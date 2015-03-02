@@ -13,56 +13,62 @@ var input =
     {
         "type": "query",
         "prefixes": {
-            "dc": "http://purl.org/dc/elements/1.1/",
-            "ns": "http://example.org/ns#"
+            "": "http://people.example/"
         },
         "queryType": "SELECT",
         "variables": [
-            "?title",
-            "?price"
+            "?y",
+            "?minName"
         ],
         "where": [
             {
                 "type": "bgp",
                 "triples": [
                     {
-                        "subject": "?x",
-                        "predicate": "http://purl.org/dc/elements/1.1/title",
-                        "object": "?title"
+                        "subject": "http://people.example/alice",
+                        "predicate": "http://people.example/knows",
+                        "object": "?y"
                     }
                 ]
             },
             {
-                "type": "optional",
-                "patterns": [
+                "type": "query",
+                "queryType": "SELECT",
+                "variables": [
+                    "?y",
+                    {
+                        "expression": {
+                            "expression": "?name",
+                            "type": "aggregate",
+                            "aggregation": "min",
+                            "distinct": false
+                        },
+                        "variable": "?minName"
+                    }
+                ],
+                "where": [
                     {
                         "type": "bgp",
                         "triples": [
                             {
-                                "subject": "?x",
-                                "predicate": "http://example.org/ns#price",
-                                "object": "?price"
+                                "subject": "?y",
+                                "predicate": "http://people.example/name",
+                                "object": "?name"
                             }
                         ]
-                    },
+                    }
+                ],
+                "group": [
                     {
-                        "type": "filter",
-                        "expression": {
-                            "type": "operation",
-                            "operator": "<",
-                            "args": [
-                                "?price",
-                                "\"30\"^^http://www.w3.org/2001/XMLSchema#integer"
-                            ]
-                        }
+                        "expression": "?y"
                     }
                 ]
             }
         ]
     };
 
-// TODO: embed simplify and translate in same function
-console.log(JSON.stringify(simplify(translate(input)), null, 4));
+// TODO: embed simplify and translateGraphPattern in same function
+console.log(JSON.stringify(translate(input), null, 4));
 
 // TODO: maybe use same casing as w3.org
 
@@ -85,6 +91,22 @@ function generateFreshVar ()
 // TODO: other stuff (select, limit, order, etc. etc.)
 function translate (thingy)
 {
+    assert(thingy.type === 'query', "Translate only works on complete query objects.");
+    var group = {type:'group', patterns:thingy.where};
+    var res = translateGraphPattern(group);
+    assertTranslate(res);
+    return simplify(res);
+}
+
+function assertTranslate (thingy)
+{
+    if (typeof thingy === 'string' || thingy.constructor === String)
+        return;
+    assert(thingy.symbol);
+}
+
+function translateGraphPattern (thingy)
+{
     if (typeof thingy === 'string' || thingy.constructor === String)
     {
         if (thingy[0] === '?')
@@ -92,22 +114,24 @@ function translate (thingy)
         return thingy;
     }
 
-    // need group object here
-    if (thingy.where)
-        return translate({type:'group', patterns:thingy.where});
+    // ignore if already parsed
+    if (thingy.symbol)
+        return thingy;
+
     // make sure optional and minus have group subelement
+    // done before recursion!
     if (thingy.type === 'optional' || thingy.type === 'minus')
-        thingy = createAlgebraElement(thingy.type, [translate({type:'group', patterns:thingy.patterns})]); // sparqljs format so it can be translated
+        thingy.patterns = [{type:'group', patterns:thingy.patterns}]; // sparqljs format so it can be translated
 
     for (var key in thingy)
     {
         if (thingy[key].constructor === Array)
             thingy[key].forEach(function (subthingy, idx)
             {
-                thingy[key][idx] = translate(subthingy);
+                thingy[key][idx] = translateGraphPattern(subthingy);
             });
         else
-            thingy[key] = translate(thingy[key]);
+            thingy[key] = translateGraphPattern(thingy[key]);
     }
 
     // update expressions to algebra format (done here since they are used in both filters and binds)
@@ -159,34 +183,33 @@ function translate (thingy)
         thingy = translateGroupOrUnionGraphPattern(thingy);
     if (thingy.type === 'graph')
         thingy = translateGraphGraphPattern(thingy);
-    // object will have changed by now
     if (thingy.type === 'group')
-    {
         thingy = translateGroupGraphPattern(thingy);
-    }
-
-    // TODO: InlineData
-    // TODO: SubSelect
+    // TODO: InlineData (jena uses own 'table' entry?). Will have to make custom function combination that has the given values as a result?
+    // (table (vars ?book ?title)
+    // (row [?title "SPARQL Tutorial"])
+    // (row [?book :book2])
+    // )
+    if (thingy.type === 'values')
+        throw "VALUES is not supported yet.";
+    if (thingy.type === 'query')
+        thingy = translateSubSelect(thingy);
 
     // 18.2.2.7
     if (filters.length > 0)
         thingy = createAlgebraElement('filter', [translateFilters(filters), thingy]);
 
-
-    // TODO: are there elements that won't have changed after a complete run? (optional, minus, bind get done in translateGroupGraphPattern)
-
     return thingy;
 }
 
 // 18.2.2.8
-function simplify(thingy)
+function simplify (thingy)
 {
     if (thingy.args)
         thingy.args.forEach(function (subthingy, idx)
         {
            thingy.args[idx] = simplify(subthingy);
         });
-    // TODO: what with leftjoin?
     if (thingy.symbol === 'join')
     {
         assert(thingy.args.length === 2, "Expected 2 args for 'join' element.");
@@ -198,6 +221,7 @@ function simplify(thingy)
     return thingy;
 }
 
+// ---------------------------------- TRANSLATE GRAPH PATTERN HELPER FUNCTIONS ----------------------------------
 function translatePathExpression (pathExp)
 {
     // iri
@@ -311,7 +335,6 @@ function translatePath (path)
 
 function translateGroupOrUnionGraphPattern (group)
 {
-    // TODO: can there be a problem with the removed filters?
     assert(group.patterns.length >= 1, "Expected at least one item in GroupOrUnionGraphPattern.");
     var accumulator = null;
     group.patterns.forEach(function (pattern)
@@ -339,10 +362,10 @@ function translateGroupGraphPattern (group)
     group.patterns.forEach(function (arg, idx)
     {
         assert(arg.symbol !== 'filter', "Filters should have been removed previously.");
-        if (arg.symbol === 'optional')
+        if (arg.type === 'optional')
         {
-            assert(arg.args.length === 1, "Expected exactly 1 arg for 'optional'.");
-            var a = arg.args[0];
+            assert(arg.patterns.length === 1, "Expected exactly 1 arg for 'optional'.");
+            var a = arg.patterns[0];
             if (a.symbol === 'filter')
             {
                 assert(a.args.length === 2, "Expected exactly 2 args for 'filter'.");
@@ -356,7 +379,6 @@ function translateGroupGraphPattern (group)
             assert(arg.args.length === 1, "minus element should only have 1 arg at this point.");
             g = createAlgebraElement('minus', [g, arg.args[0]]);
         }
-        // TODO: sure bind won't have been updated by now?
         else if (arg.type === 'bind')
             g = createAlgebraElement('extend', [g, arg.variable, arg.expression]);
         else
@@ -371,9 +393,9 @@ function translateInlineData (values)
     // TODO: ...
 }
 
-function translateSubSeletct (select)
+function translateSubSelect (query)
 {
-    return {type:'tomultiset', items:[select]};
+    return {type:'tomultiset', items:[translate(query)]};
 }
 
 function translateFilters (filters)
@@ -381,7 +403,6 @@ function translateFilters (filters)
     filters.forEach(function (filter, idx)
     {
         assert(filter.expression && filter.expression.symbol, "Expected filter to already have an updated expression.");
-        // TODO: is it correct to make these correspond to algebra elements?
         filters[idx] = createAlgebraElement(filter.expression.symbol, filter.expression.args);
     });
     if (filters.length === 1)
@@ -389,3 +410,4 @@ function translateFilters (filters)
     else
         return createAlgebraElement('&&', filters);
 }
+// ---------------------------------- END TRANSLATE GRAPH PATTERN HELPER FUNCTIONS ----------------------------------

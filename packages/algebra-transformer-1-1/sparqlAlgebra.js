@@ -5,6 +5,7 @@
 var assert = require('assert');
 
 // http://www.w3.org/TR/sparql11-query/#sparqlQuery
+// http://www.sparql.org/query-validator.html
 
 // global set of all variables in the query
 var VARIABLES = {};
@@ -68,7 +69,8 @@ var input =
     };
 
 // TODO: embed simplify and translateGraphPattern in same function
-console.log(JSON.stringify(translate(input), null, 4));
+var result = translate(input);
+console.log(JSON.stringify(result, null, 4));
 
 // TODO: maybe use same casing as w3.org
 
@@ -89,25 +91,109 @@ function generateFreshVar ()
 }
 
 // TODO: other stuff (select, limit, order, etc. etc.)
-function translate (thingy)
+function translate (query)
 {
-    assert(thingy.type === 'query', "Translate only works on complete query objects.");
-    var group = {type:'group', patterns:thingy.where};
+    assert(query.type === 'query', "Translate only works on complete query objects.");
+    var group = {type:'group', patterns:query.where};
+    var vars = inScopeVariables(group);
     var res = translateGraphPattern(group);
     assertTranslate(res);
-    return simplify(res);
+    res = simplify(res);
+    query.where = res;
+    return res;
 }
 
-function assertTranslate (thingy)
+function mergeObjects (obj1, obj2)
 {
-    if (typeof thingy === 'string' || thingy.constructor === String)
+    for (var key in obj2)
+        obj1[key] = obj2[key];
+}
+
+function isString(s)
+{
+    return (typeof thingy === 'string' || thingy.constructor === String);
+}
+
+function inScopeVariables (thingy)
+{
+    var variables = {};
+
+    if (isString(thingy) && thingy[0] === '?')
+        variables[thingy] = true;
+    else if (thingy.type === 'bgp')
+    {
+        thingy.triples.forEach(function (triple)
+        {
+            mergeObjects(variables, inScopeVariables(triple.subject));
+            mergeObjects(variables, inScopeVariables(triple.predicate));
+            mergeObjects(variables, inScopeVariables(triple.object));
+        });
+    }
+    else if (thingy.type === 'path')
+    {
+        thingy.items.forEach(function (item)
+        {
+            mergeObjects(variables, inScopeVariables(item));
+        });
+    }
+    // group, union, optional
+    else if (thingy.patterns)
+    {
+        thingy.patterns.forEach(function (pattern)
+        {
+            mergeObjects(variables, inScopeVariables(pattern));
+        });
+        // graph
+        if (thingy.name)
+            mergeObjects(variables, inScopeVariables(thingy.name));
+    }
+    // bind, aggregates
+    else if (thingy.variable)
+    {
+        mergeObjects(variables, inScopeVariables(thingy.variable));
+    }
+    else if (thingy.queryType === 'SELECT')
+    {
+        thingy.variables.forEach(function (v)
+        {
+            if (v === '*')
+                mergeObjects(variables, inScopeVariables(thingy.where));
+            else
+                mergeObjects(variables, inScopeVariables(v));
+        });
+        // TODO: I'm not 100% sure if you always add these or only when '*' was selected
+        thingy.group.forEach(function (v)
+        {
+            mergeObjects(variables, inScopeVariables(v));
+        });
+    }
+    else if (thingy.type === 'values')
+    {
+        thingy.values.forEach(function (subthingy)
+        {
+            Object.keys(subthingy).forEach(function (v)
+            {
+                variables[v] = true;
+            });
+        });
+    }
+
+    else
+        console.log(thingy);
+
+    return variables;
+}
+
+function assertTranslate (algebraQuery)
+{
+    if (typeof algebraQuery === 'string' || algebraQuery.constructor === String)
         return;
-    assert(thingy.symbol);
+    assert(algebraQuery.symbol);
 }
 
 function translateGraphPattern (thingy)
 {
-    if (typeof thingy === 'string' || thingy.constructor === String)
+    if (isString(thingy))
     {
         if (thingy[0] === '?')
             VARIABLES[thingy[0]] = true;
@@ -123,15 +209,19 @@ function translateGraphPattern (thingy)
     if (thingy.type === 'optional' || thingy.type === 'minus')
         thingy.patterns = [{type:'group', patterns:thingy.patterns}]; // sparqljs format so it can be translated
 
-    for (var key in thingy)
+    // we postpone this for subqueries so the in scope variable calculation is correct
+    if (thingy.type !== 'query')
     {
-        if (thingy[key].constructor === Array)
-            thingy[key].forEach(function (subthingy, idx)
-            {
-                thingy[key][idx] = translateGraphPattern(subthingy);
-            });
-        else
-            thingy[key] = translateGraphPattern(thingy[key]);
+        for (var key in thingy)
+        {
+            if (thingy[key].constructor === Array)
+                thingy[key].forEach(function (subthingy, idx)
+                {
+                    thingy[key][idx] = translateGraphPattern(subthingy);
+                });
+            else
+                thingy[key] = translateGraphPattern(thingy[key]);
+        }
     }
 
     // update expressions to algebra format (done here since they are used in both filters and binds)
@@ -395,7 +485,7 @@ function translateInlineData (values)
 
 function translateSubSelect (query)
 {
-    return {type:'tomultiset', items:[translate(query)]};
+    return createAlgebraElement('tomultiset', [translate(query)]);
 }
 
 function translateFilters (filters)
@@ -411,3 +501,139 @@ function translateFilters (filters)
         return createAlgebraElement('&&', filters);
 }
 // ---------------------------------- END TRANSLATE GRAPH PATTERN HELPER FUNCTIONS ----------------------------------
+
+// TODO: how to handle expressions
+function translateAggregates (query, variables)
+{
+    // 18.2.4.1
+    var g = null;
+    var e = [];
+    var a = [];
+    if (query.group)
+        g = createAlgebraElement('group', [query.group, query.where]);
+    else if (containsAggregate(query.variables) || containsAggregate(query.having) || containsAggregate(thingy.order))
+        g = createAlgebraElement('group', [1, query.where]);
+
+    if (g)
+    {
+        // TODO: TBH, should prolly just give an error here instead of replacing?
+        sampleNonAggregates(query.variables);
+        sampleNonAggregates(query.having);
+        sampleNonAggregates(query.order);
+
+        // TODO: check up on scalarvals and args
+        // TODO: do step here
+    }
+
+    // TODO: variables outside of aggregate (again, should this really happen if there are aggregates?)
+    // TODO: final join
+
+    // 18.2.4.2
+    if (query.having)
+    {
+        query.having.forEach(function (filter)
+        {
+            // TODO: these are not yet algebra elements?
+            query.where = createAlgebraElement('filter', [filter]);
+        });
+    }
+
+    // 18.2.4.3
+    // TODO: VALUES
+
+    // 18.2.4.4
+    var pv = {};
+
+    if (query.variables.indexOf('*') >= 0)
+        pv = variables;
+    else
+    {
+        query.variables.forEach(function (v)
+        {
+            if (isString(v) && v[0] === '?')
+                pv[v] = true;
+            else if (v.variable)
+            {
+                if (variables[v.variable] || pv[v.variable])
+                    throw "Aggregate variable appearing multiple times: " + v.variable;
+                pv[v.variable] = true;
+                e.push(v);
+            }
+        });
+    }
+
+    e.forEach(function (v)
+    {
+        query.where = createAlgebraElement('extend', [v.variable, v.expression]);
+    });
+
+    // 18.2.5
+    query.where = createAlgebraElement('tolist', [query.where]);
+
+    // 18.2.5.1
+    if (query.order)
+        query.where = createAlgebraElement('orderby', query.order);
+    // 18.2.5.2
+    query.where = createAlgebraElement('project', Object.keys(pv));
+    // 18.2.5.3
+    if (query.distinct)
+        query.where = createAlgebraElement('distinct', [query.where]);
+    // 18.2.5.4
+    if (query.reduced)
+        query.where = createAlgebraElement('reduced', [query.where]);
+    // 18.2.5.5
+    // we use -1 to indiciate there is no limit
+    if (query.offset || query.limit)
+        query.where = createAlgebraElement('slice', [query.offset || 0, query.limit || -1]);
+
+    return query.where;
+}
+
+// TODO: keep this format?
+function createAggregate (expression, aggregation, distinct, variable)
+{
+    var res = {expression:expression, type:'aggregate', aggregation:aggregation, distinct:distinct};
+    if (variable)
+        res.variable = variable;
+    return res;
+}
+
+function containsAggregate (thingy)
+{
+    if (!thingy)
+        return false;
+
+    if (thingy.type === 'aggregate')
+        return true;
+
+    if (thingy.constructor === Array)
+        return thingy.some(function (subthingy)
+        {
+            return containsAggregate(subthingy);
+        });
+
+    if (thingy.args)
+        return containsAggregate(thingy.args);
+
+    return false;
+}
+
+function sampleNonAggregates (thingy)
+{
+    if (!thingy || thingy.type === 'aggregate')
+        return thingy;
+
+    if (isString(thingy))
+        return thingy[0] === '?' ? createAggregate(thingy, 'sample', false) : thingy;
+
+    if (thingy.constructor === Array)
+        thingy.forEach(function (subthingy, idx)
+        {
+            thingy[idx] = sampleNonAggregates(subthingy);
+        });
+
+    else if (thingy.expression)
+        thingy.expression = sampleNonAggregates(thingy.expression);
+
+    return thingy;
+}

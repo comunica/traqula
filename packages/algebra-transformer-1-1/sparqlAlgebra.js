@@ -14,56 +14,39 @@ var input =
     {
         "type": "query",
         "prefixes": {
-            "": "http://people.example/"
+            "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
         },
         "queryType": "SELECT",
         "variables": [
-            "?y",
-            "?minName"
+            {
+                "expression": {
+                    "expression": "?val",
+                    "type": "aggregate",
+                    "aggregation": "sum",
+                    "distinct": false
+                },
+                "variable": "?sum"
+            },
+            {
+                "expression": "COUNT",
+                "variable": "?count"
+            }
         ],
         "where": [
             {
                 "type": "bgp",
                 "triples": [
                     {
-                        "subject": "http://people.example/alice",
-                        "predicate": "http://people.example/knows",
-                        "object": "?y"
+                        "subject": "?a",
+                        "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#value",
+                        "object": "?val"
                     }
                 ]
-            },
+            }
+        ],
+        "group": [
             {
-                "type": "query",
-                "queryType": "SELECT",
-                "variables": [
-                    "?y",
-                    {
-                        "expression": {
-                            "expression": "?name",
-                            "type": "aggregate",
-                            "aggregation": "min",
-                            "distinct": false
-                        },
-                        "variable": "?minName"
-                    }
-                ],
-                "where": [
-                    {
-                        "type": "bgp",
-                        "triples": [
-                            {
-                                "subject": "?y",
-                                "predicate": "http://people.example/name",
-                                "object": "?name"
-                            }
-                        ]
-                    }
-                ],
-                "group": [
-                    {
-                        "expression": "?y"
-                    }
-                ]
+                "expression": "?a"
             }
         ]
     };
@@ -87,6 +70,7 @@ function generateFreshVar ()
         v += chars[Math.floor(Math.random()*chars.length)];
     if (VARIABLES[v])
         return generateFreshVar();
+    VARIABLES[v] = true;
     return v;
 }
 
@@ -100,6 +84,7 @@ function translate (query)
     assertTranslate(res);
     res = simplify(res);
     query.where = res;
+    res = translateAggregates(query, vars);
     return res;
 }
 
@@ -111,7 +96,7 @@ function mergeObjects (obj1, obj2)
 
 function isString(s)
 {
-    return (typeof thingy === 'string' || thingy.constructor === String);
+    return (typeof s === 'string' || s.constructor === String);
 }
 
 function inScopeVariables (thingy)
@@ -177,9 +162,6 @@ function inScopeVariables (thingy)
             });
         });
     }
-
-    else
-        console.log(thingy);
 
     return variables;
 }
@@ -507,26 +489,40 @@ function translateAggregates (query, variables)
 {
     // 18.2.4.1
     var g = null;
-    var e = [];
     var a = [];
     if (query.group)
+        // TODO: query.group is an array, not an object
         g = createAlgebraElement('group', [query.group, query.where]);
-    else if (containsAggregate(query.variables) || containsAggregate(query.having) || containsAggregate(thingy.order))
+    else if (containsAggregate(query.variables) || containsAggregate(query.having) || containsAggregate(query.order))
         g = createAlgebraElement('group', [1, query.where]);
 
+    // TODO: not doing the sample stuff atm
+    // TODO: more based on jena results than w3 spec
     if (g)
     {
-        // TODO: TBH, should prolly just give an error here instead of replacing?
-        sampleNonAggregates(query.variables);
-        sampleNonAggregates(query.having);
-        sampleNonAggregates(query.order);
-
         // TODO: check up on scalarvals and args
-        // TODO: do step here
+        mapAggregates(query.variables, a);
+        mapAggregates(query.having, a);
+        mapAggregates(query.order, a);
+
+        // TODO: we use the jena syntax of adding aggregates as second argument to group, because of our structure we use the aggregates object
+        if (a.length > 0)
+        {
+            var aggregates = a.map(function (aggregate)
+            {
+                // TODO: not sure if this feels right, also: object prolly not yet in correct format?
+                // TODO: don't forget about distinct also
+                return createAlgebraElement(aggregate.variable, [aggregate.object]);
+            });
+            g.args.splice(1, 0, createAlgebraElement('aggregates', aggregates));
+        }
+        else
+            g.args.splice(1, 0, null);
+
+        query.where = g;
     }
 
     // TODO: variables outside of aggregate (again, should this really happen if there are aggregates?)
-    // TODO: final join
 
     // 18.2.4.2
     if (query.having)
@@ -534,7 +530,7 @@ function translateAggregates (query, variables)
         query.having.forEach(function (filter)
         {
             // TODO: these are not yet algebra elements?
-            query.where = createAlgebraElement('filter', [filter]);
+            query.where = createAlgebraElement('filter', [filter, query.where]);
         });
     }
 
@@ -544,6 +540,8 @@ function translateAggregates (query, variables)
     // 18.2.4.4
     var pv = {};
 
+    // TODO: doesn't contain group by mappings
+    var e = [];
     if (query.variables.indexOf('*') >= 0)
         pv = variables;
     else
@@ -564,17 +562,18 @@ function translateAggregates (query, variables)
 
     e.forEach(function (v)
     {
-        query.where = createAlgebraElement('extend', [v.variable, v.expression]);
+        query.where = createAlgebraElement('extend', [query.where, v.variable, v.expression]);
     });
 
     // 18.2.5
-    query.where = createAlgebraElement('tolist', [query.where]);
+    //query.where = createAlgebraElement('tolist', [query.where]); // TODO: this is probably not that necessary
 
     // 18.2.5.1
     if (query.order)
         query.where = createAlgebraElement('orderby', query.order);
     // 18.2.5.2
-    query.where = createAlgebraElement('project', Object.keys(pv));
+    // TODO: only place where one of the arguments is an array instead of an object...
+    query.where = createAlgebraElement('project', [query.where, Object.keys(pv)]);
     // 18.2.5.3
     if (query.distinct)
         query.where = createAlgebraElement('distinct', [query.where]);
@@ -612,28 +611,71 @@ function containsAggregate (thingy)
             return containsAggregate(subthingy);
         });
 
+    // appears in 'having'
     if (thingy.args)
         return containsAggregate(thingy.args);
 
     return false;
 }
 
-function sampleNonAggregates (thingy)
+function compareObjects (o1, o2)
 {
-    if (!thingy || thingy.type === 'aggregate')
+    if (isString(o1) !== isString(o2))
+        return false;
+    if (isString(o1))
+        return o1 === o2;
+    var k1 = Object.keys(o1);
+    var k2 = Object.keys(o2);
+    if (k1.length !== k2.length)
+        return false;
+    for (var i = 0; i < k1.length; ++i)
+    {
+        var key = k1[i];
+        if (!compareObjects(o1[key], o2[key]))
+            return false;
+    }
+    return true;
+}
+
+// TODO: could use hash, prolly not that necessary
+function getMapping (thingy, map)
+{
+    for (var i = 0; i < map.length; ++i)
+    {
+        if (compareObjects(thingy, map[i].object))
+            return map[i].variable;
+    }
+    return null;
+}
+
+function mapAggregates (thingy, map)
+{
+    if (!thingy)
         return thingy;
 
-    if (isString(thingy))
-        return thingy[0] === '?' ? createAggregate(thingy, 'sample', false) : thingy;
+    if (thingy.type === 'aggregate')
+    {
+        var v = getMapping(thingy, map);
+        if (!v)
+        {
+            v = generateFreshVar();
+            map.push({object:thingy, variable:v});
+        }
+        return v;
+    }
 
-    if (thingy.constructor === Array)
+    // non-aggregate expression
+    if (thingy.expression)
+        thingy.expression = mapAggregates(thingy.expression, map);
+    else if (thingy.args)
+        mapAggregates(thingy.args, map);
+    else if (thingy.constructor === Array)
         thingy.forEach(function (subthingy, idx)
         {
-            thingy[idx] = sampleNonAggregates(subthingy);
+            thingy[idx] = mapAggregates(subthingy, map);
         });
 
-    else if (thingy.expression)
-        thingy.expression = sampleNonAggregates(thingy.expression);
+    // TODO: can we have anything else?
 
     return thingy;
 }

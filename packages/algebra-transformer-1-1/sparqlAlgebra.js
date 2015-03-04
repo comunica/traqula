@@ -9,6 +9,7 @@ var assert = require('assert');
 
 // global set of all variables in the query
 var VARIABLES = {};
+var varCount = 0;
 
 var input =
     {
@@ -28,7 +29,12 @@ var input =
                 "variable": "?sum"
             },
             {
-                "expression": "COUNT",
+                "expression": {
+                    "expression": "?a",
+                    "type": "aggregate",
+                    "aggregation": "count",
+                    "distinct": false
+                },
                 "variable": "?count"
             }
         ],
@@ -46,16 +52,14 @@ var input =
         ],
         "group": [
             {
-                "expression": "?a"
+                "expression": "?a",
+                "variable": "?aa"
             }
         ]
     };
 
-// TODO: embed simplify and translateGraphPattern in same function
 var result = translate(input);
 console.log(JSON.stringify(result, null, 4));
-
-// TODO: maybe use same casing as w3.org
 
 function createAlgebraElement (symbol, args)
 {
@@ -64,17 +68,16 @@ function createAlgebraElement (symbol, args)
 
 function generateFreshVar ()
 {
-    var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    var v = '?var';
-    for (var i = 0; i < 5; ++i)
-        v += chars[Math.floor(Math.random()*chars.length)];
+    var v = '?var' + varCount++;
     if (VARIABLES[v])
         return generateFreshVar();
     VARIABLES[v] = true;
     return v;
+
+
 }
 
-// TODO: other stuff (select, limit, order, etc. etc.)
+// TODO: combine objects instead of nesting multiple instances?
 function translate (query)
 {
     assert(query.type === 'query', "Translate only works on complete query objects.");
@@ -484,14 +487,13 @@ function translateFilters (filters)
 }
 // ---------------------------------- END TRANSLATE GRAPH PATTERN HELPER FUNCTIONS ----------------------------------
 
-// TODO: how to handle expressions
 function translateAggregates (query, variables)
 {
     // 18.2.4.1
     var g = null;
     var a = [];
+    var e = [];
     if (query.group)
-        // TODO: query.group is an array, not an object
         g = createAlgebraElement('group', [query.group, query.where]);
     else if (containsAggregate(query.variables) || containsAggregate(query.having) || containsAggregate(query.order))
         g = createAlgebraElement('group', [1, query.where]);
@@ -505,31 +507,33 @@ function translateAggregates (query, variables)
         mapAggregates(query.having, a);
         mapAggregates(query.order, a);
 
-        // TODO: we use the jena syntax of adding aggregates as second argument to group, because of our structure we use the aggregates object
+        // TODO: we use the jena syntax of adding aggregates as second argument to group
         if (a.length > 0)
         {
             var aggregates = a.map(function (aggregate)
             {
-                // TODO: not sure if this feels right, also: object prolly not yet in correct format?
-                // TODO: don't forget about distinct also
                 return createAlgebraElement(aggregate.variable, [aggregate.object]);
             });
-            g.args.splice(1, 0, createAlgebraElement('aggregates', aggregates));
+            g.args.splice(1, 0, aggregates);
         }
         else
             g.args.splice(1, 0, null);
 
+        query.group.forEach(function (groupEntry)
+        {
+            if (groupEntry.variable)
+                e.push(groupEntry);
+        });
+
         query.where = g;
     }
 
-    // TODO: variables outside of aggregate (again, should this really happen if there are aggregates?)
 
     // 18.2.4.2
     if (query.having)
     {
         query.having.forEach(function (filter)
         {
-            // TODO: these are not yet algebra elements?
             query.where = createAlgebraElement('filter', [filter, query.where]);
         });
     }
@@ -540,8 +544,6 @@ function translateAggregates (query, variables)
     // 18.2.4.4
     var pv = {};
 
-    // TODO: doesn't contain group by mappings
-    var e = [];
     if (query.variables.indexOf('*') >= 0)
         pv = variables;
     else
@@ -566,13 +568,12 @@ function translateAggregates (query, variables)
     });
 
     // 18.2.5
-    //query.where = createAlgebraElement('tolist', [query.where]); // TODO: this is probably not that necessary
+    //query.where = createAlgebraElement('tolist', [query.where]);
 
     // 18.2.5.1
     if (query.order)
         query.where = createAlgebraElement('orderby', query.order);
     // 18.2.5.2
-    // TODO: only place where one of the arguments is an array instead of an object...
     query.where = createAlgebraElement('project', [query.where, Object.keys(pv)]);
     // 18.2.5.3
     if (query.distinct)
@@ -585,16 +586,10 @@ function translateAggregates (query, variables)
     if (query.offset || query.limit)
         query.where = createAlgebraElement('slice', [query.offset || 0, query.limit || -1]);
 
-    return query.where;
-}
+    // clean up unchanged objects
+    query.where = translateExpressionsOperations(query.where);
 
-// TODO: keep this format?
-function createAggregate (expression, aggregation, distinct, variable)
-{
-    var res = {expression:expression, type:'aggregate', aggregation:aggregation, distinct:distinct};
-    if (variable)
-        res.variable = variable;
-    return res;
+    return query.where;
 }
 
 function containsAggregate (thingy)
@@ -675,7 +670,39 @@ function mapAggregates (thingy, map)
             thingy[idx] = mapAggregates(subthingy, map);
         });
 
-    // TODO: can we have anything else?
+    return thingy;
+}
+
+function translateExpressionsOperations (thingy)
+{
+    if (!thingy)
+        return thingy;
+
+    if (isString(thingy))
+        return thingy;
+
+    if (thingy.type === 'operation')
+        return createAlgebraElement(thingy.operator, thingy.args.map(function (subthingy) { return translateExpressionsOperations(subthingy); }));
+
+    if (thingy.type === 'aggregate')
+    {
+        var a = createAlgebraElement(thingy.aggregation, [translateExpressionsOperations(thingy.expression)]);
+        if (thingy.distinct)
+            a = createAlgebraElement('distinct', [a]);
+        return a;
+    }
+
+    if (thingy.descending)
+        return createAlgebraElement('desc', [translateExpressionsOperations(thingy.expression)]);
+
+    if (thingy.expression)
+        return translateExpressionsOperations(thingy.expression);
+
+    if (thingy.constructor === Array)
+        return thingy.map(function (subthingy) { return translateExpressionsOperations(subthingy); });
+
+    for (var v in thingy)
+        thingy[v] = translateExpressionsOperations(thingy[v]);
 
     return thingy;
 }

@@ -15,11 +15,13 @@ var input =
     {
         "type": "query",
         "prefixes": {
-            "foaf": "http://xmlns.com/foaf/0.1/"
+            "dc": "http://purl.org/dc/elements/1.1/",
+            "ns": "http://example.org/ns#"
         },
         "queryType": "SELECT",
         "variables": [
-            "*"
+            "?title",
+            "?price"
         ],
         "where": [
             {
@@ -27,34 +29,36 @@ var input =
                 "triples": [
                     {
                         "subject": "?x",
-                        "predicate": {
-                            "type": "path",
-                            "pathType": "/",
-                            "items": [
-                                "http://xmlns.com/foaf/0.1/knows",
-                                {
-                                    "type": "path",
-                                    "pathType": "^",
-                                    "items": [
-                                        "http://xmlns.com/foaf/0.1/knows"
-                                    ]
-                                }
-                            ]
-                        },
-                        "object": "?y"
+                        "predicate": "http://purl.org/dc/elements/1.1/title",
+                        "object": "?title"
                     }
                 ]
             },
             {
-                "type": "filter",
-                "expression": {
-                    "type": "operation",
-                    "operator": "!=",
-                    "args": [
-                        "?x",
-                        "?y"
-                    ]
-                }
+                "type": "optional",
+                "patterns": [
+                    {
+                        "type": "bgp",
+                        "triples": [
+                            {
+                                "subject": "?x",
+                                "predicate": "http://example.org/ns#price",
+                                "object": "?price"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "filter",
+                        "expression": {
+                            "type": "operation",
+                            "operator": "<",
+                            "args": [
+                                "?price",
+                                "\"30\"^^http://www.w3.org/2001/XMLSchema#integer"
+                            ]
+                        }
+                    }
+                ]
             }
         ]
     };
@@ -195,10 +199,9 @@ function translateGraphPattern (thingy)
     if (thingy.symbol)
         return thingy;
 
-    // make sure optional and minus have group subelement
-    // done before recursion!
+    // make sure optional and minus have group subelement (needs to be done before recursion)
     if (thingy.type === 'optional' || thingy.type === 'minus')
-        thingy = {type:thingy.type, patterns:[{type:'group', patterns:thingy.patterns}]}; // sparqljs format so it can be translated
+        thingy = {type:thingy.type, patterns:[{type:'group', patterns:thingy.patterns}]};
 
     // we postpone this for subqueries so the in scope variable calculation is correct
     if (thingy.type !== 'query')
@@ -220,13 +223,20 @@ function translateGraphPattern (thingy)
     // 18.2.2.2
     var filters = [];
     var nonfilters = [];
-    if (thingy.type === 'filter' && thingy.expression.symbol === 'notexists')
-        thingy = {type:thingy.type, expression:createAlgebraElement('fn:not', [createAlgebraElement('exists', thingy.expression.args)])};
+    if (thingy.type === 'filter')
+    {
+        if (thingy.expression.symbol === 'notexists')
+            thingy = {type:thingy.type, expression:createAlgebraElement('fn:not', [createAlgebraElement('exists', thingy.expression.args)])};
+        thingy = createAlgebraElement('_filter', [thingy.expression]); // _filter since it doesn't really correspond to the 'filter' from the spec here
+    }
     else if (thingy.patterns)
     {
         thingy.patterns.forEach(function (subthingy)
         {
-            (subthingy.type === 'filter' ? filters : nonfilters).push(subthingy);
+            if (subthingy.symbol === '_filter')
+                filters.push(subthingy.args[0]); // we only need the expression, we already know they are filters now
+            else
+                nonfilters.push(subthingy);
         });
         thingy.patterns = nonfilters;
     }
@@ -290,10 +300,10 @@ function simplify (thingy)
         else if (thingy.args[1].symbol === 'bgp' && thingy.args[1].args.length === 0)
             return thingy.args[0];
     }
-    else
-        return createAlgebraElement(thingy.symbol, simplify(thingy.args));
 
-    return thingy;
+    assert(thingy.symbol, "Expected translated input.");
+
+    return createAlgebraElement(thingy.symbol, simplify(thingy.args));
 }
 
 // ---------------------------------- TRANSLATE GRAPH PATTERN HELPER FUNCTIONS ----------------------------------
@@ -474,17 +484,16 @@ function translateSubSelect (query)
     return createAlgebraElement('tomultiset', [translate(query)]);
 }
 
-function translateFilters (filters)
+function translateFilters (filterExpressions)
 {
-    filters = filters.map(function (filter, idx)
+    filterExpressions = filterExpressions.map(function (exp)
     {
-        assert(filter.expression && filter.expression.symbol, "Expected filter to already have an updated expression.");
-        return createAlgebraElement(filter.expression.symbol, filter.expression.args);
+        return createAlgebraElement(exp.symbol, exp.args);
     });
-    if (filters.length === 1)
-        return filters[0];
+    if (filterExpressions.length === 1)
+        return filterExpressions[0];
     else
-        return createAlgebraElement('&&', filters);
+        return createAlgebraElement('&&', filterExpressions);
 }
 
 // ---------------------------------- TRANSLATE AGGREGATES ----------------------------------

@@ -15,45 +15,46 @@ var input =
     {
         "type": "query",
         "prefixes": {
-            "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+            "foaf": "http://xmlns.com/foaf/0.1/"
         },
         "queryType": "SELECT",
         "variables": [
-            {
-                "expression": {
-                    "expression": "?val",
-                    "type": "aggregate",
-                    "aggregation": "sum",
-                    "distinct": false
-                },
-                "variable": "?sum"
-            },
-            {
-                "expression": {
-                    "expression": "?a",
-                    "type": "aggregate",
-                    "aggregation": "count",
-                    "distinct": false
-                },
-                "variable": "?count"
-            }
+            "*"
         ],
         "where": [
             {
                 "type": "bgp",
                 "triples": [
                     {
-                        "subject": "?a",
-                        "predicate": "http://www.w3.org/1999/02/22-rdf-syntax-ns#value",
-                        "object": "?val"
+                        "subject": "?x",
+                        "predicate": {
+                            "type": "path",
+                            "pathType": "/",
+                            "items": [
+                                "http://xmlns.com/foaf/0.1/knows",
+                                {
+                                    "type": "path",
+                                    "pathType": "^",
+                                    "items": [
+                                        "http://xmlns.com/foaf/0.1/knows"
+                                    ]
+                                }
+                            ]
+                        },
+                        "object": "?y"
                     }
                 ]
-            }
-        ],
-        "group": [
+            },
             {
-                "expression": "?a",
-                "variable": "?aa"
+                "type": "filter",
+                "expression": {
+                    "type": "operation",
+                    "operator": "!=",
+                    "args": [
+                        "?x",
+                        "?y"
+                    ]
+                }
             }
         ]
     };
@@ -77,7 +78,7 @@ function generateFreshVar ()
 
 }
 
-// TODO: combine objects instead of nesting multiple instances?
+// ---------------------------------- TRANSLATE ----------------------------------
 function translate (query)
 {
     assert(query.type === 'query', "Translate only works on complete query objects.");
@@ -86,11 +87,11 @@ function translate (query)
     var res = translateGraphPattern(group);
     assertTranslate(res);
     res = simplify(res);
-    query.where = res;
-    res = translateAggregates(query, vars);
+    res = translateAggregates(query, res, vars);
     return res;
 }
 
+// ---------------------------------- TRANSLATE HELPER FUNCTIONS ----------------------------------
 function mergeObjects (obj1, obj2)
 {
     for (var key in obj2)
@@ -135,7 +136,7 @@ function inScopeVariables (thingy)
         if (thingy.name)
             mergeObjects(variables, inScopeVariables(thingy.name));
     }
-    // bind, aggregates
+    // bind, group by
     else if (thingy.variable)
     {
         mergeObjects(variables, inScopeVariables(thingy.variable));
@@ -176,6 +177,8 @@ function assertTranslate (algebraQuery)
     assert(algebraQuery.symbol);
 }
 
+// ---------------------------------- TRANSLATE GRAPH PATTERN ----------------------------------
+// TODO: look at all places where we generate sparqljs format instead of algebra format
 function translateGraphPattern (thingy)
 {
     if (isString(thingy))
@@ -185,6 +188,9 @@ function translateGraphPattern (thingy)
         return thingy;
     }
 
+    if (thingy.constructor === Array)
+        return thingy.map(function (subthingy) { return translateGraphPattern(subthingy); });
+
     // ignore if already parsed
     if (thingy.symbol)
         return thingy;
@@ -192,22 +198,17 @@ function translateGraphPattern (thingy)
     // make sure optional and minus have group subelement
     // done before recursion!
     if (thingy.type === 'optional' || thingy.type === 'minus')
-        thingy.patterns = [{type:'group', patterns:thingy.patterns}]; // sparqljs format so it can be translated
+        thingy = {type:thingy.type, patterns:[{type:'group', patterns:thingy.patterns}]}; // sparqljs format so it can be translated
 
     // we postpone this for subqueries so the in scope variable calculation is correct
     if (thingy.type !== 'query')
     {
+        var newthingy = {};
         for (var key in thingy)
-        {
-            if (thingy[key].constructor === Array)
-                thingy[key].forEach(function (subthingy, idx)
-                {
-                    thingy[key][idx] = translateGraphPattern(subthingy);
-                });
-            else
-                thingy[key] = translateGraphPattern(thingy[key]);
-        }
+            newthingy[key] = translateGraphPattern(thingy[key]);
+        thingy = newthingy;
     }
+    // from this point on we can change contents of the input parameter since it was changed above (except for subqueries)
 
     // update expressions to algebra format (done here since they are used in both filters and binds)
     if (thingy.type === 'operation')
@@ -220,10 +221,7 @@ function translateGraphPattern (thingy)
     var filters = [];
     var nonfilters = [];
     if (thingy.type === 'filter' && thingy.expression.symbol === 'notexists')
-    {
-        thingy.expression.args = [createAlgebraElement('exists', thingy.expression.args)];
-        thingy.expression.symbol = 'fn:not';
-    }
+        thingy = {type:thingy.type, expression:createAlgebraElement('fn:not', [createAlgebraElement('exists', thingy.expression.args)])};
     else if (thingy.patterns)
     {
         thingy.patterns.forEach(function (subthingy)
@@ -235,7 +233,7 @@ function translateGraphPattern (thingy)
 
     // 18.2.2.3
     if (thingy.type === 'path')
-        thingy = translatePathExpression(thingy);
+        thingy = translatePathExpression(thingy, thingy.items);
 
     // 18.2.2.4
     // need to do this at BGP level so seq paths can be merged into BGP
@@ -244,7 +242,7 @@ function translateGraphPattern (thingy)
         var newTriples = [];
         thingy.triples.forEach(function (subthingy)
         {
-            newTriples.push.apply(newTriples, translatePath(subthingy));
+            newTriples.push.apply(newTriples, translatePath(subthingy, subthingy.predicate));
         });
         thingy.triples = newTriples;
     }
@@ -280,57 +278,59 @@ function translateGraphPattern (thingy)
 // 18.2.2.8
 function simplify (thingy)
 {
-    if (thingy.args)
-        thingy.args.forEach(function (subthingy, idx)
-        {
-           thingy.args[idx] = simplify(subthingy);
-        });
+    if (isString(thingy))
+        return thingy;
+    if (thingy.constructor === Array)
+        return thingy.map(function (subthingy) { return simplify(subthingy); });
     if (thingy.symbol === 'join')
     {
         assert(thingy.args.length === 2, "Expected 2 args for 'join' element.");
         if (thingy.args[0].symbol === 'bgp' && thingy.args[0].args.length === 0)
-            thingy = thingy.args[1];
+            return thingy.args[1];
         else if (thingy.args[1].symbol === 'bgp' && thingy.args[1].args.length === 0)
-            thingy = thingy.args[0];
+            return thingy.args[0];
     }
+    else
+        return createAlgebraElement(thingy.symbol, simplify(thingy.args));
+
     return thingy;
 }
 
 // ---------------------------------- TRANSLATE GRAPH PATTERN HELPER FUNCTIONS ----------------------------------
-function translatePathExpression (pathExp)
+function translatePathExpression (pathExp, translatedItems)
 {
-    // iri
-    pathExp.items.forEach(function (item, idx)
+    var res = null;
+    var items = translatedItems.map(function (item)
     {
         if (typeof item === 'string' || item.constructor === String)
-            pathExp.items[idx] = createAlgebraElement('link', [item]);
+            return createAlgebraElement('link', [item]);
+        return item;
     });
 
     if (pathExp.pathType === '^')
-        pathExp.pathType = 'inv';
-
+        res = createAlgebraElement('inv', items);
     else if (pathExp.pathType === '!')
     {
         var normals = [];
         var inverted = [];
-        assert(pathExp.items.length === 1, "Expected exactly 1 item for '!' path operator.");
-        var item = pathExp.items[0];
+        assert(items.length === 1, "Expected exactly 1 item for '!' path operator.");
+        var item = items[0];
 
-        if (!item.pathType)
+        if (item.symbol === 'link')
             normals.push(item);
-        else if (item.pathType === '^')
+        else if (item.symbol === 'inv')
         {
             assert(item.items.length === 1, "Expected exactly 1 item for '^' path operator.");
             inverted.push(item.items[0]);
         }
-        else if (item.pathType === '|')
+        else if (item.symbol === 'alt')
         {
-            item.items.forEach(function (subitem)
+            item.args.forEach(function (subitem)
             {
-                if (subitem.pathType === '^')
+                if (subitem.symbol === 'inv')
                 {
-                    assert(subitem.items.length === 1, "Expected exactly 1 item for '^' path operator.");
-                    inverted.push(subitem.items[0]);
+                    assert(subitem.args.length === 1, "Expected exactly 1 item for '^' path operator.");
+                    inverted.push(subitem.args[0]);
                 }
                 else
                     normals.push(subitem);
@@ -341,71 +341,71 @@ function translatePathExpression (pathExp)
         var invertedElement = createAlgebraElement('inv', [createAlgebraElement('NPS', inverted)]);
 
         if (inverted.length === 0)
-            pathExp = normalElement;
+            res = normalElement;
         else if (normals.length === 0)
-            pathExp = invertedElement;
+            res = invertedElement;
         else
-            pathExp = createAlgebraElement('alt', [normalElement, invertedElement]);
+            res = createAlgebraElement('alt', [normalElement, invertedElement]);
     }
 
     else if (pathExp.pathType === '/')
     {
         assert(pathExp.items.length >= 2, "Expected at least 2 items for '/' path operator.");
-        pathExp.pathType = 'seq';
-        var result = pathExp.items[0];
-        for (var i = 1; i < pathExp.items.length; ++i)
-            result = createAlgebraElement('seq', [result, pathExp.items[i]]);
-        pathExp = result;
+        res = pathExp.items[0];
+        for (var i = 1; i < items.length; ++i)
+            res = createAlgebraElement('seq', [res, items[i]]);
     }
     else if (pathExp.pathType === '|')
-        pathExp.pathType = 'alt';
+        res = createAlgebraElement('alt', items);
     else if (pathExp.pathType === '*')
-        pathExp.pathType = 'ZeroOrMorePath';
+        res = createAlgebraElement('ZeroOrMorePath', items);
     else if (pathExp.pathType === '+')
-        pathExp.pathType = 'OneOrMorePath';
+        res = createAlgebraElement('OneOrMorePath', items);
     else if (pathExp.pathType === '?')
-        pathExp.pathType = 'ZeroOrOnePath';
+        res = createAlgebraElement('ZeroOrOnePath', items);
 
-    if (pathExp.pathType)
-        pathExp = createAlgebraElement(pathExp.pathType, pathExp.items);
-    return pathExp;
+    assert (res, "Unable to translate path expression.");
+
+    return res;
 }
 
-function translatePath (path)
+function createTriple (subject, predicate, object)
+{
+    return {subject:subject, predicate:predicate, object:object};
+}
+
+function translatePath (pathTriple, translatedPredicate)
 {
     // assume path expressions have already been updated
-    if (!path.predicate.symbol)
-        return [path];
-    var pred = path.predicate;
+    if (!translatedPredicate.symbol)
+        return [pathTriple];
+    var pred = translatedPredicate;
+    var res = null;
     if (pred.symbol === 'link')
     {
         assert(pred.args.length === 1, "Expected exactly 1 argument for 'link' symbol.");
-        path.predicate = pred.args[0];
+        res = createTriple(pathTriple.subject, pred.args[0], pathTriple.object);
     }
     else if (pred.symbol === 'inv') // TODO: I think this applies to inv(path) instead of inv(iri) like the spec says, I might be wrong
     {
         assert(pred.args.length === 1, "Expected exactly 1 argument for 'inv' symbol.");
-        path.predicate = pred.args[0];
-        var temp = path.subject;
-        path.subject = path.object;
-        path.object = temp;
-        path = translatePath(path);
+        res = translatePath(createTriple(pathTriple.object, pathTriple.predicate, pathTriple.subject), pred.args[0]);
     }
     else if (pred.symbol === 'seq')
     {
         assert(pred.args.length === 2, "Expected exactly 2 arguments for 'seq' symbol.");
         var v = generateFreshVar();
-        var triple1 = {subject:path.subject, predicate:pred.args[0], object:v};
-        var triple2 = {subject:v, predicate:pred.args[1], object:path.object};
-        path = translatePath(triple1).concat(translatePath(triple2));
+        var triple1 =  createTriple(pathTriple.subject, pred.args[0], v);
+        var triple2 = createTriple(v, pred.args[1], pathTriple.object);
+        res = translatePath(triple1, triple1.predicate).concat(translatePath(triple2, triple2.predicate));
     }
     else
-        path = createAlgebraElement('path', [path.subject, path.predicate, path.object]);
+        res = createAlgebraElement('path', [createTriple(pathTriple.subject, pathTriple.predicate, pathTriple.object)]);
 
-    if (path.constructor !== Array)
-        path = [path];
+    if (res.constructor !== Array)
+        res = [res];
 
-    return path;
+    return res;
 }
 
 function translateGroupOrUnionGraphPattern (group)
@@ -434,8 +434,9 @@ function translateGroupGraphPattern (group)
     //assert(group.symbol && group.args, "Expected input to already be in algebra format.");
     var g = createAlgebraElement('bgp', []);
 
-    group.patterns.forEach(function (arg, idx)
+    group.patterns.forEach(function (arg)
     {
+        // TODO: not weird that some of the patterns aren't translated yet?
         assert(arg.symbol !== 'filter', "Filters should have been removed previously.");
         if (arg.type === 'optional')
         {
@@ -475,28 +476,30 @@ function translateSubSelect (query)
 
 function translateFilters (filters)
 {
-    filters.forEach(function (filter, idx)
+    filters = filters.map(function (filter, idx)
     {
         assert(filter.expression && filter.expression.symbol, "Expected filter to already have an updated expression.");
-        filters[idx] = createAlgebraElement(filter.expression.symbol, filter.expression.args);
+        return createAlgebraElement(filter.expression.symbol, filter.expression.args);
     });
     if (filters.length === 1)
         return filters[0];
     else
         return createAlgebraElement('&&', filters);
 }
-// ---------------------------------- END TRANSLATE GRAPH PATTERN HELPER FUNCTIONS ----------------------------------
 
-function translateAggregates (query, variables)
+// ---------------------------------- TRANSLATE AGGREGATES ----------------------------------
+function translateAggregates (query, parsed, variables)
 {
+    var res = parsed;
+
     // 18.2.4.1
     var g = null;
     var a = [];
     var e = [];
     if (query.group)
-        g = createAlgebraElement('group', [query.group, query.where]);
+        g = createAlgebraElement('group', [query.group, res]);
     else if (containsAggregate(query.variables) || containsAggregate(query.having) || containsAggregate(query.order))
-        g = createAlgebraElement('group', [1, query.where]);
+        g = createAlgebraElement('group', [[], res]);
 
     // TODO: not doing the sample stuff atm
     // TODO: more based on jena results than w3 spec
@@ -525,7 +528,7 @@ function translateAggregates (query, variables)
                 e.push(groupEntry);
         });
 
-        query.where = g;
+        res = g;
     }
 
 
@@ -534,7 +537,7 @@ function translateAggregates (query, variables)
     {
         query.having.forEach(function (filter)
         {
-            query.where = createAlgebraElement('filter', [filter, query.where]);
+            res = createAlgebraElement('filter', [filter, res]);
         });
     }
 
@@ -564,34 +567,35 @@ function translateAggregates (query, variables)
 
     e.forEach(function (v)
     {
-        query.where = createAlgebraElement('extend', [query.where, v.variable, v.expression]);
+        res = createAlgebraElement('extend', [res, v.variable, v.expression]);
     });
 
     // 18.2.5
-    //query.where = createAlgebraElement('tolist', [query.where]);
+    //p = createAlgebraElement('tolist', [p]);
 
     // 18.2.5.1
     if (query.order)
-        query.where = createAlgebraElement('orderby', query.order);
+        res = createAlgebraElement('orderby', query.order);
     // 18.2.5.2
-    query.where = createAlgebraElement('project', [query.where, Object.keys(pv)]);
+    res = createAlgebraElement('project', [res, Object.keys(pv)]);
     // 18.2.5.3
     if (query.distinct)
-        query.where = createAlgebraElement('distinct', [query.where]);
+        res = createAlgebraElement('distinct', [res]);
     // 18.2.5.4
     if (query.reduced)
-        query.where = createAlgebraElement('reduced', [query.where]);
+        res = createAlgebraElement('reduced', [res]);
     // 18.2.5.5
     // we use -1 to indiciate there is no limit
     if (query.offset || query.limit)
-        query.where = createAlgebraElement('slice', [query.offset || 0, query.limit || -1]);
+        res = createAlgebraElement('slice', [query.offset || 0, query.limit || -1]);
 
     // clean up unchanged objects
-    query.where = translateExpressionsOperations(query.where);
+    res = translateExpressionsOperations(res);
 
-    return query.where;
+    return res;
 }
 
+// ---------------------------------- TRANSLATE AGGREGATES HELPER FUNCTIONS ----------------------------------
 function containsAggregate (thingy)
 {
     if (!thingy)
@@ -706,3 +710,4 @@ function translateExpressionsOperations (thingy)
 
     return thingy;
 }
+// ---------------------------------- END TRANSLATE AGGREGATES ----------------------------------

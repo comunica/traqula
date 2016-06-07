@@ -4,6 +4,7 @@
 
 var assert = require('assert');
 var _ = require('lodash');
+var SparqlParser = require('sparqljs').Parser
 
 // http://www.w3.org/TR/sparql11-query/#sparqlQuery
 // http://www.sparql.org/query-validator.html
@@ -34,8 +35,10 @@ SparqlAlgebra.prototype.generateFreshVar = function ()
 };
 
 // ---------------------------------- TRANSLATE ----------------------------------
-SparqlAlgebra.prototype.translate = function (query)
+SparqlAlgebra.prototype.translate = function (sparql)
 {
+    var parser = new SparqlParser();
+    var query = parser.parse(sparql);
     assert(query.type === 'query', "Translate only works on complete query objects.");
     var group = {type:'group', patterns:query.where};
     var vars = this.inScopeVariables(group);
@@ -667,6 +670,8 @@ SparqlAlgebra.prototype.translateExpressionsOperations = function (thingy)
 };
 // ---------------------------------- END TRANSLATE AGGREGATES ----------------------------------
 
+module.exports = SparqlAlgebra;
+
 var input =
     {
         "type": "query",
@@ -719,6 +724,16 @@ var input =
         ]
     };
 
+var sparql = "PREFIX dc:   <http://purl.org/dc/elements/1.1/> " +
+"PREFIX :     <http://example.org/ns#> " +
+"    SELECT ?title ?price" +
+"            WHERE {" +
+"        ?x dc:title ?title." +
+"    OPTIONAL {" +
+"                  ?x :price ?price." +
+"FILTER (?price < 30)." +
+"}" +
+"}";
 var algebra = new SparqlAlgebra();
-var result = algebra.translate(input);
+var result = algebra.translate(sparql);
 console.log(JSON.stringify(result, null, 4));

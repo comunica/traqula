@@ -11,6 +11,7 @@ var SparqlParser = require('sparqljs').Parser;
 // https://jena.apache.org/documentation/query/index.html
 // https://www.w3.org/2011/09/SparqlAlgebra/ARQalgebra
 // https://jena.apache.org/documentation/notes/sse.html
+// https://www.w3.org/TR/sparql11-query/#ebv
 
 // TODO: unit tests...
 

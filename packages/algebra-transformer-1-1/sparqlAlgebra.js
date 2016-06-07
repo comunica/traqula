@@ -22,9 +22,19 @@ SparqlAlgebra.prototype.reset = function ()
     this.varCount = 0;
 };
 
+function AlgebraElement (symbol, args)
+{
+    this.symbol = symbol;
+    this.args = _.isArray(args) ? args : [args];
+}
+AlgebraElement.prototype.toString = function ()
+{
+    return this.symbol + '(' + this.args.join(', ') + ')';
+};
+
 SparqlAlgebra.prototype.createAlgebraElement = function (symbol, args)
 {
-    return {symbol:symbol, args:(_.isArray(args) ? args : [args])};
+    return new AlgebraElement(symbol, args);
 };
 
 SparqlAlgebra.prototype.generateFreshVar = function ()
@@ -686,4 +696,4 @@ module.exports = SparqlAlgebra;
 //"}";
 //var algebra = new SparqlAlgebra();
 //var result = algebra.translate(sparql);
-//console.log(JSON.stringify(result, null, 4));
+//console.log('' + result);

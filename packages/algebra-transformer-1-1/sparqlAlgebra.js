@@ -29,7 +29,7 @@ SparqlAlgebra.prototype.generateFreshVar = function ()
 {
     var v = '?var' + this.varCount++;
     if (this.variables[v])
-        return generateFreshVar();
+        return this.generateFreshVar();
     this.variables[v] = true;
     return v;
 };
@@ -526,7 +526,7 @@ SparqlAlgebra.prototype.translateAggregates = function (query, parsed, variables
     e.forEach(function (v)
     {
         res = this.createAlgebraElement('extend', [res, v.variable, v.expression]);
-    });
+    }.bind(this));
 
     // 18.2.5
     //p = createAlgebraElement('tolist', [p]);
@@ -588,7 +588,7 @@ SparqlAlgebra.prototype.compareObjects = function (o1, o2)
     for (var i = 0; i < k1.length; ++i)
     {
         var key = k1[i];
-        if (!compareObjects(o1[key], o2[key]))
+        if (!this.compareObjects(o1[key], o2[key]))
             return false;
     }
     return true;

@@ -8,8 +8,48 @@ var SparqlParser = require('sparqljs').Parser;
 
 // http://www.w3.org/TR/sparql11-query/#sparqlQuery
 // http://www.sparql.org/query-validator.html
+// https://jena.apache.org/documentation/query/index.html
+// https://www.w3.org/2011/09/SparqlAlgebra/ARQalgebra
+// https://jena.apache.org/documentation/notes/sse.html
 
 // TODO: unit tests...
+
+// ---------------------------------- BEGIN HELPER CLASSES ----------------------------------
+
+function AlgebraElement (symbol, args)
+{
+    this.symbol = symbol;
+    this.args = _.isArray(args) ? args : [args];
+}
+AlgebraElement.prototype.toString = function ()
+{
+    function mapArg (arg)
+    {
+        if (_.isArray(arg))
+            return '[' + _.map(arg, function (subArg) { return subArg.toString(); }).join(', ') + ']';
+        return arg.toString();
+    }
+
+    return this.symbol + '(' + _.map(this.args, mapArg).join(', ') + ')';
+};
+
+function Triple (subject, predicate, object)
+{
+    this.subject = subject;
+    this.predicate = predicate;
+    this.object = object;
+}
+Triple.prototype.toString = function ()
+{
+    function handleURI (obj) {
+        if (_.startsWith(obj, 'http://'))
+            return '<' + obj + '>';
+        return obj;
+    }
+    return handleURI(this.subject) + ' ' + handleURI(this.predicate) + ' ' + handleURI(this.object) + '.';
+};
+
+// ---------------------------------- END HELPER CLASSES ----------------------------------
 
 function SparqlAlgebra ()
 {
@@ -22,19 +62,20 @@ SparqlAlgebra.prototype.reset = function ()
     this.varCount = 0;
 };
 
-function AlgebraElement (symbol, args)
-{
-    this.symbol = symbol;
-    this.args = _.isArray(args) ? args : [args];
-}
-AlgebraElement.prototype.toString = function ()
-{
-    return this.symbol + '(' + this.args.join(', ') + ')';
-};
-
 SparqlAlgebra.prototype.createAlgebraElement = function (symbol, args)
 {
     return new AlgebraElement(symbol, args);
+};
+
+SparqlAlgebra.prototype.createTriple = function (subject, predicate, object)
+{
+    if (!predicate && !object)
+    {
+        predicate = subject.predicate;
+        object = subject.object;
+        subject = subject.subject;
+    }
+    return new Triple(subject, predicate, object);
 };
 
 SparqlAlgebra.prototype.generateFreshVar = function ()
@@ -220,7 +261,7 @@ SparqlAlgebra.prototype.translateGraphPattern = function (thingy)
 
     // 18.2.2.5
     if (thingy.type === 'bgp')
-        thingy = this.createAlgebraElement('bgp', thingy.triples);
+        thingy = this.createAlgebraElement('bgp', _.map(thingy.triples, function (triple) { return this.createTriple(triple); }.bind(this)));
 
     // 18.2.2.6
     if (thingy.type === 'union')
@@ -340,11 +381,6 @@ SparqlAlgebra.prototype.translatePathExpression = function (pathExp, translatedI
     return res;
 };
 
-SparqlAlgebra.prototype.createTriple = function (subject, predicate, object)
-{
-    return { subject:subject, predicate:predicate, object:object };
-};
-
 SparqlAlgebra.prototype.translatePath = function (pathTriple, translatedPredicate)
 {
     // assume path expressions have already been updated
@@ -447,6 +483,8 @@ SparqlAlgebra.prototype.translateSubSelect = function (query)
 
 SparqlAlgebra.prototype.translateFilters = function (filterExpressions)
 {
+    if (!_.isArray(filterExpressions))
+        filterExpressions = [filterExpressions];
     filterExpressions = filterExpressions.map(function (exp)
     {
         return this.createAlgebraElement(exp.symbol, exp.args);
@@ -507,7 +545,7 @@ SparqlAlgebra.prototype.translateAggregates = function (query, parsed, variables
     {
         query.having.forEach(function (filter)
         {
-            res = this.createAlgebraElement('filter', [filter, res]);
+            res = this.createAlgebraElement('filter', [this.translateFilters(filters), res]);
         }.bind(this));
     }
 
@@ -684,16 +722,18 @@ SparqlAlgebra.prototype.translateExpressionsOperations = function (thingy)
 
 module.exports = SparqlAlgebra;
 
-//var sparql = "PREFIX dc:   <http://purl.org/dc/elements/1.1/> " +
-//"PREFIX :     <http://example.org/ns#> " +
-//"    SELECT ?title ?price" +
-//"            WHERE {" +
-//"        ?x dc:title ?title." +
-//"    OPTIONAL {" +
-//"                  ?x :price ?price." +
-//"FILTER (?price < 30)." +
-//"}" +
-//"}";
+//var sparql =
+//    "PREFIX dc: <http://purl.org/dc/elements/1.1/> " +
+//    "PREFIX :   <http://example.org/ns#> " +
+//    "SELECT ?title ?price " +
+//    "WHERE {" +
+//    "    ?x dc:title ?title." +
+//    "    OPTIONAL {" +
+//    "        ?x :price ?price." +
+//    "        FILTER (?price < 30)." +
+//    "    }" +
+//    "}";
 //var algebra = new SparqlAlgebra();
 //var result = algebra.translate(sparql);
 //console.log('' + result);
+//console.log(JSON.stringify(result, null, 2));

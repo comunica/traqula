@@ -8,10 +8,6 @@ var _ = require('lodash');
 // http://www.w3.org/TR/sparql11-query/#sparqlQuery
 // http://www.sparql.org/query-validator.html
 
-// global set of all variables in the query
-var VARIABLES = {};
-var varCount = 0;
-
 function SparqlAlgebra ()
 {
     this.reset();
@@ -30,10 +26,10 @@ SparqlAlgebra.prototype.createAlgebraElement = function (symbol, args)
 
 SparqlAlgebra.prototype.generateFreshVar = function ()
 {
-    var v = '?var' + varCount++;
-    if (VARIABLES[v])
+    var v = '?var' + this.varCount++;
+    if (this.variables[v])
         return generateFreshVar();
-    VARIABLES[v] = true;
+    this.variables[v] = true;
     return v;
 };
 
@@ -138,7 +134,7 @@ SparqlAlgebra.prototype.translateGraphPattern = function (thingy)
     if (_.isString(thingy))
     {
         if (thingy[0] === '?')
-            VARIABLES[thingy[0]] = true;
+            this.variables[thingy[0]] = true;
         return thingy;
     }
 

@@ -1,0 +1,8 @@
+{
+  "name": "SparqlAlgebraJS",
+  "version": "1.0.0",
+  "dependencies": {
+    "lodash": "^4.13.1",
+    "sparqljs": "git+https://github.com/RubenVerborgh/SPARQL.js.git"
+  }
+}

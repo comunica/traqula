@@ -4,10 +4,12 @@
 
 var assert = require('assert');
 var _ = require('lodash');
-var SparqlParser = require('sparqljs').Parser
+var SparqlParser = require('sparqljs').Parser;
 
 // http://www.w3.org/TR/sparql11-query/#sparqlQuery
 // http://www.sparql.org/query-validator.html
+
+// TODO: unit tests...
 
 function SparqlAlgebra ()
 {
@@ -22,7 +24,7 @@ SparqlAlgebra.prototype.reset = function ()
 
 SparqlAlgebra.prototype.createAlgebraElement = function (symbol, args)
 {
-    return {symbol:symbol, args:(args.constructor === Array ? args : [args])};
+    return {symbol:symbol, args:(_.isArray(args) ? args : [args])};
 };
 
 SparqlAlgebra.prototype.generateFreshVar = function ()
@@ -125,7 +127,7 @@ SparqlAlgebra.prototype.inScopeVariables = function (thingy)
 
 SparqlAlgebra.prototype.assertTranslate = function (algebraQuery)
 {
-    if (typeof algebraQuery === 'string' || algebraQuery.constructor === String)
+    if (_.isString(algebraQuery))
         return;
     assert(algebraQuery.symbol);
 };
@@ -141,7 +143,7 @@ SparqlAlgebra.prototype.translateGraphPattern = function (thingy)
         return thingy;
     }
 
-    if (thingy.constructor === Array)
+    if (_.isArray(thingy))
         return thingy.map(function (subthingy) { return this.translateGraphPattern(subthingy); }.bind(this));
 
     // ignore if already parsed
@@ -239,7 +241,7 @@ SparqlAlgebra.prototype.simplify = function (thingy)
 {
     if (_.isString(thingy))
         return thingy;
-    if (thingy.constructor === Array)
+    if (_.isArray(thingy))
         return thingy.map(function (subthingy) { return this.simplify(subthingy); }.bind(this));
     if (thingy.symbol === 'join')
     {
@@ -261,7 +263,7 @@ SparqlAlgebra.prototype.translatePathExpression = function (pathExp, translatedI
     var res = null;
     var items = translatedItems.map(function (item)
     {
-        if (typeof item === 'string' || item.constructor === String)
+        if (_.isString(item))
             return this.createAlgebraElement('link', [item]);
         return item;
     }.bind(this));
@@ -361,7 +363,7 @@ SparqlAlgebra.prototype.translatePath = function (pathTriple, translatedPredicat
     else
         res = this.createAlgebraElement('path', [this.createTriple(pathTriple.subject, pathTriple.predicate, pathTriple.object)]);
 
-    if (res.constructor !== Array)
+    if (!_.isArray(res))
         res = [res];
 
     return res;
@@ -562,7 +564,7 @@ SparqlAlgebra.prototype.containsAggregate = function (thingy)
     if (thingy.type === 'aggregate')
         return true;
 
-    if (thingy.constructor === Array)
+    if (_.isArray(thingy))
         return thingy.some(function (subthingy)
         {
             return this.containsAggregate(subthingy);
@@ -626,7 +628,7 @@ SparqlAlgebra.prototype.mapAggregates = function (thingy, map)
         thingy.expression = this.mapAggregates(thingy.expression, map);
     else if (thingy.args)
         this.mapAggregates(thingy.args, map);
-    else if (thingy.constructor === Array)
+    else if (_.isArray(thingy))
         thingy.forEach(function (subthingy, idx)
         {
             thingy[idx] = this.mapAggregates(subthingy, map);
@@ -660,7 +662,7 @@ SparqlAlgebra.prototype.translateExpressionsOperations = function (thingy)
     if (thingy.expression)
         return this.translateExpressionsOperations(thingy.expression);
 
-    if (thingy.constructor === Array)
+    if (_.isArray(thingy))
         return thingy.map(function (subthingy) { return this.translateExpressionsOperations(subthingy); }.bind(this));
 
     for (var v in thingy)

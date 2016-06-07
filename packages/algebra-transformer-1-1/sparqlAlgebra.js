@@ -674,68 +674,68 @@ SparqlAlgebra.prototype.translateExpressionsOperations = function (thingy)
 
 module.exports = SparqlAlgebra;
 
-var input =
-    {
-        "type": "query",
-        "prefixes": {
-            "dc": "http://purl.org/dc/elements/1.1/",
-            "ns": "http://example.org/ns#"
-        },
-        "queryType": "SELECT",
-        "variables": [
-            "?title",
-            "?price"
-        ],
-        "where": [
-            {
-                "type": "bgp",
-                "triples": [
-                    {
-                        "subject": "?x",
-                        "predicate": "http://purl.org/dc/elements/1.1/title",
-                        "object": "?title"
-                    }
-                ]
-            },
-            {
-                "type": "optional",
-                "patterns": [
-                    {
-                        "type": "bgp",
-                        "triples": [
-                            {
-                                "subject": "?x",
-                                "predicate": "http://example.org/ns#price",
-                                "object": "?price"
-                            }
-                        ]
-                    },
-                    {
-                        "type": "filter",
-                        "expression": {
-                            "type": "operation",
-                            "operator": "<",
-                            "args": [
-                                "?price",
-                                "\"30\"^^http://www.w3.org/2001/XMLSchema#integer"
-                            ]
-                        }
-                    }
-                ]
-            }
-        ]
-    };
-
-var sparql = "PREFIX dc:   <http://purl.org/dc/elements/1.1/> " +
-"PREFIX :     <http://example.org/ns#> " +
-"    SELECT ?title ?price" +
-"            WHERE {" +
-"        ?x dc:title ?title." +
-"    OPTIONAL {" +
-"                  ?x :price ?price." +
-"FILTER (?price < 30)." +
-"}" +
-"}";
-var algebra = new SparqlAlgebra();
-var result = algebra.translate(sparql);
-console.log(JSON.stringify(result, null, 4));
+//var input =
+//    {
+//        "type": "query",
+//        "prefixes": {
+//            "dc": "http://purl.org/dc/elements/1.1/",
+//            "ns": "http://example.org/ns#"
+//        },
+//        "queryType": "SELECT",
+//        "variables": [
+//            "?title",
+//            "?price"
+//        ],
+//        "where": [
+//            {
+//                "type": "bgp",
+//                "triples": [
+//                    {
+//                        "subject": "?x",
+//                        "predicate": "http://purl.org/dc/elements/1.1/title",
+//                        "object": "?title"
+//                    }
+//                ]
+//            },
+//            {
+//                "type": "optional",
+//                "patterns": [
+//                    {
+//                        "type": "bgp",
+//                        "triples": [
+//                            {
+//                                "subject": "?x",
+//                                "predicate": "http://example.org/ns#price",
+//                                "object": "?price"
+//                            }
+//                        ]
+//                    },
+//                    {
+//                        "type": "filter",
+//                        "expression": {
+//                            "type": "operation",
+//                            "operator": "<",
+//                            "args": [
+//                                "?price",
+//                                "\"30\"^^http://www.w3.org/2001/XMLSchema#integer"
+//                            ]
+//                        }
+//                    }
+//                ]
+//            }
+//        ]
+//    };
+//
+//var sparql = "PREFIX dc:   <http://purl.org/dc/elements/1.1/> " +
+//"PREFIX :     <http://example.org/ns#> " +
+//"    SELECT ?title ?price" +
+//"            WHERE {" +
+//"        ?x dc:title ?title." +
+//"    OPTIONAL {" +
+//"                  ?x :price ?price." +
+//"FILTER (?price < 30)." +
+//"}" +
+//"}";
+//var algebra = new SparqlAlgebra();
+//var result = algebra.translate(sparql);
+//console.log(JSON.stringify(result, null, 4));

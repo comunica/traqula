@@ -14,6 +14,8 @@ var SparqlParser = require('sparqljs').Parser;
 // https://www.w3.org/TR/sparql11-query/#ebv
 
 // TODO: unit tests...
+// TODO: prefixes?
+// TODO: fix inconsistencies with representation using serializer (https://github.com/RubenVerborgh/N3.js)
 
 // ---------------------------------- BEGIN HELPER CLASSES ----------------------------------
 

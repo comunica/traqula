@@ -1,6 +1,6 @@
 {
   "name": "SparqlAlgebraJS",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "dependencies": {
     "lodash": "^4.13.1",
     "sparqljs": "^1.1.4"

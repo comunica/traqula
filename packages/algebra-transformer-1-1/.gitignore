@@ -1,1 +1,6 @@
-.idea
+node_modules
+.idea/
+*.tmp
+~*
+*.n3~
+*.log

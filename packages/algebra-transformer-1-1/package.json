@@ -1,6 +1,13 @@
 {
   "name": "SparqlAlgebraJS",
   "version": "0.0.1",
+  "description": "Convert SPARQL to SPARL algebra",
+  "author": "Joachim Van Herwegen",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/joachimvh/SPARQLAlgebra.js"
+  },
   "dependencies": {
     "lodash": "^4.13.1",
     "sparqljs": "^1.1.4"

@@ -438,7 +438,7 @@ function accumulateGroupGraphPattern (G, E)
             G = createAlgebraElement('leftjoin', [ G, A.args[1], A.args[0] ]);
         }
         else
-            G = createAlgebraElement('leftjoin', [ G, A, 'true' ]);
+            G = createAlgebraElement('leftjoin', [ G, A, true ]);
     }
     else if (E.symbol === 'minus')
     {

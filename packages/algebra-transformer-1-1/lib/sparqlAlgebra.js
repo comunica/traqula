@@ -55,7 +55,11 @@ class AlgebraElement
             return arg.toString();
         }
         
-        return this.symbol + '(' + _.map(this.args, mapArg).join(', ') + ')';
+        let symbol = this.symbol;
+        if (_.isSymbol(symbol))
+            symbol = symbol.toString().match(/^Symbol\((.*)\)$/)[1];
+        
+        return symbol + '(' + _.map(this.args, mapArg).join(', ') + ')';
     }
 }
 
@@ -120,6 +124,7 @@ function translate (sparql)
     if (_.isString(sparql))
     {
         let parser = new SparqlParser();
+        parser._resetBlanks();
         sparql = parser.parse(sparql);
     }
     if (sparql.type !== 'query')

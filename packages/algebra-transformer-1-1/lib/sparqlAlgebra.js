@@ -692,18 +692,3 @@ function translateExpressionsOperations(thingy)
 // ---------------------------------- END TRANSLATE AGGREGATES ----------------------------------
 
 module.exports = translate;
-
-let sparql =
-   "PREFIX dc: <http://purl.org/dc/elements/1.1/> " +
-   "PREFIX :   <http://example.org/ns#> " +
-   "SELECT ?title ?price " +
-   "WHERE {" +
-   "    ?x dc:title ?title." +
-   "    OPTIONAL {" +
-   "        ?x :price ?price." +
-   "        FILTER (?price < 30)." +
-   "    }" +
-   "}";
-let result = translate(sparql);
-console.log('' + result);
-//console.log(JSON.stringify(result, null, 2));

@@ -1,6 +1,6 @@
 {
   "name": "SparqlAlgebraJS",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "description": "Convert SPARQL to SPARL algebra",
   "author": "Joachim Van Herwegen",
   "license": "MIT",
@@ -11,5 +11,8 @@
   "dependencies": {
     "lodash": "^4.13.1",
     "sparqljs": "^1.1.4"
+  },
+  "devDependencies": {
+    "mocha": "^3.5.3"
   }
 }

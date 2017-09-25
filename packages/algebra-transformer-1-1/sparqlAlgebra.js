@@ -2,76 +2,66 @@
  * Created by joachimvh on 26/02/2015.
  */
 
-var assert = require('assert');
-var _ = require('lodash');
-var SparqlParser = require('sparqljs').Parser;
-
-// http://www.w3.org/TR/sparql11-query/#sparqlQuery
-// http://www.sparql.org/query-validator.html
-// https://jena.apache.org/documentation/query/index.html
-// https://www.w3.org/2011/09/SparqlAlgebra/ARQalgebra
-// https://jena.apache.org/documentation/notes/sse.html
-// https://www.w3.org/TR/sparql11-query/#ebv
-
-// TODO: unit tests...
-// TODO: prefixes?
-// TODO: fix inconsistencies with representation using serializer (https://github.com/RubenVerborgh/N3.js)
+const _ = require('lodash');
+const SparqlParser = require('sparqljs').Parser;
 
 // ---------------------------------- BEGIN HELPER CLASSES ----------------------------------
 
-function AlgebraElement (symbol, args)
+class AlgebraElement
 {
-    this.symbol = symbol;
-    this.args = _.isArray(args) ? args : [args];
-}
-AlgebraElement.prototype.toString = function ()
-{
-    function mapArg (arg)
+    constructor (symbol, args)
     {
-        if (_.isArray(arg))
-            return '[' + _.map(arg, function (subArg) { return subArg.toString(); }).join(', ') + ']';
-        return arg.toString();
+        this.symbol = symbol;
+        this.args = _.isArray(args) ? args : [args];
     }
-
-    return this.symbol + '(' + _.map(this.args, mapArg).join(', ') + ')';
-};
-
-function Triple (subject, predicate, object)
-{
-    this.subject = subject;
-    this.predicate = predicate;
-    this.object = object;
+    
+    toString ()
+    {
+        function mapArg (arg)
+        {
+            if (_.isArray(arg))
+                return '[' + _.map(arg, function (subArg) { return subArg.toString(); }).join(', ') + ']';
+            return arg.toString();
+        }
+        
+        return this.symbol + '(' + _.map(this.args, mapArg).join(', ') + ')';
+    }
 }
-Triple.prototype.toString = function ()
+
+class Triple
 {
-    function handleURI (obj) {
-        if (_.startsWith(obj, 'http://'))
-            return '<' + obj + '>';
-        return obj;
+    constructor (subject, predicate, object)
+    {
+        this.subject = subject;
+        this.predicate = predicate;
+        this.object = object;
     }
-    return handleURI(this.subject) + ' ' + handleURI(this.predicate) + ' ' + handleURI(this.object) + '.';
-};
+    
+    toString ()
+    {
+        function handleURI (obj) {
+            if (_.startsWith(obj, 'http://'))
+                return '<' + obj + '>';
+            return obj;
+        }
+        return handleURI(this.subject) + ' ' + handleURI(this.predicate) + ' ' + handleURI(this.object) + '.';
+    }
+}
 
 // ---------------------------------- END HELPER CLASSES ----------------------------------
 
-function SparqlAlgebra ()
-{
-    this.reset();
-}
 
-SparqlAlgebra.prototype.reset = function ()
-{
-    this.variables = {};
-    this.varCount = 0;
-};
+let variables = {};
+let varCount = 0;
 
-SparqlAlgebra.prototype.createAlgebraElement = function (symbol, args)
+function createAlgebraElement (symbol, args)
 {
     return new AlgebraElement(symbol, args);
-};
+}
 
-SparqlAlgebra.prototype.createTriple = function (subject, predicate, object)
+function createTriple (subject, predicate, object)
 {
+    // first parameter is a triple object
     if (!predicate && !object)
     {
         predicate = subject.predicate;
@@ -79,126 +69,121 @@ SparqlAlgebra.prototype.createTriple = function (subject, predicate, object)
         subject = subject.subject;
     }
     return new Triple(subject, predicate, object);
-};
+}
 
-SparqlAlgebra.prototype.generateFreshVar = function ()
+// generate an unused variable name
+function generateFreshVar ()
 {
-    var v = '?var' + this.varCount++;
-    if (this.variables[v])
-        return this.generateFreshVar();
-    this.variables[v] = true;
+    let v = '?var' + varCount++;
+    if (variables[v])
+        return generateFreshVar();
+    variables[v] = true;
     return v;
-};
+}
 
 // ---------------------------------- TRANSLATE ----------------------------------
-SparqlAlgebra.prototype.translate = function (sparql)
+function translate (sparql)
 {
-    var parser = new SparqlParser();
-    var query = parser.parse(sparql);
-    assert(query.type === 'query', "Translate only works on complete query objects.");
-    var group = {type:'group', patterns:query.where};
-    var vars = this.inScopeVariables(group);
-    var res = this.translateGraphPattern(group);
-    this.assertTranslate(res);
-    res = this.simplify(res);
-    res = this.translateAggregates(query, res, vars);
+    variables = {};
+    varCount = 0;
+    if (_.isString(sparql))
+    {
+        let parser = new SparqlParser();
+        sparql = parser.parse(sparql);
+    }
+    if (sparql.type !== 'query')
+        throw new Error('Translate only works on complete query objects.');
+    let group = { type: 'group', patterns: sparql.where };
+    let vars = inScopeVariables(group);
+    let res = translateGraphPattern(group);
+    res = simplify(res);
+    res = translateAggregates(sparql, res, vars);
     return res;
-};
+}
 
 // ---------------------------------- TRANSLATE HELPER FUNCTIONS ----------------------------------
-SparqlAlgebra.prototype.mergeObjects = function (obj1, obj2)
+function mergeObjects (obj1, obj2)
 {
-    for (var key in obj2)
+    for (let key of Object.keys(obj2))
         obj1[key] = obj2[key];
-};
+}
 
-SparqlAlgebra.prototype.inScopeVariables = function (thingy)
+function isVariable (thingy)
 {
-    var variables = {};
+    return _.isString(thingy) && thingy[0] === '?';
+}
 
-    if (_.isString(thingy) && thingy[0] === '?')
-        variables[thingy] = true;
+function inScopeVariables (thingy)
+{
+    let inScope = {};
+
+    if (isVariable(thingy))
+        inScope[thingy] = true;
     else if (thingy.type === 'bgp')
     {
-        thingy.triples.forEach(function (triple)
+        thingy.triples.forEach(triple =>
         {
-            this.mergeObjects(variables, this.inScopeVariables(triple.subject));
-            this.mergeObjects(variables, this.inScopeVariables(triple.predicate));
-            this.mergeObjects(variables, this.inScopeVariables(triple.object));
-        }.bind(this));
+            mergeObjects(inScope, inScopeVariables(triple.subject));
+            mergeObjects(inScope, inScopeVariables(triple.predicate));
+            mergeObjects(inScope, inScopeVariables(triple.object));
+        });
     }
     else if (thingy.type === 'path')
     {
-        thingy.items.forEach(function (item)
-        {
-            this.mergeObjects(variables, this.inScopeVariables(item));
-        }.bind(this));
+        for (let item of thingy.items)
+            mergeObjects(inScope, inScopeVariables(item));
     }
     // group, union, optional
     else if (thingy.patterns)
     {
-        thingy.patterns.forEach(function (pattern)
-        {
-            this.mergeObjects(variables, this.inScopeVariables(pattern));
-        }.bind(this));
+        for (let pattern of thingy.patterns)
+            mergeObjects(inScope, inScopeVariables(pattern));
+        
         // graph
         if (thingy.name)
-            this.mergeObjects(variables, this.inScopeVariables(thingy.name));
+            mergeObjects(inScope, inScopeVariables(thingy.name));
     }
     // bind, group by
     else if (thingy.variable)
     {
-        this.mergeObjects(variables, this.inScopeVariables(thingy.variable));
+        mergeObjects(inScope, inScopeVariables(thingy.variable));
     }
     else if (thingy.queryType === 'SELECT')
     {
-        thingy.variables.forEach(function (v)
+        for (let v of thingy.variables)
         {
             if (v === '*')
-                this.mergeObjects(variables, this.inScopeVariables(thingy.where));
+                mergeObjects(inScope, inScopeVariables(thingy.where));
             else
-                this.mergeObjects(variables, this.inScopeVariables(v));
-        }.bind(this));
+                mergeObjects(inScope, inScopeVariables(v));
+        }
+        
         // TODO: I'm not 100% sure if you always add these or only when '*' was selected
-        thingy.group.forEach(function (v)
-        {
-            this.mergeObjects(variables, this.inScopeVariables(v));
-        }.bind(this));
+        for (let v of thingy.group)
+            mergeObjects(inScope, inScopeVariables(v));
     }
     else if (thingy.type === 'values')
     {
-        thingy.values.forEach(function (subthingy)
-        {
-            Object.keys(subthingy).forEach(function (v)
-            {
-                variables[v] = true;
-            });
-        });
+        for (let value of thingy.values)
+            for (let v of Object.keys(value))
+                inScope[v] = true;
     }
 
-    return variables;
-};
-
-SparqlAlgebra.prototype.assertTranslate = function (algebraQuery)
-{
-    if (_.isString(algebraQuery))
-        return;
-    assert(algebraQuery.symbol);
-};
+    return inScope;
+}
 
 // ---------------------------------- TRANSLATE GRAPH PATTERN ----------------------------------
-// TODO: look at all places where we generate sparqljs format instead of algebra format
-SparqlAlgebra.prototype.translateGraphPattern = function (thingy)
+function translateGraphPattern (thingy)
 {
     if (_.isString(thingy))
     {
-        if (thingy[0] === '?')
-            this.variables[thingy[0]] = true;
+        if (isVariable(thingy))
+            variables[thingy] = true;
         return thingy;
     }
 
     if (_.isArray(thingy))
-        return thingy.map(function (subthingy) { return this.translateGraphPattern(subthingy); }.bind(this));
+        return thingy.map(subthingy => translateGraphPattern(subthingy) );
 
     // ignore if already parsed
     if (thingy.symbol)
@@ -206,408 +191,400 @@ SparqlAlgebra.prototype.translateGraphPattern = function (thingy)
 
     // make sure optional and minus have group subelement (needs to be done before recursion)
     if (thingy.type === 'optional' || thingy.type === 'minus')
-        thingy = {type:thingy.type, patterns:[{type:'group', patterns:thingy.patterns}]};
+        thingy = { type: thingy.type, patterns: [{ type: 'group', patterns: thingy.patterns }] };
 
-    // we postpone this for subqueries so the in scope variable calculation is correct
+    // we postpone this for subqueries so the in-scope variable calculation is correct
     if (thingy.type !== 'query')
     {
-        var newthingy = {};
-        for (var key in thingy)
-            newthingy[key] = this.translateGraphPattern(thingy[key]);
+        let newthingy = {};
+        for (let key of Object.keys(thingy))
+            newthingy[key] = translateGraphPattern(thingy[key]);
         thingy = newthingy;
     }
     // from this point on we can change contents of the input parameter since it was changed above (except for subqueries)
 
     // update expressions to algebra format (done here since they are used in both filters and binds)
     if (thingy.type === 'operation')
-        thingy = this.createAlgebraElement(thingy.operator, thingy.args);
+        thingy = createAlgebraElement(thingy.operator, thingy.args);
 
     // 18.2.2.1
     // already done by sparql parser
 
     // 18.2.2.2
-    var filters = [];
-    var nonfilters = [];
+    let filters = [];
+    let nonfilters = [];
     if (thingy.type === 'filter')
     {
         if (thingy.expression.symbol === 'notexists')
-            thingy = {type: thingy.type, expression: this.createAlgebraElement('fn:not', [this.createAlgebraElement('exists', thingy.expression.args)])};
-        thingy = this.createAlgebraElement('_filter', [thingy.expression]); // _filter since it doesn't really correspond to the 'filter' from the spec here
+            thingy = { type: thingy.type, expression: createAlgebraElement('fn:not', [ createAlgebraElement('exists', thingy.expression.args) ]) };
+        thingy = createAlgebraElement('_filter', [ thingy.expression ]); // _filter since it doesn't really correspond to the 'filter' from the spec here
     }
     else if (thingy.patterns)
     {
-        thingy.patterns.forEach(function (subthingy)
+        for (let pattern of thingy.patterns)
         {
-            if (subthingy.symbol === '_filter')
-                filters.push(subthingy.args[0]); // we only need the expression, we already know they are filters now
+            if (pattern.symbol === '_filter')
+                filters.push(pattern.args[0]); // we only need the expression, we already know they are filters now
             else
-                nonfilters.push(subthingy);
-        });
+                nonfilters.push(pattern);
+        }
         thingy.patterns = nonfilters;
     }
 
     // 18.2.2.3
     if (thingy.type === 'path')
-        thingy = this.translatePathExpression(thingy, thingy.items);
+        thingy = translatePathExpression(thingy, thingy.items);
 
     // 18.2.2.4
     // need to do this at BGP level so seq paths can be merged into BGP
     if (thingy.type === 'bgp')
     {
-        var newTriples = [];
-        thingy.triples.forEach(function (subthingy)
-        {
-            newTriples.push.apply(newTriples, this.translatePath(subthingy, subthingy.predicate));
-        }.bind(this));
+        let newTriples = [];
+        for (let triple of thingy.triples)
+            newTriples.push.apply(newTriples, translatePath(triple, triple.predicate));
         thingy.triples = newTriples;
     }
 
     // 18.2.2.5
     if (thingy.type === 'bgp')
-        thingy = this.createAlgebraElement('bgp', _.map(thingy.triples, function (triple) { return this.createTriple(triple); }.bind(this)));
+        thingy = createAlgebraElement('bgp', thingy.triples.map(triple => createTriple(triple)));
 
     // 18.2.2.6
     if (thingy.type === 'union')
-        thingy = this.translateGroupOrUnionGraphPattern(thingy);
+        thingy = translateGroupOrUnionGraphPattern(thingy);
     if (thingy.type === 'graph')
-        thingy = this.translateGraphGraphPattern(thingy);
+        thingy = translateGraphGraphPattern(thingy);
     if (thingy.type === 'group')
-        thingy = this.translateGroupGraphPattern(thingy);
+        thingy = translateGroupGraphPattern(thingy);
     // TODO: InlineData (jena uses own 'table' entry?). Will have to make custom function combination that has the given values as a result?
     // (table (vars ?book ?title)
     // (row [?title "SPARQL Tutorial"])
     // (row [?book :book2])
     // )
     if (thingy.type === 'values')
-        throw "VALUES is not supported yet.";
+        throw new Error("VALUES is not supported yet.");
     if (thingy.type === 'query')
-        thingy = this.translateSubSelect(thingy);
+        thingy = translateSubSelect(thingy);
 
     // 18.2.2.7
     if (filters.length > 0)
-        thingy = this.createAlgebraElement('filter', [this.translateFilters(filters), thingy]);
+        thingy = createAlgebraElement('filter', [ translateFilters(filters), thingy ]);
 
     return thingy;
-};
+}
 
 // 18.2.2.8
-SparqlAlgebra.prototype.simplify = function (thingy)
+function simplify (thingy)
 {
     if (_.isString(thingy))
         return thingy;
     if (_.isArray(thingy))
-        return thingy.map(function (subthingy) { return this.simplify(subthingy); }.bind(this));
+        return thingy.map(subthingy => simplify(subthingy));
     if (thingy.symbol === 'join')
     {
-        assert(thingy.args.length === 2, "Expected 2 args for 'join' element.");
+        if (thingy.args.length !== 2)
+            throw new Error("Expected 2 args for 'join' element.");
         if (thingy.args[0].symbol === 'bgp' && thingy.args[0].args.length === 0)
             return thingy.args[1];
         else if (thingy.args[1].symbol === 'bgp' && thingy.args[1].args.length === 0)
             return thingy.args[0];
     }
 
-    assert(thingy.symbol, "Expected translated input.");
+    if (!thingy.symbol)
+        throw new Error("Expected translated input.");
 
-    return this.createAlgebraElement(thingy.symbol, this.simplify(thingy.args));
-};
+    return createAlgebraElement(thingy.symbol, simplify(thingy.args));
+}
 
 // ---------------------------------- TRANSLATE GRAPH PATTERN HELPER FUNCTIONS ----------------------------------
-SparqlAlgebra.prototype.translatePathExpression = function (pathExp, translatedItems)
+function translatePathExpression (pathExp, translatedItems)
 {
-    var res = null;
-    var items = translatedItems.map(function (item)
-    {
-        if (_.isString(item))
-            return this.createAlgebraElement('link', [item]);
-        return item;
-    }.bind(this));
+    let res = null;
+    let items = translatedItems.map(item => _.isString(item) ? createAlgebraElement('link', [ item ]) : item);
 
     if (pathExp.pathType === '^')
-        res = this.createAlgebraElement('inv', items);
+        res = createAlgebraElement('inv', items);
     else if (pathExp.pathType === '!')
     {
-        var normals = [];
-        var inverted = [];
-        assert(items.length === 1, "Expected exactly 1 item for '!' path operator.");
-        var item = items[0];
+        let normals = [];
+        let inverted = [];
+        if (items.length !== 1)
+            throw new Error("Expected exactly 1 item for '!' path operator.");
+        let item = items[0];
 
         if (item.symbol === 'link')
             normals.push(item);
         else if (item.symbol === 'inv')
         {
-            assert(item.items.length === 1, "Expected exactly 1 item for '^' path operator.");
+            if (item.items.length !== 1)
+                throw new Error("Expected exactly 1 item for '^' path operator.");
             inverted.push(item.items[0]);
         }
         else if (item.symbol === 'alt')
         {
-            item.args.forEach(function (subitem)
+            for (let option of item.args)
             {
-                if (subitem.symbol === 'inv')
+                if (option.symbol === 'inv')
                 {
-                    assert(subitem.args.length === 1, "Expected exactly 1 item for '^' path operator.");
-                    inverted.push(subitem.args[0]);
+                    if (option.args.length !== 1)
+                        throw new Error('Expected exactly 1 item for '^' path operator.');
+                    inverted.push(option.args[0]);
                 }
                 else
-                    normals.push(subitem);
-            });
+                    normals.push(option);
+            }
         }
 
-        var normalElement = this.createAlgebraElement('NPS', normals);
-        var invertedElement = this.createAlgebraElement('inv', [this.createAlgebraElement('NPS', inverted)]);
+        let normalElement = createAlgebraElement('NPS', normals);
+        let invertedElement = createAlgebraElement('inv', [ createAlgebraElement('NPS', inverted) ]);
 
         if (inverted.length === 0)
             res = normalElement;
         else if (normals.length === 0)
             res = invertedElement;
         else
-            res = this.createAlgebraElement('alt', [normalElement, invertedElement]);
+            res = createAlgebraElement('alt', [ normalElement, invertedElement ]);
     }
 
     else if (pathExp.pathType === '/')
     {
-        assert(pathExp.items.length >= 2, "Expected at least 2 items for '/' path operator.");
+        if (pathExp.items.length < 2)
+            throw new Error('Expected at least 2 items for '/' path operator.');
         res = pathExp.items[0];
-        for (var i = 1; i < items.length; ++i)
-            res = this.createAlgebraElement('seq', [res, items[i]]);
+        for (let item of items)
+            res = createAlgebraElement('seq', [res, item]);
     }
     else if (pathExp.pathType === '|')
-        res = this.createAlgebraElement('alt', items);
+        res = createAlgebraElement('alt', items);
     else if (pathExp.pathType === '*')
-        res = this.createAlgebraElement('ZeroOrMorePath', items);
+        res = createAlgebraElement('ZeroOrMorePath', items);
     else if (pathExp.pathType === '+')
-        res = this.createAlgebraElement('OneOrMorePath', items);
+        res = createAlgebraElement('OneOrMorePath', items);
     else if (pathExp.pathType === '?')
-        res = this.createAlgebraElement('ZeroOrOnePath', items);
+        res = createAlgebraElement('ZeroOrOnePath', items);
 
-    assert (res, "Unable to translate path expression.");
+    if (!res)
+        throw new Error('Unable to translate path expression ' + pathExp);
 
     return res;
-};
+}
 
-SparqlAlgebra.prototype.translatePath = function (pathTriple, translatedPredicate)
+function translatePath (pathTriple, translatedPredicate)
 {
     // assume path expressions have already been updated
     if (!translatedPredicate.symbol)
-        return [pathTriple];
-    var pred = translatedPredicate;
-    var res = null;
+        return [ pathTriple ];
+    let pred = translatedPredicate;
+    let res = null;
     if (pred.symbol === 'link')
     {
-        assert(pred.args.length === 1, "Expected exactly 1 argument for 'link' symbol.");
-        res = this.createTriple(pathTriple.subject, pred.args[0], pathTriple.object);
+        if (pred.args.length !== 1)
+            throw new Error("Expected exactly 1 argument for 'link' symbol.");
+        res = createTriple(pathTriple.subject, pred.args[0], pathTriple.object);
     }
     else if (pred.symbol === 'inv') // TODO: I think this applies to inv(path) instead of inv(iri) like the spec says, I might be wrong
     {
-        assert(pred.args.length === 1, "Expected exactly 1 argument for 'inv' symbol.");
-        res = this.translatePath(this.createTriple(pathTriple.object, pathTriple.predicate, pathTriple.subject), pred.args[0]);
+        if (pred.args.length !== 1)
+            throw new Error("Expected exactly 1 argument for 'inv' symbol.");
+        res = translatePath(createTriple(pathTriple.object, pathTriple.predicate, pathTriple.subject), pred.args[0]);
     }
     else if (pred.symbol === 'seq')
     {
-        assert(pred.args.length === 2, "Expected exactly 2 arguments for 'seq' symbol.");
-        var v = this.generateFreshVar();
-        var triple1 =  this.createTriple(pathTriple.subject, pred.args[0], v);
-        var triple2 = this.createTriple(v, pred.args[1], pathTriple.object);
-        res = this.translatePath(triple1, triple1.predicate).concat(this.translatePath(triple2, triple2.predicate));
+        if (pred.args.length !== 2)
+            throw new Error("Expected exactly 2 arguments for 'seq' symbol.");
+        let v = generateFreshVar();
+        let triple1 =  createTriple(pathTriple.subject, pred.args[0], v);
+        let triple2 = createTriple(v, pred.args[1], pathTriple.object);
+        res = translatePath(triple1, triple1.predicate).concat(translatePath(triple2, triple2.predicate));
     }
     else
-        res = this.createAlgebraElement('path', [this.createTriple(pathTriple.subject, pathTriple.predicate, pathTriple.object)]);
+        res = createAlgebraElement('path', [ createTriple(pathTriple.subject, pathTriple.predicate, pathTriple.object) ]);
 
     if (!_.isArray(res))
         res = [res];
 
     return res;
-};
+}
 
-SparqlAlgebra.prototype.translateGroupOrUnionGraphPattern = function (group)
+function translateGroupOrUnionGraphPattern (group)
 {
-    assert(group.patterns.length >= 1, "Expected at least one item in GroupOrUnionGraphPattern.");
-    var accumulator = null;
-    group.patterns.forEach(function (pattern)
+    if (group.patterns.length < 1)
+        throw new Error('Expected at least one item in GroupOrUnionGraphPattern.');
+    
+    return group.patterns.reduce((accumulator, pattern) => createAlgebraElement('union', [ accumulator, pattern ]));
+}
+
+function translateGraphGraphPattern (group)
+{
+    if (group.patterns.length !== 1)
+        throw new Error('Expected exactly 1 item for GraphGraphPattern.');
+    return createAlgebraElement('graph', group.patterns[0]);
+}
+
+function accumulateGroupGraphPattern (G, E)
+{
+    // TODO: some of the patterns aren't translated yet at this point, might be code smell
+    if (E.symbol === 'filter')
+        throw new Error('Filters should have been removed previously.');
+    if (E.type === 'optional')
     {
-        if (!accumulator)
-            accumulator = pattern;
+        if (E.patterns.length !== 1)
+            throw new Error("Expected exactly 1 arg for 'optional'.");
+        let A = E.patterns[0];
+        if (A.symbol === 'filter')
+        {
+            if (A.args.length !== 2)
+                throw new Error("Expected exactly 2 args for 'filter'.");
+            G = createAlgebraElement('leftjoin', [ G, A.args[1], A.args[0] ]);
+        }
         else
-            accumulator = this.createAlgebraElement('union', [accumulator, pattern]);
-    }.bind(this));
-
-    return accumulator;
-};
-
-SparqlAlgebra.prototype.translateGraphGraphPattern = function (group)
-{
-    assert(group.patterns.length === 1, "Expected exactly 1 item for GraphGraphPattern.");
-    return this.createAlgebraElement('graph', group.patterns[0]);
-};
-
-SparqlAlgebra.prototype.translateGroupGraphPattern = function (group)
-{
-    //assert(group.symbol && group.args, "Expected input to already be in algebra format.");
-    var g = this.createAlgebraElement('bgp', []);
-
-    group.patterns.forEach(function (arg)
+            G = createAlgebraElement('leftjoin', [ G, A, 'true' ]);
+    }
+    else if (E.symbol === 'minus')
     {
-        // TODO: not weird that some of the patterns aren't translated yet?
-        assert(arg.symbol !== 'filter', "Filters should have been removed previously.");
-        if (arg.type === 'optional')
-        {
-            assert(arg.patterns.length === 1, "Expected exactly 1 arg for 'optional'.");
-            var a = arg.patterns[0];
-            if (a.symbol === 'filter')
-            {
-                assert(a.args.length === 2, "Expected exactly 2 args for 'filter'.");
-                g = this.createAlgebraElement('leftjoin', [g, a.args[1], a.args[0]]);
-            }
-            else
-                g = this.createAlgebraElement('leftjoin', [g, a, 'true']);
-        }
-        else if (arg.symbol === 'minus')
-        {
-            assert(arg.args.length === 1, "minus element should only have 1 arg at this point.");
-            g = this.createAlgebraElement('minus', [g, arg.args[0]]);
-        }
-        else if (arg.type === 'bind')
-            g = this.createAlgebraElement('extend', [g, arg.variable, arg.expression]);
-        else
-            g = this.createAlgebraElement('join', [g, arg]);
-    }.bind(this));
+        if (E.args.length !== 1)
+            throw new Error('MINUS element should only have 1 arg at this point.');
+        G = createAlgebraElement('minus', [ G, E.args[0] ]);
+    }
+    else if (E.type === 'bind')
+        G = createAlgebraElement('extend', [ G, E.variable, E.expression ]);
+    else
+        G = createAlgebraElement('join', [ G, E ]);
+    
+    return G
+}
 
-    return g;
-};
+function translateGroupGraphPattern (group)
+{
+    return group.patterns.reduce(accumulateGroupGraphPattern, createAlgebraElement('bgp', []));
+}
 
-SparqlAlgebra.prototype.translateInlineData = function (values)
+function translateInlineData (values)
 {
     // TODO: ...
-};
+}
 
-SparqlAlgebra.prototype.translateSubSelect = function (query)
+function translateSubSelect (query)
 {
-    return this.createAlgebraElement('tomultiset', [this.translate(query)]);
-};
+    return createAlgebraElement('tomultiset', [ translate(query) ]);
+}
 
-SparqlAlgebra.prototype.translateFilters = function (filterExpressions)
+function translateFilters (filterExpressions)
 {
     if (!_.isArray(filterExpressions))
-        filterExpressions = [filterExpressions];
-    filterExpressions = filterExpressions.map(function (exp)
-    {
-        return this.createAlgebraElement(exp.symbol, exp.args);
-    }.bind(this));
+        filterExpressions = [ filterExpressions ];
+    
+    filterExpressions = filterExpressions.map(exp => createAlgebraElement(exp.symbol, exp.args));
+    
     if (filterExpressions.length === 1)
         return filterExpressions[0];
     else
-        return this.createAlgebraElement('&&', filterExpressions);
-};
+        return createAlgebraElement('&&', filterExpressions);
+}
 
 // ---------------------------------- TRANSLATE AGGREGATES ----------------------------------
-SparqlAlgebra.prototype.translateAggregates = function (query, parsed, variables)
+function translateAggregates (query, parsed, variables)
 {
-    var res = parsed;
+    let res = parsed;
 
     // 18.2.4.1
-    var g = null;
-    var a = [];
-    var e = [];
+    let G = null;
+    let A = [];
+    let E = [];
     if (query.group)
-        g = this.createAlgebraElement('group', [query.group, res]);
-    else if (this.containsAggregate(query.variables) || this.containsAggregate(query.having) || this.containsAggregate(query.order))
-        g = this.createAlgebraElement('group', [[], res]);
+        G = createAlgebraElement('group', [ query.group, res ]);
+    else if (containsAggregate(query.variables) || containsAggregate(query.having) || containsAggregate(query.order))
+        G = createAlgebraElement('group', [ [], res ]);
 
     // TODO: not doing the sample stuff atm
     // TODO: more based on jena results than w3 spec
-    if (g)
+    if (G)
     {
         // TODO: check up on scalarvals and args
-        this.mapAggregates(query.variables, a);
-        this.mapAggregates(query.having, a);
-        this.mapAggregates(query.order, a);
+        mapAggregates(query.variables, A);
+        mapAggregates(query.having, A);
+        mapAggregates(query.order, A);
 
         // TODO: we use the jena syntax of adding aggregates as second argument to group
-        if (a.length > 0)
+        if (A.length > 0)
         {
-            var aggregates = a.map(function (aggregate)
-            {
-                return this.createAlgebraElement(aggregate.variable, [aggregate.object]);
-            }.bind(this));
-            g.args.splice(1, 0, aggregates);
+            let aggregates = A.map(aggregate => createAlgebraElement(aggregate.variable, [aggregate.object]));
+            G.args.splice(1, 0, aggregates);
         }
         else
-            g.args.splice(1, 0, null);
+            G.args.splice(1, 0, null);
 
         query.group.forEach(function (groupEntry)
         {
             if (groupEntry.variable)
-                e.push(groupEntry);
+                E.push(groupEntry);
         });
 
-        res = g;
+        res = G;
     }
 
 
     // 18.2.4.2
     if (query.having)
     {
-        query.having.forEach(function (filter)
-        {
-            res = this.createAlgebraElement('filter', [this.translateFilters(filters), res]);
-        }.bind(this));
+        for (let filter of query.having)
+            res = createAlgebraElement('filter', [ translateFilters(filter), res ]);
     }
 
     // 18.2.4.3
     // TODO: VALUES
 
     // 18.2.4.4
-    var pv = {};
+    let PV = {};
 
     if (query.variables.indexOf('*') >= 0)
-        pv = variables;
+        PV = variables;
     else
     {
-        query.variables.forEach(function (v)
+        for (let v of query.variables)
         {
-            if (_.isString(v) && v[0] === '?')
-                pv[v] = true;
+            if (isVariable(v))
+                PV[v] = true;
             else if (v.variable)
             {
-                if (variables[v.variable] || pv[v.variable])
-                    throw "Aggregate variable appearing multiple times: " + v.variable;
-                pv[v.variable] = true;
-                e.push(v);
+                if (variables[v.variable] || PV[v.variable])
+                    throw new Error('Aggregate variable appearing multiple times: ' + v.variable);
+                PV[v.variable] = true;
+                E.push(v);
             }
-        });
+        }
     }
 
-    e.forEach(function (v)
-    {
-        res = this.createAlgebraElement('extend', [res, v.variable, v.expression]);
-    }.bind(this));
+    for (let v of E)
+        res = createAlgebraElement('extend', [res, v.variable, v.expression]);
 
     // 18.2.5
     //p = createAlgebraElement('tolist', [p]);
 
     // 18.2.5.1
     if (query.order)
-        res = this.createAlgebraElement('orderby', query.order);
+        res = createAlgebraElement('orderby', query.order);
     // 18.2.5.2
-    res = this.createAlgebraElement('project', [res, Object.keys(pv)]);
+    res = createAlgebraElement('project', [ res, Object.keys(PV) ]);
     // 18.2.5.3
     if (query.distinct)
-        res = this.createAlgebraElement('distinct', [res]);
+        res = createAlgebraElement('distinct', [ res ]);
     // 18.2.5.4
     if (query.reduced)
-        res = this.createAlgebraElement('reduced', [res]);
+        res = createAlgebraElement('reduced', [ res ]);
     // 18.2.5.5
     // we use -1 to indiciate there is no limit
     if (query.offset || query.limit)
-        res = this.createAlgebraElement('slice', [query.offset || 0, query.limit || -1]);
+        res = createAlgebraElement('slice', [ query.offset || 0, query.limit || -1 ]);
 
     // clean up unchanged objects
-    res = this.translateExpressionsOperations(res);
+    res = translateExpressionsOperations(res);
 
     return res;
-};
+}
 
 // ---------------------------------- TRANSLATE AGGREGATES HELPER FUNCTIONS ----------------------------------
-SparqlAlgebra.prototype.containsAggregate = function (thingy)
+function containsAggregate (thingy)
 {
     if (!thingy)
         return false;
@@ -616,79 +593,70 @@ SparqlAlgebra.prototype.containsAggregate = function (thingy)
         return true;
 
     if (_.isArray(thingy))
-        return thingy.some(function (subthingy)
-        {
-            return this.containsAggregate(subthingy);
-        }.bind(this));
+        return thingy.some(subthingy => containsAggregate(subthingy));
 
     // appears in 'having'
     if (thingy.args)
-        return this.containsAggregate(thingy.args);
+        return containsAggregate(thingy.args);
 
     return false;
-};
+}
 
-SparqlAlgebra.prototype.compareObjects = function (o1, o2)
+function compareObjects(o1, o2)
 {
     if (_.isString(o1) !== _.isString(o2))
         return false;
+    
     if (_.isString(o1))
         return o1 === o2;
-    var k1 = Object.keys(o1);
-    var k2 = Object.keys(o2);
+    
+    let k1 = Object.keys(o1);
+    let k2 = Object.keys(o2);
     if (k1.length !== k2.length)
         return false;
-    for (var i = 0; i < k1.length; ++i)
-    {
-        var key = k1[i];
-        if (!this.compareObjects(o1[key], o2[key]))
-            return false;
-    }
-    return true;
-};
+    
+    return k1.every(key => compareObjects(o1[key], o2[key]));
+}
 
 // TODO: could use hash, prolly not that necessary
-SparqlAlgebra.prototype.getMapping = function (thingy, map)
+function getMapping(thingy, map)
 {
-    for (var i = 0; i < map.length; ++i)
+    for (let m of map)
     {
-        if (this.compareObjects(thingy, map[i].object))
-            return map[i].variable;
+        if (compareObjects(thingy, m.object))
+            return m.variable;
     }
     return null;
-};
+}
 
-SparqlAlgebra.prototype.mapAggregates = function (thingy, map)
+function mapAggregates (thingy, map)
 {
     if (!thingy)
         return thingy;
 
     if (thingy.type === 'aggregate')
     {
-        var v = this.getMapping(thingy, map);
+        let v = getMapping(thingy, map);
         if (!v)
         {
-            v = this.generateFreshVar();
-            map.push({ object:thingy, variable:v });
+            v = generateFreshVar();
+            map.push({ object: thingy, variable: v });
         }
         return v;
     }
 
     // non-aggregate expression
     if (thingy.expression)
-        thingy.expression = this.mapAggregates(thingy.expression, map);
+        thingy.expression = mapAggregates(thingy.expression, map);
     else if (thingy.args)
-        this.mapAggregates(thingy.args, map);
+        mapAggregates(thingy.args, map);
     else if (_.isArray(thingy))
-        thingy.forEach(function (subthingy, idx)
-        {
-            thingy[idx] = this.mapAggregates(subthingy, map);
-        }.bind(this));
+        thingy.forEach((subthingy, idx) => thingy[idx] = mapAggregates(subthingy, map));
 
     return thingy;
-};
+}
 
-SparqlAlgebra.prototype.translateExpressionsOperations = function (thingy)
+function translateExpressionsOperations(thingy)
 {
     if (!thingy)
         return thingy;
@@ -697,46 +665,45 @@ SparqlAlgebra.prototype.translateExpressionsOperations = function (thingy)
         return thingy;
 
     if (thingy.type === 'operation')
-        return this.createAlgebraElement(thingy.operator, thingy.args.map(function (subthingy) { return this.translateExpressionsOperations(subthingy); }.bind(this)));
+        return createAlgebraElement(thingy.operator, thingy.args.map(subthingy => translateExpressionsOperations(subthingy)));
 
     if (thingy.type === 'aggregate')
     {
-        var a = this.createAlgebraElement(thingy.aggregation, [this.translateExpressionsOperations(thingy.expression)]);
+        let A = createAlgebraElement(thingy.aggregation, [ translateExpressionsOperations(thingy.expression) ]);
         if (thingy.distinct)
-            a = this.createAlgebraElement('distinct', [a]);
-        return a;
+            A = createAlgebraElement('distinct', [ A ]);
+        return A;
     }
 
     if (thingy.descending)
-        return this.createAlgebraElement('desc', [this.translateExpressionsOperations(thingy.expression)]);
+        return createAlgebraElement('desc', [ translateExpressionsOperations(thingy.expression) ]);
 
     if (thingy.expression)
-        return this.translateExpressionsOperations(thingy.expression);
+        return translateExpressionsOperations(thingy.expression);
 
     if (_.isArray(thingy))
-        return thingy.map(function (subthingy) { return this.translateExpressionsOperations(subthingy); }.bind(this));
+        return thingy.map(subthingy => translateExpressionsOperations(subthingy));
 
-    for (var v in thingy)
-        thingy[v] = this.translateExpressionsOperations(thingy[v]);
+    for (let v of Object.keys(thingy))
+        thingy[v] = translateExpressionsOperations(thingy[v]);
 
     return thingy;
-};
+}
 // ---------------------------------- END TRANSLATE AGGREGATES ----------------------------------
 
-module.exports = SparqlAlgebra;
+module.exports = translate;
 
-//var sparql =
-//    "PREFIX dc: <http://purl.org/dc/elements/1.1/> " +
-//    "PREFIX :   <http://example.org/ns#> " +
-//    "SELECT ?title ?price " +
-//    "WHERE {" +
-//    "    ?x dc:title ?title." +
-//    "    OPTIONAL {" +
-//    "        ?x :price ?price." +
-//    "        FILTER (?price < 30)." +
-//    "    }" +
-//    "}";
-//var algebra = new SparqlAlgebra();
-//var result = algebra.translate(sparql);
-//console.log('' + result);
+let sparql =
+   "PREFIX dc: <http://purl.org/dc/elements/1.1/> " +
+   "PREFIX :   <http://example.org/ns#> " +
+   "SELECT ?title ?price " +
+   "WHERE {" +
+   "    ?x dc:title ?title." +
+   "    OPTIONAL {" +
+   "        ?x :price ?price." +
+   "        FILTER (?price < 30)." +
+   "    }" +
+   "}";
+let result = translate(sparql);
+console.log('' + result);
 //console.log(JSON.stringify(result, null, 2));

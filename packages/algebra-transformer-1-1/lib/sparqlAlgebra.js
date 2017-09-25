@@ -52,7 +52,7 @@ class AlgebraElement
         {
             if (_.isArray(arg))
                 return '[' + _.map(arg, function (subArg) { return subArg.toString(); }).join(', ') + ']';
-            return arg.toString();
+            return arg + '';
         }
         
         let symbol = this.symbol;
@@ -304,7 +304,7 @@ function translateGraphPattern (thingy)
 
     // 18.2.2.7
     if (filters.length > 0)
-        thingy = createAlgebraElement(Algebra.FILTER, [ translateFilters(filters), thingy ]);
+        thingy = createAlgebraElement(Algebra.FILTER, [translateFilters(filters), thingy]);
 
     return thingy;
 }
@@ -511,7 +511,15 @@ function translateFilters (filterExpressions)
     if (!_.isArray(filterExpressions))
         filterExpressions = [ filterExpressions ];
     
-    filterExpressions = filterExpressions.map(exp => createAlgebraElement(exp.symbol, exp.args));
+    filterExpressions = filterExpressions.map(exp =>
+    {
+        if (_.isString(exp))
+            return exp;
+        if (exp.symbol)
+            return createAlgebraElement(exp.symbol, exp.args);
+        if (exp.function)
+            return createAlgebraElement(exp.function, exp.args);
+    });
     
     if (filterExpressions.length === 1)
         return filterExpressions[0];

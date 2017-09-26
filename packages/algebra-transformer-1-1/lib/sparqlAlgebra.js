@@ -312,13 +312,16 @@ function translateGraphPattern (thingy)
 // 18.2.2.8
 function simplify (thingy)
 {
-    if (_.isString(thingy))
+    if (_.isString(thingy) || _.isBoolean(thingy) || _.isInteger(thingy))
         return thingy;
     if (_.isArray(thingy))
         return thingy.map(subthingy => simplify(subthingy));
     
     if (!thingy.symbol)
         throw new Error("Expected translated input.");
+    
+    if (thingy.symbol === Algebra.BGP)
+        return thingy;
     
     if (thingy.symbol === Algebra.JOIN)
     {

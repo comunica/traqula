@@ -608,7 +608,7 @@ function translateAggregates (query, parsed, variables)
 
     // 18.2.5.1
     if (query.order)
-        res = createAlgebraElement(Algebra.ORDER_BY, query.order);
+        res = createAlgebraElement(Algebra.ORDER_BY, [ res, query.order ]);
     // 18.2.5.2
     res = createAlgebraElement(Algebra.PROJECT, [ res, Object.keys(PV) ]);
     // 18.2.5.3

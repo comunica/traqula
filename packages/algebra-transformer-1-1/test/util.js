@@ -29,7 +29,7 @@ class Util
     
     static _compareAlgebrasRecursive (a1, a2, blanks)
     {
-        if (_.isString(a1) || _.isSymbol(a1))
+        if (_.isString(a1) || _.isSymbol(a1) || _.isBoolean(a1) || _.isInteger(a2))
             return a1 === a2;
         
         if (a1 instanceof Triple)

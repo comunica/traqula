@@ -19,11 +19,11 @@ class Util
         return new Triple(subject, predicate, object);
     }
     
-    static compareAlgebras (a1, a2)
+    static compareAlgebras (expected, actual)
     {
-        let result = Util._compareAlgebrasRecursive(a1, a2, {});
+        let result = Util._compareAlgebrasRecursive(expected, actual, {});
         if (!result)
-            assert.deepEqual(a1, a2); // just to provide readable output
+            assert.deepEqual(actual, expected);
         return result;
     }
     

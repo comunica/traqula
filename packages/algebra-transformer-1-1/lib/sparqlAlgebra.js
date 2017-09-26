@@ -739,5 +739,6 @@ function translateExpressionsOperations(thingy)
 module.exports = {
     Algebra,
     AlgebraElement,
+    Triple,
     translate,
 };

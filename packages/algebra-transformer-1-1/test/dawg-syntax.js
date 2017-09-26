@@ -1,7 +1,6 @@
 
 const _ = require('lodash');
 const assert = require('assert');
-const SparqlParser = require('sparqljs').Parser;
 const algebra = require('../lib/sparqlAlgebra');
 const Util = require('./Util');
 
@@ -12,6 +11,7 @@ const AE = Util.algebraElement;
 const T = Util.triple;
 
 // https://www.w3.org/2001/sw/DataAccess/tests/r2#syntax-basic-01
+// note that in the case of blank nodes the triples get copied from the parsed sparql object to have identical blank node names
 describe('DAWG Syntax tests', () =>
 {
     describe('basic', () => {
@@ -22,14 +22,14 @@ describe('DAWG Syntax tests', () =>
                           WHERE { }`;
             let algebra = translate(sparql);
             let expected = AE(A.PROJECT, [ AE(A.BGP, []), [] ]);
-            assert.deepEqual(algebra, expected);
+            Util.compareAlgebras(expected, algebra);
         });
     
         it('syntax-basic-02.rq', () => {
             let sparql = `SELECT * {}`;
             let algebra = translate(sparql);
             let expected = AE(A.PROJECT, [ AE(A.BGP, []), [] ]);
-            assert.deepEqual(algebra, expected);
+            Util.compareAlgebras(expected, algebra);
         });
     
         it('syntax-basic-03.rq', () => {
@@ -38,7 +38,7 @@ describe('DAWG Syntax tests', () =>
                           WHERE { ?x ?y ?z }`;
             let algebra = translate(sparql);
             let expected = AE(A.PROJECT, [ AE(A.BGP, [ T('?x', '?y', '?z') ]), [ '?x', '?y', '?z' ]]);
-            assert.deepEqual(algebra, expected);
+            Util.compareAlgebras(expected, algebra);
         });
     
         it('syntax-basic-04.rq', () => {
@@ -46,7 +46,7 @@ describe('DAWG Syntax tests', () =>
                           WHERE { ?x ?y ?z . }`;
             let algebra = translate(sparql);
             let expected = AE(A.PROJECT, [ AE(A.BGP, [ T('?x', '?y', '?z') ]), [ '?x', '?y', '?z' ]]);
-            assert.deepEqual(algebra, expected);
+            Util.compareAlgebras(expected, algebra);
         });
     
         it('syntax-basic-05.rq', () => {
@@ -54,7 +54,7 @@ describe('DAWG Syntax tests', () =>
                           WHERE { ?x ?y ?z . ?a ?b ?c }`;
             let algebra = translate(sparql);
             let expected = AE(A.PROJECT, [ AE(A.BGP, [ T('?x', '?y', '?z'), T('?a', '?b', '?c') ]), [ '?x', '?y', '?z', '?a', '?b', '?c' ]]);
-            assert.deepEqual(algebra, expected);
+            Util.compareAlgebras(expected, algebra);
         });
     
         it('syntax-basic-06.rq', () => {
@@ -62,7 +62,7 @@ describe('DAWG Syntax tests', () =>
                           WHERE { ?x ?y ?z . ?a ?b ?c . }`;
             let algebra = translate(sparql);
             let expected = AE(A.PROJECT, [ AE(A.BGP, [ T('?x', '?y', '?z'), T('?a', '?b', '?c') ]), [ '?x', '?y', '?z', '?a', '?b', '?c' ]]);
-            assert.deepEqual(algebra, expected);
+            Util.compareAlgebras(expected, algebra);
         });
     });
     
@@ -70,37 +70,38 @@ describe('DAWG Syntax tests', () =>
         it('syntax-bnodes-01', () => {
             let sparql = `PREFIX : <http://example.org/ns#>
                           SELECT * WHERE { [:p :q ] }`;
-            let parsed = (new SparqlParser).parse(sparql);
-            let algebra = translate(parsed);
-            let expected = AE(A.PROJECT, [ AE(A.BGP, [  T(parsed.where[0].triples[0].subject, 'http://example.org/ns#p', 'http://example.org/ns#q') ]), []]);
-            assert.deepEqual(algebra, expected);
+            let algebra = translate(sparql);
+            let expected = AE(A.PROJECT, [ AE(A.BGP, [ T('_:b0', 'http://example.org/ns#p', 'http://example.org/ns#q') ]), []]);
+            Util.compareAlgebras(expected, algebra);
         });
     
         it('syntax-bnodes-02', () => {
             let sparql = `PREFIX : <http://example.org/ns#>
                           SELECT * WHERE { [] :p :q }`;
-            let parsed = (new SparqlParser).parse(sparql);
-            let algebra = translate(parsed);
-            let expected = AE(A.PROJECT, [ AE(A.BGP, [  T(parsed.where[0].triples[0].subject, 'http://example.org/ns#p', 'http://example.org/ns#q') ]), []]);
-            assert.deepEqual(algebra, expected);
+            let algebra = translate(sparql);
+            let expected = AE(A.PROJECT, [ AE(A.BGP, [  T('_:b0', 'http://example.org/ns#p', 'http://example.org/ns#q') ]), []]);
+            Util.compareAlgebras(expected, algebra);
         });
     
         it('syntax-bnodes-03', () => {
             let sparql = `PREFIX : <http://example.org/ns#>
                           SELECT * WHERE { [ ?x ?y ] :p [ ?pa ?b ] }`;
-            let parsed = (new SparqlParser).parse(sparql);
-            let algebra = translate(parsed);
-            let expected = AE(A.PROJECT, [ AE(A.BGP, parsed.where[0].triples), Util.extractVariables(parsed.where[0].triples)]);
-            assert.deepEqual(algebra, expected);
+            let algebra = translate(sparql);
+            let expected =
+                    AE(A.PROJECT, [ AE(A.BGP, [
+                        T('_:b0', '?x', '?y'),
+                        T('_:b1', '?pa', '?b'),
+                        T('_:b0', 'http://example.org/ns#p', '_:b1')
+                    ]), [ '?x', '?y', '?pa', '?b' ]]);
+            Util.compareAlgebras(expected, algebra);
         });
     
         it('syntax-bnodes-04', () => {
             let sparql = `PREFIX : <http://example.org/ns#>
                           SELECT * WHERE { [ :p :q ; ] }`;
-            let parsed = (new SparqlParser).parse(sparql);
-            let algebra = translate(parsed);
-            let expected = AE(A.PROJECT, [ AE(A.BGP, [  T(parsed.where[0].triples[0].subject, 'http://example.org/ns#p', 'http://example.org/ns#q') ]), []]);
-            assert.deepEqual(algebra, expected);
+            let algebra = translate(sparql);
+            let expected = AE(A.PROJECT, [ AE(A.BGP, [  T('_:b0', 'http://example.org/ns#p', 'http://example.org/ns#q') ]), []]);
+            Util.compareAlgebras(expected, algebra);
         });
     
         it('syntax-bnodes-05', () => {
@@ -108,10 +109,9 @@ describe('DAWG Syntax tests', () =>
                           SELECT * WHERE { _:a :p1 :q1 .
                                            _:a :p2 :q2 .
                                          }`;
-            let parsed = (new SparqlParser).parse(sparql);
-            let algebra = translate(parsed);
+            let algebra = translate(sparql);
             let expected = AE(A.PROJECT, [ AE(A.BGP, [ T('_:a', 'http://example.org/ns#p1', 'http://example.org/ns#q1'), T('_:a', 'http://example.org/ns#p2', 'http://example.org/ns#q2') ]), []]);
-            assert.deepEqual(algebra, expected);
+            Util.compareAlgebras(expected, algebra);
         });
     });
     
@@ -119,48 +119,80 @@ describe('DAWG Syntax tests', () =>
         it('syntax-expr-01', () => {
             let sparql = `SELECT *
                           WHERE { ?s ?p ?o . FILTER (?o) }`;
-            let parsed = (new SparqlParser).parse(sparql);
-            let algebra = translate(parsed);
+            let algebra = translate(sparql);
             let expected = AE(A.PROJECT, [ AE(A.FILTER, [ '?o', AE(A.BGP, [ T('?s', '?p', '?o') ]) ]), [ '?s', '?p', '?o']]);
-            assert.deepEqual(algebra, expected);
+            Util.compareAlgebras(expected, algebra);
         });
     
         it('syntax-expr-02', () => {
             let sparql = `SELECT *
                           WHERE { ?s ?p ?o . FILTER REGEX(?o, "foo") }`;
-            let parsed = (new SparqlParser).parse(sparql);
-            let algebra = translate(parsed);
+            let algebra = translate(sparql);
             let expected = AE(A.PROJECT, [ AE(A.FILTER, [ AE('regex', [ '?o', '"foo"']), AE(A.BGP, [ T('?s', '?p', '?o') ]) ]), [ '?s', '?p', '?o']]);
-            assert.deepEqual(algebra, expected);
+            Util.compareAlgebras(expected, algebra);
         });
     
         it('syntax-expr-03', () => {
             let sparql = `SELECT *
                           WHERE { ?s ?p ?o . FILTER REGEX(?o, "foo", "i") }`;
-            let parsed = (new SparqlParser).parse(sparql);
-            let algebra = translate(parsed);
+            let algebra = translate(sparql);
             let expected = AE(A.PROJECT, [ AE(A.FILTER, [ AE('regex', [ '?o', '"foo"', '"i"']), AE(A.BGP, [ T('?s', '?p', '?o') ]) ]), [ '?s', '?p', '?o']]);
-            assert.deepEqual(algebra, expected);
+            Util.compareAlgebras(expected, algebra);
         });
     
         it('syntax-expr-04', () => {
             let sparql = `PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
                           SELECT *
                           WHERE { ?s ?p ?o . FILTER xsd:integer(?o) }`;
-            let parsed = (new SparqlParser).parse(sparql);
-            let algebra = translate(parsed);
+            let algebra = translate(sparql);
             let expected = AE(A.PROJECT, [ AE(A.FILTER, [ AE('http://www.w3.org/2001/XMLSchema#integer', [ '?o' ]), AE(A.BGP, [ T('?s', '?p', '?o') ]) ]), [ '?s', '?p', '?o']]);
-            assert.deepEqual(algebra, expected);
+            Util.compareAlgebras(expected, algebra);
         });
     
         it('syntax-expr-05', () => {
             let sparql = `PREFIX : <http://example.org/ns#>
                           PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
                           SELECT * WHERE { ?s ?p ?o . FILTER :myFunc(?s,?o) }`;
-            let parsed = (new SparqlParser).parse(sparql);
-            let algebra = translate(parsed);
+            let algebra = translate(sparql);
             let expected = AE(A.PROJECT, [ AE(A.FILTER, [ AE('http://example.org/ns#myFunc', [ '?s', '?o' ]), AE(A.BGP, [ T('?s', '?p', '?o') ]) ]), [ '?s', '?p', '?o']]);
-            assert.deepEqual(algebra, expected);
+            Util.compareAlgebras(expected, algebra);
+        });
+    });
+    
+    describe('forms', () => {
+        it('syntax-forms-01', () => {
+            let sparql = `PREFIX : <http://example.org/ns#>
+                          SELECT * WHERE { ( [ ?x ?y ] ) :p ( [ ?pa ?b ] 57 ) }`;
+            let algebra = translate(sparql);
+            let expected =
+                    AE(A.PROJECT, [ AE(A.BGP, [
+                        T('_:b0', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#first', '_:b1'),
+                        T('_:b1', '?x', '?y'),
+                        T('_:b0', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#rest', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#nil'),
+                        
+                        T('_:b2', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#first', '_:b3'),
+                        T('_:b3', '?pa', '?b'),
+                        T('_:b2', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#rest', '_:b4'),
+                        T('_:b4', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#first', '"57"^^http://www.w3.org/2001/XMLSchema#integer'),
+                        T('_:b4', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#rest', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#nil'),
+                        
+                        T('_:b0', 'http://example.org/ns#p', '_:b2')
+                    ]), [ '?x', '?y', '?pa', '?b' ]]);
+            Util.compareAlgebras(expected, algebra);
+        });
+    
+        it('syntax-forms-02', () => {
+            let sparql = `PREFIX : <http://example.org/ns#>
+                          SELECT * WHERE { ( [] [] ) }`;
+            let algebra = translate(sparql);
+            let expected =
+                    AE(A.PROJECT, [ AE(A.BGP, [
+                        T('_:b0', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#first', '_:b1'),
+                        T('_:b0', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#rest', '_:b2'),
+                        T('_:b2', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#first', '_:b3'),
+                        T('_:b2', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#rest', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#nil'),
+                    ]), []]);
+            Util.compareAlgebras(expected, algebra);
         });
     });
 });

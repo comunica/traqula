@@ -13,6 +13,13 @@
     "sparqljs": "^1.1.4"
   },
   "devDependencies": {
-    "mocha": "^3.5.3"
-  }
+    "mocha": "^3.5.3",
+    "pre-commit": "^1.2.2"
+  },
+  "scripts": {
+    "test": "mocha test"
+  },
+  "pre-commit": [
+    "test"
+  ]
 }

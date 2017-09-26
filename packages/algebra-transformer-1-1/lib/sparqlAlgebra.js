@@ -711,6 +711,9 @@ function translateExpressionsOperations(thingy)
 
     if (thingy.type === 'operation')
         return createAlgebraElement(thingy.operator, thingy.args.map(subthingy => translateExpressionsOperations(subthingy)));
+    
+    if (thingy.type === 'functionCall')
+        return createAlgebraElement(thingy.function, thingy.args.map(subthingy => translateExpressionsOperations(subthingy)));
 
     if (thingy.type === 'aggregate')
     {

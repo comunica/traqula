@@ -620,7 +620,7 @@ function translateAggregates (query, parsed, variables)
     // 18.2.5.5
     // we use -1 to indiciate there is no limit
     if (query.offset || query.limit)
-        res = createAlgebraElement(Algebra.SLICE, [ query.offset || 0, query.limit || -1 ]);
+        res = createAlgebraElement(Algebra.SLICE, [ query.offset || 0, query.limit || -1, res ]);
 
     // clean up unchanged objects
     res = translateExpressionsOperations(res);

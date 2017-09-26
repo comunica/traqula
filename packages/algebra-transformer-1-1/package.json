@@ -21,5 +21,10 @@
   },
   "pre-commit": [
     "test"
-  ]
+  ],
+  "files": [
+    "index.js",
+    "lib"
+  ],
+  "main": "index.js"
 }

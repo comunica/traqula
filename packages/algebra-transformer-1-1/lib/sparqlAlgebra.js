@@ -6,7 +6,7 @@ const _ = require('lodash');
 const SparqlParser = require('sparqljs').Parser;
 
 // ---------------------------------- BEGIN HELPER CLASSES ----------------------------------
-
+// TODO: add aggregates?
 const Algebra = Object.freeze({
     ALT:                'alt',
     BGP:                'bgp',
@@ -545,7 +545,7 @@ function translateAggregates (query, parsed, variables)
         G = createAlgebraElement(Algebra.GROUP, [ [], res ]);
 
     // TODO: not doing the sample stuff atm
-    // TODO: more based on jena results than w3 spec
+    // TODO: more based on jena results than w3 spec (spec would require us to copy G multiple times)
     if (G)
     {
         // TODO: check up on scalarvals and args
@@ -562,11 +562,12 @@ function translateAggregates (query, parsed, variables)
         else
             G.args.splice(1, 0, null);
 
-        query.group.forEach(function (groupEntry)
+        if (query.group)
         {
-            if (groupEntry.variable)
-                E.push(groupEntry);
-        });
+            for (let entry of query.group)
+                if (entry.variable)
+                    E.push(entry);
+        }
 
         res = G;
     }
@@ -603,6 +604,7 @@ function translateAggregates (query, parsed, variables)
         }
     }
 
+    // TODO: Jena simplifies by having a list of extends
     for (let v of E)
         res = createAlgebraElement(Algebra.EXTEND, [res, v.variable, v.expression]);
 
@@ -637,7 +639,7 @@ function containsAggregate (thingy)
     if (!thingy)
         return false;
 
-    if (thingy.type === 'aggregate')
+    if (thingy.expression && thingy.expression.type === 'aggregate')
         return true;
 
     if (_.isArray(thingy))

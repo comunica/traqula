@@ -522,6 +522,8 @@ function translateFilters (filterExpressions)
             return createAlgebraElement(exp.symbol, exp.args);
         if (exp.function)
             return createAlgebraElement(exp.function, exp.args);
+        if (exp.operator)
+            return createAlgebraElement(exp.operator, exp.args);
     });
     
     if (filterExpressions.length === 1)

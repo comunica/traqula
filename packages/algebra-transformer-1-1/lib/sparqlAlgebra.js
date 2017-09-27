@@ -193,10 +193,11 @@ function inScopeVariables (thingy)
             else
                 mergeObjects(inScope, inScopeVariables(v));
         }
-        
+
         // TODO: I'm not 100% sure if you always add these or only when '*' was selected
-        for (let v of thingy.group)
-            mergeObjects(inScope, inScopeVariables(v));
+        if (thingy.group)
+            for (let v of thingy.group)
+                mergeObjects(inScope, inScopeVariables(v));
     }
     else if (thingy.type === 'values')
     {
@@ -588,7 +589,8 @@ function translateAggregates (query, parsed, variables)
     // 18.2.4.4
     let PV = {};
 
-    if (query.variables.indexOf('*') >= 0)
+    // interpret ASK as SELECT *
+    if (query.queryType === 'ASK' || query.variables.indexOf('*') >= 0)
         PV = variables;
     else
     {

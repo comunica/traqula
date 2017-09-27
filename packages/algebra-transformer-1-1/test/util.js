@@ -30,31 +30,27 @@ class Util
     static _compareAlgebrasRecursive (a1, a2, blanks)
     {
         if (_.isString(a1) || _.isSymbol(a1) || _.isBoolean(a1) || _.isInteger(a2))
+        {
+            if (_.isString(a1) && (a1.startsWith('_:') || a1.startsWith('?')))
+            {
+                if (a2[0] !== a1[0])
+                    return false;
+                if (blanks[a1])
+                    return blanks[a1] === a2;
+
+                blanks[a1] = a2;
+                return true;
+            }
+
             return a1 === a2;
+        }
         
         if (a1 instanceof Triple)
         {
             if (!(a2 instanceof Triple))
                 return false;
-            
-            let cloned = false;
-            return ['subject', 'predicate', 'object'].every(pos =>
-            {
-                let v1 = a1[pos];
-                let v2 = a2[pos];
-                if (a1[pos].startsWith('_:'))
-                {
-                    if (!a2[pos].startsWith('_:'))
-                        return false;
-                    if (blanks[v1])
-                        return blanks[v1] === v2;
-                    
-                    blanks[v1] = v2;
-                    return true;
-                }
-                else
-                    return v1 === v2;
-            });
+
+            return ['subject', 'predicate', 'object'].every(pos => Util._compareAlgebrasRecursive(a1[pos], a2[pos], blanks));
         }
         
         if (_.isArray(a1))

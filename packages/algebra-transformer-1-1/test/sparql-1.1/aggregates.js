@@ -11,7 +11,7 @@ const T = Util.triple;
 
 // https://www.w3.org/2009/sparql/implementations/
 // https://www.w3.org/2009/sparql/docs/tests/
-describe('SPARQL 1.1 tests', () => {
+describe('SPARQL 1.1 aggregates', () => {
     it('AVG', () => {
         let sparql = `PREFIX : <http://www.example.org/>
                       SELECT (AVG(?o) AS ?avg)
@@ -194,7 +194,6 @@ describe('SPARQL 1.1 tests', () => {
                           )
                       }`;
         let algebra = translate(sparql);
-        console.log(algebra + '');
         let expected =
                 AE(A.PROJECT, [
                     AE(A.EXTEND, [
@@ -232,6 +231,162 @@ describe('SPARQL 1.1 tests', () => {
                         '?vCount'
                     ]),
                     [ '?c' ]
+                ]);
+        Util.compareAlgebras(expected, algebra);
+    });
+
+    it('GROUP_CONCAT with SEPARATOR', () => {
+        let sparql = `PREFIX : <http://www.example.org/>
+                      ASK {
+                          {SELECT (GROUP_CONCAT(?o;SEPARATOR=":") AS ?g) WHERE {
+                                  [] :p1 ?o
+                          }}
+                          FILTER(?g = "1:22" || ?g = "22:1")
+                      }`;
+        let algebra = translate(sparql);
+        let expected =
+                AE(A.PROJECT, [
+                    AE(A.FILTER, [
+                        AE('||', [ AE('=', [ '?g', '"1:22"' ]), AE('=', [ '?g', '"22:1"' ]) ]),
+                        AE(A.TO_MULTISET, [
+                            AE(A.PROJECT, [
+                                AE(A.EXTEND, [
+                                    AE(A.GROUP, [
+                                        [],
+                                        [ AE('?var0', [ AE('group_concat', [ AE(A.SEPARATOR, [ ':' ]), '?o' ]) ]) ],
+                                        AE(A.BGP, [ T('_:b0', 'http://www.example.org/p1', '?o') ])
+                                    ]),
+                                    '?g',
+                                    '?var0'
+                                ]),
+                                [ '?g' ]
+                            ])
+                        ])
+                    ]),
+                    [ '?g' ]
+                ]);
+        Util.compareAlgebras(expected, algebra);
+    });
+
+    it('GROUP_CONCAT with SEPARATOR', () => {
+        let sparql = `PREFIX : <http://www.example.org/>
+                      ASK {
+                              {
+                                      SELECT (SAMPLE(?o) AS ?sample)
+                                      WHERE {
+                                              ?s :dec ?o
+                                      }
+                              }
+                              FILTER(?sample = 1.0 || ?sample = 2.2 || ?sample = 3.5)
+                      }`;
+        let algebra = translate(sparql);
+        let expected =
+                AE(A.PROJECT, [
+                    AE(A.FILTER, [
+                        AE('||', [ AE('||', [ AE('=', [
+                            '?sample', '"1.0"^^http://www.w3.org/2001/XMLSchema#decimal' ]), AE('=', [
+                                '?sample', '"2.2"^^http://www.w3.org/2001/XMLSchema#decimal' ]) ]), AE('=', [
+                                    '?sample', '"3.5"^^http://www.w3.org/2001/XMLSchema#decimal' ])
+                        ]), AE(A.TO_MULTISET, [
+                            AE(A.PROJECT, [
+                                AE(A.EXTEND, [
+                                    AE(A.GROUP, [
+                                        [  ],
+                                        [ AE('?var0', [ AE('sample', [ '?o' ]) ]) ],
+                                        AE(A.BGP, [ T('?s', 'http://www.example.org/dec', '?o') ]) ]),
+                                    '?sample',
+                                    '?var0'
+                                ]),
+                                [ '?sample' ]
+                            ])
+                        ])
+                    ]),
+                    [ '?sample' ]
+                ]);
+        Util.compareAlgebras(expected, algebra);
+    });
+
+    it('COUNT 3', () => {
+        let sparql = `PREFIX : <http://www.example.org>
+                      SELECT ?P (COUNT(?O) AS ?C)
+                      WHERE { ?S ?P ?O }
+                      GROUP BY ?P
+                      HAVING (COUNT(?O) > 2 )`;
+        let algebra = translate(sparql);
+        let expected =
+                AE(A.PROJECT, [
+                    AE(A.EXTEND, [
+                        AE(A.FILTER, [
+                            AE('>', [ '?var0', '"2"^^http://www.w3.org/2001/XMLSchema#integer' ]),
+                            AE(A.GROUP, [
+                                [ '?P' ],
+                                [ AE('?var0', [ AE('count', [ '?O' ]) ]) ],
+                                AE(A.BGP, [ T('?S', '?P', '?O') ])
+                            ])
+                        ]),
+                        '?C',
+                        '?var0'
+                    ]),
+                    [ '?P','?C' ]
+                ]);
+        Util.compareAlgebras(expected, algebra);
+    });
+
+    it('COUNT 8', () => {
+        let sparql = `PREFIX : <http://www.example.org/>
+                      SELECT ((?O1 + ?O2) AS ?O12) (COUNT(?O1) AS ?C)
+                      WHERE { ?S :p ?O1; :q ?O2 } GROUP BY (?O1 + ?O2)
+                      ORDER BY ?O12`;
+        let algebra = translate(sparql);
+        let expected =
+                AE(A.PROJECT, [
+                    AE(A.ORDER_BY, [
+                        AE(A.EXTEND, [
+                            AE(A.EXTEND, [
+                                AE(A.GROUP, [
+                                    [ AE('+', [ '?O1', '?O2' ]) ],
+                                    [ AE('?var0', [ AE('count', [ '?O1' ]) ]) ],
+                                    AE(A.BGP, [ T('?S', 'http://www.example.org/p', '?O1'), T('?S', 'http://www.example.org/q', '?O2') ])
+                                ]),
+                                '?O12',
+                                AE('+', [ '?O1', '?O2' ])
+                            ]),
+                            '?C',
+                            '?var0'
+                        ]),
+                        [ '?O12' ]
+                    ]),
+                    [ '?O12', '?C' ]
+                ]);
+        Util.compareAlgebras(expected, algebra);
+    });
+
+    it('COUNT 8', () => {
+        let sparql = `PREFIX : <http://www.example.org/>
+                      SELECT ?O12 (COUNT(?O1) AS ?C)
+                      WHERE { ?S :p ?O1; :q ?O2 } GROUP BY ((?O1 + ?O2) AS ?O12)
+                      ORDER BY ?O12`;
+        let algebra = translate(sparql);
+        // TODO: not consistent with Jena on what to do with ?O12
+        let expected =
+                AE(A.PROJECT, [
+                    AE(A.ORDER_BY, [
+                        AE(A.EXTEND, [
+                            AE(A.EXTEND, [
+                                AE(A.GROUP, [
+                                    [ AE('+', [ '?O1', '?O2' ]) ],
+                                    [ AE('?var0', [ AE('count', [ '?O1' ]) ]) ],
+                                    AE(A.BGP, [ T('?S', 'http://www.example.org/p', '?O1'), T('?S', 'http://www.example.org/q', '?O2') ])
+                                ]),
+                                '?O12',
+                                AE('+', [ '?O1', '?O2' ])
+                            ]),
+                            '?C',
+                            '?var0'
+                        ]),
+                        [ '?O12' ]
+                    ]),
+                    [ '?O12', '?C' ]
                 ]);
         Util.compareAlgebras(expected, algebra);
     });

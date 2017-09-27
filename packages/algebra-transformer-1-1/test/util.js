@@ -2,10 +2,9 @@
 const _ = require('lodash');
 const assert = require('assert');
 const algebra = require('../lib/sparqlAlgebra');
+const Algebra = algebra.Algebra;
 const AlgebraElement = algebra.AlgebraElement;
 const Triple = algebra.Triple;
-
-let count = 0;
 
 class Util
 {
@@ -91,6 +90,22 @@ class Util
                 return false;
             return Util._compareAlgebrasRecursive(a1[key], a2[key], blanks);
         });
+    }
+
+    static testString (algebra)
+    {
+        if (algebra instanceof AlgebraElement)
+        {
+            let symbol = _.findKey(Algebra, val => val === algebra.symbol);
+            symbol = symbol ? `A.${symbol}` : `'${algebra.symbol}'`;
+            let args = algebra.args.map(Util.testString);
+            return `AE(${symbol}, [ ${args.join(', ')} ])`;
+        }
+        else if (algebra instanceof Triple)
+            return `T('${algebra.subject}', '${algebra.predicate}', '${algebra.object}')`;
+        else if (algebra instanceof Array)
+            return `[ ${algebra.map(Util.testString).join(', ')} ]`;
+        return `'${algebra}'`;
     }
 }
 

@@ -19,7 +19,6 @@ describe('SPARQL 1.1 tests', () => {
                       ?s :dec ?o
                       }`;
         let algebra = translate(sparql);
-        console.log(algebra + '');
         // TODO: different Jena ordering
         let expected =
                 AE(A.PROJECT, [
@@ -33,6 +32,35 @@ describe('SPARQL 1.1 tests', () => {
                         '?v',
                     ]),
                     [ '?avg' ]]);
+        Util.compareAlgebras(expected, algebra);
+    });
+
+    it('AVG with GROUP BY', () => {
+        let sparql = `PREFIX : <http://www.example.org/>
+                      SELECT ?s (AVG(?o) AS ?avg)
+                      WHERE {
+                            ?s ?p ?o
+                      }
+                      GROUP BY ?s
+                      HAVING (AVG(?o) <= 2.0)`;
+        let algebra = translate(sparql);
+        console.log(algebra + '');
+        // TODO: different filter/extend ordering than Jena
+        let expected =
+                AE(A.PROJECT, [
+                    AE(A.EXTEND, [
+                        AE(A.FILTER, [
+                            AE('<=', [ '?v', '"2.0"^^http://www.w3.org/2001/XMLSchema#decimal' ]),
+                            AE(A.GROUP, [
+                                [ '?s' ],
+                                [ AE('?v', [ AE('avg', [ '?o' ]) ]) ],
+                                AE(A.BGP, [ T('?s', '?p', '?o') ])
+                            ]),
+                        ]),
+                        '?avg',
+                        '?v',
+                    ]),
+                    [ '?s', '?avg' ]]);
         Util.compareAlgebras(expected, algebra);
     });
 });

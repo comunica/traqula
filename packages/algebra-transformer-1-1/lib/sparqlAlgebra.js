@@ -29,6 +29,7 @@ const Algebra = Object.freeze({
     PATH:               'path',
     PROJECT:            'project',
     REDUCED:            'reduced',
+    SEPARATOR:          'separator',
     SEQ:                'seq',
     SLICE:              'slice',
     TO_MULTISET:        'tomultiset',
@@ -727,6 +728,9 @@ function translateExpressionsOperations(thingy)
     if (thingy.type === 'aggregate')
     {
         let A = createAlgebraElement(thingy.aggregation, [ translateExpressionsOperations(thingy.expression) ]);
+        // this is specifically for group_concat
+        if (thingy.separator && thingy.separator !== ' ')
+            A.args.unshift(createAlgebraElement(Algebra.SEPARATOR, [thingy.separator]));
         if (thingy.distinct)
             A = createAlgebraElement(Algebra.DISTINCT, [ A ]);
         return A;

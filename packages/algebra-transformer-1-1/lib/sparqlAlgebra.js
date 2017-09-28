@@ -29,11 +29,14 @@ const Algebra = Object.freeze({
     PATH:               'path',
     PROJECT:            'project',
     REDUCED:            'reduced',
+    ROW:                'row',
     SEPARATOR:          'separator',
     SEQ:                'seq',
     SLICE:              'slice',
+    TABLE:              'table',
     TO_MULTISET:        'tomultiset',
     UNION:              'union',
+    VARS:               'vars',
     ZERO_OR_MORE_PATH:  'ZeroOrMorePath',
     ZERO_OR_ONE_PATH:   'ZeroOrOnePath',
 });
@@ -213,6 +216,10 @@ function inScopeVariables (thingy)
 // ---------------------------------- TRANSLATE GRAPH PATTERN ----------------------------------
 function translateGraphPattern (thingy)
 {
+    // can be UNDEF in a VALUES block
+    if (thingy === undefined)
+        return thingy;
+    
     if (_.isString(thingy))
     {
         if (isVariable(thingy))
@@ -294,13 +301,9 @@ function translateGraphPattern (thingy)
         thingy = translateGraphGraphPattern(thingy);
     if (thingy.type === 'group')
         thingy = translateGroupGraphPattern(thingy);
-    // TODO: InlineData (jena uses own 'table' entry?). Will have to make custom function combination that has the given values as a result?
-    // (table (vars ?book ?title)
-    // (row [?title "SPARQL Tutorial"])
-    // (row [?book :book2])
-    // )
+    // inlineData based on Jena implementation
     if (thingy.type === 'values')
-        throw new Error("VALUES is not supported yet.");
+        thingy = translateInlineData(thingy);
     if (thingy.type === 'query')
         thingy = translateSubSelect(thingy);
 
@@ -511,9 +514,20 @@ function translateGroupGraphPattern (group)
     return group.patterns.reduce(accumulateGroupGraphPattern, createAlgebraElement(Algebra.BGP, []));
 }
 
-function translateInlineData (values)
+function translateInlineData (thingy)
 {
-    // TODO: ...
+    let values = thingy.values.map(entry =>
+    {
+        let vals = [];
+        for (let key of Object.keys(entry))
+            if (entry[key] !== undefined)
+                vals.push([key, entry[key]]);
+        return createAlgebraElement(Algebra.ROW, vals);
+    });
+    // parser doesn't keep track of variables on first line
+    let vars = thingy.values.length === 0 ? [] : Object.keys(thingy.values[0]);
+    vars = createAlgebraElement(Algebra.VARS, vars);
+    return createAlgebraElement(Algebra.TABLE, [vars].concat(values));
 }
 
 function translateSubSelect (query)
@@ -595,7 +609,8 @@ function translateAggregates (query, parsed, variables)
     }
 
     // 18.2.4.3
-    // TODO: VALUES
+    if (query.values)
+        res = createAlgebraElement(Algebra.JOIN, [ res, translateInlineData(query) ]);
 
     // 18.2.4.4
     let PV = {};

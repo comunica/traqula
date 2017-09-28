@@ -105,7 +105,9 @@ class Util
             return `T('${algebra.subject}', '${algebra.predicate}', '${algebra.object}')`;
         else if (algebra instanceof Array)
             return `[ ${algebra.map(Util.testString).join(', ')} ]`;
-        return `'${algebra}'`;
+        else if (_.isString(algebra))
+            return `'${algebra}'`;
+        return algebra;
     }
 }
 

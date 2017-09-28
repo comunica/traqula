@@ -16,7 +16,7 @@ const Algebra = Object.freeze({
     EXTEND:             'extend',
     FILTER:             'filter',
     FN_NOT:             'fn:not',
-    GRAPH:              'GRAPH',
+    GRAPH:              'graph',
     GROUP:              'group',
     INV:                'inv',
     JOIN:               'join',
@@ -298,7 +298,14 @@ function translateGraphPattern (thingy)
     if (thingy.type === 'union')
         thingy = translateGroupOrUnionGraphPattern(thingy);
     if (thingy.type === 'graph')
+    {
+        // need to handle this separately here since the filters need to be in the graph
         thingy = translateGraphGraphPattern(thingy);
+        
+        thingy.args[1] = createAlgebraElement(Algebra.FILTER, [translateFilters(filters), thingy.args[1]]);
+        
+        filters = [];
+    }
     if (thingy.type === 'group')
         thingy = translateGroupGraphPattern(thingy);
     // inlineData based on Jena implementation
@@ -307,6 +314,8 @@ function translateGraphPattern (thingy)
     if (thingy.type === 'query')
         thingy = translateSubSelect(thingy);
 
+    let graph = thingy.type === 'graph';
+    
     // 18.2.2.7
     if (filters.length > 0)
         thingy = createAlgebraElement(Algebra.FILTER, [translateFilters(filters), thingy]);
@@ -471,7 +480,7 @@ function translateGraphGraphPattern (group)
 {
     if (group.patterns.length !== 1)
         throw new Error('Expected exactly 1 item for GraphGraphPattern.');
-    return createAlgebraElement(Algebra.GRAPH, group.patterns[0]);
+    return createAlgebraElement(Algebra.GRAPH, [ group.name, group.patterns[0] ]);
 }
 
 function accumulateGroupGraphPattern (G, E)

@@ -453,7 +453,15 @@ function translateGroupOrUnionGraphPattern (group)
     if (group.patterns.length < 1)
         throw new Error('Expected at least one item in GroupOrUnionGraphPattern.');
     
-    return group.patterns.reduce((accumulator, pattern) => createAlgebraElement(Algebra.UNION, [ accumulator, pattern ]));
+    return group.patterns.reduce((accumulator, pattern) =>
+    {
+        if (!pattern.patterns)
+            pattern = { type: 'group', patterns: [ pattern ]};
+        pattern = translateGroupGraphPattern(pattern);
+        if (!accumulator)
+            return pattern;
+        return createAlgebraElement(Algebra.UNION, [ accumulator, pattern ]);
+    }, null);
 }
 
 function translateGraphGraphPattern (group)
@@ -493,7 +501,7 @@ function accumulateGroupGraphPattern (G, E)
     else
         G = createAlgebraElement(Algebra.JOIN, [ G, E ]);
     
-    return G
+    return G;
 }
 
 function translateGroupGraphPattern (group)

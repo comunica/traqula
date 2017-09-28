@@ -474,8 +474,10 @@ function translateGraphGraphPattern (group)
 function accumulateGroupGraphPattern (G, E)
 {
     // TODO: some of the patterns aren't translated yet at this point, might be code smell
-    if (E.symbol === Algebra.FILTER)
-        throw new Error('Filters should have been removed previously.');
+    // this can happen if one of the elements was a subgroup, so shouldn't throw an error
+    // TODO: or find cleaner way to handle this
+    // if (E.symbol === Algebra.FILTER)
+    //     throw new Error('Filters should have been removed previously.');
     if (E.type === 'optional')
     {
         if (E.patterns.length !== 1)

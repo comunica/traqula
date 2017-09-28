@@ -148,7 +148,7 @@ describe('SPARQL 1.1 aggregates', () => {
         Util.compareAlgebras(expected, algebra);
     });
 
-    it('Protect from error in AVG', () => {
+    it('GROUP_CONCAT 1', () => {
         let sparql = `PREFIX : <http://www.example.org/>
                       ASK {
                           {SELECT (GROUP_CONCAT(?o) AS ?g) WHERE {
@@ -182,7 +182,7 @@ describe('SPARQL 1.1 aggregates', () => {
         Util.compareAlgebras(expected, algebra);
     });
 
-    it('Protect from error in AVG', () => {
+    it('GROUP_CONCAT 2', () => {
         let sparql = `PREFIX : <http://www.example.org/>
                       SELECT (COUNT(*) AS ?c) {
                           {SELECT ?p (GROUP_CONCAT(?o) AS ?g) WHERE {

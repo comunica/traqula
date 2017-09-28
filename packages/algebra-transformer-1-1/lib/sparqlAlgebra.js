@@ -610,7 +610,7 @@ function translateAggregates (query, parsed, variables)
 
     // 18.2.4.3
     if (query.values)
-        res = createAlgebraElement(Algebra.JOIN, [ res, translateInlineData(query) ]);
+        res = createAlgebraElement(Algebra.JOIN, [ res, createAlgebraElement(Algebra.TO_MULTISET, [ translateInlineData(query) ]) ]);
 
     // 18.2.4.4
     let PV = {};

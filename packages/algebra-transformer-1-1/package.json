@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "lodash": "^4.13.1",
-    "sparqljs": "^1.5.1"
+    "sparqljs": "^1.5.2"
   },
   "devDependencies": {
     "mocha": "^3.5.3",

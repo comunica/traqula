@@ -306,9 +306,11 @@ function translateGraphPattern (thingy)
         // need to handle this separately here since the filters need to be in the graph
         thingy = translateGraphGraphPattern(thingy);
         
-        thingy.args[1] = createAlgebraElement(Algebra.FILTER, [translateFilters(filters), thingy.args[1]]);
-        
-        filters = [];
+        if (filters.length > 0)
+        {
+            thingy.args[1] = createAlgebraElement(Algebra.FILTER, [translateFilters(filters), thingy.args[1]]);
+            filters = [];
+        }
     }
     if (thingy.type === 'group')
         thingy = translateGroupGraphPattern(thingy);

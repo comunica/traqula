@@ -504,11 +504,11 @@ function accumulateGroupGraphPattern (G, E)
         else
             G = createAlgebraElement(Algebra.LEFT_JOIN, [ G, A, true ]);
     }
-    else if (E.symbol === Algebra.MINUS)
+    else if (E.type === Algebra.MINUS)
     {
-        if (E.args.length !== 1)
+        if (E.patterns.length !== 1)
             throw new Error('MINUS element should only have 1 arg at this point.');
-        G = createAlgebraElement(Algebra.MINUS, [ G, E.args[0] ]);
+        G = createAlgebraElement(Algebra.MINUS, [ G, E.patterns[0] ]);
     }
     else if (E.type === 'bind')
         G = createAlgebraElement(Algebra.EXTEND, [ G, E.variable, E.expression ]);

@@ -56,7 +56,7 @@ describe('SPARQL 1.1 exists', () => {
         Util.compareAlgebras(expected, algebra);
     });
     
-    it('Nested positive exists', () => {
+    it('Nested negative exists in positive exists', () => {
         let sparql = `prefix ex: <http://www.example.org/>
                         select * where {
                             ?s ?p ex:o
@@ -70,7 +70,7 @@ describe('SPARQL 1.1 exists', () => {
                             AE(A.FN_NOT, [ AE(A.EXISTS, [ AE(A.BGP, [ T('?s', '?p', 'http://www.example.org/o2') ]) ]) ]),
                             AE(A.BGP, [ T('?s', '?p', 'http://www.example.org/o1') ]) ]) ]),
                         AE(A.BGP, [ T('?s', '?p', 'http://www.example.org/o') ])
-                    ]), 
+                    ]),
                     [ '?s', '?p' ]
                 ]);
         Util.compareAlgebras(expected, algebra);

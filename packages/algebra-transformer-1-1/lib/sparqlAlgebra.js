@@ -591,13 +591,8 @@ function translateAggregates (query, parsed, variables)
         mapAggregates(query.order, A);
 
         // TODO: we use the jena syntax of adding aggregates as second argument to group
-        if (A.length > 0)
-        {
-            let aggregates = A.map(aggregate => createAlgebraElement(aggregate.variable, [aggregate.object]));
-            G.args.splice(1, 0, aggregates);
-        }
-        else
-            G.args.splice(1, 0, null);
+        let aggregates = A.map(aggregate => createAlgebraElement(aggregate.variable, [aggregate.object]));
+        G.args.splice(1, 0, aggregates);
 
         if (query.group)
         {

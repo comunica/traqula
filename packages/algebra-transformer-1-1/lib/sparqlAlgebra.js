@@ -402,11 +402,11 @@ function translatePathExpression (pathExp, translatedItems)
 
     else if (pathExp.pathType === '/')
     {
-        if (pathExp.items.length < 2)
+        if (items.length < 2)
             throw new Error('Expected at least 2 items for '/' path operator.');
-        res = pathExp.items[0];
-        for (let item of items)
-            res = createAlgebraElement(Algebra.SEQ, [res, item]);
+        res = items[0];
+        for (let i = 1; i < items.length; ++i)
+            res = createAlgebraElement(Algebra.SEQ, [res, items[i]]);
     }
     else if (pathExp.pathType === '|')
         res = createAlgebraElement(Algebra.ALT, items);
@@ -447,7 +447,7 @@ function translatePath (pathTriple, translatedPredicate)
         if (pred.args.length !== 2)
             throw new Error("Expected exactly 2 arguments for 'seq' symbol.");
         let v = generateFreshVar();
-        let triple1 =  createTriple(pathTriple.subject, pred.args[0], v);
+        let triple1 = createTriple(pathTriple.subject, pred.args[0], v);
         let triple2 = createTriple(v, pred.args[1], pathTriple.object);
         res = translatePath(triple1, triple1.predicate).concat(translatePath(triple2, triple2.predicate));
     }

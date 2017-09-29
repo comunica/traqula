@@ -410,12 +410,10 @@ function translatePathExpression (pathExp, translatedItems)
     {
         if (items.length < 2)
             throw new Error('Expected at least 2 items for '/' path operator.');
-        res = items[0];
-        for (let i = 1; i < items.length; ++i)
-            res = createAlgebraElement(Algebra.SEQ, [res, items[i]]);
+        res = items.reduce((acc, v) => createAlgebraElement(Algebra.SEQ, [acc, v]));
     }
     else if (pathExp.pathType === '|')
-        res = createAlgebraElement(Algebra.ALT, items);
+        res = items.reduce((acc, v) => createAlgebraElement(Algebra.ALT, [acc, v]));
     else if (pathExp.pathType === '*')
         res = createAlgebraElement(Algebra.ZERO_OR_MORE_PATH, items);
     else if (pathExp.pathType === '+')

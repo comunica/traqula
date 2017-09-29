@@ -100,6 +100,10 @@ function createAlgebraElement (symbol, args)
 
 function createTriple (subject, predicate, object)
 {
+    // can also be a path expression
+    if (subject.symbol === 'path')
+        return subject;
+    
     // first parameter is a triple object
     if (!predicate && !object)
     {
@@ -452,7 +456,7 @@ function translatePath (pathTriple, translatedPredicate)
         res = translatePath(triple1, triple1.predicate).concat(translatePath(triple2, triple2.predicate));
     }
     else
-        res = createAlgebraElement(Algebra.PATH, [ createTriple(pathTriple.subject, pathTriple.predicate, pathTriple.object) ]);
+        res = createAlgebraElement(Algebra.PATH, [ pathTriple.subject, pathTriple.predicate, pathTriple.object ]);
 
     if (!_.isArray(res))
         res = [res];

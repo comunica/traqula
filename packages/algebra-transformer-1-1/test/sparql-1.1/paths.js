@@ -40,15 +40,14 @@ describe('SPARQL 1.1 paths', () => {
         let algebra = translate(sparql);
         let expected =
                 AE(A.PROJECT, [
-                    AE(A.BGP, [
-                        AE(A.PATH, [
-                            'http://www.example.org/instance#a',
-                            AE(A.ZERO_OR_MORE_PATH, [
-                                AE(A.SEQ, [
-                                    AE(A.SEQ, [ AE(A.LINK, [ 'http://www.example.org/schema#p1' ]),
-                                                AE(A.LINK, [ 'http://www.example.org/schema#p2' ]) ]),
-                                    AE(A.LINK, [ 'http://www.example.org/schema#p3' ]) ]) ]),
-                            '?x' ]) ]),
+                    AE(A.PATH, [
+                        'http://www.example.org/instance#a',
+                        AE(A.ZERO_OR_MORE_PATH, [
+                            AE(A.SEQ, [
+                                AE(A.SEQ, [ AE(A.LINK, [ 'http://www.example.org/schema#p1' ]),
+                                            AE(A.LINK, [ 'http://www.example.org/schema#p2' ]) ]),
+                                AE(A.LINK, [ 'http://www.example.org/schema#p3' ]) ]) ]),
+                        '?x' ]),
                     [ '?x' ] ]);
         Util.compareAlgebras(expected, algebra);
     });
@@ -106,15 +105,15 @@ describe('SPARQL 1.1 paths', () => {
                         }`;
         let algebra = translate(sparql);
         let expected =
-                AE(A.PROJECT, [ AE(A.BGP, [ AE(A.PATH, [ 'http://www.example.org/instance#a',
+                AE(A.PROJECT, [ AE(A.PATH, [ 'http://www.example.org/instance#a',
                                                          AE(A.NPS, [ AE(A.LINK, [ 'http://www.example.org/schema#p1' ]),
                                                                      AE(A.LINK, [ 'http://www.example.org/schema#p2' ]) ]),
-                                                         '?x' ]) ]),
+                                                         '?x' ]),
                                 [ '?x' ] ]);
         Util.compareAlgebras(expected, algebra);
     });
     
-    it('(pp10) Path with negation', () => {
+    it('(pp12) Variable length path and two paths to same target node', () => {
         let sparql = `prefix ex: <http://www.example.org/schema#>
                         prefix in: <http://www.example.org/instance#>
                         
@@ -124,15 +123,14 @@ describe('SPARQL 1.1 paths', () => {
         let algebra = translate(sparql);
         let expected =
                 AE(A.PROJECT, [
-                    AE(A.BGP, [
-                        AE(A.PATH, [ 'http://www.example.org/instance#a',
-                                     AE(A.ONE_OR_MORE_PATH, [ AE(A.SEQ, [ AE(A.LINK, [ 'http://www.example.org/schema#p1' ]), AE(A.LINK, [ 'http://www.example.org/schema#p2' ]) ]) ]),
-                                     '?x' ]) ]),
+                    AE(A.PATH, [ 'http://www.example.org/instance#a',
+                                 AE(A.ONE_OR_MORE_PATH, [ AE(A.SEQ, [ AE(A.LINK, [ 'http://www.example.org/schema#p1' ]), AE(A.LINK, [ 'http://www.example.org/schema#p2' ]) ]) ]),
+                                 '?x' ]),
                     [ '?x' ] ]);
         Util.compareAlgebras(expected, algebra);
     });
     
-    it('(pp10) Path with negation', () => {
+    it('(pp14) Star path over foaf:knows', () => {
         let sparql = `PREFIX : <http://example.org/>
                         PREFIX foaf: <http://xmlns.com/foaf/0.1/>
                         
@@ -142,9 +140,9 @@ describe('SPARQL 1.1 paths', () => {
         let algebra = translate(sparql);
         let expected =
                 AE(A.PROJECT, [
-                    AE(A.ORDER_BY, [ AE(A.BGP, [ AE(A.PATH, [ '?X',
-                                                              AE(A.ZERO_OR_MORE_PATH, [ AE(A.LINK, [ 'http://xmlns.com/foaf/0.1/knows' ]) ]),
-                                                              '?Y' ]) ]),
+                    AE(A.ORDER_BY, [ AE(A.PATH, [ '?X',
+                                                  AE(A.ZERO_OR_MORE_PATH, [ AE(A.LINK, [ 'http://xmlns.com/foaf/0.1/knows' ]) ]),
+                                                  '?Y' ]),
                                      [ '?X', '?Y' ] ]),
                     [ '?X', '?Y' ] ]);
         Util.compareAlgebras(expected, algebra);
@@ -157,9 +155,9 @@ describe('SPARQL 1.1 paths', () => {
                         }`;
         let algebra = translate(sparql);
         let expected =
-                AE(A.PROJECT, [ AE(A.BGP, [ AE(A.PATH, [ 'http://example/a',
-                                                         AE(A.ZERO_OR_ONE_PATH, [ AE(A.SEQ, [ AE(A.LINK, [ 'http://example/p' ]), AE(A.LINK, [ 'http://example/p' ]) ]) ]),
-                                                         '?t' ]) ]),
+                AE(A.PROJECT, [ AE(A.PATH, [ 'http://example/a',
+                                             AE(A.ZERO_OR_ONE_PATH, [ AE(A.SEQ, [ AE(A.LINK, [ 'http://example/p' ]), AE(A.LINK, [ 'http://example/p' ]) ]) ]),
+                                             '?t' ]),
                                 [ '?t' ] ]);
         Util.compareAlgebras(expected, algebra);
     });
@@ -172,11 +170,11 @@ describe('SPARQL 1.1 paths', () => {
                         }`;
         let algebra = translate(sparql);
         let expected =
-                AE(A.PROJECT, [ AE(A.BGP, [ AE(A.PATH, [ 'http://www.example.org/a',
-                                                         AE(A.ALT, [ AE(A.ALT, [ AE(A.LINK, [ 'http://www.example.org/p1' ]),
-                                                                                 AE(A.SEQ, [ AE(A.LINK, [ 'http://www.example.org/p2' ]), AE(A.LINK, [ 'http://www.example.org/p3' ]) ]) ]),
-                                                                     AE(A.LINK, [ 'http://www.example.org/p4' ]) ]),
-                                                         '?t' ]) ]),
+                AE(A.PROJECT, [ AE(A.PATH, [ 'http://www.example.org/a',
+                                             AE(A.ALT, [ AE(A.ALT, [ AE(A.LINK, [ 'http://www.example.org/p1' ]),
+                                                                     AE(A.SEQ, [ AE(A.LINK, [ 'http://www.example.org/p2' ]), AE(A.LINK, [ 'http://www.example.org/p3' ]) ]) ]),
+                                                         AE(A.LINK, [ 'http://www.example.org/p4' ]) ]),
+                                             '?t' ]),
                                 [ '?t' ] ]);
         Util.compareAlgebras(expected, algebra);
     });
@@ -189,7 +187,7 @@ describe('SPARQL 1.1 paths', () => {
                         }`;
         let algebra = translate(sparql);
         let expected =
-                AE(A.PROJECT, [ AE(A.BGP, [ AE(A.PATH, [ 'http://www.example.org/a',
+                AE(A.PROJECT, [ AE(A.JOIN, [ AE(A.PATH, [ 'http://www.example.org/a',
                                                          AE(A.ALT, [ AE(A.LINK, [ 'http://www.example.org/p1' ]), AE(A.LINK, [ 'http://www.example.org/p2' ]) ]),
                                                          '?var0' ]),
                                             AE(A.PATH, [ '?var0',
@@ -207,12 +205,12 @@ describe('SPARQL 1.1 paths', () => {
                         }`;
         let algebra = translate(sparql);
         let expected =
-                AE(A.PROJECT, [ AE(A.BGP, [ AE(A.PATH, [ 'http://www.example.org/a',
-                                                         AE(A.ALT, [ AE(A.ALT, [ AE(A.LINK, [ 'http://www.example.org/p0' ]),
-                                                                                 AE(A.SEQ, [ AE(A.INV, [ AE(A.LINK, [ 'http://www.example.org/p1' ]) ]),
-                                                                                             AE(A.LINK, [ 'http://www.example.org/p2' ]) ]) ]),
-                                                                     AE(A.LINK, [ 'http://www.example.org/p3' ]) ]),
-                                                         '?t' ]) ]),
+                AE(A.PROJECT, [ AE(A.PATH, [ 'http://www.example.org/a',
+                                             AE(A.ALT, [ AE(A.ALT, [ AE(A.LINK, [ 'http://www.example.org/p0' ]),
+                                                                     AE(A.SEQ, [ AE(A.INV, [ AE(A.LINK, [ 'http://www.example.org/p1' ]) ]),
+                                                                                 AE(A.LINK, [ 'http://www.example.org/p2' ]) ]) ]),
+                                                         AE(A.LINK, [ 'http://www.example.org/p3' ]) ]),
+                                             '?t' ]),
                                 [ '?t' ] ]);
         Util.compareAlgebras(expected, algebra);
     });
@@ -225,12 +223,12 @@ describe('SPARQL 1.1 paths', () => {
                         }`;
         let algebra = translate(sparql);
         let expected =
-                AE(A.PROJECT, [ AE(A.BGP, [ AE(A.PATH, [ 'http://www.example.org/a',
-                                                         AE(A.ALT, [ AE(A.SEQ, [ AE(A.ALT, [ AE(A.LINK, [ 'http://www.example.org/p0' ]),
-                                                                                             AE(A.INV, [ AE(A.LINK, [ 'http://www.example.org/p1' ]) ]) ]),
-                                                                                 AE(A.LINK, [ 'http://www.example.org/p2' ]) ]),
-                                                                     AE(A.LINK, [ 'http://www.example.org/p3' ]) ]),
-                                                         '?t' ]) ]),
+                AE(A.PROJECT, [ AE(A.PATH, [ 'http://www.example.org/a',
+                                             AE(A.ALT, [ AE(A.SEQ, [ AE(A.ALT, [ AE(A.LINK, [ 'http://www.example.org/p0' ]),
+                                                                                 AE(A.INV, [ AE(A.LINK, [ 'http://www.example.org/p1' ]) ]) ]),
+                                                                     AE(A.LINK, [ 'http://www.example.org/p2' ]) ]),
+                                                         AE(A.LINK, [ 'http://www.example.org/p3' ]) ]),
+                                             '?t' ]),
                                 [ '?t' ] ]);
         Util.compareAlgebras(expected, algebra);
     });
@@ -241,9 +239,9 @@ describe('SPARQL 1.1 paths', () => {
                         order by ?X`;
         let algebra = translate(sparql);
         let expected =
-                AE(A.PROJECT, [ AE(A.ORDER_BY, [ AE(A.BGP, [ AE(A.PATH, [ 'http://example.org/A0',
-                                                                          AE(A.ZERO_OR_MORE_PATH, [ AE(A.ZERO_OR_MORE_PATH, [ AE(A.LINK, [ 'http://example.org/P' ]) ]) ]),
-                                                                          '?X' ]) ]),
+                AE(A.PROJECT, [ AE(A.ORDER_BY, [ AE(A.PATH, [ 'http://example.org/A0',
+                                                              AE(A.ZERO_OR_MORE_PATH, [ AE(A.ZERO_OR_MORE_PATH, [ AE(A.LINK, [ 'http://example.org/P' ]) ]) ]),
+                                                              '?X' ]),
                                                  [ '?X' ] ]),
                                 [ '?X' ] ]);
         Util.compareAlgebras(expected, algebra);

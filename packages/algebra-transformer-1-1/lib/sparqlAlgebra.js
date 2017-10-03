@@ -29,7 +29,7 @@ function createTriple (subject, predicate, object)
         return subject;
     
     // first parameter is a triple object
-    if (!predicate && !object)
+    if (subject.subject && subject.predicate && subject.object)
     {
         predicate = subject.predicate;
         object = subject.object;
@@ -220,7 +220,30 @@ function translateGraphPattern (thingy)
 
     // 18.2.2.5
     if (thingy.type === 'bgp')
-        thingy = createAlgebraElement(Algebra.BGP, thingy.triples.map(triple => createTriple(triple)));
+    {
+        let join = [];
+        let bgp = [];
+        for (let triple of thingy.triples.map(createTriple))
+        {
+            if (triple.symbol === Algebra.PATH)
+            {
+                if (bgp.length > 0)
+                {
+                    join.push(createAlgebraElement(Algebra.BGP, bgp));
+                    bgp = [];
+                }
+                join.push(triple);
+            }
+            else
+                bgp.push(triple);
+        }
+        if (bgp.length > 0)
+            join.push(createAlgebraElement(Algebra.BGP, bgp));
+        if (join.length === 1)
+            thingy = join[0];
+        else
+            thingy = join.reduce((acc, item) => createAlgebraElement(Algebra.JOIN, [acc, item]));
+    }
 
     // 18.2.2.6
     if (thingy.type === 'union')

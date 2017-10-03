@@ -93,4 +93,13 @@ mappings[Algebra.PROJECT] = input =>
     return new AlgebraElement(Algebra.PROJECT, [args[1], args[0]]);
 };
 
+mappings[Algebra.SLICE] = input =>
+{
+    let args = input.args.map(toJena);
+
+    if (args[1] === -1)
+        args[1] = '_';
+    return new AlgebraElement(Algebra.SLICE, args);
+};
+
 module.exports = toJena;

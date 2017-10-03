@@ -23,9 +23,11 @@ function toJena(input)
 
     if (mappings[input.symbol])
         input = mappings[input.symbol](input);
+    else
+        input = new AlgebraElement(input.symbol, toJena(input.args));
 
     if (synonyms[input.symbol])
-        input = new AlgebraElement(synonyms[input.symbol], input.args);
+        input.symbol = synonyms[input.symbol];
 
     return input;
 }

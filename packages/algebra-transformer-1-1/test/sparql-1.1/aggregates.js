@@ -19,7 +19,6 @@ describe('SPARQL 1.1 aggregates', () => {
                             ?s :dec ?o
                       }`;
         let algebra = translate(sparql);
-        // TODO: different Jena ordering
         let expected =
                 AE(A.PROJECT, [
                     AE(A.EXTEND, [
@@ -70,7 +69,6 @@ describe('SPARQL 1.1 aggregates', () => {
                             ?x ex:p ?value
                       } GROUP BY ?x`;
         let algebra = translate(sparql);
-        // TODO: different Jena ordering
         let expected =
                 AE(A.PROJECT, [
                     AE(A.EXTEND, [

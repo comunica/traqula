@@ -1,4 +1,4 @@
 
-let Algebra = require('./lib/sparqlAlgebra');
+let translate = require('./lib/sparqlAlgebra');
 
-module.exports = Algebra.translate;
+module.exports = translate;

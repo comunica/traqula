@@ -1,7 +1,8 @@
 
 const _ = require('lodash');
 const assert = require('assert');
-const algebra = require('../lib/sparqlAlgebra');
+const algebra = require('../lib/algebra');
+const translate = require('../lib/sparqlAlgebra');
 const Algebra = algebra.Algebra;
 const AlgebraElement = algebra.AlgebraElement;
 const Triple = algebra.Triple;
@@ -110,5 +111,8 @@ class Util
         return algebra;
     }
 }
+
+Util.Algebra = Algebra;
+Util.translate = translate;
 
 module.exports = Util;

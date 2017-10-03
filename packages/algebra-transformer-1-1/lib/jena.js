@@ -61,6 +61,21 @@ mappings[Algebra.EXTEND] = input =>
     return new AlgebraElement(Algebra.EXTEND, [[new AlgebraElement(v, [val])], body])
 };
 
+mappings[Algebra.JOIN] = input =>
+{
+    let args = input.args.map(toJena);
+    let left = args[0];
+    let right = args[1];
+
+    args = left.symbol === Algebra.JOIN ? left.args : [left];
+    if (right.symbol === Algebra.JOIN)
+        args = args.concat(right.args);
+    else
+        args.push(right);
+
+    return new AlgebraElement(Algebra.SEQUENCE, args);
+};
+
 mappings[Algebra.LINK] = input =>
 {
     return toJena(input.args[0]);

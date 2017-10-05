@@ -14,18 +14,18 @@ class Util
         switch (key)
         {
             case Algebra.BGP: return { name: key, patterns: args };
-            case Algebra.DISTINCT: return { name: key, op: args[0] };
-            case Algebra.EXTEND: return { name: key, op: args[0], var: args[1], expr: args[2] };
-            case Algebra.FILTER: return { name: key, expr: args[0], op: args[1] };
-            case Algebra.GRAPH: return { name: key, graph: args[0], op: args[1] };
-            case Algebra.GROUP: return { name: key, vars: args[0], aggregates: args[1], op: args[2] };
+            case Algebra.DISTINCT: return { name: key, body: args[0] };
+            case Algebra.EXTEND: return { name: key, body: args[0], var: args[1], expr: args[2] };
+            case Algebra.FILTER: return { name: key, expr: args[0], body: args[1] };
+            case Algebra.GRAPH: return { name: key, graph: args[0], body: args[1] };
+            case Algebra.GROUP: return { name: key, vars: args[0], aggregates: args[1], body: args[2] };
             case Algebra.JOIN: return { name: key, left: args[0], right: args[1] };
             case Algebra.LEFT_JOIN: return args[2] === true ? { name: key, left: args[0], right: args[1] } : { name: key, left: args[0], right: args[1], expr: args[2] };
             case Algebra.MINUS: return { name: key, left: args[0], right: args[1] };
-            case Algebra.ORDER_BY: return { name: key, op: args[0], conditions: args[1] };
-            case Algebra.PROJECT: return { name: key, op: args[0], vars: args[1] };
-            case Algebra.REDUCED: return { name: key, op: args[0] };
-            case Algebra.SLICE: return args[1] === -1 ? { name: key, op: args[2], start: args[0] } : { name: key, op: args[2], start: args[0], length: args[1] };
+            case Algebra.ORDER_BY: return { name: key, body: args[0], conditions: args[1] };
+            case Algebra.PROJECT: return { name: key, body: args[0], vars: args[1] };
+            case Algebra.REDUCED: return { name: key, body: args[0] };
+            case Algebra.SLICE: return args[1] === -1 ? { name: key, body: args[2], start: args[0] } : { name: key, body: args[2], start: args[0], length: args[1] };
             case Algebra.TRIPLE: return { name: key, subject: args[0], predicate: args[1], object: args[2] };
             case Algebra.UNION: return { name: key, left: args[0], right: args[1] };
 

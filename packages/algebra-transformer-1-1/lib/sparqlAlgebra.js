@@ -260,7 +260,7 @@ function translateGraphPattern (thingy)
 
         if (filters.length > 0)
         {
-            thingy.op = createAlgebraElement(Algebra.FILTER, { expr: translateFilters(filters), op: thingy.op });
+            thingy.body = createAlgebraElement(Algebra.FILTER, { expr: translateFilters(filters), body: thingy.body });
             filters = [];
         }
     }
@@ -276,7 +276,7 @@ function translateGraphPattern (thingy)
     
     // 18.2.2.7
     if (filters.length > 0)
-        thingy = createAlgebraElement(Algebra.FILTER, { expr: translateFilters(filters), op: thingy });
+        thingy = createAlgebraElement(Algebra.FILTER, { expr: translateFilters(filters), body: thingy });
 
     return thingy;
 }
@@ -424,7 +424,7 @@ function translateGraphGraphPattern (group)
 {
     if (group.patterns.length !== 1)
         throw new Error('Expected exactly 1 item for GraphGraphPattern.');
-    return createAlgebraElement(Algebra.GRAPH, { graph: group.name, op: group.patterns[0] });
+    return createAlgebraElement(Algebra.GRAPH, { graph: group.name, body: group.patterns[0] });
 }
 
 function accumulateGroupGraphPattern (G, E)
@@ -451,7 +451,7 @@ function accumulateGroupGraphPattern (G, E)
         G = createAlgebraElement(Algebra.MINUS, { left: G, right: E.patterns[0] });
     }
     else if (E.type === 'bind')
-        G = createAlgebraElement(Algebra.EXTEND, { op: G, var: E.variable, expr: E.expression });
+        G = createAlgebraElement(Algebra.EXTEND, { body: G, var: E.variable, expr: E.expression });
     else
         G = createAlgebraElement(Algebra.JOIN, { left: G, right: E });
     
@@ -515,9 +515,9 @@ function translateAggregates (query, parsed, variables)
     let A = [];
     let E = [];
     if (query.group)
-        G = createAlgebraElement(Algebra.GROUP, { vars: query.group, op: res });
+        G = createAlgebraElement(Algebra.GROUP, { vars: query.group, body: res });
     else if (containsAggregate(query.variables) || containsAggregate(query.having) || containsAggregate(query.order))
-        G = createAlgebraElement(Algebra.GROUP, { vars: [], op: res });
+        G = createAlgebraElement(Algebra.GROUP, { vars: [], body: res });
 
     // TODO: not doing the sample stuff atm
     // TODO: more based on jena results than w3 spec (spec would require us to copy G multiple times)
@@ -546,7 +546,7 @@ function translateAggregates (query, parsed, variables)
     if (query.having)
     {
         for (let filter of query.having)
-            res = createAlgebraElement(Algebra.FILTER, { expr: translateFilters(filter), op: res });
+            res = createAlgebraElement(Algebra.FILTER, { expr: translateFilters(filter), body: res });
     }
 
     // 18.2.4.3
@@ -577,27 +577,27 @@ function translateAggregates (query, parsed, variables)
 
     // TODO: Jena simplifies by having a list of extends
     for (let v of E)
-        res = createAlgebraElement(Algebra.EXTEND, { op: res, var: v.variable, expr: v.expression });
+        res = createAlgebraElement(Algebra.EXTEND, { body: res, var: v.variable, expr: v.expression });
 
     // 18.2.5
     //p = createAlgebraElement('tolist', [p]);
 
     // 18.2.5.1
     if (query.order)
-        res = createAlgebraElement(Algebra.ORDER_BY, { op: res, conditions: query.order });
+        res = createAlgebraElement(Algebra.ORDER_BY, { body: res, conditions: query.order });
     // 18.2.5.2
-    res = createAlgebraElement(Algebra.PROJECT, { op: res, vars: Object.keys(PV) });
+    res = createAlgebraElement(Algebra.PROJECT, { body: res, vars: Object.keys(PV) });
     // 18.2.5.3
     if (query.distinct)
-        res = createAlgebraElement(Algebra.DISTINCT, { op: res });
+        res = createAlgebraElement(Algebra.DISTINCT, { body: res });
     // 18.2.5.4
     if (query.reduced)
-        res = createAlgebraElement(Algebra.REDUCED, { op: res });
+        res = createAlgebraElement(Algebra.REDUCED, { body: res });
     // 18.2.5.5
     // we use -1 to indiciate there is no limit
     if (query.offset || query.limit)
     {
-        res = createAlgebraElement(Algebra.SLICE, { op: res, start: query.offset || 0 });
+        res = createAlgebraElement(Algebra.SLICE, { body: res, start: query.offset || 0 });
         if (query.limit)
             res.length = query.limit;
     }
@@ -703,7 +703,7 @@ function translateExpressionsOperations(thingy)
         if (thingy.separator && thingy.separator !== ' ')
             A.args.unshift(createExpression(Algebra.SEPARATOR, [thingy.separator]));
         if (thingy.distinct)
-            A = createAlgebraElement(Algebra.DISTINCT, { op: A });
+            A = createAlgebraElement(Algebra.DISTINCT, { body: A });
         return A;
     }
 

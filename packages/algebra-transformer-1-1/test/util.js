@@ -11,12 +11,57 @@ class Util
 {
     static algebraElement (key, args)
     {
-        return new AlgebraElement(key, args || []);
+        switch (key)
+        {
+            case Algebra.BGP: return { name: key, patterns: args };
+            case Algebra.DISTINCT: return { name: key, op: args[0] };
+            case Algebra.EXTEND: return { name: key, op: args[0], var: args[1], expr: args[2] };
+            case Algebra.FILTER: return { name: key, expr: args[0], op: args[1] };
+            case Algebra.GRAPH: return { name: key, graph: args[0], op: args[1] };
+            case Algebra.GROUP: return { name: key, vars: args[0], aggregates: args[1], op: args[2] };
+            case Algebra.JOIN: return { name: key, left: args[0], right: args[1] };
+            case Algebra.LEFT_JOIN: return args[2] === true ? { name: key, left: args[0], right: args[1] } : { name: key, left: args[0], right: args[1], expr: args[2] };
+            case Algebra.MINUS: return { name: key, left: args[0], right: args[1] };
+            case Algebra.ORDER_BY: return { name: key, op: args[0], conditions: args[1] };
+            case Algebra.PROJECT: return { name: key, op: args[0], vars: args[1] };
+            case Algebra.REDUCED: return { name: key, op: args[0] };
+            case Algebra.SLICE: return args[1] === -1 ? { name: key, op: args[2], start: args[0] } : { name: key, op: args[2], start: args[0], length: args[1] };
+            case Algebra.TRIPLE: return { name: key, subject: args[0], predicate: args[1], object: args[2] };
+            case Algebra.UNION: return { name: key, left: args[0], right: args[1] };
+
+            case Algebra.ALT: return { name: key, left: args[0], right: args[1] };
+            case Algebra.INV: return { name: key, path: args[0] };
+            case Algebra.LINK: return { name: key, iri: args[0] };
+            case Algebra.NPS: return { name: key, iris: args };
+            case Algebra.ONE_OR_MORE_PATH: return { name: key, path: args[0] };
+            case Algebra.PATH: return { name: key, subject: args[0], predicate: args[1], object: args[2] };
+            case Algebra.SEQ: return { name: key, left: args[0], right: args[1] };
+            case Algebra.ZERO_OR_ONE_PATH: return { name: key, path: args[0] };
+            case Algebra.ZERO_OR_MORE_PATH: return { name: key, path: args[0] };
+        }
+
+        if (key === Algebra.TABLE)
+        {
+            let vars = args[0].args;
+            let bindings = [];
+            for (let i = 1; i < args.length; ++i)
+            {
+                let binding = {};
+                let row = args[i].args;
+                for (let entry of row)
+                    binding[entry[0]] = entry[1];
+                bindings.push(binding);
+            }
+            return { name: Algebra.VALUES, vars, bindings };
+        }
+
+        // not returned -> probably operator
+        return { operator: key, args};
     }
     
     static triple (subject, predicate, object)
     {
-        return new Triple(subject, predicate, object);
+        return Util.algebraElement(Algebra.TRIPLE, [ subject, predicate, object ]);
     }
     
     static compareAlgebras (expected, actual)

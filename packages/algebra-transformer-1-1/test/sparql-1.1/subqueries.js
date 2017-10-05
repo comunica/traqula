@@ -22,7 +22,7 @@ describe('SPARQL 1.1 subqueries', () => {
                         }`;
         let algebra = translate(sparql);
         let expected =
-                AE(A.PROJECT, [ AE(A.GRAPH, [ '?g', AE(A.TO_MULTISET, [ AE(A.PROJECT, [ AE(A.BGP, [ T('?x', '?p', '?y') ]), [ '?x', '?p', '?y' ] ]) ]) ]), [ '?x', '?p' ] ]);
+                AE(A.PROJECT, [ AE(A.GRAPH, [ '?g', AE(A.PROJECT, [ AE(A.BGP, [ T('?x', '?p', '?y') ]), [ '?x', '?p', '?y' ] ]) ]), [ '?x', '?p' ] ]);
         Util.compareAlgebras(expected, algebra);
     });
     
@@ -36,7 +36,7 @@ describe('SPARQL 1.1 subqueries', () => {
                         }`;
         let algebra = translate(sparql);
         let expected =
-                AE(A.PROJECT, [ AE(A.TO_MULTISET, [ AE(A.PROJECT, [ AE(A.BGP, [ T('?x', '?p', '?y') ]), [ '?x', '?p', '?y' ] ]) ]), [ '?x' ] ]);
+                AE(A.PROJECT, [ AE(A.PROJECT, [ AE(A.BGP, [ T('?x', '?p', '?y') ]), [ '?x', '?p', '?y' ] ]), [ '?x' ] ]);
         Util.compareAlgebras(expected, algebra);
     });
     
@@ -50,7 +50,7 @@ describe('SPARQL 1.1 subqueries', () => {
                         }`;
         let algebra = translate(sparql);
         let expected =
-                AE(A.PROJECT, [ AE(A.TO_MULTISET, [ AE(A.PROJECT, [ AE(A.GRAPH, [ '?g', AE(A.BGP, [ T('?x', '?p', '?y') ]) ]), [ '?x', '?p', '?y', '?g' ] ]) ]), [ '?x' ] ]);
+                AE(A.PROJECT, [ AE(A.PROJECT, [ AE(A.GRAPH, [ '?g', AE(A.BGP, [ T('?x', '?p', '?y') ]) ]), [ '?x', '?p', '?y', '?g' ] ]), [ '?x' ] ]);
         Util.compareAlgebras(expected, algebra);
     });
     
@@ -66,15 +66,15 @@ describe('SPARQL 1.1 subqueries', () => {
         let expected =
                 AE(A.PROJECT, [
                     AE(A.JOIN, [
-                        AE(A.TO_MULTISET, [ AE(A.PROJECT, [
+                        AE(A.PROJECT, [
                             AE(A.EXTEND, [
                                 AE(A.GROUP, [
                                     [],
-                                    [ AE('?var0', [ AE('max', [ '?y' ]) ]) ],
+                                    [ { var: '?var0', aggregate: AE('max', [ '?y' ]) } ],
                                     AE(A.BGP, [ T('?x', 'http://www.example.org/schema#p', '?y') ]) ]),
                                 '?max',
                                 '?var0' ]),
-                            [ '?max' ] ]) ]),
+                            [ '?max' ] ]),
                         AE(A.BGP, [ T('?x', 'http://www.example.org/schema#p', '?max') ]) ]),
                     [ '?x', '?max' ] ]);
         Util.compareAlgebras(expected, algebra);
@@ -93,11 +93,11 @@ describe('SPARQL 1.1 subqueries', () => {
         let expected =
                 AE(A.PROJECT, [
                     AE(A.JOIN, [
-                        AE(A.TO_MULTISET, [ AE(A.PROJECT, [
-                            AE(A.TO_MULTISET, [ AE(A.PROJECT, [
+                        AE(A.PROJECT, [
+                            AE(A.PROJECT, [
                                 AE(A.BGP, [ T('?x', 'http://www.example.org/schema#q', '?t') ]),
-                                [ '?x' ] ]) ]),
-                            [ '?x' ] ]) ]),
+                                [ '?x' ] ]),
+                            [ '?x' ] ]),
                         AE(A.BGP, [ T('?x', 'http://www.example.org/schema#p', '?y') ]) ]),
                     [ '?x', '?y' ] ]);
         Util.compareAlgebras(expected, algebra);
@@ -122,14 +122,14 @@ describe('SPARQL 1.1 subqueries', () => {
                     AE(A.ORDER_BY, [
                         AE(A.JOIN, [
                             AE(A.BGP, [ T('?O', 'http://www.example.orghasItem', '_:b0'), T('_:b0', 'http://www.w3.org/2000/01/rdf-schema#label', '?L') ]),
-                            AE(A.TO_MULTISET, [ AE(A.SLICE, [
+                            AE(A.SLICE, [
                                 0,
                                 2,
                                 AE(A.DISTINCT, [ AE(A.PROJECT, [
                                     AE(A.ORDER_BY, [
                                         AE(A.BGP, [ T('?O', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.example.orgOrder') ]),
                                         [ '?O' ] ]),
-                                    [ '?O' ] ]) ]) ]) ]) ]),
+                                    [ '?O' ] ]) ]) ]) ]),
                         [ '?L' ] ]),
                     [ '?L' ] ]);
         Util.compareAlgebras(expected, algebra);

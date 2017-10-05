@@ -51,13 +51,12 @@ describe('SPARQL 1.1 bind', () => {
         let algebra = translate(sparql);
         let expected =
                 AE(A.PROJECT, [
-                    AE(A.TO_MULTISET, [ AE(A.PROJECT, [
+                    AE(A.PROJECT, [
                         AE(A.JOIN, [
                             AE(A.BGP, [ T('?s', '?p', '?o') ]),
-                            AE(A.TO_MULTISET, [ AE(A.TABLE, [ AE(A.VARS, [ '?o' ]), AE(A.ROW, [ [ '?o', 'http://example.org/b' ] ]) ]) ])
+                            AE(A.TABLE, [ AE(A.VARS, [ '?o' ]), AE(A.ROW, [ [ '?o', 'http://example.org/b' ] ]) ])
                         ]),
-                        [ '?s', '?p', '?o' ] ])
-                    ]),
+                        [ '?s', '?p', '?o' ] ]),
                     [ '?s', '?o' ] ]);
         Util.compareAlgebras(expected, algebra);
     });
@@ -80,7 +79,7 @@ describe('SPARQL 1.1 bind', () => {
                 AE(A.PROJECT, [
                     AE(A.JOIN, [
                         AE(A.BGP, [ T('?book', 'http://purl.org/dc/elements/1.1/title', '?title'), T('?book', 'http://example.org/ns#price', '?price') ]),
-                        AE(A.TO_MULTISET, [ AE(A.TABLE, [ AE(A.VARS, [ '?book' ]), AE(A.ROW, [ [ '?book', 'http://example.org/book/book1' ] ]) ]) ])
+                        AE(A.TABLE, [ AE(A.VARS, [ '?book' ]), AE(A.ROW, [ [ '?book', 'http://example.org/book/book1' ] ]) ])
                     ]),
                     [ '?book', '?title', '?price' ]
                 ]);
@@ -101,7 +100,7 @@ describe('SPARQL 1.1 bind', () => {
                 AE(A.PROJECT, [
                     AE(A.JOIN, [
                         AE(A.BGP, [ T('?s', '?p1', '?o1'), T('?s', '?p2', '?o2') ]),
-                        AE(A.TO_MULTISET, [ AE(A.TABLE, [ AE(A.VARS, [ '?o1', '?o2' ]), AE(A.ROW, [ [ '?o1', '"Alan"' ] ]) ]) ])
+                        AE(A.TABLE, [ AE(A.VARS, [ '?o1', '?o2' ]), AE(A.ROW, [ [ '?o1', '"Alan"' ] ]) ])
                     ]),
                     [ '?s', '?o1', '?o2' ]
                 ]);
@@ -123,7 +122,7 @@ describe('SPARQL 1.1 bind', () => {
                 AE(A.PROJECT, [
                     AE(A.JOIN, [
                         AE(A.BGP, [ T('?s', '?p1', '?o1'), T('?s', '?p2', '?o2') ]),
-                        AE(A.TO_MULTISET, [ AE(A.TABLE, [ AE(A.VARS, [ '?o1', '?o2' ]), AE(A.ROW, [ [ '?o2', '"Alan"' ] ]), AE(A.ROW, [ [ '?o1', 'http://example.org/b' ] ]) ]) ])
+                        AE(A.TABLE, [ AE(A.VARS, [ '?o1', '?o2' ]), AE(A.ROW, [ [ '?o2', '"Alan"' ] ]), AE(A.ROW, [ [ '?o1', 'http://example.org/b' ] ]) ])
                     ]),
                     [ '?s', '?o1', '?o2' ]
                 ]);
@@ -148,7 +147,7 @@ describe('SPARQL 1.1 bind', () => {
                             AE(A.BGP, [ T('?s', '?p1', '?o1') ]),
                             AE(A.BGP, [ T('?s', 'http://xmlns.com/foaf/0.1/knows', '?o2') ]),
                             true ]),
-                        AE(A.TO_MULTISET, [ AE(A.TABLE, [ AE(A.VARS, [ '?o2' ]), AE(A.ROW, [ [ '?o2', 'http://example.org/b' ] ]) ]) ])
+                        AE(A.TABLE, [ AE(A.VARS, [ '?o2' ]), AE(A.ROW, [ [ '?o2', 'http://example.org/b' ] ]) ])
                     ]),
                     [ '?s', '?o1', '?o2' ]
                 ]);

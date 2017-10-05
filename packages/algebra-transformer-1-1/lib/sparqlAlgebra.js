@@ -7,8 +7,6 @@ const SparqlParser = require('sparqljs').Parser;
 const algebra = require('./algebra');
 
 const Algebra = algebra.Algebra;
-const AlgebraElement = algebra.AlgebraElement;
-const Triple = algebra.Triple;
 
 
 // ---------------------------------- END HELPER CLASSES ----------------------------------
@@ -19,15 +17,20 @@ let varCount = 0;
 
 function createAlgebraElement (symbol, args)
 {
-    return new AlgebraElement(symbol, args);
+    return _.extend({name: symbol}, args);
+}
+
+function createExpression (operator, args)
+{
+    // TODO: support for known operators
+    return {operator, args}
 }
 
 function createTriple (subject, predicate, object)
 {
-    // can also be a path expression
-    if (subject.symbol === 'path')
-        return subject;
-    
+    if (subject.name)
+        throw new Error ('Input is already an object');
+
     // first parameter is a triple object
     if (subject.subject && subject.predicate && subject.object)
     {
@@ -35,7 +38,11 @@ function createTriple (subject, predicate, object)
         object = subject.object;
         subject = subject.subject;
     }
-    return new Triple(subject, predicate, object);
+
+    if (predicate.name)
+        return createAlgebraElement(Algebra.PATH, {subject, predicate, object});
+
+    return createAlgebraElement(Algebra.TRIPLE, {subject, predicate, object});
 }
 
 // generate an unused variable name
@@ -158,10 +165,6 @@ function translateGraphPattern (thingy)
     if (_.isArray(thingy))
         return thingy.map(subthingy => translateGraphPattern(subthingy) );
 
-    // ignore if already parsed
-    if (thingy.symbol)
-        return thingy;
-
     // make sure optional and minus have group subelement (needs to be done before recursion)
     if (thingy.type === 'optional' || thingy.type === 'minus')
         thingy = { type: thingy.type, patterns: [{ type: 'group', patterns: thingy.patterns }] };
@@ -178,7 +181,7 @@ function translateGraphPattern (thingy)
 
     // update expressions to algebra format (done here since they are used in both filters and binds)
     if (thingy.type === 'operation')
-        thingy = createAlgebraElement(thingy.operator, thingy.args);
+        thingy = createExpression(thingy.operator, thingy.args);
 
     // 18.2.2.1
     // already done by sparql parser
@@ -188,16 +191,16 @@ function translateGraphPattern (thingy)
     let nonfilters = [];
     if (thingy.type === 'filter')
     {
-        if (thingy.expression.symbol === 'notexists')
-            thingy = { type: thingy.type, expression: createAlgebraElement(Algebra.FN_NOT, [ createAlgebraElement(Algebra.EXISTS, thingy.expression.args) ]) };
-        thingy = createAlgebraElement('_filter', [ thingy.expression ]); // _filter since it doesn't really correspond to the 'filter' from the spec here
+        if (thingy.expression.operator === 'notexists')
+            thingy = { type: thingy.type, expression: createExpression(Algebra.FN_NOT, [ createExpression(Algebra.EXISTS, thingy.expression.args) ]) };
+        thingy = createAlgebraElement('_filter', { expr: thingy.expression }); // _filter since it doesn't really correspond to the 'filter' from the spec here
     }
     else if (thingy.patterns)
     {
         for (let pattern of thingy.patterns)
         {
-            if (pattern.symbol === '_filter')
-                filters.push(pattern.args[0]); // we only need the expression, we already know they are filters now
+            if (pattern.name === '_filter')
+                filters.push(pattern.expr); // we only need the expression, we already know they are filters now
             else
                 nonfilters.push(pattern);
         }
@@ -223,13 +226,15 @@ function translateGraphPattern (thingy)
     {
         let join = [];
         let bgp = [];
-        for (let triple of thingy.triples.map(createTriple))
+        for (let triple of thingy.triples)
         {
-            if (triple.symbol === Algebra.PATH)
+            if (!triple.name)
+                triple = createTriple(triple);
+            if (triple.name === Algebra.PATH)
             {
                 if (bgp.length > 0)
                 {
-                    join.push(createAlgebraElement(Algebra.BGP, bgp));
+                    join.push(createAlgebraElement(Algebra.BGP, { patterns: bgp }));
                     bgp = [];
                 }
                 join.push(triple);
@@ -238,11 +243,11 @@ function translateGraphPattern (thingy)
                 bgp.push(triple);
         }
         if (bgp.length > 0)
-            join.push(createAlgebraElement(Algebra.BGP, bgp));
+            join.push(createAlgebraElement(Algebra.BGP, { patterns: bgp }));
         if (join.length === 1)
             thingy = join[0];
         else
-            thingy = join.reduce((acc, item) => createAlgebraElement(Algebra.JOIN, [acc, item]));
+            thingy = join.reduce((acc, item) => createAlgebraElement(Algebra.JOIN, { left: acc, right: item }));
     }
 
     // 18.2.2.6
@@ -252,10 +257,10 @@ function translateGraphPattern (thingy)
     {
         // need to handle this separately here since the filters need to be in the graph
         thingy = translateGraphGraphPattern(thingy);
-        
+
         if (filters.length > 0)
         {
-            thingy.args[1] = createAlgebraElement(Algebra.FILTER, [translateFilters(filters), thingy.args[1]]);
+            thingy.op = createAlgebraElement(Algebra.FILTER, { expr: translateFilters(filters), op: thingy.op });
             filters = [];
         }
     }
@@ -271,7 +276,7 @@ function translateGraphPattern (thingy)
     
     // 18.2.2.7
     if (filters.length > 0)
-        thingy = createAlgebraElement(Algebra.FILTER, [translateFilters(filters), thingy]);
+        thingy = createAlgebraElement(Algebra.FILTER, { expr: translateFilters(filters), op: thingy });
 
     return thingy;
 }
@@ -283,34 +288,34 @@ function simplify (thingy)
         return thingy;
     if (_.isArray(thingy))
         return thingy.map(subthingy => simplify(subthingy));
-    
-    if (!thingy.symbol)
+
+    if (!thingy.name && !thingy.operator)
         throw new Error("Expected translated input.");
     
-    if (thingy.symbol === Algebra.BGP)
+    if (thingy.name === Algebra.BGP)
         return thingy;
     
-    if (thingy.symbol === Algebra.JOIN)
+    if (thingy.name === Algebra.JOIN)
     {
-        if (thingy.args.length !== 2)
-            throw new Error("Expected 2 args for 'join' element.");
-        if (thingy.args[0].symbol === Algebra.BGP && thingy.args[0].args.length === 0)
-            return thingy.args[1];
-        else if (thingy.args[1].symbol === Algebra.BGP && thingy.args[1].args.length === 0)
-            return thingy.args[0];
+        if (thingy.left.name === Algebra.BGP && thingy.left.patterns.length === 0)
+            return thingy.right;
+        else if (thingy.right.name === Algebra.BGP && thingy.right.patterns.length === 0)
+            return thingy.left;
     }
 
-    return createAlgebraElement(thingy.symbol, simplify(thingy.args));
+    for (let key of Object.keys(thingy))
+        thingy[key] = simplify(thingy[key]);
+    return thingy;
 }
 
 // ---------------------------------- TRANSLATE GRAPH PATTERN HELPER FUNCTIONS ----------------------------------
 function translatePathExpression (pathExp, translatedItems)
 {
     let res = null;
-    let items = translatedItems.map(item => _.isString(item) ? createAlgebraElement(Algebra.LINK, [ item ]) : item);
+    let items = translatedItems.map(item => _.isString(item) ? createAlgebraElement(Algebra.LINK, { iri: item }) : item);
 
     if (pathExp.pathType === '^')
-        res = createAlgebraElement(Algebra.INV, items);
+        res = createAlgebraElement(Algebra.INV, { path: items[0] });
     else if (pathExp.pathType === '!')
     {
         let normals = [];
@@ -319,54 +324,50 @@ function translatePathExpression (pathExp, translatedItems)
             throw new Error("Expected exactly 1 item for '!' path operator.");
         let item = items[0];
 
-        if (item.symbol === Algebra.LINK)
+        if (item.name === Algebra.LINK)
             normals.push(item);
-        else if (item.symbol === Algebra.INV)
+        else if (item.name === Algebra.INV)
         {
             if (item.items.length !== 1)
                 throw new Error("Expected exactly 1 item for '^' path operator.");
             inverted.push(item.items[0]);
         }
-        else if (item.symbol === Algebra.ALT)
+        else if (item.name === Algebra.ALT)
         {
-            for (let option of item.args)
+            for (let option of [item.left, item.right])
             {
-                if (option.symbol === Algebra.INV)
-                {
-                    if (option.args.length !== 1)
-                        throw new Error('Expected exactly 1 item for '^' path operator.');
-                    inverted.push(option.args[0]);
-                }
+                if (option.name === Algebra.INV)
+                    inverted.push(option.path);
                 else
                     normals.push(option);
             }
         }
 
-        let normalElement = createAlgebraElement(Algebra.NPS, normals);
-        let invertedElement = createAlgebraElement(Algebra.INV, [ createAlgebraElement(Algebra.NPS, inverted) ]);
+        let normalElement = createAlgebraElement(Algebra.NPS, { iris: normals });
+        let invertedElement = createAlgebraElement(Algebra.INV, { path: createAlgebraElement(Algebra.NPS, { iris: inverted }) });
 
         if (inverted.length === 0)
             res = normalElement;
         else if (normals.length === 0)
             res = invertedElement;
         else
-            res = createAlgebraElement(Algebra.ALT, [ normalElement, invertedElement ]);
+            res = createAlgebraElement(Algebra.ALT, { left: normalElement, right: invertedElement });
     }
 
     else if (pathExp.pathType === '/')
     {
         if (items.length < 2)
             throw new Error('Expected at least 2 items for '/' path operator.');
-        res = items.reduce((acc, v) => createAlgebraElement(Algebra.SEQ, [acc, v]));
+        res = items.reduce((acc, v) => createAlgebraElement(Algebra.SEQ, { left: acc, right: v }));
     }
     else if (pathExp.pathType === '|')
-        res = items.reduce((acc, v) => createAlgebraElement(Algebra.ALT, [acc, v]));
+        res = items.reduce((acc, v) => createAlgebraElement(Algebra.ALT, { left: acc, right: v }));
     else if (pathExp.pathType === '*')
-        res = createAlgebraElement(Algebra.ZERO_OR_MORE_PATH, items);
+        res = createAlgebraElement(Algebra.ZERO_OR_MORE_PATH, { path: items[0] });
     else if (pathExp.pathType === '+')
-        res = createAlgebraElement(Algebra.ONE_OR_MORE_PATH, items);
+        res = createAlgebraElement(Algebra.ONE_OR_MORE_PATH, { path: items[0] });
     else if (pathExp.pathType === '?')
-        res = createAlgebraElement(Algebra.ZERO_OR_ONE_PATH, items);
+        res = createAlgebraElement(Algebra.ZERO_OR_ONE_PATH, { path: items[0] });
 
     if (!res)
         throw new Error('Unable to translate path expression ' + pathExp);
@@ -377,33 +378,25 @@ function translatePathExpression (pathExp, translatedItems)
 function translatePath (pathTriple, translatedPredicate)
 {
     // assume path expressions have already been updated
-    if (!translatedPredicate.symbol)
+    if (!translatedPredicate.name)
         return [ pathTriple ];
     let pred = translatedPredicate;
     let res = null;
-    if (pred.symbol === Algebra.LINK)
+    if (pred.name === Algebra.LINK)
+        res = createTriple(pathTriple.subject, pred.iri, pathTriple.object);
+    else if (pred.name === Algebra.INV) // TODO: I think this applies to inv(path) instead of inv(iri) like the spec says, I might be wrong
     {
-        if (pred.args.length !== 1)
-            throw new Error("Expected exactly 1 argument for 'link' symbol.");
-        res = createTriple(pathTriple.subject, pred.args[0], pathTriple.object);
+        res = translatePath(createTriple(pathTriple.object, pathTriple.predicate, pathTriple.subject), pred.path);
     }
-    else if (pred.symbol === Algebra.INV) // TODO: I think this applies to inv(path) instead of inv(iri) like the spec says, I might be wrong
+    else if (pred.name === Algebra.SEQ)
     {
-        if (pred.args.length !== 1)
-            throw new Error("Expected exactly 1 argument for 'inv' symbol.");
-        res = translatePath(createTriple(pathTriple.object, pathTriple.predicate, pathTriple.subject), pred.args[0]);
-    }
-    else if (pred.symbol === Algebra.SEQ)
-    {
-        if (pred.args.length !== 2)
-            throw new Error("Expected exactly 2 arguments for 'seq' symbol.");
         let v = generateFreshVar();
-        let triple1 = createTriple(pathTriple.subject, pred.args[0], v);
-        let triple2 = createTriple(v, pred.args[1], pathTriple.object);
+        let triple1 = createTriple(pathTriple.subject, pred.left, v);
+        let triple2 = createTriple(v, pred.right, pathTriple.object);
         res = translatePath(triple1, triple1.predicate).concat(translatePath(triple2, triple2.predicate));
     }
     else
-        res = createAlgebraElement(Algebra.PATH, [ pathTriple.subject, pathTriple.predicate, pathTriple.object ]);
+        res = createAlgebraElement(Algebra.PATH, pathTriple);
 
     if (!_.isArray(res))
         res = [res];
@@ -418,12 +411,12 @@ function translateGroupOrUnionGraphPattern (group)
     
     return group.patterns.reduce((accumulator, pattern) =>
     {
-        if (!pattern.patterns)
+        if (pattern.type !== 'group' && pattern.type !== 'union')
             pattern = { type: 'group', patterns: [ pattern ]};
         pattern = translateGroupGraphPattern(pattern);
         if (!accumulator)
             return pattern;
-        return createAlgebraElement(Algebra.UNION, [ accumulator, pattern ]);
+        return createAlgebraElement(Algebra.UNION, { left: accumulator, right: pattern });
     }, null);
 }
 
@@ -431,7 +424,7 @@ function translateGraphGraphPattern (group)
 {
     if (group.patterns.length !== 1)
         throw new Error('Expected exactly 1 item for GraphGraphPattern.');
-    return createAlgebraElement(Algebra.GRAPH, [ group.name, group.patterns[0] ]);
+    return createAlgebraElement(Algebra.GRAPH, { graph: group.name, op: group.patterns[0] });
 }
 
 function accumulateGroupGraphPattern (G, E)
@@ -446,53 +439,50 @@ function accumulateGroupGraphPattern (G, E)
         if (E.patterns.length !== 1)
             throw new Error("Expected exactly 1 arg for 'optional'.");
         let A = E.patterns[0];
-        if (A.symbol === Algebra.FILTER)
-        {
-            if (A.args.length !== 2)
-                throw new Error("Expected exactly 2 args for 'filter'.");
-            G = createAlgebraElement(Algebra.LEFT_JOIN, [ G, A.args[1], A.args[0] ]);
-        }
+        if (A.name === Algebra.FILTER)
+            G = createAlgebraElement(Algebra.LEFT_JOIN, { left: G, right: A.op, expr: A.expr });
         else
-            G = createAlgebraElement(Algebra.LEFT_JOIN, [ G, A, true ]);
+            G = createAlgebraElement(Algebra.LEFT_JOIN, { left: G, right: A });
     }
     else if (E.type === Algebra.MINUS)
     {
         if (E.patterns.length !== 1)
             throw new Error('MINUS element should only have 1 arg at this point.');
-        G = createAlgebraElement(Algebra.MINUS, [ G, E.patterns[0] ]);
+        G = createAlgebraElement(Algebra.MINUS, { left: G, right: E.patterns[0] });
     }
     else if (E.type === 'bind')
-        G = createAlgebraElement(Algebra.EXTEND, [ G, E.variable, E.expression ]);
+        G = createAlgebraElement(Algebra.EXTEND, { op: G, var: E.variable, expr: E.expression });
     else
-        G = createAlgebraElement(Algebra.JOIN, [ G, E ]);
+        G = createAlgebraElement(Algebra.JOIN, { left: G, right: E });
     
     return G;
 }
 
 function translateGroupGraphPattern (group)
 {
-    return group.patterns.reduce(accumulateGroupGraphPattern, createAlgebraElement(Algebra.BGP, []));
+    return group.patterns.reduce(accumulateGroupGraphPattern, createAlgebraElement(Algebra.BGP, { patterns: [] }));
 }
 
 function translateInlineData (thingy)
 {
-    let values = thingy.values.map(entry =>
-    {
-        let vals = [];
-        for (let key of Object.keys(entry))
-            if (entry[key] !== undefined)
-                vals.push([key, entry[key]]);
-        return createAlgebraElement(Algebra.ROW, vals);
-    });
-    // parser doesn't keep track of variables on first line
+    // let values = thingy.values.map(entry =>
+    // {
+    //     let vals = [];
+    //     for (let key of Object.keys(entry))
+    //         if (entry[key] !== undefined)
+    //             vals.push([key, entry[key]]);
+    //     return createAlgebraElement(Algebra.ROW, vals);
+    // });
+    // // parser doesn't keep track of variables on first line
     let vars = thingy.values.length === 0 ? [] : Object.keys(thingy.values[0]);
-    vars = createAlgebraElement(Algebra.VARS, vars);
-    return createAlgebraElement(Algebra.TABLE, [vars].concat(values));
+    // vars = createAlgebraElement(Algebra.VARS, vars);
+    // return createAlgebraElement(Algebra.TABLE, [vars].concat(values));
+    return createAlgebraElement(Algebra.VALUES, { vars, bindings: thingy.values.map(binding => _.omitBy(binding, v => v === undefined)) });
 }
 
 function translateSubSelect (query)
 {
-    return createAlgebraElement(Algebra.TO_MULTISET, [ translate(query) ]);
+    return translate(query);
 }
 
 function translateFilters (filterExpressions)
@@ -505,17 +495,14 @@ function translateFilters (filterExpressions)
         if (_.isString(exp))
             return exp;
         if (exp.symbol)
-            return createAlgebraElement(exp.symbol, exp.args);
+            return createExpression(exp.symbol, exp.args);
         if (exp.function)
-            return createAlgebraElement(exp.function, exp.args);
+            return createExpression(exp.function, exp.args);
         if (exp.operator)
-            return createAlgebraElement(exp.operator, exp.args);
+            return createExpression(exp.operator, exp.args);
     });
-    
-    if (filterExpressions.length === 1)
-        return filterExpressions[0];
-    else
-        return createAlgebraElement('&&', filterExpressions);
+
+    return filterExpressions.reduce((acc, val) => createExpression('&&', [acc, val]));
 }
 
 // ---------------------------------- TRANSLATE AGGREGATES ----------------------------------
@@ -528,9 +515,9 @@ function translateAggregates (query, parsed, variables)
     let A = [];
     let E = [];
     if (query.group)
-        G = createAlgebraElement(Algebra.GROUP, [ query.group, res ]);
+        G = createAlgebraElement(Algebra.GROUP, { vars: query.group, op: res });
     else if (containsAggregate(query.variables) || containsAggregate(query.having) || containsAggregate(query.order))
-        G = createAlgebraElement(Algebra.GROUP, [ [], res ]);
+        G = createAlgebraElement(Algebra.GROUP, { vars: [], op: res });
 
     // TODO: not doing the sample stuff atm
     // TODO: more based on jena results than w3 spec (spec would require us to copy G multiple times)
@@ -542,8 +529,7 @@ function translateAggregates (query, parsed, variables)
         mapAggregates(query.order, A);
 
         // TODO: we use the jena syntax of adding aggregates as second argument to group
-        let aggregates = A.map(aggregate => createAlgebraElement(aggregate.variable, [aggregate.object]));
-        G.args.splice(1, 0, aggregates);
+        G.aggregates = A.map(aggregate => { return { var: aggregate.variable, aggregate: aggregate.object }});
 
         if (query.group)
         {
@@ -560,12 +546,12 @@ function translateAggregates (query, parsed, variables)
     if (query.having)
     {
         for (let filter of query.having)
-            res = createAlgebraElement(Algebra.FILTER, [ translateFilters(filter), res ]);
+            res = createAlgebraElement(Algebra.FILTER, { expr: translateFilters(filter), op: res });
     }
 
     // 18.2.4.3
     if (query.values)
-        res = createAlgebraElement(Algebra.JOIN, [ res, createAlgebraElement(Algebra.TO_MULTISET, [ translateInlineData(query) ]) ]);
+        res = createAlgebraElement(Algebra.JOIN, { left: res, right: translateInlineData(query) });
 
     // 18.2.4.4
     let PV = {};
@@ -591,26 +577,30 @@ function translateAggregates (query, parsed, variables)
 
     // TODO: Jena simplifies by having a list of extends
     for (let v of E)
-        res = createAlgebraElement(Algebra.EXTEND, [res, v.variable, v.expression]);
+        res = createAlgebraElement(Algebra.EXTEND, { op: res, var: v.variable, expr: v.expression });
 
     // 18.2.5
     //p = createAlgebraElement('tolist', [p]);
 
     // 18.2.5.1
     if (query.order)
-        res = createAlgebraElement(Algebra.ORDER_BY, [ res, query.order ]);
+        res = createAlgebraElement(Algebra.ORDER_BY, { op: res, conditions: query.order });
     // 18.2.5.2
-    res = createAlgebraElement(Algebra.PROJECT, [ res, Object.keys(PV) ]);
+    res = createAlgebraElement(Algebra.PROJECT, { op: res, vars: Object.keys(PV) });
     // 18.2.5.3
     if (query.distinct)
-        res = createAlgebraElement(Algebra.DISTINCT, [ res ]);
+        res = createAlgebraElement(Algebra.DISTINCT, { op: res });
     // 18.2.5.4
     if (query.reduced)
-        res = createAlgebraElement(Algebra.REDUCED, [ res ]);
+        res = createAlgebraElement(Algebra.REDUCED, { op: res });
     // 18.2.5.5
     // we use -1 to indiciate there is no limit
     if (query.offset || query.limit)
-        res = createAlgebraElement(Algebra.SLICE, [ query.offset || 0, query.limit || -1, res ]);
+    {
+        res = createAlgebraElement(Algebra.SLICE, { op: res, start: query.offset || 0 });
+        if (query.limit)
+            res.length = query.limit;
+    }
 
     // clean up unchanged objects
     res = translateExpressionsOperations(res);
@@ -700,24 +690,25 @@ function translateExpressionsOperations(thingy)
         return thingy;
 
     if (thingy.type === 'operation')
-        return createAlgebraElement(thingy.operator, thingy.args.map(subthingy => translateExpressionsOperations(subthingy)));
+        return createExpression(thingy.operator, thingy.args.map(subthingy => translateExpressionsOperations(subthingy)));
     
     if (thingy.type === 'functionCall')
-        return createAlgebraElement(thingy.function, thingy.args.map(subthingy => translateExpressionsOperations(subthingy)));
+        return createExpression(thingy.function, thingy.args.map(subthingy => translateExpressionsOperations(subthingy)));
 
     if (thingy.type === 'aggregate')
     {
-        let A = createAlgebraElement(thingy.aggregation, [ translateExpressionsOperations(thingy.expression) ]);
+        let A = createExpression(thingy.aggregation, [ translateExpressionsOperations(thingy.expression) ]);
+        // TODO: put this in object somewhere
         // this is specifically for group_concat
         if (thingy.separator && thingy.separator !== ' ')
-            A.args.unshift(createAlgebraElement(Algebra.SEPARATOR, [thingy.separator]));
+            A.args.unshift(createExpression(Algebra.SEPARATOR, [thingy.separator]));
         if (thingy.distinct)
-            A = createAlgebraElement(Algebra.DISTINCT, [ A ]);
+            A = createAlgebraElement(Algebra.DISTINCT, { op: A });
         return A;
     }
 
     if (thingy.descending)
-        return createAlgebraElement(Algebra.DESC, [ translateExpressionsOperations(thingy.expression) ]);
+        return createExpression(Algebra.DESC, [ translateExpressionsOperations(thingy.expression) ]);
 
     if (thingy.expression)
         return translateExpressionsOperations(thingy.expression);

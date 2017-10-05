@@ -35,6 +35,7 @@ const Algebra = Object.freeze({
     UNION:              'union',
     UNIT:               'unit',
     VARS:               'vars',
+    VALUES:             'values',
     ZERO_OR_MORE_PATH:  'ZeroOrMorePath',
     ZERO_OR_ONE_PATH:   'ZeroOrOnePath',
 });

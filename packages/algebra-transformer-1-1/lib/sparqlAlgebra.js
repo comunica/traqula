@@ -190,11 +190,7 @@ function translateGraphPattern (thingy)
     let filters = [];
     let nonfilters = [];
     if (thingy.type === 'filter')
-    {
-        if (thingy.expression.operator === 'notexists')
-            thingy = { type: thingy.type, expression: createExpression(Algebra.FN_NOT, [ createExpression(Algebra.EXISTS, thingy.expression.args) ]) };
         thingy = createAlgebraElement('_filter', { expr: thingy.expression }); // _filter since it doesn't really correspond to the 'filter' from the spec here
-    }
     else if (thingy.patterns)
     {
         for (let pattern of thingy.patterns)

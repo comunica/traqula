@@ -18,6 +18,7 @@ const Algebra = Object.freeze({
     LEFT_JOIN:          'leftjoin',
     LINK:               'link',
     MINUS:              'minus',
+    NOT_EXISTS:         'notexists',
     NPS:                'nps',
     ONE_OR_MORE_PATH:   'OneOrMorePath',
     ORDER_BY:           'orderby',

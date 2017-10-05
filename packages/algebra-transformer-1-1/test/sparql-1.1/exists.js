@@ -67,7 +67,7 @@ describe('SPARQL 1.1 exists', () => {
                 AE(A.PROJECT, [
                     AE(A.FILTER, [
                         AE(A.EXISTS, [ AE(A.FILTER, [
-                            AE(A.FN_NOT, [ AE(A.EXISTS, [ AE(A.BGP, [ T('?s', '?p', 'http://www.example.org/o2') ]) ]) ]),
+                            AE(A.NOT_EXISTS, [ AE(A.BGP, [ T('?s', '?p', 'http://www.example.org/o2') ]) ]),
                             AE(A.BGP, [ T('?s', '?p', 'http://www.example.org/o1') ]) ]) ]),
                         AE(A.BGP, [ T('?s', '?p', 'http://www.example.org/o') ])
                     ]),

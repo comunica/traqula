@@ -26,7 +26,6 @@ const Algebra = Object.freeze({
     PROJECT:            'project',
     REDUCED:            'reduced',
     ROW:                'row',
-    SEPARATOR:          'separator',
     SEQ:                'seq',
     SEQUENCE:           'sequence',
     SLICE:              'slice',

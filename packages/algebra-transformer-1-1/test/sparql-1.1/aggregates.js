@@ -246,7 +246,7 @@ describe('SPARQL 1.1 aggregates', () => {
                             AE(A.EXTEND, [
                                 AE(A.GROUP, [
                                     [],
-                                    [ { var: '?var0', aggregate: AE('group_concat', [ AE(A.SEPARATOR, [ ':' ]), '?o' ]) } ],
+                                    [ { var: '?var0', aggregate: { operator: 'group_concat', separator: ':', args: [ '?o' ] } } ],
                                     AE(A.BGP, [ T('_:b0', 'http://www.example.org/p1', '?o') ])
                                 ]),
                                 '?g',

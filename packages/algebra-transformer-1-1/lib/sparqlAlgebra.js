@@ -697,7 +697,7 @@ function translateExpressionsOperations(thingy)
         // TODO: put this in object somewhere
         // this is specifically for group_concat
         if (thingy.separator && thingy.separator !== ' ')
-            A.args.unshift(createExpression(Algebra.SEPARATOR, [thingy.separator]));
+            A.separator = thingy.separator;
         if (thingy.distinct)
             A = createAlgebraElement(Algebra.DISTINCT, { body: A });
         return A;

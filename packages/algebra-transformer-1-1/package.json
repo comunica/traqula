@@ -13,8 +13,11 @@
     "sparqljs": "^1.5.2"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.77",
+    "@types/node": "^8.0.34",
     "mocha": "^3.5.3",
-    "pre-commit": "^1.2.2"
+    "pre-commit": "^1.2.2",
+    "typescript": "^2.5.3"
   },
   "scripts": {
     "test": "mocha test"

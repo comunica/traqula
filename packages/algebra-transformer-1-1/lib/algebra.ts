@@ -74,7 +74,7 @@ export interface Expression extends Operator
 
 export interface Alt extends Double
 {
-    type: 'alt'
+    type: 'alt';
 }
 
 export interface Aggregate extends Operator

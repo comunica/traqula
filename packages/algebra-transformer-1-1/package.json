@@ -27,7 +27,8 @@
   ],
   "files": [
     "index.js",
-    "lib"
+    "lib/**/*.js",
+    "lib/**/*.d.ts"
   ],
   "main": "index.js"
 }

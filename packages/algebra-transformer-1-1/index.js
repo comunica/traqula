@@ -1,4 +1,8 @@
-
-let translate = require('./lib/sparqlAlgebra');
-
-module.exports = translate;
+"use strict";
+const translate = require("./lib/sparqlAlgebra");
+const Algebra = require("./lib/algebra");
+module.exports = {
+    translate,
+    Algebra
+};
+//# sourceMappingURL=index.js.map

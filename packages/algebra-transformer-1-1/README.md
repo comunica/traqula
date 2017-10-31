@@ -1,1 +1,93 @@
-SPARQL to SPARQL algebra converter.
+# SPARQL to SPARQL Algebra converter
+
+2 components get exposed: the **translate** function and the **Algebra** object,
+which contains all the output types that can occur.
+
+Note that this is still a work in progress so naming conventions could change.
+
+## Translate
+
+Input for the translate function should either be a SPARQL string
+or a result from calling [SPARQL.js](https://github.com/RubenVerborgh/SPARQL.js).
+
+```javascript
+const { translate } = require('sparqlalgebrajs');
+translate('SELECT * WHERE { ?x ?y ?z }');
+```
+Returns:
+```javascript
+{ type: 'project',
+  input: { type: 'bgp', patterns: [ 
+    { type: 'triple', subject: '?x', predicate: '?y', object: '?z' } ] },
+  variables: [ '?x', '?y', '?z' ] }
+```
+
+## Algebra object
+The algebra object contains a `types` object,
+which contains all possible values for the `type` field in the output results.
+Besides that it also contains all the TypeScript interfaces of the possible output results.
+The output of the `translate` function will always be an `Algebra.Operator` instance.
+
+## Deviations from the spec
+This implementation tries to stay as close to the SPARQL 1.1
+[specification](https://www.w3.org/TR/sparql11-query/#sparqlDefinition),
+but some changes were made for ease of use.
+These are mostly based on the Jena ARQ [implementation](https://jena.apache.org/documentation/query/).
+What follows is a non-exhaustive list of deviations:
+
+#### Named parameters
+This is the biggest visual change.
+The functions no longer take an ordered list of parameters but a named list instead.
+The reason for this is to prevent having to memorize the order of parameters and also
+due to seeing some differences between the spec and the Jena ARQ SSE output when ordering parameters.
+
+#### Multiset/List conversion
+The functions `toMultiset` and `toList` have been removed for brevity.
+Conversions between the two are implied by the operators used.
+
+#### VALUES
+For the VALUES block we return the following output:
+```
+PREFIX dc:   <http://purl.org/dc/elements/1.1/> 
+PREFIX :     <http://example.org/book/> 
+PREFIX ns:   <http://example.org/ns#> 
+
+SELECT ?book ?title ?price
+{
+   VALUES ?book { :book1 :book3 }
+   ?book dc:title ?title ;
+         ns:price ?price .
+}
+```
+```javascript
+{ type: 'project',
+  input: 
+   { type: 'join',
+     left: { type: 'values', 
+             variables: ['?book'],
+             bindings: [
+               { '?book': 'http://example.org/book/book1' },
+               { '?book': 'http://example.org/book/book3' },
+             ] },
+     right: { type: 'bgp', 
+              patterns: [
+                {
+                  type: 'triple',
+                  subject: '?book',
+                  predicate: 'http://purl.org/dc/elements/1.1/title',
+                  object: '?title'
+                },
+                {
+                  type: 'triple',
+                  subject: '?book',
+                  predicate: 'http://example.org/ns#price',
+                  object: '?price'
+                }
+              ] } },
+  variables: [ '?book', '?title', '?price' ] }
+```
+
+#### Differences from Jena ARQ
+Some differences from Jena (again, non-exhaustive):
+no prefixes are used (all uris get expanded)
+and the project operator always gets used (even in the case of `SELECT *`).

@@ -1,9 +1,7 @@
 
-import _ = require('lodash');
-
 // TODO: add aggregates?
 // TODO: can't find a way to use these values as string types in the interfaces
-export const Algebra = Object.freeze({
+export const types = Object.freeze({
     AGGREGATE:          'aggregate',
     ALT:                'alt',
     BGP:                'bgp',

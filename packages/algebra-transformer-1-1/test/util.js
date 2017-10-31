@@ -1,9 +1,9 @@
 
 const _ = require('lodash');
 const assert = require('assert');
-const algebra = require('../lib/algebra');
+const { types } = require('../lib/algebra');
 const translate = require('../lib/sparqlAlgebra');
-const Algebra = algebra.Algebra;
+const Algebra = types;
 
 class Util
 {

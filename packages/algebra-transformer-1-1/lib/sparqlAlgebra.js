@@ -6,7 +6,7 @@ const _ = require('lodash');
 const SparqlParser = require('sparqljs').Parser;
 const algebra = require('./algebra');
 
-const Algebra = algebra.Algebra;
+const Algebra = algebra.types;
 
 
 // ---------------------------------- END HELPER CLASSES ----------------------------------

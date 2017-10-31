@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 // TODO: add aggregates?
 // TODO: can't find a way to use these values as string types in the interfaces
-exports.Algebra = Object.freeze({
+exports.types = Object.freeze({
     AGGREGATE: 'aggregate',
     ALT: 'alt',
     BGP: 'bgp',

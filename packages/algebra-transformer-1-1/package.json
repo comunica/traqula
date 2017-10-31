@@ -1,6 +1,6 @@
 {
   "name": "SparqlAlgebraJS",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Convert SPARQL to SPARL algebra",
   "author": "Joachim Van Herwegen",
   "license": "MIT",

@@ -46,7 +46,7 @@ describe('SPARQL 1.1 group', () => {
                     AE(A.EXTEND, [
                         AE(A.GROUP, [
                             [ '?w' ],
-                            [ { var: '?var0', aggregate: AE('sample', [ '?v' ]) } ],
+                            [ AE(A.AGGREGATE, ['sample', '?v', '?var0']) ],
                             AE(A.LEFT_JOIN, [
                                 AE(A.BGP, [ T('?s', 'http://example/p', '?v') ]),
                                 AE(A.BGP, [ T('?s', 'http://example/q', '?w') ]),
@@ -77,7 +77,7 @@ describe('SPARQL 1.1 group', () => {
                         AE(A.EXTEND, [
                             AE(A.GROUP, [
                                 [ AE('coalesce', [ '?w', '"1605-11-05"^^http://www.w3.org/2001/XMLSchema#date' ]) ],
-                                [ { var: '?var0', aggregate: AE('sample', [ '?v' ]) } ],
+                                [ AE(A.AGGREGATE, ['sample', '?v', '?var0']) ],
                                 AE(A.LEFT_JOIN, [ AE(A.BGP, [ T('?s', 'http://example/p', '?v') ]), AE(A.BGP, [ T('?s', 'http://example/q', '?w') ]), true ])
                             ]),
                             '?X',

@@ -70,7 +70,7 @@ describe('SPARQL 1.1 subqueries', () => {
                             AE(A.EXTEND, [
                                 AE(A.GROUP, [
                                     [],
-                                    [ { var: '?var0', aggregate: AE('max', [ '?y' ]) } ],
+                                    [ AE(A.AGGREGATE, ['max', '?y', '?var0']) ],
                                     AE(A.BGP, [ T('?x', 'http://www.example.org/schema#p', '?y') ]) ]),
                                 '?max',
                                 '?var0' ]),

@@ -24,7 +24,7 @@ describe('SPARQL 1.1 aggregates', () => {
                     AE(A.EXTEND, [
                         AE(A.GROUP, [
                             [],
-                            [ { var: '?v', aggregate: AE('avg', [ '?o' ]) } ],
+                            [ AE(A.AGGREGATE, ['avg', '?o', '?v']) ],
                             AE(A.BGP, [ T('?s', 'http://www.example.org/dec', '?o') ])
                         ]),
                         '?avg',
@@ -51,7 +51,7 @@ describe('SPARQL 1.1 aggregates', () => {
                             AE('<=', [ '?v', '"2.0"^^http://www.w3.org/2001/XMLSchema#decimal' ]),
                             AE(A.GROUP, [
                                 [ '?s' ],
-                                [ { var: '?v', aggregate: AE('avg', [ '?o' ]) } ],
+                                [ AE(A.AGGREGATE, ['avg', '?o', '?v']) ],
                                 AE(A.BGP, [ T('?s', '?p', '?o') ])
                             ]),
                         ]),
@@ -74,7 +74,7 @@ describe('SPARQL 1.1 aggregates', () => {
                     AE(A.EXTEND, [
                         AE(A.GROUP, [
                             [ '?x' ],
-                            [ { var: '?v', aggregate: AE('max', [ '?value' ]) } ],
+                            [ AE(A.AGGREGATE, ['max', '?value', '?v']) ],
                             AE(A.BGP, [ T('?x', 'http://example.com/p', '?value') ])
                         ]),
                         '?max',
@@ -99,9 +99,9 @@ describe('SPARQL 1.1 aggregates', () => {
                             AE(A.GROUP, [
                                 [ '?g' ],
                                 [
-                                    { var: '?v0', aggregate: AE('avg', [ '?p' ]) },
-                                    { var: '?vMin', aggregate: AE('min', [ '?p' ]) },
-                                    { var: '?vMax', aggregate: AE('max', [ '?p' ]) },
+                                    AE(A.AGGREGATE, ['avg', '?p', '?v0']),
+                                    AE(A.AGGREGATE, ['min', '?p', '?vMin']),
+                                    AE(A.AGGREGATE, ['max', '?p', '?vMax']),
                                 ],
                                 AE(A.BGP, [ T('?g', 'http://example.com/data/#p', '?p') ])
                             ]),
@@ -131,11 +131,13 @@ describe('SPARQL 1.1 aggregates', () => {
                         AE(A.GROUP, [
                             [ '?g' ],
                             [
-                                { var: '?v', aggregate: AE('avg', [ AE('if', [
-                                    AE('isnumeric', [ '?p' ]),
-                                    '?p',
-                                    AE('coalesce', [ AE('http://www.w3.org/2001/XMLSchema#double', [ '?p' ]), '"0"^^http://www.w3.org/2001/XMLSchema#integer' ])
-                                ]) ]) },
+                                AE(A.AGGREGATE, [
+                                    'avg',
+                                    AE('if', [
+                                        AE('isnumeric', [ '?p' ]),
+                                        '?p',
+                                        AE('coalesce', [ AE('http://www.w3.org/2001/XMLSchema#double', [ '?p' ]), '"0"^^http://www.w3.org/2001/XMLSchema#integer' ]) ]),
+                                    '?v']),
                             ],
                             AE(A.BGP, [ T('?g', 'http://example.com/data/#p', '?p') ])
                         ]),
@@ -164,7 +166,7 @@ describe('SPARQL 1.1 aggregates', () => {
                             AE(A.EXTEND, [
                                 AE(A.GROUP, [
                                     [],
-                                    [ { var: '?v1', aggregate: AE('group_concat', [ '?o' ]) } ],
+                                    [ AE(A.AGGREGATE, ['group_concat', '?o', '?v1']) ],
                                     AE(A.BGP, [ T('_:b', 'http://www.example.org/p1', '?o')])
                                 ]),
                                 '?g',
@@ -195,7 +197,7 @@ describe('SPARQL 1.1 aggregates', () => {
                     AE(A.EXTEND, [
                         AE(A.GROUP, [
                             [],
-                            [ { var: '?vCount', aggregate: AE('count', [ '*' ]) } ],
+                            [ AE(A.AGGREGATE, ['count', '*', '?vCount']) ],
                             AE(A.FILTER, [
                                 AE('||', [
                                     AE('&&', [ AE('=', [ '?p', 'http://www.example.org/p1' ]), AE('||', [ AE('=', [ '?g', '"1 22"' ]), AE('=', [ '?g', '"22 1"' ]) ]) ]),
@@ -211,7 +213,7 @@ describe('SPARQL 1.1 aggregates', () => {
                                     AE(A.EXTEND, [
                                         AE(A.GROUP, [
                                             [ '?p' ],
-                                            [ { var: '?vGroup', aggregate: AE('group_concat', [ '?o' ]) } ],
+                                            [ AE(A.AGGREGATE, ['group_concat', '?o', '?vGroup']) ],
                                             AE(A.BGP, [ T('_:b', '?p', '?o') ])
                                         ]),
                                         '?g',
@@ -246,7 +248,7 @@ describe('SPARQL 1.1 aggregates', () => {
                             AE(A.EXTEND, [
                                 AE(A.GROUP, [
                                     [],
-                                    [ { var: '?var0', aggregate: { operator: 'group_concat', separator: ':', args: [ '?o' ] } } ],
+                                    [ AE(A.AGGREGATE, ['group_concat', '?o', ':', '?v0']) ],
                                     AE(A.BGP, [ T('_:b0', 'http://www.example.org/p1', '?o') ])
                                 ]),
                                 '?g',
@@ -284,7 +286,7 @@ describe('SPARQL 1.1 aggregates', () => {
                             AE(A.EXTEND, [
                                 AE(A.GROUP, [
                                     [  ],
-                                    [ { var: '?var0', aggregate: AE('sample', [ '?o' ]) } ],
+                                    [ AE(A.AGGREGATE, ['sample', '?o', '?var0']) ],
                                     AE(A.BGP, [ T('?s', 'http://www.example.org/dec', '?o') ]) ]),
                                 '?sample',
                                 '?var0'
@@ -311,7 +313,7 @@ describe('SPARQL 1.1 aggregates', () => {
                             AE('>', [ '?var0', '"2"^^http://www.w3.org/2001/XMLSchema#integer' ]),
                             AE(A.GROUP, [
                                 [ '?P' ],
-                                [ { var: '?var0', aggregate: AE('count', [ '?O' ]) } ],
+                                [ AE(A.AGGREGATE, ['count', '?O', '?var0']) ],
                                 AE(A.BGP, [ T('?S', '?P', '?O') ])
                             ])
                         ]),
@@ -336,7 +338,7 @@ describe('SPARQL 1.1 aggregates', () => {
                             AE(A.EXTEND, [
                                 AE(A.GROUP, [
                                     [ AE('+', [ '?O1', '?O2' ]) ],
-                                    [ { var: '?var0', aggregate: AE('count', [ '?O1' ]) } ],
+                                    [ AE(A.AGGREGATE, ['count', '?O1', '?var0']) ],
                                     AE(A.BGP, [ T('?S', 'http://www.example.org/p', '?O1'), T('?S', 'http://www.example.org/q', '?O2') ])
                                 ]),
                                 '?O12',
@@ -366,7 +368,7 @@ describe('SPARQL 1.1 aggregates', () => {
                             AE(A.EXTEND, [
                                 AE(A.GROUP, [
                                     [ AE('+', [ '?O1', '?O2' ]) ],
-                                    [ { var: '?var0', aggregate: AE('count', [ '?O1' ]) } ],
+                                    [ AE(A.AGGREGATE, ['count', '?O1', '?var0']) ],
                                     AE(A.BGP, [ T('?S', 'http://www.example.org/p', '?O1'), T('?S', 'http://www.example.org/q', '?O2') ])
                                 ]),
                                 '?O12',

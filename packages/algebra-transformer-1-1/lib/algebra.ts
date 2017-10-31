@@ -2,7 +2,9 @@
 import _ = require('lodash');
 
 // TODO: add aggregates?
-const Algebra = Object.freeze({
+// TODO: can't find a way to use these values as string types in the interfaces
+export const Algebra = Object.freeze({
+    AGGREGATE:          'aggregate',
     ALT:                'alt',
     BGP:                'bgp',
     DESC:               'desc',
@@ -42,25 +44,27 @@ const Algebra = Object.freeze({
 
 // ----------------------- ABSTRACTS -----------------------
 
-export abstract class Operator
+export interface Operator
 {
     type: string;
-
-    constructor (type: string)
-    {
-        this.type = type;
-    }
 }
 
-export interface Single
+export interface Single extends Operator
 {
     input: Operator;
 }
 
-export interface Double
+export interface Double extends Operator
 {
     left: Operator;
     right: Operator;
+}
+
+export interface Expression extends Operator
+{
+    type: 'expression'
+    symbol: string;
+    args: (Expression|string)[]; // TODO: could find cleaner solution (string is needed for variables)
 }
 
 // TODO: currently not differentiating between lists and multisets
@@ -68,255 +72,165 @@ export interface Double
 // ----------------------- ACTUAL FUNCTIONS -----------------------
 
 
-export class Aggregator extends Operator implements Single
+export interface Alt extends Double
 {
-    symbol: string;
-    input: Expression; // TODO: this means variables also need to be expressions...
-
-    constructor (symbol: string, input: Expression)
-    {
-        super('aggregator');
-        this.symbol = symbol;
-        this.input = input;
-    }
+    type: 'alt'
 }
 
-export class BoundAggregator extends Aggregator
+export interface Aggregate extends Operator
+{
+    type: 'aggregate';
+    symbol: string;
+    expression: Expression|string; // TODO: eh... (needed for vars)
+}
+
+export interface BoundAggregate extends Aggregate
 {
     variable: string;
-
-    constructor (variable: string, symbol: string, input: Expression)
-    {
-        super(symbol, input);
-        this.variable = variable;
-    }
 }
 
-export class Bgp extends Operator
+export interface Bgp extends Operator
 {
+    type: 'bgp';
     // TODO: update to rdf js instead of own object
     patterns: Triple[];
-
-    constructor (patterns: Triple[])
-    {
-        super(Algebra.BGP);
-        this.patterns = patterns;
-    }
 }
 
-export class Distinct extends Operator implements Single
+export interface Distinct extends Single
 {
-    input: Operator;
-
-    constructor (input: Operator)
-    {
-        super(Algebra.DISTINCT);
-        this.input = input;
-    }
+    type: 'distinct';
 }
 
-export class Expression extends Operator
+export interface Extend extends Single
 {
-    symbol: string;
-    args: Expression[]; // TODO: this means variables also need to be expressions...
-
-    constructor (symbol: string, args: Expression[])
-    {
-        super('expression');
-        this.symbol = symbol;
-        this.args = args;
-    }
-}
-
-export class Extend extends Operator implements Single
-{
-    input: Operator;
+    type: 'extend';
     variable: string;
     expression: Expression;
-
-    constructor (input: Operator, variable: string, expression: Expression)
-    {
-        super(Algebra.EXTEND);
-        this.input = input;
-        this.variable = variable;
-        this.expression = expression;
-    }
 }
 
-export class Filter extends Operator implements Single
+export interface Filter extends Single
 {
-    input: Operator;
+    type: 'filter';
     expression: Expression;
-
-    constructor (input: Operator, expression: Expression)
-    {
-        super(Algebra.FILTER);
-        this.input = input;
-        this.expression = expression;
-    }
 }
 
-export class Graph extends Operator implements Single
+export interface Graph extends Single
 {
-    input: Operator;
+    type: 'graph';
     graph: string;
-
-    constructor (input: Operator, graph: string)
-    {
-        super(Algebra.GRAPH);
-        this.input = input;
-        this.graph = graph;
-    }
 }
 
-export class Group extends Operator implements Single
+export interface Group extends Single
 {
-    input: Operator;
+    type: 'group';
     variables: string[];
-    aggregators: BoundAggregator[];
-
-    constructor (input: Operator, variables: string[], aggregators: BoundAggregator[])
-    {
-        super(Algebra.GROUP);
-        this.input = input;
-        this.variables = variables;
-        this.aggregators = aggregators;
-    }
+    aggregators: BoundAggregate[];
 }
 
-export class Join extends Operator implements Double
+export interface Inv extends Operator
 {
-    left: Operator;
-    right: Operator;
-
-    constructor (left: Operator, right: Operator)
-    {
-        super(Algebra.JOIN);
-        this.left = left;
-        this.right = right;
-    }
+    type: 'inv';
+    path: Operator;
 }
 
-export class LeftJoin extends Operator implements Double
+export interface Join extends Double
 {
-    left: Operator;
-    right: Operator;
+    type: 'join'
+}
+
+export interface LeftJoin extends Double
+{
+    type: 'leftjoin';
     expression: Expression;
-
-    constructor (left: Operator, right: Operator, expression?: Expression)
-    {
-        super(Algebra.LEFT_JOIN);
-        this.left = left;
-        this.right = right;
-        this.expression = expression;
-    }
 }
 
-export class Minus extends Operator implements Double
+export interface Link extends Operator
 {
-    left: Operator;
-    right: Operator;
-
-    constructor (left: Operator, right: Operator)
-    {
-        super(Algebra.MINUS);
-        this.left = left;
-        this.right = right;
-    }
+    type: 'link';
+    iri: string;
 }
 
-export class OrderBy extends Operator implements Single
+export interface Minus extends Double
 {
-    input: Operator;
+    type: 'minus';
+}
+
+export interface Nps extends Operator
+{
+    type: 'nps';
+    iris: string[];
+}
+
+export interface OneOrMorePath extends Operator
+{
+    type: 'OneOrMorePath';
+    path: Operator;
+}
+
+export interface OrderBy extends Single
+{
+    type: 'orderby';
     expressions: Expression[];
-
-    constructor (input: Operator, expressions: Expression[])
-    {
-        super(Algebra.ORDER_BY);
-        this.input = input;
-        this.expressions = expressions;
-    }
 }
 
-export class Project extends Operator implements Single
+export interface Path extends Operator
 {
-    input: Operator;
+    type: 'path';
+    path: Operator;
+}
+
+export interface Project extends Single
+{
+    type: 'project';
     variables: String[];
-
-    constructor (input: Operator, variables: string[])
-    {
-        super(Algebra.PROJECT);
-        this.input = input;
-        this.variables = variables;
-    }
 }
 
-export class Reduced extends Operator implements Single
+export interface Reduced extends Single
 {
+    type: 'reduced';
     input: Operator;
-
-    constructor (input: Operator)
-    {
-        super(Algebra.REDUCED);
-        this.input = input;
-    }
 }
 
-export class Slice extends Operator implements Single
+export interface Seq extends Double
 {
-    input: Operator;
+    type: 'seq'
+}
+
+export interface Slice extends Single
+{
+    type: 'slice';
     start: number;
     length: number;
-
-    constructor (input: Operator, start: number, length: number)
-    {
-        super(Algebra.SLICE);
-        this.input = input;
-        this.start = start;
-        if (length)
-            this.length = length;
-        else
-            this.length = Infinity;
-    }
 }
 
-export class Union extends Operator implements Double
+export interface Union extends Double
 {
-    left: Operator;
-    right: Operator;
-
-    constructor (left: Operator, right: Operator)
-    {
-        super(Algebra.UNION);
-        this.left = left;
-        this.right = right;
-    }
+    type: 'union';
 }
 
-export class Values extends Operator
+export interface Values extends Operator
 {
+    type: 'values';
     variables: string[];
     bindings: any[];
-
-    constructor (variables: string[], bindings: any[])
-    {
-        super(Algebra.VALUES);
-        this.variables = variables;
-        this.bindings = bindings;
-    }
 }
 
-export class Triple extends Operator
+export interface ZeroOrMorePath extends Operator
 {
+    type: 'ZeroOrMorePath';
+    path: Operator;
+}
+
+export interface ZeroOrOnePath extends Operator
+{
+    type: 'ZeroOrOnePath';
+    path: Operator;
+}
+
+export interface Triple extends Operator
+{
+    type: 'triple';
     subject: string;
     predicate: string;
     object: string;
-
-    constructor (subject: string, predicate: string, object: string)
-    {
-        super(Algebra.TRIPLE);
-        this.subject = subject;
-        this.predicate = predicate;
-        this.object = object;
-    }
 }

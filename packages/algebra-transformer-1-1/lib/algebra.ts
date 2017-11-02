@@ -8,6 +8,7 @@ export const types = Object.freeze({
     DESC:               'desc',
     DISTINCT:           'distinct',
     EXISTS:             'exists',
+    EXPRESSION:         'expression',
     EXTEND:             'extend',
     FILTER:             'filter',
     FN_NOT:             'fn:not',
@@ -79,6 +80,7 @@ export interface Aggregate extends Operator
 {
     type: 'aggregate';
     symbol: string;
+    separator?: string; // used by GROUP_CONCAT
     expression: Expression|string; // TODO: eh... (needed for vars)
 }
 
@@ -122,7 +124,7 @@ export interface Group extends Single
 {
     type: 'group';
     variables: string[];
-    aggregators: BoundAggregate[];
+    aggregates: BoundAggregate[];
 }
 
 export interface Inv extends Operator
@@ -174,7 +176,9 @@ export interface OrderBy extends Single
 export interface Path extends Operator
 {
     type: 'path';
-    path: Operator;
+    subject: Operator;
+    predicate: Operator;
+    object: Operator;
 }
 
 export interface Project extends Single

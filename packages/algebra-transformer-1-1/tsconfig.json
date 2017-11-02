@@ -12,7 +12,8 @@
   },
   "include": [
     "index.ts",
-    "lib/algebra.ts"
+    "lib/algebra.ts",
+    "test/util.ts"
   ],
   "exclude": [
     "node_modules"

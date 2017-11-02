@@ -690,6 +690,7 @@ function translateExpressionsOperations(thingy)
     if (_.isString(thingy))
         return thingy;
     
+    // TODO: different types for operation and functionCall
     if (thingy.type === 'operation' && thingy.operator)
         return createExpression(thingy.operator, thingy.args.map(subthingy => translateExpressionsOperations(subthingy)));
     

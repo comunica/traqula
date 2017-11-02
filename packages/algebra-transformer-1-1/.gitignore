@@ -9,5 +9,5 @@ algebra.*
 !algebra.ts
 index.*
 !index.ts
-!util.ts
 util.*
+!util.ts

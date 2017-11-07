@@ -35,6 +35,26 @@ describe('SPARQL 1.1 exists', () => {
         Util.compareAlgebras(expected, algebra);
     });
     
+    it('Exists within graph pattern (quads)', () => {
+        let sparql = `prefix ex: <http://www.example.org/>
+                        select * where {
+                        graph ex:graph {
+                            ?s ?p ex:o1
+                            filter exists { ?s ?p ex:o2 }
+                        }
+                        }`;
+        let algebra = translate(sparql, true);
+        let expected =
+                AE(A.PROJECT, [
+                    AE(A.FILTER, [
+                        AE(A.EXISTS, [ AE(A.BGP, [ Util.quad('?s', '?p', 'http://www.example.org/o2', 'http://www.example.org/graph') ]) ]),
+                        AE(A.BGP, [ Util.quad('?s', '?p', 'http://www.example.org/o1', 'http://www.example.org/graph') ])
+                    ]),
+                    [ '?s', '?p' ]
+                ]);
+        Util.compareAlgebras(expected, algebra);
+    });
+    
     it('Nested positive exists', () => {
         let sparql = `prefix ex: <http://www.example.org/>
                         select * where {

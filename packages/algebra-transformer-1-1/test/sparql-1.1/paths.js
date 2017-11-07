@@ -70,6 +70,22 @@ describe('SPARQL 1.1 paths', () => {
         Util.compareAlgebras(expected, algebra);
     });
     
+    it('(pp06) Path with two graphs (quads)', () => {
+        let sparql = `prefix ex: <http://www.example.org/schema#>
+                        prefix in: <http://www.example.org/instance#>
+                        
+                        select ?x where {
+                            graph ?g {in:a ex:p1/ex:p2 ?x}
+                        }`;
+        let algebra = translate(sparql, true);
+        let expected =
+                AE(A.PROJECT, [
+                    AE(A.BGP, [ Util.quad('http://www.example.org/instance#a', 'http://www.example.org/schema#p1', '?var0', '?g'),
+                                Util.quad('?var0', 'http://www.example.org/schema#p2', '?x', '?g') ]),
+                    [ '?x' ] ]);
+        Util.compareAlgebras(expected, algebra);
+    });
+    
     it('(pp08) Reverse path', () => {
         let sparql = `prefix ex: <http://www.example.org/schema#>
                         prefix in: <http://www.example.org/instance#>

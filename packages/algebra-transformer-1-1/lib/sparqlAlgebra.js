@@ -14,6 +14,7 @@ const Algebra = algebra.types;
 
 let variables = {};
 let varCount = 0;
+let useQuads = false;
 
 function createAlgebraElement (symbol, args)
 {
@@ -47,9 +48,9 @@ function createTriple (subject, predicate, object)
     }
     
     if (predicate.type)
-        return createAlgebraElement(Algebra.PATH, {subject, predicate, object});
+        return createAlgebraElement(useQuads ? Algebra.QUAD_PATH : Algebra.PATH, {subject, predicate, object});
     
-    return createAlgebraElement(Algebra.TRIPLE, {subject, predicate, object});
+    return createAlgebraElement(useQuads ? Algebra.QUAD_PATTERN : Algebra.TRIPLE_PATTERN, {subject, predicate, object});
 }
 
 // generate an unused variable name
@@ -63,10 +64,11 @@ function generateFreshVar ()
 }
 
 // ---------------------------------- TRANSLATE ----------------------------------
-function translate (sparql)
+function translate (sparql, quads)
 {
     variables = {};
     varCount = 0;
+    useQuads = quads;
     if (_.isString(sparql))
     {
         let parser = new SparqlParser();
@@ -233,7 +235,7 @@ function translateGraphPattern (thingy)
         {
             if (!triple.type)
                 triple = createTriple(triple);
-            if (triple.type === Algebra.PATH)
+            if (triple.type === Algebra.PATH || triple.type === Algebra.QUAD_PATH)
             {
                 if (bgp.length > 0)
                 {
@@ -259,13 +261,8 @@ function translateGraphPattern (thingy)
     if (thingy.type === 'graph')
     {
         // need to handle this separately here since the filters need to be in the graph
-        thingy = translateGraphGraphPattern(thingy);
-        
-        if (filters.length > 0)
-        {
-            thingy.input = createAlgebraElement(Algebra.FILTER, { expression: translateFilters(filters), input: thingy.input });
-            filters = [];
-        }
+        thingy = translateGraphGraphPattern(thingy, filters);
+        filters = [];
     }
     if (thingy.type === 'group')
         thingy = translateGroupGraphPattern(thingy);
@@ -397,7 +394,7 @@ function translatePath (pathTriple, translatedPredicate)
         res = translatePath(triple1, triple1.predicate).concat(translatePath(triple2, triple2.predicate));
     }
     else
-        res = createAlgebraElement(Algebra.PATH, pathTriple);
+        res = createTriple(pathTriple.subject, pathTriple.predicate, pathTriple.object);
     
     if (!_.isArray(res))
         res = [res];
@@ -421,11 +418,48 @@ function translateGroupOrUnionGraphPattern (group)
     }, null);
 }
 
-function translateGraphGraphPattern (group)
+function translateGraphGraphPattern (group, filters)
 {
     if (group.patterns.length !== 1)
         throw new Error('Expected exactly 1 item for GraphGraphPattern.');
-    return createAlgebraElement(Algebra.GRAPH, { graph: group.name, input: group.patterns[0] });
+    
+    let name = group.name;
+    let graph = createAlgebraElement(Algebra.GRAPH, { graph: name, input: group.patterns[0] });
+    
+    if (useQuads)
+        graph = applyGraph(graph.input, graph.graph);
+    
+    if (filters.length > 0)
+    {
+        let filterInput = translateFilters(filters);
+        // filters can contain BGPs!
+        if (useQuads)
+            graph = createAlgebraElement(Algebra.FILTER, { expression: applyGraph(filterInput, name), input: graph});
+        else
+            graph.input = createAlgebraElement(Algebra.FILTER, { expression: filterInput, input: graph.input });
+    }
+    
+    return graph;
+}
+
+function applyGraph (thingy, graph)
+{
+    if (_.isArray(thingy))
+        return thingy.map(subThingy => applyGraph(subThingy, graph));
+    
+    if (thingy.type)
+    {
+        if (thingy.type === Algebra.QUAD_PATTERN)
+            return Object.assign(thingy, { type: Algebra.QUAD_PATTERN, graph });
+        if (thingy.type === Algebra.QUAD_PATH)
+            return Object.assign(thingy, { type: Algebra.QUAD_PATH, graph });
+        
+        for (let key of Object.keys(thingy))
+            thingy[key] = applyGraph(thingy[key], graph);
+        return thingy;
+    }
+    
+    return thingy;
 }
 
 function accumulateGroupGraphPattern (G, E)
@@ -483,7 +517,7 @@ function translateInlineData (thingy)
 
 function translateSubSelect (query)
 {
-    return translate(query);
+    return translate(query, useQuads);
 }
 
 function translateFilters (filterExpressions)

@@ -26,6 +26,21 @@ describe('SPARQL 1.1 subqueries', () => {
         Util.compareAlgebras(expected, algebra);
     });
     
+    it('sq01 - Subquery within graph pattern (quads)', () => {
+        let sparql = `prefix ex: <http://www.example.org/schema#>
+                        prefix in: <http://www.example.org/instance#>
+                        select ?x ?p where {
+                            graph ?g {
+                                {select * where {?x ?p ?y}}
+                            }
+                        }`;
+        let algebra = translate(sparql, true);
+        
+        let expected =
+                AE(A.PROJECT, [ AE(A.PROJECT, [ AE(A.BGP, [ Util.quad('?x', '?p', '?y', '?g') ]), [ '?x', '?p', '?y' ] ]), [ '?x', '?p' ] ]);
+        Util.compareAlgebras(expected, algebra);
+    });
+    
     it('sq06 - Subquery', () => {
         let sparql = `prefix ex: <http://www.example.org/schema#>
                         prefix in: <http://www.example.org/instance#>
@@ -51,6 +66,20 @@ describe('SPARQL 1.1 subqueries', () => {
         let algebra = translate(sparql);
         let expected =
                 AE(A.PROJECT, [ AE(A.PROJECT, [ AE(A.GRAPH, [ '?g', AE(A.BGP, [ T('?x', '?p', '?y') ]) ]), [ '?x', '?p', '?y', '?g' ] ]), [ '?x' ] ]);
+        Util.compareAlgebras(expected, algebra);
+    });
+    
+    it('sq07 - Subquery with from (quads)', () => {
+        let sparql = `prefix ex: <http://www.example.org/schema#>
+                        prefix in: <http://www.example.org/instance#>
+                        
+                        select ?x
+                        where {
+                            {select * where {graph ?g {?x ?p ?y}}}
+                        }`;
+        let algebra = translate(sparql, true);
+        let expected =
+                AE(A.PROJECT, [ AE(A.PROJECT, [ AE(A.BGP, [ Util.quad('?x', '?p', '?y', '?g') ]), [ '?x', '?p', '?y', '?g' ] ]), [ '?x' ] ]);
         Util.compareAlgebras(expected, algebra);
     });
     

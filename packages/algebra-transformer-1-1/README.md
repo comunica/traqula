@@ -18,7 +18,7 @@ Returns:
 ```javascript
 { type: 'project',
   input: { type: 'bgp', patterns: [ 
-    { type: 'triple', subject: '?x', predicate: '?y', object: '?z' } ] },
+    { type: 'triplepattern', subject: '?x', predicate: '?y', object: '?z' } ] },
   variables: [ '?x', '?y', '?z' ] }
 ```
 
@@ -26,7 +26,7 @@ Returns:
 The algebra object contains a `types` object,
 which contains all possible values for the `type` field in the output results.
 Besides that it also contains all the TypeScript interfaces of the possible output results.
-The output of the `translate` function will always be an `Algebra.Operator` instance.
+The output of the `translate` function will always be an `Algebra.Operation` instance.
 
 ## Deviations from the spec
 This implementation tries to stay as close to the SPARQL 1.1
@@ -43,7 +43,38 @@ due to seeing some differences between the spec and the Jena ARQ SSE output when
 
 #### Multiset/List conversion
 The functions `toMultiset` and `toList` have been removed for brevity.
-Conversions between the two are implied by the operators used.
+Conversions between the two are implied by the operations used.
+
+#### Quads
+The `translate` function has an optional second parameter
+indicating whether patterns should be translated to triple or quad patterns.
+In the case of quads the `graph` operation will be removed
+and embedded into the patterns it contained.
+The default value for this parameter is `false`.
+```
+PREFIX : <http://www.example.org/>
+
+SELECT ?x WHERE {
+    GRAPH ?g {?x ?y ?z}
+}
+```
+
+Default result:
+```javascript
+{ type: 'project',
+  input: { type: 'graph', graph: '?g', input:  
+    { type: 'bgp', patterns: 
+      [ { type: 'triplepattern', subject: '?x', predicate: '?y', object: '?z' } ] } },
+  variables: [ '?x' ] }
+```
+
+With quads:
+```javascript
+{ type: 'project',
+  input: { type: 'bgp', patterns: 
+    [ { type: 'quadpattern', subject: '?x', predicate: '?y', object: '?z', graph: '?g' } ] },
+  variables: [ '?x' ] }
+```
 
 #### VALUES
 For the VALUES block we return the following output:
@@ -72,13 +103,13 @@ SELECT ?book ?title ?price
      right: { type: 'bgp', 
               patterns: [
                 {
-                  type: 'triple',
+                  type: 'triplepattern',
                   subject: '?book',
                   predicate: 'http://purl.org/dc/elements/1.1/title',
                   object: '?title'
                 },
                 {
-                  type: 'triple',
+                  type: 'triplepattern',
                   subject: '?book',
                   predicate: 'http://example.org/ns#price',
                   object: '?price'
@@ -90,4 +121,4 @@ SELECT ?book ?title ?price
 #### Differences from Jena ARQ
 Some differences from Jena (again, non-exhaustive):
 no prefixes are used (all uris get expanded)
-and the project operator always gets used (even in the case of `SELECT *`).
+and the project operation always gets used (even in the case of `SELECT *`).

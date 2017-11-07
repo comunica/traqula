@@ -43,23 +43,23 @@ export const types = Object.freeze({
 
 // ----------------------- ABSTRACTS -----------------------
 
-export interface Operator
+export interface Operation
 {
     type: string;
 }
 
-export interface Single extends Operator
+export interface Single extends Operation
 {
-    input: Operator;
+    input: Operation;
 }
 
-export interface Double extends Operator
+export interface Double extends Operation
 {
-    left: Operator;
-    right: Operator;
+    left: Operation;
+    right: Operation;
 }
 
-export interface Expression extends Operator
+export interface Expression extends Operation
 {
     type: 'expression'
     symbol: string;
@@ -76,7 +76,7 @@ export interface Alt extends Double
     type: 'alt';
 }
 
-export interface Aggregate extends Operator
+export interface Aggregate extends Operation
 {
     type: 'aggregate';
     symbol: string;
@@ -89,7 +89,7 @@ export interface BoundAggregate extends Aggregate
     variable: string;
 }
 
-export interface Bgp extends Operator
+export interface Bgp extends Operation
 {
     type: 'bgp';
     // TODO: update to rdf js instead of own object
@@ -127,10 +127,10 @@ export interface Group extends Single
     aggregates: BoundAggregate[];
 }
 
-export interface Inv extends Operator
+export interface Inv extends Operation
 {
     type: 'inv';
-    path: Operator;
+    path: Operation;
 }
 
 export interface Join extends Double
@@ -144,7 +144,7 @@ export interface LeftJoin extends Double
     expression: Expression;
 }
 
-export interface Link extends Operator
+export interface Link extends Operation
 {
     type: 'link';
     iri: string;
@@ -155,16 +155,16 @@ export interface Minus extends Double
     type: 'minus';
 }
 
-export interface Nps extends Operator
+export interface Nps extends Operation
 {
     type: 'nps';
     iris: string[];
 }
 
-export interface OneOrMorePath extends Operator
+export interface OneOrMorePath extends Operation
 {
     type: 'OneOrMorePath';
-    path: Operator;
+    path: Operation;
 }
 
 export interface OrderBy extends Single
@@ -173,12 +173,12 @@ export interface OrderBy extends Single
     expressions: Expression[];
 }
 
-export interface Path extends Operator
+export interface Path extends Operation
 {
     type: 'path';
-    subject: Operator;
-    predicate: Operator;
-    object: Operator;
+    subject: Operation;
+    predicate: Operation;
+    object: Operation;
 }
 
 export interface Project extends Single
@@ -190,7 +190,7 @@ export interface Project extends Single
 export interface Reduced extends Single
 {
     type: 'reduced';
-    input: Operator;
+    input: Operation;
 }
 
 export interface Seq extends Double
@@ -210,26 +210,26 @@ export interface Union extends Double
     type: 'union';
 }
 
-export interface Values extends Operator
+export interface Values extends Operation
 {
     type: 'values';
     variables: string[];
     bindings: any[];
 }
 
-export interface ZeroOrMorePath extends Operator
+export interface ZeroOrMorePath extends Operation
 {
     type: 'ZeroOrMorePath';
-    path: Operator;
+    path: Operation;
 }
 
-export interface ZeroOrOnePath extends Operator
+export interface ZeroOrOnePath extends Operation
 {
     type: 'ZeroOrOnePath';
-    path: Operator;
+    path: Operation;
 }
 
-export interface Triple extends Operator
+export interface Triple extends Operation
 {
     type: 'triple';
     subject: string;

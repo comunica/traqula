@@ -10,7 +10,7 @@ class Util
     static Algebra = Algebra;
     static translate = translate;
 
-    static algebraElement (key: string, args: any[]) : A.Operator
+    static algebraElement (key: string, args: any[]) : A.Operation
     {
         switch (key)
         {
@@ -90,7 +90,7 @@ class Util
         return Util.algebraElement(Algebra.TRIPLE, [ subject, predicate, object ]);
     }
     
-    static compareAlgebras (expected: A.Operator, actual: A.Operator) : boolean
+    static compareAlgebras (expected: A.Operation, actual: A.Operation) : boolean
     {
         let result = Util._compareAlgebrasRecursive(expected, actual, {});
         if (!result)

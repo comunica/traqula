@@ -1,4 +1,4 @@
-import { Operator } from './algebra';
+import { Operation } from './algebra';
 
-declare function translate (sparql: any) : Operator;
+declare function translate (sparql: any) : Operation;
 export = translate;

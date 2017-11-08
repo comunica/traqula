@@ -48,9 +48,9 @@ function createTriple (subject, predicate, object)
     }
     
     if (predicate.type)
-        return createAlgebraElement(useQuads ? Algebra.QUAD_PATH : Algebra.PATH, {subject, predicate, object});
+        return createAlgebraElement(Algebra.PATH, {subject, predicate, object});
     
-    return createAlgebraElement(useQuads ? Algebra.QUAD_PATTERN : Algebra.TRIPLE_PATTERN, {subject, predicate, object});
+    return createAlgebraElement(Algebra.PATTERN, {subject, predicate, object});
 }
 
 // generate an unused variable name
@@ -235,7 +235,7 @@ function translateGraphPattern (thingy)
         {
             if (!triple.type)
                 triple = createTriple(triple);
-            if (triple.type === Algebra.PATH || triple.type === Algebra.QUAD_PATH)
+            if (triple.type === Algebra.PATH)
             {
                 if (bgp.length > 0)
                 {
@@ -449,10 +449,10 @@ function applyGraph (thingy, graph)
     
     if (thingy.type)
     {
-        if (thingy.type === Algebra.QUAD_PATTERN)
-            return Object.assign(thingy, { type: Algebra.QUAD_PATTERN, graph });
-        if (thingy.type === Algebra.QUAD_PATH)
-            return Object.assign(thingy, { type: Algebra.QUAD_PATH, graph });
+        if (thingy.type === Algebra.PATTERN)
+            return Object.assign(thingy, { type: Algebra.PATTERN, graph });
+        if (thingy.type === Algebra.PATH)
+            return Object.assign(thingy, { type: Algebra.PATH, graph });
         
         for (let key of Object.keys(thingy))
             thingy[key] = applyGraph(thingy[key], graph);

@@ -24,16 +24,14 @@ export const types = Object.freeze({
     ONE_OR_MORE_PATH:   'OneOrMorePath',
     ORDER_BY:           'orderby',
     PATH:               'path',
+    PATTERN:            'pattern',
     PROJECT:            'project',
-    QUAD_PATH:          'quadpath',
-    QUAD_PATTERN:       'quadpattern',
     REDUCED:            'reduced',
     ROW:                'row',
     SEQ:                'seq',
     SEQUENCE:           'sequence',
     SLICE:              'slice',
     TABLE:              'table',
-    TRIPLE_PATTERN:     'triplepattern',
     TO_MULTISET:        'tomultiset',
     UNION:              'union',
     UNIT:               'unit',
@@ -95,7 +93,7 @@ export interface Bgp extends Operation
 {
     type: 'bgp';
     // TODO: update to rdf js instead of own object
-    patterns: TriplePattern[];
+    patterns: Pattern[];
 }
 
 export interface Distinct extends Single
@@ -181,6 +179,7 @@ export interface Path extends Operation
     subject: string;
     predicate: Operation;
     object: string;
+    graph?: string;
 }
 
 export interface Project extends Single
@@ -231,29 +230,11 @@ export interface ZeroOrOnePath extends Operation
     path: Operation;
 }
 
-export interface TriplePattern extends Operation
+export interface Pattern extends Operation
 {
-    type: 'triplepattern';
+    type: 'pattern';
     subject: string;
     predicate: string;
     object: string;
-}
-
-// Interfaces for quad algebra
-export interface QuadPattern extends Operation
-{
-    type: 'quadpattern';
-    subject: string;
-    predicate: string;
-    object: string;
-    graph: string;
-}
-
-export interface QuadPath extends Operation
-{
-    type: 'quadpath';
-    subject: string;
-    predicate: Operation;
-    object: string;
-    graph: string;
+    graph?: string;
 }

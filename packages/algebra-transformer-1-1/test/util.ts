@@ -33,8 +33,9 @@ class Util
                                            <A.Slice>    { type: key, input: args[2], start: args[0], length: args[1] };
             case Algebra.UNION:     return <A.Union>    { type: key, left: args[0], right: args[1] };
 
-            case Algebra.QUAD_PATTERN:   return <A.QuadPattern>   { type: key, subject: args[0], predicate: args[1], object: args[2], graph: args[3] };
-            case Algebra.TRIPLE_PATTERN: return <A.TriplePattern>   { type: key, subject: args[0], predicate: args[1], object: args[2] };
+            case Algebra.PATTERN:   return args.length === 4 ?
+                                           <A.Pattern>{ type: key, subject: args[0], predicate: args[1], object: args[2], graph: args[3] }:
+                                           <A.Pattern>{ type: key, subject: args[0], predicate: args[1], object: args[2] };
 
             case Algebra.ALT:               return <A.Alt>              { type: key, left: args[0], right: args[1] };
             case Algebra.INV:               return <A.Inv>              { type: key, path: args[0] };
@@ -89,12 +90,12 @@ class Util
     
     static triple (subject: string, predicate: string, object: string)
     {
-        return Util.algebraElement(Algebra.TRIPLE_PATTERN, [ subject, predicate, object ]);
+        return Util.algebraElement(Algebra.PATTERN, [ subject, predicate, object ]);
     }
 
     static quad (subject: string, predicate: string, object: string, graph: string)
     {
-        return Util.algebraElement(Algebra.QUAD_PATTERN, [ subject, predicate, object, graph ]);
+        return Util.algebraElement(Algebra.PATTERN, [ subject, predicate, object, graph ]);
     }
     
     static compareAlgebras (expected: A.Operation, actual: A.Operation) : boolean

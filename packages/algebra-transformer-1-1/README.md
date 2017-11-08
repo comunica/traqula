@@ -18,7 +18,7 @@ Returns:
 ```javascript
 { type: 'project',
   input: { type: 'bgp', patterns: [ 
-    { type: 'triplepattern', subject: '?x', predicate: '?y', object: '?z' } ] },
+    { type: 'pattern', subject: '?x', predicate: '?y', object: '?z' } ] },
   variables: [ '?x', '?y', '?z' ] }
 ```
 
@@ -64,7 +64,7 @@ Default result:
 { type: 'project',
   input: { type: 'graph', graph: '?g', input:  
     { type: 'bgp', patterns: 
-      [ { type: 'triplepattern', subject: '?x', predicate: '?y', object: '?z' } ] } },
+      [ { type: 'pattern', subject: '?x', predicate: '?y', object: '?z' } ] } },
   variables: [ '?x' ] }
 ```
 
@@ -72,7 +72,7 @@ With quads:
 ```javascript
 { type: 'project',
   input: { type: 'bgp', patterns: 
-    [ { type: 'quadpattern', subject: '?x', predicate: '?y', object: '?z', graph: '?g' } ] },
+    [ { type: 'pattern', subject: '?x', predicate: '?y', object: '?z', graph: '?g' } ] },
   variables: [ '?x' ] }
 ```
 
@@ -103,13 +103,13 @@ SELECT ?book ?title ?price
      right: { type: 'bgp', 
               patterns: [
                 {
-                  type: 'triplepattern',
+                  type: 'pattern',
                   subject: '?book',
                   predicate: 'http://purl.org/dc/elements/1.1/title',
                   object: '?title'
                 },
                 {
-                  type: 'triplepattern',
+                  type: 'pattern',
                   subject: '?book',
                   predicate: 'http://example.org/ns#price',
                   object: '?price'

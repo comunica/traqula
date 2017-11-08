@@ -325,6 +325,7 @@ describe('SPARQL 1.1 aggregates', () => {
         Util.compareAlgebras(expected, algebra);
     });
 
+    // TODO: look into this one, not directly allowed by Jena
     it('COUNT 8', () => {
         let sparql = `PREFIX : <http://www.example.org/>
                       SELECT ((?O1 + ?O2) AS ?O12) (COUNT(?O1) AS ?C)

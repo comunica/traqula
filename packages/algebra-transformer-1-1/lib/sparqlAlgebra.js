@@ -3,8 +3,9 @@
  */
 
 const _ = require('lodash');
-const SparqlParser = require('sparqljs').Parser;
 const algebra = require('./algebra');
+const N3Util = require('n3').Util;
+const SparqlParser = require('sparqljs').Parser;
 
 const Algebra = algebra.types;
 
@@ -15,6 +16,7 @@ const Algebra = algebra.types;
 let variables = {};
 let varCount = 0;
 let useQuads = false;
+let defaultGraph = { termType: 'DefaultGraph', value: '' };
 
 function createAlgebraElement (symbol, args)
 {
@@ -23,6 +25,11 @@ function createAlgebraElement (symbol, args)
 
 function createExpression (symbol, args)
 {
+    // SPARQL.js has a list as second argument for notin (and in), we don't like lists
+    // TODO: unfortunately createExpression gets called multiple times hence the array check for now
+    if ((symbol === 'notin' || symbol === 'in') && _.isArray(args[1]))
+        args = [args[0]].concat(args[1]);
+    
     // TODO: support for known operators?
     return createAlgebraElement('expression', {symbol, args});
 }
@@ -36,9 +43,6 @@ function createAggregate (symbol, input)
 
 function createTriple (subject, predicate, object)
 {
-    if (subject.type)
-        throw new Error ('Input is already an object');
-    
     // first parameter is a triple object
     if (subject.subject && subject.predicate && subject.object)
     {
@@ -48,9 +52,35 @@ function createTriple (subject, predicate, object)
     }
     
     if (predicate.type)
-        return createAlgebraElement(Algebra.PATH, {subject, predicate, object});
+        return createAlgebraElement(Algebra.PATH, {subject: createTerm(subject), predicate, object: createTerm(object), graph: defaultGraph});
     
-    return createAlgebraElement(Algebra.PATTERN, {subject, predicate, object});
+    return createAlgebraElement(Algebra.PATTERN, {subject: createTerm(subject), predicate: createTerm(predicate), object: createTerm(object), graph: defaultGraph});
+}
+
+function createTerm (str)
+{
+    if (str.termType)
+        return str;
+    
+    if (str[0] === '?')
+        return { termType: 'Variable', value: str.substring(1) };
+    if (str.startsWith('_:'))
+        return { termType: 'BlankNode', value: str.substring(3) };
+    if (N3Util.isLiteral(str))
+    {
+        let literal = { termType: 'Literal', value: N3Util.getLiteralValue(str) };
+        let lang = N3Util.getLiteralLanguage(str);
+        if (lang && lang.length > 0)
+            literal.language = lang;
+        else
+        {
+            let type = N3Util.getLiteralType(str);
+            if (type && type.length > 0)
+                literal.datatype = createTerm(type);
+        }
+        return literal;
+    }
+    return { termType: 'NamedNode', value: str };
 }
 
 // generate an unused variable name
@@ -82,6 +112,7 @@ function translate (sparql, quads)
     let res = translateGraphPattern(group);
     res = simplify(res);
     res = translateAggregates(sparql, res, vars);
+    res = toRdfJs(res);
     return res;
 }
 
@@ -282,7 +313,7 @@ function translateGraphPattern (thingy)
 // 18.2.2.8
 function simplify (thingy)
 {
-    if (_.isString(thingy) || _.isBoolean(thingy) || _.isInteger(thingy))
+    if (_.isString(thingy) || _.isBoolean(thingy) || _.isInteger(thingy) || thingy.termType)
         return thingy;
     if (_.isArray(thingy))
         return thingy.map(subthingy => simplify(subthingy));
@@ -341,8 +372,9 @@ function translatePathExpression (pathExp, translatedItems)
             }
         }
         
-        let normalElement = createAlgebraElement(Algebra.NPS, { iris: normals });
-        let invertedElement = createAlgebraElement(Algebra.INV, { path: createAlgebraElement(Algebra.NPS, { iris: inverted }) });
+        // NPS elements do not have the LINK function
+        let normalElement = createAlgebraElement(Algebra.NPS, { iris: normals.map(link => link.iri) });
+        let invertedElement = createAlgebraElement(Algebra.INV, { path: createAlgebraElement(Algebra.NPS, { iris: inverted.map(link => link.iri) }) });
         
         if (inverted.length === 0)
             res = normalElement;
@@ -450,9 +482,9 @@ function applyGraph (thingy, graph)
     if (thingy.type)
     {
         if (thingy.type === Algebra.PATTERN)
-            return Object.assign(thingy, { type: Algebra.PATTERN, graph });
+            return Object.assign(thingy, { graph });
         if (thingy.type === Algebra.PATH)
-            return Object.assign(thingy, { type: Algebra.PATH, graph });
+            return Object.assign(thingy, { graph });
         
         for (let key of Object.keys(thingy))
             thingy[key] = applyGraph(thingy[key], graph);
@@ -550,9 +582,9 @@ function translateAggregates (query, parsed, variables)
     let A = [];
     let E = [];
     if (query.group)
-        G = createAlgebraElement(Algebra.GROUP, { variables: query.group, input: res });
+        G = createAlgebraElement(Algebra.GROUP, { expressions: query.group, input: res });
     else if (containsAggregate(query.variables) || containsAggregate(query.having) || containsAggregate(query.order))
-        G = createAlgebraElement(Algebra.GROUP, { variables: [], input: res });
+        G = createAlgebraElement(Algebra.GROUP, { expressions: [], input: res });
     
     // TODO: not doing the sample stuff atm
     // TODO: more based on jena results than w3 spec (spec would require us to copy G multiple times)
@@ -564,6 +596,7 @@ function translateAggregates (query, parsed, variables)
         mapAggregates(query.order, A);
         
         // TODO: we use the jena syntax of adding aggregates as second argument to group
+        // .var will be translated later on
         G.aggregates = A.map(aggregate => { return Object.assign({var: aggregate.variable}, aggregate.object) });
         
         if (query.group)
@@ -760,6 +793,29 @@ function translateExpressionsOperations(thingy)
     
     return thingy;
 }
-// ---------------------------------- END TRANSLATE AGGREGATES ----------------------------------
+// ---------------------------------- ADD RDF.JS ----------------------------------
+
+// at this point the only remaining fields that can have a string are `type`, `symbol` (for expressions) and `separator` (damn you group_concat)
+function toRdfJs(thingy)
+{
+    if (_.isString(thingy))
+        return createTerm(thingy);
+    
+    if (_.isArray(thingy))
+        return thingy.map(toRdfJs);
+    
+    // caused by graphs already being present
+    if (thingy.termType)
+        return thingy;
+    
+    for (let key of Object.keys(thingy))
+    {
+        if (key === 'type' || key === 'symbol' || key === 'separator')
+            continue;
+        thingy[key] = toRdfJs(thingy[key]);
+    }
+    return thingy;
+}
+// ---------------------------------- END RDF.JS ----------------------------------
 
 module.exports = translate;

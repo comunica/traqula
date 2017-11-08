@@ -47,9 +47,9 @@ describe('SPARQL 1.1 syntax', () => {
         let sparql = `SELECT * { ?s ?p ?o FILTER(?o NOT IN(1,2,?s+57)) }`;
         let algebra = translate(sparql);
         let expected =
-                AE(A.PROJECT, [ AE(A.FILTER, [ AE('notin', [ '?o', [ '"1"^^http://www.w3.org/2001/XMLSchema#integer',
-                                                                     '"2"^^http://www.w3.org/2001/XMLSchema#integer',
-                                                                     AE('+', [ '?s', '"57"^^http://www.w3.org/2001/XMLSchema#integer' ]) ] ]),
+                AE(A.PROJECT, [ AE(A.FILTER, [ AE('notin', [ '?o', '"1"^^http://www.w3.org/2001/XMLSchema#integer',
+                                                                   '"2"^^http://www.w3.org/2001/XMLSchema#integer',
+                                                                   AE('+', [ '?s', '"57"^^http://www.w3.org/2001/XMLSchema#integer' ]) ]),
                                                AE(A.BGP, [ T('?s', '?p', '?o') ]) ]),
                                 [ '?s', '?p', '?o' ] ]);
         Util.compareAlgebras(expected, algebra);
@@ -59,8 +59,7 @@ describe('SPARQL 1.1 syntax', () => {
         let sparql = `SELECT * { ?s ?p ?o FILTER(?o IN(1,<x:x>)) }`;
         let algebra = translate(sparql);
         let expected =
-                AE(A.PROJECT, [ AE(A.FILTER, [ AE('in', [ '?o', [ '"1"^^http://www.w3.org/2001/XMLSchema#integer',
-                                                                  'x:x' ] ]),
+                AE(A.PROJECT, [ AE(A.FILTER, [ AE('in', [ '?o', '"1"^^http://www.w3.org/2001/XMLSchema#integer', 'x:x' ]),
                                                AE(A.BGP, [ T('?s', '?p', '?o') ]) ]),
                                 [ '?s', '?p', '?o' ] ]);
         Util.compareAlgebras(expected, algebra);

@@ -122,8 +122,7 @@ describe('SPARQL 1.1 paths', () => {
         let algebra = translate(sparql);
         let expected =
                 AE(A.PROJECT, [ AE(A.PATH, [ 'http://www.example.org/instance#a',
-                                                         AE(A.NPS, [ AE(A.LINK, [ 'http://www.example.org/schema#p1' ]),
-                                                                     AE(A.LINK, [ 'http://www.example.org/schema#p2' ]) ]),
+                                                         AE(A.NPS, [ 'http://www.example.org/schema#p1', 'http://www.example.org/schema#p2' ]),
                                                          '?x' ]),
                                 [ '?x' ] ]);
         Util.compareAlgebras(expected, algebra);

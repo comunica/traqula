@@ -1,4 +1,6 @@
 
+import * as rdfjs from "rdf-js";
+
 // TODO: add aggregates?
 // TODO: can't find a way to use these values as string types in the interfaces
 export const types = Object.freeze({
@@ -24,7 +26,6 @@ export const types = Object.freeze({
     ONE_OR_MORE_PATH:   'OneOrMorePath',
     ORDER_BY:           'orderby',
     PATH:               'path',
-    PATTERN:            'pattern',
     PROJECT:            'project',
     REDUCED:            'reduced',
     ROW:                'row',
@@ -59,12 +60,15 @@ export interface Double extends Operation
     right: Operation;
 }
 
+export type ExpressionOrTerm = (Expression|rdfjs.Term);
+
 export interface Expression extends Operation
 {
     type: 'expression'
     symbol: string;
-    args: (Expression|string)[]; // TODO: could find cleaner solution (string is needed for variables)
+    args: ExpressionOrTerm[]; // TODO: could find cleaner solution
 }
+
 
 // TODO: currently not differentiating between lists and multisets
 
@@ -81,19 +85,19 @@ export interface Aggregate extends Operation
     type: 'aggregate';
     symbol: string;
     separator?: string; // used by GROUP_CONCAT
-    expression: Expression|string; // TODO: eh... (needed for vars)
+    expression: ExpressionOrTerm;
 }
 
 export interface BoundAggregate extends Aggregate
 {
-    variable: string;
+    variable: rdfjs.Variable;
 }
 
 export interface Bgp extends Operation
 {
     type: 'bgp';
     // TODO: update to rdf js instead of own object
-    patterns: Pattern[];
+    patterns: rdfjs.Quad[];
 }
 
 export interface Distinct extends Single
@@ -104,26 +108,26 @@ export interface Distinct extends Single
 export interface Extend extends Single
 {
     type: 'extend';
-    variable: string;
-    expression: Expression;
+    variable: rdfjs.Variable;
+    expression: ExpressionOrTerm;
 }
 
 export interface Filter extends Single
 {
     type: 'filter';
-    expression: Expression;
+    expression: ExpressionOrTerm;
 }
 
 export interface Graph extends Single
 {
     type: 'graph';
-    graph: string;
+    graph: rdfjs.Term;
 }
 
 export interface Group extends Single
 {
     type: 'group';
-    variables: string[];
+    variables: rdfjs.Variable[];
     aggregates: BoundAggregate[];
 }
 
@@ -141,13 +145,13 @@ export interface Join extends Double
 export interface LeftJoin extends Double
 {
     type: 'leftjoin';
-    expression: Expression;
+    expression: ExpressionOrTerm;
 }
 
 export interface Link extends Operation
 {
     type: 'link';
-    iri: string;
+    iri: rdfjs.NamedNode;
 }
 
 export interface Minus extends Double
@@ -158,7 +162,7 @@ export interface Minus extends Double
 export interface Nps extends Operation
 {
     type: 'nps';
-    iris: string[];
+    iris: rdfjs.NamedNode[];
 }
 
 export interface OneOrMorePath extends Operation
@@ -170,22 +174,22 @@ export interface OneOrMorePath extends Operation
 export interface OrderBy extends Single
 {
     type: 'orderby';
-    expressions: Expression[];
+    expressions: ExpressionOrTerm[];
 }
 
 export interface Path extends Operation
 {
     type: 'path';
-    subject: string;
+    subject: rdfjs.Term;
     predicate: Operation;
-    object: string;
-    graph?: string;
+    object: rdfjs.Term;
+    graph?: rdfjs.Term;
 }
 
 export interface Project extends Single
 {
     type: 'project';
-    variables: String[];
+    variables: rdfjs.Variable[];
 }
 
 export interface Reduced extends Single
@@ -214,7 +218,7 @@ export interface Union extends Double
 export interface Values extends Operation
 {
     type: 'values';
-    variables: string[];
+    variables: rdfjs.Variable[];
     bindings: any[];
 }
 
@@ -228,13 +232,4 @@ export interface ZeroOrOnePath extends Operation
 {
     type: 'ZeroOrOnePath';
     path: Operation;
-}
-
-export interface Pattern extends Operation
-{
-    type: 'pattern';
-    subject: string;
-    predicate: string;
-    object: string;
-    graph?: string;
 }

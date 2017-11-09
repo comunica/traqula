@@ -9,7 +9,6 @@ export const types = Object.freeze({
     BGP:                'bgp',
     DESC:               'desc',
     DISTINCT:           'distinct',
-    EXISTS:             'exists',
     EXPRESSION:         'expression',
     EXTEND:             'extend',
     FILTER:             'filter',
@@ -21,7 +20,6 @@ export const types = Object.freeze({
     LEFT_JOIN:          'leftjoin',
     LINK:               'link',
     MINUS:              'minus',
-    NOT_EXISTS:         'notexists',
     NPS:                'nps',
     ONE_OR_MORE_PATH:   'OneOrMorePath',
     ORDER_BY:           'orderby',
@@ -43,6 +41,13 @@ export const types = Object.freeze({
     ZERO_OR_ONE_PATH:   'ZeroOrOnePath',
 });
 
+export const expressionTypes = Object.freeze({
+    EXISTENCE: 'existence',
+    NAMED:     'named',
+    OPERATOR:  'operator',
+    TERM:      'term',
+});
+
 // ----------------------- ABSTRACTS -----------------------
 
 export interface Operation
@@ -61,13 +66,37 @@ export interface Double extends Operation
     right: Operation;
 }
 
-export type ExpressionOrTerm = (Expression|rdfjs.Term);
-
 export interface Expression extends Operation
 {
-    type: 'expression'
-    symbol: string;
-    args: ExpressionOrTerm[]; // TODO: could find cleaner solution
+    type: 'expression';
+    expressionType: 'existence'|'named'|'operator'|'term';
+}
+
+export interface ExistenceExpression extends Expression
+{
+    expressionType: 'existence';
+    not: boolean;
+    input: Operation;
+}
+
+export interface NamedExpression extends Expression
+{
+    expressionType: 'named';
+    name: rdfjs.NamedNode;
+    args: Expression[];
+}
+
+export interface OperatorExpression extends Expression
+{
+    expressionType: 'operator';
+    operator: string;
+    args: Expression[];
+}
+
+export interface TermExpression extends Expression
+{
+    expressionType: 'term';
+    term: rdfjs.Term;
 }
 
 
@@ -84,9 +113,9 @@ export interface Alt extends Double
 export interface Aggregate extends Operation
 {
     type: 'aggregate';
-    symbol: string;
+    aggregate: string;
     separator?: string; // used by GROUP_CONCAT
-    expression: ExpressionOrTerm;
+    expression: Expression;
 }
 
 export interface BoundAggregate extends Aggregate
@@ -109,13 +138,13 @@ export interface Extend extends Single
 {
     type: 'extend';
     variable: rdfjs.Variable;
-    expression: ExpressionOrTerm;
+    expression: Expression;
 }
 
 export interface Filter extends Single
 {
     type: 'filter';
-    expression: ExpressionOrTerm;
+    expression: Expression;
 }
 
 export interface Graph extends Single
@@ -127,7 +156,7 @@ export interface Graph extends Single
 export interface Group extends Single
 {
     type: 'group';
-    expressions: ExpressionOrTerm[]; // TODO: this one might need to change
+    expressions: Expression[]; // TODO: this one might need to change
     aggregates: BoundAggregate[];
 }
 
@@ -145,7 +174,7 @@ export interface Join extends Double
 export interface LeftJoin extends Double
 {
     type: 'leftjoin';
-    expression: ExpressionOrTerm;
+    expression: Expression;
 }
 
 export interface Link extends Operation
@@ -174,7 +203,7 @@ export interface OneOrMorePath extends Operation
 export interface OrderBy extends Single
 {
     type: 'orderby';
-    expressions: ExpressionOrTerm[];
+    expressions: Expression[];
 }
 
 export interface Path extends Operation

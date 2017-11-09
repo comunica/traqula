@@ -123,11 +123,11 @@ describe('SPARQL 1.1 negation', () => {
                                 AE(A.MINUS, [
                                     AE(A.BGP, [ T('?s2', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://example/Set'),
                                                 T('?s1', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://example/Set') ]),
-                                    AE(A.FILTER, [ AE(A.NOT_EXISTS, [ AE(A.BGP, [ T('?s2', 'http://example/member', '?x') ]) ]),
+                                    AE(A.FILTER, [ AE('notexists', [ AE(A.BGP, [ T('?s2', 'http://example/member', '?x') ]) ]),
                                                    AE(A.BGP, [ T('?s1', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://example/Set'),
                                                                T('?s2', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://example/Set'),
                                                                T('?s1', 'http://example/member', '?x') ]) ]) ]),
-                                AE(A.FILTER, [ AE(A.NOT_EXISTS, [ AE(A.BGP, [ T('?s1', 'http://example/member', '?x') ]) ]),
+                                AE(A.FILTER, [ AE('notexists', [ AE(A.BGP, [ T('?s1', 'http://example/member', '?x') ]) ]),
                                                AE(A.BGP, [ T('?s1', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://example/Set'),
                                                            T('?s2', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://example/Set'),
                                                            T('?s2', 'http://example/member', '?x') ]) ]) ]) ]),
@@ -154,7 +154,7 @@ describe('SPARQL 1.1 negation', () => {
         let expected =
                 AE(A.PROJECT, [
                     AE(A.FILTER, [
-                        AE(A.NOT_EXISTS, [
+                        AE('notexists', [
                             AE(A.BGP, [ T('?otherExam', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type', 'http://www.w3.org/2009/sparql/docs/tests/data-sparql11/negation#PhysicalExamination'),
                                         T('?otherExam', 'http://www.w3.org/2009/sparql/docs/tests/data-sparql11/negation#follows', '?exam'),
                                         T('?otherExam', 'http://www.w3.org/2009/sparql/docs/tests/data-sparql11/negation#precedes', 'http://www.w3.org/2009/sparql/docs/tests/data-sparql11/negation#operation1') ]) ]),

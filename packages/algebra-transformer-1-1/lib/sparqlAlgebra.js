@@ -8,6 +8,7 @@ const N3Util = require('n3').Util;
 const SparqlParser = require('sparqljs').Parser;
 
 const Algebra = algebra.types;
+const ETypes = algebra.expressionTypes;
 
 
 // ---------------------------------- END HELPER CLASSES ----------------------------------
@@ -23,22 +24,49 @@ function createAlgebraElement (symbol, args)
     return Object.assign({type: symbol}, args);
 }
 
-function createExpression (symbol, args)
+function createExpression (symbol, type, args)
 {
     // SPARQL.js has a list as second argument for notin (and in), we don't like lists
     // TODO: unfortunately createExpression gets called multiple times hence the array check for now
     if ((symbol === 'notin' || symbol === 'in') && _.isArray(args[1]))
         args = [args[0]].concat(args[1]);
     
+    // have their own type due to being applied to a groupGraphPattern
+    if (symbol === 'exists' || symbol === 'notexists')
+    {
+        if (args.length > 1)
+            throw new Error('Expected a single argument for exists/notexists');
+        return createAlgebraElement(Algebra.EXPRESSION, { expressionType: ETypes.EXISTENCE, not: (symbol === 'notexists'), input: args[0] });
+    }
+    
+    // map all terms to TermExpressions
+    args = args ? args.map(arg =>
+    {
+        if (_.isString(arg))
+            arg = createTerm(arg);
+        if (arg.termType)
+            return createAlgebraElement(Algebra.EXPRESSION, { expressionType: ETypes.TERM, term: arg });
+        if (!arg.expressionType)
+            return translateFilters(arg); // TODO: should look into this nesting
+        return arg;
+    }) : null;
+    
     // TODO: support for known operators?
-    return createAlgebraElement('expression', {symbol, args});
+    if (type === ETypes.OPERATOR)
+        return createAlgebraElement(Algebra.EXPRESSION, { expressionType: ETypes.OPERATOR, operator: symbol, args });
+    if (type === ETypes.NAMED)
+        return createAlgebraElement(Algebra.EXPRESSION, { expressionType: ETypes.NAMED, name: createTerm(symbol), args });
+    if (type === ETypes.TERM)
+        return createAlgebraElement(Algebra.EXPRESSION, { expressionType: ETypes.TERM, term: symbol });
+    
+    throw new Error('Invalid type: ' + type);
 }
 
-function createAggregate (symbol, input)
+function createAggregate (aggregate, input)
 {
     if (_.isArray(input))
         input = input[0];
-    return createAlgebraElement('aggregate', {symbol, expression: input});
+    return createAlgebraElement(Algebra.AGGREGATE, {aggregate, expression: input});
 }
 
 function createTriple (subject, predicate, object)
@@ -110,6 +138,7 @@ function translate (sparql, quads)
     let group = { type: 'group', patterns: sparql.where };
     let vars = inScopeVariables(group);
     let res = translateGraphPattern(group);
+    
     res = simplify(res);
     res = translateAggregates(sparql, res, vars);
     res = toRdfJs(res);
@@ -221,7 +250,7 @@ function translateGraphPattern (thingy)
     
     // update expressions to algebra format (done here since they are used in both filters and binds)
     if (thingy.type === 'operation')
-        thingy = createExpression(thingy.operator, thingy.args);
+        thingy = createExpression(thingy.operator, ETypes.OPERATOR, thingy.args);
     
     // 18.2.2.1
     // already done by sparql parser
@@ -518,7 +547,7 @@ function accumulateGroupGraphPattern (G, E)
         G = createAlgebraElement(Algebra.MINUS, { left: G, right: E.patterns[0] });
     }
     else if (E.type === 'bind')
-        G = createAlgebraElement(Algebra.EXTEND, { input: G, variable: E.variable, expression: E.expression });
+        G = createAlgebraElement(Algebra.EXTEND, { input: G, variable: E.variable, expression: translateFilters(E.expression) });
     else
         G = createAlgebraElement(Algebra.JOIN, { left: G, right: E });
     
@@ -559,17 +588,18 @@ function translateFilters (filterExpressions)
     
     filterExpressions = filterExpressions.map(exp =>
     {
-        if (_.isString(exp))
+        // TODO: investigate when this happens
+        if (exp.expressionType)
             return exp;
-        if (exp.symbol)
-            return createExpression(exp.symbol, exp.args);
+        if (_.isString(exp))
+            return createExpression(exp, ETypes.TERM);
         if (exp.function)
-            return createExpression(exp.function, exp.args);
+            return createExpression(exp.function, ETypes.NAMED, exp.args);
         if (exp.operator)
-            return createExpression(exp.operator, exp.args);
+            return createExpression(exp.operator, ETypes.OPERATOR, exp.args);
     });
     
-    return filterExpressions.reduce((acc, val) => createExpression('&&', [acc, val]));
+    return filterExpressions.reduce((acc, val) => createExpression('&&', ETypes.OPERATOR, [acc, val]));
 }
 
 // ---------------------------------- TRANSLATE AGGREGATES ----------------------------------
@@ -645,7 +675,7 @@ function translateAggregates (query, parsed, variables)
     
     // TODO: Jena simplifies by having a list of extends
     for (let v of E)
-        res = createAlgebraElement(Algebra.EXTEND, { input: res, variable: v.variable, expression: v.expression });
+        res = createAlgebraElement(Algebra.EXTEND, { input: res, variable: v.variable, expression: translateFilters(v.expression) });
     
     // 18.2.5
     //p = createAlgebraElement('tolist', [p]);
@@ -756,17 +786,10 @@ function translateExpressionsOperations(thingy)
     
     if (_.isString(thingy))
         return thingy;
-    
-    // TODO: different types for operation and functionCall
-    if (thingy.type === 'operation' && thingy.operator)
-        return createExpression(thingy.operator, thingy.args.map(subthingy => translateExpressionsOperations(subthingy)));
-    
-    if (thingy.type === 'functionCall' && thingy.function)
-        return createExpression(thingy.function, thingy.args.map(subthingy => translateExpressionsOperations(subthingy)));
         
     if (thingy.type === 'aggregate' && thingy.aggregation)
     {
-        let A = createAggregate(thingy.aggregation, [ translateExpressionsOperations(thingy.expression) ]);
+        let A = createAggregate(thingy.aggregation, [ translateFilters(thingy.expression) ]);
         // TODO: put this in object somewhere
         // this is specifically for group_concat
         if (thingy.separator && thingy.separator !== ' ')
@@ -780,10 +803,10 @@ function translateExpressionsOperations(thingy)
     }
     
     if (thingy.descending && !thingy.type)
-        return createExpression(Algebra.DESC, [ translateExpressionsOperations(thingy.expression) ]);
+        return createExpression(Algebra.DESC, ETypes.OPERATOR, [ translateFilters(thingy.expression) ]);
     
     if (thingy.expression && !thingy.type)
-        return translateExpressionsOperations(thingy.expression);
+        return translateFilters(thingy.expression);
     
     if (_.isArray(thingy))
         return thingy.map(subthingy => translateExpressionsOperations(subthingy));
@@ -795,7 +818,6 @@ function translateExpressionsOperations(thingy)
 }
 // ---------------------------------- ADD RDF.JS ----------------------------------
 
-// at this point the only remaining fields that can have a string are `type`, `symbol` (for expressions) and `separator` (damn you group_concat)
 function toRdfJs(thingy)
 {
     if (_.isString(thingy))
@@ -810,7 +832,7 @@ function toRdfJs(thingy)
     
     for (let key of Object.keys(thingy))
     {
-        if (key === 'type' || key === 'symbol' || key === 'separator')
+        if (key === 'type' || key === 'aggregate' || key === 'operator' || key === 'expressionType' || key === 'separator')
             continue;
         thingy[key] = toRdfJs(thingy[key]);
     }

@@ -26,7 +26,7 @@ describe('SPARQL 1.1 exists', () => {
                     AE(A.GRAPH, [
                         'http://www.example.org/graph',
                         AE(A.FILTER, [
-                            AE(A.EXISTS, [ AE(A.BGP, [ T('?s', '?p', 'http://www.example.org/o2') ]) ]),
+                            AE('exists', [ AE(A.BGP, [ T('?s', '?p', 'http://www.example.org/o2') ]) ]),
                             AE(A.BGP, [ T('?s', '?p', 'http://www.example.org/o1') ])
                         ])
                     ]),
@@ -47,7 +47,7 @@ describe('SPARQL 1.1 exists', () => {
         let expected =
                 AE(A.PROJECT, [
                     AE(A.FILTER, [
-                        AE(A.EXISTS, [ AE(A.BGP, [ Util.quad('?s', '?p', 'http://www.example.org/o2', 'http://www.example.org/graph') ]) ]),
+                        AE('exists', [ AE(A.BGP, [ Util.quad('?s', '?p', 'http://www.example.org/o2', 'http://www.example.org/graph') ]) ]),
                         AE(A.BGP, [ Util.quad('?s', '?p', 'http://www.example.org/o1', 'http://www.example.org/graph') ])
                     ]),
                     [ '?s', '?p' ]
@@ -65,8 +65,8 @@ describe('SPARQL 1.1 exists', () => {
         let expected =
                 AE(A.PROJECT, [
                     AE(A.FILTER, [
-                        AE(A.EXISTS, [ AE(A.FILTER, [
-                            AE(A.EXISTS, [ AE(A.BGP, [ T('?s', '?p', 'http://www.example.org/o2') ]) ]),
+                        AE('exists', [ AE(A.FILTER, [
+                            AE('exists', [ AE(A.BGP, [ T('?s', '?p', 'http://www.example.org/o2') ]) ]),
                             AE(A.BGP, [ T('?s', '?p', 'http://www.example.org/o1') ])
                         ]) ]),
                         AE(A.BGP, [ T('?s', '?p', 'http://www.example.org/o') ])
@@ -86,8 +86,8 @@ describe('SPARQL 1.1 exists', () => {
         let expected =
                 AE(A.PROJECT, [
                     AE(A.FILTER, [
-                        AE(A.EXISTS, [ AE(A.FILTER, [
-                            AE(A.NOT_EXISTS, [ AE(A.BGP, [ T('?s', '?p', 'http://www.example.org/o2') ]) ]),
+                        AE('exists', [ AE(A.FILTER, [
+                            AE('notexists', [ AE(A.BGP, [ T('?s', '?p', 'http://www.example.org/o2') ]) ]),
                             AE(A.BGP, [ T('?s', '?p', 'http://www.example.org/o1') ]) ]) ]),
                         AE(A.BGP, [ T('?s', '?p', 'http://www.example.org/o') ])
                     ]),

@@ -6,6 +6,7 @@ const N3Util = require('n3').Util;
 import * as A from '../lib/algebra';
 import translate = require('../lib/sparqlAlgebra');
 const Algebra = A.types;
+const ETypes = A.expressionTypes;
 
 class Util
 {
@@ -37,10 +38,10 @@ class Util
     }
 
     // :innocent:
-    static varExpr (expr: string|A.Expression) : rdfjs.Term|A.Expression
+    static termExpr (expr: string|A.Expression) : A.Expression
     {
         if (_.isString(expr))
-            return Util.createTerm(expr);
+            return <A.TermExpression>{ type: Algebra.EXPRESSION, expressionType: ETypes.TERM, term: Util.createTerm(expr) };
         return expr;
     }
 
@@ -50,16 +51,16 @@ class Util
         {
             case Algebra.BGP:       return <A.Bgp>      { type: key, patterns: args };
             case Algebra.DISTINCT:  return <A.Distinct> { type: key, input: args[0] };
-            case Algebra.EXTEND:    return <A.Extend>   { type: key, input: args[0], variable: Util.createTerm(args[1]), expression: Util.varExpr(args[2]) };
-            case Algebra.FILTER:    return <A.Filter>   { type: key, expression: Util.varExpr(args[0]), input: args[1] };
+            case Algebra.EXTEND:    return <A.Extend>   { type: key, input: args[0], variable: Util.createTerm(args[1]), expression: Util.termExpr(args[2]) };
+            case Algebra.FILTER:    return <A.Filter>   { type: key, expression: Util.termExpr(args[0]), input: args[1] };
             case Algebra.GRAPH:     return <A.Graph>    { type: key, graph: Util.createTerm(args[0]), input: args[1] };
-            case Algebra.GROUP:     return <A.Group>    { type: key, expressions: args[0].map(Util.varExpr), aggregates: args[1], input: args[2] };
+            case Algebra.GROUP:     return <A.Group>    { type: key, expressions: args[0].map(Util.termExpr), aggregates: args[1], input: args[2] };
             case Algebra.JOIN:      return <A.Join>     { type: key, left: args[0], right: args[1] };
             case Algebra.LEFT_JOIN: return args[2] === true ?
                                            <A.LeftJoin> { type: key, left: args[0], right: args[1] } :
-                                           <A.LeftJoin> { type: key, left: args[0], right: args[1], expression: Util.varExpr(args[2]) };
+                                           <A.LeftJoin> { type: key, left: args[0], right: args[1], expression: Util.termExpr(args[2]) };
             case Algebra.MINUS:     return <A.Minus>    { type: key, left: args[0], right: args[1] };
-            case Algebra.ORDER_BY:  return <A.OrderBy>  { type: key, input: args[0], expressions: args[1].map(Util.varExpr) };
+            case Algebra.ORDER_BY:  return <A.OrderBy>  { type: key, input: args[0], expressions: args[1].map(Util.termExpr) };
             case Algebra.PROJECT:   return <A.Project>  { type: key, input: args[0], variables: args[1].map(Util.createTerm) };
             case Algebra.REDUCED:   return <A.Reduced>  { type: key, input: args[0] };
             case Algebra.SLICE:     return args[1] === -1 ?
@@ -83,6 +84,10 @@ class Util
             case Algebra.ZERO_OR_MORE_PATH: return <A.ZeroOrMorePath>   { type: key, path: args[0] };
         }
 
+        // used in TABLE
+        if (key === Algebra.VARS)
+            return <A.Values> { variables: args.map(Util.createTerm) };
+
         if (key === Algebra.TABLE)
         {
             let bindings: any[] = [];
@@ -94,13 +99,13 @@ class Util
                     binding[entry[0]] = Util.createTerm(entry[1]);
                 bindings.push(binding);
             }
-            return <A.Values> { type: Algebra.VALUES, variables: args[0].args, bindings };
+            return <A.Values> { type: Algebra.VALUES, variables: args[0].variables, bindings };
         }
         
         if (key === Algebra.AGGREGATE)
         {
-            let result: A.Aggregate = { type: 'aggregate', symbol: args[0], expression: Util.varExpr(args[1]) };
-            if (result.symbol === 'group_concat')
+            let result: A.Aggregate = { type: 'aggregate', aggregate: args[0], expression: Util.termExpr(args[1]) };
+            if (result.aggregate === 'group_concat')
             {
                 if (args.length === 4)
                 {
@@ -118,8 +123,13 @@ class Util
             return result;
         }
 
-        // not returned -> probably expression
-        return <A.Expression>{ type: Algebra.EXPRESSION, symbol: key, args: args.map(Util.varExpr)};
+        // TODO: really really need to redo the test stuff
+        if (key === 'exists' || key === 'notexists')
+            return <A.ExistenceExpression>{ type: Algebra.EXPRESSION, expressionType: ETypes.EXISTENCE, not: (key === 'notexists'), input: args[0] };
+        if (key.startsWith('http'))
+            return <A.NamedExpression>{ type: Algebra.EXPRESSION, expressionType: ETypes.NAMED, name: Util.createTerm(key), args: args.map(Util.termExpr)};
+        else
+            return <A.OperatorExpression>{ type: Algebra.EXPRESSION, expressionType: ETypes.OPERATOR, operator: key, args: args.map(Util.termExpr)};
     }
     
     static triple (subject: string, predicate: string, object: string)

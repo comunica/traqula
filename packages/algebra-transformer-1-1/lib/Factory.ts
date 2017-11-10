@@ -50,4 +50,9 @@ export default class Factory
     static createValues (variables: RDF.Variable[], bindings: any[]): A.Values { return { type: 'values', variables, bindings }; }
     static createZeroOrMorePath (path: A.Operation): A.ZeroOrMorePath { return { type: 'ZeroOrMorePath', path }; }
     static createZeroOrOnePath (path: A.Operation): A.ZeroOrOnePath { return { type: 'ZeroOrOnePath', path }; }
+
+    static createExistenceExpression (not: boolean, input: A.Operation): A.ExistenceExpression { return { type: 'expression', expressionType: 'existence', not, input }; }
+    static createNamedExpression (name: RDF.NamedNode, args: A.Expression[]): A.NamedExpression { return { type: 'expression', expressionType: 'named', name, args }; }
+    static createOperatorExpression (operator: string, args: A.Expression[]): A.OperatorExpression { return { type: 'expression', expressionType: 'operator', operator, args }; }
+    static createTermExpression (term: RDF.Term): A.TermExpression { return { type: 'expression', expressionType: 'term', term }; }
 }

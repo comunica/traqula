@@ -3,8 +3,7 @@ import _ = require('lodash');
 import assert = require('assert');
 import * as rdfjs from 'rdf-js';
 const N3Util = require('n3').Util;
-import * as A from '../lib/algebra';
-import translate = require('../lib/sparqlAlgebra');
+import { translate, Algebra as A } from '../index';
 const Algebra = A.types;
 const ETypes = A.expressionTypes;
 

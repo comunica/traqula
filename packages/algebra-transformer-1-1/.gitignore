@@ -11,3 +11,4 @@ index.*
 !index.ts
 util.*
 !util.ts
+bin/**/*.js

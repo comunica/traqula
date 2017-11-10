@@ -234,7 +234,7 @@ export interface Slice extends Single
 {
     type: 'slice';
     start: number;
-    length: number;
+    length?: number;
 }
 
 export interface Union extends Double

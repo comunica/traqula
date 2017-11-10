@@ -5,10 +5,6 @@ node_modules
 *.n3~
 *.log
 notes.txt
-algebra.*
-!algebra.ts
-index.*
-!index.ts
-util.*
-!util.ts
-bin/**/*.js
+*.js
+*.js.map
+*.d.ts

@@ -840,4 +840,4 @@ function toRdfJs(thingy)
 }
 // ---------------------------------- END RDF.JS ----------------------------------
 
-module.exports = translate;
+module.exports = { translate };

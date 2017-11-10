@@ -11,7 +11,7 @@ const Algebra = algebra.types;
 const ETypes = algebra.expressionTypes;
 
 
-// ---------------------------------- END HELPER CLASSES ----------------------------------
+// ---------------------------------- HELPER CLASSES ----------------------------------
 
 
 let variables = {};

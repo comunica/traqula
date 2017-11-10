@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "@types/lodash": "^4.14.77",
-    "@types/node": "^8.0.34",
+    "@types/node": "^8.0.50",
     "@types/rdf-js": "^1.0.1",
     "mocha": "^3.5.3",
     "pre-commit": "^1.2.2",

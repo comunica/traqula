@@ -17,26 +17,28 @@ export default class Factory
         result.variable = variable;
         return result;
     }
-    static createBgp (patterns: RDF.Term[]): A.Bgp { return { type: 'bgp', patterns }; }
+    static createBgp (patterns: A.Pattern[]): A.Bgp { return { type: 'bgp', patterns }; }
     static createDistinct (input: A.Operation) : A.Distinct { return { type: 'distinct', input }; }
     static createExtend (input: A.Operation, variable: RDF.Variable, expression: A.Expression) : A.Extend { return { type: 'extend', input, variable, expression }; }
     static createFilter (input: A.Operation, expression: A.Expression) : A.Filter { return { type: 'filter', input, expression }; }
-    static createGraph (input: A.Operation, graph: RDF.Term) : A.Graph { return { type: 'graph', input, graph }; }
+    static createGraph (input: A.Operation, name: RDF.Term) : A.Graph { return { type: 'graph', input, name }; }
     static createGroup (input: A.Operation, expressions: A.Expression[], aggregates: A.BoundAggregate[]) : A.Group { return { type: 'group', input, expressions, aggregates }; }
     static createInv (path: A.Operation): A.Inv { return { type: 'inv', path }; }
     static createJoin (left: A.Operation, right: A.Operation): A.Join { return { type: 'join', left, right }; }
-    static createLeftJoin (left: A.Operation, right: A.Operation, expression: A.Expression): A.LeftJoin { return { type: 'leftjoin', left, right, expression }; }
+    static createLeftJoin (left: A.Operation, right: A.Operation, expression?: A.Expression): A.LeftJoin
+    {
+        if (expression)
+            return { type: 'leftjoin', left, right, expression };
+        return { type: 'leftjoin', left, right };
+    }
     static createLink (iri: RDF.NamedNode): A.Link { return { type: 'link', iri }; }
     static createMinus (left: A.Operation, right: A.Operation): A.Minus { return { type: 'minus', left, right }; }
     static createNps (iris: RDF.NamedNode[]): A.Nps { return { type: 'nps', iris }; }
     static createOneOrMorePath (path: A.Operation): A.OneOrMorePath { return { type: 'OneOrMorePath', path }; }
     static createOrderBy (input: A.Operation, expressions: A.Expression[]) : A.OrderBy { return { type: 'orderby', input, expressions }; }
-    static createPath (subject: RDF.Term, predicate: A.Path, object: RDF.Term, graph?: RDF.Term) : A.Path
-    {
-        if (graph)
-            return { type: 'path', subject, predicate, object, graph };
-        return { type: 'path', subject, predicate, object };
-    }
+    static createPath (subject: RDF.Term, predicate: A.Operation, object: RDF.Term, graph: RDF.Term) : A.Path { return { type: 'path', subject, predicate, object, graph }; }
+    // TODO: cast needed due to missing equals method (could use https://github.com/rdf-ext/rdf-data-model )
+    static createPattern (subject: RDF.Term, predicate: RDF.Term, object: RDF.Term, graph: RDF.Term) : A.Pattern { return <A.Pattern><any>{ type: 'pattern', subject, predicate, object, graph }; }
     static createProject (input: A.Operation, variables: RDF.Variable[]) : A.Project { return { type: 'project', input, variables }; }
     static createReduced (input: A.Operation) : A.Reduced { return { type: 'reduced', input }; }
     static createSeq (left: A.Operation, right: A.Operation): A.Seq { return { type: 'seq', left, right }; }

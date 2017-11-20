@@ -18,13 +18,16 @@ class Util
         if (str[0] === '?')
             return <rdfjs.Variable>{ termType: 'Variable', value: str.substring(1) };
         if (str.startsWith('_:'))
-            return <rdfjs.BlankNode>{ termType: 'BlankNode', value: str.substring(3) };
+            return <rdfjs.BlankNode>{ termType: 'BlankNode', value: str.substring(2) };
         if (N3Util.isLiteral(str))
         {
-            let literal = <rdfjs.Literal>{ termType: 'Literal', value: N3Util.getLiteralValue(str) };
+            let literal: rdfjs.Literal = <rdfjs.Literal>{ termType: 'Literal', value: N3Util.getLiteralValue(str), language: '', datatype: stringType };
             let lang = N3Util.getLiteralLanguage(str);
             if (lang && lang.length > 0)
+            {
                 literal.language = lang;
+                literal.datatype = langStringType;
+            }
             else
             {
                 let type = N3Util.getLiteralType(str);
@@ -33,7 +36,7 @@ class Util
             }
             return literal;
         }
-        return <rdfjs.NamedNode>{ termType: 'NamedNode', value: str };
+        return <rdfjs.NamedNode> { termType: 'NamedNode', value: str };
     }
 
     // :innocent:
@@ -52,7 +55,7 @@ class Util
             case Algebra.DISTINCT:  return <A.Distinct> { type: key, input: args[0] };
             case Algebra.EXTEND:    return <A.Extend>   { type: key, input: args[0], variable: Util.createTerm(args[1]), expression: Util.termExpr(args[2]) };
             case Algebra.FILTER:    return <A.Filter>   { type: key, expression: Util.termExpr(args[0]), input: args[1] };
-            case Algebra.GRAPH:     return <A.Graph>    { type: key, graph: Util.createTerm(args[0]), input: args[1] };
+            case Algebra.GRAPH:     return <A.Graph>    { type: key, name: Util.createTerm(args[0]), input: args[1] };
             case Algebra.GROUP:     return <A.Group>    { type: key, expressions: args[0].map(Util.termExpr), aggregates: args[1], input: args[2] };
             case Algebra.JOIN:      return <A.Join>     { type: key, left: args[0], right: args[1] };
             case Algebra.LEFT_JOIN: return args[2] === true ?
@@ -125,7 +128,7 @@ class Util
         // TODO: really really need to redo the test stuff
         if (key === 'exists' || key === 'notexists')
             return <A.ExistenceExpression>{ type: Algebra.EXPRESSION, expressionType: ETypes.EXISTENCE, not: (key === 'notexists'), input: args[0] };
-        if (key.startsWith('http'))
+        if (_.startsWith(key, 'http'))
             return <A.NamedExpression>{ type: Algebra.EXPRESSION, expressionType: ETypes.NAMED, name: Util.createTerm(key), args: args.map(Util.termExpr)};
         else
             return <A.OperatorExpression>{ type: Algebra.EXPRESSION, expressionType: ETypes.OPERATOR, operator: key, args: args.map(Util.termExpr)};
@@ -230,5 +233,7 @@ class Util
     //     return algebra;
     // }
 }
+const stringType = <rdfjs.NamedNode>Util.createTerm('http://www.w3.org/2001/XMLSchema#string');
+const langStringType = <rdfjs.NamedNode>Util.createTerm('http://www.w3.org/1999/02/22-rdf-syntax-ns#langString');
 
 module.exports = Util;

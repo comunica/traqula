@@ -38,7 +38,7 @@ describe('SPARQL 1.1 syntax', () => {
     //     console.log(algebra + '');
     //     console.log(Util.testString(algebra));
     //     let expected =
-    //             AE(A.PROJECT, [ AE(A.TO_MULTISET, [ AE(A.PROJECT, [ AE(A.BGP, [ T('?s', '?p', '?o') ]), [ '?s', '?p', '?o' ] ]) ]), [  ] ]);
+    //             AE(Algebra.PROJECT, [ AE(Algebra.TO_MULTISET, [ AE(Algebra.PROJECT, [ AE(Algebra.BGP, [ T('?s', '?p', '?o') ]), [ '?s', '?p', '?o' ] ]) ]), [  ] ]);
     //     Util.compareAlgebras(expected, algebra);
     // });
     
@@ -94,9 +94,9 @@ describe('SPARQL 1.1 syntax', () => {
     //                     }`;
     //     let algebra = translate(sparql);
     //     let expected =
-    //             AE(A.PROJECT, [ AE(A.JOIN, [ AE(A.BGP, [ T('http://www.example.orgs', 'http://www.example.orgp', '?o'),
+    //             AE(Algebra.PROJECT, [ AE(Algebra.JOIN, [ AE(Algebra.BGP, [ T('http://www.example.orgs', 'http://www.example.orgp', '?o'),
     //                                                        T('http://www.example.orgs', 'http://www.example.orgq', '?o1') ]),
-    //                                          AE(A.EXTEND, [ AE(A.BGP, [ ]),
+    //                                          AE(Algebra.EXTEND, [ AE(Algebra.BGP, [ ]),
     //                                                         '?o1',
     //                                                         AE('+', [ '"1"^^http://www.w3.org/2001/XMLSchema#integer', '?o' ]) ]) ]),
     //                             [ '?o', '?o1' ] ]);
@@ -116,9 +116,9 @@ describe('SPARQL 1.1 syntax', () => {
     //                     }`;
     //     let algebra = translate(sparql);
     //     let expected =
-    //             AE(A.PROJECT, [ AE(A.JOIN, [ AE(A.BGP, [ T('http://www.example.orgs', 'http://www.example.orgp', '?o'),
+    //             AE(Algebra.PROJECT, [ AE(Algebra.JOIN, [ AE(Algebra.BGP, [ T('http://www.example.orgs', 'http://www.example.orgp', '?o'),
     //                                                      T('http://www.example.orgs', 'http://www.example.orgq', '?o1') ]),
-    //                                          AE(A.EXTEND, [ AE(A.BGP, [ ]),
+    //                                          AE(Algebra.EXTEND, [ AE(Algebra.BGP, [ ]),
     //                                                         '?o1',
     //                                                         AE('+', [ '"1"^^http://www.w3.org/2001/XMLSchema#integer', '?o' ]) ]) ]),
     //                             [ '?o', '?o1' ] ]);

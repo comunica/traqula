@@ -24,6 +24,7 @@ export const types = Object.freeze({
     ONE_OR_MORE_PATH:   'OneOrMorePath',
     ORDER_BY:           'orderby',
     PATH:               'path',
+    PATTERN:            'pattern',
     PROJECT:            'project',
     REDUCED:            'reduced',
     ROW:                'row',
@@ -51,6 +52,7 @@ export const expressionTypes = Object.freeze({
 
 export interface Operation
 {
+    [key:string]: any;
     type: string;
 }
 
@@ -125,7 +127,7 @@ export interface BoundAggregate extends Aggregate
 export interface Bgp extends Operation
 {
     type: 'bgp';
-    patterns: rdfjs.Term[];
+    patterns: Pattern[];
 }
 
 export interface Distinct extends Single
@@ -149,7 +151,7 @@ export interface Filter extends Single
 export interface Graph extends Single
 {
     type: 'graph';
-    graph: rdfjs.Term;
+    name: rdfjs.Term;
 }
 
 export interface Group extends Single
@@ -173,7 +175,7 @@ export interface Join extends Double
 export interface LeftJoin extends Double
 {
     type: 'leftjoin';
-    expression: Expression;
+    expression?: Expression;
 }
 
 export interface Link extends Operation
@@ -211,7 +213,12 @@ export interface Path extends Operation
     subject: rdfjs.Term;
     predicate: Operation;
     object: rdfjs.Term;
-    graph?: rdfjs.Term;
+    graph: rdfjs.Term;
+}
+
+export interface Pattern extends Operation, rdfjs.Quad
+{
+    type: 'pattern';
 }
 
 export interface Project extends Single

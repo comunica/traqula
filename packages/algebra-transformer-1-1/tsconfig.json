@@ -11,9 +11,8 @@
     "allowJs": true
   },
   "include": [
-    "index.ts",
-    "lib/algebra.ts",
-    "test/util.ts"
+    "bin/**/*.ts",
+    "lib/**/*.ts"
   ],
   "exclude": [
     "node_modules"

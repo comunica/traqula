@@ -8,3 +8,4 @@ notes.txt
 *.js
 *.js.map
 *.d.ts
+!test

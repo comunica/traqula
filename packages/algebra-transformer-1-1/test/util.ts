@@ -17,7 +17,7 @@ class Util
     {
         if (str[0] === '?')
             return <rdfjs.Variable>{ termType: 'Variable', value: str.substring(1) };
-        if (str.startsWith('_:'))
+        if (_.startsWith(str, '_:'))
             return <rdfjs.BlankNode>{ termType: 'BlankNode', value: str.substring(2) };
         if (N3Util.isLiteral(str))
         {

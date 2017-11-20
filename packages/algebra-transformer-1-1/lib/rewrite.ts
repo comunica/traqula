@@ -40,7 +40,8 @@ export default function translate(sparql: any, quads?: boolean) : Algebra.Operat
 
 function isVariable(str: any) : boolean
 {
-    return _.isString(str) && str[0] === '?';
+    // there is also a '?' operator...
+    return _.isString(str) && str[0] === '?' && str.length > 1;
 }
 
 // 18.2.1
@@ -119,10 +120,7 @@ function translateGroupGraphPattern(thingy: any) : Algebra.Operation
         result = nonfilters.reduce(accumulateGroupGraphPattern, Factory.createBgp([]));
     // custom values operation
     else if (thingy.type === 'values')
-    {
-        let variables = thingy.values.length === 0 ? [] : Object.keys(thingy.values[0]);
-        result = Factory.createValues(<RDF.Variable[]>variables.map(translateTerm), thingy.values.map((binding:any) => _.omitBy(binding, v => v === undefined)));
-    }
+        result = translateInlineData(thingy);
     else if (thingy.type === 'query')
         result = translate(thingy, useQuads);
     else
@@ -208,7 +206,7 @@ function translatePathPredicate(predicate: any) : Algebra.Operation
     {
         let normals: string[] = [];
         let inverted: string[] = [];
-        let items = predicate.items[0]; // the | element
+        let items = predicate.items[0].items; // the | element
 
         for (let item of items)
         {
@@ -285,7 +283,7 @@ function translateTerm(str: any) : RDF.Term
 {
     if (str[0] === '?')
         return <RDF.Variable>{ termType: 'Variable', value: str.substring(1) };
-    if (str.startsWith('_:'))
+    if (_.startsWith(str, '_:'))
         return <RDF.BlankNode>{ termType: 'BlankNode', value: str.substring(2) };
     if (N3Util.isLiteral(str))
     {
@@ -487,5 +485,11 @@ function translateAggregates(query: any, op: Algebra.Operation, variables: Set<R
 function translateInlineData(values: any) : Algebra.Values
 {
     let variables = <RDF.Variable[]>(values.values.length === 0 ? [] : Object.keys(values.values[0])).map(translateTerm);
-    return Factory.createValues(variables, values.values.map((binding: any) => _.omitBy(binding, v => v === undefined)));
+    let bindings = values.values.map((binding: any) =>
+    {
+        let keys = Object.keys(binding);
+        keys = keys.filter(k => binding[k] !== undefined);
+        return Object.assign({}, ...keys.map(k => { let a: any = {}; a[k] = translateTerm(binding[k]); return a; }));
+    });
+    return Factory.createValues(variables, bindings);
 }

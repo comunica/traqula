@@ -7,6 +7,7 @@ export const types = Object.freeze({
     AGGREGATE:          'aggregate',
     ALT:                'alt',
     BGP:                'bgp',
+    CONSTRUCT:          'construct',
     DESC:               'desc',
     DISTINCT:           'distinct',
     EXPRESSION:         'expression',
@@ -128,6 +129,12 @@ export interface Bgp extends Operation
 {
     type: 'bgp';
     patterns: Pattern[];
+}
+
+export interface Construct extends Single
+{
+    type: 'construct';
+    template: Pattern[];
 }
 
 export interface Distinct extends Single

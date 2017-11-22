@@ -340,8 +340,8 @@ function translateAggregates(query, res, variables) {
         res = Factory_1.default.createJoin(res, translateInlineData(query));
     // 18.2.4.4
     let PV = new Set();
-    // interpret ASK as SELECT *
-    if (query.queryType === 'ASK' || query.variables.indexOf('*') >= 0)
+    // interpret other query types as SELECT *
+    if (query.queryType !== 'SELECT' || query.variables.indexOf('*') >= 0)
         PV = variables;
     else {
         for (let v of query.variables) {
@@ -374,6 +374,10 @@ function translateAggregates(query, res, variables) {
     // 18.2.5.4
     if (query.reduced)
         res = Factory_1.default.createReduced(res);
+    // NEW: support for construct queries
+    // limits are also applied to construct results, which is why those come last, although results should be the same
+    if (query.queryType === 'CONSTRUCT')
+        res = Factory_1.default.createConstruct(res, query.template.map(translateTriple));
     // 18.2.5.5
     if (query.offset || query.limit) {
         res = Factory_1.default.createSlice(res, query.offset || 0);

@@ -438,8 +438,8 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
     // 18.2.4.4
     let PV = new Set<RDF.Variable>();
 
-    // interpret ASK as SELECT *
-    if (query.queryType === 'ASK' || query.variables.indexOf('*') >= 0)
+    // interpret other query types as SELECT *
+    if (query.queryType !== 'SELECT' || query.variables.indexOf('*') >= 0)
         PV = variables;
     else
     {
@@ -482,6 +482,11 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
     // 18.2.5.4
     if (query.reduced)
         res = Factory.createReduced(res);
+
+    // NEW: support for construct queries
+    // limits are also applied to construct results, which is why those come last, although results should be the same
+    if (query.queryType === 'CONSTRUCT')
+        res = Factory.createConstruct(res, query.template.map(translateTriple));
 
     // 18.2.5.5
     if (query.offset || query.limit)

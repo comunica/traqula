@@ -18,6 +18,7 @@ export default class Factory
         return result;
     }
     static createBgp (patterns: A.Pattern[]): A.Bgp { return { type: 'bgp', patterns }; }
+    static createConstruct (input: A.Operation, template: A.Pattern[]): A.Construct { return { type: 'construct', input, template }; }
     static createDistinct (input: A.Operation) : A.Distinct { return { type: 'distinct', input }; }
     static createExtend (input: A.Operation, variable: RDF.Variable, expression: A.Expression) : A.Extend { return { type: 'extend', input, variable, expression }; }
     static createFilter (input: A.Operation, expression: A.Expression) : A.Filter { return { type: 'filter', input, expression }; }

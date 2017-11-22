@@ -1,7 +1,7 @@
 #! /usr/bin/env node
 
 import * as minimist from 'minimist';
-import { translate } from '../lib/sparqlAlgebra';
+import translate from '../lib/sparqlAlgebra';
 
 const args = minimist(process.argv.slice(2), {
     boolean: ['q'],

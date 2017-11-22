@@ -1,4 +1,2 @@
-import { Operation } from './algebra';
-
-export function translate (sparql: any, quads?: boolean) : Operation;
-
+import * as Algebra from './algebra';
+export default function translate(sparql: any, quads?: boolean): Algebra.Operation;

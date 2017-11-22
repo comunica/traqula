@@ -1,843 +1,421 @@
-/**
- * Created by joachimvh on 26/02/2015.
- */
-
-const _ = require('lodash');
-const algebra = require('./algebra');
-const N3Util = require('n3').Util;
-const SparqlParser = require('sparqljs').Parser;
-
-const Algebra = algebra.types;
-const ETypes = algebra.expressionTypes;
-
-
-// ---------------------------------- HELPER CLASSES ----------------------------------
-
-
-let variables = {};
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const _ = require("lodash");
+const Algebra = require("./algebra");
+const Factory_1 = require("./Factory");
+const n3_1 = require("n3");
+const Parser = require('sparqljs').Parser;
+const types = Algebra.types;
+const eTypes = Algebra.expressionTypes;
+let variables = new Set();
 let varCount = 0;
 let useQuads = false;
-let defaultGraph = { termType: 'DefaultGraph', value: '' };
-
-function createAlgebraElement (symbol, args)
-{
-    return Object.assign({type: symbol}, args);
-}
-
-function createExpression (symbol, type, args)
-{
-    // SPARQL.js has a list as second argument for notin (and in), we don't like lists
-    // TODO: unfortunately createExpression gets called multiple times hence the array check for now
-    if ((symbol === 'notin' || symbol === 'in') && _.isArray(args[1]))
-        args = [args[0]].concat(args[1]);
-    
-    // have their own type due to being applied to a groupGraphPattern
-    if (symbol === 'exists' || symbol === 'notexists')
-    {
-        if (args.length > 1)
-            throw new Error('Expected a single argument for exists/notexists');
-        return createAlgebraElement(Algebra.EXPRESSION, { expressionType: ETypes.EXISTENCE, not: (symbol === 'notexists'), input: args[0] });
-    }
-    
-    // map all terms to TermExpressions
-    args = args ? args.map(arg =>
-    {
-        if (_.isString(arg))
-            arg = createTerm(arg);
-        if (arg.termType)
-            return createAlgebraElement(Algebra.EXPRESSION, { expressionType: ETypes.TERM, term: arg });
-        if (!arg.expressionType)
-            return translateFilters(arg); // TODO: should look into this nesting
-        return arg;
-    }) : null;
-    
-    // TODO: support for known operators?
-    if (type === ETypes.OPERATOR)
-        return createAlgebraElement(Algebra.EXPRESSION, { expressionType: ETypes.OPERATOR, operator: symbol, args });
-    if (type === ETypes.NAMED)
-        return createAlgebraElement(Algebra.EXPRESSION, { expressionType: ETypes.NAMED, name: createTerm(symbol), args });
-    if (type === ETypes.TERM)
-        return createAlgebraElement(Algebra.EXPRESSION, { expressionType: ETypes.TERM, term: symbol });
-    
-    throw new Error('Invalid type: ' + type);
-}
-
-function createAggregate (aggregate, input)
-{
-    if (_.isArray(input))
-        input = input[0];
-    return createAlgebraElement(Algebra.AGGREGATE, {aggregate, expression: input});
-}
-
-function createTriple (subject, predicate, object)
-{
-    // first parameter is a triple object
-    if (subject.subject && subject.predicate && subject.object)
-    {
-        predicate = subject.predicate;
-        object = subject.object;
-        subject = subject.subject;
-    }
-    
-    if (predicate.type)
-        return createAlgebraElement(Algebra.PATH, {subject: createTerm(subject), predicate, object: createTerm(object), graph: defaultGraph});
-    
-    return createAlgebraElement(Algebra.PATTERN, {subject: createTerm(subject), predicate: createTerm(predicate), object: createTerm(object), graph: defaultGraph});
-}
-
-function createTerm (str)
-{
-    if (str.termType)
-        return str;
-    
-    if (str[0] === '?')
-        return { termType: 'Variable', value: str.substring(1) };
-    if (str.startsWith('_:'))
-        return { termType: 'BlankNode', value: str.substring(3) };
-    if (N3Util.isLiteral(str))
-    {
-        let literal = { termType: 'Literal', value: N3Util.getLiteralValue(str) };
-        let lang = N3Util.getLiteralLanguage(str);
-        if (lang && lang.length > 0)
-            literal.language = lang;
-        else
-        {
-            let type = N3Util.getLiteralType(str);
-            if (type && type.length > 0)
-                literal.datatype = createTerm(type);
-        }
-        return literal;
-    }
-    return { termType: 'NamedNode', value: str };
-}
-
-// generate an unused variable name
-function generateFreshVar ()
-{
-    let v = '?var' + varCount++;
-    if (variables[v])
-        return generateFreshVar();
-    variables[v] = true;
-    return v;
-}
-
-// ---------------------------------- TRANSLATE ----------------------------------
-function translate (sparql, quads)
-{
-    variables = {};
+function translate(sparql, quads) {
+    variables = new Set();
     varCount = 0;
     useQuads = quads;
-    if (_.isString(sparql))
-    {
-        let parser = new SparqlParser();
+    if (_.isString(sparql)) {
+        let parser = new Parser();
+        // resets the identifier counter used for blank nodes
+        // provides nicer and more consistent output if there are multiple calls
         parser._resetBlanks();
         sparql = parser.parse(sparql);
     }
     if (sparql.type !== 'query')
         throw new Error('Translate only works on complete query objects.');
+    // group and where are identical, having only 1 makes parsing easier
     let group = { type: 'group', patterns: sparql.where };
-    let vars = inScopeVariables(group);
-    let res = translateGraphPattern(group);
-    
-    res = simplify(res);
+    let vars = new Set(Object.keys(inScopeVariables(group)).map(translateTerm));
+    let res = translateGroupGraphPattern(group);
     res = translateAggregates(sparql, res, vars);
-    res = toRdfJs(res);
     return res;
 }
-
-// ---------------------------------- TRANSLATE HELPER FUNCTIONS ----------------------------------
-function mergeObjects (obj1, obj2)
-{
-    for (let key of Object.keys(obj2))
-        obj1[key] = obj2[key];
+exports.default = translate;
+function isVariable(str) {
+    // there is also a '?' operator...
+    return _.isString(str) && str[0] === '?' && str.length > 1;
 }
-
-function isVariable (thingy)
-{
-    return _.isString(thingy) && thingy[0] === '?';
-}
-
-function inScopeVariables (thingy)
-{
+// 18.2.1
+function inScopeVariables(thingy) {
     let inScope = {};
-    
-    if (isVariable(thingy))
+    if (isVariable(thingy)) {
         inScope[thingy] = true;
-    else if (thingy.type === 'bgp')
-    {
-        thingy.triples.forEach(triple =>
-        {
-            mergeObjects(inScope, inScopeVariables(triple.subject));
-            mergeObjects(inScope, inScopeVariables(triple.predicate));
-            mergeObjects(inScope, inScopeVariables(triple.object));
-        });
+        variables.add(thingy); // keep track of all variables so we don't generate duplicates
     }
-    else if (thingy.type === 'path')
-    {
-        for (let item of thingy.items)
-            mergeObjects(inScope, inScopeVariables(item));
-    }
-    // group, union, optional
-    else if (thingy.patterns)
-    {
-        for (let pattern of thingy.patterns)
-            mergeObjects(inScope, inScopeVariables(pattern));
-        
-        // graph
-        if (thingy.name)
-            mergeObjects(inScope, inScopeVariables(thingy.name));
-    }
-    // bind, group by
-    else if (thingy.variable)
-    {
-        mergeObjects(inScope, inScopeVariables(thingy.variable));
-    }
-    else if (thingy.queryType === 'SELECT')
-    {
-        for (let v of thingy.variables)
-        {
-            if (v === '*')
-                mergeObjects(inScope, inScopeVariables(thingy.where));
-            else
-                mergeObjects(inScope, inScopeVariables(v));
+    else if (_.isObject(thingy)) {
+        if (thingy.type === 'bind') {
+            inScopeVariables(thingy.expression); // to fill `variables`
+            Object.assign(inScope, inScopeVariables(thingy.variable));
         }
-        
-        // TODO: I'm not 100% sure if you always add these or only when '*' was selected
-        if (thingy.group)
-            for (let v of thingy.group)
-                mergeObjects(inScope, inScopeVariables(v));
+        else if (thingy.queryType === 'SELECT') {
+            let all = inScopeVariables(thingy.where); // always executing this makes sure `variables` gets filled correctly
+            for (let v of thingy.variables) {
+                if (v === '*')
+                    Object.assign(inScope, all);
+                else if (v.variable)
+                    Object.assign(inScope, inScopeVariables(v.variable));
+                else
+                    Object.assign(inScope, inScopeVariables(v));
+            }
+            // TODO: I'm not 100% sure if you always add these or only when '*' was selected
+            if (thingy.group)
+                for (let v of thingy.group)
+                    Object.assign(inScope, inScopeVariables(v));
+        }
+        else
+            for (let key of Object.keys(thingy))
+                Object.assign(inScope, inScopeVariables(thingy[key]));
     }
-    else if (thingy.type === 'values')
-    {
-        for (let value of thingy.values)
-            for (let v of Object.keys(value))
-                inScope[v] = true;
-    }
-    
     return inScope;
 }
-
-// ---------------------------------- TRANSLATE GRAPH PATTERN ----------------------------------
-function translateGraphPattern (thingy)
-{
-    // can be UNDEF in a VALUES block
-    if (thingy === undefined)
-        return thingy;
-    
-    if (_.isString(thingy))
-    {
-        if (isVariable(thingy))
-            variables[thingy] = true;
-        return thingy;
-    }
-    
-    if (_.isArray(thingy))
-        return thingy.map(subthingy => translateGraphPattern(subthingy) );
-    
-    // make sure optional and minus have group subelement (needs to be done before recursion)
-    if (thingy.type === 'optional' || thingy.type === 'minus')
-        thingy = { type: thingy.type, patterns: [{ type: 'group', patterns: thingy.patterns }] };
-    
-    // we postpone this for subqueries so the in-scope variable calculation is correct
-    if (thingy.type !== 'query')
-    {
-        let newthingy = {};
-        for (let key of Object.keys(thingy))
-            newthingy[key] = translateGraphPattern(thingy[key]);
-        thingy = newthingy;
-    }
-    // from this point on we can change contents of the input parameter since it was changed above (except for subqueries)
-    
-    // update expressions to algebra format (done here since they are used in both filters and binds)
-    if (thingy.type === 'operation')
-        thingy = createExpression(thingy.operator, ETypes.OPERATOR, thingy.args);
-    
+function translateGroupGraphPattern(thingy) {
     // 18.2.2.1
     // already done by sparql parser
-    
     // 18.2.2.2
     let filters = [];
     let nonfilters = [];
-    if (thingy.type === 'filter')
-        thingy = createAlgebraElement('_filter', { expression: thingy.expression }); // _filter since it doesn't really correspond to the 'filter' from the spec here
-    else if (thingy.patterns)
-    {
+    if (thingy.patterns)
         for (let pattern of thingy.patterns)
-        {
-            if (pattern.type === '_filter')
-                filters.push(pattern.expression); // we only need the expression, we already know they are filters now
-            else
-                nonfilters.push(pattern);
-        }
-        thingy.patterns = nonfilters;
-    }
-    
+            (pattern.type === 'filter' ? filters : nonfilters).push(pattern);
     // 18.2.2.3
-    if (thingy.type === 'path')
-        thingy = translatePathExpression(thingy, thingy.items);
-    
     // 18.2.2.4
-    // need to do this at BGP level so seq paths can be merged into BGP
-    if (thingy.type === 'bgp')
-    {
-        let newTriples = [];
-        for (let triple of thingy.triples)
-            newTriples.push.apply(newTriples, translatePath(triple, triple.predicate));
-        thingy.triples = newTriples;
-    }
-    
     // 18.2.2.5
     if (thingy.type === 'bgp')
-    {
-        let join = [];
-        let bgp = [];
-        for (let triple of thingy.triples)
-        {
-            if (!triple.type)
-                triple = createTriple(triple);
-            if (triple.type === Algebra.PATH)
-            {
-                if (bgp.length > 0)
-                {
-                    join.push(createAlgebraElement(Algebra.BGP, { patterns: bgp }));
-                    bgp = [];
-                }
-                join.push(triple);
-            }
-            else
-                bgp.push(triple);
-        }
-        if (bgp.length > 0)
-            join.push(createAlgebraElement(Algebra.BGP, { patterns: bgp }));
-        if (join.length === 1)
-            thingy = join[0];
-        else
-            thingy = join.reduce((acc, item) => createAlgebraElement(Algebra.JOIN, { left: acc, right: item }));
-    }
-    
+        return translateBgp(thingy);
     // 18.2.2.6
+    let result;
     if (thingy.type === 'union')
-        thingy = translateGroupOrUnionGraphPattern(thingy);
-    if (thingy.type === 'graph')
-    {
-        // need to handle this separately here since the filters need to be in the graph
-        thingy = translateGraphGraphPattern(thingy, filters);
-        filters = [];
+        result = nonfilters.map((p) => {
+            // algebrajs doesn't always indicate the children are groups
+            if (p.type !== 'group')
+                p = { type: 'group', patterns: [p] };
+            return translateGroupGraphPattern(p);
+        }).reduce((acc, item) => Factory_1.default.createUnion(acc, item));
+    else if (thingy.type === 'graph')
+        // need to handle this separately since the filters need to be in the graph
+        return translateGraph(thingy);
+    else if (thingy.type === 'group')
+        result = nonfilters.reduce(accumulateGroupGraphPattern, Factory_1.default.createBgp([]));
+    else if (thingy.type === 'values')
+        result = translateInlineData(thingy);
+    else if (thingy.type === 'query')
+        result = translate(thingy, useQuads);
+    else
+        throw new Error('Unexpected type: ' + thingy.type);
+    if (filters.length > 0) {
+        let expressions = filters.map(filter => translateExpression(filter.expression));
+        if (expressions.length > 0)
+            result = Factory_1.default.createFilter(result, expressions.reduce((acc, exp) => Factory_1.default.createOperatorExpression('&&', [acc, exp])));
     }
-    if (thingy.type === 'group')
-        thingy = translateGroupGraphPattern(thingy);
-    // inlineData based on Jena implementation
-    if (thingy.type === 'values')
-        thingy = translateInlineData(thingy);
-    if (thingy.type === 'query')
-        thingy = translateSubSelect(thingy);
-    
-    // 18.2.2.7
-    if (filters.length > 0)
-        thingy = createAlgebraElement(Algebra.FILTER, { expression: translateFilters(filters), input: thingy });
-    
-    return thingy;
+    return result;
 }
-
-// 18.2.2.8
-function simplify (thingy)
-{
-    if (_.isString(thingy) || _.isBoolean(thingy) || _.isInteger(thingy) || thingy.termType)
-        return thingy;
-    if (_.isArray(thingy))
-        return thingy.map(subthingy => simplify(subthingy));
-    
-    if (!thingy.type && !thingy.operator)
-        throw new Error("Expected translated input.");
-    
-    if (thingy.type === Algebra.BGP)
-        return thingy;
-    
-    if (thingy.type === Algebra.JOIN)
-    {
-        if (thingy.left.type === Algebra.BGP && thingy.left.patterns.length === 0)
-            return thingy.right;
-        else if (thingy.right.type === Algebra.BGP && thingy.right.patterns.length === 0)
-            return thingy.left;
+function translateExpression(exp) {
+    if (_.isString(exp))
+        return Factory_1.default.createTermExpression(translateTerm(exp));
+    if (exp.function)
+        return Factory_1.default.createNamedExpression(translateTerm(exp.function), exp.args.map(translateExpression));
+    if (exp.operator) {
+        if (exp.operator === 'exists' || exp.operator === 'notexists')
+            return Factory_1.default.createExistenceExpression(exp.operator === 'notexists', translateGroupGraphPattern(exp.args[0]));
+        if (exp.operator === 'in' || exp.operator === 'notin')
+            exp.args = [exp.args[0]].concat(exp.args[1]); // sparql.js uses 2 arguments with the second one bing a list
+        return Factory_1.default.createOperatorExpression(exp.operator, exp.args.map(translateExpression));
     }
-    
-    for (let key of Object.keys(thingy))
-        thingy[key] = simplify(thingy[key]);
-    return thingy;
+    throw new Error('Unknown expression: ' + JSON.stringify(exp));
 }
-
-// ---------------------------------- TRANSLATE GRAPH PATTERN HELPER FUNCTIONS ----------------------------------
-function translatePathExpression (pathExp, translatedItems)
-{
-    let res = null;
-    let items = translatedItems.map(item => _.isString(item) ? createAlgebraElement(Algebra.LINK, { iri: item }) : item);
-    
-    if (pathExp.pathType === '^')
-        res = createAlgebraElement(Algebra.INV, { path: items[0] });
-    else if (pathExp.pathType === '!')
-    {
+function translateBgp(thingy) {
+    let patterns = [];
+    let joins = [];
+    for (let t of thingy.triples) {
+        if (t.predicate.type === 'path') {
+            // translatePath returns a mix of Quads and Paths
+            let path = translatePath(t);
+            for (let p of path) {
+                if (p.type === types.PATH) {
+                    if (patterns.length > 0)
+                        joins.push(Factory_1.default.createBgp(patterns));
+                    patterns = [];
+                    joins.push(p);
+                }
+                else
+                    patterns.push(p);
+            }
+        }
+        else
+            patterns.push(translateTriple(t));
+    }
+    if (patterns.length > 0)
+        joins.push(Factory_1.default.createBgp(patterns));
+    if (joins.length === 1)
+        return joins[0];
+    return joins.reduce((acc, item) => Factory_1.default.createJoin(acc, item));
+}
+function translatePath(triple) {
+    let sub = translateTerm(triple.subject);
+    let pred = translatePathPredicate(triple.predicate);
+    let obj = translateTerm(triple.object);
+    return simplifyPath(sub, pred, obj);
+}
+function translatePathPredicate(predicate) {
+    if (_.isString(predicate))
+        return Factory_1.default.createLink(translateTerm(predicate));
+    if (predicate.pathType === '^')
+        return Factory_1.default.createInv(translatePathPredicate(predicate.items[0]));
+    if (predicate.pathType === '!') {
         let normals = [];
         let inverted = [];
-        if (items.length !== 1)
-            throw new Error("Expected exactly 1 item for '!' path operator.");
-        let item = items[0];
-        
-        if (item.type === Algebra.LINK)
-            normals.push(item);
-        else if (item.type === Algebra.INV)
-        {
-            if (item.items.length !== 1)
-                throw new Error("Expected exactly 1 item for '^' path operator.");
-            inverted.push(item.items[0]);
+        let items = predicate.items[0].items; // the | element
+        for (let item of items) {
+            if (_.isString(item))
+                normals.push(item);
+            else if (item.pathType === '^')
+                inverted.push(item.items[0]);
+            else
+                throw new Error('Unexpected item: ' + item);
         }
-        else if (item.type === Algebra.ALT)
-        {
-            for (let option of [item.left, item.right])
-            {
-                if (option.type === Algebra.INV)
-                    inverted.push(option.path);
-                else
-                    normals.push(option);
-            }
-        }
-        
         // NPS elements do not have the LINK function
-        let normalElement = createAlgebraElement(Algebra.NPS, { iris: normals.map(link => link.iri) });
-        let invertedElement = createAlgebraElement(Algebra.INV, { path: createAlgebraElement(Algebra.NPS, { iris: inverted.map(link => link.iri) }) });
-        
+        let normalElement = Factory_1.default.createNps(normals.map(translateTerm));
+        let invertedElement = Factory_1.default.createInv(Factory_1.default.createNps(inverted.map(translateTerm)));
         if (inverted.length === 0)
-            res = normalElement;
-        else if (normals.length === 0)
-            res = invertedElement;
-        else
-            res = createAlgebraElement(Algebra.ALT, { left: normalElement, right: invertedElement });
+            return normalElement;
+        if (normals.length === 0)
+            return invertedElement;
+        return Factory_1.default.createAlt(normalElement, invertedElement);
     }
-    
-    else if (pathExp.pathType === '/')
-    {
-        if (items.length < 2)
-            throw new Error('Expected at least 2 items for '/' path operator.');
-        res = items.reduce((acc, v) => createAlgebraElement(Algebra.SEQ, { left: acc, right: v }));
-    }
-    else if (pathExp.pathType === '|')
-        res = items.reduce((acc, v) => createAlgebraElement(Algebra.ALT, { left: acc, right: v }));
-    else if (pathExp.pathType === '*')
-        res = createAlgebraElement(Algebra.ZERO_OR_MORE_PATH, { path: items[0] });
-    else if (pathExp.pathType === '+')
-        res = createAlgebraElement(Algebra.ONE_OR_MORE_PATH, { path: items[0] });
-    else if (pathExp.pathType === '?')
-        res = createAlgebraElement(Algebra.ZERO_OR_ONE_PATH, { path: items[0] });
-    
-    if (!res)
-        throw new Error('Unable to translate path expression ' + pathExp);
-    
-    return res;
+    if (predicate.pathType === '/')
+        return predicate.items.map(translatePathPredicate).reduce((acc, p) => Factory_1.default.createSeq(acc, p));
+    if (predicate.pathType === '|')
+        return predicate.items.map(translatePathPredicate).reduce((acc, p) => Factory_1.default.createAlt(acc, p));
+    if (predicate.pathType === '*')
+        return Factory_1.default.createZeroOrMorePath(translatePathPredicate(predicate.items[0]));
+    if (predicate.pathType === '+')
+        return Factory_1.default.createOneOrMorePath(translatePathPredicate(predicate.items[0]));
+    if (predicate.pathType === '?')
+        return Factory_1.default.createZeroOrOnePath(translatePathPredicate(predicate.items[0]));
+    throw new Error('Unable to translate path expression ' + predicate);
 }
-
-function translatePath (pathTriple, translatedPredicate)
-{
-    // assume path expressions have already been updated
-    if (!translatedPredicate.type)
-        return [ pathTriple ];
-    let pred = translatedPredicate;
-    let res = null;
-    if (pred.type === Algebra.LINK)
-        res = createTriple(pathTriple.subject, pred.iri, pathTriple.object);
-    else if (pred.type === Algebra.INV) // TODO: I think this applies to inv(path) instead of inv(iri) like the spec says, I might be wrong
-    {
-        res = translatePath(createTriple(pathTriple.object, pathTriple.predicate, pathTriple.subject), pred.path);
-    }
-    else if (pred.type === Algebra.SEQ)
-    {
+function simplifyPath(subject, predicate, object) {
+    if (predicate.type === types.LINK)
+        return [Factory_1.default.createPattern(subject, predicate.iri, object, defaultGraph)];
+    if (predicate.type === types.INV)
+        return simplifyPath(object, predicate.path, subject);
+    if (predicate.type === types.SEQ) {
         let v = generateFreshVar();
-        let triple1 = createTriple(pathTriple.subject, pred.left, v);
-        let triple2 = createTriple(v, pred.right, pathTriple.object);
-        res = translatePath(triple1, triple1.predicate).concat(translatePath(triple2, triple2.predicate));
+        let left = simplifyPath(subject, predicate.left, v);
+        let right = simplifyPath(v, predicate.right, object);
+        return left.concat(right);
     }
-    else
-        res = createTriple(pathTriple.subject, pathTriple.predicate, pathTriple.object);
-    
-    if (!_.isArray(res))
-        res = [res];
-    
-    return res;
+    return [Factory_1.default.createPath(subject, predicate, object, defaultGraph)];
 }
-
-function translateGroupOrUnionGraphPattern (group)
-{
-    if (group.patterns.length < 1)
-        throw new Error('Expected at least one item in GroupOrUnionGraphPattern.');
-    
-    return group.patterns.reduce((accumulator, pattern) =>
-    {
-        if (pattern.type !== 'group' && pattern.type !== 'union')
-            pattern = { type: 'group', patterns: [ pattern ]};
-        pattern = translateGroupGraphPattern(pattern);
-        if (!accumulator)
-            return pattern;
-        return createAlgebraElement(Algebra.UNION, { left: accumulator, right: pattern });
-    }, null);
+function generateFreshVar() {
+    let v = '?var' + varCount++;
+    if (variables.has(v))
+        return generateFreshVar();
+    variables.add(v);
+    return translateTerm(v);
 }
-
-function translateGraphGraphPattern (group, filters)
-{
-    if (group.patterns.length !== 1)
-        throw new Error('Expected exactly 1 item for GraphGraphPattern.');
-    
-    let name = group.name;
-    let graph = createAlgebraElement(Algebra.GRAPH, { graph: name, input: group.patterns[0] });
-    
+const defaultGraph = { termType: 'DefaultGraph', value: '' };
+function translateTriple(triple) {
+    return Factory_1.default.createPattern(translateTerm(triple.subject), translateTerm(triple.predicate), translateTerm(triple.object), defaultGraph);
+}
+const stringType = translateTerm('http://www.w3.org/2001/XMLSchema#string');
+const langStringType = translateTerm('http://www.w3.org/1999/02/22-rdf-syntax-ns#langString');
+function translateTerm(str) {
+    if (str[0] === '?')
+        return { termType: 'Variable', value: str.substring(1) };
+    if (_.startsWith(str, '_:'))
+        return { termType: 'BlankNode', value: str.substring(2) };
+    if (n3_1.Util.isLiteral(str)) {
+        let literal = { termType: 'Literal', value: n3_1.Util.getLiteralValue(str), language: '', datatype: stringType };
+        let lang = n3_1.Util.getLiteralLanguage(str);
+        if (lang && lang.length > 0) {
+            literal.language = lang;
+            literal.datatype = langStringType;
+        }
+        else {
+            let type = n3_1.Util.getLiteralType(str);
+            if (type && type.length > 0)
+                literal.datatype = translateTerm(type);
+        }
+        return literal;
+    }
+    return { termType: 'NamedNode', value: str };
+}
+function translateGraph(graph) {
+    let name = translateTerm(graph.name);
+    graph.type = 'group';
+    let result = translateGroupGraphPattern(graph);
     if (useQuads)
-        graph = applyGraph(graph.input, graph.graph);
-    
-    if (filters.length > 0)
-    {
-        let filterInput = translateFilters(filters);
-        // filters can contain BGPs!
-        if (useQuads)
-            graph = createAlgebraElement(Algebra.FILTER, { expression: applyGraph(filterInput, name), input: graph});
-        else
-            graph.input = createAlgebraElement(Algebra.FILTER, { expression: filterInput, input: graph.input });
-    }
-    
-    return graph;
+        result = recurseGraph(result, name);
+    else
+        result = Factory_1.default.createGraph(result, name);
+    return result;
 }
-
-function applyGraph (thingy, graph)
-{
-    if (_.isArray(thingy))
-        return thingy.map(subThingy => applyGraph(subThingy, graph));
-    
-    if (thingy.type)
-    {
-        if (thingy.type === Algebra.PATTERN)
-            return Object.assign(thingy, { graph });
-        if (thingy.type === Algebra.PATH)
-            return Object.assign(thingy, { graph });
-        
-        for (let key of Object.keys(thingy))
-            thingy[key] = applyGraph(thingy[key], graph);
-        return thingy;
+let typeVals = Object.keys(types).map(key => types[key]);
+function recurseGraph(thingy, graph) {
+    if (thingy.type === types.BGP)
+        thingy.patterns = thingy.patterns.map(quad => {
+            quad.graph = graph;
+            return quad;
+        });
+    else if (thingy.type === types.PATH)
+        thingy.graph = graph;
+    else {
+        for (let key of Object.keys(thingy)) {
+            if (_.isArray(thingy[key]))
+                thingy[key] = thingy[key].map((x) => recurseGraph(x, graph));
+            else if (typeVals.indexOf(thingy[key].type) >= 0)
+                thingy[key] = recurseGraph(thingy[key], graph);
+        }
     }
-    
     return thingy;
 }
-
-function accumulateGroupGraphPattern (G, E)
-{
-    // TODO: some of the patterns aren't translated yet at this point, might be code smell
-    // this can happen if one of the elements was a subgroup, so shouldn't throw an error
-    // TODO: or find cleaner way to handle this
-    // if (E.symbol === Algebra.FILTER)
-    //     throw new Error('Filters should have been removed previously.');
-    if (E.type === 'optional')
-    {
-        if (E.patterns.length !== 1)
-            throw new Error("Expected exactly 1 arg for 'optional'.");
-        let A = E.patterns[0];
-        if (A.type === Algebra.FILTER)
-            G = createAlgebraElement(Algebra.LEFT_JOIN, { left: G, right: A.input, expression: A.expression });
+function accumulateGroupGraphPattern(G, E) {
+    if (E.type === 'optional') {
+        // optional input needs to be interpreted as a group
+        let A = translateGroupGraphPattern({ type: 'group', patterns: E.patterns });
+        if (A.type === types.FILTER) {
+            let filter = A;
+            G = Factory_1.default.createLeftJoin(G, filter.input, filter.expression);
+        }
         else
-            G = createAlgebraElement(Algebra.LEFT_JOIN, { left: G, right: A });
+            G = Factory_1.default.createLeftJoin(G, A);
     }
-    else if (E.type === Algebra.MINUS)
-    {
-        if (E.patterns.length !== 1)
-            throw new Error('MINUS element should only have 1 arg at this point.');
-        G = createAlgebraElement(Algebra.MINUS, { left: G, right: E.patterns[0] });
+    else if (E.type === 'minus') {
+        // minus input needs to be interpreted as a group
+        let A = translateGroupGraphPattern({ type: 'group', patterns: E.patterns });
+        G = Factory_1.default.createMinus(G, A);
     }
     else if (E.type === 'bind')
-        G = createAlgebraElement(Algebra.EXTEND, { input: G, variable: E.variable, expression: translateFilters(E.expression) });
-    else
-        G = createAlgebraElement(Algebra.JOIN, { left: G, right: E });
-    
+        G = Factory_1.default.createExtend(G, translateTerm(E.variable), translateExpression(E.expression));
+    else {
+        // 18.2.2.8 (simplification)
+        let A = translateGroupGraphPattern(E);
+        if (G.type === types.BGP && G.patterns.length === 0)
+            G = A;
+        else if (A.type === types.BGP && A.patterns.length === 0) { } // do nothing
+        else
+            G = Factory_1.default.createJoin(G, translateGroupGraphPattern(E));
+    }
     return G;
 }
-
-function translateGroupGraphPattern (group)
-{
-    return group.patterns.reduce(accumulateGroupGraphPattern, createAlgebraElement(Algebra.BGP, { patterns: [] }));
-}
-
-function translateInlineData (thingy)
-{
-    // let values = thingy.values.map(entry =>
-    // {
-    //     let vals = [];
-    //     for (let key of Object.keys(entry))
-    //         if (entry[key] !== undefined)
-    //             vals.push([key, entry[key]]);
-    //     return createAlgebraElement(Algebra.ROW, vals);
-    // });
-    // // parser doesn't keep track of variables on first line
-    let variables = thingy.values.length === 0 ? [] : Object.keys(thingy.values[0]);
-    // vars = createAlgebraElement(Algebra.VARS, vars);
-    // return createAlgebraElement(Algebra.TABLE, [vars].concat(values));
-    return createAlgebraElement(Algebra.VALUES, { variables, bindings: thingy.values.map(binding => _.omitBy(binding, v => v === undefined)) });
-}
-
-function translateSubSelect (query)
-{
-    return translate(query, useQuads);
-}
-
-function translateFilters (filterExpressions)
-{
-    if (!_.isArray(filterExpressions))
-        filterExpressions = [ filterExpressions ];
-    
-    filterExpressions = filterExpressions.map(exp =>
-    {
-        // TODO: investigate when this happens
-        if (exp.expressionType)
-            return exp;
-        if (_.isString(exp))
-            return createExpression(exp, ETypes.TERM);
-        if (exp.function)
-            return createExpression(exp.function, ETypes.NAMED, exp.args);
-        if (exp.operator)
-            return createExpression(exp.operator, ETypes.OPERATOR, exp.args);
+function translateInlineData(values) {
+    let variables = (values.values.length === 0 ? [] : Object.keys(values.values[0])).map(translateTerm);
+    let bindings = values.values.map((binding) => {
+        let keys = Object.keys(binding);
+        keys = keys.filter(k => binding[k] !== undefined);
+        return Object.assign({}, ...keys.map(k => { let a = {}; a[k] = translateTerm(binding[k]); return a; }));
     });
-    
-    return filterExpressions.reduce((acc, val) => createExpression('&&', ETypes.OPERATOR, [acc, val]));
+    return Factory_1.default.createValues(variables, bindings);
 }
-
-// ---------------------------------- TRANSLATE AGGREGATES ----------------------------------
-function translateAggregates (query, parsed, variables)
-{
-    let res = parsed;
-    
+// --------------------------------------- AGGREGATES
+function translateAggregates(query, res, variables) {
+    // TODO: re-check what to do here
     // 18.2.4.1
-    let G = null;
-    let A = [];
     let E = [];
-    if (query.group)
-        G = createAlgebraElement(Algebra.GROUP, { expressions: query.group, input: res });
-    else if (containsAggregate(query.variables) || containsAggregate(query.having) || containsAggregate(query.order))
-        G = createAlgebraElement(Algebra.GROUP, { expressions: [], input: res });
-    
-    // TODO: not doing the sample stuff atm
-    // TODO: more based on jena results than w3 spec (spec would require us to copy G multiple times)
-    if (G)
-    {
-        // TODO: check up on scalarvals and args
-        mapAggregates(query.variables, A);
-        mapAggregates(query.having, A);
-        mapAggregates(query.order, A);
-        
-        // TODO: we use the jena syntax of adding aggregates as second argument to group
-        // .var will be translated later on
-        G.aggregates = A.map(aggregate => { return Object.assign({var: aggregate.variable}, aggregate.object) });
-        
-        if (query.group)
-        {
+    let A = {};
+    query.variables = mapAggregates(query.variables, A);
+    query.having = mapAggregates(query.having, A);
+    query.order = mapAggregates(query.order, A);
+    // if there are any aggregates or if we have a groupBy (both result in a GROUP)
+    if (query.group || Object.keys(A).length > 0) {
+        let aggregates = Object.keys(A).map(v => translateBoundAggregate(A[v], translateTerm(v)));
+        let exps = [];
+        if (query.group) {
+            // TODO: investigate potential duplicates
             for (let entry of query.group)
                 if (entry.variable)
                     E.push(entry);
+            exps = query.group.map((e) => e.expression).map(translateExpression);
         }
-        
-        res = G;
+        res = Factory_1.default.createGroup(res, exps, aggregates);
     }
-    
-    
     // 18.2.4.2
     if (query.having)
-    {
         for (let filter of query.having)
-            res = createAlgebraElement(Algebra.FILTER, { expression: translateFilters(filter), input: res });
-    }
-    
+            res = Factory_1.default.createFilter(res, translateExpression(filter));
     // 18.2.4.3
     if (query.values)
-        res = createAlgebraElement(Algebra.JOIN, { left: res, right: translateInlineData(query) });
-    
+        res = Factory_1.default.createJoin(res, translateInlineData(query));
     // 18.2.4.4
-    let PV = {};
-    
+    let PV = new Set();
     // interpret ASK as SELECT *
     if (query.queryType === 'ASK' || query.variables.indexOf('*') >= 0)
         PV = variables;
-    else
-    {
-        for (let v of query.variables)
-        {
+    else {
+        for (let v of query.variables) {
             if (isVariable(v))
-                PV[v] = true;
-            else if (v.variable)
-            {
-                if (variables[v.variable] || PV[v.variable])
-                    throw new Error('Aggregate variable appearing multiple times: ' + v.variable);
-                PV[v.variable] = true;
+                PV.add(translateTerm(v));
+            else if (v.variable) {
+                PV.add(translateTerm(v.variable));
                 E.push(v);
             }
         }
     }
-    
     // TODO: Jena simplifies by having a list of extends
     for (let v of E)
-        res = createAlgebraElement(Algebra.EXTEND, { input: res, variable: v.variable, expression: translateFilters(v.expression) });
-    
+        res = Factory_1.default.createExtend(res, translateTerm(v.variable), translateExpression(v.expression));
     // 18.2.5
-    //p = createAlgebraElement('tolist', [p]);
-    
+    // not using toList and toMultiset
     // 18.2.5.1
     if (query.order)
-        res = createAlgebraElement(Algebra.ORDER_BY, { input: res, expressions: query.order });
+        res = Factory_1.default.createOrderBy(res, query.order.map((exp) => {
+            let result = translateExpression(exp.expression);
+            if (exp.descending)
+                result = Factory_1.default.createOperatorExpression(types.DESC, [result]); // TODO: should this really be an epxression?
+            return result;
+        }));
     // 18.2.5.2
-    res = createAlgebraElement(Algebra.PROJECT, { input: res, variables: Object.keys(PV) });
+    res = Factory_1.default.createProject(res, Array.from(PV));
     // 18.2.5.3
     if (query.distinct)
-        res = createAlgebraElement(Algebra.DISTINCT, { input: res });
+        res = Factory_1.default.createDistinct(res);
     // 18.2.5.4
     if (query.reduced)
-        res = createAlgebraElement(Algebra.REDUCED, { input: res });
+        res = Factory_1.default.createReduced(res);
     // 18.2.5.5
-    // we use -1 to indiciate there is no limit
-    if (query.offset || query.limit)
-    {
-        res = createAlgebraElement(Algebra.SLICE, { input: res, start: query.offset || 0 });
+    if (query.offset || query.limit) {
+        res = Factory_1.default.createSlice(res, query.offset || 0);
         if (query.limit)
             res.length = query.limit;
     }
-    
-    // clean up unchanged objects
-    res = translateExpressionsOperations(res);
-    
     return res;
 }
-
-// ---------------------------------- TRANSLATE AGGREGATES HELPER FUNCTIONS ----------------------------------
-function containsAggregate (thingy)
-{
-    if (!thingy)
-        return false;
-    
-    if (thingy.expression && thingy.expression.type === 'aggregate')
-        return true;
-    
-    if (_.isArray(thingy))
-        return thingy.some(subthingy => containsAggregate(subthingy));
-    
-    // appears in 'having'
-    if (thingy.args)
-        return containsAggregate(thingy.args);
-    
-    return false;
-}
-
-function compareObjects (o1, o2)
-{
-    if (_.isString(o1) !== _.isString(o2))
-        return false;
-    
-    if (_.isString(o1))
-        return o1 === o2;
-    
-    let k1 = Object.keys(o1);
-    let k2 = Object.keys(o2);
-    if (k1.length !== k2.length)
-        return false;
-    
-    return k1.every(key => compareObjects(o1[key], o2[key]));
-}
-
-// TODO: could use hash, prolly not that necessary
-function getMapping(thingy, map)
-{
-    for (let m of map)
-    {
-        if (compareObjects(thingy, m.object))
-            return m.variable;
-    }
-    return null;
-}
-
-function mapAggregates (thingy, map)
-{
+// rewrites some of the input sparql object to make use of aggregate variables
+function mapAggregates(thingy, aggregates) {
     if (!thingy)
         return thingy;
-    
-    if (thingy.type === 'aggregate')
-    {
-        let v = getMapping(thingy, map);
-        if (!v)
-        {
-            v = generateFreshVar();
-            map.push({ object: thingy, variable: v });
+    if (thingy.type === 'aggregate') {
+        let found = false;
+        let v;
+        for (let key of Object.keys(aggregates)) {
+            if (_.isEqual(aggregates[key], thingy)) {
+                v = key;
+                found = true;
+                break;
+            }
         }
-        return v;
+        if (!found) {
+            v = '?' + generateFreshVar().value; // this is still in "sparql.js language" so a var string is still needed
+            aggregates[v] = thingy;
+        }
+        return v; // this is still in "sparql.js language" so a var string is still needed
     }
-    
     // non-aggregate expression
     if (thingy.expression)
-        thingy.expression = mapAggregates(thingy.expression, map);
+        thingy.expression = mapAggregates(thingy.expression, aggregates);
     else if (thingy.args)
-        mapAggregates(thingy.args, map);
+        mapAggregates(thingy.args, aggregates);
     else if (_.isArray(thingy))
-        thingy.forEach((subthingy, idx) => thingy[idx] = mapAggregates(subthingy, map));
-    
+        thingy.forEach((subthingy, idx) => thingy[idx] = mapAggregates(subthingy, aggregates));
     return thingy;
 }
-
-function translateExpressionsOperations(thingy)
-{
-    if (!thingy)
-        return thingy;
-    
-    if (_.isString(thingy))
-        return thingy;
-        
-    if (thingy.type === 'aggregate' && thingy.aggregation)
-    {
-        let A = createAggregate(thingy.aggregation, [ translateFilters(thingy.expression) ]);
-        // TODO: put this in object somewhere
-        // this is specifically for group_concat
-        if (thingy.separator && thingy.separator !== ' ')
-            A.separator = thingy.separator;
-        // bound aggregates
-        if (thingy.var)
-            A.variable = thingy.var;
-        if (thingy.distinct)
-            A = createAlgebraElement(Algebra.DISTINCT, { input: A });
-        return A;
-    }
-    
-    if (thingy.descending && !thingy.type)
-        return createExpression(Algebra.DESC, ETypes.OPERATOR, [ translateFilters(thingy.expression) ]);
-    
-    if (thingy.expression && !thingy.type)
-        return translateFilters(thingy.expression);
-    
-    if (_.isArray(thingy))
-        return thingy.map(subthingy => translateExpressionsOperations(subthingy));
-    
-    for (let v of Object.keys(thingy))
-        thingy[v] = translateExpressionsOperations(thingy[v]);
-    
-    return thingy;
+function translateBoundAggregate(thingy, v) {
+    if (thingy.type !== 'aggregate' || !thingy.aggregation)
+        throw new Error('Unexpected input: ' + JSON.stringify(thingy));
+    let A = Factory_1.default.createBoundAggregate(v, thingy.aggregation, translateExpression(thingy.expression));
+    if (thingy.separator)
+        A.separator = thingy.separator;
+    return A;
 }
-// ---------------------------------- ADD RDF.JS ----------------------------------
-
-function toRdfJs(thingy)
-{
-    if (_.isString(thingy))
-        return createTerm(thingy);
-    
-    if (_.isArray(thingy))
-        return thingy.map(toRdfJs);
-    
-    // caused by graphs already being present
-    if (thingy.termType)
-        return thingy;
-    
-    for (let key of Object.keys(thingy))
-    {
-        if (key === 'type' || key === 'aggregate' || key === 'operator' || key === 'expressionType' || key === 'separator')
-            continue;
-        thingy[key] = toRdfJs(thingy[key]);
-    }
-    return thingy;
-}
-// ---------------------------------- END RDF.JS ----------------------------------
-
-module.exports = { translate };
+//# sourceMappingURL=sparqlAlgebra.js.map

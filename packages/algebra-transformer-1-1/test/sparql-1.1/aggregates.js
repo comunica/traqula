@@ -166,7 +166,7 @@ describe('SPARQL 1.1 aggregates', () => {
                             AE(A.EXTEND, [
                                 AE(A.GROUP, [
                                     [],
-                                    [ AE(A.AGGREGATE, ['group_concat', '?o', '?v1']) ],
+                                    [ AE(A.AGGREGATE, ['group_concat', '?o', ' ', '?v1']) ],
                                     AE(A.BGP, [ T('_:b', 'http://www.example.org/p1', '?o')])
                                 ]),
                                 '?g',
@@ -213,7 +213,7 @@ describe('SPARQL 1.1 aggregates', () => {
                                     AE(A.EXTEND, [
                                         AE(A.GROUP, [
                                             [ '?p' ],
-                                            [ AE(A.AGGREGATE, ['group_concat', '?o', '?vGroup']) ],
+                                            [ AE(A.AGGREGATE, ['group_concat', '?o', ' ', '?vGroup']) ],
                                             AE(A.BGP, [ T('_:b', '?p', '?o') ])
                                         ]),
                                         '?g',
@@ -262,7 +262,7 @@ describe('SPARQL 1.1 aggregates', () => {
         Util.compareAlgebras(expected, algebra);
     });
 
-    it('ASK SUBQYERT', () => {
+    it('SAMPLE', () => {
         let sparql = `PREFIX : <http://www.example.org/>
                       ASK {
                               {

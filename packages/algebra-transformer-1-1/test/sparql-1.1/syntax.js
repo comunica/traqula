@@ -27,7 +27,7 @@ describe('SPARQL 1.1 syntax', () => {
                         }`;
         let algebra = translate(sparql);
         let expected =
-                AE(A.PROJECT, [ AE(A.PROJECT, [ AE(A.BGP, [ T('?s', '?p', '?o') ]), [ '?s', '?p', '?o' ] ]), [  ] ]);
+                AE(A.PROJECT, [ AE(A.PROJECT, [ AE(A.BGP, [ T('?s', '?p', '?o') ]), [ '?s', '?p', '?o' ] ]), [ '?s', '?p', '?o' ] ]);
         Util.compareAlgebras(expected, algebra);
     });
     

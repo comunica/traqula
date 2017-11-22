@@ -6,6 +6,7 @@ import * as RDF from 'rdf-js'
 import {Util as N3Util} from 'n3';
 const Parser = require('sparqljs').Parser;
 const types = Algebra.types;
+const eTypes = Algebra.expressionTypes;
 
 let variables = new Set<string>();
 let varCount = 0;
@@ -68,6 +69,8 @@ function inScopeVariables(thingy: any) : {[key: string]: boolean}
             {
                 if (v === '*')
                     Object.assign(inScope, all);
+                else if (v.variable) // aggregates
+                    Object.assign(inScope, inScopeVariables(v.variable));
                 else
                     Object.assign(inScope, inScopeVariables(v));
             }
@@ -147,6 +150,8 @@ function translateExpression(exp: any) : Algebra.Expression
     {
         if (exp.operator === 'exists' || exp.operator === 'notexists')
             return Factory.createExistenceExpression(exp.operator === 'notexists', translateGroupGraphPattern(exp.args[0]));
+        if (exp.operator === 'in' || exp.operator === 'notin')
+            exp.args = [exp.args[0]].concat(exp.args[1]); // sparql.js uses 2 arguments with the second one bing a list
         return Factory.createOperatorExpression(exp.operator, exp.args.map(translateExpression));
     }
     throw new Error('Unknown expression: ' + JSON.stringify(exp));
@@ -380,39 +385,45 @@ function accumulateGroupGraphPattern(G: Algebra.Operation, E: any) : Algebra.Ope
     return G;
 }
 
-// --------------------------------------- AGGREGATES
-function translateAggregates(query: any, op: Algebra.Operation, variables: Set<RDF.Variable>) : Algebra.Operation
+function translateInlineData(values: any) : Algebra.Values
 {
-    let res = op;
+    let variables = <RDF.Variable[]>(values.values.length === 0 ? [] : Object.keys(values.values[0])).map(translateTerm);
+    let bindings = values.values.map((binding: any) =>
+    {
+        let keys = Object.keys(binding);
+        keys = keys.filter(k => binding[k] !== undefined);
+        return Object.assign({}, ...keys.map(k => { let a: any = {}; a[k] = translateTerm(binding[k]); return a; }));
+    });
+    return Factory.createValues(variables, bindings);
+}
 
+// --------------------------------------- AGGREGATES
+function translateAggregates(query: any, res: Algebra.Operation, variables: Set<RDF.Variable>) : Algebra.Operation
+{
     // TODO: re-check what to do here
-    // // 18.2.4.1
-    // let G = null;
-    // let A = [];
+    // 18.2.4.1
     let E = [];
-    // if (query.group)
-    //     G = createAlgebraElement(Algebra.GROUP, { expressions: query.group, input: res });
-    // else if (containsAggregate(query.variables) || containsAggregate(query.having) || containsAggregate(query.order))
-    //     G = createAlgebraElement(Algebra.GROUP, { expressions: [], input: res });
-    //
-    // if (G)
-    // {
-    //     mapAggregates(query.variables, A);
-    //     mapAggregates(query.having, A);
-    //     mapAggregates(query.order, A);
-    //
-    //     // .var will be translated later on
-    //     G.aggregates = A.map(aggregate => { return Object.assign({var: aggregate.variable}, aggregate.object) });
-    //
-    //     if (query.group)
-    //     {
-    //         for (let entry of query.group)
-    //             if (entry.variable)
-    //                 E.push(entry);
-    //     }
-    //
-    //     res = G;
-    // }
+
+    let A: any = {};
+    query.variables = mapAggregates(query.variables, A);
+    query.having = mapAggregates(query.having, A);
+    query.order = mapAggregates(query.order, A);
+
+    // if there are any aggregates or if we have a groupBy (both result in a GROUP)
+    if (query.group || Object.keys(A).length > 0)
+    {
+        let aggregates = Object.keys(A).map(v => translateBoundAggregate(A[v], <RDF.Variable>translateTerm(v)));
+        let exps: Algebra.Expression[] = [];
+        if (query.group)
+        {
+            // TODO: investigate potential duplicates
+            for (let entry of query.group)
+                if (entry.variable)
+                    E.push(entry);
+            exps = query.group.map((e: any) => e.expression).map(translateExpression);
+        }
+        res = Factory.createGroup(res, exps, aggregates);
+    }
 
     // 18.2.4.2
     if (query.having)
@@ -482,14 +493,52 @@ function translateAggregates(query: any, op: Algebra.Operation, variables: Set<R
     return res;
 }
 
-function translateInlineData(values: any) : Algebra.Values
+// rewrites some of the input sparql object to make use of aggregate variables
+function mapAggregates (thingy: any, aggregates: {[key: string]: any}) : any
 {
-    let variables = <RDF.Variable[]>(values.values.length === 0 ? [] : Object.keys(values.values[0])).map(translateTerm);
-    let bindings = values.values.map((binding: any) =>
+    if (!thingy)
+        return thingy;
+
+    if (thingy.type === 'aggregate')
     {
-        let keys = Object.keys(binding);
-        keys = keys.filter(k => binding[k] !== undefined);
-        return Object.assign({}, ...keys.map(k => { let a: any = {}; a[k] = translateTerm(binding[k]); return a; }));
-    });
-    return Factory.createValues(variables, bindings);
+        let found = false;
+        let v;
+        for (let key of Object.keys(aggregates))
+        {
+            if (_.isEqual(aggregates[key], thingy))
+            {
+                v = key;
+                found = true;
+                break;
+            }
+        }
+        if (!found)
+        {
+            v = '?' + generateFreshVar().value;// this is still in "sparql.js language" so a var string is still needed
+            aggregates[v] = thingy;
+        }
+        return v; // this is still in "sparql.js language" so a var string is still needed
+    }
+
+    // non-aggregate expression
+    if (thingy.expression)
+        thingy.expression = mapAggregates(thingy.expression, aggregates);
+    else if (thingy.args)
+        mapAggregates(thingy.args, aggregates);
+    else if (_.isArray(thingy))
+        thingy.forEach((subthingy, idx) => thingy[idx] = mapAggregates(subthingy, aggregates));
+
+    return thingy;
+}
+
+function translateBoundAggregate (thingy: any, v: RDF.Variable) : Algebra.BoundAggregate
+{
+    if (thingy.type !== 'aggregate' || !thingy.aggregation)
+        throw new Error('Unexpected input: ' + JSON.stringify(thingy));
+
+    let A = Factory.createBoundAggregate(v, thingy.aggregation, translateExpression(thingy.expression));
+    if (thingy.separator)
+        A.separator = thingy.separator;
+
+    return A;
 }

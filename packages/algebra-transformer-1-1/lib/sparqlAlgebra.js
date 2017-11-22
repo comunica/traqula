@@ -313,7 +313,6 @@ function translateInlineData(values) {
 }
 // --------------------------------------- AGGREGATES
 function translateAggregates(query, res, variables) {
-    // TODO: re-check what to do here
     // 18.2.4.1
     let E = [];
     let A = {};
@@ -325,7 +324,6 @@ function translateAggregates(query, res, variables) {
         let aggregates = Object.keys(A).map(v => translateBoundAggregate(A[v], translateTerm(v)));
         let exps = [];
         if (query.group) {
-            // TODO: investigate potential duplicates
             for (let entry of query.group)
                 if (entry.variable)
                     E.push(entry);

@@ -403,7 +403,6 @@ function translateInlineData(values: any) : Algebra.Values
 // --------------------------------------- AGGREGATES
 function translateAggregates(query: any, res: Algebra.Operation, variables: Set<RDF.Variable>) : Algebra.Operation
 {
-    // TODO: re-check what to do here
     // 18.2.4.1
     let E = [];
 
@@ -419,7 +418,6 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
         let exps: Algebra.Expression[] = [];
         if (query.group)
         {
-            // TODO: investigate potential duplicates
             for (let entry of query.group)
                 if (entry.variable)
                     E.push(entry);

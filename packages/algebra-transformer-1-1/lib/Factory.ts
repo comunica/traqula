@@ -5,11 +5,11 @@ import * as RDF from "rdf-js";
 export default class Factory
 {
     static createAlt (left: A.Operation, right: A.Operation): A.Alt { return { type: 'alt', left, right }; }
-    static createAggregate (aggregate: string, expression: A.Expression, separator?: string): A.Aggregate
+    static createAggregate (aggregator: string, expression: A.Expression, separator?: string): A.Aggregate
     {
         if (separator)
-            return { type: 'aggregate', aggregate, expression, separator};
-        return { type: 'aggregate', aggregate, expression };
+            return { type: 'aggregate', aggregator, expression, separator};
+        return { type: 'aggregate', aggregator, expression };
     }
     static createBoundAggregate (variable: RDF.Variable, aggregate: string, expression: A.Expression, separator?: string): A.BoundAggregate
     {
@@ -49,7 +49,7 @@ export default class Factory
         return { type: 'slice', input, start };
     }
     static createUnion (left: A.Operation, right: A.Operation): A.Union { return { type: 'union', left, right }; }
-    static createValues (variables: RDF.Variable[], bindings: any[]): A.Values { return { type: 'values', variables, bindings }; }
+    static createValues (variables: RDF.Variable[], bindings: Map<RDF.Variable, RDF.Term>[]): A.Values { return { type: 'values', variables, bindings }; }
     static createZeroOrMorePath (path: A.Operation): A.ZeroOrMorePath { return { type: 'ZeroOrMorePath', path }; }
     static createZeroOrOnePath (path: A.Operation): A.ZeroOrOnePath { return { type: 'ZeroOrOnePath', path }; }
 

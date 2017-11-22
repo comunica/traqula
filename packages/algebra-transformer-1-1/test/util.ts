@@ -95,19 +95,19 @@ class Util
             let bindings: any[] = [];
             for (let i = 1; i < args.length; ++i)
             {
-                let binding: any = {};
+                let binding = new Map<rdfjs.Variable, rdfjs.Term>();
                 let row = args[i].args;
                 for (let entry of row)
-                    binding[entry[0]] = Util.createTerm(entry[1]);
+                    binding.set(Util.createTerm(entry[0]), Util.createTerm(entry[1]));
                 bindings.push(binding);
             }
             return <A.Values> { type: Algebra.VALUES, variables: args[0].variables, bindings };
         }
-        
+
         if (key === Algebra.AGGREGATE)
         {
-            let result: A.Aggregate = { type: 'aggregate', aggregate: args[0], expression: Util.termExpr(args[1]) };
-            if (result.aggregate === 'group_concat')
+            let result: A.Aggregate = { type: 'aggregate', aggregator: args[0], expression: Util.termExpr(args[1]) };
+            if (result.aggregator === 'group_concat')
             {
                 if (args.length === 4)
                 {
@@ -197,6 +197,26 @@ class Util
                         return true;
                     }
                 }
+            }
+            return false;
+        }
+
+        if (a1 instanceof Map)
+        {
+            if (!(a2 instanceof Map))
+                return false;
+
+            let keys = a1.keys();
+            if (keys.length !== a2.keys().length)
+                return false;
+
+            // can't use every, not an array
+            for (let key of keys)
+            {
+                if (a2.get(key) === undefined)
+                    return false;
+                if (!Util._compareAlgebrasRecursive(a1.get(key), a2.get(key), blanks))
+                    return false;
             }
             return false;
         }

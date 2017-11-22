@@ -114,7 +114,7 @@ export interface Alt extends Double
 export interface Aggregate extends Operation
 {
     type: 'aggregate';
-    aggregate: string;
+    aggregator: string;
     separator?: string; // used by GROUP_CONCAT
     expression: Expression;
 }
@@ -253,7 +253,7 @@ export interface Values extends Operation
 {
     type: 'values';
     variables: rdfjs.Variable[];
-    bindings: {[key:string]: rdfjs.Term}[];
+    bindings: Map<rdfjs.Variable, rdfjs.Term>[];
 }
 
 export interface ZeroOrMorePath extends Operation

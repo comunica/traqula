@@ -304,7 +304,10 @@ function translateInlineData(values) {
     let bindings = values.values.map((binding) => {
         let keys = Object.keys(binding);
         keys = keys.filter(k => binding[k] !== undefined);
-        return Object.assign({}, ...keys.map(k => { let a = {}; a[k] = translateTerm(binding[k]); return a; }));
+        let map = new Map();
+        for (let key of keys)
+            map.set(translateTerm(key), translateTerm(binding[key]));
+        return map;
     });
     return Factory_1.default.createValues(variables, bindings);
 }

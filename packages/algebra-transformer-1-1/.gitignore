@@ -8,4 +8,5 @@ notes.txt
 *.js
 *.js.map
 *.d.ts
-!test
+!test/dawg-syntax/*
+!test/sparql-1.1/*

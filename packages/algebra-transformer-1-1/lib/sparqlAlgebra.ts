@@ -392,7 +392,10 @@ function translateInlineData(values: any) : Algebra.Values
     {
         let keys = Object.keys(binding);
         keys = keys.filter(k => binding[k] !== undefined);
-        return Object.assign({}, ...keys.map(k => { let a: any = {}; a[k] = translateTerm(binding[k]); return a; }));
+        let map = new Map<RDF.Variable, RDF.Term>();
+        for (let key of keys)
+            map.set(<RDF.Variable>translateTerm(key), translateTerm(binding[key]));
+        return map;
     });
     return Factory.createValues(variables, bindings);
 }

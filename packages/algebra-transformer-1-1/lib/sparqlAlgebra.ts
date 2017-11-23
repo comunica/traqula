@@ -111,7 +111,7 @@ function translateGroupGraphPattern(thingy: any) : Algebra.Operation
     if (thingy.type === 'union')
         result = nonfilters.map((p: any) =>
         {
-            // algebrajs doesn't always indicate the children are groups
+            // sparqljs doesn't always indicate the children are groups
             if (p.type !== 'group')
                 p = { type: 'group', patterns: [p] };
             return translateGroupGraphPattern(p);

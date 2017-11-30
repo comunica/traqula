@@ -98,7 +98,7 @@ class Util
                 let binding = new Map<rdfjs.Variable, rdfjs.Term>();
                 let row = args[i].args;
                 for (let entry of row)
-                    binding.set(Util.createTerm(entry[0]), Util.createTerm(entry[1]));
+                    binding.set(<rdfjs.Variable>Util.createTerm(entry[0]), Util.createTerm(entry[1]));
                 bindings.push(binding);
             }
             return <A.Values> { type: Algebra.VALUES, variables: args[0].variables, bindings };
@@ -206,8 +206,8 @@ class Util
             if (!(a2 instanceof Map))
                 return false;
 
-            let keys = a1.keys();
-            if (keys.length !== a2.keys().length)
+            let keys = (<any>a1).keys();
+            if (keys.length !== (<any>a2).keys().length)
                 return false;
 
             // can't use every, not an array

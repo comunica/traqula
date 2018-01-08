@@ -473,7 +473,9 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
         }));
 
     // 18.2.5.2
-    res = Factory.createProject(res, Array.from(PV));
+    // construct does not need a project (select, ask and describe do)
+    if (query.queryType !== 'CONSTRUCT')
+        res = Factory.createProject(res, Array.from(PV));
 
     // 18.2.5.3
     if (query.distinct)

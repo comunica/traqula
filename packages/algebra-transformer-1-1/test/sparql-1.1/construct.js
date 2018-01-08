@@ -19,43 +19,26 @@ describe('SPARQL 1.1 constructs', () => {
         let expected = {
             "type": "construct",
             "input": {
-                "type": "project",
-                "input": {
-                    "type": "bgp",
-                    "patterns": [
-                        {
-                            "type": "pattern",
-                            "subject": {
-                                "termType": "Variable",
-                                "value": "s"
-                            },
-                            "predicate": {
-                                "termType": "Variable",
-                                "value": "p"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "o"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            }
+                "type": "bgp",
+                "patterns": [
+                    {
+                        "type": "pattern",
+                        "subject": {
+                            "termType": "Variable",
+                            "value": "s"
+                        },
+                        "predicate": {
+                            "termType": "Variable",
+                            "value": "p"
+                        },
+                        "object": {
+                            "termType": "Variable",
+                            "value": "o"
+                        },
+                        "graph": {
+                            "termType": "DefaultGraph",
+                            "value": ""
                         }
-                    ]
-                },
-                "variables": [
-                    {
-                        "termType": "Variable",
-                        "value": "s"
-                    },
-                    {
-                        "termType": "Variable",
-                        "value": "p"
-                    },
-                    {
-                        "termType": "Variable",
-                        "value": "o"
                     }
                 ]
             },
@@ -91,58 +74,45 @@ describe('SPARQL 1.1 constructs', () => {
         let expected = {
             "type": "construct",
             "input": {
-                "type": "project",
-                "input": {
-                    "type": "bgp",
-                    "patterns": [
-                        {
-                            "type": "pattern",
-                            "subject": {
-                                "termType": "NamedNode",
-                                "value": "http://example.org/s1"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://example.org/p"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "o"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            }
-                        },
-                        {
-                            "type": "pattern",
-                            "subject": {
-                                "termType": "Variable",
-                                "value": "s2"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://example.org/p"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "o"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            }
-                        }
-                    ]
-                },
-                "variables": [
+                "type": "bgp",
+                "patterns": [
                     {
-                        "termType": "Variable",
-                        "value": "o"
+                        "type": "pattern",
+                        "subject": {
+                            "termType": "NamedNode",
+                            "value": "http://example.org/s1"
+                        },
+                        "predicate": {
+                            "termType": "NamedNode",
+                            "value": "http://example.org/p"
+                        },
+                        "object": {
+                            "termType": "Variable",
+                            "value": "o"
+                        },
+                        "graph": {
+                            "termType": "DefaultGraph",
+                            "value": ""
+                        }
                     },
                     {
-                        "termType": "Variable",
-                        "value": "s2"
+                        "type": "pattern",
+                        "subject": {
+                            "termType": "Variable",
+                            "value": "s2"
+                        },
+                        "predicate": {
+                            "termType": "NamedNode",
+                            "value": "http://example.org/p"
+                        },
+                        "object": {
+                            "termType": "Variable",
+                            "value": "o"
+                        },
+                        "graph": {
+                            "termType": "DefaultGraph",
+                            "value": ""
+                        }
                     }
                 ]
             },
@@ -197,58 +167,45 @@ describe('SPARQL 1.1 constructs', () => {
         let expected = {
             "type": "construct",
             "input": {
-                "type": "project",
-                "input": {
-                    "type": "bgp",
-                    "patterns": [
-                        {
-                            "type": "pattern",
-                            "subject": {
-                                "termType": "NamedNode",
-                                "value": "http://example.org/s2"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://example.org/p"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "o1"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            }
-                        },
-                        {
-                            "type": "pattern",
-                            "subject": {
-                                "termType": "NamedNode",
-                                "value": "http://example.org/s2"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://example.org/p"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "o2"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            }
-                        }
-                    ]
-                },
-                "variables": [
+                "type": "bgp",
+                "patterns": [
                     {
-                        "termType": "Variable",
-                        "value": "o1"
+                        "type": "pattern",
+                        "subject": {
+                            "termType": "NamedNode",
+                            "value": "http://example.org/s2"
+                        },
+                        "predicate": {
+                            "termType": "NamedNode",
+                            "value": "http://example.org/p"
+                        },
+                        "object": {
+                            "termType": "Variable",
+                            "value": "o1"
+                        },
+                        "graph": {
+                            "termType": "DefaultGraph",
+                            "value": ""
+                        }
                     },
                     {
-                        "termType": "Variable",
-                        "value": "o2"
+                        "type": "pattern",
+                        "subject": {
+                            "termType": "NamedNode",
+                            "value": "http://example.org/s2"
+                        },
+                        "predicate": {
+                            "termType": "NamedNode",
+                            "value": "http://example.org/p"
+                        },
+                        "object": {
+                            "termType": "Variable",
+                            "value": "o2"
+                        },
+                        "graph": {
+                            "termType": "DefaultGraph",
+                            "value": ""
+                        }
                     }
                 ]
             },
@@ -303,58 +260,45 @@ describe('SPARQL 1.1 constructs', () => {
         let expected = {
             "type": "construct",
             "input": {
-                "type": "project",
-                "input": {
-                    "type": "bgp",
-                    "patterns": [
-                        {
-                            "type": "pattern",
-                            "subject": {
-                                "termType": "NamedNode",
-                                "value": "http://example.org/s2"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://example.org/p"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "o1"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            }
-                        },
-                        {
-                            "type": "pattern",
-                            "subject": {
-                                "termType": "NamedNode",
-                                "value": "http://example.org/s2"
-                            },
-                            "predicate": {
-                                "termType": "NamedNode",
-                                "value": "http://example.org/p"
-                            },
-                            "object": {
-                                "termType": "Variable",
-                                "value": "o2"
-                            },
-                            "graph": {
-                                "termType": "DefaultGraph",
-                                "value": ""
-                            }
-                        }
-                    ]
-                },
-                "variables": [
+                "type": "bgp",
+                "patterns": [
                     {
-                        "termType": "Variable",
-                        "value": "o1"
+                        "type": "pattern",
+                        "subject": {
+                            "termType": "NamedNode",
+                            "value": "http://example.org/s2"
+                        },
+                        "predicate": {
+                            "termType": "NamedNode",
+                            "value": "http://example.org/p"
+                        },
+                        "object": {
+                            "termType": "Variable",
+                            "value": "o1"
+                        },
+                        "graph": {
+                            "termType": "DefaultGraph",
+                            "value": ""
+                        }
                     },
                     {
-                        "termType": "Variable",
-                        "value": "o2"
+                        "type": "pattern",
+                        "subject": {
+                            "termType": "NamedNode",
+                            "value": "http://example.org/s2"
+                        },
+                        "predicate": {
+                            "termType": "NamedNode",
+                            "value": "http://example.org/p"
+                        },
+                        "object": {
+                            "termType": "Variable",
+                            "value": "o2"
+                        },
+                        "graph": {
+                            "termType": "DefaultGraph",
+                            "value": ""
+                        }
                     }
                 ]
             },
@@ -410,71 +354,54 @@ describe('SPARQL 1.1 constructs', () => {
         let expected = {
             "type": "construct",
             "input": {
-                "type": "project",
+                "type": "filter",
                 "input": {
-                    "type": "filter",
-                    "input": {
-                        "type": "bgp",
-                        "patterns": [
-                            {
-                                "type": "pattern",
-                                "subject": {
-                                    "termType": "Variable",
-                                    "value": "s"
-                                },
-                                "predicate": {
-                                    "termType": "Variable",
-                                    "value": "p"
-                                },
-                                "object": {
-                                    "termType": "Variable",
-                                    "value": "o"
-                                },
-                                "graph": {
-                                    "termType": "DefaultGraph",
-                                    "value": ""
-                                }
-                            }
-                        ]
-                    },
-                    "expression": {
-                        "type": "expression",
-                        "expressionType": "operator",
-                        "operator": "=",
-                        "args": [
-                            {
-                                "type": "expression",
-                                "expressionType": "term",
-                                "term": {
-                                    "termType": "Variable",
-                                    "value": "o"
-                                }
+                    "type": "bgp",
+                    "patterns": [
+                        {
+                            "type": "pattern",
+                            "subject": {
+                                "termType": "Variable",
+                                "value": "s"
                             },
-                            {
-                                "type": "expression",
-                                "expressionType": "term",
-                                "term": {
-                                    "termType": "NamedNode",
-                                    "value": "http://example.org/o1"
-                                }
+                            "predicate": {
+                                "termType": "Variable",
+                                "value": "p"
+                            },
+                            "object": {
+                                "termType": "Variable",
+                                "value": "o"
+                            },
+                            "graph": {
+                                "termType": "DefaultGraph",
+                                "value": ""
                             }
-                        ]
-                    }
+                        }
+                    ]
                 },
-                "variables": [
-                    {
-                        "termType": "Variable",
-                        "value": "s"
-                    },
-                    {
-                        "termType": "Variable",
-                        "value": "p"
-                    },
-                    {
-                        "termType": "Variable",
-                        "value": "o"
-                    }
-                ]
+                "expression": {
+                    "type": "expression",
+                    "expressionType": "operator",
+                    "operator": "=",
+                    "args": [
+                        {
+                            "type": "expression",
+                            "expressionType": "term",
+                            "term": {
+                                "termType": "Variable",
+                                "value": "o"
+                            }
+                        },
+                        {
+                            "type": "expression",
+                            "expressionType": "term",
+                            "term": {
+                                "termType": "NamedNode",
+                                "value": "http://example.org/o1"
+                            }
+                        }
+                    ]
+                }
             },
             "template": [
                 {

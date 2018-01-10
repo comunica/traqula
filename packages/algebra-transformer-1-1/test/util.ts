@@ -56,7 +56,7 @@ class Util
             case Algebra.EXTEND:    return <A.Extend>   { type: key, input: args[0], variable: Util.createTerm(args[1]), expression: Util.termExpr(args[2]) };
             case Algebra.FILTER:    return <A.Filter>   { type: key, expression: Util.termExpr(args[0]), input: args[1] };
             case Algebra.GRAPH:     return <A.Graph>    { type: key, name: Util.createTerm(args[0]), input: args[1] };
-            case Algebra.GROUP:     return <A.Group>    { type: key, expressions: args[0].map(Util.termExpr), aggregates: args[1], input: args[2] };
+            case Algebra.GROUP:     return <A.Group>    { type: key, variables: args[0].map(Util.createTerm), aggregates: args[1], input: args[2] };
             case Algebra.JOIN:      return <A.Join>     { type: key, left: args[0], right: args[1] };
             case Algebra.LEFT_JOIN: return args[2] === true ?
                                            <A.LeftJoin> { type: key, left: args[0], right: args[1] } :

@@ -164,7 +164,7 @@ export interface Graph extends Single
 export interface Group extends Single
 {
     type: 'group';
-    expressions: Expression[]; // TODO: this one might need to change
+    variables: rdfjs.Variable[];
     aggregates: BoundAggregate[];
 }
 

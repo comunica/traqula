@@ -23,7 +23,7 @@ export default class Factory
     static createExtend (input: A.Operation, variable: RDF.Variable, expression: A.Expression) : A.Extend { return { type: 'extend', input, variable, expression }; }
     static createFilter (input: A.Operation, expression: A.Expression) : A.Filter { return { type: 'filter', input, expression }; }
     static createGraph (input: A.Operation, name: RDF.Term) : A.Graph { return { type: 'graph', input, name }; }
-    static createGroup (input: A.Operation, expressions: A.Expression[], aggregates: A.BoundAggregate[]) : A.Group { return { type: 'group', input, expressions, aggregates }; }
+    static createGroup (input: A.Operation, variables: RDF.Variable[], aggregates: A.BoundAggregate[]) : A.Group { return { type: 'group', input, variables, aggregates }; }
     static createInv (path: A.Operation): A.Inv { return { type: 'inv', path }; }
     static createJoin (left: A.Operation, right: A.Operation): A.Join { return { type: 'join', left, right }; }
     static createLeftJoin (left: A.Operation, right: A.Operation, expression?: A.Expression): A.LeftJoin

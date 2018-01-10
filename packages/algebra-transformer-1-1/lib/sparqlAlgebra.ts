@@ -6,7 +6,6 @@ import * as RDF from 'rdf-js'
 import {Util as N3Util} from 'n3';
 const Parser = require('sparqljs').Parser;
 const types = Algebra.types;
-const eTypes = Algebra.expressionTypes;
 
 let variables = new Set<string>();
 let varCount = 0;
@@ -415,15 +414,21 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
     if (query.group || Object.keys(A).length > 0)
     {
         let aggregates = Object.keys(A).map(v => translateBoundAggregate(A[v], <RDF.Variable>translateTerm(v)));
-        let exps: Algebra.Expression[] = [];
+        let vars: RDF.Variable[] = [];
         if (query.group)
         {
-            for (let entry of query.group)
-                if (entry.variable)
-                    E.push(entry);
-            exps = query.group.map((e: any) => e.expression).map(translateExpression);
+            for (let e of query.group)
+            {
+                if (e.variable)
+                {
+                    res = Factory.createExtend(res, <RDF.Variable>translateTerm(e.variable), translateExpression(e.expression));
+                    vars.push(<RDF.Variable>translateTerm(e.variable));
+                }
+                else
+                    vars.push(<RDF.Variable>translateTerm(e.expression)); // this will always be a var, otherwise sparql would be invalid
+            }
         }
-        res = Factory.createGroup(res, exps, aggregates);
+        res = Factory.createGroup(res, vars, aggregates);
     }
 
     // 18.2.4.2

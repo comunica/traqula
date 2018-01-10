@@ -325,37 +325,7 @@ describe('SPARQL 1.1 aggregates', () => {
         Util.compareAlgebras(expected, algebra);
     });
 
-    // TODO: look into this one, not directly allowed by Jena
-    it('COUNT 8', () => {
-        let sparql = `PREFIX : <http://www.example.org/>
-                      SELECT ((?O1 + ?O2) AS ?O12) (COUNT(?O1) AS ?C)
-                      WHERE { ?S :p ?O1; :q ?O2 } GROUP BY (?O1 + ?O2)
-                      ORDER BY ?O12`;
-        let algebra = translate(sparql);
-        let expected =
-                AE(A.PROJECT, [
-                    AE(A.ORDER_BY, [
-                        AE(A.EXTEND, [
-                            AE(A.EXTEND, [
-                                AE(A.GROUP, [
-                                    [ AE('+', [ '?O1', '?O2' ]) ],
-                                    [ AE(A.AGGREGATE, ['count', '?O1', '?var0']) ],
-                                    AE(A.BGP, [ T('?S', 'http://www.example.org/p', '?O1'), T('?S', 'http://www.example.org/q', '?O2') ])
-                                ]),
-                                '?O12',
-                                AE('+', [ '?O1', '?O2' ])
-                            ]),
-                            '?C',
-                            '?var0'
-                        ]),
-                        [ '?O12' ]
-                    ]),
-                    [ '?O12', '?C' ]
-                ]);
-        Util.compareAlgebras(expected, algebra);
-    });
-
-    it('COUNT 8', () => {
+    it('COUNT 8b', () => {
         let sparql = `PREFIX : <http://www.example.org/>
                       SELECT ?O12 (COUNT(?O1) AS ?C)
                       WHERE { ?S :p ?O1; :q ?O2 } GROUP BY ((?O1 + ?O2) AS ?O12)
@@ -366,14 +336,14 @@ describe('SPARQL 1.1 aggregates', () => {
                 AE(A.PROJECT, [
                     AE(A.ORDER_BY, [
                         AE(A.EXTEND, [
-                            AE(A.EXTEND, [
-                                AE(A.GROUP, [
-                                    [ AE('+', [ '?O1', '?O2' ]) ],
-                                    [ AE(A.AGGREGATE, ['count', '?O1', '?var0']) ],
-                                    AE(A.BGP, [ T('?S', 'http://www.example.org/p', '?O1'), T('?S', 'http://www.example.org/q', '?O2') ])
-                                ]),
-                                '?O12',
-                                AE('+', [ '?O1', '?O2' ])
+                            AE(A.GROUP, [
+                                [ '?O12' ],
+                                [ AE(A.AGGREGATE, ['count', '?O1', '?var0']) ],
+                                AE(A.EXTEND, [
+                                    AE(A.BGP, [ T('?S', 'http://www.example.org/p', '?O1'), T('?S', 'http://www.example.org/q', '?O2') ]),
+                                    '?O12',
+                                    AE('+', [ '?O1', '?O2' ])
+                                ])
                             ]),
                             '?C',
                             '?var0'

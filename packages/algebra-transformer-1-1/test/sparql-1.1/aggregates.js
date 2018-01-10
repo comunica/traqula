@@ -9,6 +9,8 @@ const translate = Util.translate;
 const AE = Util.algebraElement;
 const T = Util.triple;
 
+const F = Util.Factory;
+
 // https://www.w3.org/2009/sparql/implementations/
 // https://www.w3.org/2009/sparql/docs/tests/
 describe('SPARQL 1.1 aggregates', () => {
@@ -352,6 +354,48 @@ describe('SPARQL 1.1 aggregates', () => {
                     ]),
                     [ '?O12', '?C' ]
                 ]);
+        Util.compareAlgebras(expected, algebra);
+    });
+
+
+
+    it('Distinct (custom)', () => {
+        let sparql = `SELECT distinct (sum(distinct avg(distinct (?c+?s))) as ?s1)
+                      {
+                        ?s ?p ?c
+                      }
+                      GROUP BY ?c`;
+        let algebra = translate(sparql);
+        let expected =
+                F.createDistinct(
+                    F.createProject(
+                        F.createExtend(
+                            F.createGroup(
+                                F.createBgp([F.createPattern(
+                                    F.createTerm('?s'),
+                                    F.createTerm('?p'),
+                                    F.createTerm('?c')
+                                )]),
+                                [ F.createTerm('?c') ],
+                                [ F.createBoundAggregate(
+                                    F.createTerm('?var'),
+                                    'sum',
+                                    F.createAggregateExpression(
+                                        'avg',
+                                        F.createOperatorExpression(
+                                            '+',
+                                            [ F.createTermExpression(F.createTerm('?c')), F.createTermExpression(F.createTerm('?s')) ]
+                                        ),
+                                        true
+                                    ),
+                                    true
+                                ) ]
+                            ),
+                            F.createTerm('?s1'),
+                            F.createTermExpression(F.createTerm('?var'))
+                        ),
+                        [ F.createTerm('?s1') ])
+                );
         Util.compareAlgebras(expected, algebra);
     });
 });

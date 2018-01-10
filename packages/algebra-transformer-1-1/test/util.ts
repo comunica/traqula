@@ -4,6 +4,7 @@ import assert = require('assert');
 import * as rdfjs from 'rdf-js';
 const N3Util = require('n3').Util;
 import { translate, Algebra as A } from '../index';
+import Factory from '../lib/Factory';
 const Algebra = A.types;
 const ETypes = A.expressionTypes;
 
@@ -11,6 +12,7 @@ class Util
 {
     static Algebra = Algebra;
     static translate = translate;
+    static Factory = Factory;
 
     // TODO: totally copy/pasted from sparqlAlgebra.js, someone should really clean up this whole test stuff!
     static createTerm (str: string) : rdfjs.Term
@@ -106,7 +108,7 @@ class Util
 
         if (key === Algebra.AGGREGATE)
         {
-            let result: A.Aggregate = { type: 'aggregate', aggregator: args[0], expression: Util.termExpr(args[1]) };
+            let result: A.AggregateExpression = { type: 'expression', expressionType: 'aggregate', aggregator: args[0], expression: Util.termExpr(args[1]), distinct: false };
             if (result.aggregator === 'group_concat')
             {
                 if (args.length === 4)

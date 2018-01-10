@@ -1,19 +1,15 @@
 
 import * as A from './algebra';
 import * as RDF from "rdf-js";
+import {Util as N3Util} from "n3";
+import * as _ from "lodash";
 
 export default class Factory
 {
     static createAlt (left: A.Operation, right: A.Operation): A.Alt { return { type: 'alt', left, right }; }
-    static createAggregate (aggregator: string, expression: A.Expression, separator?: string): A.Aggregate
+    static createBoundAggregate (variable: RDF.Variable, aggregate: string, expression: A.Expression, distinct: boolean, separator?: string): A.BoundAggregate
     {
-        if (separator)
-            return { type: 'aggregate', aggregator, expression, separator};
-        return { type: 'aggregate', aggregator, expression };
-    }
-    static createBoundAggregate (variable: RDF.Variable, aggregate: string, expression: A.Expression, separator?: string): A.BoundAggregate
-    {
-        let result = <A.BoundAggregate>Factory.createAggregate(aggregate, expression, separator);
+        let result = <A.BoundAggregate>Factory.createAggregateExpression(aggregate, expression, distinct, separator);
         result.variable = variable;
         return result;
     }
@@ -37,9 +33,19 @@ export default class Factory
     static createNps (iris: RDF.NamedNode[]): A.Nps { return { type: 'nps', iris }; }
     static createOneOrMorePath (path: A.Operation): A.OneOrMorePath { return { type: 'OneOrMorePath', path }; }
     static createOrderBy (input: A.Operation, expressions: A.Expression[]) : A.OrderBy { return { type: 'orderby', input, expressions }; }
-    static createPath (subject: RDF.Term, predicate: A.Operation, object: RDF.Term, graph: RDF.Term) : A.Path { return { type: 'path', subject, predicate, object, graph }; }
+    static createPath (subject: RDF.Term, predicate: A.Operation, object: RDF.Term, graph?: RDF.Term) : A.Path
+    {
+        if (graph)
+            return { type: 'path', subject, predicate, object, graph };
+        return { type: 'path', subject, predicate, object, graph: defaultGraph };
+    }
     // TODO: cast needed due to missing equals method (could use https://github.com/rdf-ext/rdf-data-model )
-    static createPattern (subject: RDF.Term, predicate: RDF.Term, object: RDF.Term, graph: RDF.Term) : A.Pattern { return <A.Pattern><any>{ type: 'pattern', subject, predicate, object, graph }; }
+    static createPattern (subject: RDF.Term, predicate: RDF.Term, object: RDF.Term, graph?: RDF.Term) : A.Pattern
+    {
+        if (graph)
+            return <A.Pattern><any>{ type: 'pattern', subject, predicate, object, graph };
+        return <A.Pattern><any>{ type: 'pattern', subject, predicate, object, graph: defaultGraph };
+    }
     static createProject (input: A.Operation, variables: RDF.Variable[]) : A.Project { return { type: 'project', input, variables }; }
     static createReduced (input: A.Operation) : A.Reduced { return { type: 'reduced', input }; }
     static createSeq (left: A.Operation, right: A.Operation): A.Seq { return { type: 'seq', left, right }; }
@@ -54,8 +60,44 @@ export default class Factory
     static createZeroOrMorePath (path: A.Operation): A.ZeroOrMorePath { return { type: 'ZeroOrMorePath', path }; }
     static createZeroOrOnePath (path: A.Operation): A.ZeroOrOnePath { return { type: 'ZeroOrOnePath', path }; }
 
+    static createAggregateExpression (aggregator: string, expression: A.Expression, distinct: boolean, separator?: string): A.AggregateExpression
+    {
+        if (separator)
+            return { type: 'expression', expressionType: 'aggregate', aggregator, expression, separator, distinct};
+        return { type: 'expression', expressionType: 'aggregate', aggregator, expression, distinct };
+    }
     static createExistenceExpression (not: boolean, input: A.Operation): A.ExistenceExpression { return { type: 'expression', expressionType: 'existence', not, input }; }
     static createNamedExpression (name: RDF.NamedNode, args: A.Expression[]): A.NamedExpression { return { type: 'expression', expressionType: 'named', name, args }; }
     static createOperatorExpression (operator: string, args: A.Expression[]): A.OperatorExpression { return { type: 'expression', expressionType: 'operator', operator, args }; }
     static createTermExpression (term: RDF.Term): A.TermExpression { return { type: 'expression', expressionType: 'term', term }; }
+
+    static createTerm (str: string): RDF.Term
+    {
+        if (str[0] === '?')
+            return <RDF.Variable>{ termType: 'Variable', value: str.substring(1) };
+        if (_.startsWith(str, '_:'))
+            return <RDF.BlankNode>{ termType: 'BlankNode', value: str.substring(2) };
+        if (N3Util.isLiteral(str))
+        {
+            let literal: RDF.Literal = <RDF.Literal>{ termType: 'Literal', value: N3Util.getLiteralValue(str), language: '', datatype: stringType };
+            let lang = N3Util.getLiteralLanguage(str);
+            if (lang && lang.length > 0)
+            {
+                literal.language = lang;
+                literal.datatype = langStringType;
+            }
+            else
+            {
+                let type = N3Util.getLiteralType(str);
+                if (type && type.length > 0)
+                    literal.datatype = <RDF.NamedNode>Factory.createTerm(type);
+            }
+            return literal;
+        }
+        return <RDF.NamedNode> { termType: 'NamedNode', value: str };
+    }
 }
+
+const defaultGraph: RDF.DefaultGraph = <RDF.DefaultGraph>{ termType: 'DefaultGraph', value: ''};
+const stringType = <RDF.NamedNode>Factory.createTerm('http://www.w3.org/2001/XMLSchema#string');
+const langStringType = <RDF.NamedNode>Factory.createTerm('http://www.w3.org/1999/02/22-rdf-syntax-ns#langString');

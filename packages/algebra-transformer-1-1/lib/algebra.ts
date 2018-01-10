@@ -43,6 +43,7 @@ export const types = Object.freeze({
 });
 
 export const expressionTypes = Object.freeze({
+    AGGREGATE: 'aggregate',
     EXISTENCE: 'existence',
     NAMED:     'named',
     OPERATOR:  'operator',
@@ -71,7 +72,16 @@ export interface Double extends Operation
 export interface Expression extends Operation
 {
     type: 'expression';
-    expressionType: 'existence'|'named'|'operator'|'term';
+    expressionType: 'aggregate'|'existence'|'named'|'operator'|'term';
+}
+
+export interface AggregateExpression extends Expression
+{
+    expressionType: 'aggregate',
+    aggregator: string;
+    distinct: boolean;
+    separator?: string; // used by GROUP_CONCAT
+    expression: Expression;
 }
 
 export interface ExistenceExpression extends Expression
@@ -112,15 +122,8 @@ export interface Alt extends Double
     type: 'alt';
 }
 
-export interface Aggregate extends Operation
-{
-    type: 'aggregate';
-    aggregator: string;
-    separator?: string; // used by GROUP_CONCAT
-    expression: Expression;
-}
-
-export interface BoundAggregate extends Aggregate
+// also an expression
+export interface BoundAggregate extends AggregateExpression
 {
     variable: rdfjs.Variable;
 }

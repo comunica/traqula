@@ -13,8 +13,7 @@
     "lodash.isequal": "^4.5.0",
     "minimist": "^1.2.0",
     "rdf-data-model": "^1.0.0",
-    "rdf-string": "^1.1.0",
-    "sparqljs": "^1.5.2"
+    "sparqljs": "^2.0.2"
   },
   "devDependencies": {
     "@types/chai": "^4.1.2",

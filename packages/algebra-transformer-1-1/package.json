@@ -10,18 +10,20 @@
   },
   "bin": "./bin/sparqlalgebrajs.js",
   "dependencies": {
-    "lodash": "^4.13.1",
+    "lodash.isequal": "^4.5.0",
     "minimist": "^1.2.0",
     "n3": "^0.11.2",
     "sparqljs": "^1.5.2"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.77",
+    "@types/lodash.isequal": "^4.5.2",
     "@types/minimist": "^1.2.0",
     "@types/n3": "0.0.3",
     "@types/node": "^8.0.50",
     "@types/rdf-data-model": "^1.0.1",
     "@types/rdf-js": "^1.0.1",
+    "lodash": "^4.13.1",
     "mocha": "^3.5.3",
     "pre-commit": "^1.2.2",
     "rdf-data-model": "^1.0.0",

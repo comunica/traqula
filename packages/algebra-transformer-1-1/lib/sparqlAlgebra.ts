@@ -1,9 +1,9 @@
 
-import * as _ from 'lodash';
 import * as Algebra from './algebra';
 import Factory from './factory';
 import * as RDF from 'rdf-js'
 const Parser = require('sparqljs').Parser;
+const isEqual = require('lodash.isequal');
 const types = Algebra.types;
 
 let variables = new Set<string>();
@@ -31,7 +31,7 @@ function translateQuery(sparql: any, quads?: boolean) : Algebra.Operation
     varCount = 0;
     useQuads = quads;
 
-    if (_.isString(sparql))
+    if (isString(sparql))
     {
         let parser = new Parser();
         // resets the identifier counter used for blank nodes
@@ -52,10 +52,20 @@ function translateQuery(sparql: any, quads?: boolean) : Algebra.Operation
     return res;
 }
 
+function isString(str: any): boolean
+{
+    return typeof str === 'string';
+}
+
+function isObject(o: any): boolean
+{
+    return o !== null && typeof o === 'object';
+}
+
 function isVariable(str: any) : boolean
 {
     // there is also a '?' operator...
-    return _.isString(str) && str[0] === '?' && str.length > 1;
+    return isString(str) && str[0] === '?' && str.length > 1;
 }
 
 // 18.2.1
@@ -68,7 +78,7 @@ function inScopeVariables(thingy: any) : {[key: string]: boolean}
         inScope[thingy] = true;
         variables.add(thingy); // keep track of all variables so we don't generate duplicates
     }
-    else if (_.isObject(thingy))
+    else if (isObject(thingy))
     {
         if (thingy.type === 'bind')
         {
@@ -155,7 +165,7 @@ function translateGroupGraphPattern(thingy: any) : Algebra.Operation
 
 function translateExpression(exp: any) : Algebra.Expression
 {
-    if (_.isString(exp))
+    if (isString(exp))
         return factory.createTermExpression(factory.createTerm(exp));
     if (exp.aggregation)
     {
@@ -221,7 +231,7 @@ function translatePath(triple: any) : Algebra.Operation[]
 
 function translatePathPredicate(predicate: any) : Algebra.Operation
 {
-    if (_.isString(predicate))
+    if (isString(predicate))
         return factory.createLink(<RDF.NamedNode>factory.createTerm(predicate));
 
     if (predicate.pathType === '^')
@@ -235,7 +245,7 @@ function translatePathPredicate(predicate: any) : Algebra.Operation
 
         for (let item of items)
         {
-            if (_.isString(item))
+            if (isString(item))
                 normals.push(item);
             else if (item.pathType === '^')
                 inverted.push(item.items[0]);
@@ -329,7 +339,7 @@ function recurseGraph(thingy: Algebra.Operation, graph: RDF.NamedNode) : Algebra
     {
         for (let key of Object.keys(thingy))
         {
-            if (_.isArray(thingy[key]))
+            if (Array.isArray(thingy[key]))
                 thingy[key] = thingy[key].map((x: any) => recurseGraph(x, graph));
             else if (typeVals.indexOf(thingy[key].type) >= 0) // can't do instanceof on an interface
                 thingy[key] = recurseGraph(thingy[key], graph);
@@ -510,7 +520,7 @@ function mapAggregates (thingy: any, aggregates: {[key: string]: any}) : any
         let v;
         for (let key of Object.keys(aggregates))
         {
-            if (_.isEqual(aggregates[key], thingy))
+            if (isEqual(aggregates[key], thingy))
             {
                 v = key;
                 found = true;
@@ -530,7 +540,7 @@ function mapAggregates (thingy: any, aggregates: {[key: string]: any}) : any
         thingy.expression = mapAggregates(thingy.expression, aggregates);
     else if (thingy.args)
         mapAggregates(thingy.args, aggregates);
-    else if (_.isArray(thingy))
+    else if (Array.isArray(thingy))
         thingy.forEach((subthingy, idx) => thingy[idx] = mapAggregates(subthingy, aggregates));
 
     return thingy;

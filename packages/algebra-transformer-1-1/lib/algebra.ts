@@ -263,7 +263,7 @@ export interface Values extends Operation
 {
     type: 'values';
     variables: rdfjs.Variable[];
-    bindings: Map<rdfjs.Variable, rdfjs.Term>[];
+    bindings: {[key: string]: rdfjs.Term}[];
 }
 
 export interface ZeroOrMorePath extends Operation

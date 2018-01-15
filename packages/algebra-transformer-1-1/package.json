@@ -20,9 +20,11 @@
     "@types/minimist": "^1.2.0",
     "@types/n3": "0.0.3",
     "@types/node": "^8.0.50",
+    "@types/rdf-data-model": "^1.0.1",
     "@types/rdf-js": "^1.0.1",
     "mocha": "^3.5.3",
     "pre-commit": "^1.2.2",
+    "rdf-data-model": "^1.0.0",
     "typescript": "^2.5.3"
   },
   "scripts": {

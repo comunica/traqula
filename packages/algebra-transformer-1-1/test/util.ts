@@ -3,16 +3,21 @@ import _ = require('lodash');
 import assert = require('assert');
 import * as rdfjs from 'rdf-js';
 const N3Util = require('n3').Util;
-import { translate, Algebra as A } from '../index';
+import { translate as t, Algebra as A } from '../index';
 import Factory from '../lib/Factory';
+import * as DataFactory from 'rdf-data-model';
+
 const Algebra = A.types;
 const ETypes = A.expressionTypes;
 
 class Util
 {
     static Algebra = Algebra;
-    static translate = translate;
-    static Factory = Factory;
+    static Factory = new Factory(DataFactory);
+
+    static translate = (sparql: string, quads: boolean) => {
+        return t(sparql, { dataFactory: DataFactory, quads});
+    };
 
     // TODO: totally copy/pasted from sparqlAlgebra.js, someone should really clean up this whole test stuff!
     static createTerm (str: string) : rdfjs.Term
@@ -97,10 +102,10 @@ class Util
             let bindings: any[] = [];
             for (let i = 1; i < args.length; ++i)
             {
-                let binding = new Map<rdfjs.Variable, rdfjs.Term>();
+                let binding: any = {};
                 let row = args[i].args;
                 for (let entry of row)
-                    binding.set(<rdfjs.Variable>Util.createTerm(entry[0]), Util.createTerm(entry[1]));
+                    binding[entry[0]] = Util.createTerm(entry[1]);
                 bindings.push(binding);
             }
             return <A.Values> { type: Algebra.VALUES, variables: args[0].variables, bindings };
@@ -225,8 +230,23 @@ class Util
         
         let keys1 = Object.keys(a1);
         let keys2 = Object.keys(a2);
+
         if (keys1.length !== keys2.length)
-            return false;
+        {
+            // workaround for rdf-data-model library making termType, language and datatype part of the prototype
+            for (let key of ['termType', 'language', 'datatype'])
+            {
+                let idx1 = keys1.indexOf(key);
+                let idx2 = keys2.indexOf(key);
+                if (idx1 >= 0 && idx2 < 0)
+                    keys2.push(key);
+                if (idx2 >= 0 && idx1 < 0)
+                    keys1.push(key);
+            }
+
+            if (keys1.length !== keys2.length)
+                return false;
+        }
         
         return keys1.every(key =>
         {

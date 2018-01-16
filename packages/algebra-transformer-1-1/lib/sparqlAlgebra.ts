@@ -1,6 +1,6 @@
 
 import * as Algebra from './algebra';
-import Factory from './factory';
+import Factory from './Factory';
 import * as RDF from 'rdf-js'
 import * as DataFactory from 'rdf-data-model';
 

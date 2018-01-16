@@ -16,7 +16,7 @@ class Util
     static Factory = new Factory(DataFactory);
 
     static translate = (sparql: string, quads: boolean) => {
-        return t(sparql, { dataFactory: DataFactory, quads});
+        return t(sparql, { quads });
     };
 
     // TODO: totally copy/pasted from sparqlAlgebra.js, someone should really clean up this whole test stuff!

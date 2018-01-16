@@ -104,6 +104,6 @@ export default class Factory
                 datatype = <RDF.NamedNode>this.createTerm(type);
             return this.dataFactory.literal(value, datatype);
         }
-        return <RDF.NamedNode> { termType: 'NamedNode', value: str };
+        return this.dataFactory.namedNode(str);
     }
 }

@@ -2,7 +2,6 @@
 import * as A from './algebra';
 import * as RDF from "rdf-js";
 import {Util as N3Util} from "n3";
-import * as _ from "lodash";
 
 const defaultGraph: RDF.DefaultGraph = <RDF.DefaultGraph>{ termType: 'DefaultGraph', value: ''};
 
@@ -89,7 +88,7 @@ export default class Factory
     {
         if (str[0] === '?')
             return this.dataFactory.variable(str.substring(1));
-        if (_.startsWith(str, '_:'))
+        if (str.startsWith('_:'))
             return this.dataFactory.blankNode(str.substring(2));
         if (N3Util.isLiteral(str))
         {

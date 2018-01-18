@@ -12,8 +12,8 @@
   "dependencies": {
     "lodash.isequal": "^4.5.0",
     "minimist": "^1.2.0",
-    "n3": "^0.11.2",
     "rdf-data-model": "^1.0.0",
+    "rdf-string": "^1.1.0",
     "sparqljs": "^1.5.2"
   },
   "devDependencies": {
@@ -26,6 +26,7 @@
     "@types/rdf-js": "^1.0.1",
     "lodash": "^4.13.1",
     "mocha": "^3.5.3",
+    "n3": "^0.11.2",
     "pre-commit": "^1.2.2",
     "typescript": "^2.5.3"
   },

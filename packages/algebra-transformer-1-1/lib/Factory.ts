@@ -1,7 +1,7 @@
 
 import * as A from './algebra';
 import * as RDF from "rdf-js";
-import {Util as N3Util} from "n3";
+import {stringToTerm} from "rdf-string";
 
 const defaultGraph: RDF.DefaultGraph = <RDF.DefaultGraph>{ termType: 'DefaultGraph', value: ''};
 
@@ -86,24 +86,6 @@ export default class Factory
 
     createTerm (str: string): RDF.Term
     {
-        if (str[0] === '?')
-            return this.dataFactory.variable(str.substring(1));
-        if (str.startsWith('_:'))
-            return this.dataFactory.blankNode(str.substring(2));
-        if (N3Util.isLiteral(str))
-        {
-            let value = N3Util.getLiteralValue(str);
-
-            let lang = N3Util.getLiteralLanguage(str);
-            if (lang && lang.length > 0)
-                return this.dataFactory.literal(value, lang);
-
-            let type = N3Util.getLiteralType(str);
-            let datatype = this.stringType;
-            if (type && type.length > 0)
-                datatype = <RDF.NamedNode>this.createTerm(type);
-            return this.dataFactory.literal(value, datatype);
-        }
-        return this.dataFactory.namedNode(str);
+        return stringToTerm(str, this.dataFactory);
     }
 }

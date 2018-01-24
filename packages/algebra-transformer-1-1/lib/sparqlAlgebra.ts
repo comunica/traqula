@@ -495,11 +495,6 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
     if (query.reduced)
         res = factory.createReduced(res);
 
-    // NEW: support for construct queries
-    // limits are also applied to construct results, which is why those come last, although results should be the same
-    if (query.queryType === 'CONSTRUCT')
-        res = factory.createConstruct(res, query.template.map(translateTriple));
-
     // 18.2.5.5
     if (query.offset || query.limit)
     {
@@ -507,6 +502,10 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
         if (query.limit)
             res.length = query.limit;
     }
+
+    // NEW: support for construct queries
+    if (query.queryType === 'CONSTRUCT')
+        res = factory.createConstruct(res, query.template.map(translateTriple));
 
     return res;
 }

@@ -195,15 +195,15 @@ function translateExtend(op: Algebra.Extend): any
     ])
 }
 
-function translateFilter(op: Algebra.Filter): any[]
+function translateFilter(op: Algebra.Filter): any
 {
-    return flatten([
-        translateOperation(op.input),
-        {
-            type: 'filter',
-            'expression': translateExpression(op.expression)
-        }
-    ])
+    return {
+        type: 'group',
+        patterns:  flatten ([
+                translateOperation(op.input),
+                { type : 'filter', expression: translateExpression(op.expression) }
+            ])
+    };
 }
 
 function translateGraph(op: Algebra.Graph): any
@@ -443,8 +443,9 @@ function translateValues(op: Algebra.Values): any
             let result: any = {};
             for (let v of op.variables)
             {
-                if (binding.has(v))
-                    result['?' + v.value] = translateTerm(binding.get(v));
+                let s = '?' + v.value;
+                if (binding[s])
+                    result[s] = translateTerm(binding[s]);
             }
         })
     };

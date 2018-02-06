@@ -6,9 +6,11 @@ import * as rdfjs from "rdf-js";
 export const types = Object.freeze({
     AGGREGATE:          'aggregate',
     ALT:                'alt',
+    ASK:                'ask',
     BGP:                'bgp',
     CONSTRUCT:          'construct',
     DESC:               'desc',
+    DESCRIBE:           'describe',
     DISTINCT:           'distinct',
     EXPRESSION:         'expression',
     EXTEND:             'extend',
@@ -122,6 +124,11 @@ export interface Alt extends Double
     type: 'alt';
 }
 
+export interface Ask extends Single
+{
+    type: 'ask';
+}
+
 // also an expression
 export interface BoundAggregate extends AggregateExpression
 {
@@ -138,6 +145,12 @@ export interface Construct extends Single
 {
     type: 'construct';
     template: Pattern[];
+}
+
+export interface Describe extends Single
+{
+    type: 'describe';
+    terms: rdfjs.Term[];
 }
 
 export interface Distinct extends Single

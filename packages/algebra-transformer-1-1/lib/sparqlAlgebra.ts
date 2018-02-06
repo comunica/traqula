@@ -46,8 +46,8 @@ function translateQuery(sparql: any, quads?: boolean) : Algebra.Operation
     if (sparql.type !== 'query')
         throw new Error('Translate only works on complete query objects.');
 
-    // group and where are identical, having only 1 makes parsing easier
-    let group = { type: 'group', patterns: sparql.where };
+    // group and where are identical, having only 1 makes parsing easier, can be undefined in DESCRIBE
+    let group = { type: 'group', patterns: sparql.where || [] };
     let vars = new Set(Object.keys(inScopeVariables(group)).map(factory.createTerm.bind(factory)));
     let res = translateGroupGraphPattern(group);
     res = translateAggregates(sparql, res, <Set<RDF.Variable>>vars);
@@ -448,19 +448,21 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
     // 18.2.4.4
     let PV = new Set<RDF.Variable>();
 
-    // interpret other query types as SELECT *
-    if (query.queryType !== 'SELECT' || query.variables.indexOf('*') >= 0)
-        PV = variables;
-    else
+    if (query.queryType === 'SELECT')
     {
-        for (let v of query.variables)
+        if (query.variables.indexOf('*') >= 0)
+            PV = variables;
+        else
         {
-            if (isVariable(v))
-                PV.add(<RDF.Variable>factory.createTerm(v));
-            else if (v.variable)
+            for (let v of query.variables)
             {
-                PV.add(<RDF.Variable>factory.createTerm(v.variable));
-                E.push(v);
+                if (isVariable(v))
+                    PV.add(<RDF.Variable>factory.createTerm(v));
+                else if (v.variable)
+                {
+                    PV.add(<RDF.Variable>factory.createTerm(v.variable));
+                    E.push(v);
+                }
             }
         }
     }
@@ -484,7 +486,7 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
 
     // 18.2.5.2
     // construct does not need a project (select, ask and describe do)
-    if (query.queryType !== 'CONSTRUCT')
+    if (query.queryType === 'SELECT')
         res = factory.createProject(res, Array.from(PV));
 
     // 18.2.5.3
@@ -503,9 +505,13 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
             res.length = query.limit;
     }
 
-    // NEW: support for construct queries
+    // NEW: support for ask/construct/describe queries
     if (query.queryType === 'CONSTRUCT')
         res = factory.createConstruct(res, query.template.map(translateTriple));
+    else if (query.queryType === 'ASK')
+        res = factory.createAsk(res);
+    else if (query.queryType === 'DESCRIBE')
+        res = factory.createDescribe(res, query.variables.map(factory.createTerm.bind(factory)));
 
     return res;
 }

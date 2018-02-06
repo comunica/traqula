@@ -16,6 +16,7 @@ export default class Factory
     }
 
     createAlt (left: A.Operation, right: A.Operation): A.Alt { return { type: 'alt', left, right }; }
+    createAsk (input: A.Operation): A.Ask { return { type: 'ask', input }; }
     createBoundAggregate (variable: RDF.Variable, aggregate: string, expression: A.Expression, distinct: boolean, separator?: string): A.BoundAggregate
     {
         let result = <A.BoundAggregate>this.createAggregateExpression(aggregate, expression, distinct, separator);
@@ -24,6 +25,7 @@ export default class Factory
     }
     createBgp (patterns: A.Pattern[]): A.Bgp { return { type: 'bgp', patterns }; }
     createConstruct (input: A.Operation, template: A.Pattern[]): A.Construct { return { type: 'construct', input, template }; }
+    createDescribe (input: A.Operation, terms: RDF.Term[]): A.Describe { return { type: 'describe', input, terms }; }
     createDistinct (input: A.Operation) : A.Distinct { return { type: 'distinct', input }; }
     createExtend (input: A.Operation, variable: RDF.Variable, expression: A.Expression) : A.Extend { return { type: 'extend', input, variable, expression }; }
     createFilter (input: A.Operation, expression: A.Expression) : A.Filter { return { type: 'filter', input, expression }; }

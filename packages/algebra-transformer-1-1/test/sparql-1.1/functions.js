@@ -54,12 +54,11 @@ describe('SPARQL 1.1 functions', () => {
                         }`;
         let algebra = translate(sparql);
         let expected =
-                AE(A.PROJECT, [
+                AE(A.ASK, [
                     AE(A.FILTER, [
                         AE('=', [ AE('datatype', [ '?n' ]), 'http://www.w3.org/2001/XMLSchema#dateTime' ]),
                         AE(A.EXTEND, [ AE(A.BGP, []), '?n', AE('now', []) ])
-                    ]),
-                    [ '?n' ]
+                    ])
                 ]);
         Util.compareAlgebras(expected, algebra);
     });

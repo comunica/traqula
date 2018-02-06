@@ -95,7 +95,7 @@ describe('SPARQL 1.1 paths', () => {
                         }`;
         let algebra = translate(sparql);
         let expected =
-                AE(A.PROJECT, [ AE(A.BGP, [ T('http://www.example.org/instance#a', 'http://www.example.org/schema#p', 'http://www.example.org/instance#b') ]), [  ] ]);
+                AE(A.ASK, [ AE(A.BGP, [ T('http://www.example.org/instance#a', 'http://www.example.org/schema#p', 'http://www.example.org/instance#b') ]) ]);
         Util.compareAlgebras(expected, algebra);
     });
     

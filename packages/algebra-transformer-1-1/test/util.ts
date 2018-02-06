@@ -6,6 +6,7 @@ const N3Util = require('n3').Util;
 import { translate as t, Algebra as A } from '../index';
 import Factory from '../lib/Factory';
 import * as DataFactory from 'rdf-data-model';
+import * as util from 'util';
 
 const Algebra = A.types;
 const ETypes = A.expressionTypes;
@@ -15,9 +16,35 @@ class Util
     static Algebra = Algebra;
     static Factory = new Factory(DataFactory);
 
-    static translate = (sparql: string, quads: boolean) => {
+    static translate (sparql: string, quads?: boolean) {
         return t(sparql, { quads });
     };
+
+    static inspect (obj: any): void {
+        console.log(util.inspect(Util.objectify(obj), { depth: null, breakLength: 120 }));
+    };
+
+    private static objectify (algebra: any): any {
+        if (algebra.termType)
+        {
+            let result: any = { termType: algebra.termType, value: algebra.value };
+            if (algebra.language)
+                result.language = algebra.language;
+            if (algebra.datatype)
+                result.datatype = Util.objectify(algebra.datatype);
+            return result;
+        }
+        if (Array.isArray(algebra))
+            return algebra.map(Util.objectify);
+        if (algebra.type)
+        {
+            let result: any = {};
+            for (let key of Object.keys(algebra))
+                result[key] = Util.objectify(algebra[key]);
+            return result;
+        }
+        return algebra;
+    }
 
     // TODO: totally copy/pasted from sparqlAlgebra.js, someone should really clean up this whole test stuff!
     static createTerm (str: string) : rdfjs.Term
@@ -58,6 +85,7 @@ class Util
     {
         switch (key)
         {
+            case Algebra.ASK:       return <A.Ask>      { type: key, input: args[0] };
             case Algebra.BGP:       return <A.Bgp>      { type: key, patterns: args };
             case Algebra.DISTINCT:  return <A.Distinct> { type: key, input: args[0] };
             case Algebra.EXTEND:    return <A.Extend>   { type: key, input: args[0], variable: Util.createTerm(args[1]), expression: Util.termExpr(args[2]) };

@@ -161,7 +161,7 @@ describe('SPARQL 1.1 aggregates', () => {
         let algebra = translate(sparql);
         // TODO: technically there is no definition on what to do with non-SELECT queries in sparql algebra
         let expected =
-                AE(A.PROJECT, [
+                AE(A.ASK, [
                     AE(A.FILTER, [
                         AE('||', [ AE('=', [ '?g', '"1 22"']), AE('=', [ '?g', '"22 1"']) ]),
                         AE(A.PROJECT, [
@@ -176,8 +176,7 @@ describe('SPARQL 1.1 aggregates', () => {
                             ]),
                             [ '?g' ]
                         ])
-                    ]),
-                    [ '?g' ]
+                    ])
                 ]);
         Util.compareAlgebras(expected, algebra);
     });
@@ -243,7 +242,7 @@ describe('SPARQL 1.1 aggregates', () => {
                       }`;
         let algebra = translate(sparql);
         let expected =
-                AE(A.PROJECT, [
+                AE(A.ASK, [
                     AE(A.FILTER, [
                         AE('||', [ AE('=', [ '?g', '"1:22"' ]), AE('=', [ '?g', '"22:1"' ]) ]),
                         AE(A.PROJECT, [
@@ -258,8 +257,7 @@ describe('SPARQL 1.1 aggregates', () => {
                             ]),
                             [ '?g' ]
                         ])
-                    ]),
-                    [ '?g' ]
+                    ])
                 ]);
         Util.compareAlgebras(expected, algebra);
     });
@@ -277,7 +275,7 @@ describe('SPARQL 1.1 aggregates', () => {
                       }`;
         let algebra = translate(sparql);
         let expected =
-                AE(A.PROJECT, [
+                AE(A.ASK, [
                     AE(A.FILTER, [
                         AE('||', [ AE('||', [ AE('=', [
                             '?sample', '"1.0"^^http://www.w3.org/2001/XMLSchema#decimal' ]), AE('=', [
@@ -295,8 +293,7 @@ describe('SPARQL 1.1 aggregates', () => {
                             ]),
                             [ '?sample' ]
                         ])
-                    ]),
-                    [ '?sample' ]
+                    ])
                 ]);
         Util.compareAlgebras(expected, algebra);
     });

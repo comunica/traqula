@@ -19,12 +19,30 @@ let factory: Factory;
  * @param options - Optional options object. Current options:
  *                    * dataFactory: The Datafactory used to generate terms. Default rdf-data-model.
  *                    * quads: Boolean indicating whether triples should be converted to Quads (consumes GRAPH statements). Default false.
+ *                    * prefixes: Pre-defined prefixes for the given query. Default empty.
+ *                    * baseIRI: Base IRI that should be used for the query. Default undefined (throws error if required).
  * @returns {Operation}
  */
-export default function translate(sparql: any, options?: { dataFactory?: RDF.DataFactory, quads?: boolean }) : Algebra.Operation
+export default function translate(sparql: any, options?:
+    {
+        dataFactory?: RDF.DataFactory,
+        quads?: boolean,
+        prefixes?: {[prefix: string]: string},
+        baseIRI?: string
+    }) : Algebra.Operation
 {
     options = options || {};
     factory = new Factory(options.dataFactory || DataFactory);
+
+    if (isString(sparql))
+    {
+        let parser = new Parser(options.prefixes, options.baseIRI);
+        // resets the identifier counter used for blank nodes
+        // provides nicer and more consistent output if there are multiple calls
+        parser._resetBlanks();
+        sparql = parser.parse(sparql);
+    }
+
     return translateQuery(sparql, options.quads);
 }
 
@@ -33,15 +51,6 @@ function translateQuery(sparql: any, quads?: boolean) : Algebra.Operation
     variables = new Set();
     varCount = 0;
     useQuads = quads;
-
-    if (isString(sparql))
-    {
-        let parser = new Parser();
-        // resets the identifier counter used for blank nodes
-        // provides nicer and more consistent output if there are multiple calls
-        parser._resetBlanks();
-        sparql = parser.parse(sparql);
-    }
 
     if (sparql.type !== 'query')
         throw new Error('Translate only works on complete query objects.');

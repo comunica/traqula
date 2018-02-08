@@ -1,5 +1,4 @@
 
-import * as _ from 'lodash';
 import * as Algebra from './algebra';
 import * as RDF from 'rdf-js'
 const SparqlGenerator = require('sparqljs').Generator;
@@ -17,6 +16,7 @@ export function toSparql(op: Algebra.Operation): string
 export function toSparqlJs(op: Algebra.Operation):  any
 {
     resetContext();
+    op = removeQuads(op);
     return translateOperation(op);
 }
 
@@ -619,4 +619,57 @@ function translateZeroOrOnePath(path: Algebra.ZeroOrOnePath): any
         pathType: '?',
         items: [ translatePathComponent(path.path) ]
     }
+}
+
+function removeQuads(op: Algebra.Operation)
+{
+    return removeQuadsRecursive(op, {});
+}
+
+// remove quads
+function removeQuadsRecursive(op: any, graphs: {[id: string]: RDF.Term}): any
+{
+    if (Array.isArray(op))
+        return op.map(sub => removeQuadsRecursive(sub, graphs));
+
+    if (!op.type)
+        return op;
+
+    if ((op.type === types.PATTERN || op.type === types.PATH) && op.graph && op.graph.value.length > 0)
+    {
+        graphs[op.graph.value] = op.graph;
+        return op;
+    }
+
+    let result: any = {};
+    let keyGraphs: any = {};
+    let graphNames: any = {};
+    for (let key of Object.keys(op))
+    {
+        result[key] = removeQuadsRecursive(op[key], graphs);
+        let graphsArray = Object.keys(graphs);
+        if (graphsArray.length > 0)
+        {
+            let graphName = graphsArray[0];
+            keyGraphs[key] = graphs[graphName];
+            graphNames[keyGraphs[key].value] = keyGraphs[key];
+            delete graphs[graphName];
+        }
+    }
+
+    let graphNameSet = Object.keys(graphNames);
+    if (graphNameSet.length > 0)
+    {
+        // also need to create graph statement if we are at the edge of the query
+        if (graphNameSet.length === 1 && op.type !== types.PROJECT)
+            graphs[graphNameSet[0]] = graphNames[graphNameSet[0]];
+        else
+        {
+            // multiple graphs, need to create graph objects for them
+            for (let key of Object.keys(keyGraphs))
+                result[key] = <Algebra.Graph> { type: 'graph', input: result[key], name: keyGraphs[key] };
+        }
+    }
+
+    return result;
 }

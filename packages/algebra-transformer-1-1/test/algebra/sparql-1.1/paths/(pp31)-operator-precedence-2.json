@@ -1,0 +1,76 @@
+{
+  "type": "project",
+  "input": {
+    "type": "join",
+    "left": {
+      "type": "path",
+      "subject": {
+        "termType": "NamedNode",
+        "value": "http://www.example.org/a"
+      },
+      "predicate": {
+        "type": "alt",
+        "left": {
+          "type": "link",
+          "iri": {
+            "termType": "NamedNode",
+            "value": "http://www.example.org/p1"
+          }
+        },
+        "right": {
+          "type": "link",
+          "iri": {
+            "termType": "NamedNode",
+            "value": "http://www.example.org/p2"
+          }
+        }
+      },
+      "object": {
+        "termType": "Variable",
+        "value": "var0"
+      },
+      "graph": {
+        "termType": "DefaultGraph",
+        "value": ""
+      }
+    },
+    "right": {
+      "type": "path",
+      "subject": {
+        "termType": "Variable",
+        "value": "var0"
+      },
+      "predicate": {
+        "type": "alt",
+        "left": {
+          "type": "link",
+          "iri": {
+            "termType": "NamedNode",
+            "value": "http://www.example.org/p3"
+          }
+        },
+        "right": {
+          "type": "link",
+          "iri": {
+            "termType": "NamedNode",
+            "value": "http://www.example.org/p4"
+          }
+        }
+      },
+      "object": {
+        "termType": "Variable",
+        "value": "t"
+      },
+      "graph": {
+        "termType": "DefaultGraph",
+        "value": ""
+      }
+    }
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "t"
+    }
+  ]
+}

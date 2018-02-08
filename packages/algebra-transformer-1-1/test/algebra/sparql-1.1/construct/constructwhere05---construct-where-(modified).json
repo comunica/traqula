@@ -1,0 +1,74 @@
+{
+  "type": "construct",
+  "input": {
+    "type": "filter",
+    "input": {
+      "type": "bgp",
+      "patterns": [
+        {
+          "subject": {
+            "termType": "Variable",
+            "value": "s"
+          },
+          "predicate": {
+            "termType": "Variable",
+            "value": "p"
+          },
+          "object": {
+            "termType": "Variable",
+            "value": "o"
+          },
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
+          },
+          "type": "pattern"
+        }
+      ]
+    },
+    "expression": {
+      "type": "expression",
+      "expressionType": "operator",
+      "operator": "=",
+      "args": [
+        {
+          "type": "expression",
+          "expressionType": "term",
+          "term": {
+            "termType": "Variable",
+            "value": "o"
+          }
+        },
+        {
+          "type": "expression",
+          "expressionType": "term",
+          "term": {
+            "termType": "NamedNode",
+            "value": "http://example.org/o1"
+          }
+        }
+      ]
+    }
+  },
+  "template": [
+    {
+      "subject": {
+        "termType": "Variable",
+        "value": "s"
+      },
+      "predicate": {
+        "termType": "Variable",
+        "value": "p"
+      },
+      "object": {
+        "termType": "Variable",
+        "value": "o"
+      },
+      "graph": {
+        "termType": "DefaultGraph",
+        "value": ""
+      },
+      "type": "pattern"
+    }
+  ]
+}

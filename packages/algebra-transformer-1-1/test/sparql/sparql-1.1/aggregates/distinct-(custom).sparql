@@ -1,0 +1,5 @@
+SELECT distinct (sum(distinct avg(distinct (?c+?s))) as ?s1)
+{
+  ?s ?p ?c
+}
+GROUP BY ?c

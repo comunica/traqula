@@ -1,0 +1,224 @@
+{
+  "type": "project",
+  "input": {
+    "type": "extend",
+    "input": {
+      "type": "extend",
+      "input": {
+        "type": "filter",
+        "input": {
+          "type": "bgp",
+          "patterns": [
+            {
+              "subject": {
+                "termType": "Variable",
+                "value": "a"
+              },
+              "predicate": {
+                "termType": "NamedNode",
+                "value": "http://example.org/str"
+              },
+              "object": {
+                "termType": "Variable",
+                "value": "s1"
+              },
+              "graph": {
+                "termType": "DefaultGraph",
+                "value": ""
+              },
+              "type": "pattern"
+            },
+            {
+              "subject": {
+                "termType": "Variable",
+                "value": "b"
+              },
+              "predicate": {
+                "termType": "NamedNode",
+                "value": "http://example.org/str"
+              },
+              "object": {
+                "termType": "Variable",
+                "value": "s2"
+              },
+              "graph": {
+                "termType": "DefaultGraph",
+                "value": ""
+              },
+              "type": "pattern"
+            }
+          ]
+        },
+        "expression": {
+          "type": "expression",
+          "expressionType": "operator",
+          "operator": "&&",
+          "args": [
+            {
+              "type": "expression",
+              "expressionType": "operator",
+              "operator": "||",
+              "args": [
+                {
+                  "type": "expression",
+                  "expressionType": "operator",
+                  "operator": "=",
+                  "args": [
+                    {
+                      "type": "expression",
+                      "expressionType": "term",
+                      "term": {
+                        "termType": "Variable",
+                        "value": "a"
+                      }
+                    },
+                    {
+                      "type": "expression",
+                      "expressionType": "term",
+                      "term": {
+                        "termType": "NamedNode",
+                        "value": "http://example.org/s1"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "expression",
+                  "expressionType": "operator",
+                  "operator": "=",
+                  "args": [
+                    {
+                      "type": "expression",
+                      "expressionType": "term",
+                      "term": {
+                        "termType": "Variable",
+                        "value": "a"
+                      }
+                    },
+                    {
+                      "type": "expression",
+                      "expressionType": "term",
+                      "term": {
+                        "termType": "NamedNode",
+                        "value": "http://example.org/s3"
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "expression",
+              "expressionType": "operator",
+              "operator": "||",
+              "args": [
+                {
+                  "type": "expression",
+                  "expressionType": "operator",
+                  "operator": "=",
+                  "args": [
+                    {
+                      "type": "expression",
+                      "expressionType": "term",
+                      "term": {
+                        "termType": "Variable",
+                        "value": "b"
+                      }
+                    },
+                    {
+                      "type": "expression",
+                      "expressionType": "term",
+                      "term": {
+                        "termType": "NamedNode",
+                        "value": "http://example.org/s1"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "type": "expression",
+                  "expressionType": "operator",
+                  "operator": "=",
+                  "args": [
+                    {
+                      "type": "expression",
+                      "expressionType": "term",
+                      "term": {
+                        "termType": "Variable",
+                        "value": "b"
+                      }
+                    },
+                    {
+                      "type": "expression",
+                      "expressionType": "term",
+                      "term": {
+                        "termType": "NamedNode",
+                        "value": "http://example.org/s3"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "variable": {
+        "termType": "Variable",
+        "value": "b1"
+      },
+      "expression": {
+        "type": "expression",
+        "expressionType": "operator",
+        "operator": "BNODE",
+        "args": [
+          {
+            "type": "expression",
+            "expressionType": "term",
+            "term": {
+              "termType": "Variable",
+              "value": "s1"
+            }
+          }
+        ]
+      }
+    },
+    "variable": {
+      "termType": "Variable",
+      "value": "b2"
+    },
+    "expression": {
+      "type": "expression",
+      "expressionType": "operator",
+      "operator": "BNODE",
+      "args": [
+        {
+          "type": "expression",
+          "expressionType": "term",
+          "term": {
+            "termType": "Variable",
+            "value": "s2"
+          }
+        }
+      ]
+    }
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "s1"
+    },
+    {
+      "termType": "Variable",
+      "value": "s2"
+    },
+    {
+      "termType": "Variable",
+      "value": "b1"
+    },
+    {
+      "termType": "Variable",
+      "value": "b2"
+    }
+  ]
+}

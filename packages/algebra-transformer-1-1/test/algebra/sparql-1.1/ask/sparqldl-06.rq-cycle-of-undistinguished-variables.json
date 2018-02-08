@@ -1,0 +1,84 @@
+{
+  "type": "ask",
+  "input": {
+    "type": "bgp",
+    "patterns": [
+      {
+        "subject": {
+          "termType": "NamedNode",
+          "value": "http://example.org/test#a"
+        },
+        "predicate": {
+          "termType": "NamedNode",
+          "value": "http://example.org/test#p"
+        },
+        "object": {
+          "termType": "BlankNode",
+          "value": "aa"
+        },
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        },
+        "type": "pattern"
+      },
+      {
+        "subject": {
+          "termType": "BlankNode",
+          "value": "aa"
+        },
+        "predicate": {
+          "termType": "NamedNode",
+          "value": "http://example.org/test#r"
+        },
+        "object": {
+          "termType": "BlankNode",
+          "value": "dd"
+        },
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        },
+        "type": "pattern"
+      },
+      {
+        "subject": {
+          "termType": "BlankNode",
+          "value": "dd"
+        },
+        "predicate": {
+          "termType": "NamedNode",
+          "value": "http://example.org/test#t"
+        },
+        "object": {
+          "termType": "BlankNode",
+          "value": "bb"
+        },
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        },
+        "type": "pattern"
+      },
+      {
+        "subject": {
+          "termType": "BlankNode",
+          "value": "bb"
+        },
+        "predicate": {
+          "termType": "NamedNode",
+          "value": "http://example.org/test#s"
+        },
+        "object": {
+          "termType": "NamedNode",
+          "value": "http://example.org/test#a"
+        },
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        },
+        "type": "pattern"
+      }
+    ]
+  }
+}

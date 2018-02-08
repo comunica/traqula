@@ -1,0 +1,108 @@
+{
+  "type": "project",
+  "input": {
+    "type": "extend",
+    "input": {
+      "type": "group",
+      "input": {
+        "type": "leftjoin",
+        "left": {
+          "type": "bgp",
+          "patterns": [
+            {
+              "subject": {
+                "termType": "Variable",
+                "value": "s"
+              },
+              "predicate": {
+                "termType": "NamedNode",
+                "value": "http://example/p"
+              },
+              "object": {
+                "termType": "Variable",
+                "value": "v"
+              },
+              "graph": {
+                "termType": "DefaultGraph",
+                "value": ""
+              },
+              "type": "pattern"
+            }
+          ]
+        },
+        "right": {
+          "type": "bgp",
+          "patterns": [
+            {
+              "subject": {
+                "termType": "Variable",
+                "value": "s"
+              },
+              "predicate": {
+                "termType": "NamedNode",
+                "value": "http://example/q"
+              },
+              "object": {
+                "termType": "Variable",
+                "value": "w"
+              },
+              "graph": {
+                "termType": "DefaultGraph",
+                "value": ""
+              },
+              "type": "pattern"
+            }
+          ]
+        }
+      },
+      "variables": [
+        {
+          "termType": "Variable",
+          "value": "w"
+        }
+      ],
+      "aggregates": [
+        {
+          "type": "expression",
+          "expressionType": "aggregate",
+          "aggregator": "sample",
+          "expression": {
+            "type": "expression",
+            "expressionType": "term",
+            "term": {
+              "termType": "Variable",
+              "value": "v"
+            }
+          },
+          "distinct": false,
+          "variable": {
+            "termType": "Variable",
+            "value": "var0"
+          }
+        }
+      ]
+    },
+    "variable": {
+      "termType": "Variable",
+      "value": "S"
+    },
+    "expression": {
+      "type": "expression",
+      "expressionType": "term",
+      "term": {
+        "termType": "Variable",
+        "value": "var0"
+      }
+    }
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "w"
+    },
+    {
+      "termType": "Variable",
+      "value": "S"
+    }
+  ]
+}

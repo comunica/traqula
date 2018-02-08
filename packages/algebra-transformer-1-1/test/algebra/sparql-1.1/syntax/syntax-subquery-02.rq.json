@@ -1,0 +1,58 @@
+{
+  "type": "project",
+  "input": {
+    "type": "project",
+    "input": {
+      "type": "bgp",
+      "patterns": [
+        {
+          "subject": {
+            "termType": "Variable",
+            "value": "s"
+          },
+          "predicate": {
+            "termType": "Variable",
+            "value": "p"
+          },
+          "object": {
+            "termType": "Variable",
+            "value": "o"
+          },
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
+          },
+          "type": "pattern"
+        }
+      ]
+    },
+    "variables": [
+      {
+        "termType": "Variable",
+        "value": "s"
+      },
+      {
+        "termType": "Variable",
+        "value": "p"
+      },
+      {
+        "termType": "Variable",
+        "value": "o"
+      }
+    ]
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "s"
+    },
+    {
+      "termType": "Variable",
+      "value": "p"
+    },
+    {
+      "termType": "Variable",
+      "value": "o"
+    }
+  ]
+}

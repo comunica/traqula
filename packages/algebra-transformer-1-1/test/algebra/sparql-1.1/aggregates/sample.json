@@ -1,0 +1,173 @@
+{
+  "type": "ask",
+  "input": {
+    "type": "filter",
+    "input": {
+      "type": "project",
+      "input": {
+        "type": "extend",
+        "input": {
+          "type": "group",
+          "input": {
+            "type": "bgp",
+            "patterns": [
+              {
+                "subject": {
+                  "termType": "Variable",
+                  "value": "s"
+                },
+                "predicate": {
+                  "termType": "NamedNode",
+                  "value": "http://www.example.org/dec"
+                },
+                "object": {
+                  "termType": "Variable",
+                  "value": "o"
+                },
+                "graph": {
+                  "termType": "DefaultGraph",
+                  "value": ""
+                },
+                "type": "pattern"
+              }
+            ]
+          },
+          "variables": [],
+          "aggregates": [
+            {
+              "type": "expression",
+              "expressionType": "aggregate",
+              "aggregator": "sample",
+              "expression": {
+                "type": "expression",
+                "expressionType": "term",
+                "term": {
+                  "termType": "Variable",
+                  "value": "o"
+                }
+              },
+              "distinct": false,
+              "variable": {
+                "termType": "Variable",
+                "value": "var0"
+              }
+            }
+          ]
+        },
+        "variable": {
+          "termType": "Variable",
+          "value": "sample"
+        },
+        "expression": {
+          "type": "expression",
+          "expressionType": "term",
+          "term": {
+            "termType": "Variable",
+            "value": "var0"
+          }
+        }
+      },
+      "variables": [
+        {
+          "termType": "Variable",
+          "value": "sample"
+        }
+      ]
+    },
+    "expression": {
+      "type": "expression",
+      "expressionType": "operator",
+      "operator": "||",
+      "args": [
+        {
+          "type": "expression",
+          "expressionType": "operator",
+          "operator": "||",
+          "args": [
+            {
+              "type": "expression",
+              "expressionType": "operator",
+              "operator": "=",
+              "args": [
+                {
+                  "type": "expression",
+                  "expressionType": "term",
+                  "term": {
+                    "termType": "Variable",
+                    "value": "sample"
+                  }
+                },
+                {
+                  "type": "expression",
+                  "expressionType": "term",
+                  "term": {
+                    "termType": "Literal",
+                    "value": "1.0",
+                    "datatype": {
+                      "termType": "NamedNode",
+                      "value": "http://www.w3.org/2001/XMLSchema#decimal"
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "expression",
+              "expressionType": "operator",
+              "operator": "=",
+              "args": [
+                {
+                  "type": "expression",
+                  "expressionType": "term",
+                  "term": {
+                    "termType": "Variable",
+                    "value": "sample"
+                  }
+                },
+                {
+                  "type": "expression",
+                  "expressionType": "term",
+                  "term": {
+                    "termType": "Literal",
+                    "value": "2.2",
+                    "datatype": {
+                      "termType": "NamedNode",
+                      "value": "http://www.w3.org/2001/XMLSchema#decimal"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "expression",
+          "expressionType": "operator",
+          "operator": "=",
+          "args": [
+            {
+              "type": "expression",
+              "expressionType": "term",
+              "term": {
+                "termType": "Variable",
+                "value": "sample"
+              }
+            },
+            {
+              "type": "expression",
+              "expressionType": "term",
+              "term": {
+                "termType": "Literal",
+                "value": "3.5",
+                "datatype": {
+                  "termType": "NamedNode",
+                  "value": "http://www.w3.org/2001/XMLSchema#decimal"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,170 @@
+{
+  "type": "project",
+  "input": {
+    "type": "extend",
+    "input": {
+      "type": "extend",
+      "input": {
+        "type": "group",
+        "input": {
+          "type": "bgp",
+          "patterns": [
+            {
+              "subject": {
+                "termType": "Variable",
+                "value": "g"
+              },
+              "predicate": {
+                "termType": "NamedNode",
+                "value": "http://example.com/data/#p"
+              },
+              "object": {
+                "termType": "Variable",
+                "value": "p"
+              },
+              "graph": {
+                "termType": "DefaultGraph",
+                "value": ""
+              },
+              "type": "pattern"
+            }
+          ]
+        },
+        "variables": [
+          {
+            "termType": "Variable",
+            "value": "g"
+          }
+        ],
+        "aggregates": [
+          {
+            "type": "expression",
+            "expressionType": "aggregate",
+            "aggregator": "avg",
+            "expression": {
+              "type": "expression",
+              "expressionType": "term",
+              "term": {
+                "termType": "Variable",
+                "value": "p"
+              }
+            },
+            "distinct": false,
+            "variable": {
+              "termType": "Variable",
+              "value": "var0"
+            }
+          },
+          {
+            "type": "expression",
+            "expressionType": "aggregate",
+            "aggregator": "min",
+            "expression": {
+              "type": "expression",
+              "expressionType": "term",
+              "term": {
+                "termType": "Variable",
+                "value": "p"
+              }
+            },
+            "distinct": false,
+            "variable": {
+              "termType": "Variable",
+              "value": "var1"
+            }
+          },
+          {
+            "type": "expression",
+            "expressionType": "aggregate",
+            "aggregator": "max",
+            "expression": {
+              "type": "expression",
+              "expressionType": "term",
+              "term": {
+                "termType": "Variable",
+                "value": "p"
+              }
+            },
+            "distinct": false,
+            "variable": {
+              "termType": "Variable",
+              "value": "var2"
+            }
+          }
+        ]
+      },
+      "variable": {
+        "termType": "Variable",
+        "value": "avg"
+      },
+      "expression": {
+        "type": "expression",
+        "expressionType": "term",
+        "term": {
+          "termType": "Variable",
+          "value": "var0"
+        }
+      }
+    },
+    "variable": {
+      "termType": "Variable",
+      "value": "c"
+    },
+    "expression": {
+      "type": "expression",
+      "expressionType": "operator",
+      "operator": "/",
+      "args": [
+        {
+          "type": "expression",
+          "expressionType": "operator",
+          "operator": "+",
+          "args": [
+            {
+              "type": "expression",
+              "expressionType": "term",
+              "term": {
+                "termType": "Variable",
+                "value": "var1"
+              }
+            },
+            {
+              "type": "expression",
+              "expressionType": "term",
+              "term": {
+                "termType": "Variable",
+                "value": "var2"
+              }
+            }
+          ]
+        },
+        {
+          "type": "expression",
+          "expressionType": "term",
+          "term": {
+            "termType": "Literal",
+            "value": "2",
+            "datatype": {
+              "termType": "NamedNode",
+              "value": "http://www.w3.org/2001/XMLSchema#integer"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "g"
+    },
+    {
+      "termType": "Variable",
+      "value": "avg"
+    },
+    {
+      "termType": "Variable",
+      "value": "c"
+    }
+  ]
+}

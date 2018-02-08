@@ -1,0 +1,53 @@
+{
+  "type": "project",
+  "input": {
+    "type": "extend",
+    "input": {
+      "type": "group",
+      "input": {
+        "type": "bgp",
+        "patterns": []
+      },
+      "variables": [],
+      "aggregates": [
+        {
+          "type": "expression",
+          "expressionType": "aggregate",
+          "aggregator": "group_concat",
+          "expression": {
+            "type": "expression",
+            "expressionType": "term",
+            "term": {
+              "termType": "Variable",
+              "value": "x"
+            }
+          },
+          "distinct": false,
+          "separator": ";",
+          "variable": {
+            "termType": "Variable",
+            "value": "var0"
+          }
+        }
+      ]
+    },
+    "variable": {
+      "termType": "Variable",
+      "value": "y"
+    },
+    "expression": {
+      "type": "expression",
+      "expressionType": "term",
+      "term": {
+        "termType": "Variable",
+        "value": "var0"
+      }
+    }
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "y"
+    }
+  ]
+}

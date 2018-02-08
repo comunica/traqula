@@ -1,0 +1,115 @@
+{
+  "type": "project",
+  "input": {
+    "type": "extend",
+    "input": {
+      "type": "filter",
+      "input": {
+        "type": "bgp",
+        "patterns": [
+          {
+            "subject": {
+              "termType": "Variable",
+              "value": "s"
+            },
+            "predicate": {
+              "termType": "NamedNode",
+              "value": "http://example.org/str"
+            },
+            "object": {
+              "termType": "Variable",
+              "value": "str"
+            },
+            "graph": {
+              "termType": "DefaultGraph",
+              "value": ""
+            },
+            "type": "pattern"
+          }
+        ]
+      },
+      "expression": {
+        "type": "expression",
+        "expressionType": "operator",
+        "operator": "langmatches",
+        "args": [
+          {
+            "type": "expression",
+            "expressionType": "operator",
+            "operator": "lang",
+            "args": [
+              {
+                "type": "expression",
+                "expressionType": "term",
+                "term": {
+                  "termType": "Variable",
+                  "value": "str"
+                }
+              }
+            ]
+          },
+          {
+            "type": "expression",
+            "expressionType": "term",
+            "term": {
+              "termType": "Literal",
+              "value": "en",
+              "datatype": {
+                "termType": "NamedNode",
+                "value": "http://www.w3.org/2001/XMLSchema#string"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "variable": {
+      "termType": "Variable",
+      "value": "s2"
+    },
+    "expression": {
+      "type": "expression",
+      "expressionType": "operator",
+      "operator": "strlang",
+      "args": [
+        {
+          "type": "expression",
+          "expressionType": "operator",
+          "operator": "str",
+          "args": [
+            {
+              "type": "expression",
+              "expressionType": "term",
+              "term": {
+                "termType": "Variable",
+                "value": "str"
+              }
+            }
+          ]
+        },
+        {
+          "type": "expression",
+          "expressionType": "term",
+          "term": {
+            "termType": "Literal",
+            "value": "en-US",
+            "datatype": {
+              "termType": "NamedNode",
+              "value": "http://www.w3.org/2001/XMLSchema#string"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "s"
+    },
+    {
+      "termType": "Variable",
+      "value": "s2"
+    }
+  ]
+}

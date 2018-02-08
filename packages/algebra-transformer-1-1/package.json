@@ -17,16 +17,15 @@
     "sparqljs": "^1.5.2"
   },
   "devDependencies": {
-    "@types/lodash": "^4.14.77",
+    "@types/chai": "^4.1.2",
     "@types/lodash.isequal": "^4.5.2",
     "@types/minimist": "^1.2.0",
-    "@types/n3": "0.0.3",
+    "@types/mocha": "^2.2.48",
     "@types/node": "^8.0.50",
     "@types/rdf-data-model": "^1.0.1",
     "@types/rdf-js": "^1.0.1",
-    "lodash": "^4.13.1",
+    "chai": "^4.1.2",
     "mocha": "^3.5.3",
-    "n3": "^0.11.2",
     "pre-commit": "^1.2.2",
     "typescript": "^2.5.3"
   },

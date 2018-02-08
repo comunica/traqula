@@ -22,6 +22,8 @@ Returns:
   variables: [ '?x', '?y', '?z' ] }
 ```
 
+Translating back to SPARQL can be done with the `toSparql` (or `toSparqlJs`) function.
+
 ## Algebra object
 The algebra object contains a `types` object,
 which contains all possible values for the `type` field in the output results.

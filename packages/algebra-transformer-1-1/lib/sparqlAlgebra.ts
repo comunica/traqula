@@ -193,7 +193,7 @@ function translateExpression(exp: any) : Algebra.Expression
         if (exp.operator === 'exists' || exp.operator === 'notexists')
             return factory.createExistenceExpression(exp.operator === 'notexists', translateGroupGraphPattern(exp.args[0]));
         if (exp.operator === 'in' || exp.operator === 'notin')
-            exp.args = [exp.args[0]].concat(exp.args[1]); // sparql.js uses 2 arguments with the second one bing a list
+            exp.args = [exp.args[0]].concat(exp.args[1]); // sparql.js uses 2 arguments with the second one being a list
         return factory.createOperatorExpression(exp.operator, exp.args.map(translateExpression));
     }
     throw new Error('Unknown expression: ' + JSON.stringify(exp));

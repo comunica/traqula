@@ -22,7 +22,7 @@ export function toSparqlJs(op: Algebra.Operation):  any
 
 function flatten(s: any[]): any
 {
-    return Array.prototype.concat(...s);
+    return Array.prototype.concat(...s).filter(x => x);
 }
 
 function resetContext()
@@ -33,15 +33,17 @@ function resetContext()
 function translateOperation(op: Algebra.Operation): any
 {
     // this allows us to differentiate between BIND and SELECT when translating EXTEND
-    if (op.type !== types.EXTEND)
+    if (op.type !== types.EXTEND && op.type !== types.ORDER_BY)
         context.project = false;
 
     switch(op.type)
     {
         case types.EXPRESSION: return translateExpression(<Algebra.Expression>op);
 
+        case types.ASK:       return translateProject(<Algebra.Ask>op, types.ASK);
         case types.BGP:       return translateBgp(<Algebra.Bgp>op);
         case types.CONSTRUCT: return translateConstruct(<Algebra.Construct>op);
+        case types.DESCRIBE:  return translateProject(<Algebra.Describe>op, types.DESCRIBE);
         case types.DISTINCT:  return translateDistinct(<Algebra.Distinct>op);
         case types.EXTEND:    return translateExtend(<Algebra.Extend>op);
         case types.FILTER:    return translateFilter(<Algebra.Filter>op);
@@ -51,8 +53,9 @@ function translateOperation(op: Algebra.Operation): any
         case types.LEFT_JOIN: return translateLeftJoin(<Algebra.LeftJoin>op);
         case types.MINUS:     return translateMinus(<Algebra.Minus>op);
         case types.ORDER_BY:  return translateOrderBy(<Algebra.OrderBy>op);
+        case types.PATH:      return translatePath(<Algebra.Path>op);
         case types.PATTERN:   return translatePattern(<Algebra.Pattern>op);
-        case types.PROJECT:   return translateProject(<Algebra.Project>op);
+        case types.PROJECT:   return translateProject(<Algebra.Project>op, types.PROJECT);
         case types.REDUCED:   return translateReduced(<Algebra.Reduced>op);
         case types.SLICE:     return translateSlice(<Algebra.Slice>op);
         case types.UNION:     return translateUnion(<Algebra.Union>op);
@@ -74,6 +77,22 @@ function translateExpression(expr: Algebra.Expression): any
     return null;
 }
 
+function translatePathComponent(path: Algebra.Operation): any
+{
+    switch(path.type)
+    {
+        case types.ALT:               return translateAlt(<Algebra.Alt>path);
+        case types.INV:               return translateInv(<Algebra.Inv>path);
+        case types.LINK:              return translateLink(<Algebra.Link>path);
+        case types.NPS:               return translateNps(<Algebra.Nps>path);
+        case types.ONE_OR_MORE_PATH:  return translateOneOrMorePath(<Algebra.OneOrMorePath>path);
+        case types.SEQ:               return translateSeq(<Algebra.Seq>path);
+        case types.ZERO_OR_MORE_PATH: return translateZeroOrMorePath(<Algebra.ZeroOrMorePath>path);
+        case types.ZERO_OR_ONE_PATH:  return translateZeroOrOnePath(<Algebra.ZeroOrOnePath>path);
+    }
+    return null;
+}
+
 function translateTerm(term: RDF.Term): string
 {
     if (term.termType === 'BlankNode')
@@ -85,7 +104,7 @@ function translateTerm(term: RDF.Term): string
         let result = `"${term.value}"`;
         if (lit.language)
             result += '@' + lit.language;
-        if (lit.datatype)
+        else if (lit.datatype && lit.datatype.value !== 'http://www.w3.org/2001/XMLSchema#string')
             result += '^^' + lit.datatype.value;
         return result;
     }
@@ -100,12 +119,17 @@ function translateTerm(term: RDF.Term): string
 
 function translateAggregateExpression(expr: Algebra.AggregateExpression): any
 {
-    return {
+    let result: any = {
         expression: translateExpression(expr.expression),
         type: 'aggregate',
         aggregation: expr.aggregator,
         distinct: expr.distinct
-    }
+    };
+
+    if (expr.separator)
+        result.separator = expr.separator;
+
+    return result;
 }
 
 function translateExistenceExpression(expr: Algebra.ExistenceExpression): any
@@ -130,11 +154,16 @@ function translateNamedExpression(expr: Algebra.NamedExpression): any
 
 function translateOperatorExpression(expr: Algebra.OperatorExpression): any
 {
-    return {
+    let result = {
         type: 'operation',
         operator: expr.operator,
         args: expr.args.map(translateExpression)
-    }
+    };
+
+    if (result.operator === 'in' || result.operator === 'notin')
+        result.args = [result.args[0]].concat([result.args.slice(1)]);
+
+    return result;
 }
 
 function translateTermExpression(expr: Algebra.TermExpression): string
@@ -152,9 +181,12 @@ function translateBoundAggregate(op: Algebra.BoundAggregate): Algebra.BoundAggre
 
 function translateBgp(op: Algebra.Bgp): any
 {
+    let patterns = op.patterns.map(translatePattern);
+    if (patterns.length === 0)
+        return null;
     return {
         type: 'bgp',
-        triples: op.patterns.map(translatePattern)
+        triples: patterns
     };
 }
 
@@ -262,11 +294,14 @@ function translateLeftJoin(op: Algebra.LeftJoin): any
 
 function translateMinus(op: Algebra.Minus): any
 {
+    let patterns = translateOperation(op.right);
+    if (patterns.type === 'group')
+        patterns = patterns.patterns;
     return flatten([
         translateOperation(op.left),
         {
             type: 'minus',
-            patterns: translateOperation(op.right)
+            patterns: patterns
         }
     ]);
 }
@@ -276,6 +311,19 @@ function translateOrderBy(op: Algebra.OrderBy): any
     // TODO: DESC
     context.order.push(...op.expressions);
     return translateOperation(op.input);
+}
+
+function translatePath(op: Algebra.Path): any
+{
+    // TODO: quads back to graph statement
+    return {
+        type: 'bgp',
+        triples: [{
+            subject  : translateTerm(op.subject),
+            predicate: translatePathComponent(op.predicate),
+            object   : translateTerm(op.object)
+        }]
+    };
 }
 
 function translatePattern(op: Algebra.Pattern): any
@@ -307,14 +355,23 @@ function replaceAggregatorVariables(s: any, map: any)
     return s;
 }
 
-function translateProject(op: Algebra.Project): any
+function translateProject(op: Algebra.Project | Algebra.Ask | Algebra.Describe, type: string): any
 {
     let result: any = {
         type: 'query',
-        prefixes: {},
-        queryType: 'SELECT',
-        variables: op.variables.map(translateTerm)
+        prefixes: {}
     };
+
+    if (type === types.PROJECT)
+    {
+        result.queryType = 'SELECT';
+        result.variables = op.variables.map(translateTerm);
+    } else if (type === types.ASK) {
+        result.queryType = 'ASK';
+    } else if (type === types.DESCRIBE) {
+        result.queryType = 'DESCRIBE';
+        result.variables = op.terms.map(translateTerm);
+    }
 
     // backup values in case of nested queries
     // everything in extend, group, etc. is irrelevant for this project call
@@ -325,7 +382,10 @@ function translateProject(op: Algebra.Project): any
     resetContext();
 
     context.project = true;
-    result.where = flatten([ translateOperation(op.input) ]);
+    let input = flatten([ translateOperation(op.input) ]);
+    if (input.length === 1 && input[0].type === 'group')
+        input = input[0].patterns;
+    result.where = input;
 
     let aggregators: any = {};
     // these can not reference each other
@@ -356,28 +416,28 @@ function translateProject(op: Algebra.Project): any
             return v;
         });
     if (context.order.length > 0)
-        result.order = context.order.map(translateOperation).map(o =>
-        {
-            if (typeof o === 'string')
-                return { expression: o };
-            return o;
-        });
+        result.order = context.order.map(translateOperation).map(o => ({ expression: o }));
 
     // this needs to happen after the group because it might depend on variables generated there
-    result.variables = result.variables.map((v:string) =>
+    if (result.variables)
     {
-        if (extensions[v])
-            return {
-                variable: v,
-                expression: extensions[v]
-            };
-        return v;
-    });
+        result.variables = result.variables.map((v: string) => {
+            if (extensions[v])
+                return {
+                    variable  : v,
+                    expression: extensions[v]
+                };
+            return v;
+        });
+        // if the * didn't match any variables this would be empty
+        if (result.variables.length === 0)
+            result.variables = ['*'];
+    }
 
 
     // convert filter to 'having' if it contains an aggregator variable
     // could always convert, but is nicer to use filter when possible
-    if (result.where[result.where.length-1].type === 'filter')
+    if (result.where.length > 0 && result.where[result.where.length-1].type === 'filter')
     {
         let filter = result.where[result.where.length-1];
         if (objectContainsValues(filter, Object.keys(aggregators)))
@@ -399,7 +459,7 @@ function objectContainsValues(o: any, vals: string[]): boolean
 {
     if (Array.isArray(o))
         return o.some(e => objectContainsValues(e, vals));
-    if (_.isObject(o))
+    if (o === Object(o))
         return Object.keys(o).some(key => objectContainsValues(o[key], vals));
     return vals.indexOf(o) >= 0;
 }
@@ -434,7 +494,6 @@ function translateUnion(op: Algebra.Union): any
 
 function translateValues(op: Algebra.Values): any
 {
-    // TODO: check if undef implementation is actually correct
     // TODO: check if handled correctly when outside of select block
     return {
         type: 'values',
@@ -446,7 +505,118 @@ function translateValues(op: Algebra.Values): any
                 let s = '?' + v.value;
                 if (binding[s])
                     result[s] = translateTerm(binding[s]);
+                else
+                    result[s] = undefined;
             }
+            return result;
         })
     };
+}
+
+// PATH COMPONENTS
+
+function translateAlt(path: Algebra.Alt): any
+{
+    if (path.left.type === types.NPS || path.right.type === types.NPS)
+    {
+        let left = translatePathComponent(path.left);
+        let right = translatePathComponent(path.right);
+        return {
+            type: 'path',
+            pathType: '!',
+            items: [ {
+                type: 'path',
+                pathType: '|',
+                items: [].concat(left.items[0].items, right.items[0].items)
+            } ]
+        }
+    }
+
+    return {
+        type: 'path',
+        pathType: '|',
+        items: [ translatePathComponent(path.left), translatePathComponent(path.right) ]
+    }
+}
+
+function translateInv(path: Algebra.Inv): any
+{
+    if (path.path.type === types.NPS)
+    {
+        return {
+            type: 'path',
+            pathType: '!',
+            items: [ {
+                type: 'path',
+                pathType: '|',
+                items: [ path.iris.map((iri: string) =>
+                {
+                    return {
+                        type: 'path',
+                        pathType: '^',
+                        items: [ iri ]
+                    }
+                }) ]
+            } ]
+        }
+    }
+
+    return {
+        type: 'path',
+        pathType: '^',
+        items: [ translatePathComponent(path.path) ]
+    }
+}
+
+function translateLink(path: Algebra.Link): any
+{
+    return translateTerm(path.iri);
+}
+
+function translateNps(path: Algebra.Nps): any
+{
+    return {
+        type: 'path',
+        pathType: '!',
+        items: [ {
+            type: 'path',
+            pathType: '|',
+            items: path.iris.map(translateTerm)
+        } ]
+    }
+}
+
+function translateOneOrMorePath(path: Algebra.OneOrMorePath): any
+{
+    return {
+        type: 'path',
+        pathType: '+',
+        items: [ translatePathComponent(path.path) ]
+    }
+}
+
+function translateSeq(path: Algebra.Seq): any
+{
+    return {
+        type: 'path',
+        pathType: '/',
+        items: [ translatePathComponent(path.left), translatePathComponent(path.right) ]
+    }
+}
+
+function translateZeroOrMorePath(path: Algebra.ZeroOrMorePath): any
+{
+    return {
+        type: 'path',
+        pathType: '*',
+        items: [ translatePathComponent(path.path) ]
+    }
+}
+function translateZeroOrOnePath(path: Algebra.ZeroOrOnePath): any
+{
+    return {
+        type: 'path',
+        pathType: '?',
+        items: [ translatePathComponent(path.path) ]
+    }
 }

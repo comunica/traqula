@@ -2,7 +2,6 @@
 import * as Algebra from './algebra';
 import Factory from './Factory';
 import * as RDF from 'rdf-js'
-import * as DataFactory from 'rdf-data-model';
 
 const Parser = require('sparqljs').Parser;
 const isEqual = require('lodash.isequal');
@@ -32,7 +31,7 @@ export default function translate(sparql: any, options?:
     }) : Algebra.Operation
 {
     options = options || {};
-    factory = new Factory(options.dataFactory || DataFactory);
+    factory = new Factory(options.dataFactory);
 
     if (isString(sparql))
     {

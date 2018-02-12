@@ -1,6 +1,7 @@
 
 import * as A from './algebra';
 import * as RDF from "rdf-js";
+import * as DataFactory from 'rdf-data-model';
 import {stringToTerm} from "rdf-string";
 
 const defaultGraph: RDF.DefaultGraph = <RDF.DefaultGraph>{ termType: 'DefaultGraph', value: ''};
@@ -10,8 +11,8 @@ export default class Factory
     dataFactory: RDF.DataFactory;
     stringType: RDF.NamedNode;
 
-    constructor(dataFactory: RDF.DataFactory) {
-        this.dataFactory = dataFactory;
+    constructor(dataFactory?: RDF.DataFactory) {
+        this.dataFactory = dataFactory || DataFactory;
         this.stringType = <RDF.NamedNode>this.createTerm('http://www.w3.org/2001/XMLSchema#string');
     }
 

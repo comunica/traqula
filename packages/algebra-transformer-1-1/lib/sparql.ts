@@ -17,7 +17,10 @@ export function toSparqlJs(op: Algebra.Operation):  any
 {
     resetContext();
     op = removeQuads(op);
-    return translateOperation(op);
+    let result = translateOperation(op);
+    if (result.type === 'group')
+        return result.patterns[0];
+    return result;
 }
 
 function flatten(s: any[]): any
@@ -154,6 +157,13 @@ function translateNamedExpression(expr: Algebra.NamedExpression): any
 
 function translateOperatorExpression(expr: Algebra.OperatorExpression): any
 {
+    if (expr.operator === 'desc')
+    {
+        let result: any = { expression: translateExpression(expr.args[0])};
+        result.descending = true;
+        return result;
+    }
+
     let result = {
         type: 'operation',
         operator: expr.operator,
@@ -206,7 +216,8 @@ function translateConstruct(op: Algebra.Construct): any
 function translateDistinct(op: Algebra.Distinct): any
 {
     let result = translateOperation(op.input);
-    result.distinct = true;
+    // project is nested in group object
+    result.patterns[0].distinct = true;
     return result
 }
 
@@ -415,8 +426,10 @@ function translateProject(op: Algebra.Project | Algebra.Ask | Algebra.Describe, 
                 return { expression: v };
             return v;
         });
+
+    // descending expressions will already be in the correct format due to the structure of those
     if (context.order.length > 0)
-        result.order = context.order.map(translateOperation).map(o => ({ expression: o }));
+        result.order = context.order.map(translateOperation).map(o => o.descending ? o : ({ expression: o }));
 
     // this needs to happen after the group because it might depend on variables generated there
     if (result.variables)
@@ -452,6 +465,9 @@ function translateProject(op: Algebra.Project | Algebra.Ask | Algebra.Describe, 
     context.aggregates = aggregates;
     context.order = order;
 
+    // subqueries need to be in a group
+    result = { type: 'group', patterns: [result] };
+
     return result;
 }
 
@@ -467,17 +483,20 @@ function objectContainsValues(o: any, vals: string[]): boolean
 function translateReduced(op: Algebra.Reduced): any
 {
     let result = translateOperation(op.input);
-    result.reduced = true;
-    return result;
+    // project is nested in group object
+    result.patterns[0].reduced = true;
+    return result
 }
 
 function translateSlice(op: Algebra.Slice): any
 {
     let result = translateOperation(op.input);
+    // project is nested in group object
+    let obj = result.patterns[0];
     if (op.start !== 0)
-        result.offset = op.start;
+        obj.offset = op.start;
     if (op.length !== undefined)
-        result.limit = op.length;
+        obj.limit = op.length;
     return result;
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "sparqlalgebrajs",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "description": "Convert SPARQL to SPARL algebra",
   "author": "Joachim Van Herwegen",
   "license": "MIT",
@@ -13,7 +13,8 @@
     "lodash.isequal": "^4.5.0",
     "minimist": "^1.2.0",
     "rdf-data-model": "^1.0.0",
-    "sparqljs": "^2.0.2"
+    "rdf-string": "^1.1.1",
+    "sparqljs": "^2.0.3"
   },
   "devDependencies": {
     "@types/chai": "^4.1.2",

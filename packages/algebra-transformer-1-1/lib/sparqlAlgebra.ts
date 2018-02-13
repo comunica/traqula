@@ -454,9 +454,9 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
         res = factory.createJoin(res, translateInlineData(query));
 
     // 18.2.4.4
-    let PV = new Set<RDF.Variable>();
+    let PV = new Set<RDF.Term>();
 
-    if (query.queryType === 'SELECT')
+    if (query.queryType === 'SELECT' || query.queryType === 'DESCRIBE')
     {
         if (query.variables.indexOf('*') >= 0)
             PV = variables;
@@ -464,11 +464,12 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
         {
             for (let v of query.variables)
             {
-                if (isVariable(v))
-                    PV.add(<RDF.Variable>factory.createTerm(v));
-                else if (v.variable)
+                // can have non-variables with DESCRIBE
+                if (isVariable(v) || !v.variable)
+                    PV.add(factory.createTerm(v));
+                else if (v.variable) // ... AS ?x
                 {
-                    PV.add(<RDF.Variable>factory.createTerm(v.variable));
+                    PV.add(factory.createTerm(v.variable));
                     E.push(v);
                 }
             }
@@ -495,7 +496,7 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
     // 18.2.5.2
     // construct does not need a project (select, ask and describe do)
     if (query.queryType === 'SELECT')
-        res = factory.createProject(res, Array.from(PV));
+        res = factory.createProject(res, <RDF.Variable[]> Array.from(PV));
 
     // 18.2.5.3
     if (query.distinct)
@@ -519,7 +520,7 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
     else if (query.queryType === 'ASK')
         res = factory.createAsk(res);
     else if (query.queryType === 'DESCRIBE')
-        res = factory.createDescribe(res, query.variables.map(factory.createTerm.bind(factory)));
+        res = factory.createDescribe(res, Array.from(PV));
 
     return res;
 }

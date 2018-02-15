@@ -4,7 +4,6 @@ import * as rdfjs from "rdf-js";
 // TODO: add aggregates?
 // TODO: can't find a way to use these values as string types in the interfaces
 export const types = Object.freeze({
-    AGGREGATE:          'aggregate',
     ALT:                'alt',
     ASK:                'ask',
     BGP:                'bgp',
@@ -15,7 +14,6 @@ export const types = Object.freeze({
     EXPRESSION:         'expression',
     EXTEND:             'extend',
     FILTER:             'filter',
-    FN_NOT:             'fn:not',
     GRAPH:              'graph',
     GROUP:              'group',
     INV:                'inv',
@@ -30,15 +28,9 @@ export const types = Object.freeze({
     PATTERN:            'pattern',
     PROJECT:            'project',
     REDUCED:            'reduced',
-    ROW:                'row',
     SEQ:                'seq',
-    SEQUENCE:           'sequence',
     SLICE:              'slice',
-    TABLE:              'table',
-    TO_MULTISET:        'tomultiset',
     UNION:              'union',
-    UNIT:               'unit',
-    VARS:               'vars',
     VALUES:             'values',
     ZERO_OR_MORE_PATH:  'ZeroOrMorePath',
     ZERO_OR_ONE_PATH:   'ZeroOrOnePath',

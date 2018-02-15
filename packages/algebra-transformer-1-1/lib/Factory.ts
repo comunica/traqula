@@ -65,6 +65,7 @@ export default class Factory
     createProject (input: A.Operation, variables: RDF.Variable[]) : A.Project { return { type: 'project', input, variables }; }
     createReduced (input: A.Operation) : A.Reduced { return { type: 'reduced', input }; }
     createSeq (left: A.Operation, right: A.Operation): A.Seq { return { type: 'seq', left, right }; }
+    createService (input: A.Operation, name: RDF.Term, silent?: boolean): A.Service { return { type: 'service', input, name, silent }; }
     createSlice (input: A.Operation, start: number, length?: number) : A.Slice
     {
         if (length !== undefined)

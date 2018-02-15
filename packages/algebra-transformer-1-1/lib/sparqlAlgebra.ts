@@ -382,18 +382,31 @@ function accumulateGroupGraphPattern(G: Algebra.Operation, E: any) : Algebra.Ope
     }
     else if (E.type === 'bind')
         G = factory.createExtend(G, <RDF.Variable>factory.createTerm(E.variable), translateExpression(E.expression));
+    else if (E.type === 'service')
+    {
+        // transform to group so childnodes get parsed correctly
+        E.type = 'group';
+        let A = factory.createService(translateGroupGraphPattern(E), factory.createTerm(E.name), E.silent);
+        G = simplifiedJoin(G, A);
+    }
     else
     {
-        // 18.2.2.8 (simplification)
         let A = translateGroupGraphPattern(E);
-        if (G.type === types.BGP && (<Algebra.Bgp>G).patterns.length === 0)
-            G = A;
-        else if (A.type === types.BGP && (<Algebra.Bgp>A).patterns.length === 0)
-        {} // do nothing
-        else
-            G = factory.createJoin(G, translateGroupGraphPattern(E));
+        G = simplifiedJoin(G, A);
     }
 
+    return G;
+}
+
+function simplifiedJoin(G: Algebra.Operation, A: Algebra.Operation): Algebra.Operation
+{
+    // 18.2.2.8 (simplification)
+    if (G.type === types.BGP && (<Algebra.Bgp>G).patterns.length === 0)
+        G = A;
+    else if (A.type === types.BGP && (<Algebra.Bgp>A).patterns.length === 0)
+    {} // do nothing
+    else
+        G = factory.createJoin(G, A);
     return G;
 }
 

@@ -60,6 +60,7 @@ function translateOperation(op: Algebra.Operation): any
         case types.PATTERN:   return translatePattern(<Algebra.Pattern>op);
         case types.PROJECT:   return translateProject(<Algebra.Project>op, types.PROJECT);
         case types.REDUCED:   return translateReduced(<Algebra.Reduced>op);
+        case types.SERVICE:   return translateService(<Algebra.Service>op);
         case types.SLICE:     return translateSlice(<Algebra.Slice>op);
         case types.UNION:     return translateUnion(<Algebra.Union>op);
         case types.VALUES:    return translateValues(<Algebra.Values>op);
@@ -486,6 +487,21 @@ function translateReduced(op: Algebra.Reduced): any
     // project is nested in group object
     result.patterns[0].reduced = true;
     return result
+}
+
+function translateService(op: Algebra.Service): any
+{
+    let patterns = translateOperation(op.input);
+    if (patterns.type === 'group')
+        patterns = patterns.patterns;
+    if (!Array.isArray(patterns))
+        patterns = [patterns];
+    return {
+        type: 'service',
+        name: translateTerm(op.name),
+        silent: op.silent,
+        patterns
+    };
 }
 
 function translateSlice(op: Algebra.Slice): any

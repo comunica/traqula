@@ -29,6 +29,7 @@ export const types = Object.freeze({
     PROJECT:            'project',
     REDUCED:            'reduced',
     SEQ:                'seq',
+    SERVICE:            'service',
     SLICE:              'slice',
     UNION:              'union',
     VALUES:             'values',
@@ -250,6 +251,13 @@ export interface Reduced extends Single
 export interface Seq extends Double
 {
     type: 'seq'
+}
+
+export interface Service extends Single
+{
+    type: 'service',
+    name: rdfjs.Term,
+    silent: boolean
 }
 
 export interface Slice extends Single

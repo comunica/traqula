@@ -14,6 +14,7 @@ export const types = Object.freeze({
     EXPRESSION:         'expression',
     EXTEND:             'extend',
     FILTER:             'filter',
+    FROM:               'from',
     GRAPH:              'graph',
     GROUP:              'group',
     INV:                'inv',
@@ -156,6 +157,13 @@ export interface Extend extends Single
     type: 'extend';
     variable: rdfjs.Variable;
     expression: Expression;
+}
+
+export interface From extends Single
+{
+    type: 'from';
+    default: rdfjs.Term[];
+    named: rdfjs.Term[];
 }
 
 export interface Filter extends Single

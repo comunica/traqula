@@ -4,6 +4,8 @@
 which contains all the output types that can occur.
 
 Note that this is still a work in progress so naming conventions could change.
+There is also support for 'non-algebra' entities such as ASK, FROM, etc.
+to make sure the output contains all relevant information from the query.
 
 ## Translate
 

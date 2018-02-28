@@ -29,6 +29,7 @@ export default class Factory
     createDescribe (input: A.Operation, terms: RDF.Term[]): A.Describe { return { type: 'describe', input, terms }; }
     createDistinct (input: A.Operation) : A.Distinct { return { type: 'distinct', input }; }
     createExtend (input: A.Operation, variable: RDF.Variable, expression: A.Expression) : A.Extend { return { type: 'extend', input, variable, expression }; }
+    createFrom (input: A.Operation, def: RDF.Term[], named: RDF.Term[]) : A.From { return { type: 'from', input, default: def, named }; }
     createFilter (input: A.Operation, expression: A.Expression) : A.Filter { return { type: 'filter', input, expression }; }
     createGraph (input: A.Operation, name: RDF.Term) : A.Graph { return { type: 'graph', input, name }; }
     createGroup (input: A.Operation, variables: RDF.Variable[], aggregates: A.BoundAggregate[]) : A.Group { return { type: 'group', input, variables, aggregates }; }

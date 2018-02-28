@@ -535,6 +535,9 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
     else if (query.queryType === 'DESCRIBE')
         res = factory.createDescribe(res, Array.from(PV));
 
+    if (query.from)
+        res = factory.createFrom(res, query.from.default.map(factory.createTerm.bind(factory)), query.from.named.map(factory.createTerm.bind(factory)));
+
     return res;
 }
 

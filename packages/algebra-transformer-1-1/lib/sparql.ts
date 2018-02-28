@@ -49,6 +49,7 @@ function translateOperation(op: Algebra.Operation): any
         case types.DESCRIBE:  return translateProject(<Algebra.Describe>op, types.DESCRIBE);
         case types.DISTINCT:  return translateDistinct(<Algebra.Distinct>op);
         case types.EXTEND:    return translateExtend(<Algebra.Extend>op);
+        case types.FROM:      return translateFrom(<Algebra.From>op);
         case types.FILTER:    return translateFilter(<Algebra.Filter>op);
         case types.GRAPH:     return translateGraph(<Algebra.Graph>op);
         case types.GROUP:     return translateGroup(<Algebra.Group>op);
@@ -237,6 +238,18 @@ function translateExtend(op: Algebra.Extend): any
             expression: translateExpression(op.expression)
         }
     ])
+}
+
+function translateFrom(op: Algebra.From): any
+{
+    let result = translateOperation(op.input);
+    // project is nested in group object
+    let obj = result.patterns[0];
+    obj.from = {
+        default: op.default.map(translateTerm),
+        named: op.named.map(translateTerm)
+    };
+    return result;
 }
 
 function translateFilter(op: Algebra.Filter): any

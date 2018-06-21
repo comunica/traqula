@@ -18,12 +18,6 @@ export default class Factory
 
     createAlt (left: A.Operation, right: A.Operation): A.Alt { return { type: 'alt', left, right }; }
     createAsk (input: A.Operation): A.Ask { return { type: 'ask', input }; }
-    createBoundAggregate (variable: RDF.Variable, aggregate: string, expression: A.Expression, distinct: boolean, separator?: string): A.BoundAggregate
-    {
-        let result = <A.BoundAggregate>this.createAggregateExpression(aggregate, expression, distinct, separator);
-        result.variable = variable;
-        return result;
-    }
     createBgp (patterns: A.Pattern[]): A.Bgp { return { type: 'bgp', patterns }; }
     createConstruct (input: A.Operation, template: A.Pattern[]): A.Construct { return { type: 'construct', input, template }; }
     createDescribe (input: A.Operation, terms: RDF.Term[]): A.Describe { return { type: 'describe', input, terms }; }
@@ -68,6 +62,8 @@ export default class Factory
     createService (input: A.Operation, name: RDF.Term, silent?: boolean): A.Service { return { type: 'service', input, name, silent }; }
     createSlice (input: A.Operation, start: number, length?: number) : A.Slice
     {
+        if (start === undefined)
+            start = 0;
         if (length !== undefined)
             return { type: 'slice', input, start, length };
         return { type: 'slice', input, start };

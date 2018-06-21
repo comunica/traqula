@@ -179,12 +179,7 @@ function translateExpression(exp: any) : Algebra.Expression
     if (isString(exp))
         return factory.createTermExpression(factory.createTerm(exp));
     if (exp.aggregation)
-    {
-        let result = factory.createAggregateExpression(exp.aggregation, translateExpression(exp.expression), exp.distinct);
-        if (exp.separator)
-            result.separator = exp.separator;
-        return result;
-    }
+        return factory.createAggregateExpression(exp.aggregation, translateExpression(exp.expression), exp.distinct, exp.separator);
     if (exp.function)
         return factory.createNamedExpression(<RDF.NamedNode>factory.createTerm(exp.function), exp.args.map(translateExpression));
     if (exp.operator)
@@ -521,11 +516,7 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
 
     // 18.2.5.5
     if (query.offset || query.limit)
-    {
-        res = factory.createSlice(res, query.offset || 0);
-        if (query.limit)
-            res.length = query.limit;
-    }
+        res = factory.createSlice(res, query.offset, query.limit);
 
     // NEW: support for ask/construct/describe queries
     if (query.queryType === 'CONSTRUCT')

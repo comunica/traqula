@@ -32,8 +32,8 @@ function testPath(fileName: string, testName: string): void
         it (name, () =>
         {
             let query = fs.readFileSync(sparqlName, 'utf8');
-            let expected = JSON.parse(fs.readFileSync(path.join(rootJson, fileName.replace(/\.sparql$/, '.json')), 'utf8'));
             let algebra = Util.objectify(translate(query, { quads: name.endsWith('(quads)') }));
+            let expected = JSON.parse(fs.readFileSync(path.join(rootJson, fileName.replace(/\.sparql$/, '.json')), 'utf8'));
             expect(algebra).to.deep.equal(expected);
         });
     }

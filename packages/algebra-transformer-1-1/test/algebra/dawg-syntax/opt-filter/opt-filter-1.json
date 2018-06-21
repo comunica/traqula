@@ -1,22 +1,46 @@
 {
   "type": "project",
   "input": {
-    "type": "filter",
-    "input": {
+    "type": "leftjoin",
+    "left": {
       "type": "bgp",
       "patterns": [
         {
           "subject": {
             "termType": "Variable",
-            "value": "s"
+            "value": "x"
           },
           "predicate": {
-            "termType": "Variable",
-            "value": "p"
+            "termType": "NamedNode",
+            "value": "http://example/p"
           },
           "object": {
             "termType": "Variable",
-            "value": "o"
+            "value": "v"
+          },
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
+          },
+          "type": "pattern"
+        }
+      ]
+    },
+    "right": {
+      "type": "bgp",
+      "patterns": [
+        {
+          "subject": {
+            "termType": "Variable",
+            "value": "y"
+          },
+          "predicate": {
+            "termType": "NamedNode",
+            "value": "http://example/q"
+          },
+          "object": {
+            "termType": "Variable",
+            "value": "w"
           },
           "graph": {
             "termType": "DefaultGraph",
@@ -29,14 +53,14 @@
     "expression": {
       "type": "expression",
       "expressionType": "operator",
-      "operator": "regex",
+      "operator": "=",
       "args": [
         {
           "type": "expression",
           "expressionType": "term",
           "term": {
             "termType": "Variable",
-            "value": "o"
+            "value": "v"
           }
         },
         {
@@ -44,23 +68,10 @@
           "expressionType": "term",
           "term": {
             "termType": "Literal",
-            "value": "foo",
-            "language": "en",
+            "value": "2",
             "datatype": {
               "termType": "NamedNode",
-              "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
-            }
-          }
-        },
-        {
-          "type": "expression",
-          "expressionType": "term",
-          "term": {
-            "termType": "Literal",
-            "value": "i",
-            "datatype": {
-              "termType": "NamedNode",
-              "value": "http://www.w3.org/2001/XMLSchema#string"
+              "value": "http://www.w3.org/2001/XMLSchema#integer"
             }
           }
         }
@@ -70,15 +81,19 @@
   "variables": [
     {
       "termType": "Variable",
-      "value": "s"
+      "value": "x"
     },
     {
       "termType": "Variable",
-      "value": "p"
+      "value": "v"
     },
     {
       "termType": "Variable",
-      "value": "o"
+      "value": "y"
+    },
+    {
+      "termType": "Variable",
+      "value": "w"
     }
   ]
 }

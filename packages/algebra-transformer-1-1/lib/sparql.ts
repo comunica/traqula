@@ -66,7 +66,8 @@ function translateOperation(op: Algebra.Operation): any
         case types.UNION:     return translateUnion(<Algebra.Union>op);
         case types.VALUES:    return translateValues(<Algebra.Values>op);
     }
-    return null;
+
+    throw new Error('Unknown Operation type ' + op.type);
 }
 
 function translateExpression(expr: Algebra.Expression): any
@@ -79,7 +80,8 @@ function translateExpression(expr: Algebra.Expression): any
         case eTypes.OPERATOR:  return translateOperatorExpression(<Algebra.OperatorExpression>expr);
         case eTypes.TERM:      return translateTermExpression(<Algebra.TermExpression>expr);
     }
-    return null;
+
+    throw new Error('Unknown Expression Operation type ' + expr.expressionType);
 }
 
 function translatePathComponent(path: Algebra.Operation): any
@@ -95,7 +97,8 @@ function translatePathComponent(path: Algebra.Operation): any
         case types.ZERO_OR_MORE_PATH: return translateZeroOrMorePath(<Algebra.ZeroOrMorePath>path);
         case types.ZERO_OR_ONE_PATH:  return translateZeroOrOnePath(<Algebra.ZeroOrOnePath>path);
     }
-    return null;
+
+    throw new Error('Unknown Path type ' + path.type);
 }
 
 function translateTerm(term: RDF.Term): string
@@ -117,7 +120,8 @@ function translateTerm(term: RDF.Term): string
         return term.value;
     if (term.termType === 'Variable')
         return '?' + term.value;
-    return null;
+
+    throw new Error('Unknown Term type ' + term.termType);
 }
 
 // ------------------------- EXPRESSIONS -------------------------
@@ -333,7 +337,6 @@ function translateMinus(op: Algebra.Minus): any
 
 function translateOrderBy(op: Algebra.OrderBy): any
 {
-    // TODO: DESC
     context.order.push(...op.expressions);
     return translateOperation(op.input);
 }
@@ -436,9 +439,7 @@ function translateProject(op: Algebra.Project | Algebra.Ask | Algebra.Describe, 
                     expression: result
                 };
             }
-            if (typeof v === 'string')
-                return { expression: v };
-            return v;
+            return { expression: v };
         });
 
     // descending expressions will already be in the correct format due to the structure of those
@@ -565,17 +566,17 @@ function translateValues(op: Algebra.Values): any
 
 function translateAlt(path: Algebra.Alt): any
 {
-    if (path.left.type === types.NPS || path.right.type === types.NPS)
+    let left = translatePathComponent(path.left);
+    let right = translatePathComponent(path.right);
+    if (left.pathType === '!' && right.pathType === '!')
     {
-        let left = translatePathComponent(path.left);
-        let right = translatePathComponent(path.right);
         return {
             type: 'path',
             pathType: '!',
             items: [ {
                 type: 'path',
                 pathType: '|',
-                items: [].concat(left.items[0].items, right.items[0].items)
+                items: [].concat(left.items, right.items)
             } ]
         }
     }
@@ -583,7 +584,7 @@ function translateAlt(path: Algebra.Alt): any
     return {
         type: 'path',
         pathType: '|',
-        items: [ translatePathComponent(path.left), translatePathComponent(path.right) ]
+        items: [ left, right ]
     }
 }
 
@@ -591,20 +592,31 @@ function translateInv(path: Algebra.Inv): any
 {
     if (path.path.type === types.NPS)
     {
+        let npsPath: Algebra.Nps = <Algebra.Nps> path.path;
+
+        let inv = npsPath.iris.map((iri: RDF.NamedNode) =>
+        {
+            return {
+                type: 'path',
+                pathType: '^',
+                items: [ translateTerm(iri) ]
+            }
+        });
+
+        if (inv.length <= 1)
+            return {
+                type    : 'path',
+                pathType: '!',
+                items   : inv
+            };
+
         return {
             type: 'path',
             pathType: '!',
             items: [ {
                 type: 'path',
                 pathType: '|',
-                items: [ path.iris.map((iri: string) =>
-                {
-                    return {
-                        type: 'path',
-                        pathType: '^',
-                        items: [ iri ]
-                    }
-                }) ]
+                items: inv
             } ]
         }
     }
@@ -623,6 +635,13 @@ function translateLink(path: Algebra.Link): any
 
 function translateNps(path: Algebra.Nps): any
 {
+    if (path.iris.length <= 1)
+        return {
+            type: 'path',
+            pathType: '!',
+            items: path.iris.map(translateTerm)
+        };
+
     return {
         type: 'path',
         pathType: '!',

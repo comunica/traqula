@@ -1,6 +1,6 @@
 {
   "name": "sparqlalgebrajs",
-  "version": "0.7.6",
+  "version": "0.7.7",
   "description": "Convert SPARQL to SPARL algebra",
   "author": "Joachim Van Herwegen",
   "license": "MIT",

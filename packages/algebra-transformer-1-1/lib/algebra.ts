@@ -65,6 +65,10 @@ export interface Double extends Operation
     right: Operation;
 }
 
+export interface PropertyPathSymbol extends Operation
+{
+}
+
 export interface Expression extends Operation
 {
     type: 'expression';
@@ -113,9 +117,11 @@ export interface TermExpression extends Expression
 // ----------------------- ACTUAL FUNCTIONS -----------------------
 
 
-export interface Alt extends Double
+export interface Alt extends Double, PropertyPathSymbol
 {
     type: 'alt';
+    left: PropertyPathSymbol;
+    right: PropertyPathSymbol;
 }
 
 export interface Ask extends Single
@@ -185,10 +191,10 @@ export interface Group extends Single
     aggregates: BoundAggregate[];
 }
 
-export interface Inv extends Operation
+export interface Inv extends Operation, PropertyPathSymbol
 {
     type: 'inv';
-    path: Operation;
+    path: PropertyPathSymbol;
 }
 
 export interface Join extends Double
@@ -202,7 +208,7 @@ export interface LeftJoin extends Double
     expression?: Expression;
 }
 
-export interface Link extends Operation
+export interface Link extends Operation, PropertyPathSymbol
 {
     type: 'link';
     iri: rdfjs.NamedNode;
@@ -213,16 +219,16 @@ export interface Minus extends Double
     type: 'minus';
 }
 
-export interface Nps extends Operation
+export interface Nps extends Operation, PropertyPathSymbol
 {
     type: 'nps';
     iris: rdfjs.NamedNode[];
 }
 
-export interface OneOrMorePath extends Operation
+export interface OneOrMorePath extends Operation, PropertyPathSymbol
 {
     type: 'OneOrMorePath';
-    path: Operation;
+    path: PropertyPathSymbol;
 }
 
 export interface OrderBy extends Single
@@ -235,7 +241,7 @@ export interface Path extends Operation
 {
     type: 'path';
     subject: rdfjs.Term;
-    predicate: Operation;
+    predicate: PropertyPathSymbol;
     object: rdfjs.Term;
     graph: rdfjs.Term;
 }
@@ -256,9 +262,11 @@ export interface Reduced extends Single
     type: 'reduced';
 }
 
-export interface Seq extends Double
+export interface Seq extends Double, PropertyPathSymbol
 {
     type: 'seq'
+    left: PropertyPathSymbol;
+    right: PropertyPathSymbol;
 }
 
 export interface Service extends Single
@@ -287,14 +295,14 @@ export interface Values extends Operation
     bindings: {[key: string]: rdfjs.Term}[];
 }
 
-export interface ZeroOrMorePath extends Operation
+export interface ZeroOrMorePath extends Operation, PropertyPathSymbol
 {
     type: 'ZeroOrMorePath';
-    path: Operation;
+    path: PropertyPathSymbol;
 }
 
-export interface ZeroOrOnePath extends Operation
+export interface ZeroOrOnePath extends Operation, PropertyPathSymbol
 {
     type: 'ZeroOrOnePath';
-    path: Operation;
+    path: PropertyPathSymbol;
 }

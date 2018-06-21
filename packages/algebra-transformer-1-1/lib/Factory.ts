@@ -52,7 +52,6 @@ export default class Factory
             return { type: 'path', subject, predicate, object, graph };
         return { type: 'path', subject, predicate, object, graph: defaultGraph };
     }
-    // TODO: cast needed due to missing equals method (could use https://github.com/rdf-ext/rdf-data-model )
     createPattern (subject: RDF.Term, predicate: RDF.Term, object: RDF.Term, graph?: RDF.Term): A.Pattern
     {
         let pattern: A.Pattern;

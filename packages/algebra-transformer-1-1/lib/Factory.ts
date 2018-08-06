@@ -1,7 +1,7 @@
 
 import * as A from './algebra';
 import * as RDF from "rdf-js";
-import * as DataFactory from 'rdf-data-model';
+import * as DataFactory from '@rdfjs/data-model';
 import {stringToTerm} from "rdf-string";
 import {types, expressionTypes, Expression} from "./algebra";
 

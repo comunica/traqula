@@ -10,9 +10,9 @@
   },
   "bin": "./bin/sparqlalgebrajs.js",
   "dependencies": {
+    "@rdfjs/data-model": "^1.1.0",
     "lodash.isequal": "^4.5.0",
     "minimist": "^1.2.0",
-    "rdf-data-model": "^1.0.0",
     "rdf-string": "^1.1.1",
     "sparqljs": "^2.0.3"
   },
@@ -22,7 +22,6 @@
     "@types/minimist": "^1.2.0",
     "@types/mocha": "^2.2.48",
     "@types/node": "^8.10.20",
-    "@types/rdf-data-model": "^1.0.1",
     "@types/rdf-js": "^1.0.1",
     "chai": "^4.1.2",
     "mocha": "^5.2.0",

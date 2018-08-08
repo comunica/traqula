@@ -1,6 +1,6 @@
 
 import * as Algebra from './algebra';
-import Factory from './Factory';
+import Factory from './factory';
 import * as RDF from 'rdf-js'
 
 const Parser = require('sparqljs').Parser;

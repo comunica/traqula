@@ -2,9 +2,12 @@
 import {expect} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
-import {translate, toSparql, toSparqlJs} from '../index';
-import Util from './util';
-import Factory from "../lib/Factory";
+import TestUtil from './util';
+import Util from '../lib/util';
+import {Operation, Project} from "../lib/algebra";
+import Factory from "../lib/factory";
+import {toSparqlJs} from "../lib/sparql";
+import translate from "../lib/sparqlAlgebra";
 
 const rootJson = 'test/algebra';
 const factory = new Factory();
@@ -31,9 +34,17 @@ function testPath(fileName: string, testName: string): void
         let name = testName.replace(/\.json$/, '');
         it (name, () =>
         {
-            let expected = JSON.parse(fs.readFileSync(jsonName, 'utf8'));
-            let clone = Util.objectify(factory.mapOperation(expected, {}));
-            expect(clone).to.deep.equal(expected);
+            let expected: any = JSON.parse(fs.readFileSync(jsonName, 'utf8'));
+            let clone: Operation = Util.mapOperation(expected, {});
+            if (clone.type === 'project')
+            {
+                let input = (<Project> clone).input;
+                let scope = Util.inScopeVariables(input);
+                let project = <Project> translate(toSparqlJs(factory.createProject(input, [])));
+                for (let v of project.variables.map(v => v.value))
+                    expect(scope.map(v => v.value)).to.contain(v);
+            }
+            expect(TestUtil.objectify(clone)).to.deep.equal(expected);
         });
     }
 }

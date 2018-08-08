@@ -471,7 +471,7 @@ function translateProject(op: Algebra.Project | Algebra.Ask | Algebra.Describe, 
         if (objectContainsValues(filter, Object.keys(aggregators)))
         {
             result.having = flatten([ replaceAggregatorVariables(filter.expression, aggregators) ]);
-            delete result.where[result.where.length-1];
+            result.where.splice(-1);
         }
     }
 

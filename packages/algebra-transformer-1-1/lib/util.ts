@@ -7,6 +7,13 @@ import {Variable} from "rdf-js";
 
 export default class Util
 {
+    /**
+     * Detects all in-scope variables.
+     * In practice this means iterating through the entire algebra tree, finding all variables,
+     * and stopping when a project function is found.
+     * @param {Operation} op - Input algebra tree.
+     * @returns {Variable[]} - List of unique in-scope variables.
+     */
     public static inScopeVariables(op: A.Operation): Variable[]
     {
         const variables: Variable[] = [];
@@ -95,7 +102,14 @@ export default class Util
 
         return variables;
     }
-
+    /**
+     * Recurses through the given algebra tree
+     * A map of callback functions can be provided for individual Operation types to gather data.
+     * The return value of those callbacks should indicate whether recursion should be applied or not.
+     * Making modifications will change the original input object.
+     * @param {Operation} op - The Operation to recurse on.
+     * @param { [type: string]: (op: Operation) => boolean } callbacks - A map of required callback Operations.
+     */
     public static recurseOperation(op: A.Operation, callbacks: { [type: string]: (op: A.Operation) => boolean }): void
     {
         let result: A.Operation = op;

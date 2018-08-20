@@ -4,8 +4,6 @@ import * as RDF from "rdf-js";
 import * as DataFactory from '@rdfjs/data-model';
 import {stringToTerm} from "rdf-string";
 
-const defaultGraph: RDF.DefaultGraph = <RDF.DefaultGraph>{ termType: 'DefaultGraph', value: ''};
-
 export default class Factory
 {
     dataFactory: RDF.DataFactory;
@@ -50,7 +48,7 @@ export default class Factory
     {
         if (graph)
             return { type: 'path', subject, predicate, object, graph };
-        return { type: 'path', subject, predicate, object, graph: defaultGraph };
+        return { type: 'path', subject, predicate, object, graph: this.dataFactory.defaultGraph() };
     }
     createPattern (subject: RDF.Term, predicate: RDF.Term, object: RDF.Term, graph?: RDF.Term): A.Pattern
     {

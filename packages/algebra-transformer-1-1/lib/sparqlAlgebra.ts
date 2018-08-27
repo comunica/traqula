@@ -245,9 +245,14 @@ function translatePathPredicate(predicate: any) : Algebra.Operation
 
     if (predicate.pathType === '!')
     {
+        // negation is either over a single predicate or a list of disjuncted properties
         let normals: string[] = [];
         let inverted: string[] = [];
-        let items = predicate.items[0].items; // the | element
+        let items;
+        if (predicate.items[0].type === 'path' && predicate.items[0].pathType === '|')
+            items = predicate.items[0].items; // the | element
+        else
+            items = predicate.items;
 
         for (let item of items)
         {
@@ -256,7 +261,7 @@ function translatePathPredicate(predicate: any) : Algebra.Operation
             else if (item.pathType === '^')
                 inverted.push(item.items[0]);
             else
-                throw new Error('Unexpected item: ' + item);
+                throw new Error('Unexpected item: ' + JSON.stringify(item));
         }
 
         // NPS elements do not have the LINK function

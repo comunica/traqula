@@ -50,13 +50,13 @@ export default class Factory
             return { type: 'path', subject, predicate, object, graph };
         return { type: 'path', subject, predicate, object, graph: this.dataFactory.defaultGraph() };
     }
-    createPattern (subject: RDF.Term, predicate: RDF.Term, object: RDF.Term, graph?: RDF.Term): A.Pattern
+    createPattern<Q extends RDF.BaseQuad = RDF.Quad> (subject: Q['subject'], predicate: Q['predicate'], object: Q['object'], graph?: Q['graph']): A.Pattern
     {
         let pattern: A.Pattern;
         if (graph)
-            pattern = <A.Pattern>this.dataFactory.quad(subject, predicate, object, graph);
+            pattern = <A.Pattern><RDF.BaseQuad>this.dataFactory.quad<Q>(subject, predicate, object, graph);
         else
-            pattern = <A.Pattern>this.dataFactory.triple(subject, predicate, object);
+            pattern = <A.Pattern><RDF.BaseQuad>this.dataFactory.triple<Q>(subject, predicate, object);
         pattern.type = 'pattern';
         return pattern;
     }

@@ -3,6 +3,7 @@ import * as A from "./algebra";
 import {Expression, Operation, expressionTypes, types} from "./algebra";
 import Factory from "./factory";
 import {Variable} from "rdf-js";
+import * as RDF from 'rdf-js'
 
 
 export default class Util
@@ -360,7 +361,7 @@ export default class Util
                 return factory.createPath(path.subject, mapOp(path.predicate), path.object, path.graph);
             case types.PATTERN:
                 const pattern: A.Pattern = <A.Pattern> result;
-                return factory.createPattern(pattern.subject, pattern.predicate, pattern.object, pattern.graph);
+                return factory.createPattern<RDF.BaseQuad>(pattern.subject, pattern.predicate, pattern.object, pattern.graph);
             case types.PROJECT:
                 const project: A.Project = <A.Project> result;
                 return factory.createProject(mapOp(project.input), [].concat(project.variables));

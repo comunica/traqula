@@ -246,7 +246,7 @@ export interface Path extends Operation
     graph: rdfjs.Term;
 }
 
-export interface Pattern extends Operation, rdfjs.Quad
+export interface Pattern extends Operation, rdfjs.BaseQuad
 {
     type: 'pattern';
 }

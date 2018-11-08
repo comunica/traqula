@@ -232,7 +232,7 @@ function translatePath(triple: any) : Algebra.Operation[]
     let pred = translatePathPredicate(triple.predicate);
     let obj = factory.createTerm(triple.object);
 
-    return simplifyPath(sub, pred, obj);
+    return simplifyPath(<RDF.Quad_Subject> sub, pred, <RDF.Quad_Object> obj);
 }
 
 function translatePathPredicate(predicate: any) : Algebra.Operation
@@ -289,13 +289,13 @@ function translatePathPredicate(predicate: any) : Algebra.Operation
     throw new Error('Unable to translate path expression ' + predicate);
 }
 
-function simplifyPath(subject: RDF.Term, predicate: Algebra.Operation, object: RDF.Term) : Algebra.Operation[]
+function simplifyPath(subject: RDF.Quad_Subject, predicate: Algebra.Operation, object: RDF.Quad_Object) : Algebra.Operation[]
 {
     if (predicate.type === types.LINK)
         return [factory.createPattern(subject, (<Algebra.Link>predicate).iri, object)];
 
     if (predicate.type === types.INV)
-        return simplifyPath(object, (<Algebra.Inv>predicate).path, subject);
+        return simplifyPath(<RDF.Quad_Subject> object, (<Algebra.Inv>predicate).path, subject);
 
     if (predicate.type === types.SEQ)
     {
@@ -319,7 +319,7 @@ function generateFreshVar() : RDF.Variable
 
 function translateTriple(triple: any) : Algebra.Pattern
 {
-    return factory.createPattern(factory.createTerm(triple.subject), factory.createTerm(triple.predicate), factory.createTerm(triple.object));
+    return factory.createPattern<RDF.BaseQuad>(factory.createTerm(triple.subject), factory.createTerm(triple.predicate), factory.createTerm(triple.object));
 }
 
 function translateGraph(graph: any) : Algebra.Operation

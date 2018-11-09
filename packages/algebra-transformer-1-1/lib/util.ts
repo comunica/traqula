@@ -361,7 +361,7 @@ export default class Util
                 return factory.createPath(path.subject, mapOp(path.predicate), path.object, path.graph);
             case types.PATTERN:
                 const pattern: A.Pattern = <A.Pattern> result;
-                return factory.createPattern<RDF.BaseQuad>(pattern.subject, pattern.predicate, pattern.object, pattern.graph);
+                return factory.createPattern(pattern.subject, pattern.predicate, pattern.object, pattern.graph);
             case types.PROJECT:
                 const project: A.Project = <A.Project> result;
                 return factory.createProject(mapOp(project.input), [].concat(project.variables));

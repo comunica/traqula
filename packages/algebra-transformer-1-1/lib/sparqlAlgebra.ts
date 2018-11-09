@@ -319,7 +319,7 @@ function generateFreshVar() : RDF.Variable
 
 function translateTriple(triple: any) : Algebra.Pattern
 {
-    return factory.createPattern<RDF.BaseQuad>(factory.createTerm(triple.subject), factory.createTerm(triple.predicate), factory.createTerm(triple.object));
+    return factory.createPattern(factory.createTerm(triple.subject), factory.createTerm(triple.predicate), factory.createTerm(triple.object));
 }
 
 function translateGraph(graph: any) : Algebra.Operation

@@ -436,7 +436,7 @@ export default class Util
         let counter: number = 0;
         let labelLoop = label;
         while (variables[labelLoop]) {
-          labelLoop = label + counter++;
+            labelLoop = label + counter++;
         }
         return dataFactory.variable(labelLoop);
     }

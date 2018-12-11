@@ -49,6 +49,7 @@ export default function translate(sparql: any, options?:
 
 function translateQuery(sparql: any, quads?: boolean, blankToVariable?: boolean) : Algebra.Operation
 {
+    // this set is filled in during the inScopeVariables call
     variables = new Set();
     varCount = 0;
     useQuads = quads;
@@ -593,45 +594,45 @@ function translateBoundAggregate (thingy: any, v: RDF.Variable) : Algebra.BoundA
 
 function translateBlankNodesToVariables (res: Algebra.Operation, variables: Set<RDF.Variable>) : Algebra.Operation
 {
-  const blankToVariableMapping: {[bLabel: string]: RDF.Variable} = {};
-  const variablesRaw: {[vLabel: string]: boolean} = Array.from(variables).reduce((acc: {[vLabel: string]: boolean}, variable: RDF.Variable) => {
-    acc[variable.value] = true;
-    return acc;
-  }, {});
-  return Util.mapOperation(res, {
-    'path': (op: Algebra.Path, factory: Factory) => {
-      return {
-        result: factory.createPath(
-          blankToVariable(op.subject),
-          op.predicate,
-          blankToVariable(op.object),
-          blankToVariable(op.graph),
-        ),
-        recurse: false,
-      };
-    },
-    'pattern': (op: Algebra.Pattern, factory: Factory) => {
-      return {
-        result: factory.createPattern(
-          blankToVariable(op.subject),
-          blankToVariable(op.predicate),
-          blankToVariable(op.object),
-          blankToVariable(op.graph),
-        ),
-        recurse: false,
-      };
-    },
-  });
+    const blankToVariableMapping: {[bLabel: string]: RDF.Variable} = {};
+    const variablesRaw: {[vLabel: string]: boolean} = Array.from(variables).reduce((acc: {[vLabel: string]: boolean}, variable: RDF.Variable) => {
+        acc[variable.value] = true;
+        return acc;
+    }, {});
+    return Util.mapOperation(res, {
+        'path': (op: Algebra.Path, factory: Factory) => {
+            return {
+                result: factory.createPath(
+                    blankToVariable(op.subject),
+                    op.predicate,
+                    blankToVariable(op.object),
+                    blankToVariable(op.graph),
+                ),
+                recurse: false,
+            };
+        },
+        'pattern': (op: Algebra.Pattern, factory: Factory) => {
+            return {
+                result: factory.createPattern(
+                    blankToVariable(op.subject),
+                    blankToVariable(op.predicate),
+                    blankToVariable(op.object),
+                    blankToVariable(op.graph),
+                ),
+                recurse: false,
+            };
+        },
+    });
 
   function blankToVariable(term: RDF.Term): RDF.Term {
       if (term.termType === 'BlankNode') {
-        let variable = blankToVariableMapping[term.value];
-        if (!variable) {
-            variable = Util.createUniqueVariable(term.value, variablesRaw, factory.dataFactory);
-            variablesRaw[variable.value] = true;
-            blankToVariableMapping[term.value] = variable;
-        }
-        return variable;
+          let variable = blankToVariableMapping[term.value];
+          if (!variable) {
+              variable = Util.createUniqueVariable(term.value, variablesRaw, factory.dataFactory);
+              variablesRaw[variable.value] = true;
+              blankToVariableMapping[term.value] = variable;
+          }
+          return variable;
       }
       return term;
   }

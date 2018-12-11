@@ -1,0 +1,94 @@
+{
+  "type": "project",
+  "input": {
+    "type": "join",
+    "left": {
+      "type": "bgp",
+      "patterns": [
+        {
+          "subject": {
+            "termType": "Variable",
+            "value": "s"
+          },
+          "predicate": {
+            "termType": "Variable",
+            "value": "p1"
+          },
+          "object": {
+            "termType": "Variable",
+            "value": "o1"
+          },
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
+          },
+          "type": "pattern"
+        },
+        {
+          "subject": {
+            "termType": "Variable",
+            "value": "s"
+          },
+          "predicate": {
+            "termType": "Variable",
+            "value": "p2"
+          },
+          "object": {
+            "termType": "Variable",
+            "value": "o2"
+          },
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
+          },
+          "type": "pattern"
+        }
+      ]
+    },
+    "right": {
+      "type": "values",
+      "variables": [
+        {
+          "termType": "Variable",
+          "value": "o1"
+        },
+        {
+          "termType": "Variable",
+          "value": "o2"
+        }
+      ],
+      "bindings": [
+        {
+          "?o2": {
+            "termType": "Literal",
+            "value": "Alan",
+            "datatype": {
+              "termType": "NamedNode",
+              "value": "http://www.w3.org/2001/XMLSchema#string"
+            }
+          }
+        },
+        {
+          "?o1": {
+            "termType": "NamedNode",
+            "value": "http://example.org/b"
+          }
+        }
+      ]
+    }
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "s"
+    },
+    {
+      "termType": "Variable",
+      "value": "o1"
+    },
+    {
+      "termType": "Variable",
+      "value": "o2"
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+{
+  "type": "project",
+  "input": {
+    "type": "extend",
+    "input": {
+      "type": "filter",
+      "input": {
+        "type": "group",
+        "input": {
+          "type": "bgp",
+          "patterns": [
+            {
+              "subject": {
+                "termType": "Variable",
+                "value": "S"
+              },
+              "predicate": {
+                "termType": "Variable",
+                "value": "P"
+              },
+              "object": {
+                "termType": "Variable",
+                "value": "O"
+              },
+              "graph": {
+                "termType": "DefaultGraph",
+                "value": ""
+              },
+              "type": "pattern"
+            }
+          ]
+        },
+        "variables": [
+          {
+            "termType": "Variable",
+            "value": "P"
+          }
+        ],
+        "aggregates": [
+          {
+            "type": "expression",
+            "expressionType": "aggregate",
+            "aggregator": "count",
+            "expression": {
+              "type": "expression",
+              "expressionType": "term",
+              "term": {
+                "termType": "Variable",
+                "value": "O"
+              }
+            },
+            "distinct": false,
+            "variable": {
+              "termType": "Variable",
+              "value": "var0"
+            }
+          }
+        ]
+      },
+      "expression": {
+        "type": "expression",
+        "expressionType": "operator",
+        "operator": ">",
+        "args": [
+          {
+            "type": "expression",
+            "expressionType": "term",
+            "term": {
+              "termType": "Variable",
+              "value": "var0"
+            }
+          },
+          {
+            "type": "expression",
+            "expressionType": "term",
+            "term": {
+              "termType": "Literal",
+              "value": "2",
+              "datatype": {
+                "termType": "NamedNode",
+                "value": "http://www.w3.org/2001/XMLSchema#integer"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "variable": {
+      "termType": "Variable",
+      "value": "C"
+    },
+    "expression": {
+      "type": "expression",
+      "expressionType": "term",
+      "term": {
+        "termType": "Variable",
+        "value": "var0"
+      }
+    }
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "P"
+    },
+    {
+      "termType": "Variable",
+      "value": "C"
+    }
+  ]
+}

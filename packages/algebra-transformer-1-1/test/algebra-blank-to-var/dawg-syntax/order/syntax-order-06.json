@@ -1,0 +1,106 @@
+{
+  "type": "project",
+  "input": {
+    "type": "orderby",
+    "input": {
+      "type": "bgp",
+      "patterns": [
+        {
+          "subject": {
+            "termType": "Variable",
+            "value": "s"
+          },
+          "predicate": {
+            "termType": "Variable",
+            "value": "p"
+          },
+          "object": {
+            "termType": "Variable",
+            "value": "o"
+          },
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
+          },
+          "type": "pattern"
+        }
+      ]
+    },
+    "expressions": [
+      {
+        "type": "expression",
+        "expressionType": "operator",
+        "operator": "desc",
+        "args": [
+          {
+            "type": "expression",
+            "expressionType": "operator",
+            "operator": "+",
+            "args": [
+              {
+                "type": "expression",
+                "expressionType": "term",
+                "term": {
+                  "termType": "Variable",
+                  "value": "o"
+                }
+              },
+              {
+                "type": "expression",
+                "expressionType": "term",
+                "term": {
+                  "termType": "Literal",
+                  "value": "57",
+                  "datatype": {
+                    "termType": "NamedNode",
+                    "value": "http://www.w3.org/2001/XMLSchema#integer"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "expression",
+        "expressionType": "named",
+        "name": {
+          "termType": "NamedNode",
+          "value": "http://example.org/ns#func2"
+        },
+        "args": [
+          {
+            "type": "expression",
+            "expressionType": "term",
+            "term": {
+              "termType": "Variable",
+              "value": "o"
+            }
+          }
+        ]
+      },
+      {
+        "type": "expression",
+        "expressionType": "term",
+        "term": {
+          "termType": "Variable",
+          "value": "s"
+        }
+      }
+    ]
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "s"
+    },
+    {
+      "termType": "Variable",
+      "value": "p"
+    },
+    {
+      "termType": "Variable",
+      "value": "o"
+    }
+  ]
+}

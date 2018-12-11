@@ -1,0 +1,293 @@
+{
+  "type": "distinct",
+  "input": {
+    "type": "project",
+    "input": {
+      "type": "filter",
+      "input": {
+        "type": "minus",
+        "left": {
+          "type": "minus",
+          "left": {
+            "type": "bgp",
+            "patterns": [
+              {
+                "subject": {
+                  "termType": "Variable",
+                  "value": "s2"
+                },
+                "predicate": {
+                  "termType": "NamedNode",
+                  "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                },
+                "object": {
+                  "termType": "NamedNode",
+                  "value": "http://example/Set"
+                },
+                "graph": {
+                  "termType": "DefaultGraph",
+                  "value": ""
+                },
+                "type": "pattern"
+              },
+              {
+                "subject": {
+                  "termType": "Variable",
+                  "value": "s1"
+                },
+                "predicate": {
+                  "termType": "NamedNode",
+                  "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                },
+                "object": {
+                  "termType": "NamedNode",
+                  "value": "http://example/Set"
+                },
+                "graph": {
+                  "termType": "DefaultGraph",
+                  "value": ""
+                },
+                "type": "pattern"
+              }
+            ]
+          },
+          "right": {
+            "type": "filter",
+            "input": {
+              "type": "bgp",
+              "patterns": [
+                {
+                  "subject": {
+                    "termType": "Variable",
+                    "value": "s1"
+                  },
+                  "predicate": {
+                    "termType": "NamedNode",
+                    "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                  },
+                  "object": {
+                    "termType": "NamedNode",
+                    "value": "http://example/Set"
+                  },
+                  "graph": {
+                    "termType": "DefaultGraph",
+                    "value": ""
+                  },
+                  "type": "pattern"
+                },
+                {
+                  "subject": {
+                    "termType": "Variable",
+                    "value": "s2"
+                  },
+                  "predicate": {
+                    "termType": "NamedNode",
+                    "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                  },
+                  "object": {
+                    "termType": "NamedNode",
+                    "value": "http://example/Set"
+                  },
+                  "graph": {
+                    "termType": "DefaultGraph",
+                    "value": ""
+                  },
+                  "type": "pattern"
+                },
+                {
+                  "subject": {
+                    "termType": "Variable",
+                    "value": "s1"
+                  },
+                  "predicate": {
+                    "termType": "NamedNode",
+                    "value": "http://example/member"
+                  },
+                  "object": {
+                    "termType": "Variable",
+                    "value": "x"
+                  },
+                  "graph": {
+                    "termType": "DefaultGraph",
+                    "value": ""
+                  },
+                  "type": "pattern"
+                }
+              ]
+            },
+            "expression": {
+              "type": "expression",
+              "expressionType": "existence",
+              "not": true,
+              "input": {
+                "type": "bgp",
+                "patterns": [
+                  {
+                    "subject": {
+                      "termType": "Variable",
+                      "value": "s2"
+                    },
+                    "predicate": {
+                      "termType": "NamedNode",
+                      "value": "http://example/member"
+                    },
+                    "object": {
+                      "termType": "Variable",
+                      "value": "x"
+                    },
+                    "graph": {
+                      "termType": "DefaultGraph",
+                      "value": ""
+                    },
+                    "type": "pattern"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "right": {
+          "type": "filter",
+          "input": {
+            "type": "bgp",
+            "patterns": [
+              {
+                "subject": {
+                  "termType": "Variable",
+                  "value": "s1"
+                },
+                "predicate": {
+                  "termType": "NamedNode",
+                  "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                },
+                "object": {
+                  "termType": "NamedNode",
+                  "value": "http://example/Set"
+                },
+                "graph": {
+                  "termType": "DefaultGraph",
+                  "value": ""
+                },
+                "type": "pattern"
+              },
+              {
+                "subject": {
+                  "termType": "Variable",
+                  "value": "s2"
+                },
+                "predicate": {
+                  "termType": "NamedNode",
+                  "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                },
+                "object": {
+                  "termType": "NamedNode",
+                  "value": "http://example/Set"
+                },
+                "graph": {
+                  "termType": "DefaultGraph",
+                  "value": ""
+                },
+                "type": "pattern"
+              },
+              {
+                "subject": {
+                  "termType": "Variable",
+                  "value": "s2"
+                },
+                "predicate": {
+                  "termType": "NamedNode",
+                  "value": "http://example/member"
+                },
+                "object": {
+                  "termType": "Variable",
+                  "value": "x"
+                },
+                "graph": {
+                  "termType": "DefaultGraph",
+                  "value": ""
+                },
+                "type": "pattern"
+              }
+            ]
+          },
+          "expression": {
+            "type": "expression",
+            "expressionType": "existence",
+            "not": true,
+            "input": {
+              "type": "bgp",
+              "patterns": [
+                {
+                  "subject": {
+                    "termType": "Variable",
+                    "value": "s1"
+                  },
+                  "predicate": {
+                    "termType": "NamedNode",
+                    "value": "http://example/member"
+                  },
+                  "object": {
+                    "termType": "Variable",
+                    "value": "x"
+                  },
+                  "graph": {
+                    "termType": "DefaultGraph",
+                    "value": ""
+                  },
+                  "type": "pattern"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "expression": {
+        "type": "expression",
+        "expressionType": "operator",
+        "operator": "<",
+        "args": [
+          {
+            "type": "expression",
+            "expressionType": "operator",
+            "operator": "str",
+            "args": [
+              {
+                "type": "expression",
+                "expressionType": "term",
+                "term": {
+                  "termType": "Variable",
+                  "value": "s1"
+                }
+              }
+            ]
+          },
+          {
+            "type": "expression",
+            "expressionType": "operator",
+            "operator": "str",
+            "args": [
+              {
+                "type": "expression",
+                "expressionType": "term",
+                "term": {
+                  "termType": "Variable",
+                  "value": "s2"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "variables": [
+      {
+        "termType": "Variable",
+        "value": "s1"
+      },
+      {
+        "termType": "Variable",
+        "value": "s2"
+      }
+    ]
+  }
+}

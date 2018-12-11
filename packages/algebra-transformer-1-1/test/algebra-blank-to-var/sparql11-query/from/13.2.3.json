@@ -1,0 +1,94 @@
+{
+  "type": "from",
+  "input": {
+    "type": "project",
+    "input": {
+      "type": "join",
+      "left": {
+        "type": "bgp",
+        "patterns": [
+          {
+            "subject": {
+              "termType": "Variable",
+              "value": "g"
+            },
+            "predicate": {
+              "termType": "NamedNode",
+              "value": "http://purl.org/dc/elements/1.1/publisher"
+            },
+            "object": {
+              "termType": "Variable",
+              "value": "who"
+            },
+            "graph": {
+              "termType": "DefaultGraph",
+              "value": ""
+            },
+            "type": "pattern"
+          }
+        ]
+      },
+      "right": {
+        "type": "graph",
+        "input": {
+          "type": "bgp",
+          "patterns": [
+            {
+              "subject": {
+                "termType": "Variable",
+                "value": "x"
+              },
+              "predicate": {
+                "termType": "NamedNode",
+                "value": "http://xmlns.com/foaf/0.1/mbox"
+              },
+              "object": {
+                "termType": "Variable",
+                "value": "mbox"
+              },
+              "graph": {
+                "termType": "DefaultGraph",
+                "value": ""
+              },
+              "type": "pattern"
+            }
+          ]
+        },
+        "name": {
+          "termType": "Variable",
+          "value": "g"
+        }
+      }
+    },
+    "variables": [
+      {
+        "termType": "Variable",
+        "value": "who"
+      },
+      {
+        "termType": "Variable",
+        "value": "g"
+      },
+      {
+        "termType": "Variable",
+        "value": "mbox"
+      }
+    ]
+  },
+  "default": [
+    {
+      "termType": "NamedNode",
+      "value": "http://example.org/dft.ttl"
+    }
+  ],
+  "named": [
+    {
+      "termType": "NamedNode",
+      "value": "http://example.org/alice"
+    },
+    {
+      "termType": "NamedNode",
+      "value": "http://example.org/bob"
+    }
+  ]
+}

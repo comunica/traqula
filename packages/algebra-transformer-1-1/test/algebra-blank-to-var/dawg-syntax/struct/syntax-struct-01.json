@@ -1,0 +1,15 @@
+{
+  "type": "project",
+  "input": {
+    "type": "leftjoin",
+    "left": {
+      "type": "bgp",
+      "patterns": []
+    },
+    "right": {
+      "type": "bgp",
+      "patterns": []
+    }
+  },
+  "variables": []
+}

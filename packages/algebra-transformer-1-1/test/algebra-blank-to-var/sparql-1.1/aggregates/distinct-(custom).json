@@ -1,0 +1,101 @@
+{
+  "type": "distinct",
+  "input": {
+    "type": "project",
+    "input": {
+      "type": "extend",
+      "input": {
+        "type": "group",
+        "input": {
+          "type": "bgp",
+          "patterns": [
+            {
+              "subject": {
+                "termType": "Variable",
+                "value": "s"
+              },
+              "predicate": {
+                "termType": "Variable",
+                "value": "p"
+              },
+              "object": {
+                "termType": "Variable",
+                "value": "c"
+              },
+              "graph": {
+                "termType": "DefaultGraph",
+                "value": ""
+              },
+              "type": "pattern"
+            }
+          ]
+        },
+        "variables": [
+          {
+            "termType": "Variable",
+            "value": "c"
+          }
+        ],
+        "aggregates": [
+          {
+            "type": "expression",
+            "expressionType": "aggregate",
+            "aggregator": "sum",
+            "expression": {
+              "type": "expression",
+              "expressionType": "aggregate",
+              "aggregator": "avg",
+              "expression": {
+                "type": "expression",
+                "expressionType": "operator",
+                "operator": "+",
+                "args": [
+                  {
+                    "type": "expression",
+                    "expressionType": "term",
+                    "term": {
+                      "termType": "Variable",
+                      "value": "c"
+                    }
+                  },
+                  {
+                    "type": "expression",
+                    "expressionType": "term",
+                    "term": {
+                      "termType": "Variable",
+                      "value": "s"
+                    }
+                  }
+                ]
+              },
+              "distinct": true
+            },
+            "distinct": true,
+            "variable": {
+              "termType": "Variable",
+              "value": "var0"
+            }
+          }
+        ]
+      },
+      "variable": {
+        "termType": "Variable",
+        "value": "s1"
+      },
+      "expression": {
+        "type": "expression",
+        "expressionType": "term",
+        "term": {
+          "termType": "Variable",
+          "value": "var0"
+        }
+      }
+    },
+    "variables": [
+      {
+        "termType": "Variable",
+        "value": "s1"
+      }
+    ]
+  }
+}

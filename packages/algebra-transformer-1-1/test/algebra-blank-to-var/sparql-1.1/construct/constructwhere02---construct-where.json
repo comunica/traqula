@@ -1,0 +1,86 @@
+{
+  "type": "construct",
+  "input": {
+    "type": "bgp",
+    "patterns": [
+      {
+        "subject": {
+          "termType": "NamedNode",
+          "value": "http://example.org/s1"
+        },
+        "predicate": {
+          "termType": "NamedNode",
+          "value": "http://example.org/p"
+        },
+        "object": {
+          "termType": "Variable",
+          "value": "o"
+        },
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        },
+        "type": "pattern"
+      },
+      {
+        "subject": {
+          "termType": "Variable",
+          "value": "s2"
+        },
+        "predicate": {
+          "termType": "NamedNode",
+          "value": "http://example.org/p"
+        },
+        "object": {
+          "termType": "Variable",
+          "value": "o"
+        },
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        },
+        "type": "pattern"
+      }
+    ]
+  },
+  "template": [
+    {
+      "subject": {
+        "termType": "NamedNode",
+        "value": "http://example.org/s1"
+      },
+      "predicate": {
+        "termType": "NamedNode",
+        "value": "http://example.org/p"
+      },
+      "object": {
+        "termType": "Variable",
+        "value": "o"
+      },
+      "graph": {
+        "termType": "DefaultGraph",
+        "value": ""
+      },
+      "type": "pattern"
+    },
+    {
+      "subject": {
+        "termType": "Variable",
+        "value": "s2"
+      },
+      "predicate": {
+        "termType": "NamedNode",
+        "value": "http://example.org/p"
+      },
+      "object": {
+        "termType": "Variable",
+        "value": "o"
+      },
+      "graph": {
+        "termType": "DefaultGraph",
+        "value": ""
+      },
+      "type": "pattern"
+    }
+  ]
+}

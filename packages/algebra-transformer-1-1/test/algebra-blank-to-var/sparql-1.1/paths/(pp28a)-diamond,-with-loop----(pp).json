@@ -1,0 +1,44 @@
+{
+  "type": "project",
+  "input": {
+    "type": "path",
+    "subject": {
+      "termType": "NamedNode",
+      "value": "http://example/a"
+    },
+    "predicate": {
+      "type": "ZeroOrOnePath",
+      "path": {
+        "type": "seq",
+        "left": {
+          "type": "link",
+          "iri": {
+            "termType": "NamedNode",
+            "value": "http://example/p"
+          }
+        },
+        "right": {
+          "type": "link",
+          "iri": {
+            "termType": "NamedNode",
+            "value": "http://example/p"
+          }
+        }
+      }
+    },
+    "object": {
+      "termType": "Variable",
+      "value": "t"
+    },
+    "graph": {
+      "termType": "DefaultGraph",
+      "value": ""
+    }
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "t"
+    }
+  ]
+}

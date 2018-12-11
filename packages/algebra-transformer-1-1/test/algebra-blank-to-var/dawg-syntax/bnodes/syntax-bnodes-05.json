@@ -1,0 +1,47 @@
+{
+  "type": "project",
+  "input": {
+    "type": "bgp",
+    "patterns": [
+      {
+        "subject": {
+          "termType": "Variable",
+          "value": "a"
+        },
+        "predicate": {
+          "termType": "NamedNode",
+          "value": "http://example.org/ns#p1"
+        },
+        "object": {
+          "termType": "NamedNode",
+          "value": "http://example.org/ns#q1"
+        },
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        },
+        "type": "pattern"
+      },
+      {
+        "subject": {
+          "termType": "Variable",
+          "value": "a"
+        },
+        "predicate": {
+          "termType": "NamedNode",
+          "value": "http://example.org/ns#p2"
+        },
+        "object": {
+          "termType": "NamedNode",
+          "value": "http://example.org/ns#q2"
+        },
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        },
+        "type": "pattern"
+      }
+    ]
+  },
+  "variables": []
+}

@@ -1,0 +1,35 @@
+{
+  "type": "project",
+  "input": {
+    "type": "leftjoin",
+    "left": {
+      "type": "bgp",
+      "patterns": []
+    },
+    "right": {
+      "type": "bgp",
+      "patterns": [
+        {
+          "subject": {
+            "termType": "NamedNode",
+            "value": "http://example.org/ns#a"
+          },
+          "predicate": {
+            "termType": "NamedNode",
+            "value": "http://example.org/ns#b"
+          },
+          "object": {
+            "termType": "NamedNode",
+            "value": "http://example.org/ns#c"
+          },
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
+          },
+          "type": "pattern"
+        }
+      ]
+    }
+  },
+  "variables": []
+}

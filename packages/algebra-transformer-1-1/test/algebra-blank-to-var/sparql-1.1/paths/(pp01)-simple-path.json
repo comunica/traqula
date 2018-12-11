@@ -1,0 +1,71 @@
+{
+  "type": "project",
+  "input": {
+    "type": "bgp",
+    "patterns": [
+      {
+        "subject": {
+          "termType": "NamedNode",
+          "value": "http://www.example.org/instance#a"
+        },
+        "predicate": {
+          "termType": "NamedNode",
+          "value": "http://www.example.org/schema#p1"
+        },
+        "object": {
+          "termType": "Variable",
+          "value": "var1"
+        },
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        },
+        "type": "pattern"
+      },
+      {
+        "subject": {
+          "termType": "Variable",
+          "value": "var1"
+        },
+        "predicate": {
+          "termType": "NamedNode",
+          "value": "http://www.example.org/schema#p2"
+        },
+        "object": {
+          "termType": "Variable",
+          "value": "var0"
+        },
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        },
+        "type": "pattern"
+      },
+      {
+        "subject": {
+          "termType": "Variable",
+          "value": "var0"
+        },
+        "predicate": {
+          "termType": "NamedNode",
+          "value": "http://www.example.org/schema#p3"
+        },
+        "object": {
+          "termType": "Variable",
+          "value": "x"
+        },
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        },
+        "type": "pattern"
+      }
+    ]
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "x"
+    }
+  ]
+}

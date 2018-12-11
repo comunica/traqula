@@ -269,11 +269,11 @@ export default class Util
      * to specifically modify the given objects before triggering recursion.
      * The return value of those callbacks should indicate whether recursion should be applied to this returned object or not.
      * @param {Operation} op - The Operation to recurse on.
-     * @param { [type: string]: (op: Operation) => RecurseResult } callbacks - A map of required callback Operations.
+     * @param { [type: string]: (op: Operation, factory: Factory) => RecurseResult } callbacks - A map of required callback Operations.
      * @param {Factory} factory - Factory used to create new Operations. Will use default factory if none is provided.
      * @returns {Operation} - The copied result.
      */
-    public static mapOperation(op: A.Operation, callbacks: { [type: string]: (op: A.Operation) => RecurseResult }, factory?: Factory): A.Operation
+    public static mapOperation(op: A.Operation, callbacks: { [type: string]: (op: A.Operation, factory: Factory) => RecurseResult }, factory?: Factory): A.Operation
     {
         let result: A.Operation = op;
         let doRecursion = true;
@@ -281,7 +281,7 @@ export default class Util
         factory = factory || new Factory();
 
         if (callbacks[op.type])
-            ({ result, recurse: doRecursion } = callbacks[op.type](op));
+            ({ result, recurse: doRecursion } = callbacks[op.type](op, factory));
 
         if (!doRecursion)
             return result;
@@ -398,11 +398,11 @@ export default class Util
      * Both functions call each other while copying.
      * Should not be called directly since it does not execute the callbacks, these happen in {@link mapOperation}.
      * @param {Expression} expr - The Operation to recurse on.
-     * @param { [type: string]: (op: Operation) => RecurseResult } callbacks - A map of required callback Operations.
+     * @param { [type: string]: (op: Operation, factory: Factory) => RecurseResult } callbacks - A map of required callback Operations.
      * @param {Factory} factory - Factory used to create new Operations. Will use default factory if none is provided.
      * @returns {Operation} - The copied result.
      */
-    private static mapExpression(expr: A.Expression, callbacks: { [type: string]: (op: A.Operation) => RecurseResult }, factory: Factory): A.Expression
+    private static mapExpression(expr: A.Expression, callbacks: { [type: string]: (op: A.Operation, factory: Factory) => RecurseResult }, factory: Factory): A.Expression
     {
         let recurse = (op: A.Operation) => Util.mapOperation(op, callbacks, factory);
 
@@ -430,6 +430,15 @@ export default class Util
                 return factory.createTermExpression(term.term);
             default: throw new Error('Unknown Expression type ' + expr.expressionType);
         }
+    }
+
+    public static createUniqueVariable(label: string, variables: {[vLabel: string]: boolean}, dataFactory: RDF.DataFactory): RDF.Variable {
+        let counter: number = 0;
+        let labelLoop = label;
+        while (variables[labelLoop]) {
+          labelLoop = label + counter++;
+        }
+        return dataFactory.variable(labelLoop);
     }
 }
 

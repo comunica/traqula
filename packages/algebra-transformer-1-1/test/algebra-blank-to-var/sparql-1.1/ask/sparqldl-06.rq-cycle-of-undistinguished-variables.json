@@ -1,0 +1,84 @@
+{
+  "type": "ask",
+  "input": {
+    "type": "bgp",
+    "patterns": [
+      {
+        "subject": {
+          "termType": "NamedNode",
+          "value": "http://example.org/test#a"
+        },
+        "predicate": {
+          "termType": "NamedNode",
+          "value": "http://example.org/test#p"
+        },
+        "object": {
+          "termType": "Variable",
+          "value": "aa"
+        },
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        },
+        "type": "pattern"
+      },
+      {
+        "subject": {
+          "termType": "Variable",
+          "value": "aa"
+        },
+        "predicate": {
+          "termType": "NamedNode",
+          "value": "http://example.org/test#r"
+        },
+        "object": {
+          "termType": "Variable",
+          "value": "dd"
+        },
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        },
+        "type": "pattern"
+      },
+      {
+        "subject": {
+          "termType": "Variable",
+          "value": "dd"
+        },
+        "predicate": {
+          "termType": "NamedNode",
+          "value": "http://example.org/test#t"
+        },
+        "object": {
+          "termType": "Variable",
+          "value": "bb"
+        },
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        },
+        "type": "pattern"
+      },
+      {
+        "subject": {
+          "termType": "Variable",
+          "value": "bb"
+        },
+        "predicate": {
+          "termType": "NamedNode",
+          "value": "http://example.org/test#s"
+        },
+        "object": {
+          "termType": "NamedNode",
+          "value": "http://example.org/test#a"
+        },
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        },
+        "type": "pattern"
+      }
+    ]
+  }
+}

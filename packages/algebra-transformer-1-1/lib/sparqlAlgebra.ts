@@ -1,6 +1,7 @@
 
 import * as Algebra from './algebra';
 import Factory from './factory';
+import Util from './util';
 import * as RDF from 'rdf-js'
 
 const Parser = require('sparqljs').Parser;
@@ -27,7 +28,8 @@ export default function translate(sparql: any, options?:
         dataFactory?: RDF.DataFactory,
         quads?: boolean,
         prefixes?: {[prefix: string]: string},
-        baseIRI?: string
+        baseIRI?: string,
+        blankToVariable?: boolean
     }) : Algebra.Operation
 {
     options = options || {};
@@ -42,10 +44,10 @@ export default function translate(sparql: any, options?:
         sparql = parser.parse(sparql);
     }
 
-    return translateQuery(sparql, options.quads);
+    return translateQuery(sparql, options.quads, options.blankToVariable);
 }
 
-function translateQuery(sparql: any, quads?: boolean) : Algebra.Operation
+function translateQuery(sparql: any, quads?: boolean, blankToVariable?: boolean) : Algebra.Operation
 {
     variables = new Set();
     varCount = 0;
@@ -56,9 +58,12 @@ function translateQuery(sparql: any, quads?: boolean) : Algebra.Operation
 
     // group and where are identical, having only 1 makes parsing easier, can be undefined in DESCRIBE
     let group = { type: 'group', patterns: sparql.where || [] };
-    let vars = new Set(Object.keys(inScopeVariables(group)).map(factory.createTerm.bind(factory)));
+    let vars: Set<RDF.Variable> = new Set(Object.keys(inScopeVariables(group)).map(factory.createTerm.bind(factory)));
     let res = translateGroupGraphPattern(group);
-    res = translateAggregates(sparql, res, <Set<RDF.Variable>>vars);
+    res = translateAggregates(sparql, res, vars);
+    if (blankToVariable) {
+        res = translateBlankNodesToVariables(res, vars);
+    }
 
     return res;
 }
@@ -159,7 +164,7 @@ function translateGroupGraphPattern(thingy: any) : Algebra.Operation
     else if (thingy.type === 'values')
         result = translateInlineData(thingy);
     else if (thingy.type === 'query')
-        result = translateQuery(thingy, useQuads);
+        result = translateQuery(thingy, useQuads, false);
     else
         throw new Error('Unexpected type: ' + thingy.type);
 
@@ -584,4 +589,50 @@ function translateBoundAggregate (thingy: any, v: RDF.Variable) : Algebra.BoundA
     A.variable = v;
 
     return A;
+}
+
+function translateBlankNodesToVariables (res: Algebra.Operation, variables: Set<RDF.Variable>) : Algebra.Operation
+{
+  const blankToVariableMapping: {[bLabel: string]: RDF.Variable} = {};
+  const variablesRaw: {[vLabel: string]: boolean} = Array.from(variables).reduce((acc: {[vLabel: string]: boolean}, variable: RDF.Variable) => {
+    acc[variable.value] = true;
+    return acc;
+  }, {});
+  return Util.mapOperation(res, {
+    'path': (op: Algebra.Path, factory: Factory) => {
+      return {
+        result: factory.createPath(
+          blankToVariable(op.subject),
+          op.predicate,
+          blankToVariable(op.object),
+          blankToVariable(op.graph),
+        ),
+        recurse: false,
+      };
+    },
+    'pattern': (op: Algebra.Pattern, factory: Factory) => {
+      return {
+        result: factory.createPattern(
+          blankToVariable(op.subject),
+          blankToVariable(op.predicate),
+          blankToVariable(op.object),
+          blankToVariable(op.graph),
+        ),
+        recurse: false,
+      };
+    },
+  });
+
+  function blankToVariable(term: RDF.Term): RDF.Term {
+      if (term.termType === 'BlankNode') {
+        let variable = blankToVariableMapping[term.value];
+        if (!variable) {
+            variable = Util.createUniqueVariable(term.value, variablesRaw, factory.dataFactory);
+            variablesRaw[variable.value] = true;
+            blankToVariableMapping[term.value] = variable;
+        }
+        return variable;
+      }
+      return term;
+  }
 }

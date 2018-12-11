@@ -17,4 +17,4 @@ if (args.h || args.help || args._.length !== 1)
     process.exit((args.h || args.help) ? 0 : 1);
 }
 
-console.log(JSON.stringify(translate(args._[0], args.q), null, 2));
+console.log(JSON.stringify(translate(args._[0], { quads: args.q}), null, 2));

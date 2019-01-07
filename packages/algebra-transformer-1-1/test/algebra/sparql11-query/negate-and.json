@@ -1,0 +1,116 @@
+{
+  "type": "slice",
+  "input": {
+    "type": "project",
+    "input": {
+      "type": "filter",
+      "input": {
+        "type": "bgp",
+        "patterns": [
+          {
+            "subject": {
+              "termType": "Variable",
+              "value": "c"
+            },
+            "predicate": {
+              "termType": "NamedNode",
+              "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+            },
+            "object": {
+              "termType": "NamedNode",
+              "value": "http://www.w3.org/2002/07/owl#Class"
+            },
+            "graph": {
+              "termType": "DefaultGraph",
+              "value": ""
+            },
+            "type": "pattern"
+          }
+        ]
+      },
+      "expression": {
+        "type": "expression",
+        "expressionType": "operator",
+        "operator": "!",
+        "args": [
+          {
+            "type": "expression",
+            "expressionType": "operator",
+            "operator": "&&",
+            "args": [
+              {
+                "type": "expression",
+                "expressionType": "operator",
+                "operator": "bound",
+                "args": [
+                  {
+                    "type": "expression",
+                    "expressionType": "term",
+                    "term": {
+                      "termType": "Variable",
+                      "value": "c"
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "expression",
+                "expressionType": "operator",
+                "operator": "regex",
+                "args": [
+                  {
+                    "type": "expression",
+                    "expressionType": "operator",
+                    "operator": "str",
+                    "args": [
+                      {
+                        "type": "expression",
+                        "expressionType": "term",
+                        "term": {
+                          "termType": "Variable",
+                          "value": "c"
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "type": "expression",
+                    "expressionType": "term",
+                    "term": {
+                      "termType": "Literal",
+                      "value": "^toto",
+                      "datatype": {
+                        "termType": "NamedNode",
+                        "value": "http://www.w3.org/2001/XMLSchema#string"
+                      }
+                    }
+                  },
+                  {
+                    "type": "expression",
+                    "expressionType": "term",
+                    "term": {
+                      "termType": "Literal",
+                      "value": "i",
+                      "datatype": {
+                        "termType": "NamedNode",
+                        "value": "http://www.w3.org/2001/XMLSchema#string"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "variables": [
+      {
+        "termType": "Variable",
+        "value": "c"
+      }
+    ]
+  },
+  "start": 0,
+  "length": 10
+}

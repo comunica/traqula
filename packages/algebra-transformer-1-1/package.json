@@ -20,15 +20,15 @@
     "@types/chai": "^4.1.4",
     "@types/lodash.isequal": "^4.5.3",
     "@types/minimist": "^1.2.0",
-    "@types/mocha": "^2.2.48",
-    "@types/node": "^8.10.24",
+    "@types/mocha": "^5.2.6",
+    "@types/node": "^11.9.5",
     "@types/rdf-js": "^2.0.1",
     "chai": "^4.1.2",
-    "mocha": "^5.2.0",
-    "nyc": "^12.0.2",
+    "mocha": "^6.0.2",
+    "nyc": "^13.3.0",
     "pre-commit": "^1.2.2",
-    "ts-node": "^6.2.0",
-    "typescript": "^2.9.2"
+    "ts-node": "^8.0.2",
+    "typescript": "^3.3.3333"
   },
   "scripts": {
     "build": "tsc",

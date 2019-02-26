@@ -451,10 +451,11 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
         {
             for (let e of query.group)
             {
-                if (e.variable)
+                if (e.expression.type)
                 {
-                    res = factory.createExtend(res, <RDF.Variable>factory.createTerm(e.variable), translateExpression(e.expression));
-                    vars.push(<RDF.Variable>factory.createTerm(e.variable));
+                    const v = e.variable ? <RDF.Variable>factory.createTerm(e.variable) : generateFreshVar();
+                    res = factory.createExtend(res, v, translateExpression(e.expression));
+                    vars.push(v);
                 }
                 else
                     vars.push(<RDF.Variable>factory.createTerm(e.expression)); // this will always be a var, otherwise sparql would be invalid

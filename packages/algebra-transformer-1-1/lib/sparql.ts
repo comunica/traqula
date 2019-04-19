@@ -1,11 +1,13 @@
 
 import * as Algebra from './algebra';
 import * as RDF from 'rdf-js'
+import Factory from "./factory";
 const SparqlGenerator = require('sparqljs').Generator;
 const types = Algebra.types;
 const eTypes = Algebra.expressionTypes;
 
 let context : { project: boolean, extend: Algebra.Extend[], group: RDF.Variable[], aggregates: Algebra.BoundAggregate[], order: Algebra.Expression[] };
+const factory = new Factory();
 
 export function toSparql(op: Algebra.Operation): string
 {
@@ -694,7 +696,7 @@ function removeQuads(op: Algebra.Operation)
 }
 
 // remove quads
-function removeQuadsRecursive(op: any, graphs: {[id: string]: RDF.Term}): any
+function removeQuadsRecursive(op: any, graphs: {[id: string]: { graph: RDF.Term, values: Algebra.Operation[]}}): any
 {
     if (Array.isArray(op))
         return op.map(sub => removeQuadsRecursive(sub, graphs));
@@ -702,41 +704,70 @@ function removeQuadsRecursive(op: any, graphs: {[id: string]: RDF.Term}): any
     if (!op.type)
         return op;
 
-    if ((op.type === types.PATTERN || op.type === types.PATH) && op.graph && op.graph.value.length > 0)
+    if ((op.type === types.PATTERN || op.type === types.PATH) && op.graph)
     {
-        graphs[op.graph.value] = op.graph;
+        if (!graphs[op.graph.value])
+            graphs[op.graph.value] = { graph: op.graph, values: []};
+        graphs[op.graph.value].values.push(op);
         return op;
     }
 
-    let result: any = {};
-    let keyGraphs: any = {};
-    let graphNames: any = {};
+    const result: any = {};
+    const keyGraphs: {[id: string]: RDF.Term} = {}; // unique graph per key
+    const globalNames: {[id: string]: RDF.Term} = {}; // track all the unique graph names for the entire Operation
     for (let key of Object.keys(op))
     {
-        result[key] = removeQuadsRecursive(op[key], graphs);
-        let graphsArray = Object.keys(graphs);
-        if (graphsArray.length > 0)
+        const newGraphs: {[id: string]: { graph: RDF.Term, values: Algebra.Operation[]}} = {};
+        result[key] = removeQuadsRecursive(op[key], newGraphs);
+
+        const graphNames = Object.keys(newGraphs);
+
+        // create graph statements if multiple graphs are found
+        if (graphNames.length > 1)
         {
-            let graphName = graphsArray[0];
-            keyGraphs[key] = graphs[graphName];
-            graphNames[keyGraphs[key].value] = keyGraphs[key];
-            delete graphs[graphName];
+            // nest joins
+            let left: Algebra.Operation = potentialGraphFromPatterns(<Algebra.Pattern[]>newGraphs[graphNames[0]].values);
+            for (let i = 1; i < graphNames.length; ++i)
+            {
+                const right = potentialGraphFromPatterns(<Algebra.Pattern[]>newGraphs[graphNames[i]].values);
+                left = factory.createJoin(left, right);
+            }
+            graphNames.map(name => delete newGraphs[name]);
+            // this ignores the result object that is being generated, but should not be a problem
+            // is only an issue for objects that have 2 keys where this can occur, which is none
+            return left;
+        }
+        else if (graphNames.length === 1)
+        {
+            const graph = newGraphs[graphNames[0]].graph;
+            keyGraphs[key] = graph;
+            globalNames[graph.value] = graph;
         }
     }
 
-    let graphNameSet = Object.keys(graphNames);
+    const graphNameSet = Object.keys(globalNames);
     if (graphNameSet.length > 0)
     {
         // also need to create graph statement if we are at the edge of the query
         if (graphNameSet.length === 1 && op.type !== types.PROJECT)
-            graphs[graphNameSet[0]] = graphNames[graphNameSet[0]];
+            graphs[graphNameSet[0]] = { graph: globalNames[graphNameSet[0]], values: [result] };
         else
         {
-            // multiple graphs, need to create graph objects for them
+            // multiple graphs (or project), need to create graph objects for them
             for (let key of Object.keys(keyGraphs))
-                result[key] = <Algebra.Graph> { type: 'graph', input: result[key], name: keyGraphs[key] };
+                if (keyGraphs[key].value.length > 0)
+                    result[key] = factory.createGraph(result[key], keyGraphs[key]);
         }
     }
 
     return result;
+}
+
+function potentialGraphFromPatterns(patterns: Algebra.Pattern[])
+{
+    const bgp = factory.createBgp(patterns);
+    const name = patterns[0].graph;
+    if (name.value.length === 0)
+        return bgp;
+    return factory.createGraph(bgp, name);
 }

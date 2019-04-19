@@ -2,7 +2,7 @@
 
 import * as minimist from 'minimist';
 import translate from '../lib/sparqlAlgebra';
-import {toSparql, toSparqlJs} from '../lib/sparql';
+import {toSparql} from '../lib/sparql';
 import Util from "../test/util";
 
 const args = minimist(process.argv.slice(2), {

@@ -406,8 +406,11 @@ function accumulateGroupGraphPattern(G: Algebra.Operation, E: any) : Algebra.Ope
 
 function simplifiedJoin(G: Algebra.Operation, A: Algebra.Operation): Algebra.Operation
 {
+    // Note: this is more simplification than requested in 18.2.2.8, but no reason not to do it.
+    if (G.type  === types.BGP && A.type === types.BGP)
+        G = factory.createBgp([].concat(G.patterns, A.patterns));
     // 18.2.2.8 (simplification)
-    if (G.type === types.BGP && (<Algebra.Bgp>G).patterns.length === 0)
+    else if (G.type === types.BGP && (<Algebra.Bgp>G).patterns.length === 0)
         G = A;
     else if (A.type === types.BGP && (<Algebra.Bgp>A).patterns.length === 0)
     {} // do nothing

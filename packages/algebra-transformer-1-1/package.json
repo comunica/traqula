@@ -33,7 +33,7 @@
   "scripts": {
     "build": "tsc",
     "prepare": "npm run build",
-    "test": "nyc --reporter=text mocha"
+    "test": "nyc --exclude-after-remap false --reporter=text mocha"
   },
   "pre-commit": [
     "test"

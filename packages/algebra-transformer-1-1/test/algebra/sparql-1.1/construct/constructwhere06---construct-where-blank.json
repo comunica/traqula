@@ -1,0 +1,48 @@
+{
+  "type": "construct",
+  "input": {
+    "type": "bgp",
+    "patterns": [
+      {
+        "subject": {
+          "termType": "BlankNode",
+          "value": "s_b"
+        },
+        "predicate": {
+          "termType": "Variable",
+          "value": "p"
+        },
+        "object": {
+          "termType": "BlankNode",
+          "value": "o_b"
+        },
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        },
+        "type": "pattern"
+      }
+    ]
+  },
+  "template": [
+    {
+      "subject": {
+        "termType": "BlankNode",
+        "value": "s_b"
+      },
+      "predicate": {
+        "termType": "Variable",
+        "value": "p"
+      },
+      "object": {
+        "termType": "BlankNode",
+        "value": "o_b"
+      },
+      "graph": {
+        "termType": "DefaultGraph",
+        "value": ""
+      },
+      "type": "pattern"
+    }
+  ]
+}

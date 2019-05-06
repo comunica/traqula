@@ -626,6 +626,13 @@ function translateBlankNodesToVariables (res: Algebra.Operation, variables: Set<
                 recurse: false,
             };
         },
+        'construct': (op: Algebra.Construct) => {
+            // Blank nodes in CONSTRUCT templates must be maintained
+            return {
+                result: factory.createConstruct(translateBlankNodesToVariables(op.input, variables), op.template),
+                recurse: false,
+            };
+        },
     });
 
   function blankToVariable(term: RDF.Term): RDF.Term {

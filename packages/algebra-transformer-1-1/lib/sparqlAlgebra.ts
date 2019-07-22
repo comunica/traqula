@@ -37,7 +37,7 @@ export default function translate(sparql: any, options?:
 
     if (isString(sparql))
     {
-        let parser = new Parser(options.prefixes, options.baseIRI);
+        let parser = new Parser(options.prefixes, options.baseIRI, null);
         // resets the identifier counter used for blank nodes
         // provides nicer and more consistent output if there are multiple calls
         parser._resetBlanks();
@@ -79,10 +79,14 @@ function isObject(o: any): boolean
     return o !== null && typeof o === 'object';
 }
 
-function isVariable(str: any) : boolean
+function isVariable(term: RDF.Term) : boolean
 {
-    // there is also a '?' operator...
-    return isString(str) && str[0] === '?' && str.length > 1;
+    return term.termType === "Variable";
+}
+
+function isTerm(term: any) : boolean
+{
+    return term.termType !== undefined;
 }
 
 // 18.2.1
@@ -182,12 +186,13 @@ function translateGroupGraphPattern(thingy: any) : Algebra.Operation
 
 function translateExpression(exp: any) : Algebra.Expression
 {
-    if (isString(exp))
-        return factory.createTermExpression(factory.createTerm(exp));
+    if (isTerm(exp)) {
+        return factory.createTermExpression(exp);
+    }
     if (exp.aggregation)
         return factory.createAggregateExpression(exp.aggregation, translateExpression(exp.expression), exp.distinct, exp.separator);
     if (exp.function)
-        return factory.createNamedExpression(<RDF.NamedNode>factory.createTerm(exp.function), exp.args.map(translateExpression));
+        return factory.createNamedExpression(<RDF.NamedNode> exp.function, exp.args.map(translateExpression));
     if (exp.operator)
     {
         if (exp.operator === 'exists' || exp.operator === 'notexists')
@@ -234,17 +239,18 @@ function translateBgp(thingy: any) : Algebra.Operation
 
 function translatePath(triple: any) : Algebra.Operation[]
 {
-    let sub = factory.createTerm(triple.subject);
+    let sub = triple.subject;
     let pred = translatePathPredicate(triple.predicate);
-    let obj = factory.createTerm(triple.object);
+    let obj = triple.object;
 
     return simplifyPath(<RDF.Quad_Subject> sub, pred, <RDF.Quad_Object> obj);
 }
 
 function translatePathPredicate(predicate: any) : Algebra.Operation
 {
-    if (isString(predicate))
+    if (isString(predicate)) {
         return factory.createLink(<RDF.NamedNode>factory.createTerm(predicate));
+    }
 
     if (predicate.pathType === '^')
         return factory.createInv(translatePathPredicate(predicate.items[0]));
@@ -325,7 +331,7 @@ function generateFreshVar() : RDF.Variable
 
 function translateTriple(triple: any) : Algebra.Pattern
 {
-    return factory.createPattern(factory.createTerm(triple.subject), factory.createTerm(triple.predicate), factory.createTerm(triple.object));
+    return factory.createPattern(triple.subject, triple.predicate, triple.object);
 }
 
 function translateGraph(graph: any) : Algebra.Operation
@@ -387,12 +393,12 @@ function accumulateGroupGraphPattern(G: Algebra.Operation, E: any) : Algebra.Ope
         G = factory.createMinus(G, A);
     }
     else if (E.type === 'bind')
-        G = factory.createExtend(G, <RDF.Variable>factory.createTerm(E.variable), translateExpression(E.expression));
+        G = factory.createExtend(G, <RDF.Variable>E.variable, translateExpression(E.expression));
     else if (E.type === 'service')
     {
         // transform to group so childnodes get parsed correctly
         E.type = 'group';
-        let A = factory.createService(translateGroupGraphPattern(E), factory.createTerm(E.name), E.silent);
+        let A = factory.createService(translateGroupGraphPattern(E), E.name, E.silent);
         G = simplifiedJoin(G, A);
     }
     else
@@ -428,7 +434,7 @@ function translateInlineData(values: any) : Algebra.Values
         keys = keys.filter(k => binding[k] !== undefined);
         let map: any = {};
         for (let key of keys)
-            map[key] = factory.createTerm(binding[key]);
+            map[key] = binding[key];
         return map;
     });
     return factory.createValues(variables, bindings);
@@ -448,7 +454,7 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
     // if there are any aggregates or if we have a groupBy (both result in a GROUP)
     if (query.group || Object.keys(A).length > 0)
     {
-        let aggregates = Object.keys(A).map(v => translateBoundAggregate(A[v], <RDF.Variable>factory.createTerm(v)));
+        let aggregates = Object.keys(A).map(v => translateBoundAggregate(A[v], <RDF.Variable> factory.createTerm(v)));
         let vars: RDF.Variable[] = [];
         if (query.group)
         {
@@ -456,12 +462,12 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
             {
                 if (e.expression.type)
                 {
-                    const v = e.variable ? <RDF.Variable>factory.createTerm(e.variable) : generateFreshVar();
+                    const v = e.variable ? <RDF.Variable> e.variable : generateFreshVar();
                     res = factory.createExtend(res, v, translateExpression(e.expression));
                     vars.push(v);
                 }
                 else
-                    vars.push(<RDF.Variable>factory.createTerm(e.expression)); // this will always be a var, otherwise sparql would be invalid
+                    vars.push(<RDF.Variable> e.expression); // this will always be a var, otherwise sparql would be invalid
             }
         }
         res = factory.createGroup(res, vars, aggregates);
@@ -489,10 +495,10 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
             {
                 // can have non-variables with DESCRIBE
                 if (isVariable(v) || !v.variable)
-                    PV.add(factory.createTerm(v));
+                    PV.add(v);
                 else if (v.variable) // ... AS ?x
                 {
-                    PV.add(factory.createTerm(v.variable));
+                    PV.add(v.variable);
                     E.push(v);
                 }
             }
@@ -501,7 +507,7 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
 
     // TODO: Jena simplifies by having a list of extends
     for (let v of E)
-        res = factory.createExtend(res, <RDF.Variable>factory.createTerm(v.variable), translateExpression(v.expression));
+        res = factory.createExtend(res, <RDF.Variable> v.variable, translateExpression(v.expression));
 
     // 18.2.5
     // not using toList and toMultiset

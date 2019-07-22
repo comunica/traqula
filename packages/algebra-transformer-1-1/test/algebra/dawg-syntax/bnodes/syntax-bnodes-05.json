@@ -6,7 +6,7 @@
       {
         "subject": {
           "termType": "BlankNode",
-          "value": "a"
+          "value": "e_a"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -25,7 +25,7 @@
       {
         "subject": {
           "termType": "BlankNode",
-          "value": "a"
+          "value": "e_a"
         },
         "predicate": {
           "termType": "NamedNode",

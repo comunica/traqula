@@ -6,7 +6,7 @@
       {
         "subject": {
           "termType": "BlankNode",
-          "value": "b"
+          "value": "e_b"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -14,7 +14,7 @@
         },
         "object": {
           "termType": "Variable",
-          "value": "b"
+          "value": "e_b"
         },
         "graph": {
           "termType": "DefaultGraph",
@@ -25,7 +25,7 @@
       {
         "subject": {
           "termType": "BlankNode",
-          "value": "b"
+          "value": "e_b"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -33,7 +33,7 @@
         },
         "object": {
           "termType": "Variable",
-          "value": "b0"
+          "value": "e_b0"
         },
         "graph": {
           "termType": "DefaultGraph",
@@ -44,7 +44,7 @@
       {
         "subject": {
           "termType": "BlankNode",
-          "value": "b0"
+          "value": "e_b0"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -52,7 +52,7 @@
         },
         "object": {
           "termType": "Variable",
-          "value": "b1"
+          "value": "e_b1"
         },
         "graph": {
           "termType": "DefaultGraph",
@@ -65,15 +65,15 @@
   "variables": [
     {
       "termType": "Variable",
-      "value": "b"
+      "value": "e_b"
     },
     {
       "termType": "Variable",
-      "value": "b0"
+      "value": "e_b0"
     },
     {
       "termType": "Variable",
-      "value": "b1"
+      "value": "e_b1"
     }
   ]
 }

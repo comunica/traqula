@@ -2,7 +2,7 @@
 import * as Algebra from './algebra';
 import * as RDF from 'rdf-js'
 import Factory from "./factory";
-const SparqlGenerator = require('sparqljs').Generator;
+const SparqlGenerator = require('../../SPARQL.js/sparql.js').Generator;
 const types = Algebra.types;
 const eTypes = Algebra.expressionTypes;
 
@@ -21,6 +21,7 @@ export function toSparqlJs(op: Algebra.Operation):  any
     op = removeQuads(op);
     let result = translateOperation(op);
     if (result.type === 'group')
+        console.log(JSON.stringify(result.patterns[0], null, "  "));
         return result.patterns[0];
     return result;
 }
@@ -430,18 +431,19 @@ function translateProject(op: Algebra.Project | Algebra.Ask | Algebra.Describe, 
         extensions[translateTerm(e.variable)] = replaceAggregatorVariables(translateExpression(e.expression), aggregators);
     }
     if (context.group.length > 0)
-        result.group = context.group.map(translateTerm).map(v =>
+        result.group = context.group.map(variable =>
         {
+            let v = translateTerm(variable);
             if (extensions[v])
             {
                 let result = extensions[v];
                 delete extensions[v]; // make sure there is only 1 'AS' statement
                 return {
-                    variable  : v,
+                    variable,
                     expression: result
                 };
             }
-            return { expression: v };
+            return { expression: variable };
         });
 
     // descending expressions will already be in the correct format due to the structure of those

@@ -200,12 +200,11 @@ function translateBoundAggregate(op: Algebra.BoundAggregate): Algebra.BoundAggre
 
 function translateBgp(op: Algebra.Bgp): any
 {
-    let patterns = op.patterns.map(translatePattern);
-    if (patterns.length === 0)
+    if (op.patterns.length === 0)
         return null;
     return {
         type: 'bgp',
-        triples: patterns
+        triples: op.patterns
     };
 }
 

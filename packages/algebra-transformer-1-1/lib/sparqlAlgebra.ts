@@ -4,7 +4,7 @@ import Factory from './factory';
 import Util from './util';
 import * as RDF from 'rdf-js'
 
-const Parser = require('sparqljs').Parser;
+const Parser = require('../../SPARQL.js/sparql.js').Parser;
 const isEqual = require('lodash.isequal');
 const types = Algebra.types;
 
@@ -42,6 +42,7 @@ export default function translate(sparql: any, options?:
         // provides nicer and more consistent output if there are multiple calls
         parser._resetBlanks();
         sparql = parser.parse(sparql);
+        console.log(JSON.stringify(sparql, null, "  "));
     }
 
     return translateQuery(sparql, options.quads, options.blankToVariable);
@@ -84,7 +85,7 @@ function isVariable(term: RDF.Term) : boolean
     return term.termType === "Variable";
 }
 
-function isTerm(term: any) : boolean
+export function isTerm(term: any) : boolean
 {
     return term.termType !== undefined;
 }

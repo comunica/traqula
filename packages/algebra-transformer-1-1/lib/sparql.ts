@@ -1,4 +1,5 @@
 
+import { isTerm } from './sparqlAlgebra';
 import * as Algebra from './algebra';
 import * as RDF from 'rdf-js'
 import Factory from "./factory";
@@ -185,9 +186,9 @@ function translateOperatorExpression(expr: Algebra.OperatorExpression): any
     return result;
 }
 
-function translateTermExpression(expr: Algebra.TermExpression): string
+function translateTermExpression(expr: Algebra.TermExpression): RDF.Term
 {
-    return translateTerm(expr.term);
+    return expr.term;
 }
 
 
@@ -368,6 +369,8 @@ function translatePattern(op: Algebra.Pattern): any
 
 function replaceAggregatorVariables(s: any, map: any)
 {
+    if (isTerm(s)) s = translateTerm(s);
+
     if (typeof s === 'string')
     {
         if (map[s])
@@ -387,6 +390,7 @@ function replaceAggregatorVariables(s: any, map: any)
 
 function translateProject(op: Algebra.Project | Algebra.Ask | Algebra.Describe, type: string): any
 {
+    // &her
     let result: any = {
         type: 'query',
         prefixes: {}
@@ -395,12 +399,12 @@ function translateProject(op: Algebra.Project | Algebra.Ask | Algebra.Describe, 
     if (type === types.PROJECT)
     {
         result.queryType = 'SELECT';
-        result.variables = op.variables.map(translateTerm);
+        result.variables = op.variables;
     } else if (type === types.ASK) {
         result.queryType = 'ASK';
     } else if (type === types.DESCRIBE) {
         result.queryType = 'DESCRIBE';
-        result.variables = op.terms.map(translateTerm);
+        result.variables = op.terms;
     }
 
     // backup values in case of nested queries
@@ -427,6 +431,9 @@ function translateProject(op: Algebra.Project | Algebra.Ask | Algebra.Describe, 
     for (let i = context.extend.length-1; i >= 0; --i)
     {
         let e = context.extend[i];
+        console.log(JSON.stringify(translateExpression(e.expression)));
+        console.log(JSON.stringify(aggregators, null, "  "));
+        console.log();
         extensions[translateTerm(e.variable)] = replaceAggregatorVariables(translateExpression(e.expression), aggregators);
     }
     if (context.group.length > 0)
@@ -452,13 +459,14 @@ function translateProject(op: Algebra.Project | Algebra.Ask | Algebra.Describe, 
     // this needs to happen after the group because it might depend on variables generated there
     if (result.variables)
     {
-        result.variables = result.variables.map((v: string) => {
+        result.variables = result.variables.map((term: RDF.Term) => {
+            let v = translateTerm(term);
             if (extensions[v])
                 return {
-                    variable  : v,
+                    variable  : term,
                     expression: extensions[v]
                 };
-            return v;
+            return term;
         });
         // if the * didn't match any variables this would be empty
         if (result.variables.length === 0)

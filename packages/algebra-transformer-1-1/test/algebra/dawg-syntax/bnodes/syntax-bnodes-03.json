@@ -33,7 +33,7 @@
         },
         "object": {
           "termType": "Variable",
-          "value": "e_b"
+          "value": "b"
         },
         "graph": {
           "termType": "DefaultGraph",
@@ -69,7 +69,7 @@
     },
     {
       "termType": "Variable",
-      "value": "e_b"
+      "value": "b"
     },
     {
       "termType": "Variable",

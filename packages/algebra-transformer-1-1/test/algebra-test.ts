@@ -1,13 +1,16 @@
 
 import {expect} from 'chai';
+
 import * as fs from 'fs';
 import * as path from 'path';
 import {translate} from '../index';
 import Util from './util';
+import {Canonicalizer} from "./util";
 
 const rootSparql = 'test/sparql';
 const rootJson = 'test/algebra';
 const rootJsonBlankToVariable = 'test/algebra-blank-to-var';
+const canon = new Canonicalizer();
 
 // https://www.w3.org/2001/sw/DataAccess/tests/r2#syntax-basic-01
 // https://www.w3.org/2009/sparql/implementations/
@@ -36,8 +39,9 @@ function testPath(root: string, fileName: string, testName: string, blankToVaria
         {
             let query = fs.readFileSync(sparqlName, 'utf8');
             let algebra = Util.objectify(translate(query, { quads: name.endsWith('(quads)'), blankToVariable }));
+
             let expected = JSON.parse(fs.readFileSync(path.join(root, fileName.replace(/\.sparql$/, '.json')), 'utf8'));
-            expect(algebra).to.deep.equal(expected);
+            expect(canon.canonicalizeQuery(algebra)).to.deep.equal(canon.canonicalizeQuery(expected));
         });
     }
 }

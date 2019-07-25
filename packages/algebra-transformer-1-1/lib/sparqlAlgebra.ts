@@ -3,6 +3,7 @@ import * as Algebra from './algebra';
 import Factory from './factory';
 import Util from './util';
 import * as RDF from 'rdf-js'
+import {termToString} from "rdf-string";
 
 const Parser = require('../../SPARQL.js/sparql.js').Parser;
 const isEqual = require('lodash.isequal');
@@ -42,7 +43,6 @@ export default function translate(sparql: any, options?:
         // provides nicer and more consistent output if there are multiple calls
         parser._resetBlanks();
         sparql = parser.parse(sparql);
-        console.log(JSON.stringify(sparql, null, "  "));
     }
 
     return translateQuery(sparql, options.quads, options.blankToVariable);
@@ -97,7 +97,7 @@ function inScopeVariables(thingy: any) : {[key: string]: boolean}
 
     if (isVariable(thingy))
     {
-        inScope[thingy] = true;
+        inScope[termToString(thingy)] = true;
         variables.add(thingy); // keep track of all variables so we don't generate duplicates
     }
     else if (isObject(thingy))

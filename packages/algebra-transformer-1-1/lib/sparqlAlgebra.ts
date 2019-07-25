@@ -4,6 +4,7 @@ import Factory from './factory';
 import Util from './util';
 import * as RDF from 'rdf-js'
 import {termToString} from "rdf-string";
+import {NamedNode} from "rdf-js";
 
 const Parser = require('../../SPARQL.js/sparql.js').Parser;
 const isEqual = require('lodash.isequal');
@@ -249,8 +250,8 @@ function translatePath(triple: any) : Algebra.Operation[]
 
 function translatePathPredicate(predicate: any) : Algebra.Operation
 {
-    if (isString(predicate)) {
-        return factory.createLink(<RDF.NamedNode>factory.createTerm(predicate));
+    if (isTerm(predicate) && predicate.termType === "NamedNode") {
+        return factory.createLink(predicate);
     }
 
     if (predicate.pathType === '^')
@@ -259,8 +260,8 @@ function translatePathPredicate(predicate: any) : Algebra.Operation
     if (predicate.pathType === '!')
     {
         // negation is either over a single predicate or a list of disjuncted properties
-        let normals: string[] = [];
-        let inverted: string[] = [];
+        let normals: RDF.NamedNode[] = [];
+        let inverted: RDF.NamedNode[] = [];
         let items;
         if (predicate.items[0].type === 'path' && predicate.items[0].pathType === '|')
             items = predicate.items[0].items; // the | element
@@ -269,7 +270,7 @@ function translatePathPredicate(predicate: any) : Algebra.Operation
 
         for (let item of items)
         {
-            if (isString(item))
+            if (isTerm(item))
                 normals.push(item);
             else if (item.pathType === '^')
                 inverted.push(item.items[0]);
@@ -278,8 +279,8 @@ function translatePathPredicate(predicate: any) : Algebra.Operation
         }
 
         // NPS elements do not have the LINK function
-        let normalElement = factory.createNps(<RDF.NamedNode[]>normals.map(factory.createTerm.bind(factory)));
-        let invertedElement = factory.createInv(factory.createNps(<RDF.NamedNode[]>inverted.map(factory.createTerm.bind(factory))));
+        let normalElement = factory.createNps(normals);
+        let invertedElement = factory.createInv(factory.createNps(inverted));
 
         if (inverted.length === 0)
             return normalElement;
@@ -299,7 +300,7 @@ function translatePathPredicate(predicate: any) : Algebra.Operation
     if (predicate.pathType === '?')
         return factory.createZeroOrOnePath(translatePathPredicate(predicate.items[0]));
 
-    throw new Error('Unable to translate path expression ' + predicate);
+    throw new Error('Unable to translate path expression ' + JSON.stringify(predicate));
 }
 
 function simplifyPath(subject: RDF.Quad_Subject, predicate: Algebra.Operation, object: RDF.Quad_Object) : Algebra.Operation[]
@@ -337,13 +338,12 @@ function translateTriple(triple: any) : Algebra.Pattern
 
 function translateGraph(graph: any) : Algebra.Operation
 {
-    let name = <RDF.NamedNode>factory.createTerm(graph.name);
     graph.type = 'group';
     let result = translateGroupGraphPattern(graph);
     if (useQuads)
-        result = recurseGraph(result, name);
+        result = recurseGraph(result, graph.name);
     else
-        result = factory.createGraph(result, name);
+        result = factory.createGraph(result, graph.name);
 
     return result;
 }
@@ -549,7 +549,7 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
         res = factory.createDescribe(res, Array.from(PV));
 
     if (query.from)
-        res = factory.createFrom(res, query.from.default.map(factory.createTerm.bind(factory)), query.from.named.map(factory.createTerm.bind(factory)));
+        res = factory.createFrom(res, query.from.default, query.from.named);
 
     return res;
 }
@@ -568,17 +568,17 @@ function mapAggregates (thingy: any, aggregates: {[key: string]: any}) : any
         {
             if (isEqual(aggregates[key], thingy))
             {
-                v = key;
+                v = factory.createTerm(key);
                 found = true;
                 break;
             }
         }
         if (!found)
         {
-            v = '?' + generateFreshVar().value;// this is still in "sparql.js language" so a var string is still needed
-            aggregates[v] = thingy;
+            v = generateFreshVar();
+            aggregates[termToString(v)] = thingy;
         }
-        return v; // this is still in "sparql.js language" so a var string is still needed
+        return v;
     }
 
     // non-aggregate expression

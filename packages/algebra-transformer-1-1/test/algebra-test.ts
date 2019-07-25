@@ -5,12 +5,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {translate} from '../index';
 import Util from './util';
-import {Canonicalizer} from "./util";
 
 const rootSparql = 'test/sparql';
 const rootJson = 'test/algebra';
 const rootJsonBlankToVariable = 'test/algebra-blank-to-var';
-const canon = new Canonicalizer();
+const canon = Util.getCanonicalizerInstance();
 
 // https://www.w3.org/2001/sw/DataAccess/tests/r2#syntax-basic-01
 // https://www.w3.org/2009/sparql/implementations/

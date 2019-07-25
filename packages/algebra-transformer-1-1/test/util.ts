@@ -59,16 +59,15 @@ class Canonicalizer {
      */
     public canonicalizeQuery(res: Algebra.Operation, replaceVariables: boolean) : Algebra.Operation {
         this.blankId = 0;
-        let bnodeMapping: { [bLabel: string]: string } = {};
-        let varMapping: { [bLabel: string]: string } = {};
+        let nameMapping: { [bLabel: string]: string } = {};
         return LibUtil.default.mapOperation(res, {
             'path': (op: Algebra.Path, factory: Factory) => {
                 return {
                     result: factory.createPath(
-                        this.replaceValue(op.subject, bnodeMapping, varMapping, replaceVariables),
+                        this.replaceValue(op.subject, nameMapping, replaceVariables),
                         op.predicate,
-                        this.replaceValue(op.object, bnodeMapping, varMapping, replaceVariables),
-                        this.replaceValue(op.graph, bnodeMapping, varMapping, replaceVariables),
+                        this.replaceValue(op.object, nameMapping, replaceVariables),
+                        this.replaceValue(op.graph, nameMapping, replaceVariables),
                     ),
                     recurse: true,
                 };
@@ -76,10 +75,10 @@ class Canonicalizer {
             'pattern': (op: Algebra.Pattern, factory: Factory) => {
                 return {
                     result: factory.createPattern(
-                        this.replaceValue(op.subject, bnodeMapping, varMapping, replaceVariables),
-                        this.replaceValue(op.predicate, bnodeMapping, varMapping, replaceVariables),
-                        this.replaceValue(op.object, bnodeMapping, varMapping, replaceVariables),
-                        this.replaceValue(op.graph, bnodeMapping, varMapping, replaceVariables),
+                        this.replaceValue(op.subject, nameMapping, replaceVariables),
+                        this.replaceValue(op.predicate, nameMapping, replaceVariables),
+                        this.replaceValue(op.object, nameMapping, replaceVariables),
+                        this.replaceValue(op.graph, nameMapping, replaceVariables),
                     ),
                     recurse: true,
                 };
@@ -94,17 +93,16 @@ class Canonicalizer {
         });
     }
 
-    public replaceValue(term: RDF.Term, bnodeMapping: {[bLabel: string]: string}
-        , varMapping: {[bLabel: string]: string}, replaceVars: boolean) {
+    public replaceValue(term: RDF.Term, nameMapping: {[bLabel: string]: string}
+        , replaceVars: boolean) {
         if (term.termType !== "BlankNode" && (term.termType !== "Variable" || ! replaceVars)) return term;
 
         let generateTerm = term.termType === "Variable" && replaceVars ? variable : blankNode;
-        let map = term.termType === "Variable" && replaceVars ? varMapping : bnodeMapping;
 
-        let val = map[term.value];
+        let val = nameMapping[term.value];
         if (! val) {
             val = this.genValue();
-            map[term.value] = val;
+            nameMapping[term.value] = val;
         }
         return generateTerm(val);
     }

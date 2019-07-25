@@ -4,7 +4,7 @@ import {Algebra} from "../index";
 import * as LibUtil from "../lib/util";
 import Factory from "../lib/factory";
 import * as RDF from "rdf-js";
-import {blankNode} from "@rdfjs/data-model";
+import {blankNode, variable} from "@rdfjs/data-model";
 
 export default class Util
 {
@@ -48,25 +48,27 @@ class Canonicalizer {
     }
 
     public blankId: number;
-    public genBlankId() {
-        return "g_" + this.blankId++;
+    public genValue() {
+        return "value_" + this.blankId++;
     }
 
     /**
      * Replaces values of BlankNodes in a query with newly generated names.
      * @param res
+     * @param replaceVariables
      */
-    public canonicalizeQuery(res: Algebra.Operation) : Algebra.Operation {
+    public canonicalizeQuery(res: Algebra.Operation, replaceVariables: boolean) : Algebra.Operation {
         this.blankId = 0;
-        let nameMapping: { [bLabel: string]: string } = {};
+        let bnodeMapping: { [bLabel: string]: string } = {};
+        let varMapping: { [bLabel: string]: string } = {};
         return LibUtil.default.mapOperation(res, {
             'path': (op: Algebra.Path, factory: Factory) => {
                 return {
                     result: factory.createPath(
-                        this.getNewBlank(op.subject, nameMapping),
+                        this.replaceValue(op.subject, bnodeMapping, varMapping, replaceVariables),
                         op.predicate,
-                        this.getNewBlank(op.object, nameMapping),
-                        this.getNewBlank(op.graph, nameMapping),
+                        this.replaceValue(op.object, bnodeMapping, varMapping, replaceVariables),
+                        this.replaceValue(op.graph, bnodeMapping, varMapping, replaceVariables),
                     ),
                     recurse: true,
                 };
@@ -74,10 +76,10 @@ class Canonicalizer {
             'pattern': (op: Algebra.Pattern, factory: Factory) => {
                 return {
                     result: factory.createPattern(
-                        this.getNewBlank(op.subject, nameMapping),
-                        this.getNewBlank(op.predicate, nameMapping),
-                        this.getNewBlank(op.object, nameMapping),
-                        this.getNewBlank(op.graph, nameMapping),
+                        this.replaceValue(op.subject, bnodeMapping, varMapping, replaceVariables),
+                        this.replaceValue(op.predicate, bnodeMapping, varMapping, replaceVariables),
+                        this.replaceValue(op.object, bnodeMapping, varMapping, replaceVariables),
+                        this.replaceValue(op.graph, bnodeMapping, varMapping, replaceVariables),
                     ),
                     recurse: true,
                 };
@@ -92,14 +94,18 @@ class Canonicalizer {
         });
     }
 
-    public getNewBlank(term: RDF.Term, nameMapping: {[bLabel: string]: string}): RDF.Term {
-        if (term.termType !== "BlankNode") return term;
-        else {
-            if (nameMapping[term.value]) {
-                return blankNode(nameMapping[term.value]);
-            } else {
-                return blankNode(this.genBlankId());
-            }
+    public replaceValue(term: RDF.Term, bnodeMapping: {[bLabel: string]: string}
+        , varMapping: {[bLabel: string]: string}, replaceVars: boolean) {
+        if (term.termType !== "BlankNode" && (term.termType !== "Variable" || ! replaceVars)) return term;
+
+        let generateTerm = term.termType === "Variable" && replaceVars ? variable : blankNode;
+        let map = term.termType === "Variable" && replaceVars ? varMapping : bnodeMapping;
+
+        let val = map[term.value];
+        if (! val) {
+            val = this.genValue();
+            map[term.value] = val;
         }
+        return generateTerm(val);
     }
 }

@@ -423,10 +423,7 @@
           "expression": {
             "type": "expression",
             "expressionType": "term",
-            "term": {
-              "termType": "NamedNode",
-              "value": "*"
-            }
+            "term": "*"
           },
           "distinct": false,
           "variable": {

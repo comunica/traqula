@@ -83,7 +83,7 @@ function isObject(o: any): boolean
 
 function isVariable(term: RDF.Term) : boolean
 {
-    return term.termType === "Variable";
+    return term && term.termType === "Variable";
 }
 
 export function isTerm(term: any) : boolean

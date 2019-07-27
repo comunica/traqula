@@ -97,7 +97,7 @@ class Canonicalizer {
         , replaceVars: boolean) {
         if (term.termType !== "BlankNode" && (term.termType !== "Variable" || ! replaceVars)) return term;
 
-        let generateTerm = term.termType === "Variable" && replaceVars ? variable : blankNode;
+        let generateTerm = term.termType === "Variable" ? variable : blankNode;
 
         let val = nameMapping[term.value];
         if (! val) {

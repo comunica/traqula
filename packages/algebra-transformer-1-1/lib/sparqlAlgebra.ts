@@ -188,6 +188,9 @@ function translateGroupGraphPattern(thingy: any) : Algebra.Operation
 
 function translateExpression(exp: any) : Algebra.Expression
 {
+    if (exp === "*"){
+        return factory.createTermExpression(factory.createTerm(exp));
+    }
     if (isTerm(exp)) {
         return factory.createTermExpression(exp);
     }

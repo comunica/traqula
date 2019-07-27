@@ -25,7 +25,7 @@
       {
         "subject": {
           "termType": "BlankNode",
-          "value": "e_b"
+          "value": "b"
         },
         "predicate": {
           "termType": "NamedNode",

@@ -22,7 +22,6 @@ export function toSparqlJs(op: Algebra.Operation):  any
     op = removeQuads(op);
     let result = translateOperation(op);
     if (result.type === 'group')
-        console.log(JSON.stringify(result.patterns[0], null, "  "));
         return result.patterns[0];
     return result;
 }
@@ -160,7 +159,7 @@ function translateNamedExpression(expr: Algebra.NamedExpression): any
 {
     return {
         type: 'functionCall',
-        function: translateTerm(expr.name),
+        function: expr.name,
         args: expr.args.map(translateExpression)
     }
 }
@@ -215,7 +214,7 @@ function translateConstruct(op: Algebra.Construct): any
         type: 'query',
         prefixes: {},
         queryType: "CONSTRUCT",
-        template: op.template.map(translatePattern),
+        template: op.template,
         where: flatten([
             translateOperation(op.input)
         ])
@@ -241,7 +240,7 @@ function translateExtend(op: Algebra.Extend): any
         translateOperation(op.input),
         {
             type: 'bind',
-            variable: translateTerm(op.variable),
+            variable: op.variable,
             expression: translateExpression(op.expression)
         }
     ])
@@ -253,8 +252,8 @@ function translateFrom(op: Algebra.From): any
     // project is nested in group object
     let obj = result.patterns[0];
     obj.from = {
-        default: op.default.map(translateTerm),
-        named: op.named.map(translateTerm)
+        default: op.default,
+        named: op.named
     };
     return result;
 }
@@ -275,7 +274,7 @@ function translateGraph(op: Algebra.Graph): any
     return {
         type: 'graph',
         patterns: flatten([ translateOperation(op.input) ]),
-        name: translateTerm(op.name)
+        name: op.name
     }
 }
 
@@ -350,9 +349,9 @@ function translatePath(op: Algebra.Path): any
     return {
         type: 'bgp',
         triples: [{
-            subject  : translateTerm(op.subject),
+            subject  : op.subject,
             predicate: translatePathComponent(op.predicate),
-            object   : translateTerm(op.object)
+            object   : op.object
         }]
     };
 }
@@ -361,17 +360,20 @@ function translatePattern(op: Algebra.Pattern): any
 {
     // TODO: quads back to graph statement
     return {
-        subject: translateTerm(op.subject),
-        predicate: translateTerm(op.predicate),
-        object: translateTerm(op.object)
+        subject: op.subject,
+        predicate: op.predicate,
+        object: op.object
     };
 }
 
 function replaceAggregatorVariables(s: any, map: any)
 {
-    if (isTerm(s)) s = translateTerm(s);
-
-    if (typeof s === 'string')
+    if (isTerm(s))
+    {
+        let s2 = translateTerm(s);
+        if (map[s2])
+            return map[s2];
+    } else if (typeof s === 'string')
     {
         if (map[s])
             return map[s];
@@ -431,9 +433,6 @@ function translateProject(op: Algebra.Project | Algebra.Ask | Algebra.Describe, 
     for (let i = context.extend.length-1; i >= 0; --i)
     {
         let e = context.extend[i];
-        console.log(JSON.stringify(translateExpression(e.expression)));
-        console.log(JSON.stringify(aggregators, null, "  "));
-        console.log();
         extensions[translateTerm(e.variable)] = replaceAggregatorVariables(translateExpression(e.expression), aggregators);
     }
     if (context.group.length > 0)
@@ -523,7 +522,7 @@ function translateService(op: Algebra.Service): any
         patterns = [patterns];
     return {
         type: 'service',
-        name: translateTerm(op.name),
+        name: op.name,
         silent: op.silent,
         patterns
     };
@@ -564,7 +563,7 @@ function translateValues(op: Algebra.Values): any
             {
                 let s = '?' + v.value;
                 if (binding[s])
-                    result[s] = translateTerm(binding[s]);
+                    result[s] = binding[s];
                 else
                     result[s] = undefined;
             }
@@ -610,7 +609,7 @@ function translateInv(path: Algebra.Inv): any
             return {
                 type: 'path',
                 pathType: '^',
-                items: [ translateTerm(iri) ]
+                items: [ iri ]
             }
         });
 
@@ -641,7 +640,7 @@ function translateInv(path: Algebra.Inv): any
 
 function translateLink(path: Algebra.Link): any
 {
-    return translateTerm(path.iri);
+    return path.iri;
 }
 
 function translateNps(path: Algebra.Nps): any
@@ -650,7 +649,7 @@ function translateNps(path: Algebra.Nps): any
         return {
             type: 'path',
             pathType: '!',
-            items: path.iris.map(translateTerm)
+            items: path.iris
         };
 
     return {
@@ -659,7 +658,7 @@ function translateNps(path: Algebra.Nps): any
         items: [ {
             type: 'path',
             pathType: '|',
-            items: path.iris.map(translateTerm)
+            items: path.iris
         } ]
     }
 }

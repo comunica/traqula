@@ -214,7 +214,7 @@ function translateConstruct(op: Algebra.Construct): any
         type: 'query',
         prefixes: {},
         queryType: "CONSTRUCT",
-        template: op.template,
+        template: op.template.map(translatePattern),
         where: flatten([
             translateOperation(op.input)
         ])
@@ -392,7 +392,6 @@ function replaceAggregatorVariables(s: any, map: any)
 
 function translateProject(op: Algebra.Project | Algebra.Ask | Algebra.Describe, type: string): any
 {
-    // &her
     let result: any = {
         type: 'query',
         prefixes: {}

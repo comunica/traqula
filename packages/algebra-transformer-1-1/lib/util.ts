@@ -443,6 +443,10 @@ export default class Util
         }
         return dataFactory.variable(labelLoop);
     }
+
+    public static isTerm(term: any) : boolean {
+        return term.termType !== undefined;
+    }
 }
 
 /**

@@ -86,11 +86,6 @@ function isVariable(term: RDF.Term) : boolean
     return term && term.termType === "Variable";
 }
 
-export function isTerm(term: any) : boolean
-{
-    return term.termType !== undefined;
-}
-
 // 18.2.1
 function inScopeVariables(thingy: any) : {[key: string]: boolean}
 {
@@ -191,7 +186,7 @@ function translateExpression(exp: any) : Algebra.Expression
     if (exp === '*'){
         return factory.createTermExpression(exp);
     }
-    if (isTerm(exp)) {
+    if (Util.isTerm(exp)) {
         return factory.createTermExpression(exp);
     }
     if (exp.aggregation)
@@ -253,7 +248,7 @@ function translatePath(triple: any) : Algebra.Operation[]
 
 function translatePathPredicate(predicate: any) : Algebra.Operation
 {
-    if (isTerm(predicate) && predicate.termType === "NamedNode") {
+    if (Util.isTerm(predicate) && predicate.termType === "NamedNode") {
         return factory.createLink(predicate);
     }
 
@@ -273,7 +268,7 @@ function translatePathPredicate(predicate: any) : Algebra.Operation
 
         for (let item of items)
         {
-            if (isTerm(item))
+            if (Util.isTerm(item))
                 normals.push(item);
             else if (item.pathType === '^')
                 inverted.push(item.items[0]);

@@ -1,8 +1,8 @@
 
-import { isTerm } from './sparqlAlgebra';
 import * as Algebra from './algebra';
 import * as RDF from 'rdf-js'
 import Factory from "./factory";
+import Util from "./util";
 const SparqlGenerator = require('../../SPARQL.js/sparql.js').Generator;
 const types = Algebra.types;
 const eTypes = Algebra.expressionTypes;
@@ -369,7 +369,7 @@ function translatePattern(op: Algebra.Pattern): any
 
 function replaceAggregatorVariables(s: any, map: any)
 {
-    let st = isTerm(s) ? translateTerm(s) : s;
+    let st = Util.isTerm(s) ? translateTerm(s) : s;
 
     if (typeof st === 'string')
     {
@@ -495,7 +495,7 @@ function translateProject(op: Algebra.Project | Algebra.Ask | Algebra.Describe, 
 
 function objectContainsValues(o: any, vals: string[]): boolean
 {
-    if (isTerm(o))
+    if (Util.isTerm(o))
         return vals.indexOf(translateTerm(o)) >= 0;
     if (Array.isArray(o))
         return o.some(e => objectContainsValues(e, vals));

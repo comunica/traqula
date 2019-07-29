@@ -6,7 +6,7 @@ import * as RDF from 'rdf-js'
 import {termToString} from "rdf-string";
 import {NamedNode} from "rdf-js";
 
-const Parser = require('sparqljs').Parser;
+const Parser = require('../../SPARQL.js/sparql.js').Parser;
 const isEqual = require('lodash.isequal');
 const types = Algebra.types;
 

@@ -4,10 +4,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {translate, toSparql, toSparqlJs} from '../index';
 import Util from './util';
-import canonicalize = Mocha.utils.canonicalize;
+const canon = Util.getCanonicalizerInstance();
 
 const rootJson = 'test/algebra';
-const canon = Util.getCanonicalizerInstance();
 
 // https://www.w3.org/2001/sw/DataAccess/tests/r2#syntax-basic-01
 // https://www.w3.org/2009/sparql/implementations/

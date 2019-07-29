@@ -4,9 +4,6 @@ import {Expression, Operation, expressionTypes, types} from "./algebra";
 import Factory from "./factory";
 import {Variable} from "rdf-js";
 import * as RDF from 'rdf-js'
-import {blankNode} from "@rdfjs/data-model";
-import {Algebra} from "../index";
-import * as LibUtil from '../lib/util'
 
 
 export default class Util

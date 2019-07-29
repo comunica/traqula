@@ -1,6 +1,5 @@
 
 import {expect} from 'chai';
-
 import * as fs from 'fs';
 import * as path from 'path';
 import {translate} from '../index';
@@ -38,7 +37,6 @@ function testPath(root: string, fileName: string, testName: string, blankToVaria
         {
             let query = fs.readFileSync(sparqlName, 'utf8');
             let algebra = Util.objectify(translate(query, { quads: name.endsWith('(quads)'), blankToVariable }));
-
             let expected = JSON.parse(fs.readFileSync(path.join(root, fileName.replace(/\.sparql$/, '.json')), 'utf8'));
             expect(canon.canonicalizeQuery(algebra, blankToVariable)).to.deep.equal(canon.canonicalizeQuery(expected, blankToVariable));
         });

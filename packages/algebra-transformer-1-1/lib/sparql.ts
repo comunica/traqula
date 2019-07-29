@@ -369,16 +369,12 @@ function translatePattern(op: Algebra.Pattern): any
 
 function replaceAggregatorVariables(s: any, map: any)
 {
-    if (isTerm(s))
+    let st = isTerm(s) ? translateTerm(s) : s;
+
+    if (typeof st === 'string')
     {
-        let s2 = translateTerm(s);
-        if (map[s2])
-            return map[s2];
-    }
-    else if (typeof s === 'string')
-    {
-        if (map[s])
-            return map[s];
+        if (map[st])
+            return map[st];
     }
     else if (Array.isArray(s))
     {

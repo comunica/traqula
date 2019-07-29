@@ -374,7 +374,8 @@ function replaceAggregatorVariables(s: any, map: any)
         let s2 = translateTerm(s);
         if (map[s2])
             return map[s2];
-    } else if (typeof s === 'string')
+    }
+    else if (typeof s === 'string')
     {
         if (map[s])
             return map[s];
@@ -498,6 +499,8 @@ function translateProject(op: Algebra.Project | Algebra.Ask | Algebra.Describe, 
 
 function objectContainsValues(o: any, vals: string[]): boolean
 {
+    if (isTerm(o))
+        return vals.indexOf(translateTerm(o)) >= 0;
     if (Array.isArray(o))
         return o.some(e => objectContainsValues(e, vals));
     if (o === Object(o))

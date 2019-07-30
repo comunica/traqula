@@ -3,8 +3,8 @@ import * as Algebra from './algebra';
 import * as RDF from 'rdf-js'
 import Factory from "./factory";
 import Util from "./util";
-const SparqlGenerator = require('../../SPARQL.js/sparql.js').Generator;
-const Wildcard = require('../../SPARQL.js/sparql.js').Wildcard;
+const SparqlGenerator = require('sparqljs').Generator;
+const Wildcard = require('sparqljs').Wildcard;
 const types = Algebra.types;
 const eTypes = Algebra.expressionTypes;
 

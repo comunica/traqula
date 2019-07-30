@@ -4,6 +4,7 @@ import * as RDF from 'rdf-js'
 import Factory from "./factory";
 import Util from "./util";
 const SparqlGenerator = require('../../SPARQL.js/sparql.js').Generator;
+const Wildcard = require('../../SPARQL.js/sparql.js').Wildcard;
 const types = Algebra.types;
 const eTypes = Algebra.expressionTypes;
 
@@ -466,7 +467,7 @@ function translateProject(op: Algebra.Project | Algebra.Ask | Algebra.Describe, 
         });
         // if the * didn't match any variables this would be empty
         if (result.variables.length === 0)
-            result.variables = ['*'];
+            result.variables = [new Wildcard()];
     }
 
 

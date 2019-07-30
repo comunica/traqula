@@ -423,7 +423,10 @@
           "expression": {
             "type": "expression",
             "expressionType": "term",
-            "term": "*"
+            "term": {
+              "termType": "Wildcard",
+              "value": "*"
+            }
           },
           "distinct": false,
           "variable": {

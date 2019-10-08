@@ -2,12 +2,11 @@
 import * as Algebra from './algebra';
 import Factory from './factory';
 import Util from './util';
+import * as equal from 'fast-deep-equal';
 import * as RDF from 'rdf-js'
-import {termToString} from "rdf-string";
-import {NamedNode} from "rdf-js";
+import {termToString} from 'rdf-string';
 
 const Parser = require('sparqljs').Parser;
-const isEqual = require('lodash.isequal');
 const types = Algebra.types;
 
 let variables = new Set<string>();
@@ -560,7 +559,7 @@ function mapAggregates (thingy: any, aggregates: {[key: string]: any}) : any
         let v;
         for (let key of Object.keys(aggregates))
         {
-            if (isEqual(aggregates[key], thingy))
+            if (equal(aggregates[key], thingy))
             {
                 v = factory.createTerm(key);
                 found = true;

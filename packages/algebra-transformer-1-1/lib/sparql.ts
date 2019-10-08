@@ -3,6 +3,7 @@ import * as Algebra from './algebra';
 import * as RDF from 'rdf-js'
 import Factory from "./factory";
 import Util from "./util";
+import {termToString} from "rdf-string";
 const SparqlGenerator = require('sparqljs').Generator;
 const Wildcard = require('sparqljs').Wildcard;
 const types = Algebra.types;
@@ -107,25 +108,7 @@ function translatePathComponent(path: Algebra.Operation): any
 
 function translateTerm(term: RDF.Term): string
 {
-    if (term.termType === 'BlankNode')
-        return '_:' + term.value;
-    if (term.termType === 'Literal')
-    {
-        // TODO: should check which safety checks are required
-        let lit = <RDF.Literal>term;
-        let result = `"${term.value}"`;
-        if (lit.language)
-            result += '@' + lit.language;
-        else if (lit.datatype && lit.datatype.value !== 'http://www.w3.org/2001/XMLSchema#string')
-            result += '^^' + lit.datatype.value;
-        return result;
-    }
-    if (term.termType === 'NamedNode')
-        return term.value;
-    if (term.termType === 'Variable')
-        return '?' + term.value;
-
-    throw new Error('Unknown Term type ' + term.termType);
+    return termToString(term);
 }
 
 // ------------------------- EXPRESSIONS -------------------------

@@ -3,6 +3,7 @@ import * as A from './algebra';
 import * as RDF from "rdf-js";
 import * as DataFactory from '@rdfjs/data-model';
 import {stringToTerm} from "rdf-string";
+const Wildcard = require('sparqljs').Wildcard;
 
 export default class Factory
 {
@@ -87,6 +88,7 @@ export default class Factory
     createNamedExpression (name: RDF.NamedNode, args: A.Expression[]): A.NamedExpression { return { type: 'expression', expressionType: 'named', name, args }; }
     createOperatorExpression (operator: string, args: A.Expression[]): A.OperatorExpression { return { type: 'expression', expressionType: 'operator', operator, args }; }
     createTermExpression (term: RDF.Term): A.TermExpression { return { type: 'expression', expressionType: 'term', term }; }
+    createWildcardExpression (): A.TermExpression { return this.createTermExpression(new Wildcard()); }
 
     createTerm (str: string): RDF.Term
     {

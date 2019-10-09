@@ -38,7 +38,7 @@ export default function translate(sparql: any, options?:
 
     if (isString(sparql))
     {
-        let parser = new Parser(options.prefixes, options.baseIRI);
+        let parser = new Parser(options);
         // resets the identifier counter used for blank nodes
         // provides nicer and more consistent output if there are multiple calls
         parser._resetBlanks();

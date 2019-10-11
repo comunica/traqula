@@ -12,3 +12,4 @@ notes.txt
 *.d.ts
 !test/dawg-syntax/*
 !test/sparql-1.1/*
+!lib/wildcard.d.ts

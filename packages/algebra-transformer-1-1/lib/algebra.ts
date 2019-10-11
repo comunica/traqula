@@ -1,5 +1,7 @@
 
 import * as rdfjs from "rdf-js";
+import {Wildcard} from "./wildcard";
+import {Term} from "rdf-js";
 
 // TODO: add aggregates?
 // TODO: can't find a way to use these values as string types in the interfaces
@@ -44,6 +46,7 @@ export const expressionTypes = Object.freeze({
     NAMED:     'named',
     OPERATOR:  'operator',
     TERM:      'term',
+    WILDCARD:  'wildcard',
 });
 
 // ----------------------- ABSTRACTS -----------------------
@@ -72,17 +75,23 @@ export interface PropertyPathSymbol extends Operation
 export interface Expression extends Operation
 {
     type: 'expression';
-    expressionType: 'aggregate'|'existence'|'named'|'operator'|'term';
+    expressionType: 'aggregate'|'existence'|'named'|'operator'|'term'|'wildcard';
 }
 
 export interface AggregateExpression extends Expression
 {
     expressionType: 'aggregate',
-    aggregator: string;
+    aggregator: 'avg' | 'count' | 'group_concat' | 'max' | 'min' | 'sample' | 'sum';
     distinct: boolean;
-    separator?: string; // used by GROUP_CONCAT
     expression: Expression;
 }
+
+export interface GroupConcatExpression extends AggregateExpression
+{
+    aggregator: 'group_concat';
+    separator?: string;
+}
+
 
 export interface ExistenceExpression extends Expression
 {
@@ -108,7 +117,13 @@ export interface OperatorExpression extends Expression
 export interface TermExpression extends Expression
 {
     expressionType: 'term';
-    term: rdfjs.Term;
+    term: Term;
+}
+
+export interface WildcardExpression extends Expression
+{
+    expressionType: 'wildcard',
+    wildcard: Wildcard;
 }
 
 

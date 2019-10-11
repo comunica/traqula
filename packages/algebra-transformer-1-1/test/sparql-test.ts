@@ -11,7 +11,7 @@ const rootJson = 'test/algebra';
 // https://www.w3.org/2001/sw/DataAccess/tests/r2#syntax-basic-01
 // https://www.w3.org/2009/sparql/implementations/
 // https://www.w3.org/2009/sparql/docs/tests/
-describe('SPARQL Parser', () =>
+describe('SPARQL output', () =>
 {
     // dawg/sparql
     let subfolders = fs.readdirSync(rootJson);

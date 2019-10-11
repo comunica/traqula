@@ -4,6 +4,7 @@ import * as RDF from 'rdf-js'
 import Factory from "./factory";
 import Util from "./util";
 import {termToString} from "rdf-string";
+import {Wildcard} from "./wildcard";
 const SparqlGenerator = require('sparqljs').Generator;
 const Wildcard = require('sparqljs').Wildcard;
 const types = Algebra.types;
@@ -84,6 +85,7 @@ function translateExpression(expr: Algebra.Expression): any
         case eTypes.NAMED:     return translateNamedExpression(<Algebra.NamedExpression>expr);
         case eTypes.OPERATOR:  return translateOperatorExpression(<Algebra.OperatorExpression>expr);
         case eTypes.TERM:      return translateTermExpression(<Algebra.TermExpression>expr);
+        case eTypes.WILDCARD:  return translateWildcardExpression(<Algebra.WildcardExpression>expr);
     }
 
     throw new Error('Unknown Expression Operation type ' + expr.expressionType);
@@ -172,6 +174,11 @@ function translateOperatorExpression(expr: Algebra.OperatorExpression): any
 function translateTermExpression(expr: Algebra.TermExpression): RDF.Term
 {
     return expr.term;
+}
+
+function translateWildcardExpression(expr: Algebra.WildcardExpression): Wildcard
+{
+    return expr.wildcard;
 }
 
 

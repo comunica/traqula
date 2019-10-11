@@ -13,7 +13,7 @@ const canon = Util.getCanonicalizerInstance();
 // https://www.w3.org/2001/sw/DataAccess/tests/r2#syntax-basic-01
 // https://www.w3.org/2009/sparql/implementations/
 // https://www.w3.org/2009/sparql/docs/tests/
-describe('SPARQL Parser', () =>
+describe('Algebra output', () =>
 {
     // dawg/sparql
     let subfolders = fs.readdirSync(rootSparql);
@@ -33,7 +33,7 @@ function testPath(root: string, fileName: string, testName: string, blankToVaria
             testPath(root, path.join(fileName, sub), testName + '/' + sub, blankToVariable);
     } else {
         let name = root + '/' + testName.replace(/\.sparql$/, '');
-        it (name, () =>
+        it (name + (blankToVariable ? ' (no blanks)' : ''), () =>
         {
             let query = fs.readFileSync(sparqlName, 'utf8');
             let algebra = Util.objectify(translate(query, { quads: name.endsWith('(quads)'), blankToVariable }));

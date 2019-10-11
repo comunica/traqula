@@ -428,6 +428,8 @@ export default class Util
             case expressionTypes.TERM:
                 const term = <A.TermExpression> expr;
                 return factory.createTermExpression(term.term);
+            case expressionTypes.WILDCARD:
+                return factory.createWildcardExpression();
             default: throw new Error('Unknown Expression type ' + expr.expressionType);
         }
     }
@@ -441,8 +443,13 @@ export default class Util
         return dataFactory.variable(labelLoop);
     }
 
-    public static isTerm(term: any) : boolean {
-        return term.termType !== undefined;
+    // separate terms from wildcard since we handle them differently
+    public static isTerm(term: any): boolean {
+        return term.termType !== undefined && term.termType !== 'Wildcard';
+    }
+
+    public static isWildcard(term: any): boolean {
+        return term.termType === 'Wildcard';
     }
 }
 

@@ -77,18 +77,17 @@ export default class Factory
     createValues (variables: RDF.Variable[], bindings: {[key: string]: RDF.Term}[]): A.Values { return { type: 'values', variables, bindings }; }
     createZeroOrMorePath (path: A.PropertyPathSymbol): A.ZeroOrMorePath { return { type: 'ZeroOrMorePath', path }; }
     createZeroOrOnePath (path: A.PropertyPathSymbol): A.ZeroOrOnePath { return { type: 'ZeroOrOnePath', path }; }
-
     createAggregateExpression (aggregator: string, expression: A.Expression, distinct: boolean, separator?: string): A.AggregateExpression
     {
         if (separator)
-            return { type: 'expression', expressionType: 'aggregate', aggregator, expression, separator, distinct};
-        return { type: 'expression', expressionType: 'aggregate', aggregator, expression, distinct };
+            return { type: 'expression', expressionType: 'aggregate', aggregator: <any> aggregator, expression, separator, distinct};
+        return { type: 'expression', expressionType: 'aggregate', aggregator: <any> aggregator, expression, distinct };
     }
     createExistenceExpression (not: boolean, input: A.Operation): A.ExistenceExpression { return { type: 'expression', expressionType: 'existence', not, input }; }
     createNamedExpression (name: RDF.NamedNode, args: A.Expression[]): A.NamedExpression { return { type: 'expression', expressionType: 'named', name, args }; }
     createOperatorExpression (operator: string, args: A.Expression[]): A.OperatorExpression { return { type: 'expression', expressionType: 'operator', operator, args }; }
     createTermExpression (term: RDF.Term): A.TermExpression { return { type: 'expression', expressionType: 'term', term }; }
-    createWildcardExpression (): A.TermExpression { return this.createTermExpression(new Wildcard()); }
+    createWildcardExpression (): A.WildcardExpression { return { type: 'expression', expressionType: 'wildcard', wildcard: new Wildcard() } };
 
     createTerm (str: string): RDF.Term
     {

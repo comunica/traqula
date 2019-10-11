@@ -422,8 +422,8 @@
           "aggregator": "count",
           "expression": {
             "type": "expression",
-            "expressionType": "term",
-            "term": {
+            "expressionType": "wildcard",
+            "wildcard": {
               "termType": "Wildcard",
               "value": "*"
             }

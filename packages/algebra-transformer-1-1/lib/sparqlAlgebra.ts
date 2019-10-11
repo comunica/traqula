@@ -107,7 +107,7 @@ function inScopeVariables(thingy: any) : {[key: string]: boolean}
             let all = inScopeVariables(thingy.where); // always executing this makes sure `variables` gets filled correctly
             for (let v of thingy.variables)
             {
-                if (v.termType === "Wildcard")
+                if (Util.isWildcard(v))
                     Object.assign(inScope, all);
                 else if (v.variable) // aggregates
                     Object.assign(inScope, inScopeVariables(v.variable));
@@ -182,9 +182,10 @@ function translateGroupGraphPattern(thingy: any) : Algebra.Operation
 
 function translateExpression(exp: any) : Algebra.Expression
 {
-    if (Util.isTerm(exp)) {
+    if (Util.isTerm(exp))
         return factory.createTermExpression(exp);
-    }
+    if (Util.isWildcard(exp))
+        return factory.createWildcardExpression();
     if (exp.aggregation)
         return factory.createAggregateExpression(exp.aggregation, translateExpression(exp.expression), exp.distinct, exp.separator);
     if (exp.function)
@@ -481,7 +482,7 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
 
     if (query.queryType === 'SELECT' || query.queryType === 'DESCRIBE')
     {
-        if (query.variables.some((e: any) => e && e.termType === "Wildcard"))
+        if (query.variables.some((e: any) => e && Util.isWildcard(e)))
             PV = variables;
         else
         {

@@ -343,24 +343,59 @@ function translateGraph(graph: any) : Algebra.Operation
 }
 
 let typeVals = Object.keys(types).map(key => (<any>types)[key]);
-function recurseGraph(thingy: Algebra.Operation, graph: RDF.NamedNode) : Algebra.Operation
+function recurseGraph(thingy: Algebra.Operation, graph: RDF.Term, replacement?: RDF.Variable) : Algebra.Operation
 {
     if (thingy.type === types.BGP)
         (<Algebra.Bgp>thingy).patterns = (<Algebra.Bgp>thingy).patterns.map(quad =>
         {
+            if (replacement)
+            {
+                if (quad.subject.equals(graph)) quad.subject = replacement;
+                if (quad.predicate.equals(graph)) quad.predicate = replacement;
+                if (quad.object.equals(graph)) quad.object = replacement;
+            }
             quad.graph = graph;
             return quad;
         });
     else if (thingy.type === types.PATH)
-        (<Algebra.Path>thingy).graph = graph;
+    {
+        const p = <Algebra.Path> thingy;
+        if (replacement)
+        {
+            if (p.subject.equals(graph)) p.subject = replacement;
+            if (p.object.equals(graph))  p.object = replacement;
+        }
+        thingy.graph = graph;
+    }
+    // need to replace variables in subqueries should the graph also be a variable of the same name
+    // unless the subquery projects that variable
+    else if (thingy.type === types.PROJECT && !replacement)
+    {
+        const proj = <Algebra.Project> thingy;
+        if (!proj.variables.some(v => v.equals(graph)))
+            replacement = generateFreshVar();
+        proj.input = recurseGraph(proj.input, graph, replacement);
+    }
+    // this can happen if the query extends an expression to the name of the graph
+    // since the extend happens here there should be no further occurrences of this name
+    // if there are it's the same situation as above
+    else if (thingy.type === types.EXTEND && !replacement)
+    {
+        const ext = <Algebra.Extend> thingy;
+        if (ext.variable.equals(graph))
+            replacement = generateFreshVar();
+        ext.input = recurseGraph(ext.input, graph, replacement);
+    }
     else
     {
         for (let key of Object.keys(thingy))
         {
             if (Array.isArray(thingy[key]))
-                thingy[key] = thingy[key].map((x: any) => recurseGraph(x, graph));
+                thingy[key] = thingy[key].map((x: any) => recurseGraph(x, graph, replacement));
             else if (typeVals.indexOf(thingy[key].type) >= 0) // can't do instanceof on an interface
-                thingy[key] = recurseGraph(thingy[key], graph);
+                thingy[key] = recurseGraph(thingy[key], graph, replacement);
+            else if (replacement && isVariable(thingy[key]) && thingy[key].equals(graph))
+                thingy[key] = replacement;
         }
     }
 

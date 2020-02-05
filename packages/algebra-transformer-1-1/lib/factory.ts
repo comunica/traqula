@@ -55,9 +55,9 @@ export default class Factory
     {
         let pattern: A.Pattern;
         if (graph)
-            pattern = <A.Pattern>this.dataFactory.quad<RDF.BaseQuad>(subject, predicate, object, graph);
+            pattern = <A.Pattern>this.dataFactory.quad(<RDF.Quad_Subject>subject, <RDF.Quad_Predicate>predicate, <RDF.Quad_Object>object, <RDF.Quad_Graph>graph);
         else
-            pattern = <A.Pattern>this.dataFactory.triple<RDF.BaseQuad>(subject, predicate, object);
+            pattern = <A.Pattern>this.dataFactory.triple(<RDF.Quad_Subject>subject, <RDF.Quad_Predicate>predicate, <RDF.Quad_Object>object);
         pattern.type = 'pattern';
         return pattern;
     }

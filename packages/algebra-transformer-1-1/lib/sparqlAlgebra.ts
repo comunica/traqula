@@ -565,10 +565,6 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
     if (query.reduced)
         res = factory.createReduced(res);
 
-    // 18.2.5.5
-    if (query.offset || query.limit)
-        res = factory.createSlice(res, query.offset, query.limit);
-
     // NEW: support for ask/construct/describe queries
     if (query.queryType === 'CONSTRUCT')
         res = factory.createConstruct(res, query.template.map(translateTriple));
@@ -576,6 +572,11 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
         res = factory.createAsk(res);
     else if (query.queryType === 'DESCRIBE')
         res = factory.createDescribe(res, Array.from(PV));
+
+    // Slicing needs to happen after construct/describe
+    // 18.2.5.5
+    if (query.offset || query.limit)
+        res = factory.createSlice(res, query.offset, query.limit);
 
     if (query.from)
         res = factory.createFrom(res, query.from.default, query.from.named);

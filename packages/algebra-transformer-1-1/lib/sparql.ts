@@ -521,8 +521,10 @@ function translateService(op: Algebra.Service): any
 function translateSlice(op: Algebra.Slice): any
 {
     let result = translateOperation(op.input);
-    // project is nested in group object
-    let obj = result.patterns[0];
+    // results can be nested in a group object
+    let obj = result;
+    if (result.type && result.type === 'group')
+        obj = result.patterns[0];
     if (op.start !== 0)
         obj.offset = op.start;
     if (op.length !== undefined)

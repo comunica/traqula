@@ -53,11 +53,7 @@ export default class Factory
     }
     createPattern (subject: RDF.Term, predicate: RDF.Term, object: RDF.Term, graph?: RDF.Term): A.Pattern
     {
-        let pattern: A.Pattern;
-        if (graph)
-            pattern = <A.Pattern>this.dataFactory.quad(<RDF.Quad_Subject>subject, <RDF.Quad_Predicate>predicate, <RDF.Quad_Object>object, <RDF.Quad_Graph>graph);
-        else
-            pattern = <A.Pattern>this.dataFactory.triple(<RDF.Quad_Subject>subject, <RDF.Quad_Predicate>predicate, <RDF.Quad_Object>object);
+        let pattern = <A.Pattern>this.dataFactory.quad(<RDF.Quad_Subject>subject, <RDF.Quad_Predicate>predicate, <RDF.Quad_Object>object, <RDF.Quad_Graph>graph);
         pattern.type = 'pattern';
         return pattern;
     }

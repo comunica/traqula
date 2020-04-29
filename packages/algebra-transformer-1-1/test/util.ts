@@ -94,7 +94,7 @@ class Canonicalizer {
     }
 
     public replaceValue(term: RDF.Term, nameMapping: {[bLabel: string]: string}
-        , replaceVars: boolean) {
+        , replaceVars: boolean): RDF.Term {
         if (term.termType !== "BlankNode" && (term.termType !== "Variable" || ! replaceVars)) return term;
 
         let generateTerm = term.termType === "Variable" ? variable : blankNode;

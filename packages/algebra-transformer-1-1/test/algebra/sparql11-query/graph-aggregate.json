@@ -1,0 +1,79 @@
+{
+  "type": "project",
+  "input": {
+    "type": "extend",
+    "input": {
+      "type": "group",
+      "input": {
+        "type": "graph",
+        "input": {
+          "type": "bgp",
+          "patterns": [
+            {
+              "subject": {
+                "termType": "Variable",
+                "value": "s"
+              },
+              "predicate": {
+                "termType": "Variable",
+                "value": "p"
+              },
+              "object": {
+                "termType": "Variable",
+                "value": "o"
+              },
+              "graph": {
+                "termType": "DefaultGraph",
+                "value": ""
+              },
+              "type": "pattern"
+            }
+          ]
+        },
+        "name": {
+          "termType": "Variable",
+          "value": "g"
+        }
+      },
+      "variables": [],
+      "aggregates": [
+        {
+          "type": "expression",
+          "expressionType": "aggregate",
+          "aggregator": "count",
+          "expression": {
+            "type": "expression",
+            "expressionType": "wildcard",
+            "wildcard": {
+              "termType": "Wildcard",
+              "value": "*"
+            }
+          },
+          "distinct": false,
+          "variable": {
+            "termType": "Variable",
+            "value": "var0"
+          }
+        }
+      ]
+    },
+    "variable": {
+      "termType": "Variable",
+      "value": "count"
+    },
+    "expression": {
+      "type": "expression",
+      "expressionType": "term",
+      "term": {
+        "termType": "Variable",
+        "value": "var0"
+      }
+    }
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "count"
+    }
+  ]
+}

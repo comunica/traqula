@@ -42,7 +42,9 @@ function resetContext()
 function translateOperation(op: Algebra.Operation): any
 {
     // this allows us to differentiate between BIND and SELECT when translating EXTEND
-    if (op.type !== types.EXTEND && op.type !== types.ORDER_BY)
+    // GRAPH was added because the way graphs get added back here is not the same as how they get added in the future
+    // ^ seems fine but might have to be changed if problems get detected in the future
+    if (op.type !== types.EXTEND && op.type !== types.ORDER_BY && op.type !== types.GRAPH)
         context.project = false;
 
     switch(op.type)

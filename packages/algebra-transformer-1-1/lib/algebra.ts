@@ -38,6 +38,19 @@ export const types = Object.freeze({
     VALUES:             'values',
     ZERO_OR_MORE_PATH:  'ZeroOrMorePath',
     ZERO_OR_ONE_PATH:   'ZeroOrOnePath',
+
+    COMPOSITE_UPDATE:   'compositeupdate',
+    INSERT_DATA:        'insertdata',
+    DELETE_DATA:        'deletedata',
+    DELETE_INSERT:      'deleteinsert',
+    DELETE_WHERE:       'deletewhere',
+    LOAD:               'load',
+    CLEAR:              'clear',
+    CREATE:             'create',
+    DROP:               'drop',
+    ADD:                'add',
+    MOVE:               'move',
+    COPY:               'copy',
 });
 
 export const expressionTypes = Object.freeze({
@@ -320,4 +333,90 @@ export interface ZeroOrOnePath extends Operation, PropertyPathSymbol
 {
     type: 'ZeroOrOnePath';
     path: PropertyPathSymbol;
+}
+
+// ----------------------- UPDATE FUNCTIONS -----------------------
+export interface CompositeUpdate extends Operation {
+    type: 'compositeupdate';
+    updates: Update[];
+}
+
+export interface Update extends Operation {}
+
+export interface InsertData extends Update
+{
+    type: 'insertdata';
+    quads: Pattern[];
+}
+
+export interface DeleteData extends Update
+{
+    type: 'deletedata';
+    quads: Pattern[];
+}
+
+export interface DeleteInsert extends Update, Single
+{
+    type: 'deleteinsert';
+    delete?: Pattern[];
+    insert?: Pattern[];
+}
+
+// diffference with DeleteData is that variables are allowed here
+// this is kept in the algebra because both functions have different goals
+export interface DeleteWhere extends Update
+{
+    type: 'deletewhere';
+    patterns: Pattern[];
+}
+
+export interface UpdateGraph extends Update
+{
+    silent?: boolean;
+}
+
+export interface Load extends UpdateGraph
+{
+    type: 'load';
+    source: rdfjs.NamedNode;
+    destination?: rdfjs.NamedNode;
+}
+
+export interface Clear extends UpdateGraph
+{
+    type: 'clear';
+    source: 'DEFAULT' | 'NAMED' | 'ALL' | rdfjs.NamedNode;
+}
+
+export interface Create extends UpdateGraph
+{
+    type: 'create';
+    source: rdfjs.NamedNode;
+}
+
+export interface Drop extends UpdateGraph
+{
+    type: 'drop';
+    source: 'DEFAULT' | 'NAMED' | 'ALL' | rdfjs.NamedNode;
+}
+
+export interface UpdateGraphShortcut extends UpdateGraph
+{
+    source: 'DEFAULT' | rdfjs.NamedNode;
+    destination: 'DEFAULT' | rdfjs.NamedNode;
+}
+
+export interface Add extends UpdateGraphShortcut
+{
+    type: 'add';
+}
+
+export interface Move extends UpdateGraphShortcut
+{
+    type: 'move';
+}
+
+export interface Copy extends UpdateGraphShortcut
+{
+    type: 'copy';
 }

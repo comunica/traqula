@@ -55,14 +55,21 @@ function translateQuery(sparql: any, quads?: boolean, blankToVariable?: boolean)
     varCount = 0;
     useQuads = quads;
 
-    if (sparql.type !== 'query')
-        throw new Error('Translate only works on complete query objects.');
+    if (sparql.type !== 'query' && sparql.type !== 'update')
+        throw new Error('Translate only works on complete query or update objects.');
 
-    // group and where are identical, having only 1 makes parsing easier, can be undefined in DESCRIBE
-    let group = { type: 'group', patterns: sparql.where || [] };
-    let vars: Set<RDF.Variable> = new Set(Object.keys(inScopeVariables(group)).map(factory.createTerm.bind(factory)));
-    let res = translateGroupGraphPattern(group);
-    res = translateAggregates(sparql, res, vars);
+    let vars: Set<RDF.Variable> = new Set(Object.keys(inScopeVariables(sparql)).map(factory.createTerm.bind(factory)));
+    let res: Algebra.Operation;
+
+    if (sparql.type === 'query') {
+        // group and where are identical, having only 1 makes parsing easier, can be undefined in DESCRIBE
+        let group = { type: 'group', patterns: sparql.where || [] };
+        res = translateGroupGraphPattern(group);
+        res = translateAggregates(sparql, res, vars);
+    }
+    else if(sparql.type === 'update') {
+        res = translateUpdate(sparql);
+    }
     if (blankToVariable) {
         res = translateBlankNodesToVariables(res, vars);
     }
@@ -225,7 +232,7 @@ function translateBgp(thingy: any) : Algebra.Operation
             }
         }
         else
-            patterns.push(translateTriple(t));
+            patterns.push(translateQuad(t));
     }
     if (patterns.length > 0)
         joins.push(factory.createBgp(patterns));
@@ -325,9 +332,9 @@ function generateFreshVar() : RDF.Variable
     return <RDF.Variable>factory.createTerm(v);
 }
 
-function translateTriple(triple: any) : Algebra.Pattern
+function translateQuad(quad: RDF.BaseQuad) : Algebra.Pattern
 {
-    return factory.createPattern(triple.subject, triple.predicate, triple.object);
+    return factory.createPattern(quad.subject, quad.predicate, quad.object, quad.graph);
 }
 
 function translateGraph(graph: any) : Algebra.Operation
@@ -548,7 +555,7 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
         {
             let result = translateExpression(exp.expression);
             if (exp.descending)
-                result = factory.createOperatorExpression(types.DESC, [result]); // TODO: should this really be an epxression?
+                result = factory.createOperatorExpression(types.DESC, [result]); // TODO: should this really be an expression?
             return result;
         }));
 
@@ -567,7 +574,7 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
 
     // NEW: support for ask/construct/describe queries
     if (query.queryType === 'CONSTRUCT')
-        res = factory.createConstruct(res, query.template.map(translateTriple));
+        res = factory.createConstruct(res, query.template.map(translateQuad));
     else if (query.queryType === 'ASK')
         res = factory.createAsk(res);
     else if (query.queryType === 'DESCRIBE')
@@ -633,6 +640,138 @@ function translateBoundAggregate (thingy: any, v: RDF.Variable) : Algebra.BoundA
     return A;
 }
 
+function translateUpdate (thingy: any) : Algebra.Operation {
+    if (thingy.updates.length === 1)
+        return translateSingleUpdate(thingy.updates[0]);
+    return factory.createCompositeUpdate(thingy.updates.map(translateSingleUpdate));
+}
+
+function translateSingleUpdate (thingy: any) : Algebra.Update {
+    if (thingy.updateType === 'insertdelete' || thingy.updateType === 'deletewhere' || thingy.updateType === 'delete' || thingy.updateType === 'insert')
+        return translateInsertDelete(thingy);
+    if (thingy.type === 'load')
+        return translateUpdateGraphLoad(thingy);
+    if (thingy.type === 'clear' || thingy.type === 'create' || thingy.type === 'drop')
+        return translateUpdateGraph(thingy);
+    if (thingy.type === 'add' || thingy.type === 'copy' || thingy.type === 'move')
+        return translateUpdateGraphShortcut(thingy);
+
+    throw new Error(`Unknown update type ${thingy.updateType}`);
+}
+
+type insertDeleteInput = {
+    updateType: 'insertdelete' | 'deletewhere' | 'delete' | 'insert';
+    delete?: any[];
+    insert?: any[];
+    where?: any[];
+    graph?: RDF.NamedNode;
+    using?: { default: RDF.NamedNode[]; named: RDF.NamedNode[] };
+};
+function translateInsertDelete (thingy: insertDeleteInput): Algebra.Update
+{
+    if (!useQuads)
+        throw new Error('INSERT/DELETE operations are only supported with quads option enabled');
+
+    let deleteTriples: RDF.BaseQuad[] = [];
+    let insertTriples: RDF.BaseQuad[] = [];
+    let where: Algebra.Operation;
+    if (thingy.delete)
+        deleteTriples = Util.flatten(thingy.delete.map(input => translateUpdateTriplesBlock(input, thingy.graph)));
+    if (thingy.insert)
+        insertTriples = Util.flatten(thingy.insert.map(input => translateUpdateTriplesBlock(input, thingy.graph)));
+    if (thingy.where) {
+        where = translateGroupGraphPattern({ type: 'group', patterns: thingy.where });
+        if (thingy.using)
+            where = factory.createFrom(where, thingy.using.default, thingy.using.named);
+        else if (thingy.graph)
+            // this is equivalent
+            where = factory.createFrom(where, [thingy.graph], []);
+    }
+
+    if (thingy.updateType === 'insertdelete')
+        return factory.createDeleteInsert(
+          where,
+          deleteTriples.length > 0 ? deleteTriples.map(translateQuad) : undefined,
+          insertTriples.length > 0 ? insertTriples.map(translateQuad) : undefined,
+        );
+    if (thingy.updateType === 'deletewhere')
+        return factory.createDeleteWhere(deleteTriples.map(translateQuad));
+    if (thingy.updateType === 'delete')
+        return factory.createDeleteData(deleteTriples.map(translateQuad));
+    if (thingy.updateType === 'insert')
+        return factory.createInsertData(insertTriples.map(translateQuad));
+}
+
+type updateTriplesBlockInput = {
+    type: 'graph' | 'bgp';
+    triples: RDF.BaseQuad[];
+    name?: RDF.NamedNode
+};
+// for now, UPDATE parsing will always return quads and have no GRAPH elements
+function translateUpdateTriplesBlock (thingy: updateTriplesBlockInput, graph?: RDF.NamedNode): RDF.BaseQuad[] {
+    let currentGraph = graph;
+    if (thingy.type === 'graph')
+        currentGraph = thingy.name;
+    let currentTriples = thingy.triples;
+    if (currentGraph)
+        currentTriples = currentTriples.map(triple => Object.assign(triple, { graph: currentGraph }));
+    return currentTriples;
+}
+
+type updateGraphInput = {
+    type: 'clear' | 'create' | 'drop';
+    silent: boolean,
+    graph: { all?: boolean; default?: boolean; named?: boolean; name?: RDF.NamedNode };
+};
+function translateUpdateGraph (thingy: updateGraphInput): Algebra.UpdateGraph
+{
+    let source: 'DEFAULT' | 'NAMED' | 'ALL' | RDF.NamedNode;
+    if (thingy.graph.all)
+        source = 'ALL';
+    else if (thingy.graph.default)
+        source = 'DEFAULT';
+    else if (thingy.graph.named)
+        source = 'NAMED';
+    else
+        source = thingy.graph.name;
+
+    switch (thingy.type)
+    {
+        case 'clear': return factory.createClear(source, thingy.silent);
+        case 'create': return factory.createCreate(source as RDF.NamedNode, thingy.silent);
+        case 'drop':  return factory.createDrop(source, thingy.silent);
+    }
+}
+
+type updateGraphLoadInput = {
+    type: 'load';
+    silent: boolean,
+    source: RDF.NamedNode;
+    destination?: RDF.NamedNode;
+};
+function translateUpdateGraphLoad (thingy: updateGraphLoadInput): Algebra.Load
+{
+    return factory.createLoad(thingy.source, thingy.destination, thingy.silent);
+}
+
+type updateGraphShortcutInput = {
+    type: 'copy' | 'move' | 'add';
+    silent: boolean;
+    source: { type: 'graph'; default?: boolean; name?: RDF.NamedNode };
+    destination: { default?: boolean; name?: RDF.NamedNode };
+};
+function translateUpdateGraphShortcut (thingy: updateGraphShortcutInput): Algebra.UpdateGraphShortcut
+{
+    const source = thingy.source.default ? 'DEFAULT' : thingy.source.name;
+    const destination = thingy.destination.default ? 'DEFAULT' : thingy.destination.name;
+    switch (thingy.type)
+    {
+        case 'copy': return factory.createCopy(source, destination, thingy.silent);
+        case 'move': return factory.createMove(source, destination, thingy.silent);
+        case 'add':  return factory.createAdd(source, destination, thingy.silent);
+    }
+}
+
 function translateBlankNodesToVariables (res: Algebra.Operation, variables: Set<RDF.Variable>) : Algebra.Operation
 {
     const blankToVariableMapping: {[bLabel: string]: RDF.Variable} = {};
@@ -672,7 +811,8 @@ function translateBlankNodesToVariables (res: Algebra.Operation, variables: Set<
         },
     });
 
-  function blankToVariable(term: RDF.Term): RDF.Term {
+  function blankToVariable(term: RDF.Term): RDF.Term
+  {
       if (term.termType === 'BlankNode') {
           let variable = blankToVariableMapping[term.value];
           if (!variable) {

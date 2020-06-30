@@ -83,10 +83,53 @@ export default class Factory
     createNamedExpression (name: RDF.NamedNode, args: A.Expression[]): A.NamedExpression { return { type: 'expression', expressionType: 'named', name, args }; }
     createOperatorExpression (operator: string, args: A.Expression[]): A.OperatorExpression { return { type: 'expression', expressionType: 'operator', operator, args }; }
     createTermExpression (term: RDF.Term): A.TermExpression { return { type: 'expression', expressionType: 'term', term }; }
-    createWildcardExpression (): A.WildcardExpression { return { type: 'expression', expressionType: 'wildcard', wildcard: new Wildcard() } };
+    createWildcardExpression (): A.WildcardExpression { return { type: 'expression', expressionType: 'wildcard', wildcard: new Wildcard() }; }
 
     createTerm (str: string): RDF.Term
     {
         return stringToTerm(str, this.dataFactory);
+    }
+
+    // Update functions
+    createCompositeUpdate (updates: A.Update[]): A.CompositeUpdate { return { type: 'compositeupdate', updates }; }
+    createInsertData (quads: A.Pattern[]): A.InsertData { return { type: 'insertdata', quads }; }
+    createDeleteData (quads: A.Pattern[]): A.DeleteData { return { type: 'deletedata', quads }; }
+    createDeleteInsert (input: A.Operation, deleteQuads?: A.Pattern[], insertQuads?: A.Pattern[]): A.DeleteInsert {
+        const result: A.DeleteInsert = { type: 'deleteinsert', input };
+        if (deleteQuads)
+            result.delete = deleteQuads;
+        if (insertQuads)
+            result.insert = insertQuads;
+        return result;
+    }
+    createDeleteWhere (patterns: A.Pattern[], ): A.DeleteWhere { return { type: 'deletewhere', patterns }; }
+    createLoad (source: RDF.NamedNode, destination?: RDF.NamedNode, silent?: boolean): A.Load {
+        const result: A.Load = { type: 'load', source };
+        if (destination)
+            result.destination = destination;
+        return this.addSilent(result, silent);
+    }
+    createClear (source: 'DEFAULT' | 'NAMED' | 'ALL' | RDF.NamedNode, silent?: boolean): A.Clear {
+        return this.addSilent({ type: 'clear', source }, silent);
+    }
+    createCreate (source: RDF.NamedNode, silent?: boolean): A.Create {
+        return this.addSilent({ type: 'create', source }, silent);
+    }
+    createDrop (source: 'DEFAULT' | 'NAMED' | 'ALL' | RDF.NamedNode, silent?: boolean): A.Drop {
+        return this.addSilent({ type: 'drop', source }, silent);
+    }
+    createAdd (source: 'DEFAULT' | RDF.NamedNode, destination: 'DEFAULT' | RDF.NamedNode, silent?: boolean): A.Add {
+        return this.addSilent({ type: 'add', source, destination }, silent);
+    }
+    createMove (source: 'DEFAULT' | RDF.NamedNode, destination: 'DEFAULT' | RDF.NamedNode, silent?: boolean): A.Move {
+        return this.addSilent({ type: 'move', source, destination }, silent);
+    }
+    createCopy (source: 'DEFAULT' | RDF.NamedNode, destination: 'DEFAULT' | RDF.NamedNode, silent?: boolean): A.Copy {
+        return this.addSilent({ type: 'copy', source, destination }, silent);
+    }
+    private addSilent<T extends A.UpdateGraph>(input: T, silent: boolean): T {
+        if (silent)
+            input.silent = silent;
+        return input;
     }
 }

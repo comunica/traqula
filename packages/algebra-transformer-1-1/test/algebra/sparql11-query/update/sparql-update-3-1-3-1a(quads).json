@@ -1,0 +1,97 @@
+{
+  "type": "deleteinsert",
+  "input": {
+    "type": "filter",
+    "input": {
+      "type": "bgp",
+      "patterns": [
+        {
+          "subject": {
+            "termType": "Variable",
+            "value": "book"
+          },
+          "predicate": {
+            "termType": "NamedNode",
+            "value": "http://purl.org/dc/elements/1.1/date"
+          },
+          "object": {
+            "termType": "Variable",
+            "value": "date"
+          },
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
+          },
+          "type": "pattern"
+        },
+        {
+          "subject": {
+            "termType": "Variable",
+            "value": "book"
+          },
+          "predicate": {
+            "termType": "Variable",
+            "value": "p"
+          },
+          "object": {
+            "termType": "Variable",
+            "value": "v"
+          },
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
+          },
+          "type": "pattern"
+        }
+      ]
+    },
+    "expression": {
+      "type": "expression",
+      "expressionType": "operator",
+      "operator": ">",
+      "args": [
+        {
+          "type": "expression",
+          "expressionType": "term",
+          "term": {
+            "termType": "Variable",
+            "value": "date"
+          }
+        },
+        {
+          "type": "expression",
+          "expressionType": "term",
+          "term": {
+            "termType": "Literal",
+            "value": "1970-01-01T00:00:00-02:00",
+            "datatype": {
+              "termType": "NamedNode",
+              "value": "http://www.w3.org/2001/XMLSchema#dateTime"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "delete": [
+    {
+      "subject": {
+        "termType": "Variable",
+        "value": "book"
+      },
+      "predicate": {
+        "termType": "Variable",
+        "value": "p"
+      },
+      "object": {
+        "termType": "Variable",
+        "value": "v"
+      },
+      "graph": {
+        "termType": "DefaultGraph",
+        "value": ""
+      },
+      "type": "pattern"
+    }
+  ]
+}

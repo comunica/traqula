@@ -33,11 +33,15 @@ function testPath(root: string, fileName: string, testName: string, blankToVaria
             testPath(root, path.join(fileName, sub), testName + '/' + sub, blankToVariable);
     } else {
         let name = root + '/' + testName.replace(/\.sparql$/, '');
+        let jsonPath = path.join(root, fileName.replace(/\.sparql$/, '.json'));
+        // not all tests need a blank version
+        if (!fs.existsSync(jsonPath) && blankToVariable)
+            return;
         it (name + (blankToVariable ? ' (no blanks)' : ''), () =>
         {
             let query = fs.readFileSync(sparqlName, 'utf8');
             let algebra = Util.objectify(translate(query, { quads: name.endsWith('(quads)'), blankToVariable }));
-            let expected = JSON.parse(fs.readFileSync(path.join(root, fileName.replace(/\.sparql$/, '.json')), 'utf8'));
+            let expected = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
             expect(canon.canonicalizeQuery(algebra, blankToVariable)).to.deep.equal(canon.canonicalizeQuery(expected, blankToVariable));
         });
     }

@@ -15,7 +15,7 @@ const factory = new Factory();
 // https://www.w3.org/2001/sw/DataAccess/tests/r2#syntax-basic-01
 // https://www.w3.org/2009/sparql/implementations/
 // https://www.w3.org/2009/sparql/docs/tests/
-describe('Util funtions', () =>
+describe('Util functions', () =>
 {
     let subfolders = fs.readdirSync(rootJson);
 

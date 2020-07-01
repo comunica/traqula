@@ -1,6 +1,6 @@
 {
-  "type": "deletewhere",
-  "patterns": [
+  "type": "deleteinsert",
+  "delete": [
     {
       "subject": {
         "termType": "Variable",

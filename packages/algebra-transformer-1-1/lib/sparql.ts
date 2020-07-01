@@ -70,10 +70,7 @@ function translateOperation(op: Algebra.Operation): any
         case types.VALUES:    return translateValues(<Algebra.Values>op);
         // UPDATE operations
         case types.COMPOSITE_UPDATE: return translateCompositeUpdate(<Algebra.CompositeUpdate>op);
-        case types.INSERT_DATA:      return translateInsertData(<Algebra.InsertData>op);
-        case types.DELETE_DATA:      return translateDeleteData(<Algebra.DeleteData>op);
         case types.DELETE_INSERT:    return translateDeleteInsert(<Algebra.DeleteInsert>op);
-        case types.DELETE_WHERE:     return translateDeleteWhere(<Algebra.DeleteWhere>op);
         case types.LOAD:             return translateLoad(<Algebra.Load>op);
         case types.CLEAR:            return translateClear(<Algebra.Clear>op);
         case types.CREATE:           return translateCreate(<Algebra.Create>op);
@@ -711,24 +708,12 @@ function translateCompositeUpdate(op: Algebra.CompositeUpdate): any
   return { prefixes: {}, type: 'update', updates }
 }
 
-function translateInsertData(op: Algebra.InsertData): any
-{
-  const updates = [{ updateType: 'insert', insert: convertUpdatePatterns(op.quads) }];
-  return { prefixes: {}, type: 'update', updates }
-}
-
-function translateDeleteData(op: Algebra.DeleteData): any
-{
-    const updates = [{ updateType: 'delete', delete: convertUpdatePatterns(op.quads) }];
-    return { prefixes: {}, type: 'update', updates }
-}
-
 function translateDeleteInsert(op: Algebra.DeleteInsert): any
 {
-    let where = op.input;
+    let where = op.where;
     let using = undefined;
-    if (op.input.type === types.FROM) {
-        let from = <Algebra.From> op.input;
+    if (where && where.type === types.FROM) {
+        let from = <Algebra.From> op.where;
         where = from.input;
         using = { default: from.default, named: from.named };
     }
@@ -742,7 +727,7 @@ function translateDeleteInsert(op: Algebra.DeleteInsert): any
         updates[0].using = using;
 
     // corresponds to empty array in SPARQL.js
-    if (where.type === types.BGP && where.patterns.length === 0)
+    if (!where || (where.type === types.BGP && where.patterns.length === 0))
         updates[0].where = [];
     else
     {
@@ -764,12 +749,23 @@ function translateDeleteInsert(op: Algebra.DeleteInsert): any
         }
     }
 
-    return { prefixes: {}, type: 'update', updates }
-}
+    // not really necessary but can give cleaner looking queries
+    if (!op.delete && !op.where) {
+        updates[0].updateType = 'insert';
+        delete updates[0].delete;
+        delete updates[0].where;
+    } else if (!op.insert && !op.where) {
+        delete updates[0].insert;
+        delete updates[0].where;
+        if (op.delete.some(pattern =>
+          pattern.subject.termType === 'Variable' ||
+          pattern.predicate.termType === 'Variable' ||
+          pattern.object.termType === 'Variable'))
+            updates[0].updateType = 'deletewhere';
+        else
+            updates[0].updateType = 'delete';
+    }
 
-function translateDeleteWhere(op: Algebra.DeleteWhere): any
-{
-    const updates = [{ updateType: 'deletewhere', delete: convertUpdatePatterns(op.patterns) }];
     return { prefixes: {}, type: 'update', updates }
 }
 
@@ -871,7 +867,7 @@ function removeQuadsRecursive(op: any, graphs: {[id: string]: { graph: RDF.Term,
         return op;
 
     // UPDATE operations with Patterns handle graphs a bit differently
-    if ([types.INSERT_DATA, types.DELETE_DATA, types.DELETE_INSERT, types.DELETE_WHERE].includes(op.type))
+    if (op.type === types.DELETE_INSERT)
       return op;
 
     if ((op.type === types.PATTERN || op.type === types.PATH) && op.graph)

@@ -92,17 +92,16 @@ export default class Factory
 
     // Update functions
     createCompositeUpdate (updates: A.Update[]): A.CompositeUpdate { return { type: 'compositeupdate', updates }; }
-    createInsertData (quads: A.Pattern[]): A.InsertData { return { type: 'insertdata', quads }; }
-    createDeleteData (quads: A.Pattern[]): A.DeleteData { return { type: 'deletedata', quads }; }
-    createDeleteInsert (input: A.Operation, deleteQuads?: A.Pattern[], insertQuads?: A.Pattern[]): A.DeleteInsert {
-        const result: A.DeleteInsert = { type: 'deleteinsert', input };
+    createDeleteInsert (deleteQuads?: A.Pattern[], insertQuads?: A.Pattern[], where?: A.Operation): A.DeleteInsert {
+        const result: A.DeleteInsert = { type: 'deleteinsert' };
         if (deleteQuads)
             result.delete = deleteQuads;
         if (insertQuads)
             result.insert = insertQuads;
+        if (where)
+            result.where = where;
         return result;
     }
-    createDeleteWhere (patterns: A.Pattern[], ): A.DeleteWhere { return { type: 'deletewhere', patterns }; }
     createLoad (source: RDF.NamedNode, destination?: RDF.NamedNode, silent?: boolean): A.Load {
         const result: A.Load = { type: 'load', source };
         if (destination)

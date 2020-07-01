@@ -1,9 +1,5 @@
 {
   "type": "deleteinsert",
-  "input": {
-    "type": "bgp",
-    "patterns": []
-  },
   "insert": [
     {
       "subject": {

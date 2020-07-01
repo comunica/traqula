@@ -1,6 +1,27 @@
 {
   "type": "deleteinsert",
-  "input": {
+  "delete": [
+    {
+      "subject": {
+        "termType": "Variable",
+        "value": "s"
+      },
+      "predicate": {
+        "termType": "NamedNode",
+        "value": "foo:bar"
+      },
+      "object": {
+        "termType": "Variable",
+        "value": "o"
+      },
+      "graph": {
+        "termType": "NamedNode",
+        "value": "urn:one:graph"
+      },
+      "type": "pattern"
+    }
+  ],
+  "where": {
     "type": "from",
     "input": {
       "type": "bgp",
@@ -38,26 +59,5 @@
         "value": "urn:anamed:graph"
       }
     ]
-  },
-  "delete": [
-    {
-      "subject": {
-        "termType": "Variable",
-        "value": "s"
-      },
-      "predicate": {
-        "termType": "NamedNode",
-        "value": "foo:bar"
-      },
-      "object": {
-        "termType": "Variable",
-        "value": "o"
-      },
-      "graph": {
-        "termType": "NamedNode",
-        "value": "urn:one:graph"
-      },
-      "type": "pattern"
-    }
-  ]
+  }
 }

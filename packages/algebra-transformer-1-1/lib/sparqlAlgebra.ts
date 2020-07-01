@@ -679,7 +679,7 @@ function translateInsertDelete (thingy: insertDeleteInput): Algebra.Update
         deleteTriples = Util.flatten(thingy.delete.map(input => translateUpdateTriplesBlock(input, thingy.graph)));
     if (thingy.insert)
         insertTriples = Util.flatten(thingy.insert.map(input => translateUpdateTriplesBlock(input, thingy.graph)));
-    if (thingy.where) {
+    if (thingy.where && thingy.where.length > 0) {
         where = translateGroupGraphPattern({ type: 'group', patterns: thingy.where });
         if (thingy.using)
             where = factory.createFrom(where, thingy.using.default, thingy.using.named);
@@ -688,18 +688,11 @@ function translateInsertDelete (thingy: insertDeleteInput): Algebra.Update
             where = factory.createFrom(where, [thingy.graph], []);
     }
 
-    if (thingy.updateType === 'insertdelete')
-        return factory.createDeleteInsert(
-          where,
-          deleteTriples.length > 0 ? deleteTriples.map(translateQuad) : undefined,
-          insertTriples.length > 0 ? insertTriples.map(translateQuad) : undefined,
-        );
-    if (thingy.updateType === 'deletewhere')
-        return factory.createDeleteWhere(deleteTriples.map(translateQuad));
-    if (thingy.updateType === 'delete')
-        return factory.createDeleteData(deleteTriples.map(translateQuad));
-    if (thingy.updateType === 'insert')
-        return factory.createInsertData(insertTriples.map(translateQuad));
+    return factory.createDeleteInsert(
+        deleteTriples.length > 0 ? deleteTriples.map(translateQuad) : undefined,
+        insertTriples.length > 0 ? insertTriples.map(translateQuad) : undefined,
+        where,
+    );
 }
 
 type updateTriplesBlockInput = {

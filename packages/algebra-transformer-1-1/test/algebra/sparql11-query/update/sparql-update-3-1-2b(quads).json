@@ -2,8 +2,8 @@
   "type": "compositeupdate",
   "updates": [
     {
-      "type": "deletedata",
-      "quads": [
+      "type": "deleteinsert",
+      "delete": [
         {
           "subject": {
             "termType": "NamedNode",
@@ -30,8 +30,8 @@
       ]
     },
     {
-      "type": "insertdata",
-      "quads": [
+      "type": "deleteinsert",
+      "insert": [
         {
           "subject": {
             "termType": "NamedNode",

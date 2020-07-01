@@ -1,6 +1,6 @@
 {
-  "type": "deletedata",
-  "quads": [
+  "type": "deleteinsert",
+  "delete": [
     {
       "subject": {
         "termType": "NamedNode",

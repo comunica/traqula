@@ -1,6 +1,27 @@
 {
   "type": "deleteinsert",
-  "input": {
+  "delete": [
+    {
+      "subject": {
+        "termType": "Variable",
+        "value": "person"
+      },
+      "predicate": {
+        "termType": "Variable",
+        "value": "property"
+      },
+      "object": {
+        "termType": "Variable",
+        "value": "value"
+      },
+      "graph": {
+        "termType": "NamedNode",
+        "value": "http://example/addresses"
+      },
+      "type": "pattern"
+    }
+  ],
+  "where": {
     "type": "from",
     "input": {
       "type": "bgp",
@@ -56,26 +77,5 @@
       }
     ],
     "named": []
-  },
-  "delete": [
-    {
-      "subject": {
-        "termType": "Variable",
-        "value": "person"
-      },
-      "predicate": {
-        "termType": "Variable",
-        "value": "property"
-      },
-      "object": {
-        "termType": "Variable",
-        "value": "value"
-      },
-      "graph": {
-        "termType": "NamedNode",
-        "value": "http://example/addresses"
-      },
-      "type": "pattern"
-    }
-  ]
+  }
 }

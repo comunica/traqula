@@ -3,7 +3,28 @@
   "updates": [
     {
       "type": "deleteinsert",
-      "input": {
+      "insert": [
+        {
+          "subject": {
+            "termType": "Variable",
+            "value": "book"
+          },
+          "predicate": {
+            "termType": "Variable",
+            "value": "p"
+          },
+          "object": {
+            "termType": "Variable",
+            "value": "v"
+          },
+          "graph": {
+            "termType": "NamedNode",
+            "value": "http://example/bookStore2"
+          },
+          "type": "pattern"
+        }
+      ],
+      "where": {
         "type": "filter",
         "input": {
           "type": "bgp",
@@ -75,8 +96,11 @@
             }
           ]
         }
-      },
-      "insert": [
+      }
+    },
+    {
+      "type": "deleteinsert",
+      "delete": [
         {
           "subject": {
             "termType": "Variable",
@@ -92,15 +116,12 @@
           },
           "graph": {
             "termType": "NamedNode",
-            "value": "http://example/bookStore2"
+            "value": "http://example/bookStore"
           },
           "type": "pattern"
         }
-      ]
-    },
-    {
-      "type": "deleteinsert",
-      "input": {
+      ],
+      "where": {
         "type": "from",
         "input": {
           "type": "filter",
@@ -201,28 +222,7 @@
           }
         ],
         "named": []
-      },
-      "delete": [
-        {
-          "subject": {
-            "termType": "Variable",
-            "value": "book"
-          },
-          "predicate": {
-            "termType": "Variable",
-            "value": "p"
-          },
-          "object": {
-            "termType": "Variable",
-            "value": "v"
-          },
-          "graph": {
-            "termType": "NamedNode",
-            "value": "http://example/bookStore"
-          },
-          "type": "pattern"
-        }
-      ]
+      }
     }
   ]
 }

@@ -272,25 +272,14 @@ export default class Util
                 const cu = <A.CompositeUpdate> result;
                 cu.updates.forEach(update => recurseOp(update));
                 break;
-            case types.INSERT_DATA:
-                const id = <A.InsertData> result;
-                id.quads.forEach(pattern => recurseOp(pattern));
-                break;
-            case types.DELETE_DATA:
-                const dd = <A.DeleteData> result;
-                dd.quads.forEach(pattern => recurseOp(pattern));
-                break;
             case types.DELETE_INSERT:
                 const di = <A.DeleteInsert> result;
                 if (di.delete)
                     di.delete.forEach(pattern => recurseOp(pattern));
                 if (di.insert)
                     di.insert.forEach(pattern => recurseOp(pattern));
-                recurseOp(di.input);
-                break;
-            case types.DELETE_WHERE:
-                const dw = <A.DeleteWhere> result;
-                dw.patterns.forEach(pattern => recurseOp(pattern));
+                if (di.where)
+                    recurseOp(di.where);
                 break;
             // all of these only have graph IDs as values
             case types.LOAD: break;
@@ -435,23 +424,13 @@ export default class Util
             case types.COMPOSITE_UPDATE:
                 const cu = <A.CompositeUpdate> result;
                 return factory.createCompositeUpdate(cu.updates.map(mapOp));
-            case types.INSERT_DATA:
-                const id = <A.InsertData> result;
-                return factory.createInsertData(<A.Pattern[]> id.quads.map(mapOp));
-                break;
-            case types.DELETE_DATA:
-                const dd = <A.DeleteData> result;
-                return factory.createDeleteData(<A.Pattern[]> dd.quads.map(mapOp));
             case types.DELETE_INSERT:
                 const di = <A.DeleteInsert> result;
                 return factory.createDeleteInsert(
-                  mapOp(di.input),
                   di.delete ? <A.Pattern[]> di.delete.map(mapOp) : undefined,
                   di.insert ? <A.Pattern[]> di.insert.map(mapOp) : undefined,
+                  di.where ? mapOp(di.where) : undefined,
                   );
-            case types.DELETE_WHERE:
-                const dw = <A.DeleteWhere> result;
-                return factory.createDeleteWhere(<A.Pattern[]> dw.patterns.map(mapOp));
             case types.LOAD:
                 const load = <A.Load> result;
                 return factory.createLoad(load.source, load.destination, load.silent);

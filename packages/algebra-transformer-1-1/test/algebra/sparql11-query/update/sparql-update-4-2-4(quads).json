@@ -1,6 +1,27 @@
 {
   "type": "deleteinsert",
-  "input": {
+  "delete": [
+    {
+      "subject": {
+        "termType": "Variable",
+        "value": "S"
+      },
+      "predicate": {
+        "termType": "Variable",
+        "value": "P"
+      },
+      "object": {
+        "termType": "Variable",
+        "value": "O"
+      },
+      "graph": {
+        "termType": "DefaultGraph",
+        "value": ""
+      },
+      "type": "pattern"
+    }
+  ],
+  "where": {
     "type": "filter",
     "input": {
       "type": "bgp",
@@ -41,26 +62,5 @@
         }
       ]
     }
-  },
-  "delete": [
-    {
-      "subject": {
-        "termType": "Variable",
-        "value": "S"
-      },
-      "predicate": {
-        "termType": "Variable",
-        "value": "P"
-      },
-      "object": {
-        "termType": "Variable",
-        "value": "O"
-      },
-      "graph": {
-        "termType": "DefaultGraph",
-        "value": ""
-      },
-      "type": "pattern"
-    }
-  ]
+  }
 }

@@ -40,10 +40,7 @@ export const types = Object.freeze({
     ZERO_OR_ONE_PATH:   'ZeroOrOnePath',
 
     COMPOSITE_UPDATE:   'compositeupdate',
-    INSERT_DATA:        'insertdata',
-    DELETE_DATA:        'deletedata',
     DELETE_INSERT:      'deleteinsert',
-    DELETE_WHERE:       'deletewhere',
     LOAD:               'load',
     CLEAR:              'clear',
     CREATE:             'create',
@@ -343,31 +340,12 @@ export interface CompositeUpdate extends Operation {
 
 export interface Update extends Operation {}
 
-export interface InsertData extends Update
-{
-    type: 'insertdata';
-    quads: Pattern[];
-}
-
-export interface DeleteData extends Update
-{
-    type: 'deletedata';
-    quads: Pattern[];
-}
-
-export interface DeleteInsert extends Update, Single
+export interface DeleteInsert extends Update
 {
     type: 'deleteinsert';
     delete?: Pattern[];
     insert?: Pattern[];
-}
-
-// diffference with DeleteData is that variables are allowed here
-// this is kept in the algebra because both functions have different goals
-export interface DeleteWhere extends Update
-{
-    type: 'deletewhere';
-    patterns: Pattern[];
+    where?: Operation;
 }
 
 export interface UpdateGraph extends Update

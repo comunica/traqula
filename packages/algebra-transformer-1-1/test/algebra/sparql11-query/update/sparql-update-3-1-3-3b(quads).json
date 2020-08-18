@@ -22,7 +22,7 @@
         "termType": "NamedNode",
         "value": "http://example.com/names"
       },
-      "type": "pattern"
+      "type": "pattern","termType": "Quad","value": ""
     },
     {
       "subject": {
@@ -41,7 +41,7 @@
         "termType": "NamedNode",
         "value": "http://example.com/names"
       },
-      "type": "pattern"
+      "type": "pattern","termType": "Quad","value": ""
     },
     {
       "subject": {
@@ -60,7 +60,7 @@
         "termType": "NamedNode",
         "value": "http://example.com/addresses"
       },
-      "type": "pattern"
+      "type": "pattern","termType": "Quad","value": ""
     }
   ]
 }

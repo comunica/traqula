@@ -13,9 +13,9 @@ const eTypes = Algebra.expressionTypes;
 let context : { project: boolean, extend: Algebra.Extend[], group: RDF.Variable[], aggregates: Algebra.BoundAggregate[], order: Algebra.Expression[] };
 const factory = new Factory();
 
-export function toSparql(op: Algebra.Operation): string
+export function toSparql(op: Algebra.Operation, options = {}): string
 {
-    let generator = new SparqlGenerator();
+    let generator = new SparqlGenerator(options);
     return generator.stringify(toSparqlJs(op));
 }
 

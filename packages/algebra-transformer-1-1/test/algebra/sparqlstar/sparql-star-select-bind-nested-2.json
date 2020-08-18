@@ -1,0 +1,88 @@
+{
+  "type": "project",
+  "input": {
+    "type": "extend",
+    "input": {
+      "type": "bgp",
+      "patterns": [
+        {
+          "type": "pattern",
+          "termType": "Quad",
+          "value": "",
+          "subject": {
+            "termType": "NamedNode",
+            "value": "http://example.com/a"
+          },
+          "predicate": {
+            "termType": "NamedNode",
+            "value": "http://example.com/name"
+          },
+          "object": {
+            "termType": "NamedNode",
+            "value": "http://example.com/c"
+          },
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
+          }
+        }
+      ]
+    },
+    "variable": {
+      "termType": "Variable",
+      "value": "author"
+    },
+    "expression": {
+      "type": "expression",
+      "expressionType": "term",
+      "term": {
+        "type": "pattern",
+        "termType": "Quad",
+        "value": "",
+        "subject": {
+          "termType": "NamedNode",
+          "value": "http://example.com/a"
+        },
+        "predicate": {
+          "termType": "NamedNode",
+          "value": "http://example.com/author"
+        },
+        "object": {
+          "type": "pattern",
+          "termType": "Quad",
+          "value": "",
+          "subject": {
+            "termType": "NamedNode",
+            "value": "http://example.com/a"
+          },
+          "predicate": {
+            "termType": "NamedNode",
+            "value": "http://example.com/b"
+          },
+          "object": {
+            "termType": "NamedNode",
+            "value": "http://example.com/c"
+          },
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
+          }
+        },
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        }
+      }
+    }
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "spb"
+    },
+    {
+      "termType": "Variable",
+      "value": "author"
+    }
+  ]
+}

@@ -18,7 +18,7 @@
         "termType": "NamedNode",
         "value": "http://example/addresses"
       },
-      "type": "pattern"
+      "type": "pattern","termType": "Quad","value": ""
     },
     {
       "subject": {
@@ -37,7 +37,7 @@
         "termType": "NamedNode",
         "value": "http://example/addresses"
       },
-      "type": "pattern"
+      "type": "pattern","termType": "Quad","value": ""
     }
   ],
   "where": {
@@ -62,7 +62,7 @@
             "termType": "NamedNode",
             "value": "http://example/people"
           },
-          "type": "pattern"
+          "type": "pattern","termType": "Quad","value": ""
         }
       ]
     },
@@ -86,7 +86,7 @@
             "termType": "NamedNode",
             "value": "http://example/people"
           },
-          "type": "pattern"
+          "type": "pattern","termType": "Quad","value": ""
         }
       ]
     }

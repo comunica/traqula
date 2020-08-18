@@ -1,0 +1,78 @@
+{
+  "type": "project",
+  "input": {
+    "type": "values",
+    "variables": [
+      {
+        "termType": "Variable",
+        "value": "x"
+      }
+    ],
+    "bindings": [
+      {
+        "?x": {
+          "type": "pattern",
+          "termType": "Quad",
+          "value": "",
+          "subject": {
+            "termType": "NamedNode",
+            "value": "http://example.com/SaintPetersburg"
+          },
+          "predicate": {
+            "termType": "NamedNode",
+            "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+          },
+          "object": {
+            "termType": "NamedNode",
+            "value": "http://example.com/City"
+          },
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
+          }
+        }
+      },
+      {
+        "?x": {
+          "type": "pattern",
+          "termType": "Quad",
+          "value": "",
+          "subject": {
+            "termType": "NamedNode",
+            "value": "http://example.com/a"
+          },
+          "predicate": {
+            "termType": "NamedNode",
+            "value": "http://example.com/b"
+          },
+          "object": {
+            "type": "pattern",
+            "termType": "Quad",
+            "value": "",
+            "subject": {
+              "termType": "NamedNode",
+              "value": "http://example.com/Moscow"
+            },
+            "predicate": {
+              "termType": "NamedNode",
+              "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+            },
+            "object": {
+              "termType": "NamedNode",
+              "value": "http://example.com/City"
+            },
+            "graph": {
+              "termType": "DefaultGraph",
+              "value": ""
+            }
+          },
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
+          }
+        }
+      }
+    ]
+  },
+  "variables": []
+}

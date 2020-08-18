@@ -18,7 +18,7 @@
         "termType": "NamedNode",
         "value": "http://example/addresses"
       },
-      "type": "pattern"
+      "type": "pattern","termType": "Quad","value": ""
     }
   ],
   "where": {
@@ -43,7 +43,7 @@
             "termType": "DefaultGraph",
             "value": ""
           },
-          "type": "pattern"
+          "type": "pattern","termType": "Quad","value": ""
         },
         {
           "subject": {
@@ -66,7 +66,7 @@
             "termType": "DefaultGraph",
             "value": ""
           },
-          "type": "pattern"
+          "type": "pattern","termType": "Quad","value": ""
         }
       ]
     },

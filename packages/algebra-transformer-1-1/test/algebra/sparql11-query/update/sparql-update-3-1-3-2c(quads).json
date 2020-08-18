@@ -21,7 +21,7 @@
             "termType": "NamedNode",
             "value": "http://example/bookStore2"
           },
-          "type": "pattern"
+          "type": "pattern","termType": "Quad","value": ""
         }
       ],
       "where": {
@@ -46,7 +46,7 @@
                 "termType": "NamedNode",
                 "value": "http://example/bookStore"
               },
-              "type": "pattern"
+              "type": "pattern","termType": "Quad","value": ""
             },
             {
               "subject": {
@@ -65,7 +65,7 @@
                 "termType": "NamedNode",
                 "value": "http://example/bookStore"
               },
-              "type": "pattern"
+              "type": "pattern","termType": "Quad","value": ""
             }
           ]
         },
@@ -118,7 +118,7 @@
             "termType": "NamedNode",
             "value": "http://example/bookStore"
           },
-          "type": "pattern"
+          "type": "pattern","termType": "Quad","value": ""
         }
       ],
       "where": {
@@ -145,7 +145,7 @@
                   "termType": "DefaultGraph",
                   "value": ""
                 },
-                "type": "pattern"
+                "type": "pattern","termType": "Quad","value": ""
               },
               {
                 "subject": {
@@ -164,7 +164,7 @@
                   "termType": "DefaultGraph",
                   "value": ""
                 },
-                "type": "pattern"
+                "type": "pattern","termType": "Quad","value": ""
               },
               {
                 "subject": {
@@ -183,7 +183,7 @@
                   "termType": "DefaultGraph",
                   "value": ""
                 },
-                "type": "pattern"
+                "type": "pattern","termType": "Quad","value": ""
               }
             ]
           },

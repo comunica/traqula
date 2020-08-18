@@ -32,8 +32,8 @@ function testPath(fileName: string, testName: string): void
         it (name, () =>
         {
             let expected = JSON.parse(fs.readFileSync(jsonName, 'utf8'));
-            let query = toSparql(expected);
-            let algebra = Util.objectify(translate(query, { quads: name.endsWith('(quads)') }));
+            let query = toSparql(expected, { sparqlStar: testName.includes('sparqlstar') });
+            let algebra = Util.objectify(translate(query, { quads: name.endsWith('(quads)'), sparqlStar: testName.includes('sparqlstar') }));
             expect(canon.canonicalizeQuery(algebra, false)).to.deep.equal(canon.canonicalizeQuery(expected, false));
         });
     }

@@ -1,0 +1,45 @@
+{
+  "type": "project",
+  "input": {
+    "type": "extend",
+    "input": {
+      "type": "bgp",
+      "patterns": []
+    },
+    "variable": {
+      "termType": "Variable",
+      "value": "spb"
+    },
+    "expression": {
+      "type": "expression",
+      "expressionType": "term",
+      "term": {
+        "type": "pattern",
+        "termType": "Quad",
+        "value": "",
+        "subject": {
+          "termType": "NamedNode",
+          "value": "http://example.com/SaintPetersburg"
+        },
+        "predicate": {
+          "termType": "NamedNode",
+          "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        },
+        "object": {
+          "termType": "NamedNode",
+          "value": "http://example.com/City"
+        },
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        }
+      }
+    }
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "spb"
+    }
+  ]
+}

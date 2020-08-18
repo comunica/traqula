@@ -2,7 +2,7 @@
 import * as A from "./algebra";
 import {Expression, Operation, expressionTypes, types} from "./algebra";
 import Factory from "./factory";
-import {Variable} from "rdf-js";
+import { BaseQuad, Variable } from "rdf-js";
 import * as RDF from 'rdf-js'
 
 
@@ -32,6 +32,25 @@ export default class Util
         {
             if (!variables.find(v2 => v.value === v2.value))
                 variables.push(v);
+        }
+
+        function recurseTerm(quad: BaseQuad) {
+            if (quad.subject.termType === 'Variable')
+                addVariable(<Variable> quad.subject);
+            if (quad.predicate.termType === 'Variable')
+                addVariable(<Variable> quad.predicate);
+            if (quad.object.termType === 'Variable')
+                addVariable(<Variable> quad.object);
+            if (quad.graph.termType === 'Variable')
+                addVariable(<Variable> quad.graph);
+            if (quad.subject.termType === 'Quad')
+                recurseTerm(quad.subject);
+            if (quad.predicate.termType === 'Quad')
+                recurseTerm(quad.predicate);
+            if (quad.object.termType === 'Quad')
+                recurseTerm(quad.object);
+            if (quad.graph.termType === 'Quad')
+                recurseTerm(quad.graph);
         }
 
         // https://www.w3.org/TR/sparql11-query/#variableScope
@@ -74,19 +93,18 @@ export default class Util
                     addVariable(<Variable> path.object);
                 if (path.graph.termType === 'Variable')
                     addVariable(<Variable> path.graph);
+                if (path.subject.termType === 'Quad')
+                    recurseTerm(path.subject);
+                if (path.object.termType === 'Quad')
+                    recurseTerm(path.object);
+                if (path.graph.termType === 'Quad')
+                    recurseTerm(path.graph);
                 return true;
             },
             [types.PATTERN]: (op) =>
             {
                 let pattern = <A.Pattern>op;
-                if (pattern.subject.termType === 'Variable')
-                    addVariable(<Variable> pattern.subject);
-                if (pattern.predicate.termType === 'Variable')
-                    addVariable(<Variable> pattern.predicate);
-                if (pattern.object.termType === 'Variable')
-                    addVariable(<Variable> pattern.object);
-                if (pattern.graph.termType === 'Variable')
-                    addVariable(<Variable> pattern.graph);
+                recurseTerm(pattern);
                 return true;
             },
             [types.PROJECT]: (op) =>
@@ -452,7 +470,7 @@ export default class Util
             case types.COPY:
                 const copy = <A.Copy> result;
                 return factory.createCopy(copy.source, copy.destination);
-            default: throw new Error('Unknown Operation type ' + result.type);
+            default: throw new Error('Unknown Operation type ' + result);
         }
     }
 
@@ -508,7 +526,7 @@ export default class Util
 
     // separate terms from wildcard since we handle them differently
     public static isTerm(term: any): boolean {
-        return term.termType !== undefined && term.termType !== 'Wildcard';
+        return term.termType !== undefined && term.termType !== 'Quad' && term.termType !== 'Wildcard';
     }
 
     public static isWildcard(term: any): boolean {

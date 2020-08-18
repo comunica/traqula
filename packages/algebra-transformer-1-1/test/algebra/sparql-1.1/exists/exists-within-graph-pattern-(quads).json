@@ -22,7 +22,7 @@
             "termType": "NamedNode",
             "value": "http://www.example.org/graph"
           },
-          "type": "pattern"
+          "type": "pattern","termType": "Quad","value": ""
         }
       ]
     },
@@ -50,7 +50,7 @@
               "termType": "NamedNode",
               "value": "http://www.example.org/graph"
             },
-            "type": "pattern"
+            "type": "pattern","termType": "Quad","value": ""
           }
         ]
       }

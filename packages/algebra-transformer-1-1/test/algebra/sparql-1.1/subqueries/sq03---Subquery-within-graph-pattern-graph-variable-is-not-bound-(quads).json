@@ -22,7 +22,7 @@
             "termType": "Variable",
             "value": "g"
           },
-          "type": "pattern"
+          "type": "pattern","termType": "Quad","value": ""
         }
       ]
     },

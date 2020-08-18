@@ -31,6 +31,7 @@ export default function translate(sparql: any, options?:
         prefixes?: {[prefix: string]: string},
         baseIRI?: string,
         blankToVariable?: boolean
+        sparqlStar?: boolean;
     }) : Algebra.Operation
 {
     options = options || {};
@@ -189,7 +190,7 @@ function translateGroupGraphPattern(thingy: any) : Algebra.Operation
 
 function translateExpression(exp: any) : Algebra.Expression
 {
-    if (Util.isTerm(exp))
+    if (Util.isTerm(exp) || exp.termType === 'Quad')
         return factory.createTermExpression(exp);
     if (Util.isWildcard(exp))
         return factory.createWildcardExpression();

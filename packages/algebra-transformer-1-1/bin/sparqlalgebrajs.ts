@@ -26,5 +26,5 @@ if (args.r || args.reverse)
 }
 else
 {
-    console.log(JSON.stringify(Util.objectify(translate(args._[0], { quads: args.q })), null, 2));
+    console.log(JSON.stringify(Util.objectify(translate(args._[0], { quads: args.q, sparqlStar: true })), null, 2));
 }

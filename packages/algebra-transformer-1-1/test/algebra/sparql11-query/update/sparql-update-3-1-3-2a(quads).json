@@ -18,7 +18,7 @@
         "termType": "NamedNode",
         "value": "http://example/bookStore2"
       },
-      "type": "pattern"
+      "type": "pattern","termType": "Quad","value": ""
     }
   ],
   "where": {
@@ -43,7 +43,7 @@
             "termType": "NamedNode",
             "value": "http://example/bookStore"
           },
-          "type": "pattern"
+          "type": "pattern","termType": "Quad","value": ""
         },
         {
           "subject": {
@@ -62,7 +62,7 @@
             "termType": "NamedNode",
             "value": "http://example/bookStore"
           },
-          "type": "pattern"
+          "type": "pattern","termType": "Quad","value": ""
         }
       ]
     },

@@ -26,7 +26,7 @@
                 "termType": "DefaultGraph",
                 "value": ""
               },
-              "type": "pattern"
+              "type": "pattern","termType": "Quad","value": ""
             },
             {
               "subject": {
@@ -45,7 +45,7 @@
                 "termType": "DefaultGraph",
                 "value": ""
               },
-              "type": "pattern"
+              "type": "pattern","termType": "Quad","value": ""
             },
             {
               "subject": {
@@ -64,7 +64,7 @@
                 "termType": "DefaultGraph",
                 "value": ""
               },
-              "type": "pattern"
+              "type": "pattern","termType": "Quad","value": ""
             },
             {
               "subject": {
@@ -83,7 +83,7 @@
                 "termType": "DefaultGraph",
                 "value": ""
               },
-              "type": "pattern"
+              "type": "pattern","termType": "Quad","value": ""
             },
             {
               "subject": {
@@ -102,7 +102,7 @@
                 "termType": "DefaultGraph",
                 "value": ""
               },
-              "type": "pattern"
+              "type": "pattern","termType": "Quad","value": ""
             }
           ]
         },
@@ -133,7 +133,7 @@
                 "termType": "DefaultGraph",
                 "value": ""
               },
-              "type": "pattern"
+              "type": "pattern","termType": "Quad","value": ""
             },
             {
               "subject": {
@@ -152,7 +152,7 @@
                 "termType": "DefaultGraph",
                 "value": ""
               },
-              "type": "pattern"
+              "type": "pattern","termType": "Quad","value": ""
             }
           ]
         },

@@ -22,7 +22,7 @@
         "termType": "NamedNode",
         "value": "http://example/bookStore"
       },
-      "type": "pattern"
+      "type": "pattern","termType": "Quad","value": ""
     }
   ]
 }

@@ -82,6 +82,10 @@ With quads:
   variables: [ '?x' ] }
 ```
 
+#### SPARQL*
+
+[SPARQL*](https://blog.liu.se/olafhartig/2019/01/10/position-statement-rdf-star-and-sparql-star/) queries can be parsed by setting `sparqlStar` to true in the `translate` options.
+
 #### VALUES
 For the VALUES block we return the following output:
 ```

@@ -1,0 +1,138 @@
+{
+  "input": {
+    "patterns": [
+      {
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        },
+        "object": {
+          "termType": "NamedNode",
+          "value": "http://example.com/Bob"
+        },
+        "predicate": {
+          "termType": "NamedNode",
+          "value": "http://example.com/author"
+        },
+        "subject": {
+          "termType": "Quad",
+          "value": "",
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
+          },
+          "object": {
+            "termType": "Variable",
+            "value": "o"
+          },
+          "predicate": {
+            "termType": "Variable",
+            "value": "p"
+          },
+          "subject": {
+            "termType": "Variable",
+            "value": "s"
+          },
+          "type": "pattern","termType": "Quad","value": ""
+        },
+        "type": "pattern","termType": "Quad","value": ""
+      },
+      {
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        },
+        "object": {
+          "termType": "Variable",
+          "value": "person"
+        },
+        "predicate": {
+          "termType": "NamedNode",
+          "value": "http://example.com/author"
+        },
+        "subject": {
+          "termType": "Quad",
+          "value": "",
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
+          },
+          "object": {
+            "termType": "NamedNode",
+            "value": "http://example.com/City"
+          },
+          "predicate": {
+            "termType": "NamedNode",
+            "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+          },
+          "subject": {
+            "termType": "NamedNode",
+            "value": "http://example.com/Moscow"
+          },
+          "type": "pattern","termType": "Quad","value": ""
+        },
+        "type": "pattern","termType": "Quad","value": ""
+      },
+      {
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        },
+        "object": {
+          "datatype": {
+            "termType": "NamedNode",
+            "value": "http://www.w3.org/2001/XMLSchema#boolean"
+          },
+          "termType": "Literal",
+          "value": "true"
+        },
+        "predicate": {
+          "termType": "NamedNode",
+          "value": "http://example.com/broken"
+        },
+        "subject": {
+          "termType": "Quad",
+          "value": "",
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
+          },
+          "object": {
+            "termType": "NamedNode",
+            "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"
+          },
+          "predicate": {
+            "termType": "NamedNode",
+            "value": "http://example.com/x"
+          },
+          "subject": {
+            "termType": "BlankNode",
+            "value": "b"
+          },
+          "type": "pattern","termType": "Quad","value": ""
+        },
+        "type": "pattern","termType": "Quad","value": ""
+      }
+    ],
+    "type": "bgp"
+  },
+  "type": "project",
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "s"
+    },
+    {
+      "termType": "Variable",
+      "value": "p"
+    },
+    {
+      "termType": "Variable",
+      "value": "o"
+    },
+    {
+      "termType": "Variable",
+      "value": "person"
+    }
+  ]
+}

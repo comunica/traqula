@@ -40,7 +40,7 @@ function testPath(root: string, fileName: string, testName: string, blankToVaria
         it (name + (blankToVariable ? ' (no blanks)' : ''), () =>
         {
             let query = fs.readFileSync(sparqlName, 'utf8');
-            let algebra = Util.objectify(translate(query, { quads: name.endsWith('(quads)'), blankToVariable }));
+            let algebra = Util.objectify(translate(query, { quads: name.endsWith('(quads)'), blankToVariable, sparqlStar: testName.includes('sparqlstar') }));
             let expected = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
             expect(canon.canonicalizeQuery(algebra, blankToVariable)).to.deep.equal(canon.canonicalizeQuery(expected, blankToVariable));
         });

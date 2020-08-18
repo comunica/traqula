@@ -18,15 +18,27 @@ export default class Util
     {
         if (algebra.termType)
         {
-            let result: any = { termType: algebra.termType, value: algebra.value };
-            if (algebra.language)
-                result.language = algebra.language;
-            if (algebra.datatype)
-                result.datatype = Util.objectify(algebra.datatype);
-            return result;
+            if (algebra.termType === 'Quad') {
+                return {
+                    type: 'pattern',
+                    termType: 'Quad',
+                    value: '',
+                    subject: Util.objectify(algebra.subject),
+                    predicate: Util.objectify(algebra.predicate),
+                    object: Util.objectify(algebra.object),
+                    graph: Util.objectify(algebra.graph),
+                }
+            } else {
+                let result: any = {termType: algebra.termType, value: algebra.value};
+                if (algebra.language)
+                    result.language = algebra.language;
+                if (algebra.datatype)
+                    result.datatype = Util.objectify(algebra.datatype);
+                return result;
+            }
         }
         if (Array.isArray(algebra))
-            return algebra.map(Util.objectify);
+            return algebra.map(e => Util.objectify(e));
         if (algebra === Object(algebra))
         {
             let result: any = {};
@@ -64,10 +76,10 @@ class Canonicalizer {
             'path': (op: Algebra.Path, factory: Factory) => {
                 return {
                     result: factory.createPath(
-                        this.replaceValue(op.subject, nameMapping, replaceVariables),
+                        this.replaceValue(op.subject, nameMapping, replaceVariables, factory),
                         op.predicate,
-                        this.replaceValue(op.object, nameMapping, replaceVariables),
-                        this.replaceValue(op.graph, nameMapping, replaceVariables),
+                        this.replaceValue(op.object, nameMapping, replaceVariables, factory),
+                        this.replaceValue(op.graph, nameMapping, replaceVariables, factory),
                     ),
                     recurse: true,
                 };
@@ -75,10 +87,10 @@ class Canonicalizer {
             'pattern': (op: Algebra.Pattern, factory: Factory) => {
                 return {
                     result: factory.createPattern(
-                        this.replaceValue(op.subject, nameMapping, replaceVariables),
-                        this.replaceValue(op.predicate, nameMapping, replaceVariables),
-                        this.replaceValue(op.object, nameMapping, replaceVariables),
-                        this.replaceValue(op.graph, nameMapping, replaceVariables),
+                        this.replaceValue(op.subject, nameMapping, replaceVariables, factory),
+                        this.replaceValue(op.predicate, nameMapping, replaceVariables, factory),
+                        this.replaceValue(op.object, nameMapping, replaceVariables, factory),
+                        this.replaceValue(op.graph, nameMapping, replaceVariables, factory),
                     ),
                     recurse: true,
                 };
@@ -94,7 +106,16 @@ class Canonicalizer {
     }
 
     public replaceValue(term: RDF.Term, nameMapping: {[bLabel: string]: string}
-        , replaceVars: boolean): RDF.Term {
+        , replaceVars: boolean, factory: Factory): RDF.Term {
+        if (term.termType === 'Quad') {
+            return factory.createPattern(
+              this.replaceValue(term.subject, nameMapping, replaceVars, factory),
+              this.replaceValue(term.predicate, nameMapping, replaceVars, factory),
+              this.replaceValue(term.object, nameMapping, replaceVars, factory),
+              this.replaceValue(term.graph, nameMapping, replaceVars, factory),
+            )
+        }
+
         if (term.termType !== "BlankNode" && (term.termType !== "Variable" || ! replaceVars)) return term;
 
         let generateTerm = term.termType === "Variable" ? variable : blankNode;

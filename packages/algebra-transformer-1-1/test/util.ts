@@ -4,7 +4,7 @@ import {Algebra} from "../index";
 import * as LibUtil from "../lib/util";
 import Factory from "../lib/factory";
 import * as RDF from "rdf-js";
-import {blankNode, variable} from "@rdfjs/data-model";
+import {DataFactory} from "rdf-data-factory";
 
 export default class Util
 {
@@ -118,7 +118,8 @@ class Canonicalizer {
 
         if (term.termType !== "BlankNode" && (term.termType !== "Variable" || ! replaceVars)) return term;
 
-        let generateTerm = term.termType === "Variable" ? variable : blankNode;
+        const dataFactory = new DataFactory();
+        let generateTerm = term.termType === "Variable" ? dataFactory.variable.bind(dataFactory) : dataFactory.blankNode.bind(dataFactory);
 
         let val = nameMapping[term.value];
         if (! val) {

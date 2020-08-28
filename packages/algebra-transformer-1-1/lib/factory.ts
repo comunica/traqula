@@ -1,7 +1,7 @@
 
 import * as A from './algebra';
 import * as RDF from "rdf-js";
-import * as DataFactory from '@rdfjs/data-model';
+import { DataFactory } from 'rdf-data-factory';
 import {stringToTerm} from "rdf-string";
 const Wildcard = require('sparqljs').Wildcard;
 
@@ -11,7 +11,7 @@ export default class Factory
     stringType: RDF.NamedNode;
 
     constructor(dataFactory?: RDF.DataFactory) {
-        this.dataFactory = dataFactory || DataFactory;
+        this.dataFactory = dataFactory || new DataFactory();
         this.stringType = <RDF.NamedNode>this.createTerm('http://www.w3.org/2001/XMLSchema#string');
     }
 

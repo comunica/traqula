@@ -23,7 +23,7 @@ if (args.h || args.help || args._.length !== 1)
 
 if (args.r || args.reverse)
 {
-    console.log(toSparql(JSON.parse(args._[0])));
+    console.log(toSparql(JSON.parse(args._[0]), { sparqlStar: !args.s }));
 }
 else
 {

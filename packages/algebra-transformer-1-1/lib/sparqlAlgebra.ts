@@ -673,8 +673,8 @@ function translateInsertDelete (thingy: insertDeleteInput): Algebra.Update
     if (!useQuads)
         throw new Error('INSERT/DELETE operations are only supported with quads option enabled');
 
-    let deleteTriples: RDF.BaseQuad[] = [];
-    let insertTriples: RDF.BaseQuad[] = [];
+    let deleteTriples: Algebra.Pattern[] = [];
+    let insertTriples: Algebra.Pattern[] = [];
     let where: Algebra.Operation;
     if (thingy.delete)
         deleteTriples = Util.flatten(thingy.delete.map(input => translateUpdateTriplesBlock(input, thingy.graph)));
@@ -687,11 +687,13 @@ function translateInsertDelete (thingy: insertDeleteInput): Algebra.Update
         else if (thingy.graph)
             // this is equivalent
             where = factory.createFrom(where, [thingy.graph], []);
+    } else if (thingy.updateType === 'deletewhere' && deleteTriples.length > 0) {
+        where = factory.createBgp(deleteTriples);
     }
 
     return factory.createDeleteInsert(
-        deleteTriples.length > 0 ? deleteTriples.map(translateQuad) : undefined,
-        insertTriples.length > 0 ? insertTriples.map(translateQuad) : undefined,
+        deleteTriples.length > 0 ? deleteTriples : undefined,
+        insertTriples.length > 0 ? insertTriples : undefined,
         where,
     );
 }
@@ -702,14 +704,14 @@ type updateTriplesBlockInput = {
     name?: RDF.NamedNode
 };
 // for now, UPDATE parsing will always return quads and have no GRAPH elements
-function translateUpdateTriplesBlock (thingy: updateTriplesBlockInput, graph?: RDF.NamedNode): RDF.BaseQuad[] {
+function translateUpdateTriplesBlock (thingy: updateTriplesBlockInput, graph?: RDF.NamedNode): Algebra.Pattern[] {
     let currentGraph = graph;
     if (thingy.type === 'graph')
         currentGraph = thingy.name;
     let currentTriples = thingy.triples;
     if (currentGraph)
         currentTriples = currentTriples.map(triple => Object.assign(triple, { graph: currentGraph }));
-    return currentTriples;
+    return currentTriples.map(translateQuad);
 }
 
 type updateGraphInput = {

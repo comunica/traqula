@@ -1,4 +1,4 @@
-
+import { isomorphic } from 'rdf-isomorphic';
 import * as Algebra from './algebra';
 import * as RDF from 'rdf-js'
 import Factory from './factory';
@@ -764,6 +764,11 @@ function translateDeleteInsert(op: Algebra.DeleteInsert): any
             updates[0].updateType = 'deletewhere';
         else
             updates[0].updateType = 'delete';
+    } else if (!op.insert && op.where && op.where.type === 'bgp') {
+        if (isomorphic(op.delete, (op.where as Algebra.Bgp).patterns)) {
+            delete updates[0].where;
+            updates[0].updateType = 'deletewhere';
+        }
     }
 
     return { prefixes: {}, type: 'update', updates }

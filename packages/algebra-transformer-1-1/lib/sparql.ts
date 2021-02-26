@@ -327,6 +327,8 @@ function translateMinus(op: Algebra.Minus): any
     let patterns = translateOperation(op.right);
     if (patterns.type === 'group')
         patterns = patterns.patterns;
+    if (!Array.isArray(patterns))
+        patterns = [ patterns ];
     return Util.flatten([
         translateOperation(op.left),
         {

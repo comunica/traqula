@@ -1,0 +1,96 @@
+{
+  "type": "project",
+  "input": {
+    "type": "union",
+    "left": {
+      "type": "bgp",
+      "patterns": [
+        {
+          "type": "pattern",
+          "termType": "Quad",
+          "value": "",
+          "subject": {
+            "termType": "Variable",
+            "value": "item"
+          },
+          "predicate": {
+            "termType": "NamedNode",
+            "value": "http://www.wikidata.org/prop/direct/P31"
+          },
+          "object": {
+            "termType": "NamedNode",
+            "value": "http://www.wikidata.org/entity/Q486972"
+          },
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
+          }
+        }
+      ]
+    },
+    "right": {
+      "type": "join",
+      "left": {
+        "type": "bgp",
+        "patterns": [
+          {
+            "type": "pattern",
+            "termType": "Quad",
+            "value": "",
+            "subject": {
+              "termType": "Variable",
+              "value": "item"
+            },
+            "predicate": {
+              "termType": "NamedNode",
+              "value": "http://www.wikidata.org/prop/direct/P31"
+            },
+            "object": {
+              "termType": "Variable",
+              "value": "instanceOf"
+            },
+            "graph": {
+              "termType": "DefaultGraph",
+              "value": ""
+            }
+          }
+        ]
+      },
+      "right": {
+        "type": "path",
+        "subject": {
+          "termType": "Variable",
+          "value": "instanceOf"
+        },
+        "predicate": {
+          "type": "OneOrMorePath",
+          "path": {
+            "type": "link",
+            "iri": {
+              "termType": "NamedNode",
+              "value": "http://www.wikidata.org/prop/direct/P279"
+            }
+          }
+        },
+        "object": {
+          "termType": "NamedNode",
+          "value": "http://www.wikidata.org/entity/Q486972"
+        },
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        }
+      }
+    }
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "item"
+    },
+    {
+      "termType": "Variable",
+      "value": "instanceOf"
+    }
+  ]
+}

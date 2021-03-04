@@ -290,10 +290,21 @@ function translateGroup(op: Algebra.Group): any
 
 function translateJoin(op: Algebra.Join): any
 {
-    return Util.flatten([
+    const arr: any[] = Util.flatten([
         translateOperation(op.left),
         translateOperation(op.right)
-    ])
+    ]);
+
+    // Merge bgps
+    // This is possible if one side was a path and the other a bgp for example
+    return arr.reduce((result, val) => {
+        if (val.type !== 'bgp' || result.length == 0 || result[result.length-1].type !== 'bgp') {
+            result.push(val);
+        } else {
+            result[result.length - 1].triples.push(...val.triples);
+        }
+        return result;
+    }, []);
 }
 
 function translateLeftJoin(op: Algebra.LeftJoin): any

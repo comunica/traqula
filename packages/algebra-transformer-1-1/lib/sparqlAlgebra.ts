@@ -776,6 +776,10 @@ function translateBlankNodesToVariables (res: Algebra.Operation, variables: Set<
         return acc;
     }, {});
     return Util.mapOperation(res, {
+        'deleteinsert': (op: Algebra.DeleteInsert) => {
+            // Only relevant for INSERT operations as others should never contain blank nodes
+            return { result: op, recurse: false };
+        },
         'path': (op: Algebra.Path, factory: Factory) => {
             return {
                 result: factory.createPath(

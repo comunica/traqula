@@ -358,7 +358,18 @@ function translateGraph(graph: any) : Algebra.Operation
 let typeVals = Object.keys(types).map(key => (<any>types)[key]);
 function recurseGraph(thingy: Algebra.Operation, graph: RDF.Term, replacement?: RDF.Variable) : Algebra.Operation
 {
-    if (thingy.type === types.BGP)
+    if (thingy.type === types.GRAPH)
+    {
+        if (replacement) {
+            // At this point we would lose track of the replacement which would result in incorrect results
+            // This would indicate the library is not being used as intended though
+            throw new Error('Recursing through nested GRAPH statements with a replacement is impossible.');
+        }
+        const graph = thingy as Algebra.Graph;
+        // In case there were nested GRAPH statements that were not recursed yet for some reason
+        thingy = recurseGraph(graph.input, graph.name);
+    }
+    else if (thingy.type === types.BGP)
         (<Algebra.Bgp>thingy).patterns = (<Algebra.Bgp>thingy).patterns.map(quad =>
         {
             if (replacement)
@@ -367,7 +378,8 @@ function recurseGraph(thingy: Algebra.Operation, graph: RDF.Term, replacement?: 
                 if (quad.predicate.equals(graph)) quad.predicate = replacement;
                 if (quad.object.equals(graph)) quad.object = replacement;
             }
-            quad.graph = graph;
+            if (quad.graph.termType === 'DefaultGraph')
+                quad.graph = graph;
             return quad;
         });
     else if (thingy.type === types.PATH)
@@ -378,7 +390,8 @@ function recurseGraph(thingy: Algebra.Operation, graph: RDF.Term, replacement?: 
             if (p.subject.equals(graph)) p.subject = replacement;
             if (p.object.equals(graph))  p.object = replacement;
         }
-        thingy.graph = graph;
+        if (thingy.graph.termType === 'DefaultGraph')
+            thingy.graph = graph;
     }
     // need to replace variables in subqueries should the graph also be a variable of the same name
     // unless the subquery projects that variable

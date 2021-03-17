@@ -56,6 +56,11 @@ function translateQuery(sparql: any, quads?: boolean, blankToVariable?: boolean)
     varCount = 0;
     useQuads = quads;
 
+
+    // Assume this is an empty query
+    if (!sparql.type)
+        return factory.createProject(factory.createBgp([]), []);
+
     if (sparql.type !== 'query' && sparql.type !== 'update')
         throw new Error('Translate only works on complete query or update objects.');
 

@@ -122,106 +122,96 @@
         }
       ],
       "where": {
-        "type": "from",
+        "type": "filter",
         "input": {
-          "type": "filter",
-          "input": {
-            "type": "bgp",
-            "patterns": [
-              {
-                "subject": {
-                  "termType": "Variable",
-                  "value": "book"
-                },
-                "predicate": {
-                  "termType": "NamedNode",
-                  "value": "http://purl.org/dc/elements/1.1/date"
-                },
-                "object": {
-                  "termType": "Variable",
-                  "value": "date"
-                },
-                "graph": {
-                  "termType": "DefaultGraph",
-                  "value": ""
-                },
-                "type": "pattern","termType": "Quad","value": ""
+          "type": "bgp",
+          "patterns": [
+            {
+              "subject": {
+                "termType": "Variable",
+                "value": "book"
               },
-              {
-                "subject": {
-                  "termType": "Variable",
-                  "value": "book"
-                },
-                "predicate": {
-                  "termType": "NamedNode",
-                  "value": "http://purl.org/dc/elements/1.1/type"
-                },
-                "object": {
-                  "termType": "NamedNode",
-                  "value": "http://purl.org/dc/dcmitype/PhysicalObject"
-                },
-                "graph": {
-                  "termType": "DefaultGraph",
-                  "value": ""
-                },
-                "type": "pattern","termType": "Quad","value": ""
+              "predicate": {
+                "termType": "NamedNode",
+                "value": "http://purl.org/dc/elements/1.1/date"
               },
-              {
-                "subject": {
-                  "termType": "Variable",
-                  "value": "book"
-                },
-                "predicate": {
-                  "termType": "Variable",
-                  "value": "p"
-                },
-                "object": {
-                  "termType": "Variable",
-                  "value": "v"
-                },
-                "graph": {
-                  "termType": "DefaultGraph",
-                  "value": ""
-                },
-                "type": "pattern","termType": "Quad","value": ""
-              }
-            ]
-          },
-          "expression": {
-            "type": "expression",
-            "expressionType": "operator",
-            "operator": "<",
-            "args": [
-              {
-                "type": "expression",
-                "expressionType": "term",
-                "term": {
-                  "termType": "Variable",
-                  "value": "date"
-                }
+              "object": {
+                "termType": "Variable",
+                "value": "date"
               },
-              {
-                "type": "expression",
-                "expressionType": "term",
-                "term": {
-                  "termType": "Literal",
-                  "value": "2000-01-01T00:00:00-02:00",
-                  "datatype": {
-                    "termType": "NamedNode",
-                    "value": "http://www.w3.org/2001/XMLSchema#dateTime"
-                  }
-                }
-              }
-            ]
-          }
+              "graph": {
+                "termType": "NamedNode",
+                "value": "http://example/bookStore"
+              },
+              "type": "pattern","termType": "Quad","value": ""
+            },
+            {
+              "subject": {
+                "termType": "Variable",
+                "value": "book"
+              },
+              "predicate": {
+                "termType": "NamedNode",
+                "value": "http://purl.org/dc/elements/1.1/type"
+              },
+              "object": {
+                "termType": "NamedNode",
+                "value": "http://purl.org/dc/dcmitype/PhysicalObject"
+              },
+              "graph": {
+                "termType": "NamedNode",
+                "value": "http://example/bookStore"
+              },
+              "type": "pattern","termType": "Quad","value": ""
+            },
+            {
+              "subject": {
+                "termType": "Variable",
+                "value": "book"
+              },
+              "predicate": {
+                "termType": "Variable",
+                "value": "p"
+              },
+              "object": {
+                "termType": "Variable",
+                "value": "v"
+              },
+              "graph": {
+                "termType": "NamedNode",
+                "value": "http://example/bookStore"
+              },
+              "type": "pattern","termType": "Quad","value": ""
+            }
+          ]
         },
-        "default": [
-          {
-            "termType": "NamedNode",
-            "value": "http://example/bookStore"
-          }
-        ],
-        "named": []
+        "expression": {
+          "type": "expression",
+          "expressionType": "operator",
+          "operator": "<",
+          "args": [
+            {
+              "type": "expression",
+              "expressionType": "term",
+              "term": {
+                "termType": "Variable",
+                "value": "date"
+              }
+            },
+            {
+              "type": "expression",
+              "expressionType": "term",
+              "term": {
+                "termType": "Literal",
+                "value": "2000-01-01T00:00:00-02:00",
+                "datatype": {
+                  "termType": "NamedNode",
+                  "value": "http://www.w3.org/2001/XMLSchema#dateTime"
+                }
+              }
+            }
+          ]
+        }
       }
     }
   ]

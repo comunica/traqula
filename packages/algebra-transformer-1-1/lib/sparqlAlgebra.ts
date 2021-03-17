@@ -685,8 +685,8 @@ function translateInsertDelete (thingy: insertDeleteInput): Algebra.Update
         if (thingy.using)
             where = factory.createFrom(where, thingy.using.default, thingy.using.named);
         else if (thingy.graph)
-            // this is equivalent
-            where = factory.createFrom(where, [thingy.graph], []);
+            // This is equivalent
+            where = recurseGraph(where, thingy.graph);
     } else if (thingy.updateType === 'deletewhere' && deleteTriples.length > 0) {
         where = factory.createBgp(deleteTriples);
     }
@@ -703,7 +703,7 @@ type updateTriplesBlockInput = {
     triples: RDF.BaseQuad[];
     name?: RDF.NamedNode
 };
-// for now, UPDATE parsing will always return quads and have no GRAPH elements
+// UPDATE parsing will always return quads and have no GRAPH elements
 function translateUpdateTriplesBlock (thingy: updateTriplesBlockInput, graph?: RDF.NamedNode): Algebra.Pattern[] {
     let currentGraph = graph;
     if (thingy.type === 'graph')

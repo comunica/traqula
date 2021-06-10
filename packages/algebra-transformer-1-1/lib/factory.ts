@@ -1,9 +1,9 @@
 
 import * as A from './algebra';
-import * as RDF from "rdf-js";
+import * as RDF from 'rdf-js';
 import { DataFactory } from 'rdf-data-factory';
-import {stringToTerm} from "rdf-string";
-const Wildcard = require('sparqljs').Wildcard;
+import { stringToTerm } from "rdf-string";
+import { Wildcard } from 'sparqljs';
 
 export default class Factory
 {
@@ -25,7 +25,7 @@ export default class Factory
     }
     createBgp (patterns: A.Pattern[]): A.Bgp { return { type: A.types.BGP, patterns }; }
     createConstruct (input: A.Operation, template: A.Pattern[]): A.Construct { return { type: A.types.CONSTRUCT, input, template }; }
-    createDescribe (input: A.Operation, terms: RDF.Term[]): A.Describe { return { type: A.types.DESCRIBE, input, terms }; }
+    createDescribe (input: A.Operation, terms: (RDF.Term | Wildcard)[]): A.Describe { return { type: A.types.DESCRIBE, input, terms }; }
     createDistinct (input: A.Operation) : A.Distinct { return { type: A.types.DISTINCT, input }; }
     createExtend (input: A.Operation, variable: RDF.Variable, expression: A.Expression) : A.Extend { return { type: A.types.EXTEND, input, variable, expression }; }
     createFrom (input: A.Operation, def: RDF.Term[], named: RDF.Term[]) : A.From { return { type: A.types.FROM, input, default: def, named }; }
@@ -58,7 +58,7 @@ export default class Factory
         pattern.type = A.types.PATTERN;
         return pattern;
     }
-    createProject (input: A.Operation, variables: RDF.Variable[]) : A.Project { return { type: A.types.PROJECT, input, variables }; }
+    createProject (input: A.Operation, variables: (RDF.Variable | Wildcard)[]) : A.Project { return { type: A.types.PROJECT, input, variables }; }
     createReduced (input: A.Operation) : A.Reduced { return { type: A.types.REDUCED, input }; }
     createSeq (left: A.PropertyPathSymbol, right: A.PropertyPathSymbol): A.Seq { return { type: A.types.SEQ, left, right }; }
     createService (input: A.Operation, name: RDF.Term, silent?: boolean): A.Service { return { type: A.types.SERVICE, input, name, silent }; }

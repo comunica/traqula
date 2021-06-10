@@ -1,10 +1,36 @@
-
+import * as equal from 'fast-deep-equal';
+import * as RDF from 'rdf-js'
+import { termToString } from 'rdf-string';
+import {
+    AggregateExpression,
+    BgpPattern,
+    ClearDropOperation,
+    CopyMoveAddOperation,
+    CreateOperation,
+    Expression,
+    FilterPattern,
+    GraphPattern,
+    GraphQuads,
+    GroupPattern,
+    InsertDeleteOperation,
+    IriTerm,
+    LoadOperation,
+    Ordering,
+    Pattern,
+    PropertyPath,
+    Query,
+    SelectQuery,
+    SparqlQuery,
+    Triple,
+    Update,
+    UpdateOperation,
+    Variable,
+    VariableExpression,
+    Wildcard
+} from 'sparqljs';
 import * as Algebra from './algebra';
 import Factory from './factory';
 import Util from './util';
-import * as equal from 'fast-deep-equal';
-import * as RDF from 'rdf-js'
-import {termToString} from 'rdf-string';
 
 const Parser = require('sparqljs').Parser;
 const types = Algebra.types;
@@ -24,7 +50,7 @@ let factory: Factory;
  *                    * baseIRI: Base IRI that should be used for the query. Default undefined (throws error if required).
  * @returns {Operation}
  */
-export default function translate(sparql: any, options?:
+export default function translate(sparql: SparqlQuery | string, options?:
     {
         dataFactory?: RDF.DataFactory,
         quads?: boolean,
@@ -37,19 +63,22 @@ export default function translate(sparql: any, options?:
     options = options || {};
     factory = new Factory(options.dataFactory);
 
+    let query: SparqlQuery;
     if (isString(sparql))
     {
         let parser = new Parser(options);
         // resets the identifier counter used for blank nodes
         // provides nicer and more consistent output if there are multiple calls
         parser._resetBlanks();
-        sparql = parser.parse(sparql);
+        query = parser.parse(sparql);
+    } else {
+        query = sparql;
     }
 
-    return translateQuery(sparql, options.quads, options.blankToVariable);
+    return translateQuery(query, options.quads, options.blankToVariable);
 }
 
-function translateQuery(sparql: any, quads?: boolean, blankToVariable?: boolean) : Algebra.Operation
+function translateQuery(sparql: SparqlQuery, quads?: boolean, blankToVariable?: boolean) : Algebra.Operation
 {
     // this set is filled in during the inScopeVariables call
     variables = new Set();
@@ -63,12 +92,12 @@ function translateQuery(sparql: any, quads?: boolean, blankToVariable?: boolean)
     if (sparql.type !== 'query' && sparql.type !== 'update')
         throw new Error('Translate only works on complete query or update objects.');
 
-    let vars: Set<RDF.Variable> = new Set(Object.keys(inScopeVariables(sparql)).map(factory.createTerm.bind(factory)));
+    const vars: Set<RDF.Variable> = new Set(Object.keys(inScopeVariables(sparql)).map(factory.createTerm.bind(factory)));
     let res: Algebra.Operation;
 
     if (sparql.type === 'query') {
         // group and where are identical, having only 1 makes parsing easier, can be undefined in DESCRIBE
-        let group = { type: 'group', patterns: sparql.where || [] };
+        const group: GroupPattern = { type: 'group', patterns: sparql.where || [] };
         res = translateGroupGraphPattern(group);
         res = translateAggregates(sparql, res, vars);
     }
@@ -82,7 +111,7 @@ function translateQuery(sparql: any, quads?: boolean, blankToVariable?: boolean)
     return res;
 }
 
-function isString(str: any): boolean
+function isString(str: any): str is string
 {
     return typeof str === 'string';
 }
@@ -92,9 +121,9 @@ function isObject(o: any): boolean
     return o !== null && typeof o === 'object';
 }
 
-function isVariable(term: RDF.Term) : boolean
+function isVariable(term: any) : term is RDF.Variable
 {
-    return term && term.termType === "Variable";
+    return term?.termType === 'Variable';
 }
 
 // 18.2.1
@@ -105,7 +134,7 @@ function inScopeVariables(thingy: any) : {[key: string]: boolean}
     if (isVariable(thingy))
     {
         inScope[termToString(thingy)] = true;
-        variables.add(thingy); // keep track of all variables so we don't generate duplicates
+        variables.add(thingy.value); // keep track of all variables so we don't generate duplicates
     }
     else if (isObject(thingy))
     {
@@ -140,15 +169,15 @@ function inScopeVariables(thingy: any) : {[key: string]: boolean}
     return inScope;
 }
 
-function translateGroupGraphPattern(thingy: any) : Algebra.Operation
+function translateGroupGraphPattern(thingy: Pattern) : Algebra.Operation
 {
     // 18.2.2.1
     // already done by sparql parser
 
     // 18.2.2.2
-    let filters: any[] = [];
-    let nonfilters: any[] = [];
-    if (thingy.patterns)
+    let filters: FilterPattern[] = [];
+    let nonfilters: Pattern[] = [];
+    if ('patterns' in thingy)
         for (let pattern of thingy.patterns)
             (pattern.type === 'filter' ? filters : nonfilters).push(pattern);
 
@@ -192,20 +221,21 @@ function translateGroupGraphPattern(thingy: any) : Algebra.Operation
     return result;
 }
 
-function translateExpression(exp: any) : Algebra.Expression
+function translateExpression(exp: Expression | RDF.Term | Wildcard) : Algebra.Expression
 {
-    if (Util.isTerm(exp) || exp.termType === 'Quad')
+    if (Util.isSimpleTerm(exp) || Util.isQuad(exp))
         return factory.createTermExpression(exp);
     if (Util.isWildcard(exp))
         return factory.createWildcardExpression();
-    if (exp.aggregation)
+    if ('aggregation' in exp)
         return factory.createAggregateExpression(exp.aggregation, translateExpression(exp.expression), exp.distinct, exp.separator);
-    if (exp.function)
-        return factory.createNamedExpression(<RDF.NamedNode> exp.function, exp.args.map(translateExpression));
-    if (exp.operator)
+    if ('function' in exp)
+        // Outdated typings
+        return factory.createNamedExpression(<RDF.NamedNode><unknown> exp.function, exp.args.map(translateExpression));
+    if ('operator' in exp)
     {
         if (exp.operator === 'exists' || exp.operator === 'notexists')
-            return factory.createExistenceExpression(exp.operator === 'notexists', translateGroupGraphPattern(exp.args[0]));
+            return factory.createExistenceExpression(exp.operator === 'notexists', translateGroupGraphPattern(exp.args[0] as Pattern));
         if (exp.operator === 'in' || exp.operator === 'notin')
             exp.args = [exp.args[0]].concat(exp.args[1]); // sparql.js uses 2 arguments with the second one being a list
         return factory.createOperatorExpression(exp.operator, exp.args.map(translateExpression));
@@ -213,16 +243,16 @@ function translateExpression(exp: any) : Algebra.Expression
     throw new Error(`Unknown expression: ${JSON.stringify(exp)}`);
 }
 
-function translateBgp(thingy: any) : Algebra.Operation
+function translateBgp(thingy: BgpPattern) : Algebra.Operation
 {
     let patterns: Algebra.Pattern[] = [];
     let joins: Algebra.Operation[] = [];
     for (let t of thingy.triples)
     {
-        if (t.predicate.type === 'path')
+        if ('pathType' in t.predicate)
         {
             // translatePath returns a mix of Quads and Paths
-            let path = translatePath(t);
+            let path = translatePath(t as Triple & { predicate: PropertyPath });
             for (let p of path)
             {
                 if (p.type === types.PATH)
@@ -237,7 +267,7 @@ function translateBgp(thingy: any) : Algebra.Operation
             }
         }
         else
-            patterns.push(translateQuad(t));
+            patterns.push(translateQuad(t as RDF.Quad));
     }
     if (patterns.length > 0)
         joins.push(factory.createBgp(patterns));
@@ -246,7 +276,7 @@ function translateBgp(thingy: any) : Algebra.Operation
     return joins.reduce((acc, item) => factory.createJoin(acc, item));
 }
 
-function translatePath(triple: any) : Algebra.Operation[]
+function translatePath(triple: Triple & { predicate: PropertyPath }) : Algebra.Operation[]
 {
     let sub = triple.subject;
     let pred = translatePathPredicate(triple.predicate);
@@ -255,10 +285,15 @@ function translatePath(triple: any) : Algebra.Operation[]
     return simplifyPath(<RDF.Quad_Subject> sub, pred, <RDF.Quad_Object> obj);
 }
 
-function translatePathPredicate(predicate: any) : Algebra.Operation
+function translatePathPredicate(predicate: IriTerm | PropertyPath) : Algebra.Operation
 {
-    if (Util.isTerm(predicate) && predicate.termType === "NamedNode")
-        return factory.createLink(predicate);
+    if (Util.isSimpleTerm(predicate))
+    {
+        if (predicate.termType === 'NamedNode')
+            return factory.createLink(predicate);
+        else
+            throw new Error(`Path predicate should be a NamedNode, got ${JSON.stringify(predicate)}`);
+    }
 
     if (predicate.pathType === '^')
         return factory.createInv(translatePathPredicate(predicate.items[0]));
@@ -269,17 +304,17 @@ function translatePathPredicate(predicate: any) : Algebra.Operation
         let normals: RDF.NamedNode[] = [];
         let inverted: RDF.NamedNode[] = [];
         let items;
-        if (predicate.items[0].type === 'path' && predicate.items[0].pathType === '|')
+        if ('pathType' in predicate.items[0] && predicate.items[0].pathType === '|')
             items = predicate.items[0].items; // the | element
         else
             items = predicate.items;
 
         for (let item of items)
         {
-            if (Util.isTerm(item))
+            if (Util.isSimpleTerm(item))
                 normals.push(item);
             else if (item.pathType === '^')
-                inverted.push(item.items[0]);
+                inverted.push(item.items[0] as RDF.NamedNode);
             else
                 throw new Error(`Unexpected item: ${JSON.stringify(item)}`);
         }
@@ -342,10 +377,10 @@ function translateQuad(quad: RDF.BaseQuad) : Algebra.Pattern
     return factory.createPattern(quad.subject, quad.predicate, quad.object, quad.graph);
 }
 
-function translateGraph(graph: any) : Algebra.Operation
+function translateGraph(graph: GraphPattern) : Algebra.Operation
 {
-    graph.type = 'group';
-    let result = translateGroupGraphPattern(graph);
+    const group: GroupPattern = { type: 'group', patterns: graph.patterns };
+    let result = translateGroupGraphPattern(group);
     if (useQuads)
         result = recurseGraph(result, graph.name);
     else
@@ -354,7 +389,7 @@ function translateGraph(graph: any) : Algebra.Operation
     return result;
 }
 
-let typeVals = Object.keys(types).map(key => (<any>types)[key]);
+let typeVals = Object.values(types);
 function recurseGraph(thingy: Algebra.Operation, graph: RDF.Term, replacement?: RDF.Variable) : Algebra.Operation
 {
     if (thingy.type === types.GRAPH)
@@ -427,15 +462,15 @@ function recurseGraph(thingy: Algebra.Operation, graph: RDF.Term, replacement?: 
     return thingy;
 }
 
-function accumulateGroupGraphPattern(G: Algebra.Operation, E: any) : Algebra.Operation
+function accumulateGroupGraphPattern(G: Algebra.Operation, E: Pattern) : Algebra.Operation
 {
     if (E.type === 'optional')
     {
         // optional input needs to be interpreted as a group
-        let A: Algebra.Operation = translateGroupGraphPattern({ type: 'group', patterns: E.patterns });
+        const A = translateGroupGraphPattern({ type: 'group', patterns: E.patterns });
         if (A.type === types.FILTER)
         {
-            let filter = <Algebra.Filter> A;
+            const filter = <Algebra.Filter> A;
             G = factory.createLeftJoin(G, filter.input, filter.expression);
         }
         else
@@ -444,7 +479,7 @@ function accumulateGroupGraphPattern(G: Algebra.Operation, E: any) : Algebra.Ope
     else if (E.type === 'minus')
     {
         // minus input needs to be interpreted as a group
-        let A: Algebra.Operation = translateGroupGraphPattern({ type: 'group', patterns: E.patterns });
+        const A = translateGroupGraphPattern({ type: 'group', patterns: E.patterns });
         G = factory.createMinus(G, A);
     }
     else if (E.type === 'bind')
@@ -452,13 +487,13 @@ function accumulateGroupGraphPattern(G: Algebra.Operation, E: any) : Algebra.Ope
     else if (E.type === 'service')
     {
         // transform to group so childnodes get parsed correctly
-        E.type = 'group';
-        let A = factory.createService(translateGroupGraphPattern(E), E.name, E.silent);
+        const group: GroupPattern = { type: 'group', patterns: E.patterns };
+        const A = factory.createService(translateGroupGraphPattern(group), E.name, E.silent);
         G = simplifiedJoin(G, A);
     }
     else
     {
-        let A = translateGroupGraphPattern(E);
+        const A = translateGroupGraphPattern(E);
         G = simplifiedJoin(G, A);
     }
 
@@ -496,41 +531,45 @@ function translateInlineData(values: any) : Algebra.Values
 }
 
 // --------------------------------------- AGGREGATES
-function translateAggregates(query: any, res: Algebra.Operation, variables: Set<RDF.Variable>) : Algebra.Operation
+function translateAggregates(query: Query, res: Algebra.Operation, variables: Set<RDF.Variable>) : Algebra.Operation
 {
-    // 18.2.4.1
-    let E = [];
+    // Typings for ConstructQuery are wrong and missing several fields so we will cast quite often to SelectQuery to have partial typings
+    const select = query as SelectQuery;
 
-    let A: any = {};
-    query.variables = mapAggregates(query.variables, A);
-    query.having = mapAggregates(query.having, A);
-    query.order = mapAggregates(query.order, A);
+    // 18.2.4.1
+    const E: VariableExpression[] = [];
+
+    const A: NodeJS.Dict<AggregateExpression> = {};
+    select.variables = select.variables && select.variables.map(val => mapAggregate(val, A));
+    select.having = select.having && select.having.map(val => mapAggregate(val, A));
+    select.order = select.order && select.order.map(val => mapAggregate(val, A));
 
     // if there are any aggregates or if we have a groupBy (both result in a GROUP)
-    if (query.group || Object.keys(A).length > 0)
+    if (select.group || Object.keys(A).length > 0)
     {
-        let aggregates = Object.keys(A).map(v => translateBoundAggregate(A[v], <RDF.Variable>factory.createTerm(v)));
-        let vars: RDF.Variable[] = [];
-        if (query.group)
+        const aggregates = Object.keys(A).map(v => translateBoundAggregate(A[v], <RDF.Variable>factory.createTerm(v)));
+        const vars: RDF.Variable[] = [];
+        if (select.group)
         {
-            for (let e of query.group)
+            for (const e of select.group)
             {
-                if (e.expression.type)
-                {
-                    const v = e.variable ? <RDF.Variable>e.variable : generateFreshVar();
+                if (Util.isSimpleTerm(e.expression)) {
+                    vars.push(<RDF.Variable>e.expression); // this will always be a var, otherwise sparql would be invalid
+                } else {
+                    // Incorrect typings, e can have a variable, see for example group-variable test in sparql.js
+                    const v = 'variable' in e ? <RDF.Variable>(e as any).variable : generateFreshVar();
                     res = factory.createExtend(res, v, translateExpression(e.expression));
                     vars.push(v);
                 }
-                else
-                    vars.push(<RDF.Variable>e.expression); // this will always be a var, otherwise sparql would be invalid
+
             }
         }
         res = factory.createGroup(res, vars, aggregates);
     }
 
     // 18.2.4.2
-    if (query.having)
-        for (let filter of query.having)
+    if (select.having)
+        for (let filter of select.having)
             res = factory.createFilter(res, translateExpression(filter));
 
     // 18.2.4.3
@@ -538,7 +577,7 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
         res = factory.createJoin(res, translateInlineData(query));
 
     // 18.2.4.4
-    let PV = new Set<RDF.Term>();
+    let PV = new Set<RDF.Term | Wildcard>();
 
     if (query.queryType === 'SELECT' || query.queryType === 'DESCRIBE')
     {
@@ -549,7 +588,7 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
             for (let v of query.variables)
             {
                 // can have non-variables with DESCRIBE
-                if (isVariable(v) || !v.variable)
+                if (isVariable(v) || !('variable' in v))
                     PV.add(v);
                 else if (v.variable) // ... AS ?x
                 {
@@ -568,8 +607,8 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
     // not using toList and toMultiset
 
     // 18.2.5.1
-    if (query.order)
-        res = factory.createOrderBy(res, query.order.map((exp: any) =>
+    if (select.order)
+        res = factory.createOrderBy(res, select.order.map((exp: any) =>
         {
             let result = translateExpression(exp.expression);
             if (exp.descending)
@@ -583,16 +622,16 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
         res = factory.createProject(res, <RDF.Variable[]> Array.from(PV));
 
     // 18.2.5.3
-    if (query.distinct)
+    if (select.distinct)
         res = factory.createDistinct(res);
 
     // 18.2.5.4
-    if (query.reduced)
+    if (select.reduced)
         res = factory.createReduced(res);
 
     // NEW: support for ask/construct/describe queries
     if (query.queryType === 'CONSTRUCT')
-        res = factory.createConstruct(res, query.template.map(translateQuad));
+        res = factory.createConstruct(res, (query.template as RDF.Quad[]).map(translateQuad));
     else if (query.queryType === 'ASK')
         res = factory.createAsk(res);
     else if (query.queryType === 'DESCRIBE')
@@ -600,22 +639,21 @@ function translateAggregates(query: any, res: Algebra.Operation, variables: Set<
 
     // Slicing needs to happen after construct/describe
     // 18.2.5.5
-    if (query.offset || query.limit)
-        res = factory.createSlice(res, query.offset, query.limit);
+    if (select.offset || select.limit)
+        res = factory.createSlice(res, select.offset, select.limit);
 
-    if (query.from)
-        res = factory.createFrom(res, query.from.default, query.from.named);
+    if (select.from)
+        res = factory.createFrom(res, select.from.default, select.from.named);
 
     return res;
 }
 
-// rewrites some of the input sparql object to make use of aggregate variables
-function mapAggregates (thingy: any, aggregates: {[key: string]: any}) : any
-{
-    if (!thingy)
-        return thingy;
+type mapAggregateType = Variable | Wildcard | Expression | Ordering;
 
-    if (thingy.type === 'aggregate')
+// rewrites some of the input sparql object to make use of aggregate variables
+function mapAggregate (thingy: mapAggregateType, aggregates: NodeJS.Dict<AggregateExpression>) : any
+{
+    if ('type' in thingy && thingy.type === 'aggregate')
     {
         let found = false;
         let v;
@@ -637,55 +675,48 @@ function mapAggregates (thingy: any, aggregates: {[key: string]: any}) : any
     }
 
     // non-aggregate expression
-    if (thingy.expression)
-        thingy.expression = mapAggregates(thingy.expression, aggregates);
-    else if (thingy.args)
-        mapAggregates(thingy.args, aggregates);
-    else if (Array.isArray(thingy))
-        thingy.forEach((subthingy, idx) => thingy[idx] = mapAggregates(subthingy, aggregates));
+    if ('expression' in thingy && thingy.expression)
+        return { ...thingy, expression: mapAggregate(thingy.expression, aggregates) };
+    if ('args' in thingy && thingy.args)
+        return { ...thingy, args: thingy.args.map(subthingy => mapAggregate(subthingy, aggregates)) };
 
+    // Normal variable/wildcard
     return thingy;
 }
 
-function translateBoundAggregate (thingy: any, v: RDF.Variable) : Algebra.BoundAggregate
+function translateBoundAggregate (thingy: AggregateExpression, v: RDF.Variable) : Algebra.BoundAggregate
 {
     if (thingy.type !== 'aggregate' || !thingy.aggregation)
         throw new Error(`Unexpected input: ${JSON.stringify(thingy)}`);
 
-    let A  = <Algebra.BoundAggregate>translateExpression(thingy);
+    const A  = <Algebra.BoundAggregate>translateExpression(thingy);
     A.variable = v;
 
     return A;
 }
 
-function translateUpdate (thingy: any) : Algebra.Operation {
+function translateUpdate (thingy: Update) : Algebra.Operation {
     if (thingy.updates.length === 1)
         return translateSingleUpdate(thingy.updates[0]);
     return factory.createCompositeUpdate(thingy.updates.map(translateSingleUpdate));
 }
 
-function translateSingleUpdate (thingy: any) : Algebra.Update {
-    if (thingy.updateType === 'insertdelete' || thingy.updateType === 'deletewhere' || thingy.updateType === 'delete' || thingy.updateType === 'insert')
+function translateSingleUpdate (thingy: UpdateOperation) : Algebra.Update {
+    if ('type' in thingy) {
+        if (thingy.type === 'load')
+            return translateUpdateGraphLoad(thingy);
+        if (thingy.type === 'clear' || thingy.type === 'create' || thingy.type === 'drop')
+            return translateUpdateGraph(thingy);
+        if (thingy.type === 'add' || thingy.type === 'copy' || thingy.type === 'move')
+            return translateUpdateGraphShortcut(thingy);
+    }
+    else if (thingy.updateType === 'insertdelete' || thingy.updateType === 'deletewhere' || thingy.updateType === 'delete' || thingy.updateType === 'insert')
         return translateInsertDelete(thingy);
-    if (thingy.type === 'load')
-        return translateUpdateGraphLoad(thingy);
-    if (thingy.type === 'clear' || thingy.type === 'create' || thingy.type === 'drop')
-        return translateUpdateGraph(thingy);
-    if (thingy.type === 'add' || thingy.type === 'copy' || thingy.type === 'move')
-        return translateUpdateGraphShortcut(thingy);
 
-    throw new Error(`Unknown update type ${thingy.updateType}`);
+    throw new Error(`Unknown update type ${JSON.stringify(thingy)}`);
 }
 
-type insertDeleteInput = {
-    updateType: 'insertdelete' | 'deletewhere' | 'delete' | 'insert';
-    delete?: any[];
-    insert?: any[];
-    where?: any[];
-    graph?: RDF.NamedNode;
-    using?: { default: RDF.NamedNode[]; named: RDF.NamedNode[] };
-};
-function translateInsertDelete (thingy: insertDeleteInput): Algebra.Update
+function translateInsertDelete (thingy: InsertDeleteOperation): Algebra.Update
 {
     if (!useQuads)
         throw new Error('INSERT/DELETE operations are only supported with quads option enabled');
@@ -699,8 +730,10 @@ function translateInsertDelete (thingy: insertDeleteInput): Algebra.Update
         insertTriples = Util.flatten(thingy.insert.map(input => translateUpdateTriplesBlock(input, thingy.graph)));
     if (thingy.where && thingy.where.length > 0) {
         where = translateGroupGraphPattern({ type: 'group', patterns: thingy.where });
-        if (thingy.using)
-            where = factory.createFrom(where, thingy.using.default, thingy.using.named);
+        // Wrong typings, see test "using" in Sparql.js
+        const using: { default: RDF.Term[], named: RDF.Term[] } | undefined = (thingy as any).using;
+        if (using)
+            where = factory.createFrom(where, using.default, using.named);
         else if (thingy.graph)
             // This is equivalent
             where = recurseGraph(where, thingy.graph);
@@ -715,31 +748,23 @@ function translateInsertDelete (thingy: insertDeleteInput): Algebra.Update
     );
 }
 
-type updateTriplesBlockInput = {
-    type: 'graph' | 'bgp';
-    triples: RDF.BaseQuad[];
-    name?: RDF.NamedNode
-};
 // UPDATE parsing will always return quads and have no GRAPH elements
-function translateUpdateTriplesBlock (thingy: updateTriplesBlockInput, graph?: RDF.NamedNode): Algebra.Pattern[] {
+function translateUpdateTriplesBlock (thingy: BgpPattern | GraphQuads, graph?: RDF.NamedNode): Algebra.Pattern[] {
     let currentGraph = graph;
     if (thingy.type === 'graph')
         currentGraph = thingy.name;
     let currentTriples = thingy.triples;
     if (currentGraph)
         currentTriples = currentTriples.map(triple => Object.assign(triple, { graph: currentGraph }));
-    return currentTriples.map(translateQuad);
+    return (currentTriples as RDF.Quad[]).map(translateQuad);
 }
 
-type updateGraphInput = {
-    type: 'clear' | 'create' | 'drop';
-    silent: boolean,
-    graph: { all?: boolean; default?: boolean; named?: boolean; name?: RDF.NamedNode };
-};
-function translateUpdateGraph (thingy: updateGraphInput): Algebra.UpdateGraph
+function translateUpdateGraph (thingy: CreateOperation | ClearDropOperation): Algebra.UpdateGraph
 {
     let source: 'DEFAULT' | 'NAMED' | 'ALL' | RDF.NamedNode;
-    if (thingy.graph.all)
+    if (Util.isSimpleTerm(thingy.graph))
+        source = thingy.graph;
+    else if (thingy.graph.all)
         source = 'ALL';
     else if (thingy.graph.default)
         source = 'DEFAULT';
@@ -756,24 +781,12 @@ function translateUpdateGraph (thingy: updateGraphInput): Algebra.UpdateGraph
     }
 }
 
-type updateGraphLoadInput = {
-    type: 'load';
-    silent: boolean,
-    source: RDF.NamedNode;
-    destination?: RDF.NamedNode;
-};
-function translateUpdateGraphLoad (thingy: updateGraphLoadInput): Algebra.Load
+function translateUpdateGraphLoad (thingy: LoadOperation): Algebra.Load
 {
-    return factory.createLoad(thingy.source, thingy.destination, thingy.silent);
+    return factory.createLoad(thingy.source, thingy.destination as (RDF.NamedNode | undefined), thingy.silent);
 }
 
-type updateGraphShortcutInput = {
-    type: 'copy' | 'move' | 'add';
-    silent: boolean;
-    source: { type: 'graph'; default?: boolean; name?: RDF.NamedNode };
-    destination: { default?: boolean; name?: RDF.NamedNode };
-};
-function translateUpdateGraphShortcut (thingy: updateGraphShortcutInput): Algebra.UpdateGraphShortcut
+function translateUpdateGraphShortcut (thingy: CopyMoveAddOperation): Algebra.UpdateGraphShortcut
 {
     const source = thingy.source.default ? 'DEFAULT' : thingy.source.name;
     const destination = thingy.destination.default ? 'DEFAULT' : thingy.destination.name;

@@ -1,4 +1,5 @@
 
+import { Wildcard } from 'sparqljs';
 import * as A from "./algebra";
 import {Expression, Operation, expressionTypes, types} from "./algebra";
 import Factory from "./factory";
@@ -529,11 +530,15 @@ export default class Util
     }
 
     // separate terms from wildcard since we handle them differently
-    public static isTerm(term: any): boolean {
+    public static isSimpleTerm(term: any): term is RDF.Term {
         return term.termType !== undefined && term.termType !== 'Quad' && term.termType !== 'Wildcard';
     }
 
-    public static isWildcard(term: any): boolean {
+    public static isQuad(term: any): term is RDF.Quad {
+        return term.termType === 'Quad';
+    }
+
+    public static isWildcard(term: any): term is Wildcard {
         return term.termType === 'Wildcard';
     }
 }

@@ -178,7 +178,7 @@ export interface Construct extends Single
 export interface Describe extends Single
 {
     type: typeof types.DESCRIBE;
-    terms: rdfjs.Term[];
+    terms: (rdfjs.Term | Wildcard)[];
 }
 
 export interface Distinct extends Single
@@ -287,7 +287,7 @@ export interface Pattern extends Operation, rdfjs.BaseQuad
 export interface Project extends Single
 {
     type: typeof types.PROJECT;
-    variables: rdfjs.Variable[];
+    variables: (rdfjs.Variable | Wildcard)[];
 }
 
 export interface Reduced extends Single

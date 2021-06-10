@@ -42,6 +42,7 @@ export default class Factory
     }
     createLink (iri: RDF.NamedNode): A.Link { return { type: 'link', iri }; }
     createMinus (left: A.Operation, right: A.Operation): A.Minus { return { type: 'minus', left, right }; }
+    createNop (): A.Nop { return { type: 'nop' }; }
     createNps (iris: RDF.NamedNode[]): A.Nps { return { type: 'nps', iris }; }
     createOneOrMorePath (path: A.PropertyPathSymbol): A.OneOrMorePath { return { type: 'OneOrMorePath', path }; }
     createOrderBy (input: A.Operation, expressions: A.Expression[]) : A.OrderBy { return { type: 'orderby', input, expressions }; }

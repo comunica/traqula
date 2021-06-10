@@ -59,6 +59,7 @@ function translateOperation(op: Algebra.Operation): any
         case types.JOIN:      return translateJoin(<Algebra.Join>op);
         case types.LEFT_JOIN: return translateLeftJoin(<Algebra.LeftJoin>op);
         case types.MINUS:     return translateMinus(<Algebra.Minus>op);
+        case types.NOP:       return { };
         case types.ORDER_BY:  return translateOrderBy(<Algebra.OrderBy>op);
         case types.PATH:      return translatePath(<Algebra.Path>op);
         case types.PATTERN:   return translatePattern(<Algebra.Pattern>op);

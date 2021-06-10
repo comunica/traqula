@@ -24,6 +24,7 @@ export const types = Object.freeze({
     LEFT_JOIN:          'leftjoin',
     LINK:               'link',
     MINUS:              'minus',
+    NOP:                'nop',
     NPS:                'nps',
     ONE_OR_MORE_PATH:   'OneOrMorePath',
     ORDER_BY:           'orderby',
@@ -242,6 +243,11 @@ export interface Link extends Operation, PropertyPathSymbol
 export interface Minus extends Double
 {
     type: 'minus';
+}
+
+export interface Nop extends Operation
+{
+    type:'nop';
 }
 
 export interface Nps extends Operation, PropertyPathSymbol

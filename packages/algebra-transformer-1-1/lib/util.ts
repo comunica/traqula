@@ -232,6 +232,8 @@ export default class Util
                 recurseOp(minus.left);
                 recurseOp(minus.right);
                 break;
+            case types.NOP:
+                break;
             case types.NPS:
                 break;
             case types.ONE_OR_MORE_PATH:
@@ -396,6 +398,8 @@ export default class Util
             case types.MINUS:
                 const minus: A.Minus = <A.Minus> result;
                 return factory.createMinus(mapOp(minus.left), mapOp(minus.right));
+            case types.NOP:
+                return factory.createNop();
             case types.NPS:
                 const nps: A.Nps = <A.Nps> result;
                 return factory.createNps([].concat(nps.iris));
@@ -470,7 +474,7 @@ export default class Util
             case types.COPY:
                 const copy = <A.Copy> result;
                 return factory.createCopy(copy.source, copy.destination);
-            default: throw new Error('Unknown Operation type ' + result);
+            default: throw new Error(`Unknown Operation type ${result.type}`);
         }
     }
 

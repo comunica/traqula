@@ -81,7 +81,7 @@ function translateOperation(op: Algebra.Operation): any
         case types.COPY:             return translateCopy(<Algebra.Copy>op);
     }
 
-    throw new Error('Unknown Operation type ' + op.type);
+    throw new Error(`Unknown Operation type ${op.type}`);
 }
 
 function translateExpression(expr: Algebra.Expression): any
@@ -96,7 +96,7 @@ function translateExpression(expr: Algebra.Expression): any
         case eTypes.WILDCARD:  return translateWildcardExpression(<Algebra.WildcardExpression>expr);
     }
 
-    throw new Error('Unknown Expression Operation type ' + expr.expressionType);
+    throw new Error(`Unknown Expression Operation type ${expr.expressionType}`);
 }
 
 function translatePathComponent(path: Algebra.Operation): any
@@ -113,7 +113,7 @@ function translatePathComponent(path: Algebra.Operation): any
         case types.ZERO_OR_ONE_PATH:  return translateZeroOrOnePath(<Algebra.ZeroOrOnePath>path);
     }
 
-    throw new Error('Unknown Path type ' + path.type);
+    throw new Error(`Unknown Path type ${path.type}`);
 }
 
 function translateTerm(term: RDF.Term): string
@@ -573,7 +573,7 @@ function translateValues(op: Algebra.Values): any
             let result: any = {};
             for (let v of op.variables)
             {
-                let s = '?' + v.value;
+                let s = `?${v.value}`;
                 if (binding[s])
                     result[s] = binding[s];
                 else

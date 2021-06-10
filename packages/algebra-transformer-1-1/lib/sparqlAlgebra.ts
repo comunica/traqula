@@ -179,7 +179,7 @@ function translateGroupGraphPattern(thingy: any) : Algebra.Operation
     else if (thingy.type === 'query')
         result = translateQuery(thingy, useQuads, false);
     else
-        throw new Error('Unexpected type: ' + thingy.type);
+        throw new Error(`Unexpected type: ${thingy.type}`);
 
 
     if (filters.length > 0)
@@ -210,7 +210,7 @@ function translateExpression(exp: any) : Algebra.Expression
             exp.args = [exp.args[0]].concat(exp.args[1]); // sparql.js uses 2 arguments with the second one being a list
         return factory.createOperatorExpression(exp.operator, exp.args.map(translateExpression));
     }
-    throw new Error('Unknown expression: ' + JSON.stringify(exp));
+    throw new Error(`Unknown expression: ${JSON.stringify(exp)}`);
 }
 
 function translateBgp(thingy: any) : Algebra.Operation
@@ -281,7 +281,7 @@ function translatePathPredicate(predicate: any) : Algebra.Operation
             else if (item.pathType === '^')
                 inverted.push(item.items[0]);
             else
-                throw new Error('Unexpected item: ' + JSON.stringify(item));
+                throw new Error(`Unexpected item: ${JSON.stringify(item)}`);
         }
 
         // NPS elements do not have the LINK function
@@ -306,7 +306,7 @@ function translatePathPredicate(predicate: any) : Algebra.Operation
     if (predicate.pathType === '?')
         return factory.createZeroOrOnePath(translatePathPredicate(predicate.items[0]));
 
-    throw new Error('Unable to translate path expression ' + JSON.stringify(predicate));
+    throw new Error(`Unable to translate path expression ${JSON.stringify(predicate)}`);
 }
 
 function simplifyPath(subject: RDF.Quad_Subject, predicate: Algebra.Operation, object: RDF.Quad_Object) : Algebra.Operation[]
@@ -330,7 +330,7 @@ function simplifyPath(subject: RDF.Quad_Subject, predicate: Algebra.Operation, o
 
 function generateFreshVar() : RDF.Variable
 {
-    let v: string = '?var' + varCount++;
+    let v: string = `?var${varCount++}`;
     if (variables.has(v))
         return generateFreshVar();
     variables.add(v);
@@ -650,7 +650,7 @@ function mapAggregates (thingy: any, aggregates: {[key: string]: any}) : any
 function translateBoundAggregate (thingy: any, v: RDF.Variable) : Algebra.BoundAggregate
 {
     if (thingy.type !== 'aggregate' || !thingy.aggregation)
-        throw new Error('Unexpected input: ' + JSON.stringify(thingy));
+        throw new Error(`Unexpected input: ${JSON.stringify(thingy)}`);
 
     let A  = <Algebra.BoundAggregate>translateExpression(thingy);
     A.variable = v;

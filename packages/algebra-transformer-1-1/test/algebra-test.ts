@@ -30,14 +30,14 @@ function testPath(root: string, fileName: string, testName: string, blankToVaria
     if (fs.lstatSync(sparqlName).isDirectory())
     {
         for (let sub of fs.readdirSync(sparqlName))
-            testPath(root, path.join(fileName, sub), testName + '/' + sub, blankToVariable);
+            testPath(root, path.join(fileName, sub), `${testName}/${sub}`, blankToVariable);
     } else {
-        let name = root + '/' + testName.replace(/\.sparql$/, '');
+        let name = `${root}/${testName.replace(/\.sparql$/, '')}`;
         let jsonPath = path.join(root, fileName.replace(/\.sparql$/, '.json'));
         // not all tests need a blank version
         if (!fs.existsSync(jsonPath) && blankToVariable)
             return;
-        it (name + (blankToVariable ? ' (no blanks)' : ''), () =>
+        it (`${name}${blankToVariable ? ' (no blanks)' : ''}`, () =>
         {
             let query = fs.readFileSync(sparqlName, 'utf8');
             let algebra = Util.objectify(translate(query, { quads: name.endsWith('(quads)'), blankToVariable, sparqlStar: testName.includes('sparqlstar') }));

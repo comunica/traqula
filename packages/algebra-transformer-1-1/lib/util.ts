@@ -309,7 +309,7 @@ export default class Util
             case types.ADD: break;
             case types.MOVE: break;
             case types.COPY: break;
-            default: throw new Error('Unknown Operation type ' + result.type);
+            default: throw new Error(`Unknown Operation type ${result.type}`);
         }
     }
 
@@ -515,7 +515,7 @@ export default class Util
                 return factory.createTermExpression(term.term);
             case expressionTypes.WILDCARD:
                 return factory.createWildcardExpression();
-            default: throw new Error('Unknown Expression type ' + expr.expressionType);
+            default: throw new Error(`Unknown Expression type ${expr.expressionType}`);
         }
     }
 
@@ -523,7 +523,7 @@ export default class Util
         let counter: number = 0;
         let labelLoop = label;
         while (variables[labelLoop]) {
-            labelLoop = label + counter++;
+            labelLoop = `${label}${counter++}`;
         }
         return dataFactory.variable(labelLoop);
     }

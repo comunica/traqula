@@ -29,7 +29,7 @@ function testPath(fileName: string, testName: string): void
     if (fs.lstatSync(jsonName).isDirectory())
     {
         for (let sub of fs.readdirSync(jsonName))
-            testPath(path.join(fileName, sub), testName + '/' + sub);
+            testPath(path.join(fileName, sub), `${testName}/${sub}`);
     } else {
         let name = testName.replace(/\.json$/, '');
         it (name, () =>

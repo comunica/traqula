@@ -61,7 +61,7 @@ class Canonicalizer {
 
     public blankId: number;
     public genValue() {
-        return "value_" + this.blankId++;
+        return `value_${this.blankId++}`;
     }
 
     /**
@@ -73,7 +73,7 @@ class Canonicalizer {
         this.blankId = 0;
         let nameMapping: { [bLabel: string]: string } = {};
         return LibUtil.default.mapOperation(res, {
-            'path': (op: Algebra.Path, factory: Factory) => {
+            [Algebra.types.PATH]: (op: Algebra.Path, factory: Factory) => {
                 return {
                     result: factory.createPath(
                         this.replaceValue(op.subject, nameMapping, replaceVariables, factory),
@@ -84,7 +84,7 @@ class Canonicalizer {
                     recurse: true,
                 };
             },
-            'pattern': (op: Algebra.Pattern, factory: Factory) => {
+            [Algebra.types.PATTERN]: (op: Algebra.Pattern, factory: Factory) => {
                 return {
                     result: factory.createPattern(
                         this.replaceValue(op.subject, nameMapping, replaceVariables, factory),
@@ -95,7 +95,7 @@ class Canonicalizer {
                     recurse: true,
                 };
             },
-            'construct': (op: Algebra.Construct, factory) => {
+            [Algebra.types.CONSTRUCT]: (op: Algebra.Construct, factory) => {
                 // Blank nodes in CONSTRUCT templates must be maintained
                 return {
                     result: factory.createConstruct(op.input, op.template),

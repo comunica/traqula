@@ -58,7 +58,7 @@ export default class Util
             [types.EXPRESSION]: (op) =>
             {
                 let expr = <A.Expression>op;
-                if (expr.expressionType === 'aggregate' && expr.variable)
+                if (expr.expressionType === expressionTypes.AGGREGATE && expr.variable)
                 {
                     let agg = <A.BoundAggregate> expr;
                     addVariable(agg.variable);

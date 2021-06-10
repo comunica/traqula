@@ -793,11 +793,11 @@ function translateBlankNodesToVariables (res: Algebra.Operation, variables: Set<
         return acc;
     }, {});
     return Util.mapOperation(res, {
-        'deleteinsert': (op: Algebra.DeleteInsert) => {
+        [Algebra.types.DELETE_INSERT]: (op: Algebra.DeleteInsert) => {
             // Only relevant for INSERT operations as others should never contain blank nodes
             return { result: op, recurse: false };
         },
-        'path': (op: Algebra.Path, factory: Factory) => {
+        [Algebra.types.PATH]: (op: Algebra.Path, factory: Factory) => {
             return {
                 result: factory.createPath(
                     blankToVariable(op.subject),
@@ -808,7 +808,7 @@ function translateBlankNodesToVariables (res: Algebra.Operation, variables: Set<
                 recurse: false,
             };
         },
-        'pattern': (op: Algebra.Pattern, factory: Factory) => {
+        [Algebra.types.PATTERN]: (op: Algebra.Pattern, factory: Factory) => {
             return {
                 result: factory.createPattern(
                     blankToVariable(op.subject),
@@ -819,7 +819,7 @@ function translateBlankNodesToVariables (res: Algebra.Operation, variables: Set<
                 recurse: false,
             };
         },
-        'construct': (op: Algebra.Construct) => {
+        [Algebra.types.CONSTRUCT]: (op: Algebra.Construct) => {
             // Blank nodes in CONSTRUCT templates must be maintained
             return {
                 result: factory.createConstruct(translateBlankNodesToVariables(op.input, variables), op.template),

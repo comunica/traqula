@@ -4,8 +4,7 @@ import {Wildcard} from "./wildcard";
 import {Term} from "rdf-js";
 
 // TODO: add aggregates?
-// TODO: can't find a way to use these values as string types in the interfaces
-export const types = Object.freeze({
+export const types = {
     ALT:                'alt',
     ASK:                'ask',
     BGP:                'bgp',
@@ -49,23 +48,26 @@ export const types = Object.freeze({
     ADD:                'add',
     MOVE:               'move',
     COPY:               'copy',
-});
+} as const;
 
-export const expressionTypes = Object.freeze({
+export const expressionTypes = {
     AGGREGATE: 'aggregate',
     EXISTENCE: 'existence',
     NAMED:     'named',
     OPERATOR:  'operator',
     TERM:      'term',
     WILDCARD:  'wildcard',
-});
+} as const;
+
+// Helper type
+type valueOf<T> = T[keyof T];
 
 // ----------------------- ABSTRACTS -----------------------
 
 export interface Operation
 {
     [key:string]: any;
-    type: string;
+    type: valueOf<typeof types>;
 }
 
 export interface Single extends Operation
@@ -85,13 +87,13 @@ export interface PropertyPathSymbol extends Operation
 
 export interface Expression extends Operation
 {
-    type: 'expression';
-    expressionType: 'aggregate'|'existence'|'named'|'operator'|'term'|'wildcard';
+    type: typeof types.EXPRESSION;
+    expressionType: valueOf<typeof expressionTypes>;
 }
 
 export interface AggregateExpression extends Expression
 {
-    expressionType: 'aggregate',
+    expressionType: typeof expressionTypes.AGGREGATE,
     aggregator: 'avg' | 'count' | 'group_concat' | 'max' | 'min' | 'sample' | 'sum';
     distinct: boolean;
     expression: Expression;
@@ -106,34 +108,34 @@ export interface GroupConcatExpression extends AggregateExpression
 
 export interface ExistenceExpression extends Expression
 {
-    expressionType: 'existence';
+    expressionType: typeof expressionTypes.EXISTENCE;
     not: boolean;
     input: Operation;
 }
 
 export interface NamedExpression extends Expression
 {
-    expressionType: 'named';
+    expressionType: typeof expressionTypes.NAMED;
     name: rdfjs.NamedNode;
     args: Expression[];
 }
 
 export interface OperatorExpression extends Expression
 {
-    expressionType: 'operator';
+    expressionType: typeof expressionTypes.OPERATOR;
     operator: string;
     args: Expression[];
 }
 
 export interface TermExpression extends Expression
 {
-    expressionType: 'term';
+    expressionType: typeof expressionTypes.TERM;
     term: Term;
 }
 
 export interface WildcardExpression extends Expression
 {
-    expressionType: 'wildcard',
+    expressionType: typeof expressionTypes.WILDCARD,
     wildcard: Wildcard;
 }
 
@@ -145,14 +147,14 @@ export interface WildcardExpression extends Expression
 
 export interface Alt extends Double, PropertyPathSymbol
 {
-    type: 'alt';
+    type: typeof types.ALT;
     left: PropertyPathSymbol;
     right: PropertyPathSymbol;
 }
 
 export interface Ask extends Single
 {
-    type: 'ask';
+    type: typeof types.ASK;
 }
 
 // also an expression
@@ -163,114 +165,114 @@ export interface BoundAggregate extends AggregateExpression
 
 export interface Bgp extends Operation
 {
-    type: 'bgp';
+    type: typeof types.BGP;
     patterns: Pattern[];
 }
 
 export interface Construct extends Single
 {
-    type: 'construct';
+    type: typeof types.CONSTRUCT;
     template: Pattern[];
 }
 
 export interface Describe extends Single
 {
-    type: 'describe';
+    type: typeof types.DESCRIBE;
     terms: rdfjs.Term[];
 }
 
 export interface Distinct extends Single
 {
-    type: 'distinct';
+    type: typeof types.DISTINCT;
 }
 
 export interface Extend extends Single
 {
-    type: 'extend';
+    type: typeof types.EXTEND;
     variable: rdfjs.Variable;
     expression: Expression;
 }
 
 export interface From extends Single
 {
-    type: 'from';
+    type: typeof types.FROM;
     default: rdfjs.Term[];
     named: rdfjs.Term[];
 }
 
 export interface Filter extends Single
 {
-    type: 'filter';
+    type: typeof types.FILTER;
     expression: Expression;
 }
 
 export interface Graph extends Single
 {
-    type: 'graph';
+    type: typeof types.GRAPH;
     name: rdfjs.Term;
 }
 
 export interface Group extends Single
 {
-    type: 'group';
+    type: typeof types.GROUP;
     variables: rdfjs.Variable[];
     aggregates: BoundAggregate[];
 }
 
 export interface Inv extends Operation, PropertyPathSymbol
 {
-    type: 'inv';
+    type: typeof types.INV;
     path: PropertyPathSymbol;
 }
 
 export interface Join extends Double
 {
-    type: 'join'
+    type: typeof types.JOIN
 }
 
 export interface LeftJoin extends Double
 {
-    type: 'leftjoin';
+    type: typeof types.LEFT_JOIN;
     expression?: Expression;
 }
 
 export interface Link extends Operation, PropertyPathSymbol
 {
-    type: 'link';
+    type: typeof types.LINK;
     iri: rdfjs.NamedNode;
 }
 
 export interface Minus extends Double
 {
-    type: 'minus';
+    type: typeof types.MINUS;
 }
 
 export interface Nop extends Operation
 {
-    type:'nop';
+    type: typeof types.NOP;
 }
 
 export interface Nps extends Operation, PropertyPathSymbol
 {
-    type: 'nps';
+    type: typeof types.NPS;
     iris: rdfjs.NamedNode[];
 }
 
 export interface OneOrMorePath extends Operation, PropertyPathSymbol
 {
-    type: 'OneOrMorePath';
+    type: typeof types.ONE_OR_MORE_PATH;
     path: PropertyPathSymbol;
 }
 
 export interface OrderBy extends Single
 {
-    type: 'orderby';
+    type: typeof types.ORDER_BY;
     expressions: Expression[];
 }
 
 export interface Path extends Operation
 {
-    type: 'path';
+    type: typeof types.PATH;
     subject: rdfjs.Term;
     predicate: PropertyPathSymbol;
     object: rdfjs.Term;
@@ -279,68 +281,68 @@ export interface Path extends Operation
 
 export interface Pattern extends Operation, rdfjs.BaseQuad
 {
-    type: 'pattern';
+    type: typeof types.PATTERN;
 }
 
 export interface Project extends Single
 {
-    type: 'project';
+    type: typeof types.PROJECT;
     variables: rdfjs.Variable[];
 }
 
 export interface Reduced extends Single
 {
-    type: 'reduced';
+    type: typeof types.REDUCED;
 }
 
 export interface Seq extends Double, PropertyPathSymbol
 {
-    type: 'seq'
+    type: typeof types.SEQ;
     left: PropertyPathSymbol;
     right: PropertyPathSymbol;
 }
 
 export interface Service extends Single
 {
-    type: 'service',
-    name: rdfjs.Term,
-    silent: boolean
+    type: typeof types.SERVICE;
+    name: rdfjs.Term;
+    silent: boolean;
 }
 
 export interface Slice extends Single
 {
-    type: 'slice';
+    type: typeof types.SLICE;
     start: number;
     length?: number;
 }
 
 export interface Union extends Double
 {
-    type: 'union';
+    type: typeof types.UNION;
 }
 
 export interface Values extends Operation
 {
-    type: 'values';
+    type: typeof types.VALUES;
     variables: rdfjs.Variable[];
     bindings: {[key: string]: rdfjs.Term}[];
 }
 
 export interface ZeroOrMorePath extends Operation, PropertyPathSymbol
 {
-    type: 'ZeroOrMorePath';
+    type: typeof types.ZERO_OR_MORE_PATH;
     path: PropertyPathSymbol;
 }
 
 export interface ZeroOrOnePath extends Operation, PropertyPathSymbol
 {
-    type: 'ZeroOrOnePath';
+    type: typeof types.ZERO_OR_ONE_PATH;
     path: PropertyPathSymbol;
 }
 
 // ----------------------- UPDATE FUNCTIONS -----------------------
 export interface CompositeUpdate extends Operation {
-    type: 'compositeupdate';
+    type: typeof types.COMPOSITE_UPDATE;
     updates: Update[];
 }
 
@@ -348,7 +350,7 @@ export interface Update extends Operation {}
 
 export interface DeleteInsert extends Update
 {
-    type: 'deleteinsert';
+    type: typeof types.DELETE_INSERT;
     delete?: Pattern[];
     insert?: Pattern[];
     where?: Operation;
@@ -361,26 +363,26 @@ export interface UpdateGraph extends Update
 
 export interface Load extends UpdateGraph
 {
-    type: 'load';
+    type: typeof types.LOAD;
     source: rdfjs.NamedNode;
     destination?: rdfjs.NamedNode;
 }
 
 export interface Clear extends UpdateGraph
 {
-    type: 'clear';
+    type: typeof types.CLEAR;
     source: 'DEFAULT' | 'NAMED' | 'ALL' | rdfjs.NamedNode;
 }
 
 export interface Create extends UpdateGraph
 {
-    type: 'create';
+    type: typeof types.CREATE;
     source: rdfjs.NamedNode;
 }
 
 export interface Drop extends UpdateGraph
 {
-    type: 'drop';
+    type: typeof types.DROP;
     source: 'DEFAULT' | 'NAMED' | 'ALL' | rdfjs.NamedNode;
 }
 
@@ -392,15 +394,15 @@ export interface UpdateGraphShortcut extends UpdateGraph
 
 export interface Add extends UpdateGraphShortcut
 {
-    type: 'add';
+    type: typeof types.ADD;
 }
 
 export interface Move extends UpdateGraphShortcut
 {
-    type: 'move';
+    type: typeof types.MOVE;
 }
 
 export interface Copy extends UpdateGraphShortcut
 {
-    type: 'copy';
+    type: typeof types.COPY;
 }

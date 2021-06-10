@@ -3,10 +3,8 @@ import * as Algebra from './algebra';
 import * as RDF from 'rdf-js'
 import Factory from './factory';
 import Util from './util';
-import {termToString} from 'rdf-string';
-import {Wildcard} from "./wildcard";
-const SparqlGenerator = require('sparqljs').Generator;
-const Wildcard = require('sparqljs').Wildcard;
+import { termToString } from 'rdf-string';
+import { Generator, Wildcard } from 'sparqljs';
 const types = Algebra.types;
 const eTypes = Algebra.expressionTypes;
 
@@ -15,7 +13,7 @@ const factory = new Factory();
 
 export function toSparql(op: Algebra.Operation, options = {}): string
 {
-    let generator = new SparqlGenerator(options);
+    let generator = new Generator(options);
     return generator.stringify(toSparqlJs(op));
 }
 

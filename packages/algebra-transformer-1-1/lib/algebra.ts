@@ -1,7 +1,7 @@
 
-import * as rdfjs from "rdf-js";
-import {Wildcard} from "./wildcard";
-import {Term} from "rdf-js";
+import * as rdfjs from 'rdf-js';
+import { Wildcard } from 'sparqljs';
+import { Term } from 'rdf-js';
 
 // TODO: add aggregates?
 export const types = {

@@ -19,6 +19,44 @@ export default class Util
     }
 
     /**
+     * Outputs a JSON object corresponding to the input algebra-like.
+     */
+    public static objectify (algebra: any): any
+    {
+        if (algebra.termType)
+        {
+            if (algebra.termType === 'Quad') {
+                return {
+                    type: 'pattern',
+                    termType: 'Quad',
+                    value: '',
+                    subject: Util.objectify(algebra.subject),
+                    predicate: Util.objectify(algebra.predicate),
+                    object: Util.objectify(algebra.object),
+                    graph: Util.objectify(algebra.graph),
+                }
+            } else {
+                let result: any = {termType: algebra.termType, value: algebra.value};
+                if (algebra.language)
+                    result.language = algebra.language;
+                if (algebra.datatype)
+                    result.datatype = Util.objectify(algebra.datatype);
+                return result;
+            }
+        }
+        if (Array.isArray(algebra))
+            return algebra.map(e => Util.objectify(e));
+        if (algebra === Object(algebra))
+        {
+            let result: any = {};
+            for (let key of Object.keys(algebra))
+                result[key] = Util.objectify(algebra[key]);
+            return result;
+        }
+        return algebra;
+    }
+
+    /**
      * Detects all in-scope variables.
      * In practice this means iterating through the entire algebra tree, finding all variables,
      * and stopping when a project function is found.

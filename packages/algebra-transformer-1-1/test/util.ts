@@ -8,47 +8,6 @@ import {DataFactory} from "rdf-data-factory";
 
 export default class Util
 {
-    static inspect (obj: any): void
-    {
-        console.log(util.inspect(Util.objectify(obj), { depth: null, breakLength: 120 }));
-    };
-
-    // we need this because the RDF.js types dont output correctly when using JSON.stringify
-    static objectify (algebra: any): any
-    {
-        if (algebra.termType)
-        {
-            if (algebra.termType === 'Quad') {
-                return {
-                    type: 'pattern',
-                    termType: 'Quad',
-                    value: '',
-                    subject: Util.objectify(algebra.subject),
-                    predicate: Util.objectify(algebra.predicate),
-                    object: Util.objectify(algebra.object),
-                    graph: Util.objectify(algebra.graph),
-                }
-            } else {
-                let result: any = {termType: algebra.termType, value: algebra.value};
-                if (algebra.language)
-                    result.language = algebra.language;
-                if (algebra.datatype)
-                    result.datatype = Util.objectify(algebra.datatype);
-                return result;
-            }
-        }
-        if (Array.isArray(algebra))
-            return algebra.map(e => Util.objectify(e));
-        if (algebra === Object(algebra))
-        {
-            let result: any = {};
-            for (let key of Object.keys(algebra))
-                result[key] = Util.objectify(algebra[key]);
-            return result;
-        }
-        return algebra;
-    }
-
     static getCanonicalizerInstance(){
         return new Canonicalizer();
     }

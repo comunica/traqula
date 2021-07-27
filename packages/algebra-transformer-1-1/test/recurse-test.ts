@@ -1,8 +1,6 @@
-
 import {expect} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
-import TestUtil from './util';
 import Util from '../lib/util';
 import {Operation, Project} from "../lib/algebra";
 import Factory from "../lib/factory";
@@ -44,7 +42,7 @@ function testPath(fileName: string, testName: string): void
                 for (let v of project.variables.map(v => v.value))
                     expect(scope.map(v => v.value)).to.contain(v);
             }
-            expect(TestUtil.objectify(clone)).to.deep.equal(expected);
+            expect(Util.objectify(clone)).to.deep.equal(expected);
         });
     }
 }

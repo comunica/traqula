@@ -1,9 +1,10 @@
-
 import {expect} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
-import {translate, toSparql, toSparqlJs} from '../index';
+import {translate, toSparql} from '../index';
+import LibUtil from '../lib/util';
 import Util from './util';
+
 const canon = Util.getCanonicalizerInstance();
 
 const rootJson = 'test/algebra';
@@ -33,7 +34,7 @@ function testPath(fileName: string, testName: string): void
         {
             let expected = JSON.parse(fs.readFileSync(jsonName, 'utf8'));
             let query = toSparql(expected, { sparqlStar: testName.includes('sparqlstar') });
-            let algebra = Util.objectify(translate(query, { quads: name.endsWith('(quads)'), sparqlStar: testName.includes('sparqlstar') }));
+            let algebra = LibUtil.objectify(translate(query, { quads: name.endsWith('(quads)'), sparqlStar: testName.includes('sparqlstar') }));
             expect(canon.canonicalizeQuery(algebra, false)).to.deep.equal(canon.canonicalizeQuery(expected, false));
         });
     }

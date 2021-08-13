@@ -1,6 +1,6 @@
 
 import * as A from './algebra';
-import * as RDF from 'rdf-js';
+import * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
 import { stringToTerm } from "rdf-string";
 import { Wildcard } from 'sparqljs';

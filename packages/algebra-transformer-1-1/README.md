@@ -1,6 +1,7 @@
 # SPARQL to SPARQL Algebra converter
+
 [![npm version](https://badge.fury.io/js/sparqlalgebrajs.svg)](https://www.npmjs.com/package/sparqlalgebrajs)
-[![Build Status](https://api.travis-ci.com/joachimvh/SPARQLAlgebra.js.svg?branch=main)](https://travis-ci.org/joachimvh/SPARQLAlgebra.js) 
+[![Build status](https://github.com/joachimvh/SPARQLAlgebra.js/workflows/CI/badge.svg)](https://github.com/joachimvh/SPARQLAlgebra.js/actions?query=workflow%3ACI)
 
 2 components get exposed: the **translate** function and the **Algebra** object,
 which contains all the output types that can occur.

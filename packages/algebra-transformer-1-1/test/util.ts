@@ -3,7 +3,7 @@ import * as util from 'util';
 import {Algebra} from "../index";
 import * as LibUtil from "../lib/util";
 import Factory from "../lib/factory";
-import * as RDF from "rdf-js";
+import * as RDF from "@rdfjs/types";
 import {DataFactory} from "rdf-data-factory";
 
 export default class Util

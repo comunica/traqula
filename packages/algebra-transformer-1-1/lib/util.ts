@@ -3,8 +3,8 @@ import { Wildcard } from 'sparqljs';
 import * as A from "./algebra";
 import {Expression, Operation, expressionTypes, types} from "./algebra";
 import Factory from "./factory";
-import { BaseQuad, Variable } from "rdf-js";
-import * as RDF from 'rdf-js'
+import { BaseQuad, Variable } from "@rdfjs/types";
+import * as RDF from '@rdfjs/types'
 
 
 export default class Util

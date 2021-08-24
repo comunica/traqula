@@ -15,7 +15,7 @@ export default class Factory
         this.stringType = <RDF.NamedNode>this.createTerm('http://www.w3.org/2001/XMLSchema#string');
     }
 
-    createAlt (input: A.PropertyPathSymbol[]): A.Alt { return { type: A.types.ALT, input }; }
+    createAlt (input: A.PropertyPathSymbol[]): A.Alt { return this.flattenMulti({ type: A.types.ALT, input }); }
     createAsk (input: A.Operation): A.Ask { return { type: A.types.ASK, input }; }
     createBoundAggregate (variable: RDF.Variable, aggregate: string, expression: A.Expression, distinct: boolean, separator?: string): A.BoundAggregate
     {
@@ -33,7 +33,7 @@ export default class Factory
     createGraph (input: A.Operation, name: RDF.Term) : A.Graph { return { type: A.types.GRAPH, input, name }; }
     createGroup (input: A.Operation, variables: RDF.Variable[], aggregates: A.BoundAggregate[]) : A.Group { return { type: A.types.GROUP, input, variables, aggregates }; }
     createInv (path: A.PropertyPathSymbol): A.Inv { return { type: A.types.INV, path }; }
-    createJoin (input: A.Operation[]): A.Join { return { type: A.types.JOIN, input }; }
+    createJoin (input: A.Operation[]): A.Join { return this.flattenMulti({ type: A.types.JOIN, input }); }
     createLeftJoin (left: A.Operation, right: A.Operation, expression?: A.Expression): A.LeftJoin
     {
         if (expression)
@@ -60,7 +60,7 @@ export default class Factory
     }
     createProject (input: A.Operation, variables: (RDF.Variable | Wildcard)[]) : A.Project { return { type: A.types.PROJECT, input, variables }; }
     createReduced (input: A.Operation) : A.Reduced { return { type: A.types.REDUCED, input }; }
-    createSeq (input: A.PropertyPathSymbol[]): A.Seq { return { type: A.types.SEQ, input }; }
+    createSeq (input: A.PropertyPathSymbol[]): A.Seq { return this.flattenMulti({ type: A.types.SEQ, input }); }
     createService (input: A.Operation, name: RDF.Term, silent?: boolean): A.Service { return { type: A.types.SERVICE, input, name, silent }; }
     createSlice (input: A.Operation, start: number, length?: number) : A.Slice
     {
@@ -69,7 +69,7 @@ export default class Factory
             return { type: A.types.SLICE, input, start, length };
         return { type: A.types.SLICE, input, start };
     }
-    createUnion (input: A.Operation[]): A.Union { return { type: A.types.UNION, input }; }
+    createUnion (input: A.Operation[]): A.Union { return this.flattenMulti({ type: A.types.UNION, input }); }
     createValues (variables: RDF.Variable[], bindings: {[key: string]: RDF.Term}[]): A.Values { return { type: A.types.VALUES, variables, bindings }; }
     createZeroOrMorePath (path: A.PropertyPathSymbol): A.ZeroOrMorePath { return { type: A.types.ZERO_OR_MORE_PATH, path }; }
     createZeroOrOnePath (path: A.PropertyPathSymbol): A.ZeroOrOnePath { return { type: A.types.ZERO_OR_ONE_PATH, path }; }
@@ -129,6 +129,20 @@ export default class Factory
     private addSilent<T extends A.UpdateGraph>(input: T, silent: boolean): T {
         if (silent)
             input.silent = silent;
+        return input;
+    }
+    private flattenMulti<T extends A.Multi>(input: T): T {
+        const type = input.type;
+        const children = input.input;
+        let newChildren: A.Operation[] = [];
+        for (const child of children) {
+            if (child.type === type) {
+                newChildren = [ ...newChildren, ...(<A.Multi> child).input ];
+            } else {
+                newChildren.push(child);
+            }
+        }
+        input.input = newChildren;
         return input;
     }
 }

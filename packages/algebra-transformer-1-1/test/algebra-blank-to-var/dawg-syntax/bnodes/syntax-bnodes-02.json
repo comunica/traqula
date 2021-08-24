@@ -4,9 +4,11 @@
     "type": "bgp",
     "patterns": [
       {
+        "type": "pattern",
+        "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "b0"
+          "value": "g_0"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -19,8 +21,7 @@
         "graph": {
           "termType": "DefaultGraph",
           "value": ""
-        },
-        "type": "pattern"
+        }
       }
     ]
   },

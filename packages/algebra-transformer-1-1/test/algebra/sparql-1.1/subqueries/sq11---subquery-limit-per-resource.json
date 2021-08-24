@@ -8,6 +8,8 @@
         "type": "bgp",
         "patterns": [
           {
+            "type": "pattern",
+            "termType": "Quad",
             "subject": {
               "termType": "Variable",
               "value": "O"
@@ -18,18 +20,19 @@
             },
             "object": {
               "termType": "BlankNode",
-              "value": "b0"
+              "value": "g_0"
             },
             "graph": {
               "termType": "DefaultGraph",
               "value": ""
-            },
-            "type": "pattern","termType": "Quad","value": ""
+            }
           },
           {
+            "type": "pattern",
+            "termType": "Quad",
             "subject": {
               "termType": "BlankNode",
-              "value": "b0"
+              "value": "g_0"
             },
             "predicate": {
               "termType": "NamedNode",
@@ -42,8 +45,7 @@
             "graph": {
               "termType": "DefaultGraph",
               "value": ""
-            },
-            "type": "pattern","termType": "Quad","value": ""
+            }
           }
         ]
       },
@@ -59,6 +61,8 @@
                 "type": "bgp",
                 "patterns": [
                   {
+                    "type": "pattern",
+                    "termType": "Quad",
                     "subject": {
                       "termType": "Variable",
                       "value": "O"
@@ -74,8 +78,7 @@
                     "graph": {
                       "termType": "DefaultGraph",
                       "value": ""
-                    },
-                    "type": "pattern","termType": "Quad","value": ""
+                    }
                   }
                 ]
               },

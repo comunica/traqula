@@ -4,9 +4,11 @@
     "type": "bgp",
     "patterns": [
       {
+        "type": "pattern",
+        "termType": "Quad",
         "subject": {
           "termType": "BlankNode",
-          "value": "s_b"
+          "value": "e_s_b"
         },
         "predicate": {
           "termType": "Variable",
@@ -14,21 +16,22 @@
         },
         "object": {
           "termType": "BlankNode",
-          "value": "o_b"
+          "value": "e_o_b"
         },
         "graph": {
           "termType": "DefaultGraph",
           "value": ""
-        },
-        "type": "pattern","termType": "Quad","value": ""
+        }
       }
     ]
   },
   "template": [
     {
+      "type": "pattern",
+      "termType": "Quad",
       "subject": {
         "termType": "BlankNode",
-        "value": "s_b"
+        "value": "e_s_b"
       },
       "predicate": {
         "termType": "Variable",
@@ -36,13 +39,12 @@
       },
       "object": {
         "termType": "BlankNode",
-        "value": "o_b"
+        "value": "e_o_b"
       },
       "graph": {
         "termType": "DefaultGraph",
         "value": ""
-      },
-      "type": "pattern","termType": "Quad","value": ""
+      }
     }
   ]
 }

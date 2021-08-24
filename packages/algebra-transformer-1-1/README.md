@@ -137,3 +137,5 @@ and the project operation always gets used (even in the case of `SELECT *`).
 ## A note on tests
 Every test consists of a sparql file and a corresponding json file containing the algebra result.
 Tests ending with `(quads)` in their name are tested/generated with `quads: true` in the options.
+
+If you need to regenerate the parsed JSON files in bulk, you can invoke `node test/generate-json.js`.

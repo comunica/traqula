@@ -6,6 +6,8 @@
       "type": "bgp",
       "patterns": [
         {
+          "type": "pattern",
+          "termType": "Quad",
           "subject": {
             "termType": "Variable",
             "value": "s"
@@ -21,8 +23,7 @@
           "graph": {
             "termType": "NamedNode",
             "value": "http://www.example.org/graph"
-          },
-          "type": "pattern"
+          }
         }
       ]
     },
@@ -34,6 +35,8 @@
         "type": "bgp",
         "patterns": [
           {
+            "type": "pattern",
+            "termType": "Quad",
             "subject": {
               "termType": "Variable",
               "value": "s"
@@ -49,8 +52,7 @@
             "graph": {
               "termType": "NamedNode",
               "value": "http://www.example.org/graph"
-            },
-            "type": "pattern"
+            }
           }
         ]
       }

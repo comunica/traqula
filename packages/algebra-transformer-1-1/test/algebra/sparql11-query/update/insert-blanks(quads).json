@@ -2,6 +2,8 @@
   "type": "deleteinsert",
   "insert": [
     {
+      "type": "pattern",
+      "termType": "Quad",
       "subject": {
         "termType": "BlankNode",
         "value": "e_b"
@@ -21,10 +23,11 @@
       "graph": {
         "termType": "DefaultGraph",
         "value": ""
-      },
-      "type": "pattern","termType": "Quad","value": ""
+      }
     },
     {
+      "type": "pattern",
+      "termType": "Quad",
       "subject": {
         "termType": "BlankNode",
         "value": "e_b"
@@ -44,8 +47,7 @@
       "graph": {
         "termType": "DefaultGraph",
         "value": ""
-      },
-      "type": "pattern","termType": "Quad","value": ""
+      }
     }
   ]
 }

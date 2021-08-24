@@ -4,9 +4,11 @@
     "type": "bgp",
     "patterns": [
       {
+        "type": "pattern",
+        "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "b1"
+          "value": "g_1"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -14,18 +16,19 @@
         },
         "object": {
           "termType": "Variable",
-          "value": "b3"
+          "value": "g_3"
         },
         "graph": {
           "termType": "DefaultGraph",
           "value": ""
-        },
-        "type": "pattern"
+        }
       },
       {
+        "type": "pattern",
+        "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "b3"
+          "value": "g_3"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -33,18 +36,19 @@
         },
         "object": {
           "termType": "Variable",
-          "value": "b2"
+          "value": "g_2"
         },
         "graph": {
           "termType": "DefaultGraph",
           "value": ""
-        },
-        "type": "pattern"
+        }
       },
       {
+        "type": "pattern",
+        "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "b3"
+          "value": "g_3"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -52,18 +56,19 @@
         },
         "object": {
           "termType": "Variable",
-          "value": "b4"
+          "value": "g_4"
         },
         "graph": {
           "termType": "DefaultGraph",
           "value": ""
-        },
-        "type": "pattern"
+        }
       },
       {
+        "type": "pattern",
+        "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "b4"
+          "value": "g_4"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -80,13 +85,14 @@
         "graph": {
           "termType": "DefaultGraph",
           "value": ""
-        },
-        "type": "pattern"
+        }
       },
       {
+        "type": "pattern",
+        "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "b4"
+          "value": "g_4"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -99,13 +105,14 @@
         "graph": {
           "termType": "DefaultGraph",
           "value": ""
-        },
-        "type": "pattern"
+        }
       },
       {
+        "type": "pattern",
+        "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "b2"
+          "value": "g_2"
         },
         "predicate": {
           "termType": "Variable",
@@ -118,13 +125,14 @@
         "graph": {
           "termType": "DefaultGraph",
           "value": ""
-        },
-        "type": "pattern"
+        }
       },
       {
+        "type": "pattern",
+        "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "b1"
+          "value": "g_1"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -132,18 +140,19 @@
         },
         "object": {
           "termType": "Variable",
-          "value": "b0"
+          "value": "g_0"
         },
         "graph": {
           "termType": "DefaultGraph",
           "value": ""
-        },
-        "type": "pattern"
+        }
       },
       {
+        "type": "pattern",
+        "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "b1"
+          "value": "g_1"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -156,13 +165,14 @@
         "graph": {
           "termType": "DefaultGraph",
           "value": ""
-        },
-        "type": "pattern"
+        }
       },
       {
+        "type": "pattern",
+        "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "b0"
+          "value": "g_0"
         },
         "predicate": {
           "termType": "Variable",
@@ -175,8 +185,7 @@
         "graph": {
           "termType": "DefaultGraph",
           "value": ""
-        },
-        "type": "pattern"
+        }
       }
     ]
   },

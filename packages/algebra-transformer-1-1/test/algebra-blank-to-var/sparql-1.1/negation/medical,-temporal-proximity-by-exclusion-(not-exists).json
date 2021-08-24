@@ -6,6 +6,8 @@
       "type": "bgp",
       "patterns": [
         {
+          "type": "pattern",
+          "termType": "Quad",
           "subject": {
             "termType": "Variable",
             "value": "exam"
@@ -21,10 +23,11 @@
           "graph": {
             "termType": "DefaultGraph",
             "value": ""
-          },
-          "type": "pattern"
+          }
         },
         {
+          "type": "pattern",
+          "termType": "Quad",
           "subject": {
             "termType": "Variable",
             "value": "exam"
@@ -40,10 +43,11 @@
           "graph": {
             "termType": "DefaultGraph",
             "value": ""
-          },
-          "type": "pattern"
+          }
         },
         {
+          "type": "pattern",
+          "termType": "Quad",
           "subject": {
             "termType": "Variable",
             "value": "exam"
@@ -59,10 +63,11 @@
           "graph": {
             "termType": "DefaultGraph",
             "value": ""
-          },
-          "type": "pattern"
+          }
         },
         {
+          "type": "pattern",
+          "termType": "Quad",
           "subject": {
             "termType": "Variable",
             "value": "op"
@@ -78,10 +83,11 @@
           "graph": {
             "termType": "DefaultGraph",
             "value": ""
-          },
-          "type": "pattern"
+          }
         },
         {
+          "type": "pattern",
+          "termType": "Quad",
           "subject": {
             "termType": "Variable",
             "value": "op"
@@ -97,8 +103,7 @@
           "graph": {
             "termType": "DefaultGraph",
             "value": ""
-          },
-          "type": "pattern"
+          }
         }
       ]
     },
@@ -110,6 +115,8 @@
         "type": "bgp",
         "patterns": [
           {
+            "type": "pattern",
+            "termType": "Quad",
             "subject": {
               "termType": "Variable",
               "value": "otherExam"
@@ -125,10 +132,11 @@
             "graph": {
               "termType": "DefaultGraph",
               "value": ""
-            },
-            "type": "pattern"
+            }
           },
           {
+            "type": "pattern",
+            "termType": "Quad",
             "subject": {
               "termType": "Variable",
               "value": "otherExam"
@@ -144,10 +152,11 @@
             "graph": {
               "termType": "DefaultGraph",
               "value": ""
-            },
-            "type": "pattern"
+            }
           },
           {
+            "type": "pattern",
+            "termType": "Quad",
             "subject": {
               "termType": "Variable",
               "value": "otherExam"
@@ -163,8 +172,7 @@
             "graph": {
               "termType": "DefaultGraph",
               "value": ""
-            },
-            "type": "pattern"
+            }
           }
         ]
       }

@@ -4,6 +4,8 @@
     "type": "bgp",
     "patterns": [
       {
+        "type": "pattern",
+        "termType": "Quad",
         "subject": {
           "termType": "NamedNode",
           "value": "http://example.org/test#a"
@@ -14,18 +16,19 @@
         },
         "object": {
           "termType": "BlankNode",
-          "value": "aa"
+          "value": "e_aa"
         },
         "graph": {
           "termType": "DefaultGraph",
           "value": ""
-        },
-        "type": "pattern","termType": "Quad","value": ""
+        }
       },
       {
+        "type": "pattern",
+        "termType": "Quad",
         "subject": {
           "termType": "BlankNode",
-          "value": "aa"
+          "value": "e_aa"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -33,18 +36,19 @@
         },
         "object": {
           "termType": "BlankNode",
-          "value": "dd"
+          "value": "e_dd"
         },
         "graph": {
           "termType": "DefaultGraph",
           "value": ""
-        },
-        "type": "pattern","termType": "Quad","value": ""
+        }
       },
       {
+        "type": "pattern",
+        "termType": "Quad",
         "subject": {
           "termType": "BlankNode",
-          "value": "dd"
+          "value": "e_dd"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -52,18 +56,19 @@
         },
         "object": {
           "termType": "BlankNode",
-          "value": "bb"
+          "value": "e_bb"
         },
         "graph": {
           "termType": "DefaultGraph",
           "value": ""
-        },
-        "type": "pattern","termType": "Quad","value": ""
+        }
       },
       {
+        "type": "pattern",
+        "termType": "Quad",
         "subject": {
           "termType": "BlankNode",
-          "value": "bb"
+          "value": "e_bb"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -76,8 +81,7 @@
         "graph": {
           "termType": "DefaultGraph",
           "value": ""
-        },
-        "type": "pattern","termType": "Quad","value": ""
+        }
       }
     ]
   }

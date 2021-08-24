@@ -12,6 +12,8 @@
             "type": "bgp",
             "patterns": [
               {
+                "type": "pattern",
+                "termType": "Quad",
                 "subject": {
                   "termType": "Variable",
                   "value": "s2"
@@ -27,10 +29,11 @@
                 "graph": {
                   "termType": "DefaultGraph",
                   "value": ""
-                },
-                "type": "pattern","termType": "Quad","value": ""
+                }
               },
               {
+                "type": "pattern",
+                "termType": "Quad",
                 "subject": {
                   "termType": "Variable",
                   "value": "s1"
@@ -46,8 +49,7 @@
                 "graph": {
                   "termType": "DefaultGraph",
                   "value": ""
-                },
-                "type": "pattern","termType": "Quad","value": ""
+                }
               }
             ]
           },
@@ -57,6 +59,8 @@
               "type": "bgp",
               "patterns": [
                 {
+                  "type": "pattern",
+                  "termType": "Quad",
                   "subject": {
                     "termType": "Variable",
                     "value": "s1"
@@ -72,10 +76,11 @@
                   "graph": {
                     "termType": "DefaultGraph",
                     "value": ""
-                  },
-                  "type": "pattern","termType": "Quad","value": ""
+                  }
                 },
                 {
+                  "type": "pattern",
+                  "termType": "Quad",
                   "subject": {
                     "termType": "Variable",
                     "value": "s2"
@@ -91,10 +96,11 @@
                   "graph": {
                     "termType": "DefaultGraph",
                     "value": ""
-                  },
-                  "type": "pattern","termType": "Quad","value": ""
+                  }
                 },
                 {
+                  "type": "pattern",
+                  "termType": "Quad",
                   "subject": {
                     "termType": "Variable",
                     "value": "s1"
@@ -110,8 +116,7 @@
                   "graph": {
                     "termType": "DefaultGraph",
                     "value": ""
-                  },
-                  "type": "pattern","termType": "Quad","value": ""
+                  }
                 }
               ]
             },
@@ -123,6 +128,8 @@
                 "type": "bgp",
                 "patterns": [
                   {
+                    "type": "pattern",
+                    "termType": "Quad",
                     "subject": {
                       "termType": "Variable",
                       "value": "s2"
@@ -138,8 +145,7 @@
                     "graph": {
                       "termType": "DefaultGraph",
                       "value": ""
-                    },
-                    "type": "pattern","termType": "Quad","value": ""
+                    }
                   }
                 ]
               }
@@ -152,6 +158,8 @@
             "type": "bgp",
             "patterns": [
               {
+                "type": "pattern",
+                "termType": "Quad",
                 "subject": {
                   "termType": "Variable",
                   "value": "s1"
@@ -167,10 +175,11 @@
                 "graph": {
                   "termType": "DefaultGraph",
                   "value": ""
-                },
-                "type": "pattern","termType": "Quad","value": ""
+                }
               },
               {
+                "type": "pattern",
+                "termType": "Quad",
                 "subject": {
                   "termType": "Variable",
                   "value": "s2"
@@ -186,10 +195,11 @@
                 "graph": {
                   "termType": "DefaultGraph",
                   "value": ""
-                },
-                "type": "pattern","termType": "Quad","value": ""
+                }
               },
               {
+                "type": "pattern",
+                "termType": "Quad",
                 "subject": {
                   "termType": "Variable",
                   "value": "s2"
@@ -205,8 +215,7 @@
                 "graph": {
                   "termType": "DefaultGraph",
                   "value": ""
-                },
-                "type": "pattern","termType": "Quad","value": ""
+                }
               }
             ]
           },
@@ -218,6 +227,8 @@
               "type": "bgp",
               "patterns": [
                 {
+                  "type": "pattern",
+                  "termType": "Quad",
                   "subject": {
                     "termType": "Variable",
                     "value": "s1"
@@ -233,8 +244,7 @@
                   "graph": {
                     "termType": "DefaultGraph",
                     "value": ""
-                  },
-                  "type": "pattern","termType": "Quad","value": ""
+                  }
                 }
               ]
             }

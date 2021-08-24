@@ -29,7 +29,6 @@ export default class Util
                 return {
                     type: 'pattern',
                     termType: 'Quad',
-                    value: '',
                     subject: Util.objectify(algebra.subject),
                     predicate: Util.objectify(algebra.predicate),
                     object: Util.objectify(algebra.object),

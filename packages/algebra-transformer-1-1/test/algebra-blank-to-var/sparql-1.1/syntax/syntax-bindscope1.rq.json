@@ -8,6 +8,8 @@
         "type": "bgp",
         "patterns": [
           {
+            "type": "pattern",
+            "termType": "Quad",
             "subject": {
               "termType": "NamedNode",
               "value": "http://www.example.orgs"
@@ -23,8 +25,7 @@
             "graph": {
               "termType": "DefaultGraph",
               "value": ""
-            },
-            "type": "pattern"
+            }
           }
         ]
       },
@@ -64,6 +65,8 @@
       "type": "bgp",
       "patterns": [
         {
+          "type": "pattern",
+          "termType": "Quad",
           "subject": {
             "termType": "NamedNode",
             "value": "http://www.example.orgs"
@@ -79,8 +82,7 @@
           "graph": {
             "termType": "DefaultGraph",
             "value": ""
-          },
-          "type": "pattern"
+          }
         }
       ]
     }

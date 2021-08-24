@@ -6,6 +6,8 @@
       "type": "bgp",
       "patterns": [
         {
+          "type": "pattern",
+          "termType": "Quad",
           "subject": {
             "termType": "Variable",
             "value": "s"
@@ -21,13 +23,14 @@
           "graph": {
             "termType": "DefaultGraph",
             "value": ""
-          },
-          "type": "pattern","termType": "Quad","value": ""
+          }
         }
       ]
     },
     "template": [
       {
+        "type": "pattern",
+        "termType": "Quad",
         "subject": {
           "termType": "Variable",
           "value": "s"
@@ -43,8 +46,7 @@
         "graph": {
           "termType": "DefaultGraph",
           "value": ""
-        },
-        "type": "pattern","termType": "Quad","value": ""
+        }
       }
     ]
   },

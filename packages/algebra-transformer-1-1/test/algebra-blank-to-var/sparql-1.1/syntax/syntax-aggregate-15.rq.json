@@ -22,8 +22,8 @@
               "value": "x"
             }
           },
-          "distinct": false,
           "separator": ";",
+          "distinct": false,
           "variable": {
             "termType": "Variable",
             "value": "var0"

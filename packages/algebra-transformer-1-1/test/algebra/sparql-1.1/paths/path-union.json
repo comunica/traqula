@@ -8,7 +8,6 @@
         {
           "type": "pattern",
           "termType": "Quad",
-          "value": "",
           "subject": {
             "termType": "Variable",
             "value": "item"
@@ -36,7 +35,6 @@
           {
             "type": "pattern",
             "termType": "Quad",
-            "value": "",
             "subject": {
               "termType": "Variable",
               "value": "item"

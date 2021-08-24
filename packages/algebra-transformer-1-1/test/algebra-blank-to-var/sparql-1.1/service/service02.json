@@ -2,72 +2,74 @@
   "type": "project",
   "input": {
     "type": "leftjoin",
-    "left": {
-      "type": "service",
-      "input": {
-        "type": "bgp",
-        "patterns": [
-          {
-            "type": "pattern",
-            "termType": "Quad",
-            "subject": {
-              "termType": "Variable",
-              "value": "s"
-            },
-            "predicate": {
-              "termType": "Variable",
-              "value": "p"
-            },
-            "object": {
-              "termType": "Variable",
-              "value": "o1"
-            },
-            "graph": {
-              "termType": "DefaultGraph",
-              "value": ""
+    "input": [
+      {
+        "type": "service",
+        "input": {
+          "type": "bgp",
+          "patterns": [
+            {
+              "type": "pattern",
+              "termType": "Quad",
+              "subject": {
+                "termType": "Variable",
+                "value": "s"
+              },
+              "predicate": {
+                "termType": "Variable",
+                "value": "p"
+              },
+              "object": {
+                "termType": "Variable",
+                "value": "o1"
+              },
+              "graph": {
+                "termType": "DefaultGraph",
+                "value": ""
+              }
             }
-          }
-        ]
+          ]
+        },
+        "name": {
+          "termType": "NamedNode",
+          "value": "http://example1.org/sparql"
+        },
+        "silent": false
       },
-      "name": {
-        "termType": "NamedNode",
-        "value": "http://example1.org/sparql"
-      },
-      "silent": false
-    },
-    "right": {
-      "type": "service",
-      "input": {
-        "type": "bgp",
-        "patterns": [
-          {
-            "type": "pattern",
-            "termType": "Quad",
-            "subject": {
-              "termType": "Variable",
-              "value": "s"
-            },
-            "predicate": {
-              "termType": "Variable",
-              "value": "p2"
-            },
-            "object": {
-              "termType": "Variable",
-              "value": "o2"
-            },
-            "graph": {
-              "termType": "DefaultGraph",
-              "value": ""
+      {
+        "type": "service",
+        "input": {
+          "type": "bgp",
+          "patterns": [
+            {
+              "type": "pattern",
+              "termType": "Quad",
+              "subject": {
+                "termType": "Variable",
+                "value": "s"
+              },
+              "predicate": {
+                "termType": "Variable",
+                "value": "p2"
+              },
+              "object": {
+                "termType": "Variable",
+                "value": "o2"
+              },
+              "graph": {
+                "termType": "DefaultGraph",
+                "value": ""
+              }
             }
-          }
-        ]
-      },
-      "name": {
-        "termType": "NamedNode",
-        "value": "http://example2.org/sparql"
-      },
-      "silent": false
-    }
+          ]
+        },
+        "name": {
+          "termType": "NamedNode",
+          "value": "http://example2.org/sparql"
+        },
+        "silent": false
+      }
+    ]
   },
   "variables": [
     {

@@ -4,106 +4,108 @@
     "type": "orderby",
     "input": {
       "type": "join",
-      "left": {
-        "type": "bgp",
-        "patterns": [
-          {
-            "type": "pattern",
-            "termType": "Quad",
-            "subject": {
-              "termType": "Variable",
-              "value": "O"
+      "input": [
+        {
+          "type": "bgp",
+          "patterns": [
+            {
+              "type": "pattern",
+              "termType": "Quad",
+              "subject": {
+                "termType": "Variable",
+                "value": "O"
+              },
+              "predicate": {
+                "termType": "NamedNode",
+                "value": "http://www.example.orghasItem"
+              },
+              "object": {
+                "termType": "BlankNode",
+                "value": "g_0"
+              },
+              "graph": {
+                "termType": "DefaultGraph",
+                "value": ""
+              }
             },
-            "predicate": {
-              "termType": "NamedNode",
-              "value": "http://www.example.orghasItem"
-            },
-            "object": {
-              "termType": "BlankNode",
-              "value": "g_0"
-            },
-            "graph": {
-              "termType": "DefaultGraph",
-              "value": ""
+            {
+              "type": "pattern",
+              "termType": "Quad",
+              "subject": {
+                "termType": "BlankNode",
+                "value": "g_0"
+              },
+              "predicate": {
+                "termType": "NamedNode",
+                "value": "http://www.w3.org/2000/01/rdf-schema#label"
+              },
+              "object": {
+                "termType": "Variable",
+                "value": "L"
+              },
+              "graph": {
+                "termType": "DefaultGraph",
+                "value": ""
+              }
             }
-          },
-          {
-            "type": "pattern",
-            "termType": "Quad",
-            "subject": {
-              "termType": "BlankNode",
-              "value": "g_0"
-            },
-            "predicate": {
-              "termType": "NamedNode",
-              "value": "http://www.w3.org/2000/01/rdf-schema#label"
-            },
-            "object": {
-              "termType": "Variable",
-              "value": "L"
-            },
-            "graph": {
-              "termType": "DefaultGraph",
-              "value": ""
-            }
-          }
-        ]
-      },
-      "right": {
-        "type": "slice",
-        "input": {
-          "type": "distinct",
+          ]
+        },
+        {
+          "type": "slice",
           "input": {
-            "type": "project",
+            "type": "distinct",
             "input": {
-              "type": "orderby",
+              "type": "project",
               "input": {
-                "type": "bgp",
-                "patterns": [
+                "type": "orderby",
+                "input": {
+                  "type": "bgp",
+                  "patterns": [
+                    {
+                      "type": "pattern",
+                      "termType": "Quad",
+                      "subject": {
+                        "termType": "Variable",
+                        "value": "O"
+                      },
+                      "predicate": {
+                        "termType": "NamedNode",
+                        "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+                      },
+                      "object": {
+                        "termType": "NamedNode",
+                        "value": "http://www.example.orgOrder"
+                      },
+                      "graph": {
+                        "termType": "DefaultGraph",
+                        "value": ""
+                      }
+                    }
+                  ]
+                },
+                "expressions": [
                   {
-                    "type": "pattern",
-                    "termType": "Quad",
-                    "subject": {
+                    "type": "expression",
+                    "expressionType": "term",
+                    "term": {
                       "termType": "Variable",
                       "value": "O"
-                    },
-                    "predicate": {
-                      "termType": "NamedNode",
-                      "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-                    },
-                    "object": {
-                      "termType": "NamedNode",
-                      "value": "http://www.example.orgOrder"
-                    },
-                    "graph": {
-                      "termType": "DefaultGraph",
-                      "value": ""
                     }
                   }
                 ]
               },
-              "expressions": [
+              "variables": [
                 {
-                  "type": "expression",
-                  "expressionType": "term",
-                  "term": {
-                    "termType": "Variable",
-                    "value": "O"
-                  }
+                  "termType": "Variable",
+                  "value": "O"
                 }
               ]
-            },
-            "variables": [
-              {
-                "termType": "Variable",
-                "value": "O"
-              }
-            ]
-          }
-        },
-        "start": 0,
-        "length": 2
-      }
+            }
+          },
+          "start": 0,
+          "length": 2
+        }
+      ]
     },
     "expressions": [
       {

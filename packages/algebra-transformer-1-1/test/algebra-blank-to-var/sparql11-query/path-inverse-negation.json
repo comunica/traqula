@@ -8,27 +8,29 @@
     },
     "predicate": {
       "type": "alt",
-      "left": {
-        "type": "nps",
-        "iris": [
-          {
-            "termType": "NamedNode",
-            "value": "http://www.example.org/schema#p1"
-          }
-        ]
-      },
-      "right": {
-        "type": "inv",
-        "path": {
+      "input": [
+        {
           "type": "nps",
           "iris": [
             {
               "termType": "NamedNode",
-              "value": "http://www.example.org/schema#p2"
+              "value": "http://www.example.org/schema#p1"
             }
           ]
+        },
+        {
+          "type": "inv",
+          "path": {
+            "type": "nps",
+            "iris": [
+              {
+                "termType": "NamedNode",
+                "value": "http://www.example.org/schema#p2"
+              }
+            ]
+          }
         }
-      }
+      ]
     },
     "object": {
       "termType": "Variable",

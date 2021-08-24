@@ -8,40 +8,41 @@
     },
     "predicate": {
       "type": "alt",
-      "left": {
-        "type": "alt",
-        "left": {
+      "input": [
+        {
           "type": "link",
           "iri": {
             "termType": "NamedNode",
             "value": "http://www.example.org/p1"
           }
         },
-        "right": {
+        {
           "type": "seq",
-          "left": {
-            "type": "link",
-            "iri": {
-              "termType": "NamedNode",
-              "value": "http://www.example.org/p2"
+          "input": [
+            {
+              "type": "link",
+              "iri": {
+                "termType": "NamedNode",
+                "value": "http://www.example.org/p2"
+              }
+            },
+            {
+              "type": "link",
+              "iri": {
+                "termType": "NamedNode",
+                "value": "http://www.example.org/p3"
+              }
             }
-          },
-          "right": {
-            "type": "link",
-            "iri": {
-              "termType": "NamedNode",
-              "value": "http://www.example.org/p3"
-            }
+          ]
+        },
+        {
+          "type": "link",
+          "iri": {
+            "termType": "NamedNode",
+            "value": "http://www.example.org/p4"
           }
         }
-      },
-      "right": {
-        "type": "link",
-        "iri": {
-          "termType": "NamedNode",
-          "value": "http://www.example.org/p4"
-        }
-      }
+      ]
     },
     "object": {
       "termType": "Variable",

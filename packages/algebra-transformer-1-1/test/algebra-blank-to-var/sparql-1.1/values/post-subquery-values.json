@@ -4,48 +4,50 @@
     "type": "project",
     "input": {
       "type": "join",
-      "left": {
-        "type": "bgp",
-        "patterns": [
-          {
-            "type": "pattern",
-            "termType": "Quad",
-            "subject": {
-              "termType": "Variable",
-              "value": "s"
-            },
-            "predicate": {
-              "termType": "Variable",
-              "value": "p"
-            },
-            "object": {
+      "input": [
+        {
+          "type": "bgp",
+          "patterns": [
+            {
+              "type": "pattern",
+              "termType": "Quad",
+              "subject": {
+                "termType": "Variable",
+                "value": "s"
+              },
+              "predicate": {
+                "termType": "Variable",
+                "value": "p"
+              },
+              "object": {
+                "termType": "Variable",
+                "value": "o"
+              },
+              "graph": {
+                "termType": "DefaultGraph",
+                "value": ""
+              }
+            }
+          ]
+        },
+        {
+          "type": "values",
+          "variables": [
+            {
               "termType": "Variable",
               "value": "o"
-            },
-            "graph": {
-              "termType": "DefaultGraph",
-              "value": ""
             }
-          }
-        ]
-      },
-      "right": {
-        "type": "values",
-        "variables": [
-          {
-            "termType": "Variable",
-            "value": "o"
-          }
-        ],
-        "bindings": [
-          {
-            "?o": {
-              "termType": "NamedNode",
-              "value": "http://example.org/b"
+          ],
+          "bindings": [
+            {
+              "?o": {
+                "termType": "NamedNode",
+                "value": "http://example.org/b"
+              }
             }
-          }
-        ]
-      }
+          ]
+        }
+      ]
     },
     "variables": [
       {

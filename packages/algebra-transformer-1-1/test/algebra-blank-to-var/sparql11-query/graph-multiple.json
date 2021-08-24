@@ -2,34 +2,8 @@
   "type": "project",
   "input": {
     "type": "join",
-    "left": {
-      "type": "bgp",
-      "patterns": [
-        {
-          "type": "pattern",
-          "termType": "Quad",
-          "subject": {
-            "termType": "Variable",
-            "value": "b2"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://example.org/hero"
-          },
-          "object": {
-            "termType": "Variable",
-            "value": "hero"
-          },
-          "graph": {
-            "termType": "DefaultGraph",
-            "value": ""
-          }
-        }
-      ]
-    },
-    "right": {
-      "type": "graph",
-      "input": {
+    "input": [
+      {
         "type": "bgp",
         "patterns": [
           {
@@ -37,15 +11,15 @@
             "termType": "Quad",
             "subject": {
               "termType": "Variable",
-              "value": "hero"
+              "value": "b2"
             },
             "predicate": {
               "termType": "NamedNode",
-              "value": "http://example.org/name"
+              "value": "http://example.org/hero"
             },
             "object": {
               "termType": "Variable",
-              "value": "hero_name"
+              "value": "hero"
             },
             "graph": {
               "termType": "DefaultGraph",
@@ -54,11 +28,39 @@
           }
         ]
       },
-      "name": {
-        "termType": "Variable",
-        "value": "hero_graph"
+      {
+        "type": "graph",
+        "input": {
+          "type": "bgp",
+          "patterns": [
+            {
+              "type": "pattern",
+              "termType": "Quad",
+              "subject": {
+                "termType": "Variable",
+                "value": "hero"
+              },
+              "predicate": {
+                "termType": "NamedNode",
+                "value": "http://example.org/name"
+              },
+              "object": {
+                "termType": "Variable",
+                "value": "hero_name"
+              },
+              "graph": {
+                "termType": "DefaultGraph",
+                "value": ""
+              }
+            }
+          ]
+        },
+        "name": {
+          "termType": "Variable",
+          "value": "hero_graph"
+        }
       }
-    }
+    ]
   },
   "variables": [
     {

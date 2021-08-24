@@ -2,9 +2,8 @@
   "type": "project",
   "input": {
     "type": "join",
-    "left": {
-      "type": "join",
-      "left": {
+    "input": [
+      {
         "type": "bgp",
         "patterns": [
           {
@@ -29,7 +28,7 @@
           }
         ]
       },
-      "right": {
+      {
         "type": "path",
         "subject": {
           "termType": "NamedNode",
@@ -39,20 +38,22 @@
           "type": "ZeroOrOnePath",
           "path": {
             "type": "seq",
-            "left": {
-              "type": "link",
-              "iri": {
-                "termType": "NamedNode",
-                "value": "http://example/p"
+            "input": [
+              {
+                "type": "link",
+                "iri": {
+                  "termType": "NamedNode",
+                  "value": "http://example/p"
+                }
+              },
+              {
+                "type": "link",
+                "iri": {
+                  "termType": "NamedNode",
+                  "value": "http://example/p"
+                }
               }
-            },
-            "right": {
-              "type": "link",
-              "iri": {
-                "termType": "NamedNode",
-                "value": "http://example/p"
-              }
-            }
+            ]
           }
         },
         "object": {
@@ -63,33 +64,33 @@
           "termType": "Variable",
           "value": "g"
         }
-      }
-    },
-    "right": {
-      "type": "bgp",
-      "patterns": [
-        {
-          "type": "pattern",
-          "termType": "Quad",
-          "subject": {
-            "termType": "Variable",
-            "value": "x"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://example/c"
-          },
-          "object": {
-            "termType": "Variable",
-            "value": "t"
-          },
-          "graph": {
-            "termType": "Variable",
-            "value": "g"
+      },
+      {
+        "type": "bgp",
+        "patterns": [
+          {
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": {
+              "termType": "Variable",
+              "value": "x"
+            },
+            "predicate": {
+              "termType": "NamedNode",
+              "value": "http://example/c"
+            },
+            "object": {
+              "termType": "Variable",
+              "value": "t"
+            },
+            "graph": {
+              "termType": "Variable",
+              "value": "g"
+            }
           }
-        }
-      ]
-    }
+        ]
+      }
+    ]
   },
   "variables": [
     {

@@ -10,20 +10,22 @@
       "type": "ZeroOrOnePath",
       "path": {
         "type": "seq",
-        "left": {
-          "type": "link",
-          "iri": {
-            "termType": "NamedNode",
-            "value": "http://example/p"
+        "input": [
+          {
+            "type": "link",
+            "iri": {
+              "termType": "NamedNode",
+              "value": "http://example/p"
+            }
+          },
+          {
+            "type": "link",
+            "iri": {
+              "termType": "NamedNode",
+              "value": "http://example/p"
+            }
           }
-        },
-        "right": {
-          "type": "link",
-          "iri": {
-            "termType": "NamedNode",
-            "value": "http://example/p"
-          }
-        }
+        ]
       }
     },
     "object": {

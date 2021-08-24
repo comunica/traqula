@@ -44,55 +44,57 @@
   ],
   "where": {
     "type": "leftjoin",
-    "left": {
-      "type": "bgp",
-      "patterns": [
-        {
-          "type": "pattern",
-          "termType": "Quad",
-          "subject": {
-            "termType": "Variable",
-            "value": "person"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://xmlns.com/foaf/0.1/name"
-          },
-          "object": {
-            "termType": "Variable",
-            "value": "name"
-          },
-          "graph": {
-            "termType": "NamedNode",
-            "value": "http://example/people"
+    "input": [
+      {
+        "type": "bgp",
+        "patterns": [
+          {
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": {
+              "termType": "Variable",
+              "value": "person"
+            },
+            "predicate": {
+              "termType": "NamedNode",
+              "value": "http://xmlns.com/foaf/0.1/name"
+            },
+            "object": {
+              "termType": "Variable",
+              "value": "name"
+            },
+            "graph": {
+              "termType": "NamedNode",
+              "value": "http://example/people"
+            }
           }
-        }
-      ]
-    },
-    "right": {
-      "type": "bgp",
-      "patterns": [
-        {
-          "type": "pattern",
-          "termType": "Quad",
-          "subject": {
-            "termType": "Variable",
-            "value": "person"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://xmlns.com/foaf/0.1/mbox"
-          },
-          "object": {
-            "termType": "Variable",
-            "value": "email"
-          },
-          "graph": {
-            "termType": "NamedNode",
-            "value": "http://example/people"
+        ]
+      },
+      {
+        "type": "bgp",
+        "patterns": [
+          {
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": {
+              "termType": "Variable",
+              "value": "person"
+            },
+            "predicate": {
+              "termType": "NamedNode",
+              "value": "http://xmlns.com/foaf/0.1/mbox"
+            },
+            "object": {
+              "termType": "Variable",
+              "value": "email"
+            },
+            "graph": {
+              "termType": "NamedNode",
+              "value": "http://example/people"
+            }
           }
-        }
-      ]
-    }
+        ]
+      }
+    ]
   }
 }

@@ -2,76 +2,80 @@
   "type": "project",
   "input": {
     "type": "join",
-    "left": {
-      "type": "leftjoin",
-      "left": {
-        "type": "bgp",
-        "patterns": [
+    "input": [
+      {
+        "type": "leftjoin",
+        "input": [
           {
-            "type": "pattern",
-            "termType": "Quad",
-            "subject": {
-              "termType": "Variable",
-              "value": "s"
-            },
-            "predicate": {
-              "termType": "Variable",
-              "value": "p1"
-            },
-            "object": {
-              "termType": "Variable",
-              "value": "o1"
-            },
-            "graph": {
-              "termType": "DefaultGraph",
-              "value": ""
-            }
+            "type": "bgp",
+            "patterns": [
+              {
+                "type": "pattern",
+                "termType": "Quad",
+                "subject": {
+                  "termType": "Variable",
+                  "value": "s"
+                },
+                "predicate": {
+                  "termType": "Variable",
+                  "value": "p1"
+                },
+                "object": {
+                  "termType": "Variable",
+                  "value": "o1"
+                },
+                "graph": {
+                  "termType": "DefaultGraph",
+                  "value": ""
+                }
+              }
+            ]
+          },
+          {
+            "type": "bgp",
+            "patterns": [
+              {
+                "type": "pattern",
+                "termType": "Quad",
+                "subject": {
+                  "termType": "Variable",
+                  "value": "s"
+                },
+                "predicate": {
+                  "termType": "NamedNode",
+                  "value": "http://xmlns.com/foaf/0.1/knows"
+                },
+                "object": {
+                  "termType": "Variable",
+                  "value": "o2"
+                },
+                "graph": {
+                  "termType": "DefaultGraph",
+                  "value": ""
+                }
+              }
+            ]
           }
         ]
       },
-      "right": {
-        "type": "bgp",
-        "patterns": [
+      {
+        "type": "values",
+        "variables": [
           {
-            "type": "pattern",
-            "termType": "Quad",
-            "subject": {
-              "termType": "Variable",
-              "value": "s"
-            },
-            "predicate": {
+            "termType": "Variable",
+            "value": "o2"
+          }
+        ],
+        "bindings": [
+          {
+            "?o2": {
               "termType": "NamedNode",
-              "value": "http://xmlns.com/foaf/0.1/knows"
-            },
-            "object": {
-              "termType": "Variable",
-              "value": "o2"
-            },
-            "graph": {
-              "termType": "DefaultGraph",
-              "value": ""
+              "value": "http://example.org/b"
             }
           }
         ]
       }
-    },
-    "right": {
-      "type": "values",
-      "variables": [
-        {
-          "termType": "Variable",
-          "value": "o2"
-        }
-      ],
-      "bindings": [
-        {
-          "?o2": {
-            "termType": "NamedNode",
-            "value": "http://example.org/b"
-          }
-        }
-      ]
-    }
+    ]
   },
   "variables": [
     {

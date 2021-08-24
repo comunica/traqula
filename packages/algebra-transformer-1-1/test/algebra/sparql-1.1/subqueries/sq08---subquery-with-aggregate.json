@@ -2,104 +2,106 @@
   "type": "project",
   "input": {
     "type": "join",
-    "left": {
-      "type": "project",
-      "input": {
-        "type": "extend",
+    "input": [
+      {
+        "type": "project",
         "input": {
-          "type": "group",
+          "type": "extend",
           "input": {
-            "type": "bgp",
-            "patterns": [
+            "type": "group",
+            "input": {
+              "type": "bgp",
+              "patterns": [
+                {
+                  "type": "pattern",
+                  "termType": "Quad",
+                  "subject": {
+                    "termType": "Variable",
+                    "value": "x"
+                  },
+                  "predicate": {
+                    "termType": "NamedNode",
+                    "value": "http://www.example.org/schema#p"
+                  },
+                  "object": {
+                    "termType": "Variable",
+                    "value": "y"
+                  },
+                  "graph": {
+                    "termType": "DefaultGraph",
+                    "value": ""
+                  }
+                }
+              ]
+            },
+            "variables": [],
+            "aggregates": [
               {
-                "type": "pattern",
-                "termType": "Quad",
-                "subject": {
+                "type": "expression",
+                "expressionType": "aggregate",
+                "aggregator": "max",
+                "expression": {
+                  "type": "expression",
+                  "expressionType": "term",
+                  "term": {
+                    "termType": "Variable",
+                    "value": "y"
+                  }
+                },
+                "distinct": false,
+                "variable": {
                   "termType": "Variable",
-                  "value": "x"
-                },
-                "predicate": {
-                  "termType": "NamedNode",
-                  "value": "http://www.example.org/schema#p"
-                },
-                "object": {
-                  "termType": "Variable",
-                  "value": "y"
-                },
-                "graph": {
-                  "termType": "DefaultGraph",
-                  "value": ""
+                  "value": "var0"
                 }
               }
             ]
           },
-          "variables": [],
-          "aggregates": [
-            {
-              "type": "expression",
-              "expressionType": "aggregate",
-              "aggregator": "max",
-              "expression": {
-                "type": "expression",
-                "expressionType": "term",
-                "term": {
-                  "termType": "Variable",
-                  "value": "y"
-                }
-              },
-              "distinct": false,
-              "variable": {
-                "termType": "Variable",
-                "value": "var0"
-              }
-            }
-          ]
-        },
-        "variable": {
-          "termType": "Variable",
-          "value": "max"
-        },
-        "expression": {
-          "type": "expression",
-          "expressionType": "term",
-          "term": {
-            "termType": "Variable",
-            "value": "var0"
-          }
-        }
-      },
-      "variables": [
-        {
-          "termType": "Variable",
-          "value": "max"
-        }
-      ]
-    },
-    "right": {
-      "type": "bgp",
-      "patterns": [
-        {
-          "type": "pattern",
-          "termType": "Quad",
-          "subject": {
-            "termType": "Variable",
-            "value": "x"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://www.example.org/schema#p"
-          },
-          "object": {
+          "variable": {
             "termType": "Variable",
             "value": "max"
           },
-          "graph": {
-            "termType": "DefaultGraph",
-            "value": ""
+          "expression": {
+            "type": "expression",
+            "expressionType": "term",
+            "term": {
+              "termType": "Variable",
+              "value": "var0"
+            }
           }
-        }
-      ]
-    }
+        },
+        "variables": [
+          {
+            "termType": "Variable",
+            "value": "max"
+          }
+        ]
+      },
+      {
+        "type": "bgp",
+        "patterns": [
+          {
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": {
+              "termType": "Variable",
+              "value": "x"
+            },
+            "predicate": {
+              "termType": "NamedNode",
+              "value": "http://www.example.org/schema#p"
+            },
+            "object": {
+              "termType": "Variable",
+              "value": "max"
+            },
+            "graph": {
+              "termType": "DefaultGraph",
+              "value": ""
+            }
+          }
+        ]
+      }
+    ]
   },
   "variables": [
     {

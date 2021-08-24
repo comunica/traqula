@@ -2,54 +2,8 @@
   "type": "project",
   "input": {
     "type": "join",
-    "left": {
-      "type": "bgp",
-      "patterns": [
-        {
-          "type": "pattern",
-          "termType": "Quad",
-          "subject": {
-            "termType": "Variable",
-            "value": "g"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://purl.org/dc/elements/1.1/publisher"
-          },
-          "object": {
-            "termType": "Variable",
-            "value": "name"
-          },
-          "graph": {
-            "termType": "DefaultGraph",
-            "value": ""
-          }
-        },
-        {
-          "type": "pattern",
-          "termType": "Quad",
-          "subject": {
-            "termType": "Variable",
-            "value": "g"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://purl.org/dc/elements/1.1/date"
-          },
-          "object": {
-            "termType": "Variable",
-            "value": "date"
-          },
-          "graph": {
-            "termType": "DefaultGraph",
-            "value": ""
-          }
-        }
-      ]
-    },
-    "right": {
-      "type": "graph",
-      "input": {
+    "input": [
+      {
         "type": "bgp",
         "patterns": [
           {
@@ -57,11 +11,11 @@
             "termType": "Quad",
             "subject": {
               "termType": "Variable",
-              "value": "person"
+              "value": "g"
             },
             "predicate": {
               "termType": "NamedNode",
-              "value": "http://xmlns.com/foaf/0.1/name"
+              "value": "http://purl.org/dc/elements/1.1/publisher"
             },
             "object": {
               "termType": "Variable",
@@ -77,15 +31,15 @@
             "termType": "Quad",
             "subject": {
               "termType": "Variable",
-              "value": "person"
+              "value": "g"
             },
             "predicate": {
               "termType": "NamedNode",
-              "value": "http://xmlns.com/foaf/0.1/mbox"
+              "value": "http://purl.org/dc/elements/1.1/date"
             },
             "object": {
               "termType": "Variable",
-              "value": "mbox"
+              "value": "date"
             },
             "graph": {
               "termType": "DefaultGraph",
@@ -94,11 +48,59 @@
           }
         ]
       },
-      "name": {
-        "termType": "Variable",
-        "value": "g"
+      {
+        "type": "graph",
+        "input": {
+          "type": "bgp",
+          "patterns": [
+            {
+              "type": "pattern",
+              "termType": "Quad",
+              "subject": {
+                "termType": "Variable",
+                "value": "person"
+              },
+              "predicate": {
+                "termType": "NamedNode",
+                "value": "http://xmlns.com/foaf/0.1/name"
+              },
+              "object": {
+                "termType": "Variable",
+                "value": "name"
+              },
+              "graph": {
+                "termType": "DefaultGraph",
+                "value": ""
+              }
+            },
+            {
+              "type": "pattern",
+              "termType": "Quad",
+              "subject": {
+                "termType": "Variable",
+                "value": "person"
+              },
+              "predicate": {
+                "termType": "NamedNode",
+                "value": "http://xmlns.com/foaf/0.1/mbox"
+              },
+              "object": {
+                "termType": "Variable",
+                "value": "mbox"
+              },
+              "graph": {
+                "termType": "DefaultGraph",
+                "value": ""
+              }
+            }
+          ]
+        },
+        "name": {
+          "termType": "Variable",
+          "value": "g"
+        }
       }
-    }
+    ]
   },
   "variables": [
     {

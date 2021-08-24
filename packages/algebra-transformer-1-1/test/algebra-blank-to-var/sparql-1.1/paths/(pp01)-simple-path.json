@@ -16,7 +16,7 @@
         },
         "object": {
           "termType": "Variable",
-          "value": "var1"
+          "value": "var0"
         },
         "graph": {
           "termType": "DefaultGraph",
@@ -28,7 +28,7 @@
         "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "var1"
+          "value": "var0"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -36,7 +36,7 @@
         },
         "object": {
           "termType": "Variable",
-          "value": "var0"
+          "value": "var1"
         },
         "graph": {
           "termType": "DefaultGraph",
@@ -48,7 +48,7 @@
         "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "var0"
+          "value": "var1"
         },
         "predicate": {
           "termType": "NamedNode",

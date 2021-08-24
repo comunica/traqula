@@ -10,30 +10,29 @@
       "type": "ZeroOrMorePath",
       "path": {
         "type": "seq",
-        "left": {
-          "type": "seq",
-          "left": {
+        "input": [
+          {
             "type": "link",
             "iri": {
               "termType": "NamedNode",
               "value": "http://www.example.org/schema#p1"
             }
           },
-          "right": {
+          {
             "type": "link",
             "iri": {
               "termType": "NamedNode",
               "value": "http://www.example.org/schema#p2"
             }
+          },
+          {
+            "type": "link",
+            "iri": {
+              "termType": "NamedNode",
+              "value": "http://www.example.org/schema#p3"
+            }
           }
-        },
-        "right": {
-          "type": "link",
-          "iri": {
-            "termType": "NamedNode",
-            "value": "http://www.example.org/schema#p3"
-          }
-        }
+        ]
       }
     },
     "object": {

@@ -8,43 +8,49 @@
     },
     "predicate": {
       "type": "alt",
-      "left": {
-        "type": "seq",
-        "left": {
-          "type": "alt",
-          "left": {
-            "type": "link",
-            "iri": {
-              "termType": "NamedNode",
-              "value": "http://www.example.org/p0"
-            }
-          },
-          "right": {
-            "type": "inv",
-            "path": {
+      "input": [
+        {
+          "type": "seq",
+          "input": [
+            {
+              "type": "alt",
+              "input": [
+                {
+                  "type": "link",
+                  "iri": {
+                    "termType": "NamedNode",
+                    "value": "http://www.example.org/p0"
+                  }
+                },
+                {
+                  "type": "inv",
+                  "path": {
+                    "type": "link",
+                    "iri": {
+                      "termType": "NamedNode",
+                      "value": "http://www.example.org/p1"
+                    }
+                  }
+                }
+              ]
+            },
+            {
               "type": "link",
               "iri": {
                 "termType": "NamedNode",
-                "value": "http://www.example.org/p1"
+                "value": "http://www.example.org/p2"
               }
             }
-          }
+          ]
         },
-        "right": {
+        {
           "type": "link",
           "iri": {
             "termType": "NamedNode",
-            "value": "http://www.example.org/p2"
+            "value": "http://www.example.org/p3"
           }
         }
-      },
-      "right": {
-        "type": "link",
-        "iri": {
-          "termType": "NamedNode",
-          "value": "http://www.example.org/p3"
-        }
-      }
+      ]
     },
     "object": {
       "termType": "Variable",

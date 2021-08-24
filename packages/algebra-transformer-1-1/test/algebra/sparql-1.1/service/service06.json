@@ -4,34 +4,8 @@
     "type": "service",
     "input": {
       "type": "leftjoin",
-      "left": {
-        "type": "bgp",
-        "patterns": [
-          {
-            "type": "pattern",
-            "termType": "Quad",
-            "subject": {
-              "termType": "Variable",
-              "value": "s"
-            },
-            "predicate": {
-              "termType": "Variable",
-              "value": "p"
-            },
-            "object": {
-              "termType": "Variable",
-              "value": "o1"
-            },
-            "graph": {
-              "termType": "DefaultGraph",
-              "value": ""
-            }
-          }
-        ]
-      },
-      "right": {
-        "type": "service",
-        "input": {
+      "input": [
+        {
           "type": "bgp",
           "patterns": [
             {
@@ -43,11 +17,11 @@
               },
               "predicate": {
                 "termType": "Variable",
-                "value": "p2"
+                "value": "p"
               },
               "object": {
                 "termType": "Variable",
-                "value": "o2"
+                "value": "o1"
               },
               "graph": {
                 "termType": "DefaultGraph",
@@ -56,12 +30,40 @@
             }
           ]
         },
-        "name": {
-          "termType": "NamedNode",
-          "value": "http://invalid.endpoint.org/sparql"
-        },
-        "silent": true
-      }
+        {
+          "type": "service",
+          "input": {
+            "type": "bgp",
+            "patterns": [
+              {
+                "type": "pattern",
+                "termType": "Quad",
+                "subject": {
+                  "termType": "Variable",
+                  "value": "s"
+                },
+                "predicate": {
+                  "termType": "Variable",
+                  "value": "p2"
+                },
+                "object": {
+                  "termType": "Variable",
+                  "value": "o2"
+                },
+                "graph": {
+                  "termType": "DefaultGraph",
+                  "value": ""
+                }
+              }
+            ]
+          },
+          "name": {
+            "termType": "NamedNode",
+            "value": "http://invalid.endpoint.org/sparql"
+          },
+          "silent": true
+        }
+      ]
     },
     "name": {
       "termType": "NamedNode",

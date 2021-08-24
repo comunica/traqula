@@ -2,34 +2,63 @@
   "type": "project",
   "input": {
     "type": "join",
-    "left": {
-      "type": "leftjoin",
-      "left": {
-        "type": "bgp",
-        "patterns": [
+    "input": [
+      {
+        "type": "leftjoin",
+        "input": [
           {
-            "type": "pattern",
-            "termType": "Quad",
-            "subject": {
-              "termType": "Variable",
-              "value": "a"
-            },
-            "predicate": {
-              "termType": "NamedNode",
-              "value": "http://example.org/ns#b"
-            },
-            "object": {
-              "termType": "NamedNode",
-              "value": "http://example.org/ns#c"
-            },
-            "graph": {
-              "termType": "DefaultGraph",
-              "value": ""
-            }
+            "type": "bgp",
+            "patterns": [
+              {
+                "type": "pattern",
+                "termType": "Quad",
+                "subject": {
+                  "termType": "Variable",
+                  "value": "a"
+                },
+                "predicate": {
+                  "termType": "NamedNode",
+                  "value": "http://example.org/ns#b"
+                },
+                "object": {
+                  "termType": "NamedNode",
+                  "value": "http://example.org/ns#c"
+                },
+                "graph": {
+                  "termType": "DefaultGraph",
+                  "value": ""
+                }
+              }
+            ]
+          },
+          {
+            "type": "bgp",
+            "patterns": [
+              {
+                "type": "pattern",
+                "termType": "Quad",
+                "subject": {
+                  "termType": "NamedNode",
+                  "value": "http://example.org/ns#x"
+                },
+                "predicate": {
+                  "termType": "NamedNode",
+                  "value": "http://example.org/ns#y"
+                },
+                "object": {
+                  "termType": "NamedNode",
+                  "value": "http://example.org/ns#z"
+                },
+                "graph": {
+                  "termType": "DefaultGraph",
+                  "value": ""
+                }
+              }
+            ]
           }
         ]
       },
-      "right": {
+      {
         "type": "bgp",
         "patterns": [
           {
@@ -40,12 +69,12 @@
               "value": "http://example.org/ns#x"
             },
             "predicate": {
-              "termType": "NamedNode",
-              "value": "http://example.org/ns#y"
+              "termType": "Variable",
+              "value": "y"
             },
             "object": {
-              "termType": "NamedNode",
-              "value": "http://example.org/ns#z"
+              "termType": "Variable",
+              "value": "z"
             },
             "graph": {
               "termType": "DefaultGraph",
@@ -54,32 +83,7 @@
           }
         ]
       }
-    },
-    "right": {
-      "type": "bgp",
-      "patterns": [
-        {
-          "type": "pattern",
-          "termType": "Quad",
-          "subject": {
-            "termType": "NamedNode",
-            "value": "http://example.org/ns#x"
-          },
-          "predicate": {
-            "termType": "Variable",
-            "value": "y"
-          },
-          "object": {
-            "termType": "Variable",
-            "value": "z"
-          },
-          "graph": {
-            "termType": "DefaultGraph",
-            "value": ""
-          }
-        }
-      ]
-    }
+    ]
   },
   "variables": [
     {

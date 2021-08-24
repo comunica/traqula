@@ -2,56 +2,58 @@
   "type": "project",
   "input": {
     "type": "minus",
-    "left": {
-      "type": "bgp",
-      "patterns": [
-        {
-          "type": "pattern",
-          "termType": "Quad",
-          "subject": {
-            "termType": "Variable",
-            "value": "uri"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://www.w3.org/2004/02/skos/core#prefLabel"
-          },
-          "object": {
-            "termType": "Variable",
-            "value": "prefLabel"
-          },
-          "graph": {
-            "termType": "DefaultGraph",
-            "value": ""
+    "input": [
+      {
+        "type": "bgp",
+        "patterns": [
+          {
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": {
+              "termType": "Variable",
+              "value": "uri"
+            },
+            "predicate": {
+              "termType": "NamedNode",
+              "value": "http://www.w3.org/2004/02/skos/core#prefLabel"
+            },
+            "object": {
+              "termType": "Variable",
+              "value": "prefLabel"
+            },
+            "graph": {
+              "termType": "DefaultGraph",
+              "value": ""
+            }
           }
-        }
-      ]
-    },
-    "right": {
-      "type": "bgp",
-      "patterns": [
-        {
-          "type": "pattern",
-          "termType": "Quad",
-          "subject": {
-            "termType": "Variable",
-            "value": "uri"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://www.w3.org/2004/02/skos/core#broader"
-          },
-          "object": {
-            "termType": "NamedNode",
-            "value": "https://test.com/"
-          },
-          "graph": {
-            "termType": "DefaultGraph",
-            "value": ""
+        ]
+      },
+      {
+        "type": "bgp",
+        "patterns": [
+          {
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": {
+              "termType": "Variable",
+              "value": "uri"
+            },
+            "predicate": {
+              "termType": "NamedNode",
+              "value": "http://www.w3.org/2004/02/skos/core#broader"
+            },
+            "object": {
+              "termType": "NamedNode",
+              "value": "https://test.com/"
+            },
+            "graph": {
+              "termType": "DefaultGraph",
+              "value": ""
+            }
           }
-        }
-      ]
-    }
+        ]
+      }
+    ]
   },
   "variables": [
     {

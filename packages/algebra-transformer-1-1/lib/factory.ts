@@ -15,7 +15,7 @@ export default class Factory
         this.stringType = <RDF.NamedNode>this.createTerm('http://www.w3.org/2001/XMLSchema#string');
     }
 
-    createAlt (left: A.PropertyPathSymbol, right: A.PropertyPathSymbol): A.Alt { return { type: A.types.ALT, left, right }; }
+    createAlt (input: A.PropertyPathSymbol[]): A.Alt { return { type: A.types.ALT, input }; }
     createAsk (input: A.Operation): A.Ask { return { type: A.types.ASK, input }; }
     createBoundAggregate (variable: RDF.Variable, aggregate: string, expression: A.Expression, distinct: boolean, separator?: string): A.BoundAggregate
     {
@@ -33,15 +33,15 @@ export default class Factory
     createGraph (input: A.Operation, name: RDF.Term) : A.Graph { return { type: A.types.GRAPH, input, name }; }
     createGroup (input: A.Operation, variables: RDF.Variable[], aggregates: A.BoundAggregate[]) : A.Group { return { type: A.types.GROUP, input, variables, aggregates }; }
     createInv (path: A.PropertyPathSymbol): A.Inv { return { type: A.types.INV, path }; }
-    createJoin (left: A.Operation, right: A.Operation): A.Join { return { type: A.types.JOIN, left, right }; }
+    createJoin (input: A.Operation[]): A.Join { return { type: A.types.JOIN, input }; }
     createLeftJoin (left: A.Operation, right: A.Operation, expression?: A.Expression): A.LeftJoin
     {
         if (expression)
-            return { type: A.types.LEFT_JOIN, left, right, expression };
-        return { type: A.types.LEFT_JOIN, left, right };
+            return { type: A.types.LEFT_JOIN, input: [ left, right ], expression };
+        return { type: A.types.LEFT_JOIN, input: [ left, right ] };
     }
     createLink (iri: RDF.NamedNode): A.Link { return { type: A.types.LINK, iri }; }
-    createMinus (left: A.Operation, right: A.Operation): A.Minus { return { type: A.types.MINUS, left, right }; }
+    createMinus (left: A.Operation, right: A.Operation): A.Minus { return { type: A.types.MINUS, input: [ left, right ] }; }
     createNop (): A.Nop { return { type: A.types.NOP }; }
     createNps (iris: RDF.NamedNode[]): A.Nps { return { type: A.types.NPS, iris }; }
     createOneOrMorePath (path: A.PropertyPathSymbol): A.OneOrMorePath { return { type: A.types.ONE_OR_MORE_PATH, path }; }
@@ -60,7 +60,7 @@ export default class Factory
     }
     createProject (input: A.Operation, variables: (RDF.Variable | Wildcard)[]) : A.Project { return { type: A.types.PROJECT, input, variables }; }
     createReduced (input: A.Operation) : A.Reduced { return { type: A.types.REDUCED, input }; }
-    createSeq (left: A.PropertyPathSymbol, right: A.PropertyPathSymbol): A.Seq { return { type: A.types.SEQ, left, right }; }
+    createSeq (input: A.PropertyPathSymbol[]): A.Seq { return { type: A.types.SEQ, input }; }
     createService (input: A.Operation, name: RDF.Term, silent?: boolean): A.Service { return { type: A.types.SERVICE, input, name, silent }; }
     createSlice (input: A.Operation, start: number, length?: number) : A.Slice
     {
@@ -69,7 +69,7 @@ export default class Factory
             return { type: A.types.SLICE, input, start, length };
         return { type: A.types.SLICE, input, start };
     }
-    createUnion (left: A.Operation, right: A.Operation): A.Union { return { type: A.types.UNION, left, right }; }
+    createUnion (input: A.Operation[]): A.Union { return { type: A.types.UNION, input }; }
     createValues (variables: RDF.Variable[], bindings: {[key: string]: RDF.Term}[]): A.Values { return { type: A.types.VALUES, variables, bindings }; }
     createZeroOrMorePath (path: A.PropertyPathSymbol): A.ZeroOrMorePath { return { type: A.types.ZERO_OR_MORE_PATH, path }; }
     createZeroOrOnePath (path: A.PropertyPathSymbol): A.ZeroOrOnePath { return { type: A.types.ZERO_OR_ONE_PATH, path }; }

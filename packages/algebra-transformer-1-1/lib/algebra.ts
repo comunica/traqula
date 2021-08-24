@@ -75,10 +75,14 @@ export interface Single extends Operation
     input: Operation;
 }
 
+export interface Multi extends Operation
+{
+    input: Operation[];
+}
+
 export interface Double extends Operation
 {
-    left: Operation;
-    right: Operation;
+    input: [Operation, Operation];
 }
 
 export interface PropertyPathSymbol extends Operation
@@ -145,11 +149,10 @@ export interface WildcardExpression extends Expression
 // ----------------------- ACTUAL FUNCTIONS -----------------------
 
 
-export interface Alt extends Double, PropertyPathSymbol
+export interface Alt extends Multi, PropertyPathSymbol
 {
     type: typeof types.ALT;
-    left: PropertyPathSymbol;
-    right: PropertyPathSymbol;
+    input: PropertyPathSymbol[];
 }
 
 export interface Ask extends Single
@@ -225,7 +228,7 @@ export interface Inv extends Operation, PropertyPathSymbol
     path: PropertyPathSymbol;
 }
 
-export interface Join extends Double
+export interface Join extends Multi
 {
     type: typeof types.JOIN
 }
@@ -295,11 +298,10 @@ export interface Reduced extends Single
     type: typeof types.REDUCED;
 }
 
-export interface Seq extends Double, PropertyPathSymbol
+export interface Seq extends Multi, PropertyPathSymbol
 {
     type: typeof types.SEQ;
-    left: PropertyPathSymbol;
-    right: PropertyPathSymbol;
+    input: PropertyPathSymbol[];
 }
 
 export interface Service extends Single
@@ -316,7 +318,7 @@ export interface Slice extends Single
     length?: number;
 }
 
-export interface Union extends Double
+export interface Union extends Multi
 {
     type: typeof types.UNION;
 }

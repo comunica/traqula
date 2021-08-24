@@ -190,13 +190,13 @@ function translateGroupGraphPattern(thingy: Pattern) : Algebra.Operation
     // 18.2.2.6
     let result: Algebra.Operation;
     if (thingy.type === 'union')
-        result = nonfilters.map((p: any) =>
+        result = factory.createUnion(nonfilters.map((p: any) =>
         {
             // sparqljs doesn't always indicate the children are groups
             if (p.type !== 'group')
                 p = { type: 'group', patterns: [p] };
             return translateGroupGraphPattern(p);
-        }).reduce((acc: Algebra.Operation, item: Algebra.Operation) => factory.createUnion(acc, item));
+        }));
     else if (thingy.type === 'graph')
         // need to handle this separately since the filters need to be in the graph
         return translateGraph(thingy);
@@ -273,7 +273,7 @@ function translateBgp(thingy: BgpPattern) : Algebra.Operation
         joins.push(factory.createBgp(patterns));
     if (joins.length === 1)
         return joins[0];
-    return joins.reduce((acc, item) => factory.createJoin(acc, item));
+    return factory.createJoin(joins);
 }
 
 function translatePath(triple: Triple & { predicate: PropertyPath }) : Algebra.Operation[]
@@ -327,13 +327,13 @@ function translatePathPredicate(predicate: IriTerm | PropertyPath) : Algebra.Ope
             return normalElement;
         if (normals.length === 0)
             return invertedElement;
-        return factory.createAlt(normalElement, invertedElement);
+        return factory.createAlt([ normalElement, invertedElement, ]);
     }
 
     if (predicate.pathType === '/')
-        return predicate.items.map(translatePathPredicate).reduce((acc: Algebra.Operation, p: Algebra.Operation) => factory.createSeq(acc, p));
+        return factory.createSeq(predicate.items.map(translatePathPredicate));
     if (predicate.pathType === '|')
-        return predicate.items.map(translatePathPredicate).reduce((acc: Algebra.Operation, p: Algebra.Operation) => factory.createAlt(acc, p));
+        return factory.createAlt(predicate.items.map(translatePathPredicate));
     if (predicate.pathType === '*')
         return factory.createZeroOrMorePath(translatePathPredicate(predicate.items[0]));
     if (predicate.pathType === '+')
@@ -354,10 +354,16 @@ function simplifyPath(subject: RDF.Quad_Subject, predicate: Algebra.Operation, o
 
     if (predicate.type === types.SEQ)
     {
-        let v = generateFreshVar();
-        let left = simplifyPath(subject, (<Algebra.Seq>predicate).left, v);
-        let right = simplifyPath(v, (<Algebra.Seq>predicate).right, object);
-        return left.concat(right);
+        let joiner: RDF.Quad_Subject | RDF.Variable = subject;
+        const seq: Algebra.Seq = <Algebra.Seq> predicate;
+        return Util.flatten(seq.input.map((subOp, i) => {
+            const nextJoiner = i === seq.input.length - 1 ? object : generateFreshVar();
+            const simplifiedPath = simplifyPath(joiner, subOp, nextJoiner);
+            if (nextJoiner.termType === 'Variable') {
+                joiner = nextJoiner;
+            }
+            return simplifiedPath;
+        }));
     }
 
     return [ factory.createPath(subject, predicate, object) ];
@@ -511,7 +517,7 @@ function simplifiedJoin(G: Algebra.Operation, A: Algebra.Operation): Algebra.Ope
     else if (A.type === types.BGP && (<Algebra.Bgp>A).patterns.length === 0)
     {} // do nothing
     else
-        G = factory.createJoin(G, A);
+        G = factory.createJoin([ G, A ]);
     return G;
 }
 
@@ -574,7 +580,7 @@ function translateAggregates(query: Query, res: Algebra.Operation, variables: Se
 
     // 18.2.4.3
     if (query.values)
-        res = factory.createJoin(res, translateInlineData(query));
+        res = factory.createJoin([ res, translateInlineData(query) ]);
 
     // 18.2.4.4
     let PV = new Set<RDF.Term | Wildcard>();

@@ -16,7 +16,7 @@ function generateJsonFromSparqlInPath(currentPath: string, stack: string[]) {
         let sparql = fs.readFileSync(currentPath, 'utf8');
 
         let filename = stack.pop();
-        let name = filename.replace(/\.sparql$/, '');
+        let name = filename!.replace(/\.sparql$/, '');
         for (const blankToVariable of [ false, true ]) {
             let algebra = Util.objectify(translate(sparql, { quads: name.endsWith('(quads)'), sparqlStar: true, blankToVariable }));
             filename = name + '.json';

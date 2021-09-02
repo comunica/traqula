@@ -61,7 +61,7 @@ export default class Factory
     createProject (input: A.Operation, variables: (RDF.Variable | Wildcard)[]) : A.Project { return { type: A.types.PROJECT, input, variables }; }
     createReduced (input: A.Operation) : A.Reduced { return { type: A.types.REDUCED, input }; }
     createSeq (input: A.PropertyPathSymbol[]): A.Seq { return this.flattenMulti({ type: A.types.SEQ, input }); }
-    createService (input: A.Operation, name: RDF.Term, silent?: boolean): A.Service { return { type: A.types.SERVICE, input, name, silent }; }
+    createService (input: A.Operation, name: RDF.Term, silent?: boolean): A.Service { return { type: A.types.SERVICE, input, name, silent: Boolean(silent) }; }
     createSlice (input: A.Operation, start: number, length?: number) : A.Slice
     {
         start = start || 0;
@@ -106,25 +106,25 @@ export default class Factory
         const result: A.Load = { type: A.types.LOAD, source };
         if (destination)
             result.destination = destination;
-        return this.addSilent(result, silent);
+        return this.addSilent(result, Boolean(silent));
     }
     createClear (source: 'DEFAULT' | 'NAMED' | 'ALL' | RDF.NamedNode, silent?: boolean): A.Clear {
-        return this.addSilent({ type: A.types.CLEAR, source }, silent);
+        return this.addSilent({ type: A.types.CLEAR, source }, Boolean(silent));
     }
     createCreate (source: RDF.NamedNode, silent?: boolean): A.Create {
-        return this.addSilent({ type: A.types.CREATE, source }, silent);
+        return this.addSilent({ type: A.types.CREATE, source }, Boolean(silent));
     }
     createDrop (source: 'DEFAULT' | 'NAMED' | 'ALL' | RDF.NamedNode, silent?: boolean): A.Drop {
-        return this.addSilent({ type: A.types.DROP, source }, silent);
+        return this.addSilent({ type: A.types.DROP, source }, Boolean(silent));
     }
     createAdd (source: 'DEFAULT' | RDF.NamedNode, destination: 'DEFAULT' | RDF.NamedNode, silent?: boolean): A.Add {
-        return this.addSilent({ type: A.types.ADD, source, destination }, silent);
+        return this.addSilent({ type: A.types.ADD, source, destination }, Boolean(silent));
     }
     createMove (source: 'DEFAULT' | RDF.NamedNode, destination: 'DEFAULT' | RDF.NamedNode, silent?: boolean): A.Move {
-        return this.addSilent({ type: A.types.MOVE, source, destination }, silent);
+        return this.addSilent({ type: A.types.MOVE, source, destination }, Boolean(silent));
     }
     createCopy (source: 'DEFAULT' | RDF.NamedNode, destination: 'DEFAULT' | RDF.NamedNode, silent?: boolean): A.Copy {
-        return this.addSilent({ type: A.types.COPY, source, destination }, silent);
+        return this.addSilent({ type: A.types.COPY, source, destination }, Boolean(silent));
     }
     private addSilent<T extends A.UpdateGraph>(input: T, silent: boolean): T {
         if (silent)

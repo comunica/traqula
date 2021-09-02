@@ -5,6 +5,7 @@ import {Expression, Operation, expressionTypes, types} from "./algebra";
 import Factory from "./factory";
 import { BaseQuad, Variable } from "@rdfjs/types";
 import * as RDF from '@rdfjs/types'
+import * as rdfjs from '@rdfjs/types';
 
 
 export default class Util
@@ -402,7 +403,7 @@ export default class Util
                 return factory.createFilter(mapOp(filter.input), <A.Expression> mapOp(filter.expression));
             case types.FROM:
                 const from: A.From = <A.From> result;
-                return factory.createFrom(mapOp(from.input), [].concat(from.default), [].concat(from.named));
+                return factory.createFrom(mapOp(from.input), (<RDF.Term[]>[]).concat(from.default), (<RDF.Term[]>[]).concat(from.named));
             case types.GRAPH:
                 const graph: A.Graph = <A.Graph> result;
                 return factory.createGraph(mapOp(graph.input), graph.name);
@@ -410,7 +411,7 @@ export default class Util
                 const group: A.Group = <A.Group> result;
                 return factory.createGroup(
                     mapOp(group.input),
-                    [].concat(group.variables),
+                    (<RDF.Variable[]>[]).concat(group.variables),
                     <A.BoundAggregate[]> group.aggregates.map(mapOp));
             case types.INV:
                 const inv: A.Inv = <A.Inv> result;
@@ -434,7 +435,7 @@ export default class Util
                 return factory.createNop();
             case types.NPS:
                 const nps: A.Nps = <A.Nps> result;
-                return factory.createNps([].concat(nps.iris));
+                return factory.createNps((<RDF.NamedNode[]>[]).concat(nps.iris));
             case types.ONE_OR_MORE_PATH:
                 const oom: A.OneOrMorePath = <A.OneOrMorePath> result;
                 return factory.createOneOrMorePath(mapOp(oom.path));
@@ -449,7 +450,7 @@ export default class Util
                 return factory.createPattern(pattern.subject, pattern.predicate, pattern.object, pattern.graph);
             case types.PROJECT:
                 const project: A.Project = <A.Project> result;
-                return factory.createProject(mapOp(project.input), [].concat(project.variables));
+                return factory.createProject(mapOp(project.input), (<((RDF.Variable | Wildcard)[])>[]).concat(project.variables));
             case types.REDUCED:
                 const reduced: A.Reduced = <A.Reduced> result;
                 return factory.createReduced(mapOp(reduced.input));
@@ -467,7 +468,7 @@ export default class Util
                 return factory.createUnion(union.input.map(mapOp));
             case types.VALUES:
                 const values: A.Values = <A.Values> result;
-                return factory.createValues([].concat(values.variables), values.bindings.map(b => Object.assign({}, b)));
+                return factory.createValues((<RDF.Variable[]>[]).concat(values.variables), values.bindings.map(b => Object.assign({}, b)));
             case types.ZERO_OR_MORE_PATH:
                 const zom: A.ZeroOrMorePath = <A.ZeroOrMorePath> result;
                 return factory.createZeroOrMorePath(mapOp(zom.path));
@@ -557,7 +558,7 @@ export default class Util
         while (variables[labelLoop]) {
             labelLoop = `${label}${counter++}`;
         }
-        return dataFactory.variable(labelLoop);
+        return dataFactory.variable!(labelLoop);
     }
 
     // separate terms from wildcard since we handle them differently

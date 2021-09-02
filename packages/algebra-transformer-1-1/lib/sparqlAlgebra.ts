@@ -83,7 +83,7 @@ function translateQuery(sparql: SparqlQuery, quads?: boolean, blankToVariable?: 
     // this set is filled in during the inScopeVariables call
     variables = new Set();
     varCount = 0;
-    useQuads = quads;
+    useQuads = Boolean(quads);
 
     // Assume this is an empty query
     if (!sparql.type)
@@ -92,7 +92,7 @@ function translateQuery(sparql: SparqlQuery, quads?: boolean, blankToVariable?: 
     if (sparql.type !== 'query' && sparql.type !== 'update')
         throw new Error('Translate only works on complete query or update objects.');
 
-    const vars: Set<RDF.Variable> = new Set(Object.keys(inScopeVariables(sparql)).map(factory.createTerm.bind(factory)));
+    const vars: Set<RDF.Variable> = <Set<RDF.Variable>> new Set(Object.keys(inScopeVariables(sparql)).map(factory.createTerm.bind(factory)));
     let res: Algebra.Operation;
 
     if (sparql.type === 'query') {
@@ -105,10 +105,10 @@ function translateQuery(sparql: SparqlQuery, quads?: boolean, blankToVariable?: 
         res = translateUpdate(sparql);
     }
     if (blankToVariable) {
-        res = translateBlankNodesToVariables(res, vars);
+        res = translateBlankNodesToVariables(res!, vars);
     }
 
-    return res;
+    return res!;
 }
 
 function isString(str: any): str is string
@@ -228,7 +228,7 @@ function translateExpression(exp: Expression | RDF.Term | Wildcard) : Algebra.Ex
     if (Util.isWildcard(exp))
         return factory.createWildcardExpression();
     if ('aggregation' in exp)
-        return factory.createAggregateExpression(exp.aggregation, translateExpression(exp.expression), exp.distinct, exp.separator);
+        return factory.createAggregateExpression(exp.aggregation, translateExpression(exp.expression), Boolean(exp.distinct), exp.separator);
     if ('function' in exp)
         // Outdated typings
         return factory.createNamedExpression(<RDF.NamedNode><unknown> exp.function, exp.args.map(translateExpression));
@@ -553,7 +553,7 @@ function translateAggregates(query: Query, res: Algebra.Operation, variables: Se
     // if there are any aggregates or if we have a groupBy (both result in a GROUP)
     if (select.group || Object.keys(A).length > 0)
     {
-        const aggregates = Object.keys(A).map(v => translateBoundAggregate(A[v], <RDF.Variable>factory.createTerm(v)));
+        const aggregates = Object.keys(A).map(v => translateBoundAggregate(<AggregateExpression> A[v], <RDF.Variable>factory.createTerm(v)));
         const vars: RDF.Variable[] = [];
         if (select.group)
         {
@@ -646,7 +646,7 @@ function translateAggregates(query: Query, res: Algebra.Operation, variables: Se
     // Slicing needs to happen after construct/describe
     // 18.2.5.5
     if (select.offset || select.limit)
-        res = factory.createSlice(res, select.offset, select.limit);
+        res = factory.createSlice(res, select.offset || 0, select.limit);
 
     if (select.from)
         res = factory.createFrom(res, select.from.default, select.from.named);
@@ -750,7 +750,7 @@ function translateInsertDelete (thingy: InsertDeleteOperation): Algebra.Update
     return factory.createDeleteInsert(
         deleteTriples.length > 0 ? deleteTriples : undefined,
         insertTriples.length > 0 ? insertTriples : undefined,
-        where,
+        where!,
     );
 }
 
@@ -777,7 +777,7 @@ function translateUpdateGraph (thingy: CreateOperation | ClearDropOperation): Al
     else if (thingy.graph.named)
         source = 'NAMED';
     else
-        source = thingy.graph.name;
+        source = thingy.graph.name!;
 
     switch (thingy.type)
     {
@@ -794,8 +794,8 @@ function translateUpdateGraphLoad (thingy: LoadOperation): Algebra.Load
 
 function translateUpdateGraphShortcut (thingy: CopyMoveAddOperation): Algebra.UpdateGraphShortcut
 {
-    const source = thingy.source.default ? 'DEFAULT' : thingy.source.name;
-    const destination = thingy.destination.default ? 'DEFAULT' : thingy.destination.name;
+    const source: 'DEFAULT' | RDF.NamedNode = thingy.source.default ? 'DEFAULT' : <RDF.NamedNode> thingy.source.name;
+    const destination: 'DEFAULT' | RDF.NamedNode = thingy.destination.default ? 'DEFAULT' : <RDF.NamedNode> thingy.destination.name;
     switch (thingy.type)
     {
         case 'copy': return factory.createCopy(source, destination, thingy.silent);

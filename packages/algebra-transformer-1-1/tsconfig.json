@@ -7,7 +7,11 @@
     "noImplicitThis": true,
     "preserveConstEnums": true,
     "sourceMap": true,
-    "declaration": true
+    "declaration": true,
+
+    "strict": true,
+    "strictFunctionTypes": false,
+    "strictPropertyInitialization": false
   },
   "include": [
     "index.ts",

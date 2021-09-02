@@ -760,8 +760,8 @@ function translateDeleteInsert(op: Algebra.DeleteInsert): Update
 
     const updates: [InsertDeleteOperation] = [{
         updateType: 'insertdelete',
-        delete: convertUpdatePatterns(op.delete),
-        insert: convertUpdatePatterns(op.insert),
+        delete: convertUpdatePatterns(op.delete || []),
+        insert: convertUpdatePatterns(op.insert || []),
     }];
     // Typings don't support 'using' yet
     if (using)
@@ -785,8 +785,8 @@ function translateDeleteInsert(op: Algebra.DeleteInsert): Update
             if (graphNames.length !== 1)
                 throw new Error('This is unexpected and might indicate an error in graph handling for updates.');
             // ignore if default graph
-            if (graphs[graphNames[0]].graph.value !== '')
-                updates[0].where = [{ type: 'graph', patterns: updates[0].where, name: graphs[graphNames[0]].graph as any }]
+            if (graphs[graphNames[0]]!.graph.value !== '')
+                updates[0].where = [{ type: 'graph', patterns: updates[0].where!, name: graphs[graphNames[0]]!.graph as any }]
         }
     }
 
@@ -798,7 +798,7 @@ function translateDeleteInsert(op: Algebra.DeleteInsert): Update
     } else if (!op.insert && !op.where) {
         delete updates[0].insert;
         delete updates[0].where;
-        if (op.delete.some(pattern =>
+        if (op.delete!.some(pattern =>
           pattern.subject.termType === 'Variable' ||
           pattern.predicate.termType === 'Variable' ||
           pattern.object.termType === 'Variable'))
@@ -806,7 +806,7 @@ function translateDeleteInsert(op: Algebra.DeleteInsert): Update
         else
             updates[0].updateType = 'delete';
     } else if (!op.insert && op.where && op.where.type === 'bgp') {
-        if (isomorphic(op.delete, (op.where as Algebra.Bgp).patterns)) {
+        if (isomorphic(op.delete!, (op.where as Algebra.Bgp).patterns)) {
             delete updates[0].where;
             updates[0].updateType = 'deletewhere';
         }
@@ -922,7 +922,7 @@ function removeQuadsRecursive(op: any, graphs: NodeJS.Dict<{ graph: RDF.Term, va
     {
         if (!graphs[op.graph.value])
             graphs[op.graph.value] = { graph: op.graph, values: []};
-        graphs[op.graph.value].values.push(op);
+        graphs[op.graph.value]!.values.push(op);
         return op;
     }
 

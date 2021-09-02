@@ -1,5 +1,4 @@
 
-import * as util from 'util';
 import {Algebra} from "../index";
 import * as LibUtil from "../lib/util";
 import Factory from "../lib/factory";

@@ -20,11 +20,27 @@ const { translate } = require('sparqlalgebrajs');
 translate('SELECT * WHERE { ?x ?y ?z }');
 ```
 Returns:
-```javascript
-{ type: 'project',
-  input: { type: 'bgp', patterns: [ 
-    { type: 'pattern', subject: '?x', predicate: '?y', object: '?z' } ] },
-  variables: [ '?x', '?y', '?z' ] }
+```json
+{ 
+  "type": "project",
+  "input": {
+    "type": "bgp",
+      "patterns": [{
+        "type": "pattern",
+        "termType": "Quad",
+        "subject": { "termType": "Variable", "value": "x" },
+        "predicate": { "termType": "Variable", "value": "y" },
+        "object": { "termType": "Variable", "value": "z" },
+        "graph": { "termType": "DefaultGraph", "value": "" }
+      }]
+  },
+  "variables": [
+    { "termType": "Variable", "value": "x" },
+    { "termType": "Variable", "value": "y" },
+    { "termType": "Variable", "value": "z" }
+  ]
+}
+
 ```
 
 Translating back to SPARQL can be done with the `toSparql` (or `toSparqlJs`) function.
@@ -34,6 +50,9 @@ The algebra object contains a `types` object,
 which contains all possible values for the `type` field in the output results.
 Besides that it also contains all the TypeScript interfaces of the possible output results.
 The output of the `translate` function will always be an `Algebra.Operation` instance.
+
+The best way to see what output would be generated is to look in the `test` folder,
+where we have many SPARQL queries and their corresponding algebra output.
 
 ## Deviations from the spec
 This implementation tries to stay as close to the SPARQL 1.1
@@ -67,20 +86,81 @@ SELECT ?x WHERE {
 ```
 
 Default result:
-```javascript
-{ type: 'project',
-  input: { type: 'graph', graph: '?g', input:  
-    { type: 'bgp', patterns: 
-      [ { type: 'pattern', subject: '?x', predicate: '?y', object: '?z' } ] } },
-  variables: [ '?x' ] }
+```json
+{
+  "type": "project",
+    "input": {
+    "type": "graph",
+      "input": {
+      "type": "bgp",
+        "patterns": [{
+          "type": "pattern",
+          "termType": "Quad",
+          "subject": { "termType": "Variable", "value": "x" },
+          "predicate": { "termType": "Variable", "value": "y" },
+          "object": { "termType": "Variable", "value": "z" },
+          "graph": { "termType": "DefaultGraph", "value": "" }
+        }]
+    },
+    "name": { "termType": "Variable", "value": "g" }
+  },
+  "variables": [{ "termType": "Variable", "value": "x" }]
+}
+
 ```
 
 With quads:
-```javascript
-{ type: 'project',
-  input: { type: 'bgp', patterns: 
-    [ { type: 'pattern', subject: '?x', predicate: '?y', object: '?z', graph: '?g' } ] },
-  variables: [ '?x' ] }
+```json
+{
+  "type": "project",
+    "input": {
+    "type": "bgp",
+      "patterns": [{
+        "type": "pattern",
+        "termType": "Quad",
+        "subject": { "termType": "Variable", "value": "x" },
+        "predicate": { "termType": "Variable", "value": "y" },
+        "object": { "termType": "Variable", "value": "z" },
+        "graph": { "termType": "Variable", "value": "g" }
+      }]
+  },
+  "variables": [{ "termType": "Variable", "value": "x" }]
+}
+
+```
+
+### Flattened operators
+Several binary operators that can be nested, 
+such as the path operators,
+can take an array of input entries to simply this notation.
+For example, the following SPARQL:
+```sparql
+SELECT * WHERE { ?x <a:a>|<b:b>|<c:c> ?z }
+```
+outputs the following algebra:
+```json
+{
+  "type": "project",
+  "input": {
+    "type": "path",
+    "subject": { "termType": "Variable", "value": "x" },
+    "predicate": {
+      "type": "alt",
+      "input": [
+        { "type": "link", "iri": { "termType": "NamedNode", "value": "a:a" }},
+        { "type": "link", "iri": { "termType": "NamedNode", "value": "b:b" }},
+        { "type": "link", "iri": { "termType": "NamedNode", "value": "c:c" }}
+      ]
+    },
+    "object": { "termType": "Variable", "value": "z" },
+    "graph": { "termType": "DefaultGraph", "value": "" }
+  },
+  "variables": [
+    { "termType": "Variable", "value": "x" },
+    { "termType": "Variable", "value": "z" }
+  ]
+}
+
 ```
 
 #### SPARQL*
@@ -101,32 +181,50 @@ SELECT ?book ?title ?price
          ns:price ?price .
 }
 ```
-```javascript
-{ type: 'project',
-  input: 
-   { type: 'join',
-     left: { type: 'values', 
-             variables: ['?book'],
-             bindings: [
-               { '?book': 'http://example.org/book/book1' },
-               { '?book': 'http://example.org/book/book3' },
-             ] },
-     right: { type: 'bgp', 
-              patterns: [
-                {
-                  type: 'pattern',
-                  subject: '?book',
-                  predicate: 'http://purl.org/dc/elements/1.1/title',
-                  object: '?title'
-                },
-                {
-                  type: 'pattern',
-                  subject: '?book',
-                  predicate: 'http://example.org/ns#price',
-                  object: '?price'
-                }
-              ] } },
-  variables: [ '?book', '?title', '?price' ] }
+```json
+{
+  "type": "project",
+  "input": {
+    "type": "join",
+    "input": [
+      {
+        "type": "values",
+        "variables": [{ "termType": "Variable", "value": "book" }],
+        "bindings": [
+          { "?book": { "termType": "NamedNode", "value": "http://example.org/book/book1" }},
+          { "?book": { "termType": "NamedNode", "value": "http://example.org/book/book3" }}
+        ]
+      },
+      {
+        "type": "bgp",
+        "patterns": [
+          {
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": { "termType": "Variable", "value": "book" },
+            "predicate": { "termType": "NamedNode", "value": "http://purl.org/dc/elements/1.1/title" },
+            "object": { "termType": "Variable", "value": "title" },
+            "graph": { "termType": "DefaultGraph", "value": "" }
+          },
+          {
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": { "termType": "Variable", "value": "book" },
+            "predicate": { "termType": "NamedNode", "value": "http://example.org/ns#price" },
+            "object": { "termType": "Variable", "value": "price" },
+            "graph": { "termType": "DefaultGraph", "value": "" }
+          }
+        ]
+      }
+    ]
+  },
+  "variables": [
+    { "termType": "Variable", "value": "book" },
+    { "termType": "Variable", "value": "title" },
+    { "termType": "Variable", "value": "price" }
+  ]
+}
+
 ```
 
 #### Differences from Jena ARQ

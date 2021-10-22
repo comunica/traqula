@@ -140,7 +140,7 @@ export default class Factory
         let newChildren: A.Operation[] = [];
         for (const child of children) {
             if (child.type === type) {
-                newChildren = [ ...newChildren, ...(<A.Multi> child).input ];
+                newChildren.push(...(<A.Multi> child).input);
             } else {
                 newChildren.push(child);
             }

@@ -1,11 +1,13 @@
 
+import { open } from 'fs';
 import { Wildcard } from 'sparqljs';
 import * as A from "./algebra";
-import {Expression, Operation, expressionTypes, types} from "./algebra";
+import { Expression, Operation, expressionTypes, types, TypedOperation } from './algebra';
 import Factory from "./factory";
 import { BaseQuad, Variable } from "@rdfjs/types";
 import * as RDF from '@rdfjs/types'
 import * as rdfjs from '@rdfjs/types';
+import Dict = NodeJS.Dict;
 
 
 export default class Util
@@ -63,11 +65,11 @@ export default class Util
      * @param {Operation} op - Input algebra tree.
      * @returns {Variable[]} - List of unique in-scope variables.
      */
-    public static inScopeVariables(op: A.Operation): Variable[]
+    public static inScopeVariables(op: A.Operation): (Variable | Wildcard)[]
     {
-        const variables: Variable[] = [];
+        const variables: (Variable | Wildcard)[] = [];
 
-        function addVariable(v: Variable)
+        function addVariable(v: Variable | Wildcard)
         {
             if (!variables.find(v2 => v.value === v2.value))
                 variables.push(v);
@@ -96,73 +98,63 @@ export default class Util
         Util.recurseOperation(op, {
             [types.EXPRESSION]: (op) =>
             {
-                let expr = <A.Expression>op;
-                if (expr.expressionType === expressionTypes.AGGREGATE && expr.variable)
+                if (op.expressionType === expressionTypes.AGGREGATE && op.variable)
                 {
-                    let agg = <A.BoundAggregate> expr;
-                    addVariable(agg.variable);
+                    addVariable(op.variable);
                 }
                 return true;
             },
             [types.EXTEND]: (op) =>
             {
-                let extend = <A.Extend>op;
-                addVariable(extend.variable);
+                addVariable(op.variable);
                 return true;
             },
             [types.GRAPH]: (op) =>
             {
-                let graph = <A.Graph>op;
-                if (graph.name.termType === 'Variable')
-                    addVariable(<Variable> graph.name);
+                if (op.name.termType === 'Variable')
+                    addVariable(<Variable> op.name);
                 return true;
             },
             [types.GROUP]: (op) =>
             {
-                let group = <A.Group>op;
-                group.variables.forEach(addVariable);
+                op.variables.forEach(addVariable);
                 return true;
             },
             [types.PATH]: (op) =>
             {
-                let path = <A.Path>op;
-                if (path.subject.termType === 'Variable')
-                    addVariable(<Variable> path.subject);
-                if (path.object.termType === 'Variable')
-                    addVariable(<Variable> path.object);
-                if (path.graph.termType === 'Variable')
-                    addVariable(<Variable> path.graph);
-                if (path.subject.termType === 'Quad')
-                    recurseTerm(path.subject);
-                if (path.object.termType === 'Quad')
-                    recurseTerm(path.object);
-                if (path.graph.termType === 'Quad')
-                    recurseTerm(path.graph);
+                if (op.subject.termType === 'Variable')
+                    addVariable(<Variable> op.subject);
+                if (op.object.termType === 'Variable')
+                    addVariable(<Variable> op.object);
+                if (op.graph.termType === 'Variable')
+                    addVariable(<Variable> op.graph);
+                if (op.subject.termType === 'Quad')
+                    recurseTerm(op.subject);
+                if (op.object.termType === 'Quad')
+                    recurseTerm(op.object);
+                if (op.graph.termType === 'Quad')
+                    recurseTerm(op.graph);
                 return true;
             },
             [types.PATTERN]: (op) =>
             {
-                let pattern = <A.Pattern>op;
-                recurseTerm(pattern);
+                recurseTerm(op);
                 return true;
             },
             [types.PROJECT]: (op) =>
             {
-                let project = <A.Project>op;
-                project.variables.forEach(addVariable);
+                op.variables.forEach(addVariable);
                 return false;
             },
             [types.SERVICE]: (op) =>
             {
-                let service = <A.Service>op;
-                if (service.name.termType === 'Variable')
-                    addVariable(<Variable> service.name);
+                if (op.name.termType === 'Variable')
+                    addVariable(<Variable> op.name);
                 return true;
             },
             [types.VALUES]: (op) =>
             {
-                let values = <A.Values>op;
-                values.variables.forEach(addVariable);
+                op.variables.forEach(addVariable);
                 return true;
             },
         });
@@ -177,13 +169,15 @@ export default class Util
      * @param {Operation} op - The Operation to recurse on.
      * @param { [type: string]: (op: Operation) => boolean } callbacks - A map of required callback Operations.
      */
-    public static recurseOperation(op: A.Operation, callbacks: { [type: string]: (op: A.Operation) => boolean }): void
+    public static recurseOperation(op: A.Operation, callbacks:{ [T in A.types]?: (op: TypedOperation<T>,) => boolean }): void
     {
         let result: A.Operation = op;
         let doRecursion = true;
 
-        if (callbacks[op.type])
-            doRecursion = callbacks[op.type](op);
+        const callback = callbacks[op.type];
+        if (callback)
+            // Not sure how to get typing correct for op here
+            doRecursion = callback(op as any);
 
         if (!doRecursion)
             return;
@@ -193,146 +187,116 @@ export default class Util
         switch (result.type)
         {
             case types.ALT:
-                const alt: A.Alt = <A.Alt> result;
-                alt.input.map(recurseOp);
+                result.input.map(recurseOp);
                 break;
             case types.ASK:
-                const ask: A.Ask = <A.Ask> result;
-               recurseOp(ask.input);
+               recurseOp(result.input);
                break;
             case types.BGP:
-                const bgp: A.Bgp = <A.Bgp> result;
-                bgp.patterns.forEach(recurseOp);
+                result.patterns.forEach(recurseOp);
                 break;
             case types.CONSTRUCT:
-                const construct: A.Construct = <A.Construct> result;
-                recurseOp(construct.input);
-                construct.template.map(recurseOp);
+                recurseOp(result.input);
+                result.template.map(recurseOp);
                 break;
             case types.DESCRIBE:
-                const describe: A.Describe = <A.Describe> result;
-                recurseOp(describe.input);
+                recurseOp(result.input);
                 break;
             case types.DISTINCT:
-                const distinct: A.Distinct = <A.Distinct> result;
-                recurseOp(distinct.input);
+                recurseOp(result.input);
                 break;
             case types.EXPRESSION:
-                const expr: A.Expression = <A.Expression> result;
-                if (expr.expressionType === expressionTypes.EXISTENCE)
+                if (result.expressionType === expressionTypes.EXISTENCE)
                 {
-                    const exist = <A.ExistenceExpression> expr;
-                    recurseOp(exist.input);
+                    recurseOp(result.input);
                 }
                 break;
             case types.EXTEND:
-                const extend: A.Extend = <A.Extend> result;
-                recurseOp(extend.input);
-                recurseOp(extend.expression);
+                recurseOp(result.input);
+                recurseOp(result.expression);
                 break;
             case types.FILTER:
-                const filter: A.Filter = <A.Filter> result;
-                recurseOp(filter.input);
-                recurseOp(filter.expression);
+                recurseOp(result.input);
+                recurseOp(result.expression);
                 break;
             case types.FROM:
-                const from: A.From = <A.From> result;
-                recurseOp(from.input);
+                recurseOp(result.input);
                 break;
             case types.GRAPH:
-                const graph: A.Graph = <A.Graph> result;
-                recurseOp(graph.input);
+                recurseOp(result.input);
                 break;
             case types.GROUP:
-                const group: A.Group = <A.Group> result;
-                recurseOp(group.input);
-                group.aggregates.forEach(recurseOp);
+                recurseOp(result.input);
+                result.aggregates.forEach(recurseOp);
                 break;
             case types.INV:
-                const inv: A.Inv = <A.Inv> result;
-                recurseOp(inv.path);
+                recurseOp(result.path);
                 break;
             case types.JOIN:
-                const join: A.Join = <A.Join> result;
-                join.input.map(recurseOp);
+                result.input.map(recurseOp);
                 break;
             case types.LEFT_JOIN:
-                const leftJoin: A.LeftJoin = <A.LeftJoin> result;
-                leftJoin.input.map(recurseOp);
-                if (leftJoin.expression) recurseOp(leftJoin.expression);
+                result.input.map(recurseOp);
+                if (result.expression) recurseOp(result.expression);
                 break;
             case types.LINK:
                 break;
             case types.MINUS:
-                const minus: A.Minus = <A.Minus> result;
-                minus.input.map(recurseOp);
+                result.input.map(recurseOp);
                 break;
             case types.NOP:
                 break;
             case types.NPS:
                 break;
             case types.ONE_OR_MORE_PATH:
-                const oom: A.OneOrMorePath = <A.OneOrMorePath> result;
-                recurseOp(oom.path);
+                recurseOp(result.path);
                 break;
             case types.ORDER_BY:
-                const order: A.OrderBy = <A.OrderBy> result;
-                recurseOp(order.input);
-                order.expressions.forEach(recurseOp);
+                recurseOp(result.input);
+                result.expressions.forEach(recurseOp);
                 break;
             case types.PATH:
-                const path: A.Path = <A.Path> result;
-                recurseOp(path.predicate);
+                recurseOp(result.predicate);
                 break;
             case types.PATTERN:
                 break;
             case types.PROJECT:
-                const project: A.Project = <A.Project> result;
-                recurseOp(project.input);
+                recurseOp(result.input);
                 break;
             case types.REDUCED:
-                const reduced: A.Reduced = <A.Reduced> result;
-                recurseOp(reduced.input);
+                recurseOp(result.input);
                 break;
             case types.SEQ:
-                const seq: A.Seq = <A.Seq> result;
-                seq.input.map(recurseOp);
+                result.input.map(recurseOp);
                 break;
             case types.SERVICE:
-                const service: A.Service = <A.Service> result;
-                recurseOp(service.input);
+                recurseOp(result.input);
                 break;
             case types.SLICE:
-                const slice: A.Slice = <A.Slice> result;
-                recurseOp(slice.input);
+                recurseOp(result.input);
                 break;
             case types.UNION:
-                const union: A.Union = <A.Union> result;
-                union.input.map(recurseOp);
+                result.input.map(recurseOp);
                 break;
             case types.VALUES:
                 break;
             case types.ZERO_OR_MORE_PATH:
-                const zom: A.ZeroOrMorePath = <A.ZeroOrMorePath> result;
-                recurseOp(zom.path);
+                recurseOp(result.path);
                 break;
             case types.ZERO_OR_ONE_PATH:
-                const zoo: A.ZeroOrOnePath = <A.ZeroOrOnePath> result;
-                recurseOp(zoo.path);
+                recurseOp(result.path);
                 break;
             // UPDATE operations
             case types.COMPOSITE_UPDATE:
-                const cu = <A.CompositeUpdate> result;
-                cu.updates.forEach(update => recurseOp(update));
+                result.updates.forEach(update => recurseOp(update));
                 break;
             case types.DELETE_INSERT:
-                const di = <A.DeleteInsert> result;
-                if (di.delete)
-                    di.delete.forEach(pattern => recurseOp(pattern));
-                if (di.insert)
-                    di.insert.forEach(pattern => recurseOp(pattern));
-                if (di.where)
-                    recurseOp(di.where);
+                if (result.delete)
+                    result.delete.forEach(pattern => recurseOp(pattern));
+                if (result.insert)
+                    result.insert.forEach(pattern => recurseOp(pattern));
+                if (result.where)
+                    recurseOp(result.where);
                 break;
             // all of these only have graph IDs as values
             case types.LOAD: break;
@@ -342,7 +306,7 @@ export default class Util
             case types.ADD: break;
             case types.MOVE: break;
             case types.COPY: break;
-            default: throw new Error(`Unknown Operation type ${result.type}`);
+            default: throw new Error(`Unknown Operation type ${(result as any).type}`);
         }
     }
 
@@ -357,157 +321,122 @@ export default class Util
      * @param {Factory} factory - Factory used to create new Operations. Will use default factory if none is provided.
      * @returns {Operation} - The copied result.
      */
-    public static mapOperation(op: A.Operation, callbacks: { [type: string]: (op: A.Operation, factory: Factory) => RecurseResult }, factory?: Factory): A.Operation
+    public static mapOperation(op: A.Operation,
+      callbacks:{ [T in A.types]?: (op: TypedOperation<T>, factory: Factory) => RecurseResult },
+      factory?: Factory): A.Operation
     {
         let result: A.Operation = op;
         let doRecursion = true;
 
         factory = factory || new Factory();
 
-        if (callbacks[op.type])
-            ({ result, recurse: doRecursion } = callbacks[op.type](op, factory));
+        const callback = callbacks[op.type];
+        if (callback)
+            // Not sure how to get typing correct for op here
+            ({ result, recurse: doRecursion } = callback(op as any, factory));
 
         if (!doRecursion)
             return result;
 
         let mapOp = (op: A.Operation) => Util.mapOperation(op, callbacks, factory);
 
+        // Several casts here might be wrong though depending on the callbacks output
         switch (result.type)
         {
             case types.ALT:
-                const alt: A.Alt = <A.Alt> result;
-                return factory.createAlt(alt.input.map(mapOp));
+                return factory.createAlt(<A.PropertyPathSymbol[]> result.input.map(mapOp));
             case types.ASK:
-                const ask: A.Ask = <A.Ask> result;
-                return factory.createAsk(mapOp(ask.input));
+                return factory.createAsk(mapOp(result.input));
             case types.BGP:
-                const bgp: A.Bgp = <A.Bgp> result;
-                return factory.createBgp(<A.Pattern[]> bgp.patterns.map(mapOp));
+                return factory.createBgp(<A.Pattern[]> result.patterns.map(mapOp));
             case types.CONSTRUCT:
-                const construct: A.Construct = <A.Construct> result;
-                return factory.createConstruct(mapOp(construct.input), <A.Pattern[]> construct.template.map(mapOp));
+                return factory.createConstruct(mapOp(result.input), <A.Pattern[]> result.template.map(mapOp));
             case types.DESCRIBE:
-                const describe: A.Describe = <A.Describe> result;
-                return factory.createDescribe(mapOp(describe.input), describe.terms);
+                return factory.createDescribe(mapOp(result.input), result.terms);
             case types.DISTINCT:
-                const distinct: A.Distinct = <A.Distinct> result;
-                return factory.createDistinct(mapOp(distinct.input));
+                return factory.createDistinct(mapOp(result.input));
             case types.EXPRESSION:
-                const expr: A.Expression = <A.Expression> result;
-                return Util.mapExpression(expr, callbacks, factory);
+                return Util.mapExpression(result, callbacks, factory);
             case types.EXTEND:
-                const extend: A.Extend = <A.Extend> result;
-                return factory.createExtend(mapOp(extend.input), extend.variable, <A.Expression> mapOp(extend.expression));
+                return factory.createExtend(mapOp(result.input), result.variable, <A.Expression> mapOp(result.expression));
             case types.FILTER:
-                const filter: A.Filter = <A.Filter> result;
-                return factory.createFilter(mapOp(filter.input), <A.Expression> mapOp(filter.expression));
+                return factory.createFilter(mapOp(result.input), <A.Expression> mapOp(result.expression));
             case types.FROM:
-                const from: A.From = <A.From> result;
-                return factory.createFrom(mapOp(from.input), (<RDF.Term[]>[]).concat(from.default), (<RDF.Term[]>[]).concat(from.named));
+                return factory.createFrom(mapOp(result.input), [ ...result.default ], [ ...result.named ]);
             case types.GRAPH:
-                const graph: A.Graph = <A.Graph> result;
-                return factory.createGraph(mapOp(graph.input), graph.name);
+                return factory.createGraph(mapOp(result.input), result.name);
             case types.GROUP:
-                const group: A.Group = <A.Group> result;
                 return factory.createGroup(
-                    mapOp(group.input),
-                    (<RDF.Variable[]>[]).concat(group.variables),
-                    <A.BoundAggregate[]> group.aggregates.map(mapOp));
+                    mapOp(result.input),
+                    (<RDF.Variable[]>[]).concat(result.variables),
+                    <A.BoundAggregate[]> result.aggregates.map(mapOp));
             case types.INV:
-                const inv: A.Inv = <A.Inv> result;
-                return factory.createInv(mapOp(inv.path));
+                return factory.createInv(<A.PropertyPathSymbol> mapOp(result.path));
             case types.JOIN:
-                const join: A.Join = <A.Join> result;
-                return factory.createJoin(join.input.map(mapOp));
+                return factory.createJoin(result.input.map(mapOp));
             case types.LEFT_JOIN:
-                const leftJoin: A.LeftJoin = <A.LeftJoin> result;
                 return factory.createLeftJoin(
-                    mapOp(leftJoin.input[0]),
-                    mapOp(leftJoin.input[1]),
-                    leftJoin.expression ? <A.Expression> mapOp(leftJoin.expression) : undefined);
+                    mapOp(result.input[0]),
+                    mapOp(result.input[1]),
+                  result.expression ? <A.Expression> mapOp(result.expression) : undefined);
             case types.LINK:
-                const link: A.Link = <A.Link> result;
-                return factory.createLink(link.iri);
+                return factory.createLink(result.iri);
             case types.MINUS:
-                const minus: A.Minus = <A.Minus> result;
-                return factory.createMinus(mapOp(minus.input[0]), mapOp(minus.input[1]));
+                return factory.createMinus(mapOp(result.input[0]), mapOp(result.input[1]));
             case types.NOP:
                 return factory.createNop();
             case types.NPS:
-                const nps: A.Nps = <A.Nps> result;
-                return factory.createNps((<RDF.NamedNode[]>[]).concat(nps.iris));
+                return factory.createNps((<RDF.NamedNode[]>[]).concat(result.iris));
             case types.ONE_OR_MORE_PATH:
-                const oom: A.OneOrMorePath = <A.OneOrMorePath> result;
-                return factory.createOneOrMorePath(mapOp(oom.path));
+                return factory.createOneOrMorePath(<A.PropertyPathSymbol> mapOp(result.path));
             case types.ORDER_BY:
-                const order: A.OrderBy = <A.OrderBy> result;
-                return factory.createOrderBy(mapOp(order.input), <A.Expression[]> order.expressions.map(mapOp));
+                return factory.createOrderBy(mapOp(result.input), <A.Expression[]> result.expressions.map(mapOp));
             case types.PATH:
-                const path: A.Path = <A.Path> result;
-                return factory.createPath(path.subject, mapOp(path.predicate), path.object, path.graph);
+                return factory.createPath(result.subject, <A.PropertyPathSymbol> mapOp(result.predicate), result.object, result.graph);
             case types.PATTERN:
-                const pattern: A.Pattern = <A.Pattern> result;
-                return factory.createPattern(pattern.subject, pattern.predicate, pattern.object, pattern.graph);
+                return factory.createPattern(result.subject, result.predicate, result.object, result.graph);
             case types.PROJECT:
-                const project: A.Project = <A.Project> result;
-                return factory.createProject(mapOp(project.input), (<((RDF.Variable | Wildcard)[])>[]).concat(project.variables));
+                return factory.createProject(mapOp(result.input), [ ...result.variables ]);
             case types.REDUCED:
-                const reduced: A.Reduced = <A.Reduced> result;
-                return factory.createReduced(mapOp(reduced.input));
+                return factory.createReduced(mapOp(result.input));
             case types.SEQ:
-                const seq: A.Seq = <A.Seq> result;
-                return factory.createSeq(seq.input.map(mapOp));
+                return factory.createSeq(<A.PropertyPathSymbol[]> result.input.map(mapOp));
             case types.SERVICE:
-                const service: A.Service = <A.Service> result;
-                return factory.createService(mapOp(service.input), service.name, service.silent);
+                return factory.createService(mapOp(result.input), result.name, result.silent);
             case types.SLICE:
-                const slice: A.Slice = <A.Slice> result;
-                return factory.createSlice(mapOp(slice.input), slice.start, slice.length);
+                return factory.createSlice(mapOp(result.input), result.start, result.length);
             case types.UNION:
-                const union: A.Union = <A.Union> result;
-                return factory.createUnion(union.input.map(mapOp));
+                return factory.createUnion(result.input.map(mapOp));
             case types.VALUES:
-                const values: A.Values = <A.Values> result;
-                return factory.createValues((<RDF.Variable[]>[]).concat(values.variables), values.bindings.map(b => Object.assign({}, b)));
+                return factory.createValues((<RDF.Variable[]>[]).concat(result.variables), result.bindings.map(b => Object.assign({}, b)));
             case types.ZERO_OR_MORE_PATH:
-                const zom: A.ZeroOrMorePath = <A.ZeroOrMorePath> result;
-                return factory.createZeroOrMorePath(mapOp(zom.path));
+                return factory.createZeroOrMorePath(<A.PropertyPathSymbol> mapOp(result.path));
             case types.ZERO_OR_ONE_PATH:
-                const zoo: A.ZeroOrOnePath = <A.ZeroOrOnePath> result;
-                return factory.createZeroOrOnePath(mapOp(zoo.path));
+                return factory.createZeroOrOnePath(<A.PropertyPathSymbol> mapOp(result.path));
           // UPDATE operations
             case types.COMPOSITE_UPDATE:
-                const cu = <A.CompositeUpdate> result;
-                return factory.createCompositeUpdate(cu.updates.map(mapOp));
+                return factory.createCompositeUpdate(<A.Update[]> result.updates.map(mapOp));
             case types.DELETE_INSERT:
-                const di = <A.DeleteInsert> result;
                 return factory.createDeleteInsert(
-                  di.delete ? <A.Pattern[]> di.delete.map(mapOp) : undefined,
-                  di.insert ? <A.Pattern[]> di.insert.map(mapOp) : undefined,
-                  di.where ? mapOp(di.where) : undefined,
+                  result.delete ? <A.Pattern[]> result.delete.map(mapOp) : undefined,
+                  result.insert ? <A.Pattern[]> result.insert.map(mapOp) : undefined,
+                  result.where ? mapOp(result.where) : undefined,
                   );
             case types.LOAD:
-                const load = <A.Load> result;
-                return factory.createLoad(load.source, load.destination, load.silent);
+                return factory.createLoad(result.source, result.destination, result.silent);
             case types.CLEAR:
-                const clear = <A.Clear> result;
-                return factory.createClear(clear.source, clear.silent);
+                return factory.createClear(result.source, result.silent);
             case types.CREATE:
-                const create = <A.Create> result;
-                return factory.createCreate(create.source, create.silent);
+                return factory.createCreate(result.source, result.silent);
             case types.DROP:
-                const drop = <A.Drop> result;
-                return factory.createDrop(drop.source, drop.silent);
+                return factory.createDrop(result.source, result.silent);
             case types.ADD:
-                const add = <A.Add> result;
-                return factory.createAdd(add.source, add.destination);
+                return factory.createAdd(result.source, result.destination);
             case types.MOVE:
-                const move = <A.Move> result;
-                return factory.createMove(move.source, move.destination);
+                return factory.createMove(result.source, result.destination);
             case types.COPY:
-                const copy = <A.Copy> result;
-                return factory.createCopy(copy.source, copy.destination);
-            default: throw new Error(`Unknown Operation type ${result.type}`);
+                return factory.createCopy(result.source, result.destination);
+            default: throw new Error(`Unknown Operation type ${(result as any).type}`);
         }
     }
 
@@ -520,7 +449,9 @@ export default class Util
      * @param {Factory} factory - Factory used to create new Operations. Will use default factory if none is provided.
      * @returns {Operation} - The copied result.
      */
-    private static mapExpression(expr: A.Expression, callbacks: { [type: string]: (op: A.Operation, factory: Factory) => RecurseResult }, factory: Factory): A.Expression
+    private static mapExpression(expr: A.Expression,
+      callbacks:{ [T in A.types]?: (op: TypedOperation<T>, factory: Factory) => RecurseResult },
+      factory: Factory): A.Expression
     {
         let recurse = (op: A.Operation) => Util.mapOperation(op, callbacks, factory);
 
@@ -529,26 +460,20 @@ export default class Util
             case expressionTypes.AGGREGATE:
                 if (expr.variable)
                 {
-                    const bound = <A.BoundAggregate> expr;
-                    return factory.createBoundAggregate(bound.variable, bound.aggregator, <Expression> recurse(bound.expression), bound.distinct, bound.separator);
+                    return factory.createBoundAggregate(expr.variable, expr.aggregator, <Expression> recurse(expr.expression), expr.distinct, expr.separator);
                 }
-                const aggregate = <A.AggregateExpression> expr;
-                return factory.createAggregateExpression(aggregate.aggregator, <Expression> recurse(aggregate.expression), aggregate.distinct, aggregate.separator);
+                return factory.createAggregateExpression(expr.aggregator, <Expression> recurse(expr.expression), expr.distinct, expr.separator);
             case expressionTypes.EXISTENCE:
-                const exist = <A.ExistenceExpression> expr;
-                return factory.createExistenceExpression(exist.not, recurse(exist.input));
+                return factory.createExistenceExpression(expr.not, recurse(expr.input));
             case expressionTypes.NAMED:
-                const named = <A.NamedExpression> expr;
-                return factory.createNamedExpression(named.name, <A.Expression[]> named.args.map(recurse));
+                return factory.createNamedExpression(expr.name, <A.Expression[]> expr.args.map(recurse));
             case expressionTypes.OPERATOR:
-                const op = <A.OperatorExpression> expr;
-                return factory.createOperatorExpression(op.operator, <A.Expression[]> op.args.map(recurse));
+                return factory.createOperatorExpression(expr.operator, <A.Expression[]> expr.args.map(recurse));
             case expressionTypes.TERM:
-                const term = <A.TermExpression> expr;
-                return factory.createTermExpression(term.term);
+                return factory.createTermExpression(expr.term);
             case expressionTypes.WILDCARD:
                 return factory.createWildcardExpression();
-            default: throw new Error(`Unknown Expression type ${expr.expressionType}`);
+            default: throw new Error(`Unknown Expression type ${(expr as any).expressionType}`);
         }
     }
 

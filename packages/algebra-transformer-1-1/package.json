@@ -25,6 +25,7 @@
     "sparqljs": "^3.5.1"
   },
   "devDependencies": {
+    "@tsconfig/node12": "^1.0.9",
     "@types/jest": "^27.0.2",
     "@types/minimist": "^1.2.2",
     "@types/node": "^16.11.3",

@@ -74,41 +74,41 @@ function translateOperation(op: Algebra.Operation): any
 
     switch(op.type)
     {
-        case types.EXPRESSION: return translateExpression(<Algebra.Expression>op);
+        case types.EXPRESSION: return translateExpression(op);
 
-        case types.ASK:       return translateProject(<Algebra.Ask>op, types.ASK);
-        case types.BGP:       return translateBgp(<Algebra.Bgp>op);
-        case types.CONSTRUCT: return translateConstruct(<Algebra.Construct>op);
-        case types.DESCRIBE:  return translateProject(<Algebra.Describe>op, types.DESCRIBE);
-        case types.DISTINCT:  return translateDistinct(<Algebra.Distinct>op);
-        case types.EXTEND:    return translateExtend(<Algebra.Extend>op);
-        case types.FROM:      return translateFrom(<Algebra.From>op);
-        case types.FILTER:    return translateFilter(<Algebra.Filter>op);
-        case types.GRAPH:     return translateGraph(<Algebra.Graph>op);
-        case types.GROUP:     return translateGroup(<Algebra.Group>op);
-        case types.JOIN:      return translateJoin(<Algebra.Join>op);
-        case types.LEFT_JOIN: return translateLeftJoin(<Algebra.LeftJoin>op);
-        case types.MINUS:     return translateMinus(<Algebra.Minus>op);
+        case types.ASK:       return translateProject(op, types.ASK);
+        case types.BGP:       return translateBgp(op);
+        case types.CONSTRUCT: return translateConstruct(op);
+        case types.DESCRIBE:  return translateProject(op, types.DESCRIBE);
+        case types.DISTINCT:  return translateDistinct(op);
+        case types.EXTEND:    return translateExtend(op);
+        case types.FROM:      return translateFrom(op);
+        case types.FILTER:    return translateFilter(op);
+        case types.GRAPH:     return translateGraph(op);
+        case types.GROUP:     return translateGroup(op);
+        case types.JOIN:      return translateJoin(op);
+        case types.LEFT_JOIN: return translateLeftJoin(op);
+        case types.MINUS:     return translateMinus(op);
         case types.NOP:       return {};
-        case types.ORDER_BY:  return translateOrderBy(<Algebra.OrderBy>op);
-        case types.PATH:      return translatePath(<Algebra.Path>op);
-        case types.PATTERN:   return translatePattern(<Algebra.Pattern>op);
-        case types.PROJECT:   return translateProject(<Algebra.Project>op, types.PROJECT);
-        case types.REDUCED:   return translateReduced(<Algebra.Reduced>op);
-        case types.SERVICE:   return translateService(<Algebra.Service>op);
-        case types.SLICE:     return translateSlice(<Algebra.Slice>op);
-        case types.UNION:     return translateUnion(<Algebra.Union>op);
-        case types.VALUES:    return translateValues(<Algebra.Values>op);
+        case types.ORDER_BY:  return translateOrderBy(op);
+        case types.PATH:      return translatePath(op);
+        case types.PATTERN:   return translatePattern(op);
+        case types.PROJECT:   return translateProject(op, types.PROJECT);
+        case types.REDUCED:   return translateReduced(op);
+        case types.SERVICE:   return translateService(op);
+        case types.SLICE:     return translateSlice(op);
+        case types.UNION:     return translateUnion(op);
+        case types.VALUES:    return translateValues(op);
         // UPDATE operations
-        case types.COMPOSITE_UPDATE: return translateCompositeUpdate(<Algebra.CompositeUpdate>op);
-        case types.DELETE_INSERT:    return translateDeleteInsert(<Algebra.DeleteInsert>op);
-        case types.LOAD:             return translateLoad(<Algebra.Load>op);
-        case types.CLEAR:            return translateClear(<Algebra.Clear>op);
-        case types.CREATE:           return translateCreate(<Algebra.Create>op);
-        case types.DROP:             return translateDrop(<Algebra.Drop>op);
-        case types.ADD:              return translateAdd(<Algebra.Add>op);
-        case types.MOVE:             return translateMove(<Algebra.Move>op);
-        case types.COPY:             return translateCopy(<Algebra.Copy>op);
+        case types.COMPOSITE_UPDATE: return translateCompositeUpdate(op);
+        case types.DELETE_INSERT:    return translateDeleteInsert(op);
+        case types.LOAD:             return translateLoad(op);
+        case types.CLEAR:            return translateClear(op);
+        case types.CREATE:           return translateCreate(op);
+        case types.DROP:             return translateDrop(op);
+        case types.ADD:              return translateAdd(op);
+        case types.MOVE:             return translateMove(op);
+        case types.COPY:             return translateCopy(op);
     }
 
     throw new Error(`Unknown Operation type ${op.type}`);
@@ -118,29 +118,29 @@ function translateExpression(expr: Algebra.Expression): any
 {
     switch(expr.expressionType)
     {
-        case eTypes.AGGREGATE: return translateAggregateExpression(<Algebra.AggregateExpression>expr);
-        case eTypes.EXISTENCE: return translateExistenceExpression(<Algebra.ExistenceExpression>expr);
-        case eTypes.NAMED:     return translateNamedExpression(<Algebra.NamedExpression>expr);
-        case eTypes.OPERATOR:  return translateOperatorExpression(<Algebra.OperatorExpression>expr);
-        case eTypes.TERM:      return translateTermExpression(<Algebra.TermExpression>expr);
-        case eTypes.WILDCARD:  return translateWildcardExpression(<Algebra.WildcardExpression>expr);
+        case eTypes.AGGREGATE: return translateAggregateExpression(expr);
+        case eTypes.EXISTENCE: return translateExistenceExpression(expr);
+        case eTypes.NAMED:     return translateNamedExpression(expr);
+        case eTypes.OPERATOR:  return translateOperatorExpression(expr);
+        case eTypes.TERM:      return translateTermExpression(expr);
+        case eTypes.WILDCARD:  return translateWildcardExpression(expr);
     }
 
-    throw new Error(`Unknown Expression Operation type ${expr.expressionType}`);
+    throw new Error(`Unknown Expression Operation type ${(expr as any).expressionType}`);
 }
 
 function translatePathComponent(path: Algebra.Operation): IriTerm | PropertyPath
 {
     switch(path.type)
     {
-        case types.ALT:               return translateAlt(<Algebra.Alt>path);
-        case types.INV:               return translateInv(<Algebra.Inv>path);
-        case types.LINK:              return translateLink(<Algebra.Link>path);
-        case types.NPS:               return translateNps(<Algebra.Nps>path);
-        case types.ONE_OR_MORE_PATH:  return translateOneOrMorePath(<Algebra.OneOrMorePath>path);
-        case types.SEQ:               return translateSeq(<Algebra.Seq>path);
-        case types.ZERO_OR_MORE_PATH: return translateZeroOrMorePath(<Algebra.ZeroOrMorePath>path);
-        case types.ZERO_OR_ONE_PATH:  return translateZeroOrOnePath(<Algebra.ZeroOrOnePath>path);
+        case types.ALT:               return translateAlt(path);
+        case types.INV:               return translateInv(path);
+        case types.LINK:              return translateLink(path);
+        case types.NPS:               return translateNps(path);
+        case types.ONE_OR_MORE_PATH:  return translateOneOrMorePath(path);
+        case types.SEQ:               return translateSeq(path);
+        case types.ZERO_OR_MORE_PATH: return translateZeroOrMorePath(path);
+        case types.ZERO_OR_ONE_PATH:  return translateZeroOrOnePath(path);
     }
 
     throw new Error(`Unknown Path type ${path.type}`);
@@ -639,9 +639,7 @@ function translateInv(path: Algebra.Inv): PropertyPath
 {
     if (path.path.type === types.NPS)
     {
-        const npsPath: Algebra.Nps = <Algebra.Nps> path.path;
-
-        const inv: PropertyPath[] = npsPath.iris.map((iri: RDF.NamedNode) =>
+        const inv: PropertyPath[] = path.path.iris.map((iri: RDF.NamedNode) =>
         {
             return {
                 type: 'path',
@@ -753,7 +751,7 @@ function translateDeleteInsert(op: Algebra.DeleteInsert): Update
     let where: Algebra.Operation | undefined = op.where;
     let using = undefined;
     if (where && where.type === types.FROM) {
-        let from = <Algebra.From> op.where;
+        let from = where;
         where = from.input;
         using = { default: from.default, named: from.named };
     }

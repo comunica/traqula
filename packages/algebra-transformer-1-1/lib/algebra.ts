@@ -1,81 +1,94 @@
-
 import * as rdfjs from '@rdfjs/types';
 import { Wildcard } from 'sparqljs';
 import { Term } from '@rdfjs/types';
 
-// TODO: add aggregates?
-export const types = {
-    ALT:                'alt',
-    ASK:                'ask',
-    BGP:                'bgp',
-    CONSTRUCT:          'construct',
-    DESC:               'desc',
-    DESCRIBE:           'describe',
-    DISTINCT:           'distinct',
-    EXPRESSION:         'expression',
-    EXTEND:             'extend',
-    FILTER:             'filter',
-    FROM:               'from',
-    GRAPH:              'graph',
-    GROUP:              'group',
-    INV:                'inv',
-    JOIN:               'join',
-    LEFT_JOIN:          'leftjoin',
-    LINK:               'link',
-    MINUS:              'minus',
-    NOP:                'nop',
-    NPS:                'nps',
-    ONE_OR_MORE_PATH:   'OneOrMorePath',
-    ORDER_BY:           'orderby',
-    PATH:               'path',
-    PATTERN:            'pattern',
-    PROJECT:            'project',
-    REDUCED:            'reduced',
-    SEQ:                'seq',
-    SERVICE:            'service',
-    SLICE:              'slice',
-    UNION:              'union',
-    VALUES:             'values',
-    ZERO_OR_MORE_PATH:  'ZeroOrMorePath',
-    ZERO_OR_ONE_PATH:   'ZeroOrOnePath',
+export enum types {
+    ALT=                'alt',
+    ASK=                'ask',
+    BGP=                'bgp',
+    CONSTRUCT=          'construct',
+    DESCRIBE=           'describe',
+    DISTINCT=           'distinct',
+    EXPRESSION=         'expression',
+    EXTEND=             'extend',
+    FILTER=             'filter',
+    FROM=               'from',
+    GRAPH=              'graph',
+    GROUP=              'group',
+    INV=                'inv',
+    JOIN=               'join',
+    LEFT_JOIN=          'leftjoin',
+    LINK=               'link',
+    MINUS=              'minus',
+    NOP=                'nop',
+    NPS=                'nps',
+    ONE_OR_MORE_PATH=   'OneOrMorePath',
+    ORDER_BY=           'orderby',
+    PATH=               'path',
+    PATTERN=            'pattern',
+    PROJECT=            'project',
+    REDUCED=            'reduced',
+    SEQ=                'seq',
+    SERVICE=            'service',
+    SLICE=              'slice',
+    UNION=              'union',
+    VALUES=             'values',
+    ZERO_OR_MORE_PATH=  'ZeroOrMorePath',
+    ZERO_OR_ONE_PATH=   'ZeroOrOnePath',
 
-    COMPOSITE_UPDATE:   'compositeupdate',
-    DELETE_INSERT:      'deleteinsert',
-    LOAD:               'load',
-    CLEAR:              'clear',
-    CREATE:             'create',
-    DROP:               'drop',
-    ADD:                'add',
-    MOVE:               'move',
-    COPY:               'copy',
-} as const;
+    COMPOSITE_UPDATE=   'compositeupdate',
+    DELETE_INSERT=      'deleteinsert',
+    LOAD=               'load',
+    CLEAR=              'clear',
+    CREATE=             'create',
+    DROP=               'drop',
+    ADD=                'add',
+    MOVE=               'move',
+    COPY=               'copy',
+}
 
-export const expressionTypes = {
-    AGGREGATE: 'aggregate',
-    EXISTENCE: 'existence',
-    NAMED:     'named',
-    OPERATOR:  'operator',
-    TERM:      'term',
-    WILDCARD:  'wildcard',
-} as const;
+export enum expressionTypes {
+    AGGREGATE= 'aggregate',
+    EXISTENCE= 'existence',
+    NAMED=     'named',
+    OPERATOR=  'operator',
+    TERM=      'term',
+    WILDCARD=  'wildcard',
+}
 
 // Helper type
 type valueOf<T> = T[keyof T];
 
+// ----------------------- OPERATIONS -----------------------
+export type Operation =
+  Ask | Expression | Bgp | Construct | Describe | Distinct | Extend | From | Filter | Graph | Group | Join | LeftJoin |
+  Minus | Nop | OrderBy | Path | Pattern | Project | PropertyPathSymbol | Reduced | Service | Slice | Union | Values |
+  Update;
+
+export type Expression = AggregateExpression | GroupConcatExpression | ExistenceExpression | NamedExpression |
+  OperatorExpression | TermExpression | WildcardExpression | BoundAggregate;
+
+export type PropertyPathSymbol = Alt | Inv | Link | Nps | OneOrMorePath | Seq | ZeroOrMorePath | ZeroOrOnePath;
+
+export type Update = CompositeUpdate | DeleteInsert | Load | Clear | Create | Drop | Add | Move | Copy;
+
+// Returns the correct type based on the type enum
+export type TypedOperation<T extends types> = Extract<Operation, { type: T }>;
+export type TypedExpression<T extends expressionTypes> = Extract<Expression, { expressionType: T }>;
 // ----------------------- ABSTRACTS -----------------------
 
-export interface Operation
+export interface BaseOperation
 {
     [key:string]: any;
-    type: valueOf<typeof types>;
+    type: types;
 }
 
-export interface Single extends Operation
+export interface Single extends BaseOperation
 {
     input: Operation;
 }
 
-export interface Multi extends Operation
+export interface Multi extends BaseOperation
 {
     input: Operation[];
 }
@@ -85,19 +98,15 @@ export interface Double extends Multi
     input: [Operation, Operation];
 }
 
-export interface PropertyPathSymbol extends Operation
+export interface BaseExpression extends BaseOperation
 {
+    type: types.EXPRESSION;
+    expressionType: expressionTypes;
 }
 
-export interface Expression extends Operation
+export interface AggregateExpression extends BaseExpression
 {
-    type: typeof types.EXPRESSION;
-    expressionType: valueOf<typeof expressionTypes>;
-}
-
-export interface AggregateExpression extends Expression
-{
-    expressionType: typeof expressionTypes.AGGREGATE,
+    expressionType: expressionTypes.AGGREGATE,
     aggregator: 'avg' | 'count' | 'group_concat' | 'max' | 'min' | 'sample' | 'sum';
     distinct: boolean;
     expression: Expression;
@@ -110,36 +119,36 @@ export interface GroupConcatExpression extends AggregateExpression
 }
 
 
-export interface ExistenceExpression extends Expression
+export interface ExistenceExpression extends BaseExpression
 {
-    expressionType: typeof expressionTypes.EXISTENCE;
+    expressionType: expressionTypes.EXISTENCE;
     not: boolean;
     input: Operation;
 }
 
-export interface NamedExpression extends Expression
+export interface NamedExpression extends BaseExpression
 {
-    expressionType: typeof expressionTypes.NAMED;
+    expressionType: expressionTypes.NAMED;
     name: rdfjs.NamedNode;
     args: Expression[];
 }
 
-export interface OperatorExpression extends Expression
+export interface OperatorExpression extends BaseExpression
 {
-    expressionType: typeof expressionTypes.OPERATOR;
+    expressionType: expressionTypes.OPERATOR;
     operator: string;
     args: Expression[];
 }
 
-export interface TermExpression extends Expression
+export interface TermExpression extends BaseExpression
 {
-    expressionType: typeof expressionTypes.TERM;
+    expressionType: expressionTypes.TERM;
     term: Term;
 }
 
-export interface WildcardExpression extends Expression
+export interface WildcardExpression extends BaseExpression
 {
-    expressionType: typeof expressionTypes.WILDCARD,
+    expressionType: expressionTypes.WILDCARD,
     wildcard: Wildcard;
 }
 
@@ -149,15 +158,15 @@ export interface WildcardExpression extends Expression
 // ----------------------- ACTUAL FUNCTIONS -----------------------
 
 
-export interface Alt extends Multi, PropertyPathSymbol
+export interface Alt extends Multi
 {
-    type: typeof types.ALT;
+    type: types.ALT;
     input: PropertyPathSymbol[];
 }
 
 export interface Ask extends Single
 {
-    type: typeof types.ASK;
+    type: types.ASK;
 }
 
 // also an expression
@@ -166,225 +175,223 @@ export interface BoundAggregate extends AggregateExpression
     variable: rdfjs.Variable;
 }
 
-export interface Bgp extends Operation
+export interface Bgp extends BaseOperation
 {
-    type: typeof types.BGP;
+    type: types.BGP;
     patterns: Pattern[];
 }
 
 export interface Construct extends Single
 {
-    type: typeof types.CONSTRUCT;
+    type: types.CONSTRUCT;
     template: Pattern[];
 }
 
 export interface Describe extends Single
 {
-    type: typeof types.DESCRIBE;
+    type: types.DESCRIBE;
     terms: (rdfjs.Term | Wildcard)[];
 }
 
 export interface Distinct extends Single
 {
-    type: typeof types.DISTINCT;
+    type: types.DISTINCT;
 }
 
 export interface Extend extends Single
 {
-    type: typeof types.EXTEND;
+    type: types.EXTEND;
     variable: rdfjs.Variable;
     expression: Expression;
 }
 
 export interface From extends Single
 {
-    type: typeof types.FROM;
+    type: types.FROM;
     default: rdfjs.Term[];
     named: rdfjs.Term[];
 }
 
 export interface Filter extends Single
 {
-    type: typeof types.FILTER;
+    type: types.FILTER;
     expression: Expression;
 }
 
 export interface Graph extends Single
 {
-    type: typeof types.GRAPH;
+    type: types.GRAPH;
     name: rdfjs.Term;
 }
 
 export interface Group extends Single
 {
-    type: typeof types.GROUP;
+    type: types.GROUP;
     variables: rdfjs.Variable[];
     aggregates: BoundAggregate[];
 }
 
-export interface Inv extends Operation, PropertyPathSymbol
+export interface Inv extends BaseOperation
 {
-    type: typeof types.INV;
+    type: types.INV;
     path: PropertyPathSymbol;
 }
 
 export interface Join extends Multi
 {
-    type: typeof types.JOIN
+    type: types.JOIN
 }
 
 export interface LeftJoin extends Double
 {
-    type: typeof types.LEFT_JOIN;
+    type: types.LEFT_JOIN;
     expression?: Expression;
 }
 
-export interface Link extends Operation, PropertyPathSymbol
+export interface Link extends BaseOperation
 {
-    type: typeof types.LINK;
+    type: types.LINK;
     iri: rdfjs.NamedNode;
 }
 
 export interface Minus extends Double
 {
-    type: typeof types.MINUS;
+    type: types.MINUS;
 }
 
-export interface Nop extends Operation
+export interface Nop extends BaseOperation
 {
-    type: typeof types.NOP;
+    type: types.NOP;
 }
 
-export interface Nps extends Operation, PropertyPathSymbol
+export interface Nps extends BaseOperation
 {
-    type: typeof types.NPS;
+    type: types.NPS;
     iris: rdfjs.NamedNode[];
 }
 
-export interface OneOrMorePath extends Operation, PropertyPathSymbol
+export interface OneOrMorePath extends BaseOperation
 {
-    type: typeof types.ONE_OR_MORE_PATH;
+    type: types.ONE_OR_MORE_PATH;
     path: PropertyPathSymbol;
 }
 
 export interface OrderBy extends Single
 {
-    type: typeof types.ORDER_BY;
+    type: types.ORDER_BY;
     expressions: Expression[];
 }
 
-export interface Path extends Operation
+export interface Path extends BaseOperation
 {
-    type: typeof types.PATH;
+    type: types.PATH;
     subject: rdfjs.Term;
     predicate: PropertyPathSymbol;
     object: rdfjs.Term;
     graph: rdfjs.Term;
 }
 
-export interface Pattern extends Operation, rdfjs.BaseQuad
+export interface Pattern extends BaseOperation, rdfjs.BaseQuad
 {
-    type: typeof types.PATTERN;
+    type: types.PATTERN;
 }
 
 export interface Project extends Single
 {
-    type: typeof types.PROJECT;
+    type: types.PROJECT;
     variables: (rdfjs.Variable | Wildcard)[];
 }
 
 export interface Reduced extends Single
 {
-    type: typeof types.REDUCED;
+    type: types.REDUCED;
 }
 
-export interface Seq extends Multi, PropertyPathSymbol
+export interface Seq extends Multi
 {
-    type: typeof types.SEQ;
+    type: types.SEQ;
     input: PropertyPathSymbol[];
 }
 
 export interface Service extends Single
 {
-    type: typeof types.SERVICE;
+    type: types.SERVICE;
     name: rdfjs.Term;
     silent: boolean;
 }
 
 export interface Slice extends Single
 {
-    type: typeof types.SLICE;
+    type: types.SLICE;
     start: number;
     length?: number;
 }
 
 export interface Union extends Multi
 {
-    type: typeof types.UNION;
+    type: types.UNION;
 }
 
-export interface Values extends Operation
+export interface Values extends BaseOperation
 {
-    type: typeof types.VALUES;
+    type: types.VALUES;
     variables: rdfjs.Variable[];
     bindings: {[key: string]: rdfjs.Term}[];
 }
 
-export interface ZeroOrMorePath extends Operation, PropertyPathSymbol
+export interface ZeroOrMorePath extends BaseOperation
 {
-    type: typeof types.ZERO_OR_MORE_PATH;
+    type: types.ZERO_OR_MORE_PATH;
     path: PropertyPathSymbol;
 }
 
-export interface ZeroOrOnePath extends Operation, PropertyPathSymbol
+export interface ZeroOrOnePath extends BaseOperation
 {
-    type: typeof types.ZERO_OR_ONE_PATH;
+    type: types.ZERO_OR_ONE_PATH;
     path: PropertyPathSymbol;
 }
 
 // ----------------------- UPDATE FUNCTIONS -----------------------
-export interface CompositeUpdate extends Operation {
-    type: typeof types.COMPOSITE_UPDATE;
+export interface CompositeUpdate extends BaseOperation {
+    type: types.COMPOSITE_UPDATE;
     updates: Update[];
 }
 
-export interface Update extends Operation {}
-
-export interface DeleteInsert extends Update
+export interface DeleteInsert extends BaseOperation
 {
-    type: typeof types.DELETE_INSERT;
+    type: types.DELETE_INSERT;
     delete?: Pattern[];
     insert?: Pattern[];
     where?: Operation;
 }
 
-export interface UpdateGraph extends Update
+export interface UpdateGraph extends BaseOperation
 {
     silent?: boolean;
 }
 
 export interface Load extends UpdateGraph
 {
-    type: typeof types.LOAD;
+    type: types.LOAD;
     source: rdfjs.NamedNode;
     destination?: rdfjs.NamedNode;
 }
 
 export interface Clear extends UpdateGraph
 {
-    type: typeof types.CLEAR;
+    type: types.CLEAR;
     source: 'DEFAULT' | 'NAMED' | 'ALL' | rdfjs.NamedNode;
 }
 
 export interface Create extends UpdateGraph
 {
-    type: typeof types.CREATE;
+    type: types.CREATE;
     source: rdfjs.NamedNode;
 }
 
 export interface Drop extends UpdateGraph
 {
-    type: typeof types.DROP;
+    type: types.DROP;
     source: 'DEFAULT' | 'NAMED' | 'ALL' | rdfjs.NamedNode;
 }
 
@@ -396,15 +403,15 @@ export interface UpdateGraphShortcut extends UpdateGraph
 
 export interface Add extends UpdateGraphShortcut
 {
-    type: typeof types.ADD;
+    type: types.ADD;
 }
 
 export interface Move extends UpdateGraphShortcut
 {
-    type: typeof types.MOVE;
+    type: types.MOVE;
 }
 
 export interface Copy extends UpdateGraphShortcut
 {
-    type: typeof types.COPY;
+    type: types.COPY;
 }

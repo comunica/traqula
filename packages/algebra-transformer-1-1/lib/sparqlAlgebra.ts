@@ -1,4 +1,4 @@
-import * as equal from 'fast-deep-equal';
+import equal = require('fast-deep-equal/es6');
 import * as RDF from '@rdfjs/types'
 import { termToString } from 'rdf-string';
 import {
@@ -263,7 +263,7 @@ function translateBgp(thingy: BgpPattern) : Algebra.Operation
                     joins.push(p);
                 }
                 else
-                    patterns.push(<Algebra.Pattern>p);
+                    patterns.push(p);
             }
         }
         else
@@ -276,7 +276,7 @@ function translateBgp(thingy: BgpPattern) : Algebra.Operation
     return factory.createJoin(joins);
 }
 
-function translatePath(triple: Triple & { predicate: PropertyPath }) : Algebra.Operation[]
+function translatePath(triple: Triple & { predicate: PropertyPath }) : (Algebra.Path | Algebra.Pattern)[]
 {
     let sub = triple.subject;
     let pred = translatePathPredicate(triple.predicate);
@@ -285,7 +285,7 @@ function translatePath(triple: Triple & { predicate: PropertyPath }) : Algebra.O
     return simplifyPath(<RDF.Quad_Subject> sub, pred, <RDF.Quad_Object> obj);
 }
 
-function translatePathPredicate(predicate: IriTerm | PropertyPath) : Algebra.Operation
+function translatePathPredicate(predicate: IriTerm | PropertyPath) : Algebra.PropertyPathSymbol
 {
     if (Util.isSimpleTerm(predicate))
     {
@@ -347,20 +347,19 @@ function translatePathPredicate(predicate: IriTerm | PropertyPath) : Algebra.Ope
     throw new Error(`Unable to translate path expression ${JSON.stringify(predicate)}`);
 }
 
-function simplifyPath(subject: RDF.Quad_Subject, predicate: Algebra.Operation, object: RDF.Quad_Object) : Algebra.Operation[]
+function simplifyPath(subject: RDF.Quad_Subject, predicate: Algebra.PropertyPathSymbol, object: RDF.Quad_Object) : (Algebra.Pattern | Algebra.Path)[]
 {
     if (predicate.type === types.LINK)
-        return [factory.createPattern(subject, (<Algebra.Link>predicate).iri, object)];
+        return [factory.createPattern(subject, predicate.iri, object)];
 
     if (predicate.type === types.INV)
-        return simplifyPath(<RDF.Quad_Subject> object, (<Algebra.Inv>predicate).path, subject);
+        return simplifyPath(<RDF.Quad_Subject> object, predicate.path, subject);
 
     if (predicate.type === types.SEQ)
     {
         let joiner: RDF.Quad_Subject | RDF.Variable = subject;
-        const seq: Algebra.Seq = <Algebra.Seq> predicate;
-        return Util.flatten(seq.input.map((subOp, i) => {
-            const nextJoiner = i === seq.input.length - 1 ? object : generateFreshVar();
+        return Util.flatten(predicate.input.map((subOp, i) => {
+            const nextJoiner = i === predicate.input.length - 1 ? object : generateFreshVar();
             const simplifiedPath = simplifyPath(joiner, subOp, nextJoiner);
             if (nextJoiner.termType === 'Variable') {
                 joiner = nextJoiner;
@@ -413,7 +412,7 @@ function recurseGraph(thingy: Algebra.Operation, graph: RDF.Term, replacement?: 
         thingy = recurseGraph(graph.input, graph.name);
     }
     else if (thingy.type === types.BGP)
-        (<Algebra.Bgp>thingy).patterns = (<Algebra.Bgp>thingy).patterns.map(quad =>
+        thingy.patterns = thingy.patterns.map(quad =>
         {
             if (replacement)
             {
@@ -427,11 +426,10 @@ function recurseGraph(thingy: Algebra.Operation, graph: RDF.Term, replacement?: 
         });
     else if (thingy.type === types.PATH)
     {
-        const p = <Algebra.Path> thingy;
         if (replacement)
         {
-            if (p.subject.equals(graph)) p.subject = replacement;
-            if (p.object.equals(graph))  p.object = replacement;
+            if (thingy.subject.equals(graph)) thingy.subject = replacement;
+            if (thingy.object.equals(graph))  thingy.object = replacement;
         }
         if (thingy.graph.termType === 'DefaultGraph')
             thingy.graph = graph;
@@ -440,20 +438,18 @@ function recurseGraph(thingy: Algebra.Operation, graph: RDF.Term, replacement?: 
     // unless the subquery projects that variable
     else if (thingy.type === types.PROJECT && !replacement)
     {
-        const proj = <Algebra.Project> thingy;
-        if (!proj.variables.some(v => v.equals(graph)))
+        if (!thingy.variables.some(v => v.equals(graph)))
             replacement = generateFreshVar();
-        proj.input = recurseGraph(proj.input, graph, replacement);
+        thingy.input = recurseGraph(thingy.input, graph, replacement);
     }
     // this can happen if the query extends an expression to the name of the graph
     // since the extend happens here there should be no further occurrences of this name
     // if there are it's the same situation as above
     else if (thingy.type === types.EXTEND && !replacement)
     {
-        const ext = <Algebra.Extend> thingy;
-        if (ext.variable.equals(graph))
+        if (thingy.variable.equals(graph))
             replacement = generateFreshVar();
-        ext.input = recurseGraph(ext.input, graph, replacement);
+        thingy.input = recurseGraph(thingy.input, graph, replacement);
     }
     else
     {
@@ -479,8 +475,7 @@ function accumulateGroupGraphPattern(G: Algebra.Operation, E: Pattern) : Algebra
         const A = translateGroupGraphPattern({ type: 'group', patterns: E.patterns });
         if (A.type === types.FILTER)
         {
-            const filter = <Algebra.Filter> A;
-            G = factory.createLeftJoin(G, filter.input, filter.expression);
+            G = factory.createLeftJoin(G, A.input, A.expression);
         }
         else
             G = factory.createLeftJoin(G, A);
@@ -513,11 +508,11 @@ function simplifiedJoin(G: Algebra.Operation, A: Algebra.Operation): Algebra.Ope
 {
     // Note: this is more simplification than requested in 18.2.2.8, but no reason not to do it.
     if (G.type  === types.BGP && A.type === types.BGP)
-        G = factory.createBgp([].concat(G.patterns, A.patterns));
+        G = factory.createBgp([ ...G.patterns, ...A.patterns ]);
     // 18.2.2.8 (simplification)
-    else if (G.type === types.BGP && (<Algebra.Bgp>G).patterns.length === 0)
+    else if (G.type === types.BGP && G.patterns.length === 0)
         G = A;
-    else if (A.type === types.BGP && (<Algebra.Bgp>A).patterns.length === 0)
+    else if (A.type === types.BGP && A.patterns.length === 0)
     {} // do nothing
     else
         G = factory.createJoin([ G, A ]);
@@ -621,7 +616,7 @@ function translateAggregates(query: Query, res: Algebra.Operation, variables: Se
         {
             let result = translateExpression(exp.expression);
             if (exp.descending)
-                result = factory.createOperatorExpression(types.DESC, [result]); // TODO: should this really be an expression?
+                result = factory.createOperatorExpression('desc', [result]);
             return result;
         }));
 
@@ -768,7 +763,7 @@ function translateUpdateTriplesBlock (thingy: BgpPattern | GraphQuads, graph?: R
     return (currentTriples as RDF.Quad[]).map(translateQuad);
 }
 
-function translateUpdateGraph (thingy: CreateOperation | ClearDropOperation): Algebra.UpdateGraph
+function translateUpdateGraph (thingy: CreateOperation | ClearDropOperation): Algebra.Update
 {
     let source: 'DEFAULT' | 'NAMED' | 'ALL' | RDF.NamedNode;
     if (Util.isSimpleTerm(thingy.graph))
@@ -795,7 +790,7 @@ function translateUpdateGraphLoad (thingy: LoadOperation): Algebra.Load
     return factory.createLoad(thingy.source, thingy.destination as (RDF.NamedNode | undefined), thingy.silent);
 }
 
-function translateUpdateGraphShortcut (thingy: CopyMoveAddOperation): Algebra.UpdateGraphShortcut
+function translateUpdateGraphShortcut (thingy: CopyMoveAddOperation): Algebra.Update
 {
     const source: 'DEFAULT' | RDF.NamedNode = thingy.source.default ? 'DEFAULT' : <RDF.NamedNode> thingy.source.name;
     const destination: 'DEFAULT' | RDF.NamedNode = thingy.destination.default ? 'DEFAULT' : <RDF.NamedNode> thingy.destination.name;

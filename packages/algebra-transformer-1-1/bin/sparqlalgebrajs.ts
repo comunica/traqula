@@ -1,6 +1,6 @@
 #! /usr/bin/env node
 
-import * as minimist from 'minimist';
+import minimist from 'minimist';
 import translate from '../lib/sparqlAlgebra';
 import {toSparql} from '../lib/sparql';
 import Util from "../lib/util";

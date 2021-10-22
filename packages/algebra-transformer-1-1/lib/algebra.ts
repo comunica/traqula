@@ -80,7 +80,7 @@ export interface Multi extends Operation
     input: Operation[];
 }
 
-export interface Double extends Operation
+export interface Double extends Multi
 {
     input: [Operation, Operation];
 }

@@ -312,7 +312,10 @@ function translatePathPredicate(predicate: IriTerm | PropertyPath) : Algebra.Ope
         for (let item of items)
         {
             if (Util.isSimpleTerm(item))
-                normals.push(item);
+                // I got typing errors when building a script that directly called the `translate` function
+                // error TS2345: Argument of type 'Term' is not assignable to parameter of type 'NamedNode<string>'.
+                // Should investigate why this is the case because it seems unnecessary.
+                normals.push(item as RDF.NamedNode);
             else if (item.pathType === '^')
                 inverted.push(item.items[0] as RDF.NamedNode);
             else

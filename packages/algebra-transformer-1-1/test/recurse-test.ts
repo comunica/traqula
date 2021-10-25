@@ -1,4 +1,3 @@
-import {expect} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
 import Util from '../lib/util';
@@ -40,9 +39,9 @@ function testPath(fileName: string, testName: string): void
                 let scope = Util.inScopeVariables(input);
                 let project = <Project> translate(toSparqlJs(factory.createProject(input, [])));
                 for (let v of project.variables.map(v => v.value))
-                    expect(scope.map(v => v.value)).to.contain(v);
+                    expect(scope.map(v => v.value)).toContain(v);
             }
-            expect(Util.objectify(clone)).to.deep.equal(expected);
+            expect(Util.objectify(clone)).toEqual(expected);
         });
     }
 }

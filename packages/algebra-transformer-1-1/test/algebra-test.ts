@@ -1,5 +1,3 @@
-
-import {expect} from 'chai';
 import * as fs from 'fs';
 import * as path from 'path';
 import {translate} from '../index';
@@ -43,7 +41,7 @@ function testPath(root: string, fileName: string, testName: string, blankToVaria
             let query = fs.readFileSync(sparqlName, 'utf8');
             let algebra = LibUtil.objectify(translate(query, { quads: name.endsWith('(quads)'), blankToVariable, sparqlStar: testName.includes('sparqlstar') }));
             let expected = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
-            expect(canon.canonicalizeQuery(algebra, blankToVariable)).to.deep.equal(canon.canonicalizeQuery(expected, blankToVariable));
+            expect(canon.canonicalizeQuery(algebra, blankToVariable)).toEqual(canon.canonicalizeQuery(expected, blankToVariable));
         });
     }
 }

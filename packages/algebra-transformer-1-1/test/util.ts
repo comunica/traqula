@@ -1,4 +1,3 @@
-
 import {Algebra} from "../index";
 import * as LibUtil from "../lib/util";
 import Factory from "../lib/factory";
@@ -63,8 +62,7 @@ class Canonicalizer {
         });
     }
 
-    public replaceValue(term: RDF.Term, nameMapping: {[bLabel: string]: string}
-        , replaceVars: boolean, factory: Factory): RDF.Term {
+    public replaceValue(term: RDF.Term, nameMapping: {[bLabel: string]: string}, replaceVars: boolean, factory: Factory): RDF.Term {
         if (term.termType === 'Quad') {
             return factory.createPattern(
               this.replaceValue(term.subject, nameMapping, replaceVars, factory),

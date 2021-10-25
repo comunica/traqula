@@ -283,8 +283,8 @@ function translateFrom(op: Algebra.From): GroupPattern
     // project is nested in group object
     const obj: SelectQuery = result.patterns[0];
     obj.from = {
-        default: op.default as IriTerm[],
-        named: op.named as IriTerm[]
+        default: op.default,
+        named: op.named
     };
     return result;
 }
@@ -497,14 +497,14 @@ function translateProject(op: Algebra.Project | Algebra.Ask | Algebra.Describe, 
     // this needs to happen after the group because it might depend on variables generated there
     if (variables)
     {
-        select.variables = variables.map((term: RDF.Term): Variable => {
+        select.variables = variables.map((term): Variable => {
             let v = translateTerm(term);
             if (extensions[v])
                 return {
-                    variable  : term as RDF.Variable,
+                    variable  : term,
                     expression: extensions[v]
                 };
-            return term as RDF.Variable;
+            return term;
         });
         // if the * didn't match any variables this would be empty
         if (select.variables.length === 0)
@@ -561,6 +561,7 @@ function translateService(op: Algebra.Service): ServicePattern
         patterns = [patterns];
     return {
         type: 'service',
+        // Typings are wrong, name can also be a variable
         name: op.name as RDF.NamedNode,
         silent: op.silent,
         patterns
@@ -601,7 +602,7 @@ function translateValues(op: Algebra.Values): ValuesPattern
             {
                 let s = `?${v.value}`;
                 if (binding[s])
-                    result[s] = binding[s] as any;
+                    result[s] = binding[s];
                 else
                     result[s] = undefined;
             }
@@ -729,6 +730,7 @@ function translateZeroOrOnePath(path: Algebra.ZeroOrOnePath): PropertyPath
     // Typings are missing '?' operator
     return {
         type: 'path',
+        // Typings are missing this path
         pathType: '?' as any,
         items: [ translatePathComponent(path.path) ]
     }
@@ -770,7 +772,7 @@ function translateDeleteInsert(op: Algebra.DeleteInsert): Update
         updates[0].where = [];
     else
     {
-        const graphs: NodeJS.Dict<{ graph: RDF.Term, values: Algebra.Operation[]}> = {};
+        const graphs: NodeJS.Dict<{ graph: RDF.NamedNode, values: Algebra.Operation[]}> = {};
         let result = translateOperation(removeQuadsRecursive(where, graphs));
         if (result.type === 'group')
             updates[0].where = result.patterns;
@@ -782,9 +784,10 @@ function translateDeleteInsert(op: Algebra.DeleteInsert): Update
         if (graphNames.length > 0) {
             if (graphNames.length !== 1)
                 throw new Error('This is unexpected and might indicate an error in graph handling for updates.');
+            const graphName = graphs[graphNames[0]]?.graph;
             // ignore if default graph
-            if (graphs[graphNames[0]]!.graph.value !== '')
-                updates[0].where = [{ type: 'graph', patterns: updates[0].where!, name: graphs[graphNames[0]]!.graph as any }]
+            if (graphName && graphName.value !== '')
+                updates[0].where = [{ type: 'graph', patterns: updates[0].where!, name: graphName }]
         }
     }
 
@@ -804,7 +807,7 @@ function translateDeleteInsert(op: Algebra.DeleteInsert): Update
         else
             updates[0].updateType = 'delete';
     } else if (!op.insert && op.where && op.where.type === 'bgp') {
-        if (isomorphic(op.delete!, (op.where as Algebra.Bgp).patterns)) {
+        if (isomorphic(op.delete!, op.where.patterns)) {
             delete updates[0].where;
             updates[0].updateType = 'deletewhere';
         }
@@ -904,7 +907,7 @@ function removeQuads(op: Algebra.Operation): any
 }
 
 // remove quads
-function removeQuadsRecursive(op: any, graphs: NodeJS.Dict<{ graph: RDF.Term, values: Algebra.Operation[]}>): any
+function removeQuadsRecursive(op: any, graphs: NodeJS.Dict<{ graph: RDF.NamedNode, values: Algebra.Operation[]}>): any
 {
     if (Array.isArray(op))
         return op.map(sub => removeQuadsRecursive(sub, graphs));
@@ -925,11 +928,11 @@ function removeQuadsRecursive(op: any, graphs: NodeJS.Dict<{ graph: RDF.Term, va
     }
 
     const result: any = {};
-    const keyGraphs: {[id: string]: RDF.Term} = {}; // unique graph per key
-    const globalNames: {[id: string]: RDF.Term} = {}; // track all the unique graph names for the entire Operation
+    const keyGraphs: {[id: string]: RDF.NamedNode} = {}; // unique graph per key
+    const globalNames: {[id: string]: RDF.NamedNode} = {}; // track all the unique graph names for the entire Operation
     for (let key of Object.keys(op))
     {
-        const newGraphs: {[id: string]: { graph: RDF.Term, values: Algebra.Operation[]}} = {};
+        const newGraphs: {[id: string]: { graph: RDF.NamedNode, values: Algebra.Operation[]}} = {};
         result[key] = removeQuadsRecursive(op[key], newGraphs);
 
         const graphNames = Object.keys(newGraphs);
@@ -968,6 +971,7 @@ function removeQuadsRecursive(op: any, graphs: NodeJS.Dict<{ graph: RDF.Term, va
             // multiple graphs (or project), need to create graph objects for them
             for (let key of Object.keys(keyGraphs))
                 if (keyGraphs[key].value.length > 0)
+                    // TODO: Should check if this cast and graph cast below are correct
                     result[key] = factory.createGraph(result[key], keyGraphs[key]);
         }
     }
@@ -981,5 +985,6 @@ function potentialGraphFromPatterns(patterns: Algebra.Pattern[]): Algebra.Graph 
     const name = patterns[0].graph;
     if (name.value.length === 0)
         return bgp;
-    return factory.createGraph(bgp, name);
+    // TODO: not sure about typings here, would have to check in the future
+    return factory.createGraph(bgp, name as RDF.NamedNode);
 }

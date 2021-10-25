@@ -1,13 +1,9 @@
-
-import { open } from 'fs';
 import { Wildcard } from 'sparqljs';
 import * as A from "./algebra";
 import { Expression, Operation, expressionTypes, types, TypedOperation } from './algebra';
 import Factory from "./factory";
-import { BaseQuad, Variable } from "@rdfjs/types";
+import { BaseQuad, Variable } from '@rdfjs/types';
 import * as RDF from '@rdfjs/types'
-import * as rdfjs from '@rdfjs/types';
-import Dict = NodeJS.Dict;
 
 
 export default class Util
@@ -65,11 +61,11 @@ export default class Util
      * @param {Operation} op - Input algebra tree.
      * @returns {Variable[]} - List of unique in-scope variables.
      */
-    public static inScopeVariables(op: A.Operation): (Variable | Wildcard)[]
+    public static inScopeVariables(op: A.Operation): Variable[]
     {
-        const variables: (Variable | Wildcard)[] = [];
+        const variables: Variable[] = [];
 
-        function addVariable(v: Variable | Wildcard)
+        function addVariable(v: Variable)
         {
             if (!variables.find(v2 => v.value === v2.value))
                 variables.push(v);
@@ -77,13 +73,13 @@ export default class Util
 
         function recurseTerm(quad: BaseQuad) {
             if (quad.subject.termType === 'Variable')
-                addVariable(<Variable> quad.subject);
+                addVariable(quad.subject);
             if (quad.predicate.termType === 'Variable')
-                addVariable(<Variable> quad.predicate);
+                addVariable(quad.predicate);
             if (quad.object.termType === 'Variable')
-                addVariable(<Variable> quad.object);
+                addVariable(quad.object);
             if (quad.graph.termType === 'Variable')
-                addVariable(<Variable> quad.graph);
+                addVariable(quad.graph);
             if (quad.subject.termType === 'Quad')
                 recurseTerm(quad.subject);
             if (quad.predicate.termType === 'Quad')
@@ -123,11 +119,11 @@ export default class Util
             [types.PATH]: (op) =>
             {
                 if (op.subject.termType === 'Variable')
-                    addVariable(<Variable> op.subject);
+                    addVariable(op.subject);
                 if (op.object.termType === 'Variable')
-                    addVariable(<Variable> op.object);
+                    addVariable(op.object);
                 if (op.graph.termType === 'Variable')
-                    addVariable(<Variable> op.graph);
+                    addVariable(op.graph);
                 if (op.subject.termType === 'Quad')
                     recurseTerm(op.subject);
                 if (op.object.termType === 'Quad')
@@ -477,7 +473,7 @@ export default class Util
         }
     }
 
-    public static createUniqueVariable(label: string, variables: {[vLabel: string]: boolean}, dataFactory: RDF.DataFactory): RDF.Variable {
+    public static createUniqueVariable(label: string, variables: {[vLabel: string]: boolean}, dataFactory: RDF.DataFactory<BaseQuad, BaseQuad>): RDF.Variable {
         let counter: number = 0;
         let labelLoop = label;
         while (variables[labelLoop]) {

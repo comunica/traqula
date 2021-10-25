@@ -1,4 +1,3 @@
-
 import * as A from './algebra';
 import * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
@@ -7,7 +6,7 @@ import { Wildcard } from 'sparqljs';
 
 export default class Factory
 {
-    dataFactory: RDF.DataFactory;
+    dataFactory: RDF.DataFactory<RDF.BaseQuad, RDF.BaseQuad>;
     stringType: RDF.NamedNode;
 
     constructor(dataFactory?: RDF.DataFactory) {
@@ -19,18 +18,18 @@ export default class Factory
     createAsk (input: A.Operation): A.Ask { return { type: A.types.ASK, input }; }
     createBoundAggregate (variable: RDF.Variable, aggregate: string, expression: A.Expression, distinct: boolean, separator?: string): A.BoundAggregate
     {
-        let result = <A.BoundAggregate>this.createAggregateExpression(aggregate, expression, distinct, separator);
+        const result = <A.BoundAggregate>this.createAggregateExpression(aggregate, expression, distinct, separator);
         result.variable = variable;
         return result;
     }
     createBgp (patterns: A.Pattern[]): A.Bgp { return { type: A.types.BGP, patterns }; }
     createConstruct (input: A.Operation, template: A.Pattern[]): A.Construct { return { type: A.types.CONSTRUCT, input, template }; }
-    createDescribe (input: A.Operation, terms: (RDF.Term | Wildcard)[]): A.Describe { return { type: A.types.DESCRIBE, input, terms }; }
+    createDescribe (input: A.Operation, terms: (RDF.Variable | RDF.NamedNode)[]): A.Describe { return { type: A.types.DESCRIBE, input, terms }; }
     createDistinct (input: A.Operation) : A.Distinct { return { type: A.types.DISTINCT, input }; }
     createExtend (input: A.Operation, variable: RDF.Variable, expression: A.Expression) : A.Extend { return { type: A.types.EXTEND, input, variable, expression }; }
-    createFrom (input: A.Operation, def: RDF.Term[], named: RDF.Term[]) : A.From { return { type: A.types.FROM, input, default: def, named }; }
+    createFrom (input: A.Operation, def: RDF.NamedNode[], named: RDF.NamedNode[]) : A.From { return { type: A.types.FROM, input, default: def, named }; }
     createFilter (input: A.Operation, expression: A.Expression) : A.Filter { return { type: A.types.FILTER, input, expression }; }
-    createGraph (input: A.Operation, name: RDF.Term) : A.Graph { return { type: A.types.GRAPH, input, name }; }
+    createGraph (input: A.Operation, name: RDF.Variable | RDF.NamedNode) : A.Graph { return { type: A.types.GRAPH, input, name }; }
     createGroup (input: A.Operation, variables: RDF.Variable[], aggregates: A.BoundAggregate[]) : A.Group { return { type: A.types.GROUP, input, variables, aggregates }; }
     createInv (path: A.PropertyPathSymbol): A.Inv { return { type: A.types.INV, path }; }
     createJoin (input: A.Operation[], flatten = true): A.Join { return this.flattenMulti({ type: A.types.JOIN, input }, flatten); }
@@ -54,14 +53,14 @@ export default class Factory
     }
     createPattern (subject: RDF.Term, predicate: RDF.Term, object: RDF.Term, graph?: RDF.Term): A.Pattern
     {
-        let pattern = <A.Pattern>this.dataFactory.quad(<RDF.Quad_Subject>subject, <RDF.Quad_Predicate>predicate, <RDF.Quad_Object>object, <RDF.Quad_Graph>graph);
+        const pattern = <A.Pattern>this.dataFactory.quad(subject, predicate, object, graph);
         pattern.type = A.types.PATTERN;
         return pattern;
     }
-    createProject (input: A.Operation, variables: (RDF.Variable | Wildcard)[]) : A.Project { return { type: A.types.PROJECT, input, variables }; }
+    createProject (input: A.Operation, variables: RDF.Variable[]) : A.Project { return { type: A.types.PROJECT, input, variables }; }
     createReduced (input: A.Operation) : A.Reduced { return { type: A.types.REDUCED, input }; }
     createSeq (input: A.PropertyPathSymbol[], flatten = true): A.Seq { return this.flattenMulti({ type: A.types.SEQ, input }, flatten); }
-    createService (input: A.Operation, name: RDF.Term, silent?: boolean): A.Service { return { type: A.types.SERVICE, input, name, silent: Boolean(silent) }; }
+    createService (input: A.Operation, name: RDF.NamedNode | RDF.Variable, silent?: boolean): A.Service { return { type: A.types.SERVICE, input, name, silent: Boolean(silent) }; }
     createSlice (input: A.Operation, start: number, length?: number) : A.Slice
     {
         start = start || 0;
@@ -70,7 +69,7 @@ export default class Factory
         return { type: A.types.SLICE, input, start };
     }
     createUnion (input: A.Operation[], flatten = true): A.Union { return this.flattenMulti({ type: A.types.UNION, input }, flatten); }
-    createValues (variables: RDF.Variable[], bindings: {[key: string]: RDF.Term}[]): A.Values { return { type: A.types.VALUES, variables, bindings }; }
+    createValues (variables: RDF.Variable[], bindings: {[key: string]: RDF.Literal | RDF.NamedNode}[]): A.Values { return { type: A.types.VALUES, variables, bindings }; }
     createZeroOrMorePath (path: A.PropertyPathSymbol): A.ZeroOrMorePath { return { type: A.types.ZERO_OR_MORE_PATH, path }; }
     createZeroOrOnePath (path: A.PropertyPathSymbol): A.ZeroOrOnePath { return { type: A.types.ZERO_OR_ONE_PATH, path }; }
     createAggregateExpression (aggregator: string, expression: A.Expression, distinct: boolean, separator?: string): A.AggregateExpression

@@ -190,7 +190,7 @@ export interface Construct extends Single
 export interface Describe extends Single
 {
     type: types.DESCRIBE;
-    terms: (rdfjs.Term | Wildcard)[];
+    terms: (rdfjs.Variable | rdfjs.NamedNode)[];
 }
 
 export interface Distinct extends Single
@@ -208,8 +208,8 @@ export interface Extend extends Single
 export interface From extends Single
 {
     type: types.FROM;
-    default: rdfjs.Term[];
-    named: rdfjs.Term[];
+    default: rdfjs.NamedNode[];
+    named: rdfjs.NamedNode[];
 }
 
 export interface Filter extends Single
@@ -221,7 +221,7 @@ export interface Filter extends Single
 export interface Graph extends Single
 {
     type: types.GRAPH;
-    name: rdfjs.Term;
+    name: rdfjs.Variable | rdfjs.NamedNode;
 }
 
 export interface Group extends Single
@@ -299,7 +299,7 @@ export interface Pattern extends BaseOperation, rdfjs.BaseQuad
 export interface Project extends Single
 {
     type: types.PROJECT;
-    variables: (rdfjs.Variable | Wildcard)[];
+    variables: rdfjs.Variable[];
 }
 
 export interface Reduced extends Single
@@ -316,7 +316,7 @@ export interface Seq extends Multi
 export interface Service extends Single
 {
     type: types.SERVICE;
-    name: rdfjs.Term;
+    name: rdfjs.Variable | rdfjs.NamedNode;
     silent: boolean;
 }
 
@@ -336,7 +336,7 @@ export interface Values extends BaseOperation
 {
     type: types.VALUES;
     variables: rdfjs.Variable[];
-    bindings: {[key: string]: rdfjs.Term}[];
+    bindings: {[key: string]: rdfjs.Literal | rdfjs.NamedNode}[];
 }
 
 export interface ZeroOrMorePath extends BaseOperation

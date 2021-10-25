@@ -35,9 +35,8 @@ function testPath(fileName: string, testName: string): void
             let clone: Operation = Util.mapOperation(expected, {});
             if (clone.type === 'project')
             {
-                let input = (<Project> clone).input;
-                let scope = Util.inScopeVariables(input);
-                let project = <Project> translate(toSparqlJs(factory.createProject(input, [])));
+                let scope = Util.inScopeVariables(clone.input);
+                let project = <Project> translate(toSparqlJs(factory.createProject(clone.input, [])));
                 for (let v of project.variables.map(v => v.value))
                     expect(scope.map(v => v.value)).toContain(v);
             }

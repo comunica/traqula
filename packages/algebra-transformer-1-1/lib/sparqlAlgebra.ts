@@ -267,7 +267,7 @@ function translateBgp(thingy: BgpPattern) : Algebra.Operation
             }
         }
         else
-            patterns.push(translateQuad(t as RDF.Quad));
+            patterns.push(translateQuad(t));
     }
     if (patterns.length > 0)
         joins.push(factory.createBgp(patterns));
@@ -282,7 +282,7 @@ function translatePath(triple: Triple & { predicate: PropertyPath }) : (Algebra.
     let pred = translatePathPredicate(triple.predicate);
     let obj = triple.object;
 
-    return simplifyPath(<RDF.Quad_Subject> sub, pred, <RDF.Quad_Object> obj);
+    return simplifyPath(sub, pred, obj);
 }
 
 function translatePathPredicate(predicate: IriTerm | PropertyPath) : Algebra.PropertyPathSymbol
@@ -303,7 +303,7 @@ function translatePathPredicate(predicate: IriTerm | PropertyPath) : Algebra.Pro
         // negation is either over a single predicate or a list of disjuncted properties
         let normals: RDF.NamedNode[] = [];
         let inverted: RDF.NamedNode[] = [];
-        let items;
+        let items: (IriTerm | PropertyPath)[];
         if ('pathType' in predicate.items[0] && predicate.items[0].pathType === '|')
             items = predicate.items[0].items; // the | element
         else
@@ -312,10 +312,7 @@ function translatePathPredicate(predicate: IriTerm | PropertyPath) : Algebra.Pro
         for (let item of items)
         {
             if (Util.isSimpleTerm(item))
-                // I got typing errors when building a script that directly called the `translate` function
-                // error TS2345: Argument of type 'Term' is not assignable to parameter of type 'NamedNode<string>'.
-                // Should investigate why this is the case because it seems unnecessary.
-                normals.push(item as RDF.NamedNode);
+                normals.push(item);
             else if (item.pathType === '^')
                 inverted.push(item.items[0] as RDF.NamedNode);
             else
@@ -380,9 +377,14 @@ function generateFreshVar() : RDF.Variable
     return <RDF.Variable>factory.createTerm(v);
 }
 
-function translateQuad(quad: RDF.BaseQuad) : Algebra.Pattern
+function translateQuad(quad: Triple) : Algebra.Pattern
 {
-    return factory.createPattern(quad.subject, quad.predicate, quad.object, quad.graph);
+    if ('pathType' in quad.predicate) {
+        throw new Error('Trying to translate property path to quad.');
+    }
+    // Graphs are needed here
+    // TODO: investigate if typings are wrong or if we internally add graphs to these
+    return factory.createPattern(quad.subject, quad.predicate, quad.object, (quad as any).graph);
 }
 
 function translateGraph(graph: GraphPattern) : Algebra.Operation
@@ -407,9 +409,8 @@ function recurseGraph(thingy: Algebra.Operation, graph: RDF.Term, replacement?: 
             // This would indicate the library is not being used as intended though
             throw new Error('Recursing through nested GRAPH statements with a replacement is impossible.');
         }
-        const graph = thingy as Algebra.Graph;
         // In case there were nested GRAPH statements that were not recursed yet for some reason
-        thingy = recurseGraph(graph.input, graph.name);
+        thingy = recurseGraph(thingy.input, thingy.name);
     }
     else if (thingy.type === types.BGP)
         thingy.patterns = thingy.patterns.map(quad =>
@@ -581,7 +582,7 @@ function translateAggregates(query: Query, res: Algebra.Operation, variables: Se
         res = factory.createJoin([ res, translateInlineData(query) ]);
 
     // 18.2.4.4
-    let PV = new Set<RDF.Term | Wildcard>();
+    let PV = new Set<RDF.Variable | RDF.NamedNode>();
 
     if (query.queryType === 'SELECT' || query.queryType === 'DESCRIBE')
     {
@@ -589,7 +590,8 @@ function translateAggregates(query: Query, res: Algebra.Operation, variables: Se
             PV = variables;
         else
         {
-            for (let v of query.variables)
+            // Wildcard has been filtered out above
+            for (let v of query.variables as Variable[])
             {
                 // can have non-variables with DESCRIBE
                 if (isVariable(v) || !('variable' in v))
@@ -623,7 +625,8 @@ function translateAggregates(query: Query, res: Algebra.Operation, variables: Se
     // 18.2.5.2
     // construct does not need a project (select, ask and describe do)
     if (query.queryType === 'SELECT')
-        res = factory.createProject(res, <RDF.Variable[]> Array.from(PV));
+        // Named nodes are only possible in a DESCRIBE so this cast is safe
+        res = factory.createProject(res, Array.from(PV) as RDF.Variable[]);
 
     // 18.2.5.3
     if (select.distinct)
@@ -635,7 +638,7 @@ function translateAggregates(query: Query, res: Algebra.Operation, variables: Se
 
     // NEW: support for ask/construct/describe queries
     if (query.queryType === 'CONSTRUCT')
-        res = factory.createConstruct(res, (query.template as RDF.Quad[]).map(translateQuad));
+        res = factory.createConstruct(res, (query.template || []).map(translateQuad));
     else if (query.queryType === 'ASK')
         res = factory.createAsk(res);
     else if (query.queryType === 'DESCRIBE')
@@ -735,7 +738,7 @@ function translateInsertDelete (thingy: InsertDeleteOperation): Algebra.Update
     if (thingy.where && thingy.where.length > 0) {
         where = translateGroupGraphPattern({ type: 'group', patterns: thingy.where });
         // Wrong typings, see test "using" in Sparql.js
-        const using: { default: RDF.Term[], named: RDF.Term[] } | undefined = (thingy as any).using;
+        const using: { default: RDF.NamedNode[], named: RDF.NamedNode[] } | undefined = (thingy as any).using;
         if (using)
             where = factory.createFrom(where, using.default, using.named);
         else if (thingy.graph)
@@ -760,7 +763,7 @@ function translateUpdateTriplesBlock (thingy: BgpPattern | GraphQuads, graph?: R
     let currentTriples = thingy.triples;
     if (currentGraph)
         currentTriples = currentTriples.map(triple => Object.assign(triple, { graph: currentGraph }));
-    return (currentTriples as RDF.Quad[]).map(translateQuad);
+    return currentTriples.map(translateQuad);
 }
 
 function translateUpdateGraph (thingy: CreateOperation | ClearDropOperation): Algebra.Update
@@ -845,17 +848,17 @@ function translateBlankNodesToVariables (res: Algebra.Operation, variables: Set<
         },
     });
 
-  function blankToVariable(term: RDF.Term): RDF.Term
-  {
-      if (term.termType === 'BlankNode') {
-          let variable = blankToVariableMapping[term.value];
-          if (!variable) {
-              variable = Util.createUniqueVariable(term.value, variablesRaw, factory.dataFactory);
-              variablesRaw[variable.value] = true;
-              blankToVariableMapping[term.value] = variable;
-          }
-          return variable;
-      }
-      return term;
+    function blankToVariable(term: RDF.Term): RDF.Term
+    {
+        if (term.termType === 'BlankNode') {
+            let variable = blankToVariableMapping[term.value];
+            if (!variable) {
+                variable = Util.createUniqueVariable(term.value, variablesRaw, factory.dataFactory);
+                variablesRaw[variable.value] = true;
+                blankToVariableMapping[term.value] = variable;
+            }
+            return variable;
+        }
+        return term;
   }
 }

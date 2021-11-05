@@ -70,7 +70,7 @@ export type Expression = AggregateExpression | GroupConcatExpression | Existence
 
 export type PropertyPathSymbol = Alt | Inv | Link | Nps | OneOrMorePath | Seq | ZeroOrMorePath | ZeroOrOnePath;
 
-export type Update = CompositeUpdate | DeleteInsert | Load | Clear | Create | Drop | Add | Move | Copy;
+export type Update = CompositeUpdate | DeleteInsert | Load | Clear | Create | Drop | Add | Move | Copy | Nop;
 
 // Returns the correct type based on the type enum
 export type TypedOperation<T extends types> = Extract<Operation, { type: T }>;

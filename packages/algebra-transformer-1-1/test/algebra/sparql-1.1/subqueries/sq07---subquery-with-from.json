@@ -37,7 +37,7 @@
     "variables": [
       {
         "termType": "Variable",
-        "value": "x"
+        "value": "g"
       },
       {
         "termType": "Variable",
@@ -45,11 +45,11 @@
       },
       {
         "termType": "Variable",
-        "value": "y"
+        "value": "x"
       },
       {
         "termType": "Variable",
-        "value": "g"
+        "value": "y"
       }
     ]
   },

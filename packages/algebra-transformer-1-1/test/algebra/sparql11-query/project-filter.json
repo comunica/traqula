@@ -10,15 +10,15 @@
           "termType": "Quad",
           "subject": {
             "termType": "Variable",
-            "value": "s"
+            "value": "x"
           },
           "predicate": {
-            "termType": "Variable",
-            "value": "p"
+            "termType": "NamedNode",
+            "value": "http://example.com/p"
           },
           "object": {
-            "termType": "NamedNode",
-            "value": "http://www.example.org/o"
+            "termType": "Variable",
+            "value": "n"
           },
           "graph": {
             "termType": "DefaultGraph",
@@ -30,7 +30,7 @@
     "expression": {
       "type": "expression",
       "expressionType": "existence",
-      "not": false,
+      "not": true,
       "input": {
         "type": "filter",
         "input": {
@@ -41,15 +41,15 @@
               "termType": "Quad",
               "subject": {
                 "termType": "Variable",
-                "value": "s"
+                "value": "x"
               },
               "predicate": {
-                "termType": "Variable",
-                "value": "p"
+                "termType": "NamedNode",
+                "value": "http://example.com/q"
               },
               "object": {
-                "termType": "NamedNode",
-                "value": "http://www.example.org/o1"
+                "termType": "Variable",
+                "value": "m"
               },
               "graph": {
                 "termType": "DefaultGraph",
@@ -60,33 +60,26 @@
         },
         "expression": {
           "type": "expression",
-          "expressionType": "existence",
-          "not": true,
-          "input": {
-            "type": "bgp",
-            "patterns": [
-              {
-                "type": "pattern",
-                "termType": "Quad",
-                "subject": {
-                  "termType": "Variable",
-                  "value": "s"
-                },
-                "predicate": {
-                  "termType": "Variable",
-                  "value": "p"
-                },
-                "object": {
-                  "termType": "NamedNode",
-                  "value": "http://www.example.org/o2"
-                },
-                "graph": {
-                  "termType": "DefaultGraph",
-                  "value": ""
-                }
+          "expressionType": "operator",
+          "operator": "=",
+          "args": [
+            {
+              "type": "expression",
+              "expressionType": "term",
+              "term": {
+                "termType": "Variable",
+                "value": "n"
               }
-            ]
-          }
+            },
+            {
+              "type": "expression",
+              "expressionType": "term",
+              "term": {
+                "termType": "Variable",
+                "value": "m"
+              }
+            }
+          ]
         }
       }
     }
@@ -94,11 +87,11 @@
   "variables": [
     {
       "termType": "Variable",
-      "value": "p"
+      "value": "n"
     },
     {
       "termType": "Variable",
-      "value": "s"
+      "value": "x"
     }
   ]
 }

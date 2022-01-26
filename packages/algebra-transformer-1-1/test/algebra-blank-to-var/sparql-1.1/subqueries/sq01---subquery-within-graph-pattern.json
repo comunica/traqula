@@ -32,11 +32,11 @@
       "variables": [
         {
           "termType": "Variable",
-          "value": "x"
+          "value": "p"
         },
         {
           "termType": "Variable",
-          "value": "p"
+          "value": "x"
         },
         {
           "termType": "Variable",

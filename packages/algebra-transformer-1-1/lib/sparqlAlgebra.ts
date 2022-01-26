@@ -1,4 +1,5 @@
 import equal = require('fast-deep-equal/es6');
+import { Quad } from '@rdfjs/types';
 import * as RDF from '@rdfjs/types'
 import { termToString } from 'rdf-string';
 import {
@@ -23,7 +24,7 @@ import {
     SparqlQuery,
     Triple,
     Update,
-    UpdateOperation,
+    UpdateOperation, ValuesPattern,
     Variable,
     VariableExpression,
     Wildcard
@@ -92,20 +93,22 @@ function translateQuery(sparql: SparqlQuery, quads?: boolean, blankToVariable?: 
     if (sparql.type !== 'query' && sparql.type !== 'update')
         throw new Error('Translate only works on complete query or update objects.');
 
-    const vars: Set<RDF.Variable> = <Set<RDF.Variable>> new Set(Object.keys(inScopeVariables(sparql)).map(factory.createTerm.bind(factory)));
     let res: Algebra.Operation;
+
+    // find ALL variables here to fill `variables` array
+    findAllVariables(sparql);
 
     if (sparql.type === 'query') {
         // group and where are identical, having only 1 makes parsing easier, can be undefined in DESCRIBE
         const group: GroupPattern = { type: 'group', patterns: sparql.where || [] };
         res = translateGroupGraphPattern(group);
-        res = translateAggregates(sparql, res, vars);
+        res = translateAggregates(sparql, res);
     }
     else if(sparql.type === 'update') {
         res = translateUpdate(sparql);
     }
     if (blankToVariable) {
-        res = translateBlankNodesToVariables(res!, vars);
+        res = translateBlankNodesToVariables(res!);
     }
 
     return res!;
@@ -116,9 +119,14 @@ function isString(str: any): str is string
     return typeof str === 'string';
 }
 
-function isObject(o: any): boolean
+function isTerm(term: any) : term is RDF.Term
 {
-    return o !== null && typeof o === 'object';
+    return Boolean(term?.termType);
+}
+
+// This is not completely correct but this way we also catch SPARQL.js triples
+function isTriple(triple: any) : triple is RDF.Quad {
+    return triple.subject && triple.predicate && triple.object;
 }
 
 function isVariable(term: any) : term is RDF.Variable
@@ -126,44 +134,114 @@ function isVariable(term: any) : term is RDF.Variable
     return term?.termType === 'Variable';
 }
 
-// 18.2.1
-function inScopeVariables(thingy: any) : {[key: string]: boolean}
+// Will be used to make sure new variables don't overlap
+function findAllVariables(thingy: any): void
 {
-    let inScope: {[id:string]: boolean} = {};
-
-    if (isVariable(thingy))
+    if (isTerm(thingy))
     {
-        inScope[termToString(thingy)] = true;
-        variables.add(thingy.value); // keep track of all variables so we don't generate duplicates
+        if (isVariable(thingy))
+        {
+            // Variables don't store the `?`
+            variables.add(`?${thingy.value}`);
+        }
     }
-    else if (isObject(thingy))
+    else if (Array.isArray(thingy))
     {
-        if (thingy.type === 'bind')
+        for (const entry of thingy)
+            findAllVariables(entry);
+    }
+    else if (thingy && typeof thingy === 'object')
+    {
+        for (let key of Object.keys(thingy))
         {
-            inScopeVariables(thingy.expression); // to fill `variables`
-            Object.assign(inScope, inScopeVariables(thingy.variable));
+            // Some variables are hidden in keys (specifically for VALUES)
+            if (key.startsWith('?'))
+                variables.add(key);
+            findAllVariables(thingy[key]);
         }
-        else if (thingy.queryType === 'SELECT')
-        {
-            let all = inScopeVariables(thingy.where); // always executing this makes sure `variables` gets filled correctly
-            for (let v of thingy.variables)
-            {
-                if (Util.isWildcard(v))
-                    Object.assign(inScope, all);
-                else if (v.variable) // aggregates
-                    Object.assign(inScope, inScopeVariables(v.variable));
-                else
-                    Object.assign(inScope, inScopeVariables(v));
-            }
+    }
+}
 
-            // TODO: I'm not 100% sure if you always add these or only when '*' was selected
-            if (thingy.group)
-                for (let v of thingy.group)
-                    Object.assign(inScope, inScopeVariables(v));
+// 18.2.1
+function inScopeVariables(thingy: SparqlQuery | Pattern | PropertyPath | RDF.Term) : {[key: string]: RDF.Variable}
+{
+    let inScope: {[key: string]: RDF.Variable} = {};
+
+    if (isTriple(thingy))
+    {
+        // Note that this could both be an actual Quad or a SPARQL.js triple (without graph)
+        const result = [
+            inScopeVariables(thingy.subject),
+            inScopeVariables(thingy.predicate),
+            inScopeVariables(thingy.object),
+            thingy.graph ? inScopeVariables(thingy.graph) : {}
+        ];
+        Object.assign(inScope, ...result);
+    }
+    else if (isTerm(thingy))
+    {
+        if (isVariable(thingy))
+            inScope[thingy.value] = thingy;
+    }
+    else if (thingy.type === 'bgp')
+    {
+        // Slightly cheating but this is a subset of what we support so is fine
+        const quads = thingy.triples as Quad[];
+        Object.assign(inScope, ...quads.map(inScopeVariables));
+    }
+    else if (thingy.type === 'path') {
+      // A path predicate should not have variables but just iterating so we could theoretically support this
+      Object.assign(inScope, ...thingy.items.map(inScopeVariables));
+    }
+    else if (thingy.type === 'group' || thingy.type === 'union' || thingy.type === 'optional') {
+      Object.assign(inScope, ...thingy.patterns.map(inScopeVariables));
+    }
+    else if (thingy.type === 'service' || thingy.type === 'graph') {
+      Object.assign(inScope, inScopeVariables(thingy.name));
+      Object.assign(inScope, ...thingy.patterns.map(inScopeVariables));
+    }
+    else if (thingy.type === 'bind') {
+        Object.assign(inScope, inScopeVariables(thingy.variable));
+    }
+    else if (thingy.type === 'values')
+    {
+        if (thingy.values.length > 0)
+        {
+            const vars = Object.keys(thingy.values[0]).map(v => factory.createTerm(v));
+            Object.assign(inScope, ...vars.map(inScopeVariables));
         }
-        else
-            for (let key of Object.keys(thingy))
-                Object.assign(inScope, inScopeVariables(thingy[key]));
+    }
+    else if (thingy.type === 'query')
+    {
+        if (thingy.queryType === 'SELECT' || thingy.queryType === 'DESCRIBE')
+        {
+            if (thingy.where && thingy.variables.some(Util.isWildcard))
+                Object.assign(inScope, ...thingy.where.map(inScopeVariables));
+            for (const v of thingy.variables)
+            {
+                if (isVariable(v))
+                    Object.assign(inScope, inScopeVariables(v));
+                else if ((v as VariableExpression).variable)
+                    Object.assign(inScope, inScopeVariables((v as VariableExpression).variable));
+            }
+            if (thingy.queryType === 'SELECT')
+            {
+                if (thingy.group)
+                {
+                    // Grouping can be a VariableExpression, typings are wrong
+                    for (const g of thingy.group)
+                    {
+                        if ((g as VariableExpression).variable)
+                            Object.assign(inScope, inScopeVariables((g as VariableExpression).variable));
+                    }
+                }
+                if (thingy.values)
+                {
+                    const values: ValuesPattern = { type: 'values', values: thingy.values };
+                    Object.assign(inScope, inScopeVariables(values));
+                }
+            }
+        }
     }
 
     return inScope;
@@ -536,7 +614,7 @@ function translateInlineData(values: any) : Algebra.Values
 }
 
 // --------------------------------------- AGGREGATES
-function translateAggregates(query: Query, res: Algebra.Operation, variables: Set<RDF.Variable>) : Algebra.Operation
+function translateAggregates(query: Query, res: Algebra.Operation) : Algebra.Operation
 {
     // Typings for ConstructQuery are wrong and missing several fields so we will cast quite often to SelectQuery to have partial typings
     const select = query as SelectQuery;
@@ -582,12 +660,14 @@ function translateAggregates(query: Query, res: Algebra.Operation, variables: Se
         res = factory.createJoin([ res, translateInlineData(query) ]);
 
     // 18.2.4.4
-    let PV = new Set<RDF.Variable | RDF.NamedNode>();
+    let PV: (RDF.Variable | RDF.NamedNode)[] = [];
 
     if (query.queryType === 'SELECT' || query.queryType === 'DESCRIBE')
     {
+        // Sort variables for consistent output
         if (query.variables.some((e: any) => e && Util.isWildcard(e)))
-            PV = variables;
+            PV = Object.values(inScopeVariables(query))
+              .sort((left, right) => left.value.localeCompare(right.value));
         else
         {
             // Wildcard has been filtered out above
@@ -595,10 +675,10 @@ function translateAggregates(query: Query, res: Algebra.Operation, variables: Se
             {
                 // can have non-variables with DESCRIBE
                 if (isVariable(v) || !('variable' in v))
-                    PV.add(v);
+                    PV.push(v);
                 else if (v.variable) // ... AS ?x
                 {
-                    PV.add(v.variable);
+                    PV.push(v.variable);
                     E.push(v);
                 }
             }
@@ -626,7 +706,7 @@ function translateAggregates(query: Query, res: Algebra.Operation, variables: Se
     // construct does not need a project (select, ask and describe do)
     if (query.queryType === 'SELECT')
         // Named nodes are only possible in a DESCRIBE so this cast is safe
-        res = factory.createProject(res, Array.from(PV) as RDF.Variable[]);
+        res = factory.createProject(res, PV as RDF.Variable[]);
 
     // 18.2.5.3
     if (select.distinct)
@@ -642,7 +722,7 @@ function translateAggregates(query: Query, res: Algebra.Operation, variables: Se
     else if (query.queryType === 'ASK')
         res = factory.createAsk(res);
     else if (query.queryType === 'DESCRIBE')
-        res = factory.createDescribe(res, Array.from(PV));
+        res = factory.createDescribe(res, PV);
 
     // Slicing needs to happen after construct/describe
     // 18.2.5.5
@@ -805,11 +885,11 @@ function translateUpdateGraphShortcut (thingy: CopyMoveAddOperation): Algebra.Up
     }
 }
 
-function translateBlankNodesToVariables (res: Algebra.Operation, variables: Set<RDF.Variable>) : Algebra.Operation
+function translateBlankNodesToVariables (res: Algebra.Operation) : Algebra.Operation
 {
     const blankToVariableMapping: {[bLabel: string]: RDF.Variable} = {};
-    const variablesRaw: {[vLabel: string]: boolean} = Array.from(variables).reduce((acc: {[vLabel: string]: boolean}, variable: RDF.Variable) => {
-        acc[variable.value] = true;
+    const variablesRaw: {[vLabel: string]: boolean} = Array.from(variables).reduce((acc: {[vLabel: string]: boolean}, variable: string) => {
+        acc[variable] = true;
         return acc;
     }, {});
     return Util.mapOperation(res, {
@@ -842,7 +922,7 @@ function translateBlankNodesToVariables (res: Algebra.Operation, variables: Set<
         [Algebra.types.CONSTRUCT]: (op: Algebra.Construct) => {
             // Blank nodes in CONSTRUCT templates must be maintained
             return {
-                result: factory.createConstruct(translateBlankNodesToVariables(op.input, variables), op.template),
+                result: factory.createConstruct(translateBlankNodesToVariables(op.input), op.template),
                 recurse: false,
             };
         },

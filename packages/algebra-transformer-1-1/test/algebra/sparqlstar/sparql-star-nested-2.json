@@ -60,7 +60,7 @@
   "variables": [
     {
       "termType": "Variable",
-      "value": "s1"
+      "value": "o3"
     },
     {
       "termType": "Variable",
@@ -68,15 +68,7 @@
     },
     {
       "termType": "Variable",
-      "value": "s2"
-    },
-    {
-      "termType": "Variable",
       "value": "p2"
-    },
-    {
-      "termType": "Variable",
-      "value": "s3"
     },
     {
       "termType": "Variable",
@@ -84,7 +76,15 @@
     },
     {
       "termType": "Variable",
-      "value": "o3"
+      "value": "s1"
+    },
+    {
+      "termType": "Variable",
+      "value": "s2"
+    },
+    {
+      "termType": "Variable",
+      "value": "s3"
     }
   ]
 }

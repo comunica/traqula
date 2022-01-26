@@ -58,11 +58,11 @@
   "variables": [
     {
       "termType": "Variable",
-      "value": "uri"
+      "value": "prefLabel"
     },
     {
       "termType": "Variable",
-      "value": "prefLabel"
+      "value": "uri"
     }
   ]
 }

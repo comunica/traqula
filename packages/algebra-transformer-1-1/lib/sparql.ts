@@ -8,7 +8,6 @@ import {
     ConstructQuery,
     CopyMoveAddOperation,
     CreateOperation,
-    DescribeQuery,
     FunctionCallExpression,
     Generator,
     GraphOrDefault,

@@ -48,18 +48,6 @@
   "variables": [
     {
       "termType": "Variable",
-      "value": "x"
-    },
-    {
-      "termType": "Variable",
-      "value": "y"
-    },
-    {
-      "termType": "Variable",
-      "value": "z"
-    },
-    {
-      "termType": "Variable",
       "value": "a"
     },
     {
@@ -69,6 +57,18 @@
     {
       "termType": "Variable",
       "value": "c"
+    },
+    {
+      "termType": "Variable",
+      "value": "x"
+    },
+    {
+      "termType": "Variable",
+      "value": "y"
+    },
+    {
+      "termType": "Variable",
+      "value": "z"
     }
   ]
 }

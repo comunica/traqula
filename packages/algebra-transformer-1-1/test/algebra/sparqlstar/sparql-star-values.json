@@ -71,5 +71,10 @@
       }
     ]
   },
-  "variables": []
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "x"
+    }
+  ]
 }

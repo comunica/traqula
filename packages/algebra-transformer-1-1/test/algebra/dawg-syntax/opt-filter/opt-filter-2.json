@@ -119,19 +119,19 @@
   "variables": [
     {
       "termType": "Variable",
-      "value": "x"
-    },
-    {
-      "termType": "Variable",
       "value": "v"
     },
     {
       "termType": "Variable",
-      "value": "y"
+      "value": "w"
     },
     {
       "termType": "Variable",
-      "value": "w"
+      "value": "x"
+    },
+    {
+      "termType": "Variable",
+      "value": "y"
     }
   ]
 }

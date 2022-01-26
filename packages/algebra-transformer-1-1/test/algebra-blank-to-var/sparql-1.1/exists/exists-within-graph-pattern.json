@@ -68,11 +68,11 @@
   "variables": [
     {
       "termType": "Variable",
-      "value": "s"
+      "value": "p"
     },
     {
       "termType": "Variable",
-      "value": "p"
+      "value": "s"
     }
   ]
 }

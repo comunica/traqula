@@ -30,7 +30,7 @@
     "variables": [
       {
         "termType": "Variable",
-        "value": "x"
+        "value": "g"
       },
       {
         "termType": "Variable",
@@ -38,7 +38,7 @@
       },
       {
         "termType": "Variable",
-        "value": "g"
+        "value": "x"
       }
     ]
   },

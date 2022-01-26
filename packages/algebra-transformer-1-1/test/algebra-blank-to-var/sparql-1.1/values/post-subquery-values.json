@@ -52,7 +52,7 @@
     "variables": [
       {
         "termType": "Variable",
-        "value": "s"
+        "value": "o"
       },
       {
         "termType": "Variable",
@@ -60,7 +60,7 @@
       },
       {
         "termType": "Variable",
-        "value": "o"
+        "value": "s"
       }
     ]
   },

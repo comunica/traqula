@@ -41,9 +41,12 @@
   "files": [
     "index.js",
     "index.d.ts",
+    "index.js.map",
     "lib/**/*.js",
     "lib/**/*.d.ts",
-    "bin/**/*.js"
+    "lib/**/*.js.map",
+    "bin/**/*.js",
+    "bin/**/*.js.map"
   ],
   "main": "index.js"
 }

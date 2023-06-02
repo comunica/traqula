@@ -1,6 +1,6 @@
 import { Wildcard } from 'sparqljs';
 import * as A from "./algebra";
-import { Expression, Operation, expressionTypes, types, TypedOperation } from './algebra';
+import { Expression, Operation, expressionTypes, types, TypedOperation, TypedExpression } from './algebra';
 import Factory from "./factory";
 import { BaseQuad, Variable } from '@rdfjs/types';
 import * as RDF from '@rdfjs/types'
@@ -313,12 +313,13 @@ export default class Util
      * to specifically modify the given objects before triggering recursion.
      * The return value of those callbacks should indicate whether recursion should be applied to this returned object or not.
      * @param {Operation} op - The Operation to recurse on.
-     * @param { [type: string]: (op: Operation, factory: Factory) => RecurseResult } callbacks - A map of required callback Operations.
+     * @param callbacks - A map of required callback Operations.
      * @param {Factory} factory - Factory used to create new Operations. Will use default factory if none is provided.
      * @returns {Operation} - The copied result.
      */
     public static mapOperation(op: A.Operation,
-      callbacks:{ [T in A.types]?: (op: TypedOperation<T>, factory: Factory) => RecurseResult },
+      callbacks: { [T in A.types]?: (op: TypedOperation<T>, factory: Factory) => RecurseResult }
+        & { [T in A.expressionTypes]?: (expr: TypedExpression<T>, factory: Factory) => ExpressionRecurseResult },
       factory?: Factory): A.Operation
     {
         let result: A.Operation = op;
@@ -441,36 +442,69 @@ export default class Util
      * Both functions call each other while copying.
      * Should not be called directly since it does not execute the callbacks, these happen in {@link mapOperation}.
      * @param {Expression} expr - The Operation to recurse on.
-     * @param { [type: string]: (op: Operation, factory: Factory) => RecurseResult } callbacks - A map of required callback Operations.
+     * @param callbacks - A map of required callback Operations.
      * @param {Factory} factory - Factory used to create new Operations. Will use default factory if none is provided.
      * @returns {Operation} - The copied result.
      */
-    private static mapExpression(expr: A.Expression,
-      callbacks:{ [T in A.types]?: (op: TypedOperation<T>, factory: Factory) => RecurseResult },
-      factory: Factory): A.Expression
+    public static mapExpression(expr: A.Expression,
+      callbacks: { [T in A.types]?: (op: TypedOperation<T>, factory: Factory) => RecurseResult }
+        & { [T in A.expressionTypes]?: (expr: TypedExpression<T>, factory: Factory) => ExpressionRecurseResult },
+      factory?: Factory): A.Expression
     {
-        let recurse = (op: A.Operation) => Util.mapOperation(op, callbacks, factory);
+        let result: A.Expression = expr;
+        let doRecursion = true;
+
+        factory = factory || new Factory();
+
+        const callback = callbacks[expr.expressionType];
+        if (callback)
+            ({ result, recurse: doRecursion } = callback(expr as any, factory));
+
+        if (!doRecursion)
+            return result;
+
+        let mapOp = (op: A.Operation) => Util.mapOperation(op, callbacks, factory);
 
         switch(expr.expressionType)
         {
             case expressionTypes.AGGREGATE:
                 if (expr.variable)
                 {
-                    return factory.createBoundAggregate(expr.variable, expr.aggregator, <Expression> recurse(expr.expression), expr.distinct, expr.separator);
+                    return factory.createBoundAggregate(expr.variable, expr.aggregator, <Expression> mapOp(expr.expression), expr.distinct, expr.separator);
                 }
-                return factory.createAggregateExpression(expr.aggregator, <Expression> recurse(expr.expression), expr.distinct, expr.separator);
+                return factory.createAggregateExpression(expr.aggregator, <Expression> mapOp(expr.expression), expr.distinct, expr.separator);
             case expressionTypes.EXISTENCE:
-                return factory.createExistenceExpression(expr.not, recurse(expr.input));
+                return factory.createExistenceExpression(expr.not, mapOp(expr.input));
             case expressionTypes.NAMED:
-                return factory.createNamedExpression(expr.name, <A.Expression[]> expr.args.map(recurse));
+                return factory.createNamedExpression(expr.name, <A.Expression[]> expr.args.map(mapOp));
             case expressionTypes.OPERATOR:
-                return factory.createOperatorExpression(expr.operator, <A.Expression[]> expr.args.map(recurse));
+                return factory.createOperatorExpression(expr.operator, <A.Expression[]> expr.args.map(mapOp));
             case expressionTypes.TERM:
                 return factory.createTermExpression(expr.term);
             case expressionTypes.WILDCARD:
                 return factory.createWildcardExpression();
             default: throw new Error(`Unknown Expression type ${(expr as any).expressionType}`);
         }
+    }
+
+    /**
+     * Creates a deep clone of the operation.
+     * This is syntactic sugar for calling {@link mapOperation} without callbacks.
+     * @param {Operation} op - The operation to copy.
+     * @returns {Operation} - The deep copy.
+     */
+    public static cloneOperation(op: A.Operation) {
+        return Util.mapOperation(op, {});
+    }
+
+    /**
+     * Creates a deep clone of the expression.
+     * This is syntactic sugar for calling {@link mapExpression} without callbacks.
+     * @param {Expression} expr - The operation to copy.
+     * @returns {Expression} - The deep copy.
+     */
+    public static cloneExpression(expr: A.Expression) {
+        return Util.mapExpression(expr, {});
     }
 
     public static createUniqueVariable(label: string, variables: {[vLabel: string]: boolean}, dataFactory: RDF.DataFactory<BaseQuad, BaseQuad>): RDF.Variable {
@@ -504,5 +538,16 @@ export default class Util
 export interface RecurseResult
 {
     result: A.Operation;
+    recurse: boolean;
+}
+
+/**
+ * @interface ExpressionRecurseResult
+ * @property {Expression} result - The resulting A.Expression.
+ * @property {boolean} recurse - Whether to continue with recursion.
+ */
+export interface ExpressionRecurseResult
+{
+    result: A.Expression;
     recurse: boolean;
 }

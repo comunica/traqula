@@ -1,0 +1,186 @@
+{
+  "type": "project",
+  "input": {
+    "type": "bgp",
+    "patterns": [
+      {
+        "type": "pattern",
+        "termType": "Quad",
+        "subject": {
+          "type": "pattern",
+          "termType": "Quad",
+          "subject": {
+            "termType": "Variable",
+            "value": "s0"
+          },
+          "predicate": {
+            "termType": "Variable",
+            "value": "p0"
+          },
+          "object": {
+            "termType": "Variable",
+            "value": "o0"
+          },
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
+          }
+        },
+        "predicate": {
+          "termType": "Variable",
+          "value": "p1"
+        },
+        "object": {
+          "type": "pattern",
+          "termType": "Quad",
+          "subject": {
+            "termType": "Variable",
+            "value": "s2"
+          },
+          "predicate": {
+            "termType": "Variable",
+            "value": "p2"
+          },
+          "object": {
+            "termType": "Variable",
+            "value": "o2"
+          },
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
+          }
+        },
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        }
+      },
+      {
+        "type": "pattern",
+        "termType": "Quad",
+        "subject": {
+          "type": "pattern",
+          "termType": "Quad",
+          "subject": {
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": {
+              "termType": "Variable",
+              "value": "s0"
+            },
+            "predicate": {
+              "termType": "Variable",
+              "value": "p0"
+            },
+            "object": {
+              "termType": "Variable",
+              "value": "o0"
+            },
+            "graph": {
+              "termType": "DefaultGraph",
+              "value": ""
+            }
+          },
+          "predicate": {
+            "termType": "Variable",
+            "value": "p1"
+          },
+          "object": {
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": {
+              "termType": "Variable",
+              "value": "s2"
+            },
+            "predicate": {
+              "termType": "Variable",
+              "value": "p2"
+            },
+            "object": {
+              "termType": "Variable",
+              "value": "o2"
+            },
+            "graph": {
+              "termType": "DefaultGraph",
+              "value": ""
+            }
+          },
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
+          }
+        },
+        "predicate": {
+          "termType": "Variable",
+          "value": "p2"
+        },
+        "object": {
+          "type": "pattern",
+          "termType": "Quad",
+          "subject": {
+            "termType": "Variable",
+            "value": "s3"
+          },
+          "predicate": {
+            "termType": "Variable",
+            "value": "p3"
+          },
+          "object": {
+            "termType": "Variable",
+            "value": "o3"
+          },
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
+          }
+        },
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        }
+      }
+    ]
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "o0"
+    },
+    {
+      "termType": "Variable",
+      "value": "o2"
+    },
+    {
+      "termType": "Variable",
+      "value": "o3"
+    },
+    {
+      "termType": "Variable",
+      "value": "p0"
+    },
+    {
+      "termType": "Variable",
+      "value": "p1"
+    },
+    {
+      "termType": "Variable",
+      "value": "p2"
+    },
+    {
+      "termType": "Variable",
+      "value": "p3"
+    },
+    {
+      "termType": "Variable",
+      "value": "s0"
+    },
+    {
+      "termType": "Variable",
+      "value": "s2"
+    },
+    {
+      "termType": "Variable",
+      "value": "s3"
+    }
+  ]
+}

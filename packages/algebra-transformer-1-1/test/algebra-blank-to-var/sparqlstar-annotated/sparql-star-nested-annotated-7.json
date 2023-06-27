@@ -7,68 +7,16 @@
         "type": "pattern",
         "termType": "Quad",
         "subject": {
-          "type": "pattern",
-          "termType": "Quad",
-          "subject": {
-            "termType": "Variable",
-            "value": "s"
-          },
-          "predicate": {
-            "termType": "Variable",
-            "value": "p"
-          },
-          "object": {
-            "termType": "Variable",
-            "value": "o"
-          },
-          "graph": {
-            "termType": "DefaultGraph",
-            "value": ""
-          }
+          "termType": "Variable",
+          "value": "s1"
         },
         "predicate": {
-          "termType": "NamedNode",
-          "value": "http://example.com/author"
-        },
-        "object": {
-          "termType": "NamedNode",
-          "value": "http://example.com/Bob"
-        },
-        "graph": {
-          "termType": "DefaultGraph",
-          "value": ""
-        }
-      },
-      {
-        "type": "pattern",
-        "termType": "Quad",
-        "subject": {
-          "type": "pattern",
-          "termType": "Quad",
-          "subject": {
-            "termType": "NamedNode",
-            "value": "http://example.com/Moscow"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-          },
-          "object": {
-            "termType": "NamedNode",
-            "value": "http://example.com/City"
-          },
-          "graph": {
-            "termType": "DefaultGraph",
-            "value": ""
-          }
-        },
-        "predicate": {
-          "termType": "NamedNode",
-          "value": "http://example.com/author"
+          "termType": "Variable",
+          "value": "p1"
         },
         "object": {
           "termType": "Variable",
-          "value": "person"
+          "value": "o1"
         },
         "graph": {
           "termType": "DefaultGraph",
@@ -82,16 +30,16 @@
           "type": "pattern",
           "termType": "Quad",
           "subject": {
-            "termType": "BlankNode",
-            "value": "e_b"
+            "termType": "Variable",
+            "value": "s1"
           },
           "predicate": {
-            "termType": "NamedNode",
-            "value": "http://example.com/x"
+            "termType": "Variable",
+            "value": "p1"
           },
           "object": {
-            "termType": "NamedNode",
-            "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil"
+            "termType": "Variable",
+            "value": "o1"
           },
           "graph": {
             "termType": "DefaultGraph",
@@ -99,16 +47,48 @@
           }
         },
         "predicate": {
-          "termType": "NamedNode",
-          "value": "http://example.com/broken"
+          "termType": "Variable",
+          "value": "p2"
         },
         "object": {
-          "termType": "Literal",
-          "value": "true",
-          "datatype": {
-            "termType": "NamedNode",
-            "value": "http://www.w3.org/2001/XMLSchema#boolean"
+          "termType": "Variable",
+          "value": "o2"
+        },
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        }
+      },
+      {
+        "type": "pattern",
+        "termType": "Quad",
+        "subject": {
+          "type": "pattern",
+          "termType": "Quad",
+          "subject": {
+            "termType": "Variable",
+            "value": "s1"
+          },
+          "predicate": {
+            "termType": "Variable",
+            "value": "p1"
+          },
+          "object": {
+            "termType": "Variable",
+            "value": "o1"
+          },
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
           }
+        },
+        "predicate": {
+          "termType": "Variable",
+          "value": "p3"
+        },
+        "object": {
+          "termType": "Variable",
+          "value": "o3"
         },
         "graph": {
           "termType": "DefaultGraph",
@@ -120,19 +100,31 @@
   "variables": [
     {
       "termType": "Variable",
-      "value": "o"
+      "value": "o1"
     },
     {
       "termType": "Variable",
-      "value": "p"
+      "value": "o2"
     },
     {
       "termType": "Variable",
-      "value": "person"
+      "value": "o3"
     },
     {
       "termType": "Variable",
-      "value": "s"
+      "value": "p1"
+    },
+    {
+      "termType": "Variable",
+      "value": "p2"
+    },
+    {
+      "termType": "Variable",
+      "value": "p3"
+    },
+    {
+      "termType": "Variable",
+      "value": "s1"
     }
   ]
 }

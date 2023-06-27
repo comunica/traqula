@@ -1,0 +1,90 @@
+{
+  "type": "construct",
+  "input": {
+    "type": "bgp",
+    "patterns": [
+      {
+        "type": "pattern",
+        "termType": "Quad",
+        "subject": {
+          "termType": "Variable",
+          "value": "s1"
+        },
+        "predicate": {
+          "termType": "Variable",
+          "value": "p1"
+        },
+        "object": {
+          "termType": "Variable",
+          "value": "o1"
+        },
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        }
+      }
+    ]
+  },
+  "template": [
+    {
+      "type": "pattern",
+      "termType": "Quad",
+      "subject": {
+        "termType": "Variable",
+        "value": "s1"
+      },
+      "predicate": {
+        "termType": "Variable",
+        "value": "p1"
+      },
+      "object": {
+        "termType": "Variable",
+        "value": "o1"
+      },
+      "graph": {
+        "termType": "DefaultGraph",
+        "value": ""
+      }
+    },
+    {
+      "type": "pattern",
+      "termType": "Quad",
+      "subject": {
+        "type": "pattern",
+        "termType": "Quad",
+        "subject": {
+          "termType": "Variable",
+          "value": "s1"
+        },
+        "predicate": {
+          "termType": "Variable",
+          "value": "p1"
+        },
+        "object": {
+          "termType": "Variable",
+          "value": "o1"
+        },
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        }
+      },
+      "predicate": {
+        "termType": "NamedNode",
+        "value": "http://example.org#is"
+      },
+      "object": {
+        "termType": "Literal",
+        "value": "true",
+        "datatype": {
+          "termType": "NamedNode",
+          "value": "http://www.w3.org/2001/XMLSchema#boolean"
+        }
+      },
+      "graph": {
+        "termType": "DefaultGraph",
+        "value": ""
+      }
+    }
+  ]
+}

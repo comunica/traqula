@@ -1,0 +1,59 @@
+{
+  "type": "project",
+  "input": {
+    "type": "path",
+    "subject": {
+      "type": "pattern",
+      "termType": "Quad",
+      "subject": {
+        "termType": "NamedNode",
+        "value": "http://example.org/a"
+      },
+      "predicate": {
+        "termType": "NamedNode",
+        "value": "http://example.org/b"
+      },
+      "object": {
+        "termType": "NamedNode",
+        "value": "http://example.org/c"
+      },
+      "graph": {
+        "termType": "DefaultGraph",
+        "value": ""
+      }
+    },
+    "predicate": {
+      "type": "alt",
+      "input": [
+        {
+          "type": "link",
+          "iri": {
+            "termType": "NamedNode",
+            "value": "http://example.org/defaultp"
+          }
+        },
+        {
+          "type": "link",
+          "iri": {
+            "termType": "NamedNode",
+            "value": "http://example.org/defaultq"
+          }
+        }
+      ]
+    },
+    "object": {
+      "termType": "Variable",
+      "value": "o"
+    },
+    "graph": {
+      "termType": "DefaultGraph",
+      "value": ""
+    }
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "o"
+    }
+  ]
+}

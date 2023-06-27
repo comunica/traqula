@@ -1,0 +1,74 @@
+{
+  "type": "project",
+  "input": {
+    "type": "extend",
+    "input": {
+      "type": "filter",
+      "input": {
+        "type": "bgp",
+        "patterns": [
+          {
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": {
+              "termType": "Variable",
+              "value": "s"
+            },
+            "predicate": {
+              "termType": "Variable",
+              "value": "p"
+            },
+            "object": {
+              "termType": "Variable",
+              "value": "o"
+            },
+            "graph": {
+              "termType": "DefaultGraph",
+              "value": ""
+            }
+          }
+        ]
+      },
+      "expression": {
+        "type": "expression",
+        "expressionType": "operator",
+        "operator": "istriple",
+        "args": [
+          {
+            "type": "expression",
+            "expressionType": "term",
+            "term": {
+              "termType": "Variable",
+              "value": "s"
+            }
+          }
+        ]
+      }
+    },
+    "variable": {
+      "termType": "Variable",
+      "value": "s1"
+    },
+    "expression": {
+      "type": "expression",
+      "expressionType": "operator",
+      "operator": "subject",
+      "args": [
+        {
+          "type": "expression",
+          "expressionType": "term",
+          "term": {
+            "termType": "Variable",
+            "value": "s"
+          }
+        }
+      ]
+    }
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "s1"
+    }
+  ]
+}

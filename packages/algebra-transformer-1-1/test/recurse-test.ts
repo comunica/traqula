@@ -27,7 +27,7 @@ function testPath(fileName: string, testName: string): void
     {
         for (let sub of fs.readdirSync(jsonName))
             testPath(path.join(fileName, sub), `${testName}/${sub}`);
-    } else {
+    } else if (fileName.endsWith('.json')) {
         let name = testName.replace(/\.json$/, '');
         it (name, () =>
         {

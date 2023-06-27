@@ -30,7 +30,7 @@ function testPath(root: string, fileName: string, testName: string, blankToVaria
     {
         for (let sub of fs.readdirSync(sparqlName))
             testPath(root, path.join(fileName, sub), `${testName}/${sub}`, blankToVariable);
-    } else {
+    } else if (fileName.endsWith('.sparql')) {
         let name = `${root}/${testName.replace(/\.sparql$/, '')}`;
         let jsonPath = path.join(root, fileName.replace(/\.sparql$/, '.json'));
         // not all tests need a blank version

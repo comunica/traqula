@@ -1,0 +1,4 @@
+PREFIX : <http://example.org/default>
+SELECT * WHERE {
+    ?s ?p ?o {| :p/:q ?oo |}.
+}

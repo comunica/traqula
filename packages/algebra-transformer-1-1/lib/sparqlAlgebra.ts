@@ -301,8 +301,18 @@ function translateGroupGraphPattern(thingy: Pattern) : Algebra.Operation
 
 function translateExpression(exp: Expression | RDF.Term | Wildcard) : Algebra.Expression
 {
-    if (Util.isSimpleTerm(exp) || Util.isQuad(exp))
+    if (Util.isSimpleTerm(exp))
         return factory.createTermExpression(exp);
+    if (Util.isQuad(exp)) {
+        if (Util.hasQuadVariables(exp))
+            return factory.createOperatorExpression('triple', [
+              translateExpression(exp.subject),
+              translateExpression(exp.predicate),
+              translateExpression(exp.object),
+            ]);
+        else
+            return factory.createTermExpression(exp);
+    }
     if (Util.isWildcard(exp))
         return factory.createWildcardExpression();
     if ('aggregation' in exp)

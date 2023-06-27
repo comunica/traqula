@@ -12,22 +12,31 @@ function generateJsonFromSparqlInPath(currentPath: string, stack: string[]) {
         for (let file of files) {
             generateJsonFromSparqlInPath(path.join(currentPath, file), stack.concat([file]));
         }
-    } else {
+    } else if (currentPath.endsWith('.sparql')) {
         let sparql = fs.readFileSync(currentPath, 'utf8');
 
         let filename = stack.pop();
         let name = filename!.replace(/\.sparql$/, '');
         for (const blankToVariable of [ false, true ]) {
-            let algebra = Util.objectify(translate(sparql, { quads: name.endsWith('(quads)'), sparqlStar: true, blankToVariable }));
-            filename = name + '.json';
-            let newPath = path.join(__dirname, 'algebra' + (blankToVariable ? '-blank-to-var' : ''));
-            for (let piece of stack) {
-                newPath = path.join(newPath, piece);
-                if (!fs.existsSync(newPath))
-                    fs.mkdirSync(newPath);
-            }
+            try {
+                let algebra = Util.objectify(translate(sparql, {
+                    quads: name.endsWith('(quads)'),
+                    sparqlStar: true,
+                    blankToVariable
+                }));
+                filename = name + '.json';
+                let newPath = path.join(__dirname, 'algebra' + (blankToVariable ? '-blank-to-var' : ''));
+                for (let piece of stack) {
+                    newPath = path.join(newPath, piece);
+                    if (!fs.existsSync(newPath))
+                        fs.mkdirSync(newPath);
+                }
 
-            fs.writeFileSync(path.join(newPath, filename), JSON.stringify(algebra, null, 2));
+                fs.writeFileSync(path.join(newPath, filename), JSON.stringify(algebra, null, 2));
+            } catch (error) {
+                console.error('Error in ' + currentPath);
+                throw error;
+            }
         }
     }
 }

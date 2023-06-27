@@ -4,63 +4,45 @@
     "type": "extend",
     "input": {
       "type": "bgp",
-      "patterns": [
-        {
-          "type": "pattern",
-          "termType": "Quad",
-          "subject": {
-            "termType": "Variable",
-            "value": "x"
-          },
-          "predicate": {
-            "termType": "Variable",
-            "value": "y"
-          },
-          "object": {
-            "termType": "Variable",
-            "value": "z"
-          },
-          "graph": {
-            "termType": "DefaultGraph",
-            "value": ""
-          }
-        }
-      ]
+      "patterns": []
     },
     "variable": {
       "termType": "Variable",
-      "value": "x"
+      "value": "y"
     },
     "expression": {
       "type": "expression",
-      "expressionType": "term",
-      "term": {
-        "type": "pattern",
-        "termType": "Quad",
-        "subject": {
-          "termType": "Variable",
-          "value": "a"
+      "expressionType": "operator",
+      "operator": "triple",
+      "args": [
+        {
+          "type": "expression",
+          "expressionType": "term",
+          "term": {
+            "termType": "Variable",
+            "value": "s"
+          }
         },
-        "predicate": {
-          "termType": "Variable",
-          "value": "b"
+        {
+          "type": "expression",
+          "expressionType": "term",
+          "term": {
+            "termType": "Variable",
+            "value": "p"
+          }
         },
-        "object": {
-          "termType": "Variable",
-          "value": "c"
-        },
-        "graph": {
-          "termType": "DefaultGraph",
-          "value": ""
+        {
+          "type": "expression",
+          "expressionType": "term",
+          "term": {
+            "termType": "Variable",
+            "value": "o"
+          }
         }
-      }
+      ]
     }
   },
   "variables": [
-    {
-      "termType": "Variable",
-      "value": "x"
-    },
     {
       "termType": "Variable",
       "value": "y"

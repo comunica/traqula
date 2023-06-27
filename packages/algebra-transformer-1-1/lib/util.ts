@@ -3,6 +3,7 @@ import * as A from "./algebra";
 import { Expression, Operation, expressionTypes, types, TypedOperation, TypedExpression } from './algebra';
 import Factory from "./factory";
 import { BaseQuad, Variable } from '@rdfjs/types';
+import { someTermsNested } from 'rdf-terms';
 import * as RDF from '@rdfjs/types'
 
 
@@ -523,6 +524,10 @@ export default class Util
 
     public static isQuad(term: any): term is RDF.Quad {
         return term.termType === 'Quad';
+    }
+
+    public static hasQuadVariables(quad: RDF.Quad): boolean {
+        return someTermsNested(quad, term => term.termType === 'Variable');
     }
 
     public static isWildcard(term: any): term is Wildcard {

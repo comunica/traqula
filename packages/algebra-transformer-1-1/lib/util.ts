@@ -325,16 +325,32 @@ export default class Util
     {
         let result: A.Operation = op;
         let doRecursion = true;
+        let copyMetadata = true;
 
         factory = factory || new Factory();
 
         const callback = callbacks[op.type];
-        if (callback)
+        if (callback) {
             // Not sure how to get typing correct for op here
-            ({ result, recurse: doRecursion } = callback(op as any, factory));
+            const recurseResult = callback(op as any, factory);
+            result = recurseResult.result;
+            doRecursion = recurseResult.recurse;
+            copyMetadata = recurseResult.copyMetadata !== false;
+        }
 
-        if (!doRecursion)
+        let toCopyMetadata;
+        if (copyMetadata && (result.metadata || op.metadata)) {
+            toCopyMetadata = { ...result.metadata, ...op.metadata };
+        }
+
+        if (!doRecursion) {
+            // Inherit metadata
+            if (toCopyMetadata) {
+                result.metadata = toCopyMetadata;
+            }
+
             return result;
+        }
 
         let mapOp = (op: A.Operation) => Util.mapOperation(op, callbacks, factory);
 
@@ -342,100 +358,148 @@ export default class Util
         switch (result.type)
         {
             case types.ALT:
-                return factory.createAlt(<A.PropertyPathSymbol[]> result.input.map(mapOp));
+                result = factory.createAlt(<A.PropertyPathSymbol[]> result.input.map(mapOp));
+                break;
             case types.ASK:
-                return factory.createAsk(mapOp(result.input));
+                result = factory.createAsk(mapOp(result.input));
+                break;
             case types.BGP:
-                return factory.createBgp(<A.Pattern[]> result.patterns.map(mapOp));
+                result = factory.createBgp(<A.Pattern[]> result.patterns.map(mapOp));
+                break;
             case types.CONSTRUCT:
-                return factory.createConstruct(mapOp(result.input), <A.Pattern[]> result.template.map(mapOp));
+                result = factory.createConstruct(mapOp(result.input), <A.Pattern[]> result.template.map(mapOp));
+                break;
             case types.DESCRIBE:
-                return factory.createDescribe(mapOp(result.input), result.terms);
+                result = factory.createDescribe(mapOp(result.input), result.terms);
+                break;
             case types.DISTINCT:
-                return factory.createDistinct(mapOp(result.input));
+                result = factory.createDistinct(mapOp(result.input));
+                break;
             case types.EXPRESSION:
-                return Util.mapExpression(result, callbacks, factory);
+                result = Util.mapExpression(result, callbacks, factory);
+                break;
             case types.EXTEND:
-                return factory.createExtend(mapOp(result.input), result.variable, <A.Expression> mapOp(result.expression));
+                result = factory.createExtend(mapOp(result.input), result.variable, <A.Expression> mapOp(result.expression));
+                break;
             case types.FILTER:
-                return factory.createFilter(mapOp(result.input), <A.Expression> mapOp(result.expression));
+                result = factory.createFilter(mapOp(result.input), <A.Expression> mapOp(result.expression));
+                break;
             case types.FROM:
-                return factory.createFrom(mapOp(result.input), [ ...result.default ], [ ...result.named ]);
+                result = factory.createFrom(mapOp(result.input), [ ...result.default ], [ ...result.named ]);
+                break;
             case types.GRAPH:
-                return factory.createGraph(mapOp(result.input), result.name);
+                result = factory.createGraph(mapOp(result.input), result.name);
+                break;
             case types.GROUP:
-                return factory.createGroup(
+                result = factory.createGroup(
                     mapOp(result.input),
                     (<RDF.Variable[]>[]).concat(result.variables),
                     <A.BoundAggregate[]> result.aggregates.map(mapOp));
+                break;
             case types.INV:
-                return factory.createInv(<A.PropertyPathSymbol> mapOp(result.path));
+                result = factory.createInv(<A.PropertyPathSymbol> mapOp(result.path));
+                break;
             case types.JOIN:
-                return factory.createJoin(result.input.map(mapOp));
+                result = factory.createJoin(result.input.map(mapOp));
+                break;
             case types.LEFT_JOIN:
-                return factory.createLeftJoin(
+                result = factory.createLeftJoin(
                     mapOp(result.input[0]),
                     mapOp(result.input[1]),
                   result.expression ? <A.Expression> mapOp(result.expression) : undefined);
+                break;
             case types.LINK:
-                return factory.createLink(result.iri);
+                result = factory.createLink(result.iri);
+                break;
             case types.MINUS:
-                return factory.createMinus(mapOp(result.input[0]), mapOp(result.input[1]));
+                result = factory.createMinus(mapOp(result.input[0]), mapOp(result.input[1]));
+                break;
             case types.NOP:
-                return factory.createNop();
+                result = factory.createNop();
+                break;
             case types.NPS:
-                return factory.createNps((<RDF.NamedNode[]>[]).concat(result.iris));
+                result = factory.createNps((<RDF.NamedNode[]>[]).concat(result.iris));
+                break;
             case types.ONE_OR_MORE_PATH:
-                return factory.createOneOrMorePath(<A.PropertyPathSymbol> mapOp(result.path));
+                result = factory.createOneOrMorePath(<A.PropertyPathSymbol> mapOp(result.path));
+                break;
             case types.ORDER_BY:
-                return factory.createOrderBy(mapOp(result.input), <A.Expression[]> result.expressions.map(mapOp));
+                result = factory.createOrderBy(mapOp(result.input), <A.Expression[]> result.expressions.map(mapOp));
+                break;
             case types.PATH:
-                return factory.createPath(result.subject, <A.PropertyPathSymbol> mapOp(result.predicate), result.object, result.graph);
+                result = factory.createPath(result.subject, <A.PropertyPathSymbol> mapOp(result.predicate), result.object, result.graph);
+                break;
             case types.PATTERN:
-                return factory.createPattern(result.subject, result.predicate, result.object, result.graph);
+                result = factory.createPattern(result.subject, result.predicate, result.object, result.graph);
+                break;
             case types.PROJECT:
-                return factory.createProject(mapOp(result.input), [ ...result.variables ]);
+                result = factory.createProject(mapOp(result.input), [ ...result.variables ]);
+                break;
             case types.REDUCED:
-                return factory.createReduced(mapOp(result.input));
+                result = factory.createReduced(mapOp(result.input));
+                break;
             case types.SEQ:
-                return factory.createSeq(<A.PropertyPathSymbol[]> result.input.map(mapOp));
+                result = factory.createSeq(<A.PropertyPathSymbol[]> result.input.map(mapOp));
+                break;
             case types.SERVICE:
-                return factory.createService(mapOp(result.input), result.name, result.silent);
+                result = factory.createService(mapOp(result.input), result.name, result.silent);
+                break;
             case types.SLICE:
-                return factory.createSlice(mapOp(result.input), result.start, result.length);
+                result = factory.createSlice(mapOp(result.input), result.start, result.length);
+                break;
             case types.UNION:
-                return factory.createUnion(result.input.map(mapOp));
+                result = factory.createUnion(result.input.map(mapOp));
+                break;
             case types.VALUES:
-                return factory.createValues((<RDF.Variable[]>[]).concat(result.variables), result.bindings.map(b => Object.assign({}, b)));
+                result = factory.createValues((<RDF.Variable[]>[]).concat(result.variables), result.bindings.map(b => Object.assign({}, b)));
+                break;
             case types.ZERO_OR_MORE_PATH:
-                return factory.createZeroOrMorePath(<A.PropertyPathSymbol> mapOp(result.path));
+                result = factory.createZeroOrMorePath(<A.PropertyPathSymbol> mapOp(result.path));
+                break;
             case types.ZERO_OR_ONE_PATH:
-                return factory.createZeroOrOnePath(<A.PropertyPathSymbol> mapOp(result.path));
+                result = factory.createZeroOrOnePath(<A.PropertyPathSymbol> mapOp(result.path));
+                break;
           // UPDATE operations
             case types.COMPOSITE_UPDATE:
-                return factory.createCompositeUpdate(<A.Update[]> result.updates.map(mapOp));
+                result = factory.createCompositeUpdate(<A.Update[]> result.updates.map(mapOp));
+                break;
             case types.DELETE_INSERT:
-                return factory.createDeleteInsert(
+                result = factory.createDeleteInsert(
                   result.delete ? <A.Pattern[]> result.delete.map(mapOp) : undefined,
                   result.insert ? <A.Pattern[]> result.insert.map(mapOp) : undefined,
                   result.where ? mapOp(result.where) : undefined,
                   );
+                break;
             case types.LOAD:
-                return factory.createLoad(result.source, result.destination, result.silent);
+                result = factory.createLoad(result.source, result.destination, result.silent);
+                break;
             case types.CLEAR:
-                return factory.createClear(result.source, result.silent);
+                result = factory.createClear(result.source, result.silent);
+                break;
             case types.CREATE:
-                return factory.createCreate(result.source, result.silent);
+                result = factory.createCreate(result.source, result.silent);
+                break;
             case types.DROP:
-                return factory.createDrop(result.source, result.silent);
+                result = factory.createDrop(result.source, result.silent);
+                break;
             case types.ADD:
-                return factory.createAdd(result.source, result.destination);
+                result = factory.createAdd(result.source, result.destination);
+                break;
             case types.MOVE:
-                return factory.createMove(result.source, result.destination);
+                result = factory.createMove(result.source, result.destination);
+                break;
             case types.COPY:
-                return factory.createCopy(result.source, result.destination);
+                result = factory.createCopy(result.source, result.destination);
+                break;
             default: throw new Error(`Unknown Operation type ${(result as any).type}`);
         }
+
+        // Inherit metadata
+        if (toCopyMetadata) {
+            result.metadata = toCopyMetadata;
+        }
+
+        return result;
     }
 
     /**
@@ -539,20 +603,24 @@ export default class Util
  * @interface RecurseResult
  * @property {Operation} result - The resulting A.Operation.
  * @property {boolean} recurse - Whether to continue with recursion.
+ * @property {boolean} copyMetadata - If the metadata object should be copied. Defaults to true.
  */
 export interface RecurseResult
 {
     result: A.Operation;
     recurse: boolean;
+    copyMetadata?: boolean;
 }
 
 /**
  * @interface ExpressionRecurseResult
  * @property {Expression} result - The resulting A.Expression.
  * @property {boolean} recurse - Whether to continue with recursion.
+ * @property {boolean} copyMetadata - If the metadata object should be copied. Defaults to true.
  */
 export interface ExpressionRecurseResult
 {
     result: A.Expression;
     recurse: boolean;
+    copyMetadata?: boolean;
 }

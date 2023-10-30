@@ -279,8 +279,12 @@ function translateExtend(op: Algebra.Extend): any
 function translateFrom(op: Algebra.From): GroupPattern
 {
     const result = translateOperation(op.input);
+    // Can't type as CONSTRUCT queries do not have `from` field in their type
+    let obj = result;
     // project is nested in group object
-    const obj: SelectQuery = result.patterns[0];
+    if (result.type === 'group') {
+        obj = result.patterns[0];
+    }
     obj.from = {
         default: op.default,
         named: op.named

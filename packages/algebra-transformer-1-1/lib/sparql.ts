@@ -775,7 +775,7 @@ function translateDeleteInsert(op: Algebra.DeleteInsert): Update
         updates[0].where = [];
     else
     {
-        const graphs: NodeJS.Dict<{ graph: RDF.NamedNode, values: Algebra.Operation[]}> = {};
+        const graphs: RDF.NamedNode[] = [];
         let result = translateOperation(removeQuadsRecursive(where, graphs));
         if (result.type === 'group')
             updates[0].where = result.patterns;
@@ -783,14 +783,12 @@ function translateDeleteInsert(op: Algebra.DeleteInsert): Update
             updates[0].where = [result];
         // graph might not be applied yet since there was no project
         // this can only happen if there was a single graph
-        const graphNames = Object.keys(graphs);
-        if (graphNames.length > 0) {
-            if (graphNames.length !== 1)
+        if (graphs.length > 0) {
+            if (graphs.length !== 1)
                 throw new Error('This is unexpected and might indicate an error in graph handling for updates.');
-            const graphName = graphs[graphNames[0]]?.graph;
             // ignore if default graph
-            if (graphName && graphName.value !== '')
-                updates[0].where = [{ type: 'graph', patterns: updates[0].where!, name: graphName }]
+            if (graphs[0]?.value !== '')
+                updates[0].where = [{ type: 'graph', patterns: updates[0].where!, name: graphs[0] }]
         }
     }
 
@@ -906,11 +904,11 @@ function convertUpdatePatterns(patterns: Algebra.Pattern[]): any[]
 
 function removeQuads(op: Algebra.Operation): any
 {
-    return removeQuadsRecursive(op, {});
+    return removeQuadsRecursive(op, []);
 }
 
 // remove quads
-function removeQuadsRecursive(op: any, graphs: NodeJS.Dict<{ graph: RDF.NamedNode, values: Algebra.Operation[]}>): any
+function removeQuadsRecursive(op: any, graphs: RDF.NamedNode[]): any
 {
     if (Array.isArray(op))
         return op.map(sub => removeQuadsRecursive(sub, graphs));
@@ -924,42 +922,28 @@ function removeQuadsRecursive(op: any, graphs: NodeJS.Dict<{ graph: RDF.NamedNod
 
     if ((op.type === types.PATTERN || op.type === types.PATH) && op.graph)
     {
-        if (!graphs[op.graph.value])
-            graphs[op.graph.value] = { graph: op.graph, values: []};
-        graphs[op.graph.value]!.values.push(op);
+        graphs.push(op.graph);
+        // Remove non-default graphs
+        if (op.graph.name !== '')
+            return op.type === types.PATTERN ?
+              factory.createPattern(op.subject, op.predicate, op.object) :
+              factory.createPath(op.subject, op.predicate, op.object);
         return op;
     }
 
     const result: any = {};
-    const keyGraphs: {[id: string]: RDF.NamedNode} = {}; // unique graph per key
+    const keyGraphs: {[id: string]: RDF.NamedNode[]} = {}; // unique graph per key
     const globalNames: {[id: string]: RDF.NamedNode} = {}; // track all the unique graph names for the entire Operation
     for (let key of Object.keys(op))
     {
-        const newGraphs: {[id: string]: { graph: RDF.NamedNode, values: Algebra.Operation[]}} = {};
+        const newGraphs: RDF.NamedNode[] = [];
         result[key] = removeQuadsRecursive(op[key], newGraphs);
 
-        const graphNames = Object.keys(newGraphs);
-
-        // create graph statements if multiple graphs are found
-        if (graphNames.length > 1)
-        {
-            // nest joins
-            let left: Algebra.Operation = potentialGraphFromPatterns(<Algebra.Pattern[]>newGraphs[graphNames[0]].values);
-            for (let i = 1; i < graphNames.length; ++i)
-            {
-                const right = potentialGraphFromPatterns(<Algebra.Pattern[]>newGraphs[graphNames[i]].values);
-                left = factory.createJoin([ left, right ]);
+        if (newGraphs.length > 0) {
+            keyGraphs[key] = newGraphs;
+            for (const graph of newGraphs) {
+                globalNames[graph.value] = graph;
             }
-            graphNames.map(name => delete newGraphs[name]);
-            // this ignores the result object that is being generated, but should not be a problem
-            // is only an issue for objects that have 2 keys where this can occur, which is none
-            return left;
-        }
-        else if (graphNames.length === 1)
-        {
-            const graph = newGraphs[graphNames[0]].graph;
-            keyGraphs[key] = graph;
-            globalNames[graph.value] = graph;
         }
     }
 
@@ -968,26 +952,52 @@ function removeQuadsRecursive(op: any, graphs: NodeJS.Dict<{ graph: RDF.NamedNod
     {
         // also need to create graph statement if we are at the edge of the query
         if (graphNameSet.length === 1 && op.type !== types.PROJECT)
-            graphs[graphNameSet[0]] = { graph: globalNames[graphNameSet[0]], values: [result] };
-        else
+            graphs.push(globalNames[graphNameSet[0]]);
+        else if (op.type === types.BGP)
         {
+            // This is the specific case that got changed because of using quads.
+            return splitBgpToGraphs(op, keyGraphs.patterns);
+        } else {
             // multiple graphs (or project), need to create graph objects for them
             for (let key of Object.keys(keyGraphs))
-                if (keyGraphs[key].value.length > 0)
-                    // TODO: Should check if this cast and graph cast below are correct
-                    result[key] = factory.createGraph(result[key], keyGraphs[key]);
+            {
+                const value = result[key];
+                if (Array.isArray(value))
+                    result[key] = value.map((child, idx) => keyGraphs[key][0].value === '' ? child : factory.createGraph(child, keyGraphs[key][idx]));
+                else if (keyGraphs[key][0].value !== '')
+                    result[key] = factory.createGraph(value, keyGraphs[key][0]);
+            }
         }
     }
 
     return result;
 }
 
-function potentialGraphFromPatterns(patterns: Algebra.Pattern[]): Algebra.Graph | Algebra.Bgp
+// `graphs` should be an array of length identical to `op.patterns`, containing the corresponding graph for each triple.
+function splitBgpToGraphs(op: Algebra.Bgp, graphs: RDF.NamedNode[]): Algebra.Operation
 {
-    const bgp = factory.createBgp(patterns);
-    const name = patterns[0].graph;
-    if (name.value.length === 0)
-        return bgp;
-    // TODO: not sure about typings here, would have to check in the future
-    return factory.createGraph(bgp, name as RDF.NamedNode);
+    // Split patterns per graph
+    const graphPatterns: Record<string, { patterns: Algebra.Pattern[], graph: RDF.NamedNode }> = {};
+    for (let i = 0; i < op.patterns.length; ++i)
+    {
+        const pattern = op.patterns[i];
+        const graphName = graphs[i].value;
+        graphPatterns[graphName] = graphPatterns[graphName] ?? { patterns: [], graph: graphs[i] };
+        graphPatterns[graphName].patterns.push(pattern);
+    }
+
+    // Create graph objects for every cluster
+    let children: (Algebra.Graph | Algebra.Bgp)[] = [];
+    for (const [graphName, { patterns, graph }] of Object.entries(graphPatterns))
+    {
+        const bgp = factory.createBgp(patterns);
+        children.push(graphName === '' ? bgp : factory.createGraph(bgp, graph))
+    }
+
+    // Join the graph objects
+    let join: Algebra.Operation = children[0];
+    for (let i = 1; i < children.length; ++i)
+        join = factory.createJoin([join, children[i]]);
+
+    return join;
 }

@@ -500,6 +500,11 @@ function recurseGraph(thingy: Algebra.Operation, graph: RDF.Term, replacement?: 
         // In case there were nested GRAPH statements that were not recursed yet for some reason
         thingy = recurseGraph(thingy.input, thingy.name);
     }
+    else if (thingy.type === types.SERVICE)
+    {
+        // Service blocks are not affected by enclosing GRAPH statements, so nothing is modified in this block.
+        // See https://github.com/joachimvh/SPARQLAlgebra.js/pull/104#issuecomment-1838016303
+    }
     else if (thingy.type === types.BGP)
         thingy.patterns = thingy.patterns.map(quad =>
         {

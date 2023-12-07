@@ -950,8 +950,8 @@ function removeQuadsRecursive(op: any, graphs: RDF.NamedNode[]): any
     const graphNameSet = Object.keys(globalNames);
     if (graphNameSet.length > 0)
     {
-        // also need to create graph statement if we are at the edge of the query
-        if (graphNameSet.length === 1 && op.type !== types.PROJECT)
+        // We also need to create graph statement if we are at the edge of certain operations
+        if (graphNameSet.length === 1 && ![ types.PROJECT, types.SERVICE ].includes(op.type))
             graphs.push(globalNames[graphNameSet[0]]);
         else if (op.type === types.BGP)
         {

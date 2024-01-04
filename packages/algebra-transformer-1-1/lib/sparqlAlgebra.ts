@@ -10,7 +10,6 @@ import {
     CreateOperation,
     Expression,
     FilterPattern,
-    GraphPattern,
     GraphQuads,
     GroupPattern,
     InsertDeleteOperation,
@@ -101,7 +100,7 @@ function translateQuery(sparql: SparqlQuery, quads?: boolean, blankToVariable?: 
     if (sparql.type === 'query') {
         // group and where are identical, having only 1 makes parsing easier, can be undefined in DESCRIBE
         const group: GroupPattern = { type: 'group', patterns: sparql.where || [] };
-        res = translateGroupGraphPattern(group);
+        res = translateGraphPattern(group);
         res = translateAggregates(sparql, res);
     }
     else if(sparql.type === 'update') {
@@ -247,56 +246,75 @@ function inScopeVariables(thingy: SparqlQuery | Pattern | PropertyPath | RDF.Ter
     return inScope;
 }
 
-function translateGroupGraphPattern(thingy: Pattern) : Algebra.Operation
+function translateGraphPattern(thingy: Pattern) : Algebra.Operation
 {
     // 18.2.2.1
     // already done by sparql parser
 
-    // 18.2.2.2
-    let filters: FilterPattern[] = [];
-    let nonfilters: Pattern[] = [];
-    if ('patterns' in thingy)
-        for (let pattern of thingy.patterns)
-            (pattern.type === 'filter' ? filters : nonfilters).push(pattern);
-
     // 18.2.2.3
     // 18.2.2.4
     // 18.2.2.5
+    // In Sparql.js, a group with a single BGP in it is a single object.
     if (thingy.type === 'bgp')
+    {
         return translateBgp(thingy);
+    }
 
-    // 18.2.2.6
-    let result: Algebra.Operation;
+    // 18.2.2.6 - GroupOrUnionGraphPattern
     if (thingy.type === 'union')
-        result = factory.createUnion(nonfilters.map((p: any) =>
+        return factory.createUnion(thingy.patterns.map((p: any) =>
         {
             // sparqljs doesn't always indicate the children are groups
             if (p.type !== 'group')
                 p = { type: 'group', patterns: [p] };
-            return translateGroupGraphPattern(p);
+            return translateGraphPattern(p);
         }));
-    else if (thingy.type === 'graph')
-        // need to handle this separately since the filters need to be in the graph
-        return translateGraph(thingy);
-    else if (thingy.type === 'group')
-        result = nonfilters.reduce(accumulateGroupGraphPattern, factory.createBgp([]));
-    // custom values operation
-    else if (thingy.type === 'values')
-        result = translateInlineData(thingy);
-    else if (thingy.type === 'query')
-        result = translateQuery(thingy, useQuads, false);
-    else
-        throw new Error(`Unexpected type: ${thingy.type}`);
 
-
-    if (filters.length > 0)
+    // 18.2.2.6 - GraphGraphPattern
+    if (thingy.type === 'graph')
     {
+        // Sparql.js combines the group graph pattern and the graph itself in the same object.
+        // We split here so the group graph pattern can be interpreted correctly.
+        const group: GroupPattern = { type: 'group', patterns: thingy.patterns };
+        let result = translateGraphPattern(group);
+
+        // Output depends on if we use quads or not
+        if (useQuads)
+            result = recurseGraph(result, thingy.name);
+        else
+            result = factory.createGraph(result, thingy.name);
+
+        return result;
+    }
+
+    // 18.2.2.6 - InlineData
+    if (thingy.type === 'values')
+        return translateInlineData(thingy);
+
+    // 18.2.2.6 - SubSelect
+    if (thingy.type === 'query')
+        return translateQuery(thingy, useQuads, false);
+
+    if (thingy.type === 'group')
+    {
+        // 18.2.2.2
+        let filters: FilterPattern[] = [];
+        let nonfilters: Pattern[] = [];
+        for (let pattern of thingy.patterns)
+            (pattern.type === 'filter' ? filters : nonfilters).push(pattern);
+
+        // 18.2.2.6 - GroupGraphPattern
+        let result = nonfilters.reduce(accumulateGroupGraphPattern, factory.createBgp([]));
+
+        // 18.2.2.7
         let expressions: Algebra.Expression[] = filters.map(filter => translateExpression(filter.expression));
         if (expressions.length > 0)
             result = factory.createFilter(result, expressions.reduce((acc, exp) => factory.createOperatorExpression('&&', [acc, exp])));
+
+        return result;
     }
 
-    return result;
+    throw new Error(`Unexpected type: ${thingy.type}`);
 }
 
 function translateExpression(exp: Expression | RDF.Term | Wildcard) : Algebra.Expression
@@ -323,7 +341,7 @@ function translateExpression(exp: Expression | RDF.Term | Wildcard) : Algebra.Ex
     if ('operator' in exp)
     {
         if (exp.operator === 'exists' || exp.operator === 'notexists')
-            return factory.createExistenceExpression(exp.operator === 'notexists', translateGroupGraphPattern(exp.args[0] as Pattern));
+            return factory.createExistenceExpression(exp.operator === 'notexists', translateGraphPattern(exp.args[0] as Pattern));
         if (exp.operator === 'in' || exp.operator === 'notin')
             exp.args = [exp.args[0]].concat(exp.args[1]); // sparql.js uses 2 arguments with the second one being a list
         return factory.createOperatorExpression(exp.operator, exp.args.map(translateExpression));
@@ -475,18 +493,6 @@ function translateQuad(quad: Triple) : Algebra.Pattern
     return factory.createPattern(quad.subject, quad.predicate, quad.object, (quad as any).graph);
 }
 
-function translateGraph(graph: GraphPattern) : Algebra.Operation
-{
-    const group: GroupPattern = { type: 'group', patterns: graph.patterns };
-    let result = translateGroupGraphPattern(group);
-    if (useQuads)
-        result = recurseGraph(result, graph.name);
-    else
-        result = factory.createGraph(result, graph.name);
-
-    return result;
-}
-
 let typeVals = Object.values(types);
 function recurseGraph(thingy: Algebra.Operation, graph: RDF.Term, replacement?: RDF.Variable) : Algebra.Operation
 {
@@ -566,7 +572,7 @@ function accumulateGroupGraphPattern(G: Algebra.Operation, E: Pattern) : Algebra
     if (E.type === 'optional')
     {
         // optional input needs to be interpreted as a group
-        const A = translateGroupGraphPattern({ type: 'group', patterns: E.patterns });
+        const A = translateGraphPattern({ type: 'group', patterns: E.patterns });
         if (A.type === types.FILTER)
         {
             G = factory.createLeftJoin(G, A.input, A.expression);
@@ -577,7 +583,7 @@ function accumulateGroupGraphPattern(G: Algebra.Operation, E: Pattern) : Algebra
     else if (E.type === 'minus')
     {
         // minus input needs to be interpreted as a group
-        const A = translateGroupGraphPattern({ type: 'group', patterns: E.patterns });
+        const A = translateGraphPattern({ type: 'group', patterns: E.patterns });
         G = factory.createMinus(G, A);
     }
     else if (E.type === 'bind')
@@ -586,12 +592,12 @@ function accumulateGroupGraphPattern(G: Algebra.Operation, E: Pattern) : Algebra
     {
         // transform to group so childnodes get parsed correctly
         const group: GroupPattern = { type: 'group', patterns: E.patterns };
-        const A = factory.createService(translateGroupGraphPattern(group), E.name, E.silent);
+        const A = factory.createService(translateGraphPattern(group), E.name, E.silent);
         G = simplifiedJoin(G, A);
     }
     else
     {
-        const A = translateGroupGraphPattern(E);
+        const A = translateGraphPattern(E);
         G = simplifiedJoin(G, A);
     }
 
@@ -831,7 +837,7 @@ function translateInsertDelete (thingy: InsertDeleteOperation): Algebra.Update
     if (thingy.insert)
         insertTriples = Util.flatten(thingy.insert.map(input => translateUpdateTriplesBlock(input, thingy.graph)));
     if (thingy.where && thingy.where.length > 0) {
-        where = translateGroupGraphPattern({ type: 'group', patterns: thingy.where });
+        where = translateGraphPattern({ type: 'group', patterns: thingy.where });
         // Wrong typings, see test "using" in Sparql.js
         const using: { default: RDF.NamedNode[], named: RDF.NamedNode[] } | undefined = (thingy as any).using;
         if (using)

@@ -219,6 +219,17 @@ function translateWildcardExpression(expr: Algebra.WildcardExpression): Wildcard
     return expr.wildcard;
 }
 
+function arrayToPattern(input: any): Pattern
+{
+    if (!Array.isArray(input))
+        return input;
+    if (input.length === 1)
+        return input[0];
+    return {
+        type: 'group',
+        patterns: input,
+    } satisfies GroupPattern
+}
 
 // ------------------------- OPERATIONS -------------------------
 // these get translated in the project function
@@ -589,7 +600,7 @@ function translateUnion(op: Algebra.Union): UnionPattern
 {
     return {
         type: 'union',
-        patterns: Util.flatten(op.input.map(translateOperation))
+        patterns: op.input.map(translateOperation).map(arrayToPattern),
     }
 }
 

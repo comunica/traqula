@@ -839,9 +839,9 @@ function translateInsertDelete (thingy: InsertDeleteOperation): Algebra.Update
     if (thingy.where && thingy.where.length > 0) {
         where = translateGraphPattern({ type: 'group', patterns: thingy.where });
         // Wrong typings, see test "using" in Sparql.js
-        const using: { default: RDF.NamedNode[], named: RDF.NamedNode[] } | undefined = (thingy as any).using;
-        if (using)
-            where = factory.createFrom(where, using.default, using.named);
+        const use: { default: RDF.NamedNode[], named: RDF.NamedNode[] } | undefined = (thingy as any).using;
+        if (use)
+            where = factory.createFrom(where, use.default, use.named);
         else if (thingy.graph)
             // This is equivalent
             where = recurseGraph(where, thingy.graph);

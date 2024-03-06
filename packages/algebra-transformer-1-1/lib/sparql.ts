@@ -765,11 +765,11 @@ function translateCompositeUpdate(op: Algebra.CompositeUpdate): Update
 function translateDeleteInsert(op: Algebra.DeleteInsert): Update
 {
     let where: Algebra.Operation | undefined = op.where;
-    let using = undefined;
+    let use = undefined;
     if (where && where.type === types.FROM) {
         let from = where;
         where = from.input;
-        using = { default: from.default, named: from.named };
+        use = { default: from.default, named: from.named };
     }
 
     const updates: [InsertDeleteOperation] = [{
@@ -778,8 +778,8 @@ function translateDeleteInsert(op: Algebra.DeleteInsert): Update
         insert: convertUpdatePatterns(op.insert || []),
     }];
     // Typings don't support 'using' yet
-    if (using)
-        (updates[0] as any).using = using;
+    if (use)
+        (updates[0] as any).using = use;
 
     // corresponds to empty array in SPARQL.js
     if (!where || (where.type === types.BGP && where.patterns.length === 0))

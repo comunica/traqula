@@ -915,8 +915,11 @@ function translateBlankNodesToVariables (res: Algebra.Operation) : Algebra.Opera
     }, {});
     return Util.mapOperation(res, {
         [Algebra.types.DELETE_INSERT]: (op: Algebra.DeleteInsert) => {
-            // Only relevant for INSERT operations as others should never contain blank nodes
-            return { result: op, recurse: false };
+            // Make sure blank nodes remain in the INSERT block, but do update the WHERE block
+            return { 
+                result: factory.createDeleteInsert(op.delete, op.insert, op.where && translateBlankNodesToVariables(op.where)), 
+                recurse: false,
+            };
         },
         [Algebra.types.PATH]: (op: Algebra.Path, factory: Factory) => {
             return {

@@ -172,9 +172,10 @@ function translateExistenceExpression(expr: Algebra.ExistenceExpression): Operat
     return {
         type: 'operation',
         operator: expr.not ? 'notexists' : 'exists',
-        args: Util.flatten([
-            translateOperation(expr.input)
-        ])
+        args: [{ 
+          type: 'group',
+          patterns: Util.flatten([ translateOperation(expr.input) ])
+        }]
     };
 }
 

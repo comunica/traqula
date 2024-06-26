@@ -154,8 +154,12 @@ function findAllVariables(thingy: any): void
         for (let key of Object.keys(thingy))
         {
             // Some variables are hidden in keys (specifically for VALUES)
-            if (key.startsWith('?'))
+            if (key.startsWith('?')) {
                 variables.add(key);
+            } else if (key.startsWith('$')) {
+                variables.add(`?${key.slice(1)}`);
+            }
+
             findAllVariables(thingy[key]);
         }
     }

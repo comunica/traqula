@@ -1,6 +1,6 @@
 import { isomorphic } from 'rdf-isomorphic';
 import * as RDF from '@rdfjs/types'
-import { termToString } from 'rdf-string';
+import { stringToTerm, termToString } from 'rdf-string';
 import {
     AggregateExpression,
     BgpPattern,
@@ -483,7 +483,7 @@ function translateProject(op: Algebra.Project | Algebra.Ask | Algebra.Describe, 
         aggregators[translateTerm(agg.variable)] = translateExpression(agg);
 
     // do these in reverse order since variables in one extend might apply to an expression in an other extend
-    let extensions: any = {};
+    let extensions: Record<string, any> = {};
     for (let i = context.extend.length-1; i >= 0; --i)
     {
         let e = context.extend[i];
@@ -514,16 +514,34 @@ function translateProject(op: Algebra.Project | Algebra.Ask | Algebra.Describe, 
     {
         select.variables = variables.map((term): Variable => {
             let v = translateTerm(term);
-            if (extensions[v])
+            if (extensions[v]) {
+                let result = extensions[v];
+                delete extensions[v]; // remove used extensions so only unused ones remain
                 return {
-                    variable  : term,
-                    expression: extensions[v]
+                    variable: term,
+                    expression: result,
                 };
+            }
             return term;
         });
         // if the * didn't match any variables this would be empty
         if (select.variables.length === 0)
             select.variables = [new Wildcard()];
+    }
+    
+    // It is possible that at this point some extensions have not yet been resolved.
+    // These would be bind operations that are not used in a GROUP BY or SELECT body.
+    // We still need to add them though, as they could be relevant to the other extensions.
+    const extensionEntries = Object.entries(extensions);
+    if (extensionEntries.length > 0) {
+        select.where = select.where || [];
+        for (const [ key, value ] of extensionEntries) {
+            select.where.push({
+                type: 'bind',
+                variable: stringToTerm(key) as RDF.Variable,
+                expression: value
+            });
+        }
     }
 
 

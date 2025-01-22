@@ -41,7 +41,7 @@
   "dependencies": {
     "@traqula/core": "^0.0.0",
     "rdf-data-factory": "^2.0.1",
-    "vitest": "^2.1.8"
+    "vitest": "^3.0.3"
   },
   "devDependencies": {
     "@rdfjs/types": "^2.0.0"

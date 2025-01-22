@@ -1,8 +1,8 @@
 import * as l from '../lexer';
-import { CommonIRIs, resolveIRI } from '@traqula/core';
-import { blankNode, booleanLiteral, canCreateBlankNodes, iri, numericLiteral, rdfLiteral } from './literals';
-import type {GraphTerm, Term, Triple, VerbA, IriTerm, VariableTerm, BaseQuery, SparqlRuleDef} from '../Sparql11types';
-import { triplesSameSubject } from './tripleBlock';
+import {CommonIRIs, resolveIRI} from '@traqula/core';
+import {blankNode, booleanLiteral, iri, numericLiteral, rdfLiteral} from './literals';
+import type {BaseQuery, GraphTerm, IriTerm, SparqlRuleDef, Term, Triple, VariableTerm, VerbA} from '../Sparql11types';
+import {triplesSameSubject} from './tripleBlock';
 
 /**
  * [[4]](https://www.w3.org/TR/sparql11-query/#rPrologue)

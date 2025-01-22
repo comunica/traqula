@@ -36,17 +36,15 @@ function objectsEqual(received: unknown, expected: unknown): boolean {
   }
 
   if (isTerm(received)) {
-    // eslint-disable-next-line ts/ban-ts-comment
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error TS2345
     return received.equals(expected);
   }
   if (isTerm(expected)) {
-    // eslint-disable-next-line ts/ban-ts-comment
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error TS2345
     return expected.equals(received);
   }
-  //  York
-  // test
   if (Array.isArray(received)) {
     if (!Array.isArray(expected)) {
       return false;
@@ -67,7 +65,7 @@ function objectsEqual(received: unknown, expected: unknown): boolean {
     const keys_first = Object.keys(received);
 
     for (const key of keys_first) {
-      // eslint-disable-next-line ts/ban-ts-comment
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error TS7053
       if (!objectsEqual(received[key], expected[key])) {
         return false;
@@ -75,9 +73,9 @@ function objectsEqual(received: unknown, expected: unknown): boolean {
     }
 
     // We do this to make sure that we are not missing keys in the received object
-    const keys_second = Object.keys(expected);
-    for (const key of keys_second) {
-      // eslint-disable-next-line ts/ban-ts-comment
+    const keysSecond = Object.keys(expected);
+    for (const key of keysSecond) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error TS7053
       if (!objectsEqual(received[key], expected[key])) {
         return false;

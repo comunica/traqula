@@ -1,4 +1,5 @@
 import {Builder} from '@traqula/core';
+// eslint-disable-next-line  @typescript-eslint/no-unused-vars
 import {gram as g11, SparqlParser, SparqlQuery} from '@traqula/rules-sparql-1-1';
 import {gram as S12, lex as l12} from '@traqula/rules-sparql-1-2';
 import {sparql11ParserBuilder} from '@traqula/engine-sparql-1-1';

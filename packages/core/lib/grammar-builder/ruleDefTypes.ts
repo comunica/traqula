@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type {
   AtLeastOneSepMethodOpts,
   DSLMethodOpts,
   DSLMethodOptsWithErr,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   EmbeddedActionsParser,
   GrammarAction,
   IOrAlt,

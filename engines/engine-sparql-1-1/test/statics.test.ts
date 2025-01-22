@@ -1,6 +1,6 @@
-import {beforeEach, describe, it} from "vitest";
+import {describe, it} from "vitest";
 import {Parser} from "../lib";
-import {positiveTest, importSparql11NoteTests} from "@traqula/test-utils";
+import {importSparql11NoteTests, positiveTest} from "@traqula/test-utils";
 import {DataFactory} from "rdf-data-factory";
 import {BaseQuad} from "@rdfjs/types";
 

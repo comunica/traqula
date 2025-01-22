@@ -8,9 +8,10 @@ interface Parser {
 }
 
 export function importSparql11NoteTests(parser: Parser, dataFactory: DataFactory<BaseQuad>) {
-  function testErroneousQuery(query: string, errorMsg: string): TestFunction<object> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function testErroneousQuery(query: string, errorMsg: string): TestFunction {
     return ({ expect }) => {
-      let error: any = null;
+      let error: unknown = null;
       try {
         parser.parse(query);
       } catch (e) {

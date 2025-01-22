@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/prefer-return-this-type */
 import type { TokenType } from 'chevrotain';
 import type { CheckOverlap } from '../grammar-builder/builderTypes';
 

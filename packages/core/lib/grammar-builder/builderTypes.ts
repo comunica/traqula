@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { ParserMethod } from 'chevrotain';
 import type {RuleDef} from './ruleDefTypes';
 

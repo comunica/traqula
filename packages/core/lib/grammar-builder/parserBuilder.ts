@@ -1,3 +1,8 @@
+/* eslint-disable
+@typescript-eslint/no-explicit-any,
+@typescript-eslint/no-unsafe-assignment,
+@typescript-eslint/no-unsafe-return,
+@typescript-eslint/no-unsafe-argument */
 import {ILexerConfig, IParserConfig} from '@chevrotain/types';
 import type {TokenType, TokenVocabulary} from 'chevrotain';
 import {EmbeddedActionsParser, Lexer} from 'chevrotain';
@@ -59,6 +64,7 @@ export class Builder<Context, Names extends string, RuleDefs extends RuleDefMap<
   Builder<Context, Names, {[Key in Names]: Key extends U ? RuleDef<Context, Key, RET, ARGS> : (RuleDefs[Key] extends RuleDef<Context, Key> ? RuleDefs[Key] : never) }> {
     const self = <Builder<Context, Names, {[Key in Names]: Key extends U ? RuleDef<Context, Key, RET, ARGS> : (RuleDefs[Key] extends RuleDef<Context, Key> ? RuleDefs[Key] : never) }>>
       <unknown> this;
+     
     self.rules[patch.name] = <any> patch;
     return self;
   }
@@ -70,7 +76,7 @@ export class Builder<Context, Names extends string, RuleDefs extends RuleDefMap<
   Builder<Context, Names | U, {[K in Names | U]: K extends U ? RuleDef<Context, K, RET, ARGS> : ( K extends Names ? (RuleDefs[K] extends RuleDef<Context, K> ? RuleDefs[K] : never ) : never) }> {
     const self = <Builder<Context, Names | U, {[K in Names | U]: K extends U ? RuleDef<Context, K, RET, ARGS> : ( K extends Names ? (RuleDefs[K] extends RuleDef<Context, K> ? RuleDefs[K] : never ) : never) }>>
       <unknown> this;
-    const rules = <Record<string, RuleDef<Context>>> self.rules;
+    const rules = <Record<string, RuleDef<Context> | undefined>> self.rules;
     if (rules[rule.name] !== undefined && rules[rule.name] !== rule) {
       throw new Error(`Rule ${rule.name} already exists in the builder`);
     }
@@ -108,6 +114,7 @@ export class Builder<Context, Names extends string, RuleDefs extends RuleDefMap<
    */
   public deleteRule<U extends Names>(ruleName: U):
   Builder<Context, Exclude<Names, U>, { [K in Exclude<Names, U>]: RuleDefs[K] extends RuleDef<Context, K> ? RuleDefs[K] : never }> {
+    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
     delete this.rules[ruleName];
     return <Builder<Context, Exclude<Names, U>, { [K in Exclude<Names, U>]: RuleDefs[K] extends RuleDef<Context, K> ? RuleDefs[K] : never }>>
       <unknown> this;
@@ -136,7 +143,7 @@ export class Builder<Context, Names extends string, RuleDefs extends RuleDefMap<
           : K extends OtherNames ? (OtherRules[K] extends RuleDef<Context, K> ? OtherRules[K] : never) : never
         )}> {
     // Assume the other grammar is bigger than yours. So start from that one and add this one
-    const otherRules: Record<string, RuleDef<Context>> = { ...builder.rules };
+    const otherRules: Record<string, RuleDef<Context> | undefined> = { ...builder.rules };
     const myRules: Record<string, RuleDef<Context>> = this.rules;
 
     for (const rule of Object.values(myRules)) {
@@ -179,6 +186,7 @@ export class Builder<Context, Names extends string, RuleDefs extends RuleDefMap<
     // Start building a parser that does not pass input using a state, but instead gets it as a function argument.
     const selfSufficientParser: Partial<ParserFromRules<Context, Names, RuleDefs>> = {};
     // To do that, we need to create a wrapper for each parser rule.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     for (const rule of <RuleDef<Context, Names>[]> Object.values(this.rules)) {
       selfSufficientParser[rule.name] = <any> ((input: string, context: Context, arg: unknown) => {
         // Transform input in accordance to 19.2
@@ -211,7 +219,7 @@ export class Builder<Context, Names extends string, RuleDefs extends RuleDefMap<
         if (parser.errors.length > 0) {
           // Console.log(lexResult.tokens);
           throw new Error(`Parse error on line ${parser.errors.map(x => x.token.startLine).join(', ')}
-${parser.errors.map(x => `${x.token.startLine}: ${x.message}`).join('\n')}`);
+${parser.errors.map(x => `${String(x.token.startLine ?? '?')}: ${x.message}`).join('\n')}`);
         }
         return result;
       });
@@ -261,7 +269,7 @@ ${parser.errors.map(x => `${x.token.startLine}: ${x.message}`).join('\n')}`);
       private getSelfRef(): CstDef {
         const subRuleImpl = (chevrotainSubrule: typeof this.SUBRULE): CstDef['SUBRULE'] => {
           return ((cstDef, arg) => {
-            return chevrotainSubrule(<any> this[<keyof (typeof this)> cstDef.name], <any> { ARGS: [this.context, arg] });
+            return chevrotainSubrule( <any> this[<keyof (typeof this)> cstDef.name], <any> { ARGS: [this.context, arg] });
           }) satisfies CstDef['SUBRULE'];
         }
         return {
@@ -295,53 +303,49 @@ ${parser.errors.map(x => `${x.token.startLine}: ${x.message}`).join('\n')}`);
           OR7: altsOrOpts => this.OR7(altsOrOpts),
           OR8: altsOrOpts => this.OR8(altsOrOpts),
           OR9: altsOrOpts => this.OR9(altsOrOpts),
-          MANY: actionORMethodDef => this.MANY(actionORMethodDef),
-          MANY1: actionORMethodDef => this.MANY1(actionORMethodDef),
-          MANY2: actionORMethodDef => this.MANY2(actionORMethodDef),
-          MANY3: actionORMethodDef => this.MANY3(actionORMethodDef),
-          MANY4: actionORMethodDef => this.MANY4(actionORMethodDef),
-          MANY5: actionORMethodDef => this.MANY5(actionORMethodDef),
-          MANY6: actionORMethodDef => this.MANY6(actionORMethodDef),
-          MANY7: actionORMethodDef => this.MANY7(actionORMethodDef),
-          MANY8: actionORMethodDef => this.MANY8(actionORMethodDef),
-          MANY9: actionORMethodDef => this.MANY9(actionORMethodDef),
-          MANY_SEP: options => this.MANY_SEP(options),
-          MANY_SEP1: options => this.MANY_SEP1(options),
-          MANY_SEP2: options => this.MANY_SEP2(options),
-          MANY_SEP3: options => this.MANY_SEP3(options),
-          MANY_SEP4: options => this.MANY_SEP4(options),
-          MANY_SEP5: options => this.MANY_SEP5(options),
-          MANY_SEP6: options => this.MANY_SEP6(options),
-          MANY_SEP7: options => this.MANY_SEP7(options),
-          MANY_SEP8: options => this.MANY_SEP8(options),
-          MANY_SEP9: options => this.MANY_SEP9(options),
-          AT_LEAST_ONE: actionORMethodDef => this.AT_LEAST_ONE(actionORMethodDef),
-          AT_LEAST_ONE1: actionORMethodDef => this.AT_LEAST_ONE1(actionORMethodDef),
-          AT_LEAST_ONE2: actionORMethodDef => this.AT_LEAST_ONE2(actionORMethodDef),
-          AT_LEAST_ONE3: actionORMethodDef => this.AT_LEAST_ONE3(actionORMethodDef),
-          AT_LEAST_ONE4: actionORMethodDef => this.AT_LEAST_ONE4(actionORMethodDef),
-          AT_LEAST_ONE5: actionORMethodDef => this.AT_LEAST_ONE5(actionORMethodDef),
-          AT_LEAST_ONE6: actionORMethodDef => this.AT_LEAST_ONE6(actionORMethodDef),
-          AT_LEAST_ONE7: actionORMethodDef => this.AT_LEAST_ONE7(actionORMethodDef),
-          AT_LEAST_ONE8: actionORMethodDef => this.AT_LEAST_ONE8(actionORMethodDef),
-          AT_LEAST_ONE9: actionORMethodDef => this.AT_LEAST_ONE9(actionORMethodDef),
-          AT_LEAST_ONE_SEP: options => this.AT_LEAST_ONE_SEP(options),
-          AT_LEAST_ONE_SEP1: options => this.AT_LEAST_ONE_SEP1(options),
-          AT_LEAST_ONE_SEP2: options => this.AT_LEAST_ONE_SEP2(options),
-          AT_LEAST_ONE_SEP3: options => this.AT_LEAST_ONE_SEP3(options),
-          AT_LEAST_ONE_SEP4: options => this.AT_LEAST_ONE_SEP4(options),
-          AT_LEAST_ONE_SEP5: options => this.AT_LEAST_ONE_SEP5(options),
-          AT_LEAST_ONE_SEP6: options => this.AT_LEAST_ONE_SEP6(options),
-          AT_LEAST_ONE_SEP7: options => this.AT_LEAST_ONE_SEP7(options),
-          AT_LEAST_ONE_SEP8: options => this.AT_LEAST_ONE_SEP8(options),
-          AT_LEAST_ONE_SEP9: options => this.AT_LEAST_ONE_SEP9(options),
+          MANY: actionORMethodDef => { this.MANY(actionORMethodDef); },
+          MANY1: actionORMethodDef => { this.MANY1(actionORMethodDef); },
+          MANY2: actionORMethodDef => { this.MANY2(actionORMethodDef); },
+          MANY3: actionORMethodDef => { this.MANY3(actionORMethodDef); },
+          MANY4: actionORMethodDef => { this.MANY4(actionORMethodDef); },
+          MANY5: actionORMethodDef => { this.MANY5(actionORMethodDef); },
+          MANY6: actionORMethodDef => { this.MANY6(actionORMethodDef); },
+          MANY7: actionORMethodDef => { this.MANY7(actionORMethodDef); },
+          MANY8: actionORMethodDef => { this.MANY8(actionORMethodDef); },
+          MANY9: actionORMethodDef => { this.MANY9(actionORMethodDef); },
+          MANY_SEP: options => { this.MANY_SEP(options); },
+          MANY_SEP1: options => { this.MANY_SEP1(options); },
+          MANY_SEP2: options => { this.MANY_SEP2(options); },
+          MANY_SEP3: options => { this.MANY_SEP3(options); },
+          MANY_SEP4: options => { this.MANY_SEP4(options); },
+          MANY_SEP5: options => { this.MANY_SEP5(options); },
+          MANY_SEP6: options => { this.MANY_SEP6(options); },
+          MANY_SEP7: options => { this.MANY_SEP7(options); },
+          MANY_SEP8: options => { this.MANY_SEP8(options); },
+          MANY_SEP9: options => { this.MANY_SEP9(options); },
+          AT_LEAST_ONE: actionORMethodDef => { this.AT_LEAST_ONE(actionORMethodDef); },
+          AT_LEAST_ONE1: actionORMethodDef => { this.AT_LEAST_ONE1(actionORMethodDef); },
+          AT_LEAST_ONE2: actionORMethodDef => { this.AT_LEAST_ONE2(actionORMethodDef); },
+          AT_LEAST_ONE3: actionORMethodDef => { this.AT_LEAST_ONE3(actionORMethodDef); },
+          AT_LEAST_ONE4: actionORMethodDef => { this.AT_LEAST_ONE4(actionORMethodDef); },
+          AT_LEAST_ONE5: actionORMethodDef => { this.AT_LEAST_ONE5(actionORMethodDef); },
+          AT_LEAST_ONE6: actionORMethodDef => { this.AT_LEAST_ONE6(actionORMethodDef); },
+          AT_LEAST_ONE7: actionORMethodDef => { this.AT_LEAST_ONE7(actionORMethodDef); },
+          AT_LEAST_ONE8: actionORMethodDef => { this.AT_LEAST_ONE8(actionORMethodDef); },
+          AT_LEAST_ONE9: actionORMethodDef => { this.AT_LEAST_ONE9(actionORMethodDef); },
+          AT_LEAST_ONE_SEP: options => { this.AT_LEAST_ONE_SEP(options); },
+          AT_LEAST_ONE_SEP1: options => { this.AT_LEAST_ONE_SEP1(options); },
+          AT_LEAST_ONE_SEP2: options => { this.AT_LEAST_ONE_SEP2(options); },
+          AT_LEAST_ONE_SEP3: options => { this.AT_LEAST_ONE_SEP3(options); },
+          AT_LEAST_ONE_SEP4: options => { this.AT_LEAST_ONE_SEP4(options); },
+          AT_LEAST_ONE_SEP5: options => { this.AT_LEAST_ONE_SEP5(options); },
+          AT_LEAST_ONE_SEP6: options => { this.AT_LEAST_ONE_SEP6(options); },
+          AT_LEAST_ONE_SEP7: options => { this.AT_LEAST_ONE_SEP7(options); },
+          AT_LEAST_ONE_SEP8: options => { this.AT_LEAST_ONE_SEP8(options); },
+          AT_LEAST_ONE_SEP9: options => { this.AT_LEAST_ONE_SEP9(options); },
           ACTION: func => this.ACTION(func),
           BACKTRACK: (cstDef, ...args) => {
-            try {
-              return this.BACKTRACK(<any> this[<keyof (typeof this)> cstDef.name], <any> { ARGS: args });
-            } catch (error: unknown) {
-              throw error;
-            }
+            return this.BACKTRACK(<any> this[<keyof (typeof this)> cstDef.name], <any> { ARGS: args });
           },
           SUBRULE: subRuleImpl((rule, args) => this.SUBRULE(rule, args)),
           SUBRULE1: subRuleImpl((rule, args) => this.SUBRULE1(rule, args)),

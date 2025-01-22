@@ -165,7 +165,7 @@ export function builtInCallList(SUBRULE: ImplArgs['SUBRULE']): IOrAlt<Expression
 export const builtInCall: SparqlRuleDef<'builtInCall', Expression> = <const> {
   name: 'builtInCall',
   impl: ({ OR, SUBRULE, cache }) => () => {
-    const cached = <IOrAlt<Expression>[]>cache.get(builtInCall);
+    const cached = <IOrAlt<Expression>[] | undefined> cache.get(builtInCall);
     if (cached) {
       return OR<Expression>(cached);
     }

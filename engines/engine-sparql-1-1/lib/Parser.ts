@@ -58,9 +58,7 @@ const queryOrUpdate: SparqlRuleDef<'queryOrUpdate', Query | Update | Pick<Update
 
               ACTION(() => {
                 updateResult.base = prologueValues.base ?? updateResult.base;
-                updateResult.prefixes = prologueValues.prefixes ?
-                  { ...updateResult.prefixes, ...prologueValues.prefixes } :
-                  updateResult.prefixes;
+                updateResult.prefixes = { ...updateResult.prefixes, ...prologueValues.prefixes };
               });
 
               parsedPrologue = true;

@@ -172,9 +172,9 @@ export const selectQuery: SparqlRuleDef<'selectQuery', Omit<SelectQuery, Handled
             } else if (getAggregatesOfExpression(selectVar.expression).length === 0) {
               const usedvars = getVariablesFromExpression(selectVar.expression);
               for (const usedvar of usedvars) {
-                if (!modifier.group || !modifier.group.map || !modifier.group.map(groupVar => getExpressionId(groupVar))
+                if (!modifier.group || !modifier.group.map(groupVar => getExpressionId(groupVar))
                   .includes(getExpressionId(usedvar))) {
-                  throw new Error(`Use of ungrouped variable in projection of operation (?${getExpressionId(usedvar)})`);
+                  throw new Error(`Use of ungrouped variable in projection of operation (?${getExpressionId(usedvar) ?? '??'})`);
                 }
               }
             }
@@ -182,7 +182,7 @@ export const selectQuery: SparqlRuleDef<'selectQuery', Omit<SelectQuery, Handled
         }
       }
       // Check if id of each AS-selected column is not yet bound by subquery
-      const subqueries = <Omit<SelectQuery, "prefixes">[]> where.filter(pattern => pattern.type === 'query');
+      const subqueries = where.filter(pattern => pattern.type === 'query');
       if (subqueries.length > 0) {
         const selectedVarIds: string[] = [];
         for (const selectedVar of variables) {
@@ -266,7 +266,8 @@ export const selectClause: SparqlRuleDef<'selectClause', ISelectClause> = <const
       { ALT: () => {
         const usedVars: VariableTerm[] = [];
         const result: Variable[] = [];
-        AT_LEAST_ONE(() => OR3([
+        AT_LEAST_ONE(() => {
+          OR3([
           { ALT: () => {
             const raw = SUBRULE1(var_, undefined);
             ACTION(() => {
@@ -294,7 +295,7 @@ export const selectClause: SparqlRuleDef<'selectClause', ISelectClause> = <const
               } satisfies VariableExpression);
             });
           } },
-        ]));
+        ]); });
         return result;
       } },
     ]);

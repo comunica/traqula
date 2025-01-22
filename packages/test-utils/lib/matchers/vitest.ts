@@ -1,3 +1,4 @@
+/* eslint-disable */
 import 'vitest';
 
 interface CustomMatchers<R = unknown> {

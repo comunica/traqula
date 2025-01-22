@@ -1,14 +1,15 @@
 import * as l from '../lexer';
-import { CommonIRIs } from '@traqula/core';
-import { var_, varOrTerm, verb } from './general';
-import { canCreateBlankNodes } from './literals';
-import { path } from './propertyPaths';
+import {CommonIRIs} from '@traqula/core';
+import {var_, varOrTerm, verb} from './general';
+import {path} from './propertyPaths';
 import type {
-  BgpPattern, BlankTerm,
+  BgpPattern,
+  BlankTerm,
   IGraphNode,
   IriTerm,
   ITriplesNode,
-  PropertyPath, SparqlRuleDef,
+  PropertyPath,
+  SparqlRuleDef,
   Triple,
   VariableTerm,
 } from '../Sparql11types';

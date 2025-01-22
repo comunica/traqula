@@ -1,4 +1,4 @@
-/* eslint-disable require-unicode-regexp */
+ 
 import { LexerBuilder } from '@traqula/core';
 import { createToken } from '@traqula/core';
 

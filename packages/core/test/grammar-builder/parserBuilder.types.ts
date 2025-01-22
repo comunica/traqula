@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment */
 import {describe, it} from 'vitest';
 import {Builder} from '../../lib';
 import {SparqlContext, SparqlRuleDef} from "@traqula/rules-sparql-1-1";

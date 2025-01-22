@@ -6,6 +6,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  tooling:
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version:
+          - 18.x
+          - 20.x
+          - 22.x
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: yarn install --immutable
+      - run: yarn lint
+      - run: yarn depcheck
+
   test:
     strategy:
       fail-fast: false
@@ -27,7 +46,6 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: yarn install --immutable
       - run: yarn build
-      - run: yarn depcheck
       - run: yarn test
 
   spec:

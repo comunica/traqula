@@ -3,8 +3,8 @@ import {Parser} from '../lib'
 
 import {SparqlContext} from "@traqula/rules-sparql-1-1";
 
-export async function parse(query: string,  context: Partial<SparqlContext> = {}) {
-  const parser = new Parser();
+const parser = new Parser();
+export function parse(query: string,  context: Partial<SparqlContext> = {}) {
   parser.parse(query, context);
 }
 export function query() {

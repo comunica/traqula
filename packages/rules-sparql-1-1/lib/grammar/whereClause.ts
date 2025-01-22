@@ -348,7 +348,6 @@ export const dataBlockValue: SparqlRuleDef<'dataBlockValue', IriTerm | BlankTerm
     {
       ALT: () => {
         CONSUME(l.undef);
-        // eslint-disable-next-line unicorn/no-useless-undefined
         return undefined;
       },
     },

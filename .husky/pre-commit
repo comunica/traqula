@@ -1,3 +1,5 @@
 yarn run build
+yarn run lint
+yarn run depcheck
 yarn run test
 yarn run spec:all

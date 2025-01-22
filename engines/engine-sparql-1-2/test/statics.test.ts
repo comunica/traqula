@@ -1,6 +1,6 @@
-import {beforeEach, describe, it} from "vitest";
-import { Parser } from "../lib";
-import {positiveTest, importSparql11NoteTests, negativeTest} from "@traqula/test-utils";
+import {describe, it} from "vitest";
+import {Parser} from "../lib";
+import {importSparql11NoteTests, negativeTest, positiveTest} from "@traqula/test-utils";
 import {DataFactory} from "rdf-data-factory";
 import {BaseQuad} from "@rdfjs/types";
 
@@ -38,7 +38,7 @@ describe('a SPARQL 1.2 parser', () => {
     }
   });
 
-  it(`should NOT parse $only thing}`, async ({expect}) => {
+  it(`should NOT parse $only thing}`, ({expect}) => {
     const query = `
     PREFIX : <http://example.com/ns#>
 

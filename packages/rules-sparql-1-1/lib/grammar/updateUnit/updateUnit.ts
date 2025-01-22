@@ -3,7 +3,7 @@ import * as l from '../../lexer';
 import type {RuleDefReturn} from '@traqula/core';
 import {unCapitalize} from '@traqula/core';
 import {prologue, triplesTemplate, varOrIri} from '../general';
-import {canCreateBlankNodes, iri} from '../literals';
+import {iri} from '../literals';
 import type {
   ClearDropOperation,
   GraphOrDefault,
@@ -53,12 +53,12 @@ export const update: SparqlRuleDef<'update', Update> = <const> {
         return SUBRULE(update, undefined);
       });
 
-      return ACTION(() => {
+      ACTION(() => {
         result.updates.push(updateOperation);
         if (recursiveRes) {
           result.updates.push(...recursiveRes.updates);
           result.base = recursiveRes.base ?? result.base;
-          result.prefixes = recursiveRes.prefixes ? { ...result.prefixes, ...recursiveRes.prefixes } : result.prefixes;
+          result.prefixes = { ...result.prefixes, ...recursiveRes.prefixes };
         }
       });
     });

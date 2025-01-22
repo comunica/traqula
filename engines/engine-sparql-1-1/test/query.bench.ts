@@ -1,4 +1,3 @@
-/* eslint-disable test/consistent-test-it */
 import { Parser as SparqlJSparser } from 'sparqljs';
 import { describe, bench } from 'vitest';
 import { Parser as TraqulaParqer } from '../lib/';

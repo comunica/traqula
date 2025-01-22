@@ -118,7 +118,7 @@ function objectImpl<T extends string>(name: T, allowPaths: boolean): SparqlRuleD
 
       return ACTION(() => {
         const {subject, predicate} = arg;
-        if ('type' in predicate && predicate.type === 'path' && annotationVal.length > 0) {
+        if ('type' in predicate && annotationVal.length > 0) {
           throw new Error('Note 17 violation');
         }
 
@@ -174,7 +174,7 @@ function annotationImpl<T extends string>(name: T, allowPaths: boolean): SparqlR
         OR([
           { ALT: () => {
             const node = SUBRULE(reifier, undefined);
-            ACTION(() => flush());
+            ACTION(() => { flush() });
             currentReifier = node;
           } },
           { ALT: () => {

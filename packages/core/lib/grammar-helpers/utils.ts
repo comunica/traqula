@@ -29,6 +29,7 @@ export function resolveIRI(iri: string, base: string | undefined): string {
   }
   switch (iri[0]) {
     // An empty relative IRI indicates the base IRI
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     case undefined:
       return base;
     // Resolve relative fragment IRIs against the base IRI
@@ -38,17 +39,18 @@ export function resolveIRI(iri: string, base: string | undefined): string {
     case '?':
       return base.replace(/(?:\?.*)?$/u, iri);
     // Resolve root relative IRIs at the root of the base IRI
-    case '/':
-      const baseMatch = base.match(/^(?:[a-z]+:\/*)?[^\/]*/);
+    case '/': {
+      const baseMatch = base.match(/^(?:[a-z]+:\/*)?[^/]*/);
       if (!baseMatch) {
         throw new Error(`Could not determine relative IRI using base: ${base}`);
       }
       const baseRoot = baseMatch[0];
-      return baseRoot + iri;
+      return baseRoot + iri; }
     // Resolve all other IRIs at the base IRI's path
-    default:
-      const basePath = base.replace(/[^\/:]*$/, '');
+    default: {
+      const basePath = base.replace(/[^/:]*$/, '');
       return basePath + iri;
+    }
   }
 }
 

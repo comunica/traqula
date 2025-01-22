@@ -342,7 +342,7 @@ export interface SparqlContext {
   /**
    * Current scoped prefixes. Used for resolving prefixed names.
    */
-  prefixes: Record<string, string>;
+  prefixes: Record<string, string | undefined>;
   /**
    * The base IRI for the query. Used for resolving relative IRIs.
    */
@@ -354,5 +354,6 @@ export interface SparqlContext {
   /**
    * Set of queryModes. Primarily used for note 8, 14.
    */
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   parseMode: Set<'canParseVars' | 'canCreateBlankNodes' | 'inAggregate' | 'canParseAggregate' | string>;
 }

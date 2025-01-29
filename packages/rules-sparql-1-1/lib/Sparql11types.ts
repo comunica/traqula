@@ -1,16 +1,11 @@
 import type * as RDF from '@rdfjs/types';
-import type { CommonIRIs, RuleDef } from '@traqula/core';
+import type { CommonIRIs, ParserRule, PGRule } from '@traqula/core';
 import type { BlankNode, DataFactory } from 'rdf-data-factory';
+import type { Wildcard } from './Wildcard';
 
 export type GraphTerm = IriTerm | BlankTerm | LiteralTerm;
 export type Term = GraphTerm | VariableTerm;
 export type VerbA = IriTerm<CommonIRIs.TYPE>;
-
-export interface Wildcard {
-  readonly termType: 'Wildcard';
-  readonly value: '*';
-  equals: (other: RDF.Term | null | undefined) => boolean;
-}
 
 export type Triple = {
   subject: Term;
@@ -233,7 +228,7 @@ export type IriTermOrElt = IriTerm | {
 export interface NegatedPropertySet {
   type: 'path';
   pathType: '!';
-  items: IriTermOrElt[] | [{
+  items: [IriTermOrElt] | [{
     type: 'path';
     pathType: '|';
     items: (IriTermOrElt)[];
@@ -307,7 +302,8 @@ export interface BaseExpression {
 export interface OperationExpression extends BaseExpression {
   type: 'operation';
   operator: string;
-  args: (Expression | Pattern)[];
+  // Can be a pattern in case of exists and not exists
+  args: (Expression)[] | [Pattern];
 }
 
 export interface AggregateExpression extends BaseExpression {
@@ -317,7 +313,7 @@ export interface AggregateExpression extends BaseExpression {
   separator?: string | undefined;
 }
 
-export type SparqlRuleDef<
+export type SparqlRule<
   /**
    * Name of grammar rule, should be a strict subtype of string like 'myGrammarRule'.
    */
@@ -331,7 +327,23 @@ export type SparqlRuleDef<
    * Function arguments that can be given to convey the state of the current parse operation.
    */
   ParamType = undefined,
-> = RuleDef<SparqlContext, NameType, ReturnType, ParamType>;
+> = PGRule<SparqlContext, NameType, ReturnType, ParamType>;
+
+export type SparqlGrammarRule<
+  /**
+   * Name of grammar rule, should be a strict subtype of string like 'myGrammarRule'.
+   */
+  NameType extends string = string,
+  /**
+   * Type that will be returned after a correct parse of this rule.
+   * This type will be the return type of calling SUBRULE with this grammar rule.
+   */
+  ReturnType = unknown,
+  /**
+   * Function arguments that can be given to convey the state of the current parse operation.
+   */
+  ParamType = undefined,
+> = ParserRule<SparqlContext, NameType, ReturnType, ParamType>;
 
 export interface SparqlContext {
   /**

@@ -1,30 +1,54 @@
 import type { TokenType } from 'chevrotain';
 import * as l from '../lexer';
-import type { IriTerm, IriTermOrElt, NegatedPropertySet, PropertyPath, SparqlRuleDef } from '../Sparql11types';
+import type {
+  IriTerm,
+  IriTermOrElt,
+  NegatedPropertySet,
+  PropertyPath,
+  SparqlGrammarRule,
+  SparqlRule,
+} from '../Sparql11types';
 import { verbA } from './general';
 import { iri } from './literals';
 
 /**
  * [[88]](https://www.w3.org/TR/sparql11-query/#rPath)
  */
-export const path: SparqlRuleDef<'path', PropertyPath | IriTerm> = <const> {
+export const path: SparqlRule<'path', PropertyPath | IriTerm> = <const> {
   name: 'path',
   impl: ({ SUBRULE }) => () => SUBRULE(pathAlternative, undefined),
+  gImpl: ({ SUBRULE }) => (ast) => {
+    if ('type' in ast) {
+      // Infix
+      if (ast.pathType === '/' || ast.pathType === '|') {
+        return `( ${ast.items.map(item => SUBRULE(path, item, undefined)).join(ast.pathType)} )`;
+      }
+      // Prefix
+      if (ast.pathType === '^' || ast.pathType === '!') {
+        return `${ast.pathType}${SUBRULE(path, ast.items[0], undefined)}`;
+      }
+      // Postfix
+      if (ast.pathType === '*' || ast.pathType === '+' || ast.pathType === '?') {
+        return `${SUBRULE(path, ast.items[0], undefined)}${ast.pathType}`;
+      }
+    }
+    return SUBRULE(iri, <IriTerm> ast, undefined);
+  },
 };
 
 export function pathHelper<T extends string>(
   name: T,
   SEP: TokenType,
-  pathType: '|' | '/' | '^' | '+' | '*' | '?',
-  subRule: SparqlRuleDef<string, PropertyPath | IriTerm>,
-): SparqlRuleDef<T, PropertyPath | IriTerm> {
+  pathType: '|' | '/',
+  subRule: SparqlGrammarRule<string, PropertyPath | IriTerm>,
+): SparqlGrammarRule<T, PropertyPath | IriTerm> {
   return {
     name,
-    impl: ({ SUBRULE2, AT_LEAST_ONE_SEP }) => () => {
+    impl: ({ SUBRULE, AT_LEAST_ONE_SEP }) => () => {
       const alternatives: (IriTerm | PropertyPath)[] = [];
       AT_LEAST_ONE_SEP({
         DEF: () => {
-          alternatives.push(SUBRULE2(subRule, undefined));
+          alternatives.push(SUBRULE(subRule, undefined));
         },
         SEP,
       });
@@ -42,7 +66,7 @@ export function pathHelper<T extends string>(
 /**
  * [[92]](https://www.w3.org/TR/sparql11-query/#rPathEltOrInverse)
  */
-export const pathEltOrInverse: SparqlRuleDef<'pathEltOrInverse', PropertyPath | IriTerm> = <const> {
+export const pathEltOrInverse: SparqlGrammarRule<'pathEltOrInverse', PropertyPath | IriTerm> = <const> {
   name: 'pathEltOrInverse',
   impl: ({ CONSUME, SUBRULE1, SUBRULE2, OR }) => () => OR<PropertyPath | IriTerm>([
     {
@@ -77,7 +101,7 @@ export const pathAlternative = pathHelper('pathAlternative', l.symbols.pipe, '|'
 /**
  * [[91]](https://www.w3.org/TR/sparql11-query/#rPathElt)
  */
-export const pathElt: SparqlRuleDef<'pathElt', PropertyPath | IriTerm> = <const> {
+export const pathElt: SparqlGrammarRule<'pathElt', PropertyPath | IriTerm> = <const> {
   name: 'pathElt',
   impl: ({ SUBRULE, OPTION }) => () => {
     const item = SUBRULE(pathPrimary, undefined);
@@ -95,7 +119,7 @@ export const pathElt: SparqlRuleDef<'pathElt', PropertyPath | IriTerm> = <const>
 /**
  * [[93]](https://www.w3.org/TR/sparql11-query/#rPathMod)
  */
-export const pathMod: SparqlRuleDef<'pathMod', '*' | '+' | '?'> = <const> {
+export const pathMod: SparqlGrammarRule<'pathMod', '*' | '+' | '?'> = <const> {
   name: 'pathMod',
   impl: ({ CONSUME, OR }) => () => OR([
     {
@@ -122,7 +146,7 @@ export const pathMod: SparqlRuleDef<'pathMod', '*' | '+' | '?'> = <const> {
 /**
  * [[94]](https://www.w3.org/TR/sparql11-query/#rPathPrimary)
  */
-export const pathPrimary: SparqlRuleDef<'pathPrimary', PropertyPath | IriTerm> = <const> {
+export const pathPrimary: SparqlGrammarRule<'pathPrimary', PropertyPath | IriTerm> = <const> {
   name: 'pathPrimary',
   impl: ({ SUBRULE, CONSUME, OR }) => () => OR<PropertyPath | IriTerm>([
     { ALT: () => SUBRULE(iri, undefined) },
@@ -154,7 +178,8 @@ export const pathPrimary: SparqlRuleDef<'pathPrimary', PropertyPath | IriTerm> =
 /**
  * [[95]](https://www.w3.org/TR/sparql11-query/#rPathNegatedPropertySet)
  */
-export const pathNegatedPropertySet: SparqlRuleDef<'pathNegatedPropertySet', NegatedPropertySet['items']> = <const> {
+export const pathNegatedPropertySet:
+SparqlGrammarRule<'pathNegatedPropertySet', NegatedPropertySet['items']> = <const> {
   name: 'pathNegatedPropertySet',
   impl: ({ CONSUME, SUBRULE1, SUBRULE2, OR, MANY_SEP }) => () => OR<NegatedPropertySet['items']>([
     {
@@ -171,13 +196,14 @@ export const pathNegatedPropertySet: SparqlRuleDef<'pathNegatedPropertySet', Neg
           SEP: l.symbols.pipe,
         });
         CONSUME(l.symbols.RParen);
-        return items.length === 1 ?
-          items :
-            [{
-              type: 'path',
-              pathType: '|',
-              items,
-            }];
+        if (items.length === 1) {
+          return <[IriTermOrElt]> items;
+        }
+        return [{
+          type: 'path',
+          pathType: '|',
+          items,
+        }];
       },
     },
   ]),
@@ -186,7 +212,7 @@ export const pathNegatedPropertySet: SparqlRuleDef<'pathNegatedPropertySet', Neg
 /**
  * [[96]](https://www.w3.org/TR/sparql11-query/#rPathOneInPropertySet)
  */
-export const pathOneInPropertySet: SparqlRuleDef<'pathOneInPropertySet', IriTermOrElt> = <const> {
+export const pathOneInPropertySet: SparqlGrammarRule<'pathOneInPropertySet', IriTermOrElt> = <const> {
   name: 'pathOneInPropertySet',
   impl: ({ CONSUME, SUBRULE1, SUBRULE2, OR1, OR2 }) => () =>
     OR1<IriTermOrElt>([

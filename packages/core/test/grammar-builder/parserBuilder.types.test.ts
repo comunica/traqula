@@ -1,16 +1,16 @@
-import type { SparqlContext, SparqlRuleDef } from '@traqula/rules-sparql-1-1';
+import type { SparqlContext, SparqlGrammarRule } from '@traqula/rules-sparql-1-1';
 import { describe, it, expectTypeOf } from 'vitest';
 import { Builder } from '../../lib';
 
-const RuleA: SparqlRuleDef<'apple', 'apple'> = {
+const RuleA: SparqlGrammarRule<'apple', 'apple'> = {
   name: 'apple',
   impl: () => () => 'apple',
 };
-const RuleB: SparqlRuleDef<'banana', 'banana'> = {
+const RuleB: SparqlGrammarRule<'banana', 'banana'> = {
   name: 'banana',
   impl: () => () => 'banana',
 };
-const RuleC: SparqlRuleDef<'coconut', 'coconut'> = {
+const RuleC: SparqlGrammarRule<'coconut', 'coconut'> = {
   name: 'coconut',
   impl: () => () => 'coconut',
 };

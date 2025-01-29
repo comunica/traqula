@@ -1,5 +1,5 @@
 import * as l from '../lexer';
-import type { IriTerm, SparqlRuleDef } from '../Sparql11types';
+import type { IriTerm, SparqlGrammarRule, SparqlRule } from '../Sparql11types';
 import { iri } from './literals';
 
 /**
@@ -9,7 +9,7 @@ export interface IDatasetClause {
   value: IriTerm;
   type: 'default' | 'named';
 }
-export const datasetClause: SparqlRuleDef<'datasetClause', IDatasetClause> = <const> {
+export const datasetClause: SparqlRule<'datasetClause', IDatasetClause> = <const> {
   name: 'datasetClause',
   impl: ({ SUBRULE, CONSUME, OR }) => () => {
     CONSUME(l.from);
@@ -18,12 +18,13 @@ export const datasetClause: SparqlRuleDef<'datasetClause', IDatasetClause> = <co
       { ALT: () => ({ value: SUBRULE(namedGraphClause, undefined), type: 'named' }) },
     ]);
   },
+  gImpl: ({ SUBRULE }) => ast => `FROM ${ast.type}`,
 };
 
 /**
  * [[14]](https://www.w3.org/TR/sparql11-query/#rDefaultGraphClause)
  */
-export const defaultGraphClause: SparqlRuleDef<'defaultGraphClause', IriTerm> = <const> {
+export const defaultGraphClause: SparqlGrammarRule<'defaultGraphClause', IriTerm> = <const> {
   name: 'defaultGraphClause',
   impl: ({ SUBRULE }) => () => SUBRULE(sourceSelector, undefined),
 };
@@ -31,7 +32,7 @@ export const defaultGraphClause: SparqlRuleDef<'defaultGraphClause', IriTerm> = 
 /**
  * [[15]](https://www.w3.org/TR/sparql11-query/#rNamedGraphClause)
  */
-export const namedGraphClause: SparqlRuleDef<'namedGraphClause', IriTerm> = <const> {
+export const namedGraphClause: SparqlGrammarRule<'namedGraphClause', IriTerm> = <const> {
   name: 'namedGraphClause',
   impl: ({ SUBRULE, CONSUME }) => () => {
     CONSUME(l.graph.named);
@@ -42,7 +43,7 @@ export const namedGraphClause: SparqlRuleDef<'namedGraphClause', IriTerm> = <con
 /**
  * [[16]](https://www.w3.org/TR/sparql11-query/#rSourceSelector)
  */
-export const sourceSelector: SparqlRuleDef<'sourceSelector', IriTerm> = <const> {
+export const sourceSelector: SparqlGrammarRule<'sourceSelector', IriTerm> = <const> {
   name: 'sourceSelector',
   impl: ({ SUBRULE }) => () => SUBRULE(iri, undefined),
 };

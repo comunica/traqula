@@ -17,7 +17,7 @@ import {
   funcVar1,
 } from '../expressionHelpers';
 import * as l from '../lexer';
-import type { AggregateExpression, Expression, SparqlRuleDef } from '../Sparql11types';
+import type { AggregateExpression, Expression, SparqlGrammarRule, SparqlRule } from '../Sparql11types';
 import { expression } from './expression';
 import { string } from './literals';
 
@@ -162,7 +162,7 @@ export function builtInCallList(SUBRULE: ImplArgs['SUBRULE']): IOrAlt<Expression
 /**
  * [[121]](https://www.w3.org/TR/sparql11-query/#rBuiltInCall)
  */
-export const builtInCall: SparqlRuleDef<'builtInCall', Expression> = <const> {
+export const builtInCall: SparqlGrammarRule<'builtInCall', Expression> = <const> {
   name: 'builtInCall',
   impl: ({ OR, SUBRULE, cache }) => () => {
     const cached = <IOrAlt<Expression>[]>cache.get(builtInCall);
@@ -206,7 +206,7 @@ export const aggregateMin = baseAggregateFunc(l.builtIn.min);
 export const aggregateMax = baseAggregateFunc(l.builtIn.max);
 export const aggregateAvg = baseAggregateFunc(l.builtIn.avg);
 export const aggregateSample = baseAggregateFunc(l.builtIn.sample);
-export const aggregateGroup_concat: SparqlRuleDef<'builtInGroup_concat', AggregateExpression> = <const> {
+export const aggregateGroup_concat: SparqlGrammarRule<'builtInGroup_concat', AggregateExpression> = <const> {
   name: unCapitalize(l.builtIn.groupConcat.name),
   impl: ({ CONSUME, OPTION1, SUBRULE, OPTION2 }) => () => {
     CONSUME(l.builtIn.groupConcat);
@@ -234,14 +234,14 @@ export const aggregateGroup_concat: SparqlRuleDef<'builtInGroup_concat', Aggrega
 /**
  * [[127]](https://www.w3.org/TR/sparql11-query/#rBuiltInCall)
  */
-export const aggregate: SparqlRuleDef<'aggregate', Expression> = <const> {
+export const aggregate: SparqlRule<'aggregate', AggregateExpression> = <const> {
   name: 'aggregate',
   impl: ({ ACTION, SUBRULE, OR }) => (C) => {
     // https://www.w3.org/2013/sparql-errata#errata-query-5 - Or note 15 in SPARQL1.2 spec
     //  An aggregate function is not allowed within an aggregate function.
     const wasInAggregate = ACTION(() => C.parseMode.has('inAggregate'));
     ACTION(() => C.parseMode.add('inAggregate'));
-    const result = OR<Expression>([
+    const result = OR<AggregateExpression>([
       { ALT: () => SUBRULE(aggregateCount, undefined) },
       { ALT: () => SUBRULE(aggregateSum, undefined) },
       { ALT: () => SUBRULE(aggregateMin, undefined) },
@@ -262,5 +262,21 @@ export const aggregate: SparqlRuleDef<'aggregate', Expression> = <const> {
     });
 
     return result;
+  },
+  gImpl: ({ SUBRULE }) => (ast) => {
+    const builder = [ ast.expression, '(' ];
+    if (ast.distinct) {
+      builder.push('DISTINCT');
+    }
+    if ('termType' in ast.expression && ast.expression.termType === 'Wildcard') {
+      builder.push('*');
+    } else {
+      builder.push(SUBRULE(expression, ast.expression, undefined));
+    }
+    if (ast.separator && ast.separator !== ' ') {
+      builder.push(';', 'SEPARATOR', '=', SUBRULE(string, ast.separator, undefined));
+    }
+    builder.push(')');
+    return builder.join(' ');
   },
 };

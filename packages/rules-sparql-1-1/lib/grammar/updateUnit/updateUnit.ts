@@ -11,7 +11,7 @@ import type {
   IriTerm,
   LoadOperation,
   Quads,
-  SparqlRuleDef,
+  SparqlGrammarRule,
   Update,
   UpdateOperation,
 } from '../../Sparql11types';
@@ -22,7 +22,7 @@ import { groupGraphPattern } from '../whereClause';
 /**
  * [[3]](https://www.w3.org/TR/sparql11-query/#rUpdateUnit)
  */
-export const updateUnit: SparqlRuleDef<'updateUnit', Update> = <const> {
+export const updateUnit: SparqlGrammarRule<'updateUnit', Update> = <const> {
   name: 'updateUnit',
   impl: ({ ACTION, SUBRULE }) => () => {
     const data = SUBRULE(update, undefined);
@@ -35,7 +35,7 @@ export const updateUnit: SparqlRuleDef<'updateUnit', Update> = <const> {
 /**
  * [[29]](https://www.w3.org/TR/sparql11-query/#rUpdate)
  */
-export const update: SparqlRuleDef<'update', Update> = <const> {
+export const update: SparqlGrammarRule<'update', Update> = <const> {
   name: 'update',
   impl: ({ ACTION, SUBRULE, CONSUME, OPTION1, OPTION2 }) => () => {
     const prologueValues = SUBRULE(prologue, undefined);
@@ -69,7 +69,7 @@ export const update: SparqlRuleDef<'update', Update> = <const> {
 /**
  * [[30]](https://www.w3.org/TR/sparql11-query/#rUpdate1)
  */
-export const update1: SparqlRuleDef<'update1', UpdateOperation> = <const> {
+export const update1: SparqlGrammarRule<'update1', UpdateOperation> = <const> {
   name: 'update1',
   impl: ({ SUBRULE, OR }) => () => OR([
     { ALT: () => SUBRULE(load, undefined) },
@@ -89,7 +89,7 @@ export const update1: SparqlRuleDef<'update1', UpdateOperation> = <const> {
 /**
  * [[31]](https://www.w3.org/TR/sparql11-query/#rLoad)
  */
-export const load: SparqlRuleDef<'load', LoadOperation> = <const> {
+export const load: SparqlGrammarRule<'load', LoadOperation> = <const> {
   name: 'load',
   impl: ({ SUBRULE, CONSUME, OPTION1, OPTION2 }) => () => {
     CONSUME(l.load);
@@ -111,7 +111,7 @@ export const load: SparqlRuleDef<'load', LoadOperation> = <const> {
 /**
  * [[32]](https://www.w3.org/TR/sparql11-query/#rClear)
  */
-export const clear: SparqlRuleDef<'clear', ClearDropOperation> = <const> {
+export const clear: SparqlGrammarRule<'clear', ClearDropOperation> = <const> {
   name: 'clear',
   impl: ({ SUBRULE, CONSUME, OPTION }) => () => {
     CONSUME(l.clear);
@@ -128,7 +128,7 @@ export const clear: SparqlRuleDef<'clear', ClearDropOperation> = <const> {
 /**
  * [[33]](https://www.w3.org/TR/sparql11-query/#rDrop)
  */
-export const drop: SparqlRuleDef<'drop', UpdateOperation> = <const> {
+export const drop: SparqlGrammarRule<'drop', UpdateOperation> = <const> {
   name: 'drop',
   impl: ({ SUBRULE, CONSUME, OPTION }) => () => {
     CONSUME(l.drop);
@@ -145,7 +145,7 @@ export const drop: SparqlRuleDef<'drop', UpdateOperation> = <const> {
 /**
  * [[34]](https://www.w3.org/TR/sparql11-query/#rCreate)
  */
-export const create: SparqlRuleDef<'create', UpdateOperation> = <const> {
+export const create: SparqlGrammarRule<'create', UpdateOperation> = <const> {
   name: 'create',
   impl: ({ SUBRULE, CONSUME, OPTION }) => () => {
     CONSUME(l.create);
@@ -163,7 +163,7 @@ export const create: SparqlRuleDef<'create', UpdateOperation> = <const> {
 };
 
 function copyMoveAddOperation<T extends 'Copy' | 'Move' | 'Add'>(operation: TokenType & { name: T }):
-SparqlRuleDef<Uncapitalize<T>, UpdateOperation> {
+SparqlGrammarRule<Uncapitalize<T>, UpdateOperation> {
   return {
     name: unCapitalize(operation.name),
     impl: ({ CONSUME, SUBRULE1, SUBRULE2, OPTION }) => () => {
@@ -200,7 +200,7 @@ export const copy = copyMoveAddOperation(l.copy);
 /**
  * [[38]](https://www.w3.org/TR/sparql11-query/#rInsertData)
  */
-export const insertData: SparqlRuleDef<'insertData', InsertDeleteOperation> = <const> {
+export const insertData: SparqlGrammarRule<'insertData', InsertDeleteOperation> = <const> {
   name: 'insertData',
   impl: ({ SUBRULE, CONSUME }) => () => {
     CONSUME(l.insertClause);
@@ -216,7 +216,7 @@ export const insertData: SparqlRuleDef<'insertData', InsertDeleteOperation> = <c
 /**
  * [[39]](https://www.w3.org/TR/sparql11-query/#rDeleteData)
  */
-export const deleteData: SparqlRuleDef<'deleteData', InsertDeleteOperation> = <const> {
+export const deleteData: SparqlGrammarRule<'deleteData', InsertDeleteOperation> = <const> {
   name: 'deleteData',
   impl: ({ ACTION, SUBRULE, CONSUME }) => (C) => {
     CONSUME(l.deleteClause);
@@ -236,7 +236,7 @@ export const deleteData: SparqlRuleDef<'deleteData', InsertDeleteOperation> = <c
 /**
  * [[40]](https://www.w3.org/TR/sparql11-query/#rDeleteWhere)
  */
-export const deleteWhere: SparqlRuleDef<'deleteWhere', InsertDeleteOperation> = <const> {
+export const deleteWhere: SparqlGrammarRule<'deleteWhere', InsertDeleteOperation> = <const> {
   name: 'deleteWhere',
   impl: ({ ACTION, SUBRULE, CONSUME }) => (C) => {
     CONSUME(l.deleteClause);
@@ -256,7 +256,7 @@ export const deleteWhere: SparqlRuleDef<'deleteWhere', InsertDeleteOperation> = 
 /**
  * [[41]](https://www.w3.org/TR/sparql11-query/#rModify)
  */
-export const modify: SparqlRuleDef<'modify', UpdateOperation> = <const> {
+export const modify: SparqlGrammarRule<'modify', UpdateOperation> = <const> {
   name: 'modify',
   impl: ({ ACTION, SUBRULE, CONSUME, MANY, SUBRULE1, SUBRULE2, OPTION1, OPTION2, OR }) => () => {
     const graph = OPTION1(() => {
@@ -308,7 +308,7 @@ export const modify: SparqlRuleDef<'modify', UpdateOperation> = <const> {
 /**
  * [[42]](https://www.w3.org/TR/sparql11-query/#rDeleteClause)
  */
-export const deleteClause: SparqlRuleDef<'deleteClause', Quads[]> = <const> {
+export const deleteClause: SparqlGrammarRule<'deleteClause', Quads[]> = <const> {
   name: 'deleteClause',
   impl: ({ ACTION, SUBRULE, CONSUME }) => (C) => {
     CONSUME(l.deleteClause);
@@ -324,7 +324,7 @@ export const deleteClause: SparqlRuleDef<'deleteClause', Quads[]> = <const> {
 /**
  * [[43]](https://www.w3.org/TR/sparql11-query/#rInsertClause)
  */
-export const insertClause: SparqlRuleDef<'insertClause', Quads[]> = <const> {
+export const insertClause: SparqlGrammarRule<'insertClause', Quads[]> = <const> {
   name: 'insertClause',
   impl: ({ SUBRULE, CONSUME }) => () => {
     CONSUME(l.insertClause);
@@ -335,7 +335,7 @@ export const insertClause: SparqlRuleDef<'insertClause', Quads[]> = <const> {
 /**
  * [[44]](https://www.w3.org/TR/sparql11-query/#rUsingClause)
  */
-export const usingClause: SparqlRuleDef<'usingClause', { value: IriTerm; type: 'default' | 'named' }> = <const> {
+export const usingClause: SparqlGrammarRule<'usingClause', { value: IriTerm; type: 'default' | 'named' }> = <const> {
   name: 'usingClause',
   impl: ({ CONSUME, SUBRULE1, SUBRULE2, OR }) => () => {
     CONSUME(l.usingClause);
@@ -358,7 +358,7 @@ export const usingClause: SparqlRuleDef<'usingClause', { value: IriTerm; type: '
 /**
  * [[45]](https://www.w3.org/TR/sparql11-query/#rGraphOrDefault)
  */
-export const graphOrDefault: SparqlRuleDef<'graphOrDefault', GraphOrDefault> = <const> {
+export const graphOrDefault: SparqlGrammarRule<'graphOrDefault', GraphOrDefault> = <const> {
   name: 'graphOrDefault',
   impl: ({ SUBRULE, CONSUME, OPTION, OR }) => () => OR<GraphOrDefault>([
     { ALT: () => {
@@ -381,7 +381,7 @@ export const graphOrDefault: SparqlRuleDef<'graphOrDefault', GraphOrDefault> = <
 /**
  * [[46]](https://www.w3.org/TR/sparql11-query/#rGraphRef)
  */
-export const graphRef: SparqlRuleDef<'graphRef', IriTerm> = <const> {
+export const graphRef: SparqlGrammarRule<'graphRef', IriTerm> = <const> {
   name: 'graphRef',
   impl: ({ SUBRULE, CONSUME }) => () => {
     CONSUME(l.graph.graph);
@@ -392,7 +392,7 @@ export const graphRef: SparqlRuleDef<'graphRef', IriTerm> = <const> {
 /**
  * [[47]](https://www.w3.org/TR/sparql11-query/#rGraphRefAll)
  */
-export const graphRefAll: SparqlRuleDef<'graphRefAll', GraphReference> = <const> {
+export const graphRefAll: SparqlGrammarRule<'graphRefAll', GraphReference> = <const> {
   name: 'graphRefAll',
   impl: ({ SUBRULE, CONSUME, OR }) => () => OR<GraphReference>([
     { ALT: () => {
@@ -417,7 +417,7 @@ export const graphRefAll: SparqlRuleDef<'graphRefAll', GraphReference> = <const>
 /**
  * [[48]](https://www.w3.org/TR/sparql11-query/#rQuadPattern)
  */
-export const quadPattern: SparqlRuleDef<'quadPattern', Quads[]> = <const> {
+export const quadPattern: SparqlGrammarRule<'quadPattern', Quads[]> = <const> {
   name: 'quadPattern',
   impl: ({ SUBRULE, CONSUME }) => () => {
     CONSUME(l.symbols.LCurly);
@@ -430,7 +430,7 @@ export const quadPattern: SparqlRuleDef<'quadPattern', Quads[]> = <const> {
 /**
  * [[49]](https://www.w3.org/TR/sparql11-query/#rQuadData)
  */
-export const quadData: SparqlRuleDef<'quadData', Quads[]> = <const> {
+export const quadData: SparqlGrammarRule<'quadData', Quads[]> = <const> {
   name: 'quadData',
   impl: ({ ACTION, SUBRULE, CONSUME }) => (C) => {
     CONSUME(l.symbols.LCurly);
@@ -447,7 +447,7 @@ export const quadData: SparqlRuleDef<'quadData', Quads[]> = <const> {
 /**
  * [[50]](https://www.w3.org/TR/sparql11-query/#rQuads)
  */
-export const quads: SparqlRuleDef<'quads', Quads[]> = <const> {
+export const quads: SparqlGrammarRule<'quads', Quads[]> = <const> {
   name: 'quads',
   impl: ({ SUBRULE, CONSUME, MANY, SUBRULE1, SUBRULE2, OPTION1, OPTION2, OPTION3 }) => () => {
     const quads: Quads[] = [];
@@ -479,7 +479,7 @@ export const quads: SparqlRuleDef<'quads', Quads[]> = <const> {
 /**
  * [[51]](https://www.w3.org/TR/sparql11-query/#rQuadsNotTriples)
  */
-export const quadsNotTriples: SparqlRuleDef<'quadsNotTriples', GraphQuads> = <const> {
+export const quadsNotTriples: SparqlGrammarRule<'quadsNotTriples', GraphQuads> = <const> {
   name: 'quadsNotTriples',
   impl: ({ SUBRULE, CONSUME, OPTION }) => () => {
     CONSUME(l.graph.graph);

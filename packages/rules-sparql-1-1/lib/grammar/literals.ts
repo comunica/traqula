@@ -1,13 +1,13 @@
 import { CommonIRIs, resolveIRI } from '@traqula/core';
 import type { NamedNode } from 'rdf-data-factory';
 import * as l from '../lexer';
-import type { BlankTerm, IriTerm, LiteralTerm, SparqlRuleDef } from '../Sparql11types';
+import type { BlankTerm, IriTerm, LiteralTerm, SparqlGrammarRule, SparqlRule } from '../Sparql11types';
 
 /**
  * Parses an RDF literal, in the form of {value}@{lang} or {value}^^{datatype}.
  * [[129]](https://www.w3.org/TR/sparql11-query/#rRDFLiteral)
  */
-export const rdfLiteral: SparqlRuleDef<'rdfLiteral', LiteralTerm> = <const> {
+export const rdfLiteral: SparqlRule<'rdfLiteral', LiteralTerm> = <const> {
   name: 'rdfLiteral',
   impl: ({ ACTION, SUBRULE, CONSUME, OPTION, OR }) => (C) => {
     const value = SUBRULE(string, undefined);
@@ -22,13 +22,23 @@ export const rdfLiteral: SparqlRuleDef<'rdfLiteral', LiteralTerm> = <const> {
     ]));
     return ACTION(() => C.dataFactory.literal(value, languageOrDatatype));
   },
+  gImpl: ({ SUBRULE }) => (ast) => {
+    const lexical = SUBRULE(string, ast.value, undefined);
+    if (ast.direction) {
+      return `${lexical}@${ast.language}--${ast.direction}`;
+    }
+    if (ast.language) {
+      return `${lexical}@${ast.language}`;
+    }
+    return `${lexical}^^<${ast.datatype.value}>`;
+  },
 };
 
 /**
  * Parses a numeric literal.
  * [[130]](https://www.w3.org/TR/sparql11-query/#rNumericLiteral)
  */
-export const numericLiteral: SparqlRuleDef<'numericLiteral', LiteralTerm> = <const> {
+export const numericLiteral: SparqlGrammarRule<'numericLiteral', LiteralTerm> = <const> {
   name: 'numericLiteral',
   impl: ({ SUBRULE, OR }) => () => OR([
     { ALT: () => SUBRULE(numericLiteralUnsigned, undefined) },
@@ -41,7 +51,7 @@ export const numericLiteral: SparqlRuleDef<'numericLiteral', LiteralTerm> = <con
  * Parses an unsigned numeric literal.
  * [[131]](https://www.w3.org/TR/sparql11-query/#rNumericLiteralUnsigned)
  */
-export const numericLiteralUnsigned: SparqlRuleDef<'numericLiteralUnsigned', LiteralTerm> = <const> {
+export const numericLiteralUnsigned: SparqlGrammarRule<'numericLiteralUnsigned', LiteralTerm> = <const> {
   name: 'numericLiteralUnsigned',
   impl: ({ ACTION, CONSUME, OR }) => C => OR([
     { ALT: () => {
@@ -63,7 +73,7 @@ export const numericLiteralUnsigned: SparqlRuleDef<'numericLiteralUnsigned', Lit
  * Parses a positive numeric literal.
  * [[132]](https://www.w3.org/TR/sparql11-query/#rNumericLiteralPositive)
  */
-export const numericLiteralPositive: SparqlRuleDef<'numericLiteralPositive', LiteralTerm> = <const> {
+export const numericLiteralPositive: SparqlGrammarRule<'numericLiteralPositive', LiteralTerm> = <const> {
   name: 'numericLiteralPositive',
   impl: ({ ACTION, CONSUME, OR }) => C => OR([
     { ALT: () => {
@@ -85,7 +95,7 @@ export const numericLiteralPositive: SparqlRuleDef<'numericLiteralPositive', Lit
  * Parses a negative numeric literal.
  * [[133]](https://www.w3.org/TR/sparql11-query/#rNumericLiteralNegative)
  */
-export const numericLiteralNegative: SparqlRuleDef<'numericLiteralNegative', LiteralTerm> = <const> {
+export const numericLiteralNegative: SparqlGrammarRule<'numericLiteralNegative', LiteralTerm> = <const> {
   name: 'numericLiteralNegative',
   impl: ({ ACTION, CONSUME, OR }) => C => OR([
     { ALT: () => {
@@ -107,7 +117,7 @@ export const numericLiteralNegative: SparqlRuleDef<'numericLiteralNegative', Lit
  * Parses a boolean literal.
  * [[134]](https://www.w3.org/TR/sparql11-query/#rBooleanLiteral)
  */
-export const booleanLiteral: SparqlRuleDef<'booleanLiteral', LiteralTerm> = <const> {
+export const booleanLiteral: SparqlGrammarRule<'booleanLiteral', LiteralTerm> = <const> {
   name: 'booleanLiteral',
   impl: ({ ACTION, CONSUME, OR }) => C => OR([
     { ALT: () => {
@@ -125,7 +135,7 @@ export const booleanLiteral: SparqlRuleDef<'booleanLiteral', LiteralTerm> = <con
  * Parses a string literal.
  * [[135]](https://www.w3.org/TR/sparql11-query/#rString)
  */
-export const string: SparqlRuleDef<'string', string> = <const> {
+export const string: SparqlRule<'string', string> = <const> {
   name: 'string',
   impl: ({ ACTION, CONSUME, OR }) => () => {
     const rawString = OR([
@@ -146,13 +156,36 @@ export const string: SparqlRuleDef<'string', string> = <const> {
       }
     }));
   },
+  gImpl: () => (ast) => {
+    const lexical = ast.replaceAll(/["\\\t\n\r\b\f]/gu, (char) => {
+      switch (char) {
+        case '\t':
+          return '\\t';
+        case '\n':
+          return '\\n';
+        case '\r':
+          return '\\r';
+        case '\b':
+          return '\\b';
+        case '\f':
+          return '\\f';
+        case '"':
+          return '\\"';
+        case '\\':
+          return '\\\\';
+        default:
+          return char;
+      }
+    });
+    return `"${lexical}"`;
+  },
 };
 
 /**
  * Parses a named node, either as an IRI or as a prefixed name.
  * [[136]](https://www.w3.org/TR/sparql11-query/#riri)
  */
-export const iri: SparqlRuleDef<'iri', IriTerm> = <const> {
+export const iri: SparqlRule<'iri', IriTerm> = <const> {
   name: 'iri',
   impl: ({ ACTION, SUBRULE, CONSUME, OR }) => C => OR([
     { ALT: () => {
@@ -161,13 +194,14 @@ export const iri: SparqlRuleDef<'iri', IriTerm> = <const> {
     } },
     { ALT: () => SUBRULE(prefixedName, undefined) },
   ]),
+  gImpl: () => ast => ast.value,
 };
 
 /**
  * Parses a named node with a prefix. Looks up the prefix in the context and returns the full IRI.
  * [[137]](https://www.w3.org/TR/sparql11-query/#rPrefixedName)
  */
-export const prefixedName: SparqlRuleDef<'prefixedName', IriTerm> = <const> {
+export const prefixedName: SparqlGrammarRule<'prefixedName', IriTerm> = <const> {
   name: 'prefixedName',
   impl: ({ ACTION, CONSUME, OR }) => (C) => {
     const fullStr = OR([
@@ -191,7 +225,7 @@ export const canCreateBlankNodes = Symbol('canCreateBlankNodes');
  * Parses blank note and throws an error if 'canCreateBlankNodes' is not in the current parserMode.
  * [[138]](https://www.w3.org/TR/sparql11-query/#rBlankNode)
  */
-export const blankNode: SparqlRuleDef<'blankNode', BlankTerm> = <const> {
+export const blankNode: SparqlRule<'blankNode', BlankTerm> = <const> {
   name: 'blankNode',
   impl: ({ ACTION, CONSUME, OR }) => (C) => {
     const result = OR([
@@ -215,4 +249,5 @@ export const blankNode: SparqlRuleDef<'blankNode', BlankTerm> = <const> {
     });
     return result;
   },
+  gImpl: () => ast => `_:${ast.value}`,
 };

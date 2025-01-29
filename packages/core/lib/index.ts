@@ -4,4 +4,4 @@ export * from './grammar-builder/ruleDefTypes';
 export * from './grammar-helpers/utils';
 export * from './lexer-builder/LexerBuilder';
 export * from './lexer-helper/utils';
-export * from './Wildcard';
+export * from '../../rules-sparql-1-1/lib/Wildcard';

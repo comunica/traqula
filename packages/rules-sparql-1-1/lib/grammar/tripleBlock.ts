@@ -15,22 +15,38 @@ import type {
 import { var_, varOrTerm, verb } from './general';
 import { path } from './propertyPaths';
 
+function triplesDotSeperated(subRule: SparqlGrammarRule<any, Triple[]>): SparqlGrammarRule<any, Triple[]>['impl'] {
+  return ({ ACTION, AT_LEAST_ONE, SUBRULE, CONSUME, OPTION }) => () => {
+    const triples: Triple[] = [];
+
+    let parsedDot = true;
+    AT_LEAST_ONE({
+      GATE: () => parsedDot,
+      DEF: () => {
+        parsedDot = false;
+        const template = SUBRULE(subRule, undefined);
+        ACTION(() => {
+          triples.push(...template);
+        });
+        OPTION(() => {
+          CONSUME(l.symbols.dot);
+          parsedDot = true;
+        });
+      },
+    });
+    return triples;
+  };
+}
+
 /**
  * [[55]](https://www.w3.org/TR/sparql11-query/#rTriplesBlock)
  */
 export const triplesBlock: SparqlRule<'triplesBlock', BgpPattern> = <const> {
   name: 'triplesBlock',
-  impl: ({ ACTION, SUBRULE, CONSUME, OPTION1, OPTION2 }) => () => {
-    const triples = SUBRULE(triplesSameSubjectPath, undefined);
-    const pattern = OPTION1(() => {
-      CONSUME(l.symbols.dot);
-      return OPTION2(() => SUBRULE(triplesBlock, undefined));
-    });
-    return ACTION(() => ({
-      type: 'bgp',
-      triples: [ ...triples, ...(pattern?.triples ?? []) ],
-    }));
-  },
+  impl: implArgs => C => ({
+    type: 'bgp',
+    triples: triplesDotSeperated(triplesSameSubjectPath)(implArgs)(C, undefined),
+  }),
   gImpl: ({ SUBRULE }) => ast => ast.triples.map((triple) => {
     const { subject, predicate, object } = triple;
     return [ subject, predicate, object ].map((part) => {
@@ -71,6 +87,14 @@ function triplesSameSubjectImpl<T extends string>(name: T, allowPaths: boolean):
 }
 export const triplesSameSubject = triplesSameSubjectImpl('triplesSameSubject', false);
 export const triplesSameSubjectPath = triplesSameSubjectImpl('triplesSameSubjectPath', true);
+
+/**
+ * [[52]](https://www.w3.org/TR/sparql11-query/#rTriplesTemplate)
+ */
+export const triplesTemplate: SparqlGrammarRule<'triplesTemplate', Triple[]> = <const> {
+  name: 'triplesTemplate',
+  impl: triplesDotSeperated(triplesSameSubject),
+};
 
 /**
  * [[76]](https://www.w3.org/TR/sparql11-query/#rPropertyList)

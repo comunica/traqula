@@ -3,7 +3,6 @@ import * as l from '../lexer';
 import type {
   GraphTerm,
   Term,
-  Triple,
   VerbA,
   IriTerm,
   VariableTerm,
@@ -12,7 +11,6 @@ import type {
   SparqlRule,
 } from '../Sparql11types';
 import { blankNode, booleanLiteral, iri, numericLiteral, rdfLiteral } from './literals';
-import { triplesSameSubject } from './tripleBlock';
 
 /**
  * [[4]](https://www.w3.org/TR/sparql11-query/#rPrologue)
@@ -95,34 +93,6 @@ export const prefixDecl: SparqlGrammarRule<'prefixDecl', [string, string]> = <co
 };
 
 /**
- * [[52]](https://www.w3.org/TR/sparql11-query/#rTriplesTemplate)
- */
-export const triplesTemplate: SparqlGrammarRule<'triplesTemplate', Triple[]> = <const> {
-  name: 'triplesTemplate',
-  impl: ({ ACTION, AT_LEAST_ONE, SUBRULE, CONSUME, OPTION }) => () => {
-    const triples: Triple[] = [];
-
-    let parsedDot = true;
-    AT_LEAST_ONE({
-      GATE: () => parsedDot,
-      DEF: () => {
-        parsedDot = false;
-        const template = SUBRULE(triplesSameSubject, undefined);
-        ACTION(() => {
-          triples.push(...template);
-        });
-        OPTION(() => {
-          CONSUME(l.symbols.dot);
-          parsedDot = true;
-        });
-      },
-    });
-
-    return triples;
-  },
-};
-
-/**
  * [[78]](https://www.w3.org/TR/sparql11-query/#rVerb)
  */
 export const verb: SparqlGrammarRule<'verb', VariableTerm | IriTerm> = <const> {
@@ -154,7 +124,7 @@ export const varOrTerm: SparqlRule<'varOrTerm', Term> = <const> {
   ]),
   gImpl: ({ SUBRULE }) => (ast) => {
     if (ast.termType === 'Variable') {
-      return SUBRULE(varOrTerm, ast, undefined);
+      return SUBRULE(var_, ast, undefined);
     }
     if (ast.termType === 'NamedNode') {
       return SUBRULE(iri, <IriTerm> ast, undefined);

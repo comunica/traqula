@@ -22,10 +22,10 @@ import type {
 } from '../../Sparql11types';
 import { datasetClause, type IDatasetClause } from '../dataSetClause';
 import { expression } from '../expression';
-import { prologue, triplesTemplate, var_, varOrIri } from '../general';
+import { prologue, var_, varOrIri } from '../general';
 import { iri } from '../literals';
 import { solutionModifier } from '../solutionModifier';
-import { triplesSameSubject } from '../tripleBlock';
+import { triplesBlock, triplesTemplate } from '../tripleBlock';
 import { dataBlock, groupGraphPattern, inlineDataFull, whereClause } from '../whereClause';
 
 /**
@@ -370,7 +370,7 @@ export const selectClause: SparqlRule<'selectClause', ISelectClause> = <const> {
 /**
  * [[10]](https://www.w3.org/TR/sparql11-query/#rConstructQuery)
  */
-export const constructQuery: SparqlGrammarRule<'constructQuery', Omit<ConstructQuery, HandledByBase>> = <const> {
+export const constructQuery: SparqlRule<'constructQuery', Omit<ConstructQuery, HandledByBase>> = <const> {
   name: 'constructQuery',
   impl: ({ ACTION, SUBRULE, CONSUME, SUBRULE1, SUBRULE2, MANY1, MANY2, OPTION, OR }) => () => {
     CONSUME(l.construct);
@@ -415,6 +415,22 @@ export const constructQuery: SparqlGrammarRule<'constructQuery', Omit<ConstructQ
         },
       },
     ]);
+  },
+  gImpl: ({ SUBRULE }) => (ast) => {
+    const selectString = SUBRULE(constructTemplate, ast.template, undefined);
+
+    const fromDefaultString = ast.from?.default.map(clause =>
+      `FROM ${SUBRULE(iri, clause, undefined)}`).join('\n') ?? '';
+
+    const fromNamedString = ast.from?.named.map(clause =>
+      `FROM NAMED ${SUBRULE(iri, clause, undefined)}`).join('\n') ?? '';
+
+    const whereString = ast.where ?
+      `WHERE ${SUBRULE(groupGraphPattern, { type: 'group', patterns: ast.where }, undefined)}` :
+      '';
+
+    const modifierString = SUBRULE(solutionModifier, ast, undefined);
+    return [ 'CONSTRUCT', selectString, fromDefaultString, fromNamedString, whereString, modifierString ].join('\n');
   },
 };
 
@@ -490,7 +506,7 @@ export const valuesClause: SparqlRule<'valuesClause', ValuePatternRow[] | undefi
 /**
  * [[73]](https://www.w3.org/TR/sparql11-query/#ConstructTemplate)
  */
-export const constructTemplate: SparqlGrammarRule<'constructTemplate', Triple[] | undefined> = <const> {
+export const constructTemplate: SparqlRule<'constructTemplate', Triple[] | undefined> = <const> {
   name: 'constructTemplate',
   impl: ({ SUBRULE, CONSUME, OPTION }) => () => {
     CONSUME(l.symbols.LCurly);
@@ -498,6 +514,8 @@ export const constructTemplate: SparqlGrammarRule<'constructTemplate', Triple[] 
     CONSUME(l.symbols.RCurly);
     return triples;
   },
+  gImpl: ({ SUBRULE }) => ast =>
+    `{ ${ast ? SUBRULE(triplesBlock, { type: 'bgp', triples: ast }, undefined) : ''} }`,
 };
 
 /**
@@ -505,15 +523,5 @@ export const constructTemplate: SparqlGrammarRule<'constructTemplate', Triple[] 
  */
 export const constructTriples: SparqlGrammarRule<'constructTriples', Triple[]> = <const> {
   name: 'constructTriples',
-  impl: ({ SUBRULE, CONSUME, OPTION1, OPTION2 }) => () => {
-    const triples: Triple[][] = [];
-    triples.push(SUBRULE(triplesSameSubject, undefined));
-    OPTION1(() => {
-      CONSUME(l.symbols.dot);
-      OPTION2(() => {
-        triples.push(SUBRULE(constructTriples, undefined));
-      });
-    });
-    return triples.flat(1);
-  },
+  impl: triplesTemplate.impl,
 };

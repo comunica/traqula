@@ -17,6 +17,7 @@ import type {
 } from '../../Sparql11types';
 import { prologue, triplesTemplate, varOrIri } from '../general';
 import { iri } from '../literals';
+import { triplesTemplate } from '../tripleBlock';
 import { groupGraphPattern } from '../whereClause';
 
 /**

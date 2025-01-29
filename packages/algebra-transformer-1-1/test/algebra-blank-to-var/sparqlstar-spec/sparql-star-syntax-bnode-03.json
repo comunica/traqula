@@ -10,7 +10,7 @@
           "type": "pattern",
           "termType": "Quad",
           "subject": {
-            "termType": "BlankNode",
+            "termType": "Variable",
             "value": "g_0"
           },
           "predicate": {
@@ -18,7 +18,7 @@
             "value": "http://example.com/ns#p"
           },
           "object": {
-            "termType": "BlankNode",
+            "termType": "Variable",
             "value": "g_1"
           },
           "graph": {

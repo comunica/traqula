@@ -38,7 +38,7 @@
             "value": "http://example.com/ns#p"
           },
           "object": {
-            "termType": "BlankNode",
+            "termType": "Variable",
             "value": "g_0"
           },
           "graph": {

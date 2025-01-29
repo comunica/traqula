@@ -97,7 +97,7 @@
               "value": "http://example.com/ns#b"
             },
             "object": {
-              "termType": "BlankNode",
+              "termType": "Variable",
               "value": "g_0"
             },
             "graph": {
@@ -121,7 +121,7 @@
             "type": "pattern",
             "termType": "Quad",
             "subject": {
-              "termType": "BlankNode",
+              "termType": "Variable",
               "value": "g_1"
             },
             "predicate": {
@@ -153,7 +153,7 @@
               "value": "http://example.com/ns#b"
             },
             "object": {
-              "termType": "BlankNode",
+              "termType": "Variable",
               "value": "g_2"
             },
             "graph": {

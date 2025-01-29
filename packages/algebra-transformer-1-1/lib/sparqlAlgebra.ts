@@ -920,8 +920,8 @@ function translateBlankNodesToVariables (res: Algebra.Operation) : Algebra.Opera
     return Util.mapOperation(res, {
         [Algebra.types.DELETE_INSERT]: (op: Algebra.DeleteInsert) => {
             // Make sure blank nodes remain in the INSERT block, but do update the WHERE block
-            return { 
-                result: factory.createDeleteInsert(op.delete, op.insert, op.where && translateBlankNodesToVariables(op.where)), 
+            return {
+                result: factory.createDeleteInsert(op.delete, op.insert, op.where && translateBlankNodesToVariables(op.where)),
                 recurse: false,
             };
         },
@@ -966,6 +966,14 @@ function translateBlankNodesToVariables (res: Algebra.Operation) : Algebra.Opera
                 blankToVariableMapping[term.value] = variable;
             }
             return variable;
+        }
+        if (term.termType === 'Quad') {
+            return factory.dataFactory.quad(
+              blankToVariable(term.subject),
+              blankToVariable(term.predicate),
+              blankToVariable(term.object),
+              blankToVariable(term.graph),
+            );
         }
         return term;
   }

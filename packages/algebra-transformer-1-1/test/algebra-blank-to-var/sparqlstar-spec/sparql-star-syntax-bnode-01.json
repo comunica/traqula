@@ -10,7 +10,7 @@
           "type": "pattern",
           "termType": "Quad",
           "subject": {
-            "termType": "BlankNode",
+            "termType": "Variable",
             "value": "e_a"
           },
           "predicate": {

@@ -30,7 +30,7 @@
           "type": "pattern",
           "termType": "Quad",
           "subject": {
-            "termType": "BlankNode",
+            "termType": "Variable",
             "value": "g_0"
           },
           "predicate": {

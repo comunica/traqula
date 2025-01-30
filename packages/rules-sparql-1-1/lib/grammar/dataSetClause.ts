@@ -18,7 +18,7 @@ export const datasetClause: SparqlRule<'datasetClause', IDatasetClause> = <const
       { ALT: () => ({ value: SUBRULE(namedGraphClause, undefined), type: 'named' }) },
     ]);
   },
-  gImpl: ({ SUBRULE }) => ast => `FROM ${ast.type}`,
+  gImpl: () => ast => `FROM ${ast.type}`,
 };
 
 /**

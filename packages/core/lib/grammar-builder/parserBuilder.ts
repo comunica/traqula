@@ -95,8 +95,8 @@ export class Builder<Context, Names extends string, RuleDefs extends RuleDefMap<
   public addRule<U extends string, RET, ARGS>(
     rule: CheckOverlap<U, Names, ParserRule<Context, U, RET, ARGS>>,
   ): Builder<Context, Names | U, {[K in Names | U]: K extends U ?
-      ParserRule<Context, K, RET, ARGS> :
-        (K extends Names ? (RuleDefs[K] extends ParserRule<Context, K> ? RuleDefs[K] : never) : never) }> {
+    ParserRule<Context, K, RET, ARGS> :
+      (K extends Names ? (RuleDefs[K] extends ParserRule<Context, K> ? RuleDefs[K] : never) : never) }> {
     return this.addRuleRedundant(rule);
   }
 

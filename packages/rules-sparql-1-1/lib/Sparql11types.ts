@@ -116,33 +116,30 @@ export interface Update {
 
 export type UpdateOperation = InsertDeleteOperation | ManagementOperation;
 
-export type InsertDeleteOperation =
-  | {
-    updateType: 'insert';
-    graph?: GraphOrDefault;
-    insert: Quads[];
-  }
-  | {
-    updateType: 'delete';
-    graph?: GraphOrDefault;
-    delete: Quads[];
-  }
-  | {
-    updateType: 'insertdelete';
-    graph?: IriTerm;
-    insert: Quads[];
-    delete: Quads[];
-    using?: {
-      default: IriTerm[];
-      named: IriTerm[];
-    };
-    where: Pattern[];
-  }
-  | {
-    updateType: 'deletewhere';
-    graph?: GraphOrDefault;
-    delete: Quads[];
+export type InsertDeleteOperation = InsertOperation | DeleteOperation | ModifyOperation | DeleteWhereOperation;
+export interface InsertOperation {
+  updateType: 'insert';
+  insert: Quads[];
+}
+export interface DeleteOperation {
+  updateType: 'delete';
+  delete: Quads[];
+}
+export interface ModifyOperation {
+  updateType: 'insertdelete';
+  insert: Quads[];
+  delete: Quads[];
+  graph?: IriTerm;
+  using?: {
+    default: IriTerm[];
+    named: IriTerm[];
   };
+  where: Pattern[];
+}
+export interface DeleteWhereOperation {
+  updateType: 'deletewhere';
+  delete: Quads[];
+}
 
 export type Quads = BgpPattern | GraphQuads;
 

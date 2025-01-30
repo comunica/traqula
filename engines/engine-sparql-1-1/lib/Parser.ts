@@ -38,16 +38,16 @@ const queryOrUpdate: SparqlGrammarRule<'queryOrUpdate', Query | Update | Pick<Up
         // Prologue ( Update1 ( ';' Update )? )?
         // Is equivalent to:
 
-        let parsedPrologue = true;
+        let parsedSemi = true;
         const updateResult: Update = {
           ...prologueValues,
           type: 'update',
           updates: [],
         };
         MANY({
-          GATE: () => parsedPrologue,
+          GATE: () => parsedSemi,
           DEF: () => {
-            parsedPrologue = false;
+            parsedSemi = false;
             const updateOperation = SUBRULE(gram.update1, undefined);
 
             updateResult.updates.push(updateOperation);
@@ -63,7 +63,7 @@ const queryOrUpdate: SparqlGrammarRule<'queryOrUpdate', Query | Update | Pick<Up
                   updateResult.prefixes;
               });
 
-              parsedPrologue = true;
+              parsedSemi = true;
             });
           },
         });

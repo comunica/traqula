@@ -1,10 +1,11 @@
 import { Builder } from '@traqula/core';
+import type { UpdateOperation } from '@traqula/rules-sparql-1-1';
 import { gram } from '@traqula/rules-sparql-1-1';
 import { triplesTemplateParserBuilder } from './triplesTemplateParserBuilder';
 
 const update1Patch: typeof gram.update1 = {
   name: 'update1',
-  impl: ({ SUBRULE, OR }) => () => OR([
+  impl: ({ SUBRULE, OR }) => () => OR<UpdateOperation>([
     { ALT: () => SUBRULE(gram.load, undefined) },
     { ALT: () => SUBRULE(gram.clear, undefined) },
     { ALT: () => SUBRULE(gram.drop, undefined) },
@@ -16,6 +17,7 @@ const update1Patch: typeof gram.update1 = {
     { ALT: () => SUBRULE(gram.deleteData, undefined) },
     { ALT: () => SUBRULE(gram.deleteWhere, undefined) },
   ]),
+  gImpl: gram.update1.gImpl,
 };
 
 const rulesNoUpdate1 = <const>[

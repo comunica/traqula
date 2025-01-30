@@ -81,11 +81,6 @@ export interface SelectQuery extends BaseQuery {
   variables: Variable[] | [Wildcard];
   distinct?: true | undefined;
   reduced?: true | undefined;
-  having?: Expression[] | undefined;
-  group?: Grouping[] | undefined;
-  order?: Ordering[] | undefined;
-  limit?: number | undefined;
-  offset?: number | undefined;
 }
 
 export interface Grouping {
@@ -101,11 +96,6 @@ export interface Ordering {
 export interface ConstructQuery extends BaseQuery {
   queryType: 'CONSTRUCT';
   template?: Triple[] | undefined;
-  having?: Expression[] | undefined;
-  group?: Grouping[] | undefined;
-  order?: Ordering[] | undefined;
-  limit?: number | undefined;
-  offset?: number | undefined;
 }
 
 export interface AskQuery extends BaseQuery {
@@ -222,6 +212,11 @@ export interface BaseQuery {
     | undefined;
   where?: Pattern[] | undefined;
   values?: ValuePatternRow[] | undefined;
+  having?: Expression[] | undefined;
+  group?: Grouping[] | undefined;
+  order?: Ordering[] | undefined;
+  limit?: number | undefined;
+  offset?: number | undefined;
 }
 
 export type IriTermOrElt = IriTerm | {

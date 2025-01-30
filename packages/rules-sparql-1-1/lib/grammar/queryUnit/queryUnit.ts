@@ -22,7 +22,7 @@ import type {
 } from '../../Sparql11types';
 import { datasetClause, type IDatasetClause } from '../dataSetClause';
 import { expression } from '../expression';
-import { prologue, var_, varOrIri } from '../general';
+import { prologue, var_, varOrIri, varOrTerm } from '../general';
 import { iri } from '../literals';
 import { solutionModifier } from '../solutionModifier';
 import { triplesBlock, triplesTemplate } from '../tripleBlock';
@@ -417,7 +417,7 @@ export const constructQuery: SparqlRule<'constructQuery', Omit<ConstructQuery, H
     ]);
   },
   gImpl: ({ SUBRULE }) => (ast) => {
-    const selectString = SUBRULE(constructTemplate, ast.template, undefined);
+    const constructString = SUBRULE(constructTemplate, ast.template, undefined);
 
     const fromDefaultString = ast.from?.default.map(clause =>
       `FROM ${SUBRULE(iri, clause, undefined)}`).join('\n') ?? '';
@@ -430,14 +430,14 @@ export const constructQuery: SparqlRule<'constructQuery', Omit<ConstructQuery, H
       '';
 
     const modifierString = SUBRULE(solutionModifier, ast, undefined);
-    return [ 'CONSTRUCT', selectString, fromDefaultString, fromNamedString, whereString, modifierString ].join('\n');
+    return [ 'CONSTRUCT', constructString, fromDefaultString, fromNamedString, whereString, modifierString ].join('\n');
   },
 };
 
 /**
  * [[11]](https://www.w3.org/TR/sparql11-query/#rDescribeQuery)
  */
-export const describeQuery: SparqlGrammarRule<'describeQuery', Omit<DescribeQuery, HandledByBase>> = <const> {
+export const describeQuery: SparqlRule<'describeQuery', Omit<DescribeQuery, HandledByBase>> = <const> {
   name: 'describeQuery',
   impl: ({ ACTION, AT_LEAST_ONE, SUBRULE, CONSUME, MANY, OPTION, OR }) => () => {
     CONSUME(l.describe);
@@ -465,12 +465,33 @@ export const describeQuery: SparqlGrammarRule<'describeQuery', Omit<DescribeQuer
       where,
     }));
   },
+  gImpl: ({ SUBRULE }) => (ast) => {
+    const builder = [ 'DESCRIBE' ];
+    for (const variable of ast.variables) {
+      if (variable.termType === 'Wildcard') {
+        builder.push('*');
+      } else {
+        builder.push(SUBRULE(varOrTerm, variable, undefined));
+      }
+    }
+
+    if (ast.from) {
+      builder.push(ast.from.default.map(clause => `FROM ${SUBRULE(iri, clause, undefined)}`).join('\n'));
+      builder.push(ast.from.named.map(clause => `FROM NAMED ${SUBRULE(iri, clause, undefined)}`).join('\n'));
+    }
+
+    if (ast.where) {
+      builder.push(`WHERE ${SUBRULE(groupGraphPattern, { type: 'group', patterns: ast.where }, undefined)}`);
+    }
+    builder.push(SUBRULE(solutionModifier, ast, undefined));
+    return builder.join(' ');
+  },
 };
 
 /**
  * [[12]](https://www.w3.org/TR/sparql11-query/#rAskQuery)
  */
-export const askQuery: SparqlGrammarRule<'askQuery', Omit<AskQuery, HandledByBase>> = <const> {
+export const askQuery: SparqlRule<'askQuery', Omit<AskQuery, HandledByBase>> = <const> {
   name: 'askQuery',
   impl: ({ ACTION, SUBRULE, CONSUME, MANY }) => () => {
     CONSUME(l.ask);
@@ -483,6 +504,19 @@ export const askQuery: SparqlGrammarRule<'askQuery', Omit<AskQuery, HandledByBas
       from,
       where,
     }));
+  },
+  gImpl: ({ SUBRULE }) => (ast) => {
+    const builder = [ 'ASK' ];
+    if (ast.from) {
+      builder.push(ast.from.default.map(clause => `FROM ${SUBRULE(iri, clause, undefined)}`).join('\n'));
+      builder.push(ast.from.named.map(clause => `FROM NAMED ${SUBRULE(iri, clause, undefined)}`).join('\n'));
+    }
+
+    if (ast.where) {
+      builder.push(`WHERE ${SUBRULE(groupGraphPattern, { type: 'group', patterns: ast.where }, undefined)}`);
+    }
+    builder.push(SUBRULE(solutionModifier, ast, undefined));
+    return builder.join(' ');
   },
 };
 

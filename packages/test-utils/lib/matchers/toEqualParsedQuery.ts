@@ -1,4 +1,4 @@
-import { Wildcard } from '@traqula/core';
+import { Wildcard } from '@traqula/rules-sparql-1-1';
 import { BlankNode, DefaultGraph, NamedNode, Quad, Variable } from 'rdf-data-factory';
 import { expect } from 'vitest';
 

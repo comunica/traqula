@@ -1,6 +1,7 @@
 import type * as RDF from '@rdfjs/types';
-import type { CommonIRIs, ParserRule, PGRule } from '@traqula/core';
+import type { ParserRule, ParseAndGenRule } from '@traqula/core';
 import type { BlankNode, DataFactory } from 'rdf-data-factory';
+import type { CommonIRIs } from './grammar-helpers/utils';
 import type { Wildcard } from './Wildcard';
 
 export type GraphTerm = IriTerm | BlankTerm | LiteralTerm;
@@ -324,7 +325,7 @@ export type SparqlRule<
    * Function arguments that can be given to convey the state of the current parse operation.
    */
   ParamType = undefined,
-> = PGRule<SparqlContext, NameType, ReturnType, ParamType>;
+> = ParseAndGenRule<SparqlContext, NameType, ReturnType, ParamType>;
 
 export type SparqlGrammarRule<
   /**

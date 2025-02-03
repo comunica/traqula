@@ -1,4 +1,4 @@
-import { Wildcard, unCapitalize } from '@traqula/core';
+import { unCapitalize } from '@traqula/core';
 import type { TokenType } from 'chevrotain';
 import { expression, expressionList } from './grammar/expression';
 import { var_ } from './grammar/general';
@@ -6,6 +6,7 @@ import { groupGraphPattern } from './grammar/whereClause';
 import * as l from './lexer';
 import type { Expression, OperationExpression, Pattern, SparqlGrammarRule, VariableTerm } from './Sparql11types';
 import { deGroupSingle } from './utils';
+import { Wildcard } from './Wildcard';
 
 export interface IExpressionFunctionX<U extends Expression[] | [Pattern]> extends OperationExpression {
   type: 'operation';

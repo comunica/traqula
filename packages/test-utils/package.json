@@ -39,7 +39,7 @@
     "build:transpile": " node \"../../node_modules/esbuild/bin/esbuild\" --platform=node --format=cjs --bundle --log-level=error --outfile=lib/index.cjs lib/index.ts"
   },
   "dependencies": {
-    "@traqula/core": "^0.0.0",
+    "@traqula/rules-sparql-1-1": "^0.0.0",
     "rdf-data-factory": "^2.0.1",
     "vitest": "^3.0.3"
   },

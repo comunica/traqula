@@ -14,26 +14,6 @@ import type { ConsumeMethodOpts, IToken, TokenType } from 'chevrotain';
  */
 export type RuleDefReturn<T extends ParserRule> = T extends ParserRule<any, string, infer Ret> ? Ret : never;
 
-export type PGRule<
-  /**
-   * Context object available in rule implementation.
-   */
-  Context = any,
-  /**
-   * Name of grammar rule, should be a strict subtype of string like 'myGrammarRule'.
-   */
-  NameType extends string = string,
-  /**
-   * Type that will be returned after a correct parse of this rule.
-   * This type will be the return type of calling SUBRULE with this grammar rule.
-   */
-  ReturnType = unknown,
-  /**
-   * Function arguments that can be given to convey the state of the current parse operation.
-   */
-  ParamType = any,
-> = ParserRule<Context, NameType, ReturnType, ParamType> & GeneratorRule<Context, NameType, ReturnType, ParamType>;
-
 /**
  * Type used to declare grammar rules.
  */
@@ -58,33 +38,6 @@ export type ParserRule<
 > = {
   name: NameType;
   impl: (def: ImplArgs) => (context: Context, params: ParamType) => ReturnType;
-};
-
-/**
- * Type used to declare grammar rules.
- */
-export type GeneratorRule<
-  /**
-   * Context object available in rule implementation.
-   */
-  Context = any,
-  /**
-   * Name of grammar rule, should be a strict subtype of string like 'myGrammarRule'.
-   */
-  NameType extends string = string,
-  /**
-   * Type that will be returned after a correct parse of this rule.
-   * This type will be the return type of calling SUBRULE with this grammar rule.
-   */
-  ReturnType = unknown,
-  /**
-   * Function arguments that can be given to convey the state of the current parse operation.
-   */
-  ParamType = any,
-> = {
-  name: NameType;
-  gImpl: (def: { SUBRULE: <T, U>(cstDef: GeneratorRule<any, any, T, U>, input: T, arg: U) => string }) =>
-  (ast: ReturnType, context: Context, params: ParamType) => string;
 };
 
 /**

@@ -1,5 +1,5 @@
-import { CommonIRIs, resolveIRI } from '@traqula/core';
 import type { NamedNode } from 'rdf-data-factory';
+import { CommonIRIs, resolveIRI } from '../grammar-helpers/utils';
 import * as l from '../lexer';
 import type { BlankTerm, IriTerm, LiteralTerm, SparqlGrammarRule, SparqlRule } from '../Sparql11types';
 

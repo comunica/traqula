@@ -1,4 +1,4 @@
-import { CommonIRIs } from '@traqula/core';
+import { CommonIRIs } from '../grammar-helpers/utils';
 import * as l from '../lexer';
 import type {
   BgpPattern,

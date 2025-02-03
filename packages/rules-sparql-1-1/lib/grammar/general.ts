@@ -1,4 +1,4 @@
-import { CommonIRIs, resolveIRI } from '@traqula/core';
+import { CommonIRIs, resolveIRI } from '../grammar-helpers/utils';
 import * as l from '../lexer';
 import type {
   GraphTerm,

@@ -1,25 +1,25 @@
 import type { ILexerConfig, IParserConfig } from '@chevrotain/types';
 import type { TokenType, TokenVocabulary } from 'chevrotain';
 import { EmbeddedActionsParser, Lexer } from 'chevrotain';
+import type { CheckOverlap } from '../utils';
 import type {
-  CheckOverlap,
   ParseMethodsFromRules,
   ParserFromRules,
-  RuleDefMap,
-  RuleListToObject,
-  RuleNamesFromList,
+  ParseRuleMap,
+  ParseRulesToObject,
+  ParseNamesFromList,
 } from './builderTypes';
 import type { CstDef, ImplArgs, ParserRule } from './ruleDefTypes';
 
 /**
  * Converts a list of ruledefs to a record mapping a name to the corresponding ruledef.
  */
-function listToRuleDefMap<T extends readonly ParserRule[]>(rules: T): RuleListToObject<T> {
+function listToRuleDefMap<T extends readonly ParserRule[]>(rules: T): ParseRulesToObject<T> {
   const newRules: Record<string, ParserRule> = {};
   for (const rule of rules) {
     newRules[rule.name] = rule;
   }
-  return <RuleListToObject<T>>newRules;
+  return <ParseRulesToObject<T>>newRules;
 }
 
 /**
@@ -29,7 +29,7 @@ function listToRuleDefMap<T extends readonly ParserRule[]>(rules: T): RuleListTo
  * Constructing a parser will cause a validation which will validate the correctness of the grammar.
  */
 // This code is wild so other code can be simple.
-export class Builder<Context, Names extends string, RuleDefs extends RuleDefMap<Names>> {
+export class Builder<Context, Names extends string, RuleDefs extends ParseRuleMap<Names>> {
   /**
    * Create a builder from some initial grammar rules or an existing builder.
    * If a builder is provided, a new copy will be created.
@@ -37,8 +37,8 @@ export class Builder<Context, Names extends string, RuleDefs extends RuleDefMap<
   public static createBuilder<
     Rules extends readonly ParserRule[] = readonly ParserRule[],
     Context = Rules[0] extends ParserRule<infer context> ? context : never,
-    Names extends string = RuleNamesFromList<Rules>,
-    RuleDefs extends RuleDefMap<Names> = RuleListToObject<Rules>,
+    Names extends string = ParseNamesFromList<Rules>,
+    RuleDefs extends ParseRuleMap<Names> = ParseRulesToObject<Rules>,
   >(
     start: Rules | Builder<Context, Names, RuleDefs>,
   ): Builder<Context, Names, RuleDefs> {
@@ -101,13 +101,13 @@ export class Builder<Context, Names extends string, RuleDefs extends RuleDefMap<
   }
 
   public addMany<U extends readonly ParserRule<Context>[]>(
-    ...rules: CheckOverlap<RuleNamesFromList<U>, Names, U>
+    ...rules: CheckOverlap<ParseNamesFromList<U>, Names, U>
   ): Builder<
       Context,
-    Names | RuleNamesFromList<U>,
-    {[K in Names | RuleNamesFromList<U>]:
-      K extends keyof RuleListToObject<typeof rules> ? (
-        RuleListToObject<typeof rules>[K] extends ParserRule<Context, K> ? RuleListToObject<typeof rules>[K] : never
+    Names | ParseNamesFromList<U>,
+    {[K in Names | ParseNamesFromList<U>]:
+      K extends keyof ParseRulesToObject<typeof rules> ? (
+        ParseRulesToObject<typeof rules>[K] extends ParserRule<Context, K> ? ParseRulesToObject<typeof rules>[K] : never
       ) : (
         K extends Names ? (RuleDefs[K] extends ParserRule<Context, K> ? RuleDefs[K] : never) : never
       )
@@ -140,7 +140,7 @@ export class Builder<Context, Names extends string, RuleDefs extends RuleDefMap<
    */
   public merge<
     OtherNames extends string,
-    OtherRules extends RuleDefMap<OtherNames>,
+    OtherRules extends ParseRuleMap<OtherNames>,
     OW extends readonly ParserRule<Context>[],
   >(
     builder: Builder<Context, OtherNames, OtherRules>,
@@ -148,10 +148,10 @@ export class Builder<Context, Names extends string, RuleDefs extends RuleDefMap<
   ):
     Builder<
       Context,
-      Names | OtherNames | RuleNamesFromList<OW>,
-      {[K in Names | OtherNames | RuleNamesFromList<OW>]:
-        K extends keyof RuleListToObject<OW> ? (
-          RuleListToObject<OW>[K] extends ParserRule<Context, K> ? RuleListToObject<OW>[K] : never
+      Names | OtherNames | ParseNamesFromList<OW>,
+      {[K in Names | OtherNames | ParseNamesFromList<OW>]:
+        K extends keyof ParseRulesToObject<OW> ? (
+          ParseRulesToObject<OW>[K] extends ParserRule<Context, K> ? ParseRulesToObject<OW>[K] : never
         )
           : (
               K extends Names ? (RuleDefs[K] extends ParserRule<Context, K> ? RuleDefs[K] : never)

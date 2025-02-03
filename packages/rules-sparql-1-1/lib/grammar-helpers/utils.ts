@@ -13,10 +13,6 @@ export enum CommonIRIs {
   REIFIES = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies',
 }
 
-export function unCapitalize<T extends string>(str: T): Uncapitalize<T> {
-  return <Uncapitalize<T>> (str.charAt(0).toLowerCase() + str.slice(1));
-}
-
 /**
  * Resolves an IRI against a base path in accordance to the [Syntax for IRIs](https://www.w3.org/TR/sparql11-query/#QSynIRI)
  */

@@ -1,4 +1,3 @@
-import { Wildcard } from '@traqula/core';
 import type { ImplArgs } from '@traqula/core';
 import * as l from '../../lexer';
 import type {
@@ -20,6 +19,7 @@ import type {
   VariableExpression,
   VariableTerm,
 } from '../../Sparql11types';
+import { Wildcard } from '../../Wildcard';
 import { datasetClause, type IDatasetClause } from '../dataSetClause';
 import { expression } from '../expression';
 import { prologue, var_, varOrIri, varOrTerm } from '../general';

@@ -1,5 +1,5 @@
 import type { TokenType } from 'chevrotain';
-import type { CheckOverlap } from '../grammar-builder/builderTypes';
+import type { CheckOverlap } from '../utils';
 
 type NamedToken<Name extends string> = TokenType & { name: Name };
 

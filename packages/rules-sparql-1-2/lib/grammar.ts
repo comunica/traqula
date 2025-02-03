@@ -7,8 +7,7 @@
 
 import type { DirectionalLanguage } from '@rdfjs/types';
 import type { RuleDefReturn } from '@traqula/core';
-import { CommonIRIs } from '@traqula/core';
-import { funcExpr1, funcExpr3, gram as S11, lex as l11 } from '@traqula/rules-sparql-1-1';
+import { funcExpr1, funcExpr3, gram as S11, lex as l11, CommonIRIs } from '@traqula/rules-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import type { NamedNode } from 'rdf-data-factory';
 import * as l12 from './lexer';

@@ -1,5 +1,5 @@
 import type * as RDF from '@rdfjs/types';
-import type { ParserRule, ParseAndGenRule } from '@traqula/core';
+import type { ParserRule, GeneratorRule } from '@traqula/core';
 import type { BlankNode, DataFactory } from 'rdf-data-factory';
 import type { CommonIRIs } from './grammar-helpers/utils';
 import type { Wildcard } from './Wildcard';
@@ -325,7 +325,8 @@ export type SparqlRule<
    * Function arguments that can be given to convey the state of the current parse operation.
    */
   ParamType = undefined,
-> = ParseAndGenRule<SparqlContext, NameType, ReturnType, ParamType>;
+> = ParserRule<SparqlContext, NameType, ReturnType, ParamType>
+  & GeneratorRule<undefined, NameType, ReturnType, ParamType>;
 
 export type SparqlGrammarRule<
   /**

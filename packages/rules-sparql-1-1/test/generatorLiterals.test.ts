@@ -2,7 +2,7 @@ import type { BaseQuad } from '@rdfjs/types';
 import { GeneratorBuilder } from '@traqula/core';
 import { DataFactory } from 'rdf-data-factory';
 import { describe, it } from 'vitest';
-import type { LiteralTerm, SparqlContext } from '../lib';
+import type { LiteralTerm } from '../lib';
 import { CommonIRIs } from '../lib';
 import * as gram from '../lib/grammar';
 
@@ -12,7 +12,7 @@ describe('generatorLiterals', () => {
   function testLiteralParse(input: LiteralTerm, expected: string): void {
     it(`${input.value} -> ${expected}`, ({ expect }) => {
       const generator = GeneratorBuilder.createBuilder(<const> [ gram.rdfLiteral, gram.string ]).build();
-      expect(generator.rdfLiteral(input, <SparqlContext> {}, undefined)).toBe(expected);
+      expect(generator.rdfLiteral(input, undefined, undefined)).toBe(expected);
     });
   }
 

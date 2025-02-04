@@ -10,5 +10,4 @@ export * from './parser-builder/builderTypes';
 export * from './parser-builder/parserBuilder';
 export * from './parser-builder/ruleDefTypes';
 // Export general types
-export * from './types';
 export * from './utils';

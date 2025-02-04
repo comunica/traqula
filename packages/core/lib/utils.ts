@@ -1,5 +1,5 @@
 /**
- * Check whether the first two types overlap, if yes, return the 3th argument, else the 4th.
+ * Check whether the first two types overlap, if no, return the 3th argument, else the 4th.
  */
 export type CheckOverlap<T, U, V, W = never> = T & U extends never ? V : W;
 

@@ -58,13 +58,13 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
    * Add a rule to the grammar. If the rule already exists, but the implementation differs, an error will be thrown.
    */
   public addRuleRedundant<U extends string, RET, ARGS>(rule: GeneratorRule<Context, U, RET, ARGS>):
-  GeneratorBuilder<Context, Names | U, {[K in Names | U]: K extends U ?
-    GeneratorRule<Context, K, RET, ARGS> :
-      (K extends Names ? (RuleDefs[K] extends GeneratorRule<Context, K> ? RuleDefs[K] : never) : never)
+  GeneratorBuilder<Context, Names | U, {[K in Names | U]: K extends Names ?
+      (RuleDefs[K] extends GeneratorRule<Context, K> ? RuleDefs[K] : never)
+    : (K extends U ? GeneratorRule<Context, K, RET, ARGS> : never)
   }> {
-    const self = <GeneratorBuilder<Context, Names | U, {[K in Names | U]: K extends U ?
-      GeneratorRule<Context, K, RET, ARGS> :
-        (K extends Names ? (RuleDefs[K] extends GeneratorRule<Context, K> ? RuleDefs[K] : never) : never) }>>
+    const self = <GeneratorBuilder<Context, Names | U, {[K in Names | U]: K extends Names ?
+        (RuleDefs[K] extends GeneratorRule<Context, K> ? RuleDefs[K] : never)
+      : (K extends U ? GeneratorRule<Context, K, RET, ARGS> : never) }>>
       <unknown> this;
     const rules = <Record<string, GeneratorRule<Context>>> self.rules;
     if (rules[rule.name] !== undefined && rules[rule.name] !== rule) {
@@ -79,9 +79,10 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
    */
   public addRule<U extends string, RET, ARGS>(
     rule: CheckOverlap<U, Names, GeneratorRule<Context, U, RET, ARGS>>,
-  ): GeneratorBuilder<Context, Names | U, {[K in Names | U]: K extends U ?
-    GeneratorRule<Context, K, RET, ARGS> :
-      (K extends Names ? (RuleDefs[K] extends GeneratorRule<Context, K> ? RuleDefs[K] : never) : never) }> {
+  ): GeneratorBuilder<Context, Names | U, {[K in Names | U]: K extends Names ?
+      (RuleDefs[K] extends GeneratorRule<Context, K> ? RuleDefs[K] : never)
+    : (K extends U ? GeneratorRule<Context, K, RET, ARGS> : never)
+  }> {
     return this.addRuleRedundant(rule);
   }
 
@@ -180,10 +181,7 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
       }
 
       private getSafeContext(): Context {
-        if (this.__context === undefined) {
-          throw new Error('context was not correctly set');
-        }
-        return this.__context;
+        return <Context> this.__context;
       }
 
       public constructor() {

@@ -1,4 +1,4 @@
-import { Parser } from '@traqula/engine-sparql-1-1';
+import { Parser } from '@traqula/parser-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import { describe, it } from 'vitest';
 import { Generator } from '../lib';

@@ -1,5 +1,5 @@
 {
-  "name": "@traqula/engine-generate-sparql-1-1",
+  "name": "@traqula/generator-sparql-1-1",
   "type": "module",
   "version": "0.0.0",
   "description": "SPARQL 1.1 generator",
@@ -8,7 +8,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/comunica/traqula.git",
-    "directory": "engines/engine-generate-sparql-1-1"
+    "directory": "engines/generator-sparql-1-1"
   },
   "bugs": {
     "url": "https://github.com/comunica/traqula/issues"
@@ -42,7 +42,7 @@
     "@traqula/rules-sparql-1-1": "^0.0.0"
   },
   "devDependencies": {
-    "@traqula/engine-sparql-1-1": "^0.0.0",
+    "@traqula/parser-sparql-1-1": "^0.0.0",
     "@traqula/rules-sparql-1-1": "^0.0.0"
   }
 }

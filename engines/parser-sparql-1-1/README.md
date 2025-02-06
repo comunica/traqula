@@ -5,13 +5,13 @@ TRAQULA Sparql 1.1 is a [SPARQL 1.1](https://www.w3.org/TR/sparql11-query/#gramm
 ## Installation
 
 ```bash
-npm install @traqula/engine-sparql-1-1
+npm install @traqula/parser-sparql-1-1
 ```
 
 or
 
 ```bash
-yarn add @traqula/engine-sparql-1-1
+yarn add @traqula/parser-sparql-1-1
 ```
 
 ## Import
@@ -19,13 +19,13 @@ yarn add @traqula/engine-sparql-1-1
 Either through ESM import:
 
 ```javascript
-import { Parser } from '@traqula/engine-sparql-1-1';
+import {Parser} from 'engines/parser-sparql-1-1';
 ```
 
 _or_ CJS require:
 
 ```javascript
-const Parser = require('@traqula/engine-sparql-1-1').Parser;
+const Parser = require('engines/parser-sparql-1-1').Parser;
 ```
 
 ## Usage

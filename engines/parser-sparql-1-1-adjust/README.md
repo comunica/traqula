@@ -1,18 +1,18 @@
 # TRAQULA parser engine for SPARQL 1.1 + Adjust
 
 TRAQULA Sparql 1.1 Adjust is a [SPARQL 1.1](https://www.w3.org/TR/sparql11-query/#grammar) query parser that also parses the [builtin function ADJUST](https://github.com/w3c/sparql-dev/blob/main/SEP/SEP-0002/sep-0002.md) for TypeScript.
-Simple grammar extension of [TRAQULA engine-sparql-1-1](https://github.com/comunica/traqula/tree/main/engines/engine-sparql-1-1)
+Simple grammar extension of [TRAQULA engine-sparql-1-1](https://github.com/comunica/traqula/tree/main/engines/parser-sparql-1-1)
 
 ## Installation
 
 ```bash
-npm install @traqula/engine-sparql-1-1
+npm install @traqula/parser-sparql-1-1-adjust
 ```
 
 or
 
 ```bash
-yarn add @traqula/engine-sparql-1-1
+yarn add @traqula/parser-sparql-1-1-adjust
 ```
 
 ## Import
@@ -20,13 +20,13 @@ yarn add @traqula/engine-sparql-1-1
 Either through ESM import:
 
 ```typescript
-import { Parser } from '@traqula/engine-sparql-1-1-adjust';
+import { Parser } from '@traqula/parser-sparql-1-1-adjust';
 ```
 
 _or_ CJS require:
 
 ```typescript
-const Sparql11AdjustParser = require('@traqula/engine-sparql-1-1-adjust').Parser;
+const Sparql11AdjustParser = require('@traqula/parser-sparql-1-1-adjust').Parser;
 ```
 
 ## Usage

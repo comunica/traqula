@@ -1,5 +1,5 @@
 {
-  "name": "@traqula/engine-sparql-1-1",
+  "name": "@traqula/parser-sparql-1-1",
   "type": "module",
   "version": "0.0.0",
   "description": "SPARQL 1.1 parser",
@@ -8,7 +8,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/comunica/traqula.git",
-    "directory": "engines/engine-sparql-1-1"
+    "directory": "engines/parser-sparql-1-1"
   },
   "bugs": {
     "url": "https://github.com/comunica/traqula/issues"

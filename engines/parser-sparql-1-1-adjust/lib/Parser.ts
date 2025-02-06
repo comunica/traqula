@@ -1,5 +1,5 @@
 import { Builder, LexerBuilder } from '@traqula/core';
-import { sparql11ParserBuilder } from '@traqula/engine-sparql-1-1';
+import { sparql11ParserBuilder } from '@traqula/parser-sparql-1-1';
 import type { Expression, gram as g11, SparqlQuery } from '@traqula/rules-sparql-1-1';
 import { lex as l11, SparqlParser } from '@traqula/rules-sparql-1-1';
 import { gram, lex } from '@traqula/rules-sparql-1-1-adjust';

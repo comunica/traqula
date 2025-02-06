@@ -1,5 +1,5 @@
 {
-  "name": "@traqula/engine-sparql-1-1-adjust",
+  "name": "@traqula/parser-sparql-1-1-adjust",
   "version": "0.0.0",
   "description": "SPARQL 1.1 + ADJUST parser",
   "lsd:module": true,
@@ -7,7 +7,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/comunica/traqula.git",
-    "directory": "engines/engine-sparql-1-1-adjust"
+    "directory": "engines/parser-sparql-1-1-adjust"
   },
   "bugs": {
     "url": "https://github.com/comunica/traqula/issues"
@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "@traqula/core": "^0.0.0",
-    "@traqula/engine-sparql-1-1": "^0.0.0",
+    "@traqula/parser-sparql-1-1": "^0.0.0",
     "@traqula/rules-sparql-1-1": "^0.0.0",
     "@traqula/rules-sparql-1-1-adjust": "^0.0.0"
   },

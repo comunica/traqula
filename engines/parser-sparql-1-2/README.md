@@ -6,13 +6,13 @@ It is a grammar extension of [TRAQULA engine-sparql-1-1](https://github.com/comu
 ## Installation
 
 ```bash
-npm install @traqula/engine-sparql-1-1
+npm install @traqula/parser-sparql-1-1
 ```
 
 or
 
 ```bash
-yarn add @traqula/engine-sparql-1-1
+yarn add @traqula/parser-sparql-1-1
 ```
 
 ## Import
@@ -20,13 +20,13 @@ yarn add @traqula/engine-sparql-1-1
 Either through ESM import:
 
 ```typescript
-import { Parser } from '@traqula/engine-sparql-1-2';
+import {Parser} from '';
 ```
 
 _or_ CJS require:
 
 ```typescript
-const Parser = require('@traqula/engine-sparql-1-2').Parser;
+const Parser = require('').Parser;
 ```
 
 ## Usage

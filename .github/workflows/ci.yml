@@ -5,6 +5,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  DEFAULT_NODE_VERSION: 22.x
+
 jobs:
   tooling:
     strategy:
@@ -21,6 +24,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+          cache: yarn
       - run: yarn install --immutable
       - run: yarn lint
       - run: yarn depcheck
@@ -44,6 +48,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+          cache: yarn
       - run: yarn install --immutable
       - run: yarn build
       - run: yarn test
@@ -68,6 +73,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+          cache: yarn
       - run: yarn install --immutable
       - run: yarn build
       - name: Load RDF test suite cache
@@ -86,3 +92,44 @@ jobs:
         with:
           name: earl report
           path: engines/*/spec/earl-*.ttl
+
+  documentation:
+    name: Prepare documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure line endings are consistent
+        run: git config --global core.autocrlf input
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.DEFAULT_NODE_VERSION }}
+          cache: yarn
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+      - name: Build documentation
+        run: yarn run doc
+      - name: Prepare artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: documentation
+          name: documentation
+
+  documentation-publish:
+    name: Publish documentation
+    needs:
+      - documentation
+    runs-on: ubuntu-latest
+    # The documentation is only published for main branch
+    if: startsWith(github.ref, 'refs/heads/main')
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: documentation

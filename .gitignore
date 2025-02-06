@@ -5,6 +5,7 @@ out
 .yarn
 .rdf-test-suite-cache
 .eslintcache
+documentation
 
 engines/*/lib/**/*.cjs
 engines/*/lib/**/*.js

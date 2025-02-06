@@ -1,0 +1,7 @@
+{
+  "name": "TRAQULA",
+  "out": "documentation",
+  "theme": "default",
+  "entryPointStrategy": "packages",
+  "entryPoints": ["engines/*", "packages/*"]
+}

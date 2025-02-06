@@ -16,6 +16,7 @@
     "build:transpile-spec": "lerna run build:transpile-spec",
     "clean": "git clean -dfx",
     "depcheck": "lerna exec --concurrency 1 -- depcheck --ignores=\"vitest\"",
+    "doc": "typedoc",
     "lint": "eslint . --cache",
     "postinstall": "yarn husky && yarn run build",
     "publish": "yarn run build",
@@ -27,7 +28,7 @@
   "devDependencies": {
     "@rdfjs/types": "^2.0.0",
     "@rubensworks/eslint-config": "^3.1.0",
-    "@vitest/coverage-v8": "2.1.8",
+    "@vitest/coverage-v8": "3.0.5",
     "depcheck": "^1.4.7",
     "esbuild": "^0.24.0",
     "eslint": "^8.57.0",
@@ -35,8 +36,9 @@
     "lerna": "8.1.4",
     "manual-git-changelog": "^1.0.2",
     "rdf-test-suite": "^2.0.0",
+    "typedoc": "^0.27.6",
     "typescript": "^5.7.3",
     "vite": "^6.0.11",
-    "vitest": "^3.0.4"
+    "vitest": "^3.0.5"
   }
 }

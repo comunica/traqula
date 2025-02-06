@@ -81,4 +81,9 @@ export default config([
       'ts/no-var-requires': 'off',
     },
   },
+  {
+    ignores: [
+      'documentation',
+    ],
+  },
 ], { disableJest: true });

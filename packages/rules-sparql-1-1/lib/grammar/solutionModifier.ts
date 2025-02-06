@@ -30,7 +30,7 @@ export const solutionModifier: SparqlRule<'solutionModifier', ISolutionModifier>
     const order = ast.order ? SUBRULE(orderClause, ast.order, undefined) : '';
     const limit = SUBRULE(limitOffsetClauses, ast, undefined);
 
-    return `${group} ${having} ${order} ${limit}`;
+    return [ group, having, order, limit ].filter(Boolean).join(' ');
   },
 };
 
@@ -238,7 +238,7 @@ export const limitOffsetClauses: SparqlRule<'limitOffsetClauses', Pick<SelectQue
     if (ast.offset) {
       builder.push(`OFFSET ${String(ast.offset)}`);
     }
-    return builder.join('\n');
+    return builder.join(' ');
   },
 };
 

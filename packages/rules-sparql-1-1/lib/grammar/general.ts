@@ -50,10 +50,11 @@ export const prologue: SparqlRule<'prologue', Pick<BaseQuery, 'base' | 'prefixes
     if (ast.base) {
       rules.push(`BASE <${ast.base}>`);
     }
-    for (const [ key, value ] of Object.entries(ast.prefixes)) {
+    // eslint-disable-next-line ts/no-unnecessary-type-assertion
+    for (const [ key, value ] of <[string, string][]> Object.entries(ast.prefixes)) {
       rules.push(`PREFIX ${key}: <${value}>`);
     }
-    return rules.join('\n');
+    return rules.join(' ');
   },
 };
 

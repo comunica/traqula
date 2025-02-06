@@ -73,7 +73,7 @@ export const groupGraphPattern: SparqlRule<'groupGraphPattern', GroupPattern> = 
       }
     }
     builder.push('}');
-    return builder.join('\n');
+    return builder.join(' ');
   },
 };
 

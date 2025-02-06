@@ -11,6 +11,6 @@ describe('a SPARQL 1.1 generator', () => {
     const query = 'SELECT * WHERE { ?s ?p ?o }';
     const ast = <T11.Query> parser.parse(query);
     const result = generator.generate(ast);
-    expect(result.replaceAll(/\s+/gu, ' ').replaceAll(/^ +/gu, '').replaceAll(/ +$/gu, '')).toBe(query);
+    expect(result.replaceAll(/\s+/gu, ' ')).toBe(query);
   });
 });

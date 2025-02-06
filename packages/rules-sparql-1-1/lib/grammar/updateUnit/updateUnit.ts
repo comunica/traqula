@@ -78,8 +78,8 @@ export const update: SparqlRule<'update', Update> = <const> {
   },
   gImpl: ({ SUBRULE }) => (ast) => {
     const prologueString = SUBRULE(prologue, ast, undefined);
-    const updates = ast.updates.map(update => SUBRULE(update1, update, undefined)).join(';\n');
-    return `${prologueString}\n${updates}`;
+    const updates = ast.updates.map(update => SUBRULE(update1, update, undefined)).join(' ; ');
+    return `${prologueString} ${updates}`;
   },
 };
 
@@ -418,7 +418,7 @@ export const modify: SparqlRule<'modify', ModifyOperation> = <const> {
       builder.push(...ast.using.named.map(val => `USING NAMED ${SUBRULE(iri, val, undefined)}`));
     }
     builder.push('WHERE', SUBRULE(groupGraphPattern, { type: 'group', patterns: ast.where }, undefined));
-    return builder.join('\n');
+    return builder.join(' ');
   },
 };
 

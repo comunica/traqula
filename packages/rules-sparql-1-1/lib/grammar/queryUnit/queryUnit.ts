@@ -76,7 +76,7 @@ export const query: SparqlRule<'query', Query> = <const> {
         break;
     }
     const valuesString = ast.values ? SUBRULE(valuesClause, ast.values, undefined) : '';
-    return [ prologueString, queryString, valuesString ].join('\n');
+    return [ prologueString, queryString, valuesString ].filter(Boolean).join(' ');
   },
 };
 
@@ -236,17 +236,17 @@ export const selectQuery: SparqlRule<'selectQuery', Omit<SelectQuery, HandledByB
     const selectString = SUBRULE(selectClause, ast, undefined);
 
     const fromDefaultString = ast.from?.default.map(clause =>
-      `FROM ${SUBRULE(iri, clause, undefined)}`).join('\n') ?? '';
+      `FROM ${SUBRULE(iri, clause, undefined)}`).join(' ') ?? '';
 
     const fromNamedString = ast.from?.named.map(clause =>
-      `FROM NAMED ${SUBRULE(iri, clause, undefined)}`).join('\n') ?? '';
+      `FROM NAMED ${SUBRULE(iri, clause, undefined)}`).join(' ') ?? '';
 
     const whereString = ast.where ?
       `WHERE ${SUBRULE(groupGraphPattern, { type: 'group', patterns: ast.where }, undefined)}` :
       '';
 
     const modifierString = SUBRULE(solutionModifier, ast, undefined);
-    return [ selectString, fromDefaultString, fromNamedString, whereString, modifierString ].join('\n');
+    return [ selectString, fromDefaultString, fromNamedString, whereString, modifierString ].filter(Boolean).join(' ');
   },
 };
 
@@ -420,17 +420,18 @@ export const constructQuery: SparqlRule<'constructQuery', Omit<ConstructQuery, H
     const constructString = SUBRULE(constructTemplate, ast.template, undefined);
 
     const fromDefaultString = ast.from?.default.map(clause =>
-      `FROM ${SUBRULE(iri, clause, undefined)}`).join('\n') ?? '';
+      `FROM ${SUBRULE(iri, clause, undefined)}`).join(' ') ?? '';
 
     const fromNamedString = ast.from?.named.map(clause =>
-      `FROM NAMED ${SUBRULE(iri, clause, undefined)}`).join('\n') ?? '';
+      `FROM NAMED ${SUBRULE(iri, clause, undefined)}`).join(' ') ?? '';
 
     const whereString = ast.where ?
       `WHERE ${SUBRULE(groupGraphPattern, { type: 'group', patterns: ast.where }, undefined)}` :
       '';
 
     const modifierString = SUBRULE(solutionModifier, ast, undefined);
-    return [ 'CONSTRUCT', constructString, fromDefaultString, fromNamedString, whereString, modifierString ].join('\n');
+    return [ 'CONSTRUCT', constructString, fromDefaultString, fromNamedString, whereString, modifierString ]
+      .filter(Boolean).join(' ');
   },
 };
 
@@ -476,8 +477,8 @@ export const describeQuery: SparqlRule<'describeQuery', Omit<DescribeQuery, Hand
     }
 
     if (ast.from) {
-      builder.push(ast.from.default.map(clause => `FROM ${SUBRULE(iri, clause, undefined)}`).join('\n'));
-      builder.push(ast.from.named.map(clause => `FROM NAMED ${SUBRULE(iri, clause, undefined)}`).join('\n'));
+      builder.push(ast.from.default.map(clause => `FROM ${SUBRULE(iri, clause, undefined)}`).join(' '));
+      builder.push(ast.from.named.map(clause => `FROM NAMED ${SUBRULE(iri, clause, undefined)}`).join(' '));
     }
 
     if (ast.where) {
@@ -508,8 +509,8 @@ export const askQuery: SparqlRule<'askQuery', Omit<AskQuery, HandledByBase>> = <
   gImpl: ({ SUBRULE }) => (ast) => {
     const builder = [ 'ASK' ];
     if (ast.from) {
-      builder.push(ast.from.default.map(clause => `FROM ${SUBRULE(iri, clause, undefined)}`).join('\n'));
-      builder.push(ast.from.named.map(clause => `FROM NAMED ${SUBRULE(iri, clause, undefined)}`).join('\n'));
+      builder.push(ast.from.default.map(clause => `FROM ${SUBRULE(iri, clause, undefined)}`).join(' '));
+      builder.push(ast.from.named.map(clause => `FROM NAMED ${SUBRULE(iri, clause, undefined)}`).join(' '));
     }
 
     if (ast.where) {

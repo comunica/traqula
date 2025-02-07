@@ -1,4 +1,4 @@
-/* eslint-disable require-unicode-regexp,no-misleading-character-class,max-len */
+/* eslint-disable require-unicode-regexp,no-misleading-character-class,max-len,unicorn/better-regex */
 import { LexerBuilder, createToken } from '@traqula/core';
 import { Lexer } from 'chevrotain';
 
@@ -35,7 +35,7 @@ export const stringLiteral2Pattern = new RegExp(`"(([^\\u0022\\u005C\\u000A\\u00
 export const stringLiteralLong1Pattern = new RegExp(`'''(('|(''))?([^'\\\\]|(${echarPattern.source})))*'''`);
 export const stringLiteralLong2Pattern = new RegExp(`"""(("|(""))?([^"\\\\]|(${echarPattern.source})))*"""`);
 // eslint-disable-next-line no-control-regex
-export const wsPattern = /[\u0009\u000A\u000D ]/;
+export const wsPattern = /[\u0020\u0009\u000D\u000A]/;
 export const nilPattern = new RegExp(`\\((${wsPattern.source})*\\)`);
 export const anonPattern = new RegExp(`\\[(${wsPattern.source})*\\]`);
 

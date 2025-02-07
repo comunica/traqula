@@ -31,7 +31,8 @@ export type WTOS = WTO[];
  */
 export type B_WTOS = { w0: WTOS };
 export type WBefore<T> = { w0: WTOS; val: T };
-export type Consumed1<T> = { w0: WTOS; image: string; val: T };
+export type Image1<T> = { image1: string } & WBefore<T>;
+export type WIn1<T> = WBefore<T> & { w1: WTOS };
 
 export type BaseDecl = { base: string } &
   { RTT: { baseImage: string; w1: WTOS }};
@@ -107,7 +108,6 @@ export type FullIriTerm = {
   type: 'term';
   termType: 'NamedNode';
   value: string;
-  prefix: undefined;
 };
 export type PrefixedIriTerm = {
   type: 'term';

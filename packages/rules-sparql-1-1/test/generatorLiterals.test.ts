@@ -5,11 +5,13 @@ import { describe, it } from 'vitest';
 import type { SparqlContext, SparqlRule } from '../lib';
 import * as l from '../lib/lexer';
 import type {
-  Consumed1,
+  FullIriTerm,
+  Image1,
   IriTerm,
   LiteralTerm,
   PrefixedIriTerm,
   WBefore,
+  WIn1,
   WS,
   WTO,
   WTOS,
@@ -23,6 +25,9 @@ const ignoredSpace = createToken({ name: 'Ws', pattern: /(?:[\u0020\u0009\u000D\
 
 function isWS(x: WTO): x is WS {
   return 'ws' in x;
+}
+function isPrefixedIriTerm(x: IriTerm): x is PrefixedIriTerm {
+  return 'prefix' in x;
 }
 
 function genW(subrule: Parameters<GeneratorRule<any, any, WTOS>['gImpl']>[0]['SUBRULE'], ast: WTOS): string {
@@ -63,7 +68,7 @@ const white: SparqlRule<'wtos', WTOS> = <const> {
  * Parses a string literal.
  * [[135]](https://www.w3.org/TR/sparql11-query/#rString)
  */
-const string: SparqlRule<'string', Consumed1<string>> = <const> {
+const string: SparqlRule<'string', Image1<string>> = <const> {
   name: 'string',
   impl: ({ ACTION, CONSUME, OR, SUBRULE }) => () => {
     let image = '';
@@ -89,7 +94,7 @@ const string: SparqlRule<'string', Consumed1<string>> = <const> {
     // Handle string escapes (19.7). (19.2 is handled at input level.)
     return ACTION(() => ({
       w0,
-      image,
+      image1: image,
       val: rawString.replaceAll(/\\([tnrbf"'\\])/gu, (_, char: string) => {
         switch (char) {
           case 't':
@@ -108,7 +113,7 @@ const string: SparqlRule<'string', Consumed1<string>> = <const> {
       }),
     }));
   },
-  gImpl: ({ SUBRULE: s }) => ast => `${genW(s, ast.w0)}${ast.image}`,
+  gImpl: ({ SUBRULE: s }) => ast => `${genW(s, ast.w0)}${ast.image1}`,
 };
 
 /**
@@ -117,32 +122,62 @@ const string: SparqlRule<'string', Consumed1<string>> = <const> {
  */
 const iri: SparqlRule<'iri', WBefore<IriTerm>> = <const> {
   name: 'iri',
-  impl: ({ SUBRULE, CONSUME, OR }) => () => OR<WBefore<IriTerm>>([
-    { ALT: () => {
-      const w0 = SUBRULE(white, undefined);
-      const iriVal = CONSUME(l.terminals.iriRef).image.slice(1, -1);
-      return {
-        w0,
-        val: {
-          type: 'term',
-          termType: 'NamedNode',
-          value: iriVal,
-          prefix: undefined,
-        },
-      };
-    } },
+  impl: ({ SUBRULE, OR }) => () => OR<WBefore<IriTerm>>([
+    { ALT: () => SUBRULE(iriFull, undefined) },
     { ALT: () => SUBRULE(prefixedName, undefined) },
   ]),
-  gImpl: ({ SUBRULE: s }) => ast => ast.val.prefix ?
-    s(prefixedName, <any> ast, undefined) :
-`${genW(s, ast.w0)}<${ast.val.value}>`,
+  gImpl: ({ SUBRULE }) => (ast) => {
+    const { val, w0 } = ast;
+    if (isPrefixedIriTerm(val)) {
+      return SUBRULE(prefixedName, { val, w0 }, undefined);
+    }
+    return SUBRULE(iriFull, { val, w0 }, undefined);
+  },
+};
+
+const iriFull: SparqlRule<'iriFull', WBefore<FullIriTerm>> = <const> {
+  name: 'iriFull',
+  impl: ({ SUBRULE, CONSUME }) => () => {
+    const w0 = SUBRULE(white, undefined);
+    const iriVal = CONSUME(l.terminals.iriRef).image.slice(1, -1);
+    return {
+      w0,
+      val: {
+        type: 'term',
+        termType: 'NamedNode',
+        value: iriVal,
+      },
+    };
+  },
+  gImpl: ({ SUBRULE: s }) => ast => `${genW(s, ast.w0)}<${ast.val.value}>`,
+};
+
+/**
+ * Registers base IRI in the context and returns it.
+ * [[5]](https://www.w3.org/TR/sparql11-query/#rBaseDecl)
+ */
+export const baseDecl: SparqlRule<'baseDecl', WIn1<FullIriTerm> & Image1<FullIriTerm>> = <const> {
+  name: 'baseDecl',
+  impl: ({ CONSUME, SUBRULE }) => () => {
+    const w0 = SUBRULE(white, undefined);
+    const image = CONSUME(l.baseDecl).image;
+    const val = SUBRULE(iriFull, undefined);
+    return {
+      w0,
+      w1: val.w0,
+      image1: image,
+      val: val.val,
+    };
+  },
+  gImpl: ({ SUBRULE: s }) => ast =>
+    `${genW(s, ast.w0)}${ast.image1}${s(iriFull, { w0: ast.w1, val: ast.val }, undefined)}`,
 };
 
 /**
  * Parses a named node with a prefix. Looks up the prefix in the context and returns the full IRI.
  * [[137]](https://www.w3.org/TR/sparql11-query/#rPrefixedName)
  */
-export const prefixedName: SparqlRule<'prefixedName', WBefore<PrefixedIriTerm>> = <const> {
+const prefixedName: SparqlRule<'prefixedName', WBefore<PrefixedIriTerm>> = <const> {
   name: 'prefixedName',
   impl: ({ ACTION, CONSUME, SUBRULE, OR }) => () => {
     const w0 = SUBRULE(white, undefined);
@@ -187,7 +222,7 @@ const rdfLiteral: SparqlRule<'rdfLiteral', LiteralTerm> = <const> {
       value: value.val,
       langOrIri: undefined,
       RTT: {
-        valueImage: value.image,
+        valueImage: value.image1,
         w0: value.w0,
         w1: undefined,
         w2: undefined,
@@ -211,7 +246,7 @@ const rdfLiteral: SparqlRule<'rdfLiteral', LiteralTerm> = <const> {
   },
   gImpl: ({ SUBRULE }) => (ast) => {
     const builder: string[] = [
-      SUBRULE(string, { val: ast.value, image: ast.RTT.valueImage, w0: ast.RTT.w0 }, undefined),
+      SUBRULE(string, { val: ast.value, image1: ast.RTT.valueImage, w0: ast.RTT.w0 }, undefined),
     ];
     if (ast.langOrIri !== undefined) {
       builder.push(genW(SUBRULE, ast.RTT.w1!));
@@ -225,9 +260,29 @@ const rdfLiteral: SparqlRule<'rdfLiteral', LiteralTerm> = <const> {
   },
 };
 
+const literalOrbase: SparqlRule<'literalOrbase', LiteralTerm | WIn1<FullIriTerm> & Image1<FullIriTerm>> = <const> {
+  name: 'literalOrbase',
+  impl: ({ SUBRULE, OR }) => () => OR<LiteralTerm | WIn1<FullIriTerm> & Image1<FullIriTerm>>([
+    { ALT: () => SUBRULE(rdfLiteral, undefined) },
+    { ALT: () => SUBRULE(baseDecl, undefined) },
+  ]),
+  gImpl: ({ SUBRULE }) => ast =>
+    'type' in ast ? SUBRULE(rdfLiteral, ast, undefined) : SUBRULE(baseDecl, ast, undefined),
+};
+
 describe('generatorLiterals', () => {
-  const parserBuilder = Builder.createBuilder(<const> [ white, string, iri, prefixedName, rdfLiteral ]);
-  const generatorBuilder = GeneratorBuilder.createBuilder(<const> [ white, string, iri, prefixedName, rdfLiteral ]);
+  const rules = <const> [
+    white,
+    string,
+    iri,
+    iriFull,
+    prefixedName,
+    rdfLiteral,
+    baseDecl,
+    literalOrbase,
+  ];
+  const parserBuilder = Builder.createBuilder(rules);
+  const generatorBuilder = GeneratorBuilder.createBuilder(rules);
   const lexerBuilder = LexerBuilder.create().add(
     ignoredSpace,
     l.terminals.stringLiteral1,
@@ -239,6 +294,7 @@ describe('generatorLiterals', () => {
     l.terminals.pNameNs,
     l.terminals.langTag,
     l.symbols.hathat,
+    l.baseDecl,
   );
   const parser = parserBuilder.consumeToParser({
     tokenVocabulary: lexerBuilder.build(),
@@ -247,8 +303,8 @@ describe('generatorLiterals', () => {
 
   function testRoundTrip(input: string): void {
     it(`can round trip ${input}`, ({ expect }) => {
-      const ast = parser.rdfLiteral(input, <SparqlContext> {}, undefined);
-      const gen = generator.rdfLiteral(ast, undefined, undefined);
+      const ast = parser.literalOrbase(input, <SparqlContext> {}, undefined);
+      const gen = generator.literalOrbase(ast, undefined, undefined);
       expect(gen).toBe(input);
     });
   }
@@ -260,4 +316,6 @@ describe('generatorLiterals', () => {
   testRoundTrip(`"I am" ^^
 <ns:>`);
   testRoundTrip(`"I am"^^<ns:>`);
+  testRoundTrip(`   
+  BAse <http://example.org/>`);
 });

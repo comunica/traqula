@@ -30,6 +30,8 @@ export type WTOS = WTO[];
  * Before White Track Object Sequence
  */
 export type B_WTOS = { w0: WTOS };
+export type WBefore<T> = { w0: WTOS; val: T };
+export type Consumed1<T> = { w0: WTOS; image: string; val: T };
 
 export type BaseDecl = { base: string } &
   { RTT: { baseImage: string; w1: WTOS }};
@@ -89,6 +91,8 @@ export type LiteralTerm = {
   // Need whole image to reconstruct the original.
   //  Cannot see difference between for tab: u0009 or \t
   valueImage: string;
+  // White before string
+  w0: WTOS;
   // Between value and potential langtag/ ^^
   w1: WTOS | undefined;
   // Between ^^ and iri

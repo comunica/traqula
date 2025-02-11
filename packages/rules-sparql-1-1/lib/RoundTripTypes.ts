@@ -1,81 +1,44 @@
 import type {
-  Expression,
-  Grouping,
-  Ordering,
-  Pattern,
   PropertyPath,
-  ValuePatternRow,
-  Variable,
 } from './Sparql11types';
-import type { Wildcard } from './Wildcard';
 
 /**
- * White Space Object.
+ * Blank Space Object.
  */
-export type WS = { ws: string };
+export type BlankSpace = { bs: string };
 /**
  * Comment Object.
  * The comment can NEVER contain a newline - generators should ALWAYS append a newline
  */
 export type Comment = { comment: string };
 /**
- * White Tracking Object
+ * Ignored Tracking Object
  */
-export type WTO = WS | Comment;
+export type ITO = BlankSpace | Comment;
 /**
- * White Track Object Sequence.
+ * Ignored Track Object Sequence.
  */
-export type WTOS = WTO[];
+export type ITOS = ITO[];
 /**
- * Before White Track Object Sequence
+ * Before Ignored Track Object Sequence
  */
-export type B_WTOS = { w0: WTOS };
-export type WBefore<T> = { w0: WTOS; val: T };
-export type Image1<T> = { image1: string } & WBefore<T>;
-export type WIn1<T> = WBefore<T> & { w1: WTOS };
+export type Wrap<T> = { val: T };
+export type Indexes0 = '0' | Indexes;
+export type Indexes = '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
+export type Ignores<Idx extends Indexes0 = '0'> = {[k in `i${Idx}`]: ITOS };
+export type Images<Idx extends Indexes = '1'> = {[k in `img${Idx}`]: string };
+export type Reconstruct<IgnoredIdx extends Indexes0 = '0', ImageIdx extends Indexes = '1'> =
+  Ignores<IgnoredIdx> & Images<ImageIdx>;
 
-export type BaseDecl = { base: string } &
-  { RTT: { baseImage: string; w1: WTOS }};
-export type PrefixDecl = { prefix: string; value: string } &
-  { w1: WTOS; w2: WTOS };
-export type Prologue = [BaseDecl | PrefixDecl, ...((BaseDecl & B_WTOS) | PrefixDecl & B_WTOS)[]];
-export type DataSet = { default: IriTerm } | { named: IriTerm };
+export type Ignored<Val, Idx extends Indexes0 = '0'> = Wrap<Val> & Ignores<Idx>;
+export type Imaged<Val, Idx extends Indexes = '1'> = Wrap<Val> & Images<Idx>;
+export type Reconstructed<Val, IgnoredIdx extends Indexes0 = '0', ImageIdx extends Indexes = '1'>
+  = Wrap<Val> & Reconstruct<IgnoredIdx, ImageIdx>;
 
-export interface BaseQuery {
-  type: 'query';
-  prologue: Prologue;
-  from: DataSet[];
-  where: Pattern[];
-  values: ValuePatternRow[];
-  having: Expression[];
-  group: Grouping[];
-  order: Ordering[];
-  limit: number | undefined;
-  offset: number | undefined;
-}
-
-export interface SelectQuery extends BaseQuery {
-  queryType: 'SELECT';
-  variables: [Variable, ...(Variable & B_WTOS)[]] | [Wildcard];
-  modifier: 'DISTINCT' | 'REDUCED' | undefined;
-  selectRTT: {
-    selectImage: string;
-    /**
-     * Space after SELECT keyword.
-     */
-    w1: WTOS;
-    /**
-     * Space between distinct/ reduced (if present) and the variables
-     */
-    w2: WTOS | undefined;
-    distRedImage: string | undefined;
-  };
-}
-
-export interface ConstructQuery extends BaseQuery {
-  queryType: 'CONSTRUCT';
-  template: Triple[];
-}
+export type IgnoredRTT<Val, Idx extends Indexes0 = '0'> = Val & { RTT: Ignores<Idx> };
+export type ImageRTT<Val, Idx extends Indexes = '1'> = Val & { RTT: Images<Idx> };
+export type ReconstructRTT<Val, IgnoredIdx extends Indexes0 = '0', ImageIdx extends Indexes = '1'>
+  = IgnoredRTT<Val, IgnoredIdx> & ImageRTT<Val, ImageIdx>;
 
 export type Triple = {
   subject: Term;
@@ -88,17 +51,21 @@ export type LiteralTerm = {
   termType: 'Literal';
   value: string;
   langOrIri: string | IriTerm | undefined;
-} & { RTT: {
-  // Need whole image to reconstruct the original.
-  //  Cannot see difference between for tab: u0009 or \t
-  valueImage: string;
-  // White before string
-  w0: WTOS;
-  // Between value and potential langtag/ ^^
-  w1: WTOS | undefined;
-  // Between ^^ and iri
-  w2: WTOS | undefined;
-}; };
+};
+export type LiteralTermRTT = LiteralTerm & {
+  RTT: {
+    // Need whole image to reconstruct the original.
+    //  Cannot see difference between for tab: u0009 or \t
+    valueImage: string;
+    // White before string
+    i0: ITOS;
+    // Between value and potential langtag/ ^^
+    i1: ITOS | undefined;
+    // Between ^^ and iri
+    i2: ITOS | undefined;
+  };
+};
+
 export type VariableTerm = {
   type: 'term';
   termType: 'Variable';

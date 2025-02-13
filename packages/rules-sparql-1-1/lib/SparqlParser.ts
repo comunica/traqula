@@ -8,7 +8,7 @@ interface Parser<ParseRet> {
 
 function completeParseContext(context: Partial<SparqlContext>): SparqlContext {
   return {
-    dataFactory: context.dataFactory ?? new DataFactory({ blankNodePrefix: 'g_' }),
+    factory: context.factory ?? new DataFactory({ blankNodePrefix: 'g_' }),
     baseIRI: context.baseIRI,
     prefixes: { ...context.prefixes },
     parseMode: context.parseMode ? new Set(context.parseMode) : new Set([ 'canParseVars', 'canCreateBlankNodes' ]),

@@ -1,5 +1,8 @@
+import type { GeneratorRule } from '@traqula/core';
+import { TraqulaFactory } from '../factory';
 import { CommonIRIs, resolveIRI } from '../grammar-helpers/utils';
 import * as l from '../lexer';
+import type { FullIriTerm } from '../RoundTripTypes';
 import type {
   GraphTerm,
   Term,
@@ -10,7 +13,45 @@ import type {
   SparqlGrammarRule,
   SparqlRule,
 } from '../Sparql11types';
-import { blankNode, booleanLiteral, iri, numericLiteral, rdfLiteral } from './literals';
+import type { ITOS, Reconstructed } from '../TypeHelpersRTT';
+import { blankNode, booleanLiteral, iri, iriFull, numericLiteral, rdfLiteral } from './literals';
+
+const F = new TraqulaFactory();
+
+export function genB(subrule: Parameters<GeneratorRule<any, any, ITOS>['gImpl']>[0]['SUBRULE'], ast: ITOS): string {
+  return subrule(blank, ast, undefined);
+}
+
+/**
+ * Parses blank space and comments. - Subrule needs to be called before every CONSUME!
+ */
+export const blank: SparqlRule<'itos', ITOS> = <const> {
+  name: 'itos',
+  impl: ({ ACTION, CONSUME, OPTION }) => () => {
+    const image = OPTION(() => CONSUME(l.terminals.ignoredSpace).image);
+    return ACTION(() => {
+      if (image === undefined) {
+        return [];
+      }
+      const res: ITOS = [];
+      let iter = image;
+      while (iter) {
+        // eslint-disable-next-line require-unicode-regexp,unicorn/better-regex,no-control-regex
+        const [ _, ws, comment ] = /^(?:([\u0020\u0009\u000D\u000A]+)|(#[^\n]*\n)).*/.exec(iter)!;
+        if (ws) {
+          res.push({ bs: ws });
+          iter = iter.slice(ws.length);
+        }
+        if (comment) {
+          res.push({ comment: comment.slice(0, -1) });
+          iter = iter.slice(comment.length);
+        }
+      }
+      return res;
+    });
+  },
+  gImpl: () => ast => ast.map(x => F.isBS(x) ? x.bs : `${x.comment}\n`).join(''),
+};
 
 /**
  * [[4]](https://www.w3.org/TR/sparql11-query/#rPrologue)
@@ -62,16 +103,20 @@ export const prologue: SparqlRule<'prologue', Pick<BaseQuery, 'base' | 'prefixes
  * Registers base IRI in the context and returns it.
  * [[5]](https://www.w3.org/TR/sparql11-query/#rBaseDecl)
  */
-export const baseDecl: SparqlGrammarRule<'baseDecl', string> = <const> {
+const baseDecl: SparqlRule<'baseDecl', Reconstructed<FullIriTerm, '0' | '1'>> = <const> {
   name: 'baseDecl',
-  impl: ({ CONSUME, ACTION }) => (C) => {
-    CONSUME(l.baseDecl);
-    const base = CONSUME(l.terminals.iriRef).image.slice(1, -1);
-    return ACTION(() => {
-      C.baseIRI = base;
-      return base;
-    });
+  impl: ({ CONSUME, SUBRULE }) => () => {
+    const i0 = SUBRULE(blank, undefined);
+    const image = CONSUME(l.baseDecl).image;
+    const val = SUBRULE(iriFull, undefined);
+    return F.ignores(
+      F.image(F.wrap(val.val), image),
+      i0,
+      val.i0,
+    );
   },
+  gImpl: ({ SUBRULE: s }) => ast =>
+    `${genB(s, ast.i0)}${ast.img1}${s(iriFull, F.ignores(F.wrap(ast.val), ast.i1), undefined)}`,
 };
 
 /**
@@ -110,7 +155,7 @@ export const verbA: SparqlGrammarRule<'VerbA', VerbA> = <const> {
   name: 'VerbA',
   impl: ({ ACTION, CONSUME }) => (C) => {
     CONSUME(l.a);
-    return ACTION(() => C.dataFactory.namedNode(CommonIRIs.TYPE));
+    return ACTION(() => C.factory.namedNode(CommonIRIs.TYPE));
   },
 };
 
@@ -163,7 +208,7 @@ export const var_: SparqlRule<'var', VariableTerm> = <const> {
         throw new Error('Variables are not allowed here');
       }
     });
-    return ACTION(() => C.dataFactory.variable(varVal));
+    return ACTION(() => C.factory.variable(varVal));
   },
   gImpl: () => ast => `?${ast.value}`,
 };
@@ -182,7 +227,7 @@ export const graphTerm: SparqlRule<'graphTerm', GraphTerm> = <const> {
     {
       ALT: () => {
         CONSUME(l.terminals.nil);
-        return ACTION(() => C.dataFactory.namedNode(CommonIRIs.NIL));
+        return ACTION(() => C.factory.namedNode(CommonIRIs.NIL));
       },
     },
   ]),

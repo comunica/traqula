@@ -67,7 +67,7 @@ export const reifier: T11.SparqlGrammarRule<'reifier', T11.VariableTerm | T11.Ir
       if (reifier === undefined && !C.parseMode.has('canCreateBlankNodes')) {
         throw new Error('Cannot create blanknodes in current parse mode');
       }
-      return reifier ?? C.dataFactory.blankNode();
+      return reifier ?? C.factory.blankNode();
     });
   },
 };
@@ -131,10 +131,10 @@ T11.SparqlGrammarRule<T, Triple[], Pick<Triple, 'subject' | 'predicate'>> {
           ...objectVal.triples,
         ];
         for (const annotation of annotationVal) {
-          result.push(<Triple> C.dataFactory.quad(
+          result.push(<Triple> C.factory.quad(
             annotation.node,
-            C.dataFactory.namedNode(CommonIRIs.REIFIES),
-            C.dataFactory.quad(
+            C.factory.namedNode(CommonIRIs.REIFIES),
+            C.factory.quad(
               subject,
               <Exclude<typeof predicate, T11.PropertyPath>>predicate,
               objectVal.node,
@@ -187,7 +187,7 @@ function annotationImpl<T extends string>(name: T, allowPaths: boolean): T11.Spa
                 if (currentReifier === undefined && !C.parseMode.has('canCreateBlankNodes')) {
                   throw new Error('Cannot create blanknodes in current parse mode');
                 }
-                node = currentReifier ?? C.dataFactory.blankNode();
+                node = currentReifier ?? C.factory.blankNode();
                 return node;
               }) },
             );
@@ -280,7 +280,7 @@ export const varOrTerm: T11.SparqlGrammarRule<'varOrTerm', Term> = <const> {
     { ALT: () => SUBRULE(S11.blankNode, undefined) },
     { ALT: () => {
       CONSUME(l11.terminals.nil);
-      return ACTION(() => C.dataFactory.namedNode(CommonIRIs.NIL));
+      return ACTION(() => C.factory.namedNode(CommonIRIs.NIL));
     } },
     { ALT: () => SUBRULE(tripleTerm, undefined) },
   ]),
@@ -306,13 +306,13 @@ export const reifiedTriple: T11.SparqlGrammarRule<
       if (reifierVal === undefined && !C.parseMode.has('canCreateBlankNodes')) {
         throw new Error('Cannot create blanknodes in current parse mode');
       }
-      const reifier = reifierVal ?? C.dataFactory.blankNode();
-      const tripleTerm = C.dataFactory.quad(subject.node, predicate, object.node);
+      const reifier = reifierVal ?? C.factory.blankNode();
+      const tripleTerm = C.factory.quad(subject.node, predicate, object.node);
       return {
         node: reifier,
         triples: [
           ...subject.triples,
-          <Triple> C.dataFactory.quad(reifier, C.dataFactory.namedNode(CommonIRIs.REIFIES), tripleTerm),
+          <Triple> C.factory.quad(reifier, C.factory.namedNode(CommonIRIs.REIFIES), tripleTerm),
           ...object.triples,
         ],
       };
@@ -362,7 +362,7 @@ export const tripleTerm: T11.SparqlGrammarRule<'tripleTerm', BaseQuadTerm> = <co
     const predicate = SUBRULE(S11.verb, undefined);
     const object = SUBRULE(tripleTermObject, undefined);
     CONSUME(l12.tripleTermClose);
-    return ACTION(() => C.dataFactory.quad(subject, predicate, object));
+    return ACTION(() => C.factory.quad(subject, predicate, object));
   },
 };
 
@@ -406,13 +406,13 @@ export const tripleTermData: T11.SparqlGrammarRule<'tripleTermData', BaseQuadTer
       { ALT: () => SUBRULE(S11.iri, undefined) },
       { ALT: () => {
         CONSUME(l11.a);
-        return ACTION(() => C.dataFactory.namedNode(CommonIRIs.TYPE));
+        return ACTION(() => C.factory.namedNode(CommonIRIs.TYPE));
       } },
     ]);
     const object = SUBRULE(tripleTermDataObject, undefined);
     CONSUME(l12.tripleTermClose);
 
-    return ACTION(() => C.dataFactory.quad(subject, predicate, object));
+    return ACTION(() => C.factory.quad(subject, predicate, object));
   },
 };
 
@@ -466,7 +466,7 @@ export const exprTripleTerm: T11.SparqlGrammarRule<'exprTripleTerm', BaseQuadTer
     const object = SUBRULE(exprTripleTermObject, undefined);
     CONSUME(l12.tripleTermClose);
 
-    return ACTION(() => C.dataFactory.quad(subject, predicate, object));
+    return ACTION(() => C.factory.quad(subject, predicate, object));
   },
 };
 
@@ -566,6 +566,6 @@ export const rdfLiteral: T11.SparqlGrammarRule<'rdfLiteral', T11.LiteralTerm> = 
         return SUBRULE(S11.iri, undefined);
       } },
     ]));
-    return ACTION(() => C.dataFactory.literal(value, langOrDataType));
+    return ACTION(() => C.factory.literal(value, langOrDataType));
   },
 };

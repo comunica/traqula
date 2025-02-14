@@ -7,6 +7,7 @@ import type {
   IriTerm,
   IriTermFull,
   LiteralTermPrimitive,
+  IriTermPrimitive,
 } from '../RoundTripTypes';
 
 import type { SparqlGrammarRule, SparqlRule } from '../Sparql11types';
@@ -216,9 +217,15 @@ export const iri: SparqlRule<'iri', IriTerm> = <const> {
     { ALT: () => SUBRULE(iriFull, undefined) },
     { ALT: () => SUBRULE(prefixedName, undefined) },
   ]),
-  gImpl: ({ SUBRULE }) => (ast, { factory: F }) => F.isPrefixedIriTerm(ast) ?
-    SUBRULE(prefixedName, ast, undefined) :
-    SUBRULE(iriFull, ast, undefined),
+  gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
+    if (F.isPrimitiveIriTerm(ast)) {
+      return SUBRULE(verbA, ast, undefined);
+    }
+    if (F.isPrefixedIriTerm(ast)) {
+      return SUBRULE(prefixedName, ast, undefined);
+    }
+    return SUBRULE(iriFull, ast, undefined);
+  },
 };
 
 export const iriFull: SparqlRule<'iriFull', IriTermFull> = <const> {
@@ -287,4 +294,20 @@ export const blankNode: SparqlRule<'blankNode', BlankTermExplicit> = <const> {
   },
   gImpl: ({ SUBRULE: s }) => ast =>
     ast.label === undefined ? `${genB(s, ast.RTT.i0)}${ast.RTT.img1}` : `${genB(s, ast.RTT.i0)}_:${ast.label}`,
+};
+
+export const verbA: SparqlRule<'VerbA', IriTermPrimitive> = <const> {
+  name: 'VerbA',
+  impl: ({ CONSUME, SUBRULE }) => ({ factory: F }) => {
+    const i0 = SUBRULE(blank, undefined);
+    const img1 = CONSUME(l.a).image;
+    return {
+      ...F.namedNode(i0, CommonIRIs.TYPE),
+      RTT: {
+        i0,
+        img1,
+      },
+    };
+  },
+  gImpl: ({ SUBRULE: s }) => ast => `${genB(s, ast.RTT.i0)}${ast.RTT.img1}`,
 };

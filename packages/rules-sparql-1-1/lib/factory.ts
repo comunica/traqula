@@ -14,8 +14,18 @@ import type {
   IriTermPrefixed,
   VariableTerm,
   BaseDecl,
+  IriTermPrimitive,
+  NegatedElt,
+  PropertyPath,
+  PropertyPathModified,
+  PropertyPathChain,
+  PropertyPathAlternativeLimited,
+  PropertyPathNegated,
+  ContextDefinition,
+  Term,
 } from './RoundTripTypes';
 import type { ITOS } from './TypeHelpersRTT';
+import type * as r from './TypeHelpersRTT';
 
 export class TraqulaFactory extends BlankSpaceFactory {
   private blankNodeCounter = 0;
@@ -52,8 +62,92 @@ export class TraqulaFactory extends BlankSpaceFactory {
     }, i0), img1);
   }
 
+  public isTerm(x: object): x is Term {
+    return 'type' in x && x.type === 'term';
+  }
+
+  public isIriTerm(x: Term): x is IriTerm {
+    return x.termType === 'NamedNode';
+  }
+
+  public isPrimitiveIriTerm(x: IriTerm): x is IriTermPrimitive {
+    return 'img1' in x.RTT;
+  }
+
   public isPrefixedIriTerm(x: IriTerm): x is IriTermPrefixed {
     return 'prefix' in x;
+  }
+
+  public isBrackettedRTT(x: { RTT: object }): x is { RTT: { preBracket: [r.ITOS, r.ITOS][] }} {
+    return 'preBracket' in x.RTT;
+  }
+
+  /**
+   * If PreBracketed exists, this function will append the current values to it.
+   */
+  public bracketted<T extends object & { RTT?: { preBracket?: [ITOS, ITOS][] }}>(x: T, i0: ITOS, i1: ITOS):
+    T & { RTT: { preBracket: [ITOS, ITOS][] }} {
+    if (x.RTT !== undefined && x.RTT.preBracket !== undefined) {
+      x.RTT.preBracket.push([ i0, i1 ]);
+      return <T & { RTT: { preBracket: [ITOS, ITOS][] }}> x;
+    }
+    return {
+      ...x,
+      RTT: {
+        ...x.RTT,
+        preBracket: [[ i0, i1 ]],
+      },
+    };
+  }
+
+  public path(pathType: '!', items: IriTerm | NegatedElt | PropertyPathAlternativeLimited, ignored: ITOS):
+  PropertyPathNegated;
+  public path(pathType: '!', items: IriTerm | NegatedElt | PropertyPathAlternativeLimited, ignored: [ITOS, ITOS, ITOS]):
+  PropertyPathNegated;
+  public path(pathType: '^', items: IriTerm, i0: ITOS): NegatedElt;
+  public path(pathType: '?' | '*' | '+' | '^', item: PropertyPath, i0: ITOS): PropertyPathModified;
+  public path(pathType: '|', items: [IriTerm | NegatedElt, ...(IriTerm | NegatedElt)[]], ignored: [ITOS, ...ITOS[]]):
+  PropertyPathAlternativeLimited;
+  public path(pathType: '|' | '/', items: [PropertyPath, ...PropertyPath[]], ignored: [ITOS, ...ITOS[]]):
+  PropertyPathChain;
+  public path(
+    pathType: '?' | '*' | '+' | '^' | '|' | '/' | '!',
+    items: PropertyPath | PropertyPath[],
+    ignored: ITOS | ITOS[],
+  ): PropertyPath {
+    if (pathType === '!') {
+      let RTT: PropertyPathNegated['RTT'];
+      if (Array.isArray(ignored[0])) {
+        const [ i0, i1, i2 ] = <[ITOS, ITOS, ITOS]> ignored;
+        RTT = this.ignores({}, i0, i1, i2);
+      } else {
+        RTT = this.ignores({}, <ITOS> ignored);
+      }
+      return {
+        type: 'path',
+        pathType,
+        items: <[IriTerm | NegatedElt | PropertyPathAlternativeLimited]> [ items ],
+        RTT,
+      };
+    }
+    if (pathType === '|' || pathType === '/') {
+      return {
+        type: 'path',
+        pathType,
+        items: <[PropertyPath, ...PropertyPath[]]> items,
+        RTT: {
+          preSepIgnores: <[ITOS, ...ITOS[]]> ignored,
+        },
+      };
+    }
+    return {
+      type: 'path',
+      pathType,
+      items: <[PropertyPath]> items,
+      RTT: {
+        i0: <ITOS> ignored,
+      },
+    };
   }
 
   public namedNode(i0: ITOS, value: string): IriTermFull;

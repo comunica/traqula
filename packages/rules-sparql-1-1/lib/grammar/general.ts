@@ -5,14 +5,13 @@ import type { BaseDecl, ContextDefinition, PrefixDecl } from '../RoundTripTypes'
 import type {
   GraphTerm,
   Term,
-  VerbA,
   IriTerm,
   VariableTerm,
   SparqlGrammarRule,
   SparqlRule,
 } from '../Sparql11types';
 import type { ITOS } from '../TypeHelpersRTT';
-import { blankNode, booleanLiteral, iri, iriFull, numericLiteral, rdfLiteral } from './literals';
+import { blankNode, booleanLiteral, iri, iriFull, numericLiteral, rdfLiteral, verbA } from './literals';
 
 export function genB(subrule: Parameters<GeneratorRule<any, any, ITOS>['gImpl']>[0]['SUBRULE'], ast: ITOS): string {
   return subrule(blank, ast, undefined);
@@ -126,14 +125,6 @@ export const verb: SparqlGrammarRule<'verb', VariableTerm | IriTerm> = <const> {
       ALT: () => SUBRULE(verbA, undefined),
     },
   ]),
-};
-
-export const verbA: SparqlGrammarRule<'VerbA', VerbA> = <const> {
-  name: 'VerbA',
-  impl: ({ ACTION, CONSUME }) => (C) => {
-    CONSUME(l.a);
-    return ACTION(() => C.factory.namedNode(CommonIRIs.TYPE));
-  },
 };
 
 /**

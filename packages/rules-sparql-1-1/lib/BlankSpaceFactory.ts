@@ -121,7 +121,7 @@ export class BlankSpaceFactory {
 
   public isIgnores0 = (x: object): x is Ignores => this.isIgnores(x, [ '0' ]);
   public isIgnores1 = (x: object): x is Ignores1 => this.isIgnores(x, [ '0', '1' ]);
-  public isIgnores2 = (x: object): x is Ignores1 => this.isIgnores(x, [ '0', '1', '2' ]);
+  public isIgnores2 = (x: object): x is Ignores2 => this.isIgnores(x, [ '0', '1', '2' ]);
 
   private isImages<Indexes extends string>(x: object, indexes: Indexes[]): x is Images {
     return indexes.every(i => `img${i}` in x);

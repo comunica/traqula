@@ -322,12 +322,13 @@ export type SparqlRule<
    * This type will be the return type of calling SUBRULE with this grammar rule.
    */
   ReturnType = unknown,
+  GenInputType = ReturnType,
   /**
    * Function arguments that can be given to convey the state of the current parse operation.
    */
   ParamType = undefined,
 > = SparqlGrammarRule<NameType, ReturnType, ParamType>
-  & SparqlGeneratorRule<NameType, ReturnType, ParamType>;
+  & SparqlGeneratorRule<NameType, GenInputType, ParamType>;
 
 export type SparqlGeneratorRule<
   /**

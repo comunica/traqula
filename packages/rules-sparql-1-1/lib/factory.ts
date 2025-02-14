@@ -3,15 +3,17 @@ import type {
   BlankTermAnon,
   BlankTermImplicit,
   BlankTermLabeled,
-  FullIriTerm,
+  IriTermFull,
   IriTerm,
   LiteralTerm,
   LiteralTermLangStr,
   LiteralTermPrimitive,
   LiteralTermStr,
   LiteralTermTyped,
-  PrefixedIriTerm,
+  PrefixDecl,
+  IriTermPrefixed,
   VariableTerm,
+  BaseDecl,
 } from './RoundTripTypes';
 import type { ITOS } from './TypeHelpersRTT';
 
@@ -21,21 +23,42 @@ export class TraqulaFactory extends BlankSpaceFactory {
     super();
   }
 
-  public variable(value: string): VariableTerm {
-    return {
+  public prefix(i0: ITOS, img1: string, i1: ITOS, i2: ITOS, key: string, value: IriTermFull): PrefixDecl {
+    return this.rttImage(this.rttIgnore({
+      type: 'contextDef',
+      contextType: 'prefix',
+      key,
+      value,
+    }, i0, i1, i2), img1);
+  }
+
+  public baseDecl(i0: ITOS, img1: string, value: IriTermFull): BaseDecl {
+    return this.rttImage(this.rttIgnore({
+      type: 'contextDef',
+      contextType: 'base',
+      value,
+    }, i0), img1);
+  }
+
+  public isBaseDecl(x: ContextDefinition): x is BaseDecl {
+    return x.contextType === 'base';
+  }
+
+  public variable(i0: ITOS, img1: string, value: string): VariableTerm {
+    return this.rttImage(this.rttIgnore({
       type: 'term',
       termType: 'Variable',
       value,
-    };
+    }, i0), img1);
   }
 
-  public isPrefixedIriTerm(x: IriTerm): x is PrefixedIriTerm {
+  public isPrefixedIriTerm(x: IriTerm): x is IriTermPrefixed {
     return 'prefix' in x;
   }
 
-  public namedNode(i0: ITOS, value: string): FullIriTerm;
-  public namedNode(i0: ITOS, value: string, prefix: string): PrefixedIriTerm;
-  public namedNode(i0: ITOS, value: string, prefix?: string): FullIriTerm | PrefixedIriTerm {
+  public namedNode(i0: ITOS, value: string): IriTermFull;
+  public namedNode(i0: ITOS, value: string, prefix: string): IriTermPrefixed;
+  public namedNode(i0: ITOS, value: string, prefix?: string): IriTermFull | IriTermPrefixed {
     if (prefix === undefined) {
       return this.rttIgnore({
         type: 'term',

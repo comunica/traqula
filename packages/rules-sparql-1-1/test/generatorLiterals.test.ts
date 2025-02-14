@@ -16,12 +16,12 @@ import {
 } from '../lib/factory';
 import * as l from '../lib/lexer';
 import type {
-  FullIriTerm,
+  IriTermFull,
   Ignored,
   IriTerm,
   ITOS,
   LiteralTermRTT,
-  PrefixedIriTerm,
+  IriTermPrefixed,
   Reconstructed,
 } from '../lib/RoundTripTypes';
 
@@ -135,7 +135,7 @@ const iri: SparqlRule<'iri', Ignored<IriTerm>> = <const> {
   },
 };
 
-const iriFull: SparqlRule<'iriFull', Ignored<FullIriTerm>> = <const> {
+const iriFull: SparqlRule<'iriFull', Ignored<IriTermFull>> = <const> {
   name: 'iriFull',
   impl: ({ SUBRULE, CONSUME }) => () => {
     const w0 = SUBRULE(blank, undefined);
@@ -149,7 +149,7 @@ const iriFull: SparqlRule<'iriFull', Ignored<FullIriTerm>> = <const> {
  * Registers base IRI in the context and returns it.
  * [[5]](https://www.w3.org/TR/sparql11-query/#rBaseDecl)
  */
-const baseDecl: SparqlRule<'baseDecl', Reconstructed<FullIriTerm, '0' | '1'>> = <const> {
+const baseDecl: SparqlRule<'baseDecl', Reconstructed<IriTermFull, '0' | '1'>> = <const> {
   name: 'baseDecl',
   impl: ({ CONSUME, SUBRULE }) => () => {
     const i0 = SUBRULE(blank, undefined);
@@ -169,11 +169,11 @@ const baseDecl: SparqlRule<'baseDecl', Reconstructed<FullIriTerm, '0' | '1'>> = 
  * Parses a named node with a prefix. Looks up the prefix in the context and returns the full IRI.
  * [[137]](https://www.w3.org/TR/sparql11-query/#rPrefixedName)
  */
-const prefixedName: SparqlRule<'prefixedName', Ignored<PrefixedIriTerm>> = <const> {
+const prefixedName: SparqlRule<'prefixedName', Ignored<IriTermPrefixed>> = <const> {
   name: 'prefixedName',
   impl: ({ ACTION, CONSUME, SUBRULE, OR }) => () => {
     const w0 = SUBRULE(blank, undefined);
-    const node = OR<PrefixedIriTerm>([
+    const node = OR<IriTermPrefixed>([
       { ALT: () => {
         const longName = CONSUME(l.terminals.pNameLn).image;
         return ACTION(() => {
@@ -229,9 +229,9 @@ const rdfLiteral: SparqlRule<'rdfLiteral', LiteralTermRTT> = <const> {
   },
 };
 
-const literalOrBase: SparqlRule<'literalOrBase', LiteralTermRTT | Reconstructed<FullIriTerm, '0' | '1'>> = <const> {
+const literalOrBase: SparqlRule<'literalOrBase', LiteralTermRTT | Reconstructed<IriTermFull, '0' | '1'>> = <const> {
   name: 'literalOrBase',
-  impl: ({ SUBRULE, OR }) => () => OR<LiteralTermRTT | Reconstructed<FullIriTerm, '0' | '1'>>([
+  impl: ({ SUBRULE, OR }) => () => OR<LiteralTermRTT | Reconstructed<IriTermFull, '0' | '1'>>([
     { ALT: () => SUBRULE(rdfLiteral, undefined) },
     { ALT: () => SUBRULE(baseDecl, undefined) },
   ]),

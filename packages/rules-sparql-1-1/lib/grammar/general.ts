@@ -1,22 +1,18 @@
 import type { GeneratorRule } from '@traqula/core';
-import { TraqulaFactory } from '../factory';
-import { CommonIRIs, resolveIRI } from '../grammar-helpers/utils';
+import { CommonIRIs } from '../grammar-helpers/utils';
 import * as l from '../lexer';
-import type { FullIriTerm } from '../RoundTripTypes';
+import type { BaseDecl, ContextDefinition, PrefixDecl } from '../RoundTripTypes';
 import type {
   GraphTerm,
   Term,
   VerbA,
   IriTerm,
   VariableTerm,
-  BaseQuery,
   SparqlGrammarRule,
   SparqlRule,
 } from '../Sparql11types';
-import type { ITOS, Reconstructed } from '../TypeHelpersRTT';
+import type { ITOS } from '../TypeHelpersRTT';
 import { blankNode, booleanLiteral, iri, iriFull, numericLiteral, rdfLiteral } from './literals';
-
-const F = new TraqulaFactory();
 
 export function genB(subrule: Parameters<GeneratorRule<any, any, ITOS>['gImpl']>[0]['SUBRULE'], ast: ITOS): string {
   return subrule(blank, ast, undefined);
@@ -50,92 +46,73 @@ export const blank: SparqlRule<'itos', ITOS> = <const> {
       return res;
     });
   },
-  gImpl: () => ast => ast.map(x => F.isBS(x) ? x.bs : `${x.comment}\n`).join(''),
+  gImpl: () => (ast, { factory: F }) =>
+    ast.map(x => F.isBS(x) ? x.bs : `${x.comment}\n`).join(''),
 };
 
 /**
  * [[4]](https://www.w3.org/TR/sparql11-query/#rPrologue)
  */
-export const prologue: SparqlRule<'prologue', Pick<BaseQuery, 'base' | 'prefixes'>> = <const> {
+export const prologue: SparqlRule<'prologue', ContextDefinition[]> = <const> {
   name: 'prologue',
-  impl: ({ ACTION, SUBRULE, MANY, OR }) => (C) => {
-    const result: Pick<BaseQuery, 'base' | 'prefixes'> = ACTION(() => ({
-      prefixes: {},
-      ...(C.baseIRI && { base: C.baseIRI }),
-    }));
-    MANY(() => {
-      OR([
-        {
-          ALT: () => {
-            const base = SUBRULE(baseDecl, undefined);
-            ACTION(() => result.base = base);
-          },
-        },
-        {
-          ALT: () => {
-            // TODO: the [spec](https://www.w3.org/TR/sparql11-query/#iriRefs) says you cannot redefine prefixes.
-            //  We might need to check this.
-            const pref = SUBRULE(prefixDecl, undefined);
-            ACTION(() => {
-              const [ name, value ] = pref;
-              result.prefixes[name] = value;
-            });
-          },
-        },
-      ]);
-    });
+  impl: ({ SUBRULE, MANY, OR }) => () => {
+    const result: ContextDefinition[] = [];
+    MANY(() => OR([
+      { ALT: () => result.push(SUBRULE(baseDecl, undefined)) },
+      // TODO: the [spec](https://www.w3.org/TR/sparql11-query/#iriRefs) says you cannot redefine prefixes.
+      //  We might need to check this.
+      { ALT: () => result.push(SUBRULE(prefixDecl, undefined)) },
+    ]));
     return result;
   },
-  gImpl: () => (ast) => {
-    const rules: string[] = [];
-    if (ast.base) {
-      rules.push(`BASE <${ast.base}>`);
-    }
-    // eslint-disable-next-line ts/no-unnecessary-type-assertion
-    for (const [ key, value ] of <[string, string][]> Object.entries(ast.prefixes)) {
-      rules.push(`PREFIX ${key}: <${value}>`);
-    }
-    return rules.join(' ');
-  },
+  gImpl: ({ SUBRULE: s }) => (ast, { factory: F }) =>
+    ast.map(rule => F.isBaseDecl(rule) ? s(baseDecl, rule, undefined) : s(prefixDecl, rule, undefined)).join(''),
 };
 
 /**
  * Registers base IRI in the context and returns it.
  * [[5]](https://www.w3.org/TR/sparql11-query/#rBaseDecl)
  */
-const baseDecl: SparqlRule<'baseDecl', Reconstructed<FullIriTerm, '0' | '1'>> = <const> {
+const baseDecl: SparqlRule<'baseDecl', BaseDecl> = <const> {
   name: 'baseDecl',
-  impl: ({ CONSUME, SUBRULE }) => () => {
+  impl: ({ CONSUME, SUBRULE }) => ({ factory: F }) => {
     const i0 = SUBRULE(blank, undefined);
     const image = CONSUME(l.baseDecl).image;
     const val = SUBRULE(iriFull, undefined);
-    return F.ignores(
-      F.image(F.wrap(val.val), image),
-      i0,
-      val.i0,
-    );
+    return F.baseDecl(i0, image, val);
   },
-  gImpl: ({ SUBRULE: s }) => ast =>
-    `${genB(s, ast.i0)}${ast.img1}${s(iriFull, F.ignores(F.wrap(ast.val), ast.i1), undefined)}`,
+  gImpl: ({ SUBRULE: s }) => ast => [
+    genB(s, ast.RTT.i0),
+    ast.RTT.img1,
+    s(iriFull, ast.value, undefined),
+  ].join(''),
 };
 
 /**
  * Registers prefix in the context and returns registered key-value-pair.
  * [[6]](https://www.w3.org/TR/sparql11-query/#rPrefixDecl)
  */
-export const prefixDecl: SparqlGrammarRule<'prefixDecl', [string, string]> = <const> {
+export const prefixDecl: SparqlRule<'prefixDecl', PrefixDecl> = <const> {
   name: 'prefixDecl',
-  impl: ({ CONSUME, ACTION }) => (C) => {
-    CONSUME(l.prefixDecl);
+  impl: ({ CONSUME, SUBRULE, SUBRULE1, SUBRULE2, SUBRULE3 }) => ({ factory: F }) => {
+    const i0 = SUBRULE1(blank, undefined);
+    const img1 = CONSUME(l.prefixDecl).image;
+    const i1 = SUBRULE2(blank, undefined);
     const name = CONSUME(l.terminals.pNameNs).image.slice(0, -1);
-    const value = CONSUME(l.terminals.iriRef).image.slice(1, -1);
+    const i2 = SUBRULE3(blank, undefined);
+    const value = SUBRULE(iriFull, undefined);
 
-    return ACTION(() => {
-      const fullIri = resolveIRI(value, C.baseIRI);
-      C.prefixes[name] = fullIri;
-      return [ name, fullIri ];
-    });
+    return F.prefix(i0, img1, i1, i2, name, value);
   },
+  gImpl: ({ SUBRULE: s }) => ast => [
+    genB(s, ast.RTT.i0),
+    ast.RTT.img1,
+    genB(s, ast.RTT.i1),
+    ast.key,
+    ':',
+    genB(s, ast.RTT.i2),
+    s(iriFull, ast.value, undefined),
+  ].join(''),
 };
 
 /**

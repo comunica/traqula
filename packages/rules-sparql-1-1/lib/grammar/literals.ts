@@ -2,10 +2,10 @@ import { CommonIRIs } from '../grammar-helpers/utils';
 import * as l from '../lexer';
 import type {
   LiteralTerm,
-  PrefixedIriTerm,
+  IriTermPrefixed,
   BlankTermExplicit,
   IriTerm,
-  FullIriTerm,
+  IriTermFull,
   LiteralTermPrimitive,
 } from '../RoundTripTypes';
 
@@ -221,7 +221,7 @@ export const iri: SparqlRule<'iri', IriTerm> = <const> {
     SUBRULE(iriFull, ast, undefined),
 };
 
-export const iriFull: SparqlRule<'iriFull', FullIriTerm> = <const> {
+export const iriFull: SparqlRule<'iriFull', IriTermFull> = <const> {
   name: 'iriFull',
   impl: ({ SUBRULE, CONSUME }) => ({ factory: F }) => {
     const i0 = SUBRULE(blank, undefined);
@@ -235,11 +235,11 @@ export const iriFull: SparqlRule<'iriFull', FullIriTerm> = <const> {
  * Parses a named node with a prefix. Looks up the prefix in the context and returns the full IRI.
  * [[137]](https://www.w3.org/TR/sparql11-query/#rPrefixedName)
  */
-export const prefixedName: SparqlRule<'prefixedName', PrefixedIriTerm> = <const> {
+export const prefixedName: SparqlRule<'prefixedName', IriTermPrefixed> = <const> {
   name: 'prefixedName',
   impl: ({ ACTION, CONSUME, SUBRULE, OR }) => ({ factory: F }) => {
     const i0 = SUBRULE(blank, undefined);
-    return OR<PrefixedIriTerm>([
+    return OR<IriTermPrefixed>([
       { ALT: () => {
         const longName = CONSUME(l.terminals.pNameLn).image;
         return ACTION(() => {

@@ -249,7 +249,7 @@ function blankNodePropertyListImpl<T extends string>(name: T, allowPaths: boolea
       let blankNode: BlankTerm;
       const propList = SUBRULE(
         allowPaths ? propertyListPathNotEmpty : propertyListNotEmpty,
-        { subject: ACTION(() => blankNode = C.dataFactory.blankNode()) },
+        { subject: ACTION(() => blankNode = C.factory.blankNode()) },
       );
       CONSUME(l.symbols.RSquare);
 
@@ -284,10 +284,10 @@ function collectionImpl<T extends string>(name: T, allowPaths: boolean): SparqlG
         const triples: Triple[] = [];
         const appendTriples: Triple[] = [];
 
-        const listHead = C.dataFactory.blankNode();
+        const listHead = C.factory.blankNode();
         let iterHead = listHead;
-        const predFirst = C.dataFactory.namedNode(CommonIRIs.FIRST);
-        const predRest = C.dataFactory.namedNode(CommonIRIs.REST);
+        const predFirst = C.factory.namedNode(CommonIRIs.FIRST);
+        const predRest = C.factory.namedNode(CommonIRIs.REST);
         for (const [ index, term ] of terms.entries()) {
           const headTriple: Triple = {
             subject: iterHead,
@@ -302,11 +302,11 @@ function collectionImpl<T extends string>(name: T, allowPaths: boolean): SparqlG
             const nilTriple: Triple = {
               subject: iterHead,
               predicate: predRest,
-              object: C.dataFactory.namedNode(CommonIRIs.NIL),
+              object: C.factory.namedNode(CommonIRIs.NIL),
             };
             triples.push(nilTriple);
           } else {
-            const tail = C.dataFactory.blankNode();
+            const tail = C.factory.blankNode();
             const linkTriple: Triple = {
               subject: iterHead,
               predicate: predRest,

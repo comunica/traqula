@@ -1,8 +1,7 @@
 import type { ImplArgs } from '@traqula/core';
 import * as l from '../lexer';
+import type { Expression } from '../RoundTripTypes';
 import type {
-  Expression,
-  IriTerm,
   Pattern,
   SparqlGrammarRule,
   SparqlRule,

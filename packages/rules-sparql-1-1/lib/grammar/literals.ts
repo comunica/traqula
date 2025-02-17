@@ -1,26 +1,26 @@
 import { CommonIRIs } from '../grammar-helpers/utils';
 import * as l from '../lexer';
 import type {
-  LiteralTerm,
-  IriTermPrefixed,
-  BlankTermExplicit,
-  IriTerm,
-  IriTermFull,
-  LiteralTermPrimitive,
-  IriTermPrimitive,
+  TermLiteral,
+  TermIriPrefixed,
+  TermBlankExplicit,
+  TermIri,
+  TermIriFull,
+  TermLiteralPrimitive,
+  TermIriPrimitive,
 } from '../RoundTripTypes';
 
 import type { SparqlGrammarRule, SparqlRule } from '../Sparql11types';
 import type { Reconstructed } from '../TypeHelpersRTT';
 import { blank, genB } from './general';
 
-export const rdfLiteral: SparqlRule<'rdfLiteral', LiteralTerm> = <const> {
+export const rdfLiteral: SparqlRule<'rdfLiteral', TermLiteral> = <const> {
   name: 'rdfLiteral',
   impl: ({ SUBRULE1, CONSUME, OPTION, OR }) => ({ factory: F }) => {
     const value = SUBRULE1(string, undefined);
     return OPTION(() => {
       const i1 = SUBRULE1(blank, undefined);
-      return OR<LiteralTerm>([
+      return OR<TermLiteral>([
         { ALT: () => {
           const lang = CONSUME(l.terminals.langTag).image.slice(1);
           return F.literalTerm(value.i0, value.img1, i1, value.val, lang);
@@ -53,7 +53,7 @@ export const rdfLiteral: SparqlRule<'rdfLiteral', LiteralTerm> = <const> {
  * Parses a numeric literal.
  * [[130]](https://www.w3.org/TR/sparql11-query/#rNumericLiteral)
  */
-export const numericLiteral: SparqlGrammarRule<'numericLiteral', LiteralTermPrimitive> = <const> {
+export const numericLiteral: SparqlGrammarRule<'numericLiteral', TermLiteralPrimitive> = <const> {
   name: 'numericLiteral',
   impl: ({ SUBRULE, OR }) => () => OR([
     { ALT: () => SUBRULE(numericLiteralUnsigned, undefined) },
@@ -66,7 +66,7 @@ export const numericLiteral: SparqlGrammarRule<'numericLiteral', LiteralTermPrim
  * Parses an unsigned numeric literal.
  * [[131]](https://www.w3.org/TR/sparql11-query/#rNumericLiteralUnsigned)
  */
-export const numericLiteralUnsigned: SparqlGrammarRule<'numericLiteralUnsigned', LiteralTermPrimitive> = <const> {
+export const numericLiteralUnsigned: SparqlGrammarRule<'numericLiteralUnsigned', TermLiteralPrimitive> = <const> {
   name: 'numericLiteralUnsigned',
   impl: ({ CONSUME, OR, SUBRULE }) => ({ factory: F }) => {
     const i0 = SUBRULE(blank, undefined);
@@ -92,7 +92,7 @@ export const numericLiteralUnsigned: SparqlGrammarRule<'numericLiteralUnsigned',
  * Parses a positive numeric literal.
  * [[132]](https://www.w3.org/TR/sparql11-query/#rNumericLiteralPositive)
  */
-export const numericLiteralPositive: SparqlGrammarRule<'numericLiteralPositive', LiteralTermPrimitive> = <const> {
+export const numericLiteralPositive: SparqlGrammarRule<'numericLiteralPositive', TermLiteralPrimitive> = <const> {
   name: 'numericLiteralPositive',
   impl: ({ CONSUME, OR, SUBRULE }) => ({ factory: F }) => {
     const i0 = SUBRULE(blank, undefined);
@@ -118,7 +118,7 @@ export const numericLiteralPositive: SparqlGrammarRule<'numericLiteralPositive',
  * Parses a negative numeric literal.
  * [[133]](https://www.w3.org/TR/sparql11-query/#rNumericLiteralNegative)
  */
-export const numericLiteralNegative: SparqlGrammarRule<'numericLiteralNegative', LiteralTermPrimitive> = <const> {
+export const numericLiteralNegative: SparqlGrammarRule<'numericLiteralNegative', TermLiteralPrimitive> = <const> {
   name: 'numericLiteralNegative',
   impl: ({ CONSUME, OR, SUBRULE }) => ({ factory: F }) => {
     const i0 = SUBRULE(blank, undefined);
@@ -144,7 +144,7 @@ export const numericLiteralNegative: SparqlGrammarRule<'numericLiteralNegative',
  * Parses a boolean literal.
  * [[134]](https://www.w3.org/TR/sparql11-query/#rBooleanLiteral)
  */
-export const booleanLiteral: SparqlGrammarRule<'booleanLiteral', LiteralTermPrimitive> = <const> {
+export const booleanLiteral: SparqlGrammarRule<'booleanLiteral', TermLiteralPrimitive> = <const> {
   name: 'booleanLiteral',
   impl: ({ CONSUME, OR, SUBRULE }) => ({ factory: F }) => {
     const i0 = SUBRULE(blank, undefined);
@@ -211,9 +211,9 @@ export const string: SparqlRule<'string', Reconstructed<string>> = <const> {
  * Parses a named node, either as an IRI or as a prefixed name.
  * [[136]](https://www.w3.org/TR/sparql11-query/#riri)
  */
-export const iri: SparqlRule<'iri', IriTerm> = <const> {
+export const iri: SparqlRule<'iri', TermIri> = <const> {
   name: 'iri',
-  impl: ({ SUBRULE, OR }) => () => OR<IriTerm>([
+  impl: ({ SUBRULE, OR }) => () => OR<TermIri>([
     { ALT: () => SUBRULE(iriFull, undefined) },
     { ALT: () => SUBRULE(prefixedName, undefined) },
   ]),
@@ -228,7 +228,7 @@ export const iri: SparqlRule<'iri', IriTerm> = <const> {
   },
 };
 
-export const iriFull: SparqlRule<'iriFull', IriTermFull> = <const> {
+export const iriFull: SparqlRule<'iriFull', TermIriFull> = <const> {
   name: 'iriFull',
   impl: ({ SUBRULE, CONSUME }) => ({ factory: F }) => {
     const i0 = SUBRULE(blank, undefined);
@@ -242,11 +242,11 @@ export const iriFull: SparqlRule<'iriFull', IriTermFull> = <const> {
  * Parses a named node with a prefix. Looks up the prefix in the context and returns the full IRI.
  * [[137]](https://www.w3.org/TR/sparql11-query/#rPrefixedName)
  */
-export const prefixedName: SparqlRule<'prefixedName', IriTermPrefixed> = <const> {
+export const prefixedName: SparqlRule<'prefixedName', TermIriPrefixed> = <const> {
   name: 'prefixedName',
   impl: ({ ACTION, CONSUME, SUBRULE, OR }) => ({ factory: F }) => {
     const i0 = SUBRULE(blank, undefined);
-    return OR<IriTermPrefixed>([
+    return OR<TermIriPrefixed>([
       { ALT: () => {
         const longName = CONSUME(l.terminals.pNameLn).image;
         return ACTION(() => {
@@ -267,11 +267,11 @@ export const canCreateBlankNodes = Symbol('canCreateBlankNodes');
  * Parses blank note and throws an error if 'canCreateBlankNodes' is not in the current parserMode.
  * [[138]](https://www.w3.org/TR/sparql11-query/#rBlankNode)
  */
-export const blankNode: SparqlRule<'blankNode', BlankTermExplicit> = <const> {
+export const blankNode: SparqlRule<'blankNode', TermBlankExplicit> = <const> {
   name: 'blankNode',
   impl: ({ ACTION, CONSUME, OR, SUBRULE }) => ({ factory: F, parseMode }) => {
     const i0 = SUBRULE(blank, undefined);
-    const result = OR<BlankTermExplicit>([
+    const result = OR<TermBlankExplicit>([
       {
         ALT: () => {
           const label = CONSUME(l.terminals.blankNodeLabel).image.slice(2);
@@ -296,7 +296,7 @@ export const blankNode: SparqlRule<'blankNode', BlankTermExplicit> = <const> {
     ast.label === undefined ? `${genB(s, ast.RTT.i0)}${ast.RTT.img1}` : `${genB(s, ast.RTT.i0)}_:${ast.label}`,
 };
 
-export const verbA: SparqlRule<'VerbA', IriTermPrimitive> = <const> {
+export const verbA: SparqlRule<'VerbA', TermIriPrimitive> = <const> {
   name: 'VerbA',
   impl: ({ CONSUME, SUBRULE }) => ({ factory: F }) => {
     const i0 = SUBRULE(blank, undefined);

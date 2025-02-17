@@ -1,12 +1,13 @@
 import { unCapitalize } from '@traqula/core';
 import type { TokenType } from 'chevrotain';
 import { expression, expressionList } from './grammar/expression';
-import { var_ } from './grammar/general';
+import { blank, var_ } from './grammar/general';
 import { groupGraphPattern } from './grammar/whereClause';
 import * as l from './lexer';
+import type { ExpressionAggregateDefault } from './RoundTripTypes';
 import type { Expression, OperationExpression, Pattern, SparqlGrammarRule, VariableTerm } from './Sparql11types';
+import type { ITOS } from './TypeHelpersRTT';
 import { deGroupSingle } from './utils';
-import { Wildcard } from './Wildcard';
 
 export interface IExpressionFunctionX<U extends Expression[] | [Pattern]> extends OperationExpression {
   type: 'operation';
@@ -234,40 +235,28 @@ RuleDefExpressionFunctionX<
   };
 }
 
-export interface IExpressionAggregator {
-  type: 'aggregate';
-  distinct: boolean;
-  expression: Expression | Wildcard;
-  aggregation: string;
-  separator?: string;
-}
-
-export type RuleDefExpressionAggregatorX<T extends string> = SparqlGrammarRule<T, IExpressionAggregator>;
+export type RuleDefExpressionAggregatorX<T extends string> = SparqlGrammarRule<T, ExpressionAggregateDefault>;
 
 export function baseAggregateFunc<T extends string>(func: TokenType & { name: T }):
 RuleDefExpressionAggregatorX<Uncapitalize<T>> {
   return {
     name: unCapitalize(func.name),
-    impl: ({ CONSUME, SUBRULE, OPTION, OR }) => () => {
-      const operator = CONSUME(func);
+    impl: ({ CONSUME, SUBRULE, OPTION, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4 }) => ({ factory: F }) => {
+      const i0 = SUBRULE1(blank, undefined);
+      const img1 = CONSUME(func).image;
+      const i1 = SUBRULE2(blank, undefined);
       CONSUME(l.symbols.LParen);
-      const distinct = OPTION(() => CONSUME(l.distinct));
-      const expressionVal = OR<Expression | Wildcard>([
-        {
-          ALT: () => {
-            CONSUME(l.symbols.star);
-            return new Wildcard();
-          },
-        },
-        { ALT: () => SUBRULE(expression, undefined) },
-      ]);
+      let i2: ITOS | undefined;
+      let img2: string | undefined;
+      OPTION(() => {
+        i2 = SUBRULE3(blank, undefined);
+        img2 = CONSUME(l.distinct).image;
+      });
+      const expr1 = SUBRULE(expression, undefined);
+      const i3 = SUBRULE4(blank, undefined);
       CONSUME(l.symbols.RParen);
-      return {
-        type: 'aggregate',
-        aggregation: operator.image.toLowerCase(),
-        expression: expressionVal,
-        distinct: Boolean(distinct),
-      };
+
+      return F.aggregate(i0, i1, i2, i3, img1, img2, [ expr1 ]);
     },
   };
 }

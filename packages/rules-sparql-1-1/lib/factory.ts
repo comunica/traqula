@@ -1,31 +1,37 @@
 import { BlankSpaceFactory } from './BlankSpaceFactory';
 import type {
-  BlankTermAnon,
-  BlankTermImplicit,
-  BlankTermLabeled,
-  IriTermFull,
-  IriTerm,
-  LiteralTerm,
-  LiteralTermLangStr,
-  LiteralTermPrimitive,
-  LiteralTermStr,
-  LiteralTermTyped,
-  PrefixDecl,
-  IriTermPrefixed,
-  VariableTerm,
-  BaseDecl,
-  IriTermPrimitive,
-  NegatedElt,
-  PropertyPath,
-  PropertyPathModified,
+  TermBlankAnon,
+  TermBlankImplicit,
+  TermBlankLabeled,
+  TermIriFull,
+  TermIri,
+  TermLiteral,
+  TermLiteralLangStr,
+  TermLiteralPrimitive,
+  TermLiteralStr,
+  TermLiteralTyped,
+  ContextDefinitionPrefixDecl,
+  TermIriPrefixed,
+  TermVariable,
+  ContextDefinitionBaseDecl,
+  TermIriPrimitive,
+  PathNegatedElt,
+  Path,
+  PathModified,
   PropertyPathChain,
-  PropertyPathAlternativeLimited,
-  PropertyPathNegated,
+  PathAlternativeLimited,
+  PathNegated,
   ContextDefinition,
   Term,
+  ExpressionAggregateDefault,
+  Expression,
+  ExpressionAggregateOnWildcard,
+  ExpressionAggregateSeparator,
+  ExpressionAggregate,
 } from './RoundTripTypes';
-import type { ITOS } from './TypeHelpersRTT';
 import type * as r from './TypeHelpersRTT';
+import type { ITOS } from './TypeHelpersRTT';
+import type { Wildcard } from './Wildcard';
 
 export class TraqulaFactory extends BlankSpaceFactory {
   private blankNodeCounter = 0;
@@ -33,7 +39,8 @@ export class TraqulaFactory extends BlankSpaceFactory {
     super();
   }
 
-  public prefix(i0: ITOS, img1: string, i1: ITOS, i2: ITOS, key: string, value: IriTermFull): PrefixDecl {
+  public prefix(i0: r.ITOS, img1: string, i1: r.ITOS, i2: r.ITOS, key: string, value: TermIriFull):
+  ContextDefinitionPrefixDecl {
     return this.rttImage(this.rttIgnore({
       type: 'contextDef',
       contextType: 'prefix',
@@ -42,7 +49,7 @@ export class TraqulaFactory extends BlankSpaceFactory {
     }, i0, i1, i2), img1);
   }
 
-  public baseDecl(i0: ITOS, img1: string, value: IriTermFull): BaseDecl {
+  public baseDecl(i0: r.ITOS, img1: string, value: TermIriFull): ContextDefinitionBaseDecl {
     return this.rttImage(this.rttIgnore({
       type: 'contextDef',
       contextType: 'base',
@@ -50,15 +57,15 @@ export class TraqulaFactory extends BlankSpaceFactory {
     }, i0), img1);
   }
 
-  public isBaseDecl(x: ContextDefinition): x is BaseDecl {
+  public isBaseDecl(x: ContextDefinition): x is ContextDefinitionBaseDecl {
     return x.contextType === 'base';
   }
 
-  public variable(i0: ITOS, img1: string, value: string): VariableTerm {
+  public variable(i0: r.ITOS, img1: string): TermVariable {
     return this.rttImage(this.rttIgnore({
       type: 'term',
       termType: 'Variable',
-      value,
+      value: img1.slice(1),
     }, i0), img1);
   }
 
@@ -66,15 +73,15 @@ export class TraqulaFactory extends BlankSpaceFactory {
     return 'type' in x && x.type === 'term';
   }
 
-  public isIriTerm(x: Term): x is IriTerm {
+  public isIriTerm(x: Term): x is TermIri {
     return x.termType === 'NamedNode';
   }
 
-  public isPrimitiveIriTerm(x: IriTerm): x is IriTermPrimitive {
+  public isPrimitiveIriTerm(x: TermIri): x is TermIriPrimitive {
     return 'img1' in x.RTT;
   }
 
-  public isPrefixedIriTerm(x: IriTerm): x is IriTermPrefixed {
+  public isPrefixedIriTerm(x: TermIri): x is TermIriPrefixed {
     return 'prefix' in x;
   }
 
@@ -82,14 +89,96 @@ export class TraqulaFactory extends BlankSpaceFactory {
     return 'preBracket' in x.RTT;
   }
 
+  public aggregate(i0: r.ITOS, i1: r.ITOS, i2: r.ITOS | undefined, i3: r.ITOS, img1: string, img2: string | undefined,
+    expression: Expression[]): ExpressionAggregateDefault;
+  public aggregate(i0: r.ITOS, i1: r.ITOS, i2: r.ITOS | undefined, i3: r.ITOS, i4: r.ITOS, img1: string,
+    img2: string | undefined, expression: [Wildcard]): ExpressionAggregateOnWildcard;
+  public aggregate(i0: r.ITOS, i1: r.ITOS, i2: r.ITOS | undefined, i3: r.ITOS, i4: r.ITOS, i5: r.ITOS, i6: r.ITOS,
+    i7: ITOS, img1: string, img2: string | undefined, img3: string, img4: string, expression: Expression[],
+    separator: string): ExpressionAggregateSeparator;
+  public aggregate(
+    i0: r.ITOS,
+    i1: r.ITOS,
+    i2: r.ITOS | undefined,
+    i3: r.ITOS,
+    img1ori4: string | r.ITOS,
+    img2or1ori5: string | r.ITOS | undefined,
+    expressionOrImg2Ori6: Expression[] | string | r.ITOS | undefined,
+    expressionOri7?: [Wildcard] | r.ITOS,
+    img1?: string,
+    img2?: string,
+    img3?: string,
+    img4?: string,
+    expression?: Expression[],
+    separator?: string,
+  ): ExpressionAggregate {
+    if (typeof img1ori4 === 'string' &&
+      (img2or1ori5 === undefined || typeof img2or1ori5 === 'string') &&
+      Array.isArray(expressionOrImg2Ori6)
+    ) {
+      return {
+        type: 'expression',
+        expressionType: 'aggregate',
+        aggregation: img1ori4.toLowerCase(),
+        distinct: img2or1ori5 !== undefined,
+        expression: <Expression[]> expressionOrImg2Ori6,
+        RTT: this.ignores(this.image({}, img1ori4, img2or1ori5 ?? ''), i0, i1, i2 ?? [], i3),
+      } satisfies ExpressionAggregateDefault;
+    }
+    if (Array.isArray(img1ori4) &&
+      typeof img2or1ori5 === 'string' &&
+      (expressionOrImg2Ori6 === undefined || typeof expressionOrImg2Ori6 === 'string')
+    ) {
+      return {
+        type: 'expression',
+        expressionType: 'aggregate',
+        aggregation: img2or1ori5.toLowerCase(),
+        distinct: expressionOrImg2Ori6 !== undefined,
+        expression: <[Wildcard]> expressionOri7,
+        RTT: this.ignores(this.image({}, img2or1ori5, expressionOrImg2Ori6 ?? ''), i0, i1, i2 ?? [], i3, img1ori4),
+      } satisfies ExpressionAggregateOnWildcard;
+    }
+    if (Array.isArray(img1ori4) &&
+      Array.isArray(img2or1ori5) &&
+      Array.isArray(expressionOrImg2Ori6) &&
+      expressionOri7 !== undefined &&
+      img1 !== undefined &&
+      img3 !== undefined &&
+      img4 !== undefined &&
+      expression !== undefined &&
+      separator !== undefined
+    ) {
+      return {
+        type: 'expression',
+        expressionType: 'aggregate',
+        aggregation: img1.toLowerCase(),
+        distinct: img2 !== undefined,
+        expression,
+        separator,
+        RTT: this.ignores(
+          this.image({}, img1, img2 ?? '', img3, img4),
+          i0,
+          i1,
+          i2 ?? [],
+          i3,
+          img1ori4,
+          img2or1ori5,
+          <ITOS> expressionOrImg2Ori6,
+          <ITOS> expressionOri7,
+        ),
+      } satisfies ExpressionAggregateSeparator;
+    }
+    throw new Error('Invalid arguments');
+  }
+
   /**
    * If PreBracketed exists, this function will append the current values to it.
    */
-  public bracketted<T extends object & { RTT?: { preBracket?: [ITOS, ITOS][] }}>(x: T, i0: ITOS, i1: ITOS):
-    T & { RTT: { preBracket: [ITOS, ITOS][] }} {
+  public bracketted<T extends object & { RTT?: { preBracket?: [r.ITOS, r.ITOS][] }}>(x: T, i0: r.ITOS, i1: r.ITOS):
+    T & { RTT: { preBracket: [r.ITOS, r.ITOS][] }} {
     if (x.RTT !== undefined && x.RTT.preBracket !== undefined) {
       x.RTT.preBracket.push([ i0, i1 ]);
-      return <T & { RTT: { preBracket: [ITOS, ITOS][] }}> x;
+      return <T & { RTT: { preBracket: [r.ITOS, r.ITOS][] }}> x;
     }
     return {
       ...x,
@@ -100,33 +189,37 @@ export class TraqulaFactory extends BlankSpaceFactory {
     };
   }
 
-  public path(pathType: '!', items: IriTerm | NegatedElt | PropertyPathAlternativeLimited, ignored: ITOS):
-  PropertyPathNegated;
-  public path(pathType: '!', items: IriTerm | NegatedElt | PropertyPathAlternativeLimited, ignored: [ITOS, ITOS, ITOS]):
-  PropertyPathNegated;
-  public path(pathType: '^', items: IriTerm, i0: ITOS): NegatedElt;
-  public path(pathType: '?' | '*' | '+' | '^', item: PropertyPath, i0: ITOS): PropertyPathModified;
-  public path(pathType: '|', items: [IriTerm | NegatedElt, ...(IriTerm | NegatedElt)[]], ignored: [ITOS, ...ITOS[]]):
-  PropertyPathAlternativeLimited;
-  public path(pathType: '|' | '/', items: [PropertyPath, ...PropertyPath[]], ignored: [ITOS, ...ITOS[]]):
+  public path(pathType: '!', items: TermIri | PathNegatedElt | PathAlternativeLimited, ignored: r.ITOS):
+  PathNegated;
+  public path(pathType: '!', items: TermIri | PathNegatedElt | PathAlternativeLimited,
+    ignored: [r.ITOS, r.ITOS, r.ITOS]): PathNegated;
+  public path(pathType: '^', items: TermIri, i0: r.ITOS): PathNegatedElt;
+  public path(pathType: '?' | '*' | '+' | '^', item: Path, i0: r.ITOS): PathModified;
+  public path(pathType: '|', items: [TermIri | PathNegatedElt, ...(TermIri | PathNegatedElt)[]],
+    ignored: [r.ITOS, ...r.ITOS[]]): PathAlternativeLimited;
+  public path(pathType: '|' | '/', items: [Path, ...Path[]], ignored: [r.ITOS, ...r.ITOS[]]):
   PropertyPathChain;
   public path(
     pathType: '?' | '*' | '+' | '^' | '|' | '/' | '!',
-    items: PropertyPath | PropertyPath[],
-    ignored: ITOS | ITOS[],
-  ): PropertyPath {
+    items: Path | Path[],
+    ignored: r.ITOS | r.ITOS[],
+  ): Path {
     if (pathType === '!') {
-      let RTT: PropertyPathNegated['RTT'];
       if (Array.isArray(ignored[0])) {
-        const [ i0, i1, i2 ] = <[ITOS, ITOS, ITOS]> ignored;
-        RTT = this.ignores({}, i0, i1, i2);
-      } else {
-        RTT = this.ignores({}, <ITOS> ignored);
+        const [ i0, i1, i2 ] = <[r.ITOS, r.ITOS, r.ITOS]> ignored;
+        const RTT = this.ignores({}, i0, i1, i2);
+        return {
+          type: 'path',
+          pathType,
+          items: <[TermIri | PathNegatedElt | PathAlternativeLimited]> [ items ],
+          RTT,
+        };
       }
+      const RTT = this.ignores({}, <r.ITOS> ignored);
       return {
         type: 'path',
         pathType,
-        items: <[IriTerm | NegatedElt | PropertyPathAlternativeLimited]> [ items ],
+        items: <[TermIri | PathNegatedElt]> [ items ],
         RTT,
       };
     }
@@ -134,25 +227,25 @@ export class TraqulaFactory extends BlankSpaceFactory {
       return {
         type: 'path',
         pathType,
-        items: <[PropertyPath, ...PropertyPath[]]> items,
+        items: <[Path, ...Path[]]> items,
         RTT: {
-          preSepIgnores: <[ITOS, ...ITOS[]]> ignored,
+          preSepIgnores: <[r.ITOS, ...r.ITOS[]]> ignored,
         },
       };
     }
     return {
       type: 'path',
       pathType,
-      items: <[PropertyPath]> items,
+      items: <[Path]> items,
       RTT: {
-        i0: <ITOS> ignored,
+        i0: <r.ITOS> ignored,
       },
     };
   }
 
-  public namedNode(i0: ITOS, value: string): IriTermFull;
-  public namedNode(i0: ITOS, value: string, prefix: string): IriTermPrefixed;
-  public namedNode(i0: ITOS, value: string, prefix?: string): IriTermFull | IriTermPrefixed {
+  public namedNode(i0: r.ITOS, value: string): TermIriFull;
+  public namedNode(i0: r.ITOS, value: string, prefix: string): TermIriPrefixed;
+  public namedNode(i0: r.ITOS, value: string, prefix?: string): TermIriFull | TermIriPrefixed {
     if (prefix === undefined) {
       return this.rttIgnore({
         type: 'term',
@@ -168,9 +261,9 @@ export class TraqulaFactory extends BlankSpaceFactory {
     }, i0);
   }
 
-  public blankNode(i0: ITOS, label: string): BlankTermLabeled;
-  public blankNode(i0: ITOS, label: undefined, image: string): BlankTermAnon;
-  public blankNode(i0: ITOS, label: string | undefined, image?: string): BlankTermAnon | BlankTermLabeled {
+  public blankNode(i0: r.ITOS, label: string): TermBlankLabeled;
+  public blankNode(i0: r.ITOS, label: undefined, image: string): TermBlankAnon;
+  public blankNode(i0: r.ITOS, label: string | undefined, image?: string): TermBlankAnon | TermBlankLabeled {
     return label === undefined ?
       this.rttIgnore(this.rttImage({
         type: 'term',
@@ -184,7 +277,7 @@ export class TraqulaFactory extends BlankSpaceFactory {
       }, i0);
   }
 
-  public blankNodeImplicit(count?: number): BlankTermImplicit {
+  public blankNodeImplicit(count?: number): TermBlankImplicit {
     return {
       type: 'term',
       termType: 'BlankNode',
@@ -192,17 +285,17 @@ export class TraqulaFactory extends BlankSpaceFactory {
     };
   }
 
-  public literalTerm(i0: ITOS, img: string, value: string): LiteralTermStr;
-  public literalTerm(i0: ITOS, img: string, value: string, iri: IriTerm): LiteralTermPrimitive;
-  public literalTerm(i0: ITOS, img: string, i1: ITOS, value: string, lang: string): LiteralTermLangStr;
-  public literalTerm(i0: ITOS, img: string, i1: ITOS, value: string, iri: IriTerm): LiteralTermTyped;
+  public literalTerm(i0: r.ITOS, img: string, value: string): TermLiteralStr;
+  public literalTerm(i0: r.ITOS, img: string, value: string, iri: TermIri): TermLiteralPrimitive;
+  public literalTerm(i0: r.ITOS, img: string, i1: r.ITOS, value: string, lang: string): TermLiteralLangStr;
+  public literalTerm(i0: r.ITOS, img: string, i1: r.ITOS, value: string, iri: TermIri): TermLiteralTyped;
   public literalTerm(
-    i0: ITOS,
+    i0: r.ITOS,
     img: string,
-    i1OrValue: string | ITOS,
-    valueOrIri?: string | IriTerm,
-    langOrIri?: string | IriTerm,
-  ): LiteralTerm {
+    i1OrValue: string | r.ITOS,
+    valueOrIri?: string | TermIri,
+    langOrIri?: string | TermIri,
+  ): TermLiteral {
     if (typeof i1OrValue === 'string') {
       if (valueOrIri === undefined) {
         return this.rttImage(this.rttIgnore({

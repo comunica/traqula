@@ -16,12 +16,12 @@ import {
 } from '../lib/factory';
 import * as l from '../lib/lexer';
 import type {
-  IriTermFull,
+  TermIriFull,
   Ignored,
-  IriTerm,
+  TermIri,
   ITOS,
   LiteralTermRTT,
-  IriTermPrefixed,
+  TermIriPrefixed,
   Reconstructed,
 } from '../lib/RoundTripTypes';
 
@@ -120,9 +120,9 @@ const string: SparqlRule<'string', Reconstructed<string>> = <const> {
  * Parses a named node, either as an IRI or as a prefixed name.
  * [[136]](https://www.w3.org/TR/sparql11-query/#riri)
  */
-const iri: SparqlRule<'iri', Ignored<IriTerm>> = <const> {
+const iri: SparqlRule<'iri', Ignored<TermIri>> = <const> {
   name: 'iri',
-  impl: ({ SUBRULE, OR }) => () => OR<Ignored<IriTerm>>([
+  impl: ({ SUBRULE, OR }) => () => OR<Ignored<TermIri>>([
     { ALT: () => SUBRULE(iriFull, undefined) },
     { ALT: () => SUBRULE(prefixedName, undefined) },
   ]),
@@ -135,7 +135,7 @@ const iri: SparqlRule<'iri', Ignored<IriTerm>> = <const> {
   },
 };
 
-const iriFull: SparqlRule<'iriFull', Ignored<IriTermFull>> = <const> {
+const iriFull: SparqlRule<'iriFull', Ignored<TermIriFull>> = <const> {
   name: 'iriFull',
   impl: ({ SUBRULE, CONSUME }) => () => {
     const w0 = SUBRULE(blank, undefined);
@@ -149,7 +149,7 @@ const iriFull: SparqlRule<'iriFull', Ignored<IriTermFull>> = <const> {
  * Registers base IRI in the context and returns it.
  * [[5]](https://www.w3.org/TR/sparql11-query/#rBaseDecl)
  */
-const baseDecl: SparqlRule<'baseDecl', Reconstructed<IriTermFull, '0' | '1'>> = <const> {
+const baseDecl: SparqlRule<'baseDecl', Reconstructed<TermIriFull, '0' | '1'>> = <const> {
   name: 'baseDecl',
   impl: ({ CONSUME, SUBRULE }) => () => {
     const i0 = SUBRULE(blank, undefined);
@@ -169,11 +169,11 @@ const baseDecl: SparqlRule<'baseDecl', Reconstructed<IriTermFull, '0' | '1'>> = 
  * Parses a named node with a prefix. Looks up the prefix in the context and returns the full IRI.
  * [[137]](https://www.w3.org/TR/sparql11-query/#rPrefixedName)
  */
-const prefixedName: SparqlRule<'prefixedName', Ignored<IriTermPrefixed>> = <const> {
+const prefixedName: SparqlRule<'prefixedName', Ignored<TermIriPrefixed>> = <const> {
   name: 'prefixedName',
   impl: ({ ACTION, CONSUME, SUBRULE, OR }) => () => {
     const w0 = SUBRULE(blank, undefined);
-    const node = OR<IriTermPrefixed>([
+    const node = OR<TermIriPrefixed>([
       { ALT: () => {
         const longName = CONSUME(l.terminals.pNameLn).image;
         return ACTION(() => {
@@ -229,9 +229,9 @@ const rdfLiteral: SparqlRule<'rdfLiteral', LiteralTermRTT> = <const> {
   },
 };
 
-const literalOrBase: SparqlRule<'literalOrBase', LiteralTermRTT | Reconstructed<IriTermFull, '0' | '1'>> = <const> {
+const literalOrBase: SparqlRule<'literalOrBase', LiteralTermRTT | Reconstructed<TermIriFull, '0' | '1'>> = <const> {
   name: 'literalOrBase',
-  impl: ({ SUBRULE, OR }) => () => OR<LiteralTermRTT | Reconstructed<IriTermFull, '0' | '1'>>([
+  impl: ({ SUBRULE, OR }) => () => OR<LiteralTermRTT | Reconstructed<TermIriFull, '0' | '1'>>([
     { ALT: () => SUBRULE(rdfLiteral, undefined) },
     { ALT: () => SUBRULE(baseDecl, undefined) },
   ]),

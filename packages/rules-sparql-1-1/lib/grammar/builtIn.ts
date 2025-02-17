@@ -17,8 +17,17 @@ import {
   funcVar1,
 } from '../expressionHelpers';
 import * as l from '../lexer';
-import type { AggregateExpression, Expression, SparqlGrammarRule, SparqlRule } from '../Sparql11types';
+import type {
+  Expression,
+  ExpressionAggregateDefault,
+  ExpressionAggregateOnWildcard,
+  ExpressionAggregateSeparator,
+} from '../RoundTripTypes';
+import type { AggregateExpression, SparqlGrammarRule, SparqlRule } from '../Sparql11types';
+import type { ITOS } from '../TypeHelpersRTT';
+import { Wildcard } from '../Wildcard';
 import { expression } from './expression';
+import { blank } from './general';
 import { string } from './literals';
 
 export const builtInStr = funcExpr1(l.builtIn.str);
@@ -200,35 +209,92 @@ export const existsFunc = funcGroupGraphPattern(l.builtIn.exists);
  */
 export const notExistsFunc = funcGroupGraphPattern(l.builtIn.notexists);
 
-export const aggregateCount = baseAggregateFunc(l.builtIn.count);
+export const aggregateCount:
+SparqlGrammarRule<'builtInCount', ExpressionAggregateOnWildcard | ExpressionAggregateDefault> = {
+  name: unCapitalize(l.builtIn.count.name),
+  impl: ({ CONSUME, SUBRULE, OR, OPTION, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4, SUBRULE5 }) => ({ factory: F }) => {
+    const i0 = SUBRULE1(blank, undefined);
+    const img1 = CONSUME(l.builtIn.count).image;
+    const i1 = SUBRULE2(blank, undefined);
+    CONSUME(l.symbols.LParen);
+    let i2: ITOS | undefined;
+    let img2: string | undefined;
+    OPTION(() => {
+      i2 = SUBRULE3(blank, undefined);
+      img2 = CONSUME(l.distinct).image;
+    });
+
+    const expressionVal = OR<[ Expression ] | [ITOS, Wildcard]>([
+      { ALT: () => {
+        const i3 = SUBRULE4(blank, undefined);
+        CONSUME(l.symbols.star);
+        return [ i3, new Wildcard() ];
+      } },
+      { ALT: () => [ SUBRULE(expression, undefined) ]},
+    ]);
+    const i4 = SUBRULE5(blank, undefined);
+    CONSUME(l.symbols.RParen);
+
+    if (expressionVal[1] === undefined) {
+      const expr = <Expression> expressionVal[0];
+      return F.aggregate(i0, i1, i2, i4, img1, img2, [ expr ]);
+    }
+    return F.aggregate(i0, i1, i2, <ITOS> expressionVal[0], i4, img1, img2, [ expressionVal[1] ]);
+  },
+};
 export const aggregateSum = baseAggregateFunc(l.builtIn.sum);
 export const aggregateMin = baseAggregateFunc(l.builtIn.min);
 export const aggregateMax = baseAggregateFunc(l.builtIn.max);
 export const aggregateAvg = baseAggregateFunc(l.builtIn.avg);
 export const aggregateSample = baseAggregateFunc(l.builtIn.sample);
-export const aggregateGroup_concat: SparqlGrammarRule<'builtInGroup_concat', AggregateExpression> = <const> {
+export const aggregateGroup_concat:
+SparqlGrammarRule<'builtInGroup_concat', ExpressionAggregateDefault | ExpressionAggregateSeparator> = <const> {
   name: unCapitalize(l.builtIn.groupConcat.name),
-  impl: ({ CONSUME, OPTION1, SUBRULE, OPTION2 }) => () => {
-    CONSUME(l.builtIn.groupConcat);
-    CONSUME(l.symbols.LParen);
-    const distinct = OPTION1(() => CONSUME(l.distinct));
-    const expr = SUBRULE(expression, undefined);
-    const separator = OPTION2(() => {
-      CONSUME(l.symbols.semi);
-      CONSUME(l.separator);
-      CONSUME(l.symbols.equal);
-      return SUBRULE(string, undefined);
-    }) ?? ' ';
-    CONSUME(l.symbols.RParen);
+  impl: ({ CONSUME, OPTION1, SUBRULE, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4, SUBRULE5, SUBRULE6, OPTION2 }) =>
+    ({ factory: F }) => {
+      const i0 = SUBRULE1(blank, undefined);
+      const img1 = CONSUME(l.builtIn.groupConcat).image;
+      const i1 = SUBRULE2(blank, undefined);
+      CONSUME(l.symbols.LParen);
+      let i2: ITOS | undefined;
+      let img2: string | undefined;
+      OPTION1(() => {
+        i2 = SUBRULE3(blank, undefined);
+        img2 = CONSUME(l.distinct).image;
+      });
+      const expr = SUBRULE(expression, undefined);
+      const sep = OPTION2(() => {
+        const i3 = SUBRULE4(blank, undefined);
+        CONSUME(l.symbols.semi);
+        const i4 = SUBRULE5(blank, undefined);
+        const img3 = CONSUME(l.separator).image;
+        const i5 = SUBRULE6(blank, undefined);
+        CONSUME(l.symbols.equal);
+        const { val: separator, img1: img4, i0: i6 } = SUBRULE(string, undefined);
+        return { separator, img3, img4, i3, i4, i5, i6 };
+      });
+      const i7 = SUBRULE(blank, undefined);
+      CONSUME(l.symbols.RParen);
 
-    return {
-      type: 'aggregate',
-      aggregation: 'group_concat',
-      expression: expr,
-      distinct: Boolean(distinct),
-      separator,
-    };
-  },
+      return sep ?
+        F.aggregate(
+          i0,
+          i1,
+          i2,
+          sep.i3,
+          sep.i4,
+          sep.i5,
+          sep.i6,
+          i7,
+          img1,
+          img2,
+          sep.img3,
+          sep.img4,
+          [ expr ],
+          sep.separator,
+        ) :
+        F.aggregate(i0, i1, i2, i7, img1, img2, [ expr ]);
+    },
 };
 
 /**

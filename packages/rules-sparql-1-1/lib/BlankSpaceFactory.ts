@@ -130,25 +130,25 @@ export class BlankSpaceFactory {
   public isImages1 = (x: object): x is Images => this.isImages(x, [ '1' ]);
   public isImages2 = (x: object): x is Images2 => this.isImages(x, [ '1', '2' ]);
 
-  public rttIgnore<T extends object>(value: T, ignored0: ITOS): IgnoredRTT<T>;
-  public rttIgnore<T extends object>(value: T, ignored0: ITOS, ignored1: ITOS): IgnoredRTT1<T>;
-  public rttIgnore<T extends object>(value: T, ignored0: ITOS, ignored1: ITOS, ignored2: ITOS): IgnoredRTT2<T>;
+  public rttIgnore<T extends object>(value: T, ignored0: ITOS): IgnoredRTT & T;
+  public rttIgnore<T extends object>(value: T, ignored0: ITOS, ignored1: ITOS): IgnoredRTT1 & T;
+  public rttIgnore<T extends object>(value: T, ignored0: ITOS, ignored1: ITOS, ignored2: ITOS): IgnoredRTT2 & T;
   public rttIgnore<T extends object>(value: T, ignored0: ITOS, ignored1: ITOS, ignored2: ITOS,
-    ignored3: ITOS): IgnoredRTT3<T>;
+    ignored3: ITOS): IgnoredRTT3 & T;
   public rttIgnore<T extends object>(value: T, ignored0: ITOS, ignored1: ITOS, ignored2: ITOS,
-    ignored3: ITOS, ignored4: ITOS): IgnoredRTT4<T>;
+    ignored3: ITOS, ignored4: ITOS): IgnoredRTT4 & T;
   public rttIgnore<T extends object>(value: T, ignored0: ITOS, ignored1: ITOS, ignored2: ITOS,
-    ignored3: ITOS, ignored4: ITOS, ignored5: ITOS): IgnoredRTT5<T>;
+    ignored3: ITOS, ignored4: ITOS, ignored5: ITOS): IgnoredRTT5 & T;
   public rttIgnore<T extends object>(value: T, ignored0: ITOS, ignored1: ITOS, ignored2: ITOS,
-    ignored3: ITOS, ignored4: ITOS, ignored5: ITOS, ignored6: ITOS): IgnoredRTT6<T>;
+    ignored3: ITOS, ignored4: ITOS, ignored5: ITOS, ignored6: ITOS): IgnoredRTT6 & T;
   public rttIgnore<T extends object>(value: T, ignored0: ITOS, ignored1: ITOS, ignored2: ITOS,
-    ignored3: ITOS, ignored4: ITOS, ignored5: ITOS, ignored6: ITOS, ignored7: ITOS): IgnoredRTT7<T>;
+    ignored3: ITOS, ignored4: ITOS, ignored5: ITOS, ignored6: ITOS, ignored7: ITOS): IgnoredRTT7 & T;
   public rttIgnore<T extends object>(value: T, ignored0: ITOS, ignored1: ITOS, ignored2: ITOS,
-    ignored3: ITOS, ignored4: ITOS, ignored5: ITOS, ignored6: ITOS, ignored7: ITOS, ignored8: ITOS): IgnoredRTT8<T>;
+    ignored3: ITOS, ignored4: ITOS, ignored5: ITOS, ignored6: ITOS, ignored7: ITOS, ignored8: ITOS): IgnoredRTT8 & T;
   public rttIgnore<T extends object>(value: T, ignored0: ITOS, ignored1: ITOS, ignored2: ITOS,
     ignored3: ITOS, ignored4: ITOS, ignored5: ITOS, ignored6: ITOS, ignored7: ITOS, ignored8: ITOS,
-    ignored9: ITOS): IgnoredRTT9<T>;
-  public rttIgnore<T extends object>(value: T, ...ignored: ITOS[]): IgnoredRTT<T> {
+    ignored9: ITOS): IgnoredRTT9 & T;
+  public rttIgnore<T extends object>(value: T, ...ignored: ITOS[]): IgnoredRTT & T {
     const val = <T & { RTT: any | undefined }> value;
     val.RTT = val.RTT ?? {};
     for (const [ i, ignore ] of ignored.entries()) {
@@ -157,22 +157,22 @@ export class BlankSpaceFactory {
     return val;
   }
 
-  public rttImage<T extends object>(value: T, image1: string): ImageRTT<T>;
-  public rttImage<T extends object>(value: T, image1: string, image2: string): ImageRTT2<T>;
-  public rttImage<T extends object>(value: T, image1: string, image2: string, image3: string): ImageRTT3<T>;
+  public rttImage<T extends object>(value: T, image1: string): ImageRTT & T;
+  public rttImage<T extends object>(value: T, image1: string, image2: string): ImageRTT2 & T;
+  public rttImage<T extends object>(value: T, image1: string, image2: string, image3: string): ImageRTT3 & T;
   public rttImage<T extends object>(value: T, image1: string, image2: string, image3: string,
-    image4: string): ImageRTT4<T>;
+    image4: string): ImageRTT4 & T;
   public rttImage<T extends object>(value: T, image1: string, image2: string, image3: string,
-    image4: string, image5: string): ImageRTT5<T>;
+    image4: string, image5: string): ImageRTT5 & T;
   public rttImage<T extends object>(value: T, image1: string, image2: string, image3: string,
-    image4: string, image5: string, image6: string): ImageRTT6<T>;
+    image4: string, image5: string, image6: string): ImageRTT6 & T;
   public rttImage<T extends object>(value: T, image1: string, image2: string, image3: string,
-    image4: string, image5: string, image6: string, image7: string): ImageRTT7<T>;
+    image4: string, image5: string, image6: string, image7: string): ImageRTT7 & T;
   public rttImage<T extends object>(value: T, image1: string, image2: string, image3: string,
-    image4: string, image5: string, image6: string, image7: string, image8: string): ImageRTT8<T>;
+    image4: string, image5: string, image6: string, image7: string, image8: string): ImageRTT8 & T;
   public rttImage<T extends object>(value: T, image1: string, image2: string, image3: string,
-    image4: string, image5: string, image6: string, image7: string, image8: string, image9: string): ImageRTT9<T>;
-  public rttImage<T extends object>(value: T, ...images: string[]): ImageRTT<T> {
+    image4: string, image5: string, image6: string, image7: string, image8: string, image9: string): ImageRTT9 & T;
+  public rttImage<T extends object>(value: T, ...images: string[]): ImageRTT & T {
     const val = <T & { RTT: any | undefined }> value;
     val.RTT = val.RTT ?? {};
     for (const [ i, image_ ] of images.entries()) {

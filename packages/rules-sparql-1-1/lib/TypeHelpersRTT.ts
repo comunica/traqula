@@ -31,10 +31,10 @@ export type Imaged<Val, Idx extends Indexes = '1'> = Wrap<Val> & Images<Idx>;
 export type Reconstructed<Val, IgnoredIdx extends Indexes0 = '0', ImageIdx extends Indexes = '1'>
   = Wrap<Val> & Reconstruct<IgnoredIdx, ImageIdx>;
 
-export type IgnoredRTT<Val, Idx extends Indexes0 = '0'> = Val & { RTT: Ignores<Idx> };
-export type ImageRTT<Val, Idx extends Indexes = '1'> = Val & { RTT: Images<Idx> };
-export type ReconstructRTT<Val, IgnoredIdx extends Indexes0 = '0', ImageIdx extends Indexes = '1'>
-  = IgnoredRTT<Val, IgnoredIdx> & ImageRTT<Val, ImageIdx>;
+export type IgnoredRTT<Idx extends Indexes0 = '0'> = { RTT: Ignores<Idx> };
+export type ImageRTT<Idx extends Indexes = '1'> = { RTT: Images<Idx> };
+export type ReconstructRTT<IgnoredIdx extends Indexes0 = '0', ImageIdx extends Indexes = '1'>
+  = IgnoredRTT<IgnoredIdx> & ImageRTT<ImageIdx>;
 
 export type Images2 = Images<'1' | '2'>;
 export type Images3 = Images<'1' | '2' | '3'>;
@@ -70,20 +70,20 @@ export type Imaged6<T> = Imaged<T, '1' | '2' | '3' | '4' | '5' | '6'>;
 export type Imaged7<T> = Imaged<T, '1' | '2' | '3' | '4' | '5' | '6' | '7'>;
 export type Imaged8<T> = Imaged<T, '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8'>;
 export type Imaged9<T> = Imaged<T, '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'>;
-export type IgnoredRTT1<T> = IgnoredRTT<T, '0' | '1'>;
-export type IgnoredRTT2<T> = IgnoredRTT<T, '0' | '1' | '2'>;
-export type IgnoredRTT3<T> = IgnoredRTT<T, '0' | '1' | '2' | '3'>;
-export type IgnoredRTT4<T> = IgnoredRTT<T, '0' | '1' | '2' | '3' | '4'>;
-export type IgnoredRTT5<T> = IgnoredRTT<T, '0' | '1' | '2' | '3' | '4' | '5'>;
-export type IgnoredRTT6<T> = IgnoredRTT<T, '0' | '1' | '2' | '3' | '4' | '5' | '6'>;
-export type IgnoredRTT7<T> = IgnoredRTT<T, '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7'>;
-export type IgnoredRTT8<T> = IgnoredRTT<T, '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8'>;
-export type IgnoredRTT9<T> = IgnoredRTT<T, '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'>;
-export type ImageRTT2<T> = ImageRTT<T, '1' | '2'>;
-export type ImageRTT3<T> = ImageRTT<T, '1' | '2' | '3'>;
-export type ImageRTT4<T> = ImageRTT<T, '1' | '2' | '3' | '4'>;
-export type ImageRTT5<T> = ImageRTT<T, '1' | '2' | '3' | '4' | '5'>;
-export type ImageRTT6<T> = ImageRTT<T, '1' | '2' | '3' | '4' | '5' | '6'>;
-export type ImageRTT7<T> = ImageRTT<T, '1' | '2' | '3' | '4' | '5' | '6' | '7'>;
-export type ImageRTT8<T> = ImageRTT<T, '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8'>;
-export type ImageRTT9<T> = ImageRTT<T, '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'>;
+export type IgnoredRTT1 = IgnoredRTT<'0' | '1'>;
+export type IgnoredRTT2 = IgnoredRTT<'0' | '1' | '2'>;
+export type IgnoredRTT3 = IgnoredRTT<'0' | '1' | '2' | '3'>;
+export type IgnoredRTT4 = IgnoredRTT<'0' | '1' | '2' | '3' | '4'>;
+export type IgnoredRTT5 = IgnoredRTT<'0' | '1' | '2' | '3' | '4' | '5'>;
+export type IgnoredRTT6 = IgnoredRTT<'0' | '1' | '2' | '3' | '4' | '5' | '6'>;
+export type IgnoredRTT7 = IgnoredRTT<'0' | '1' | '2' | '3' | '4' | '5' | '6' | '7'>;
+export type IgnoredRTT8 = IgnoredRTT<'0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8'>;
+export type IgnoredRTT9 = IgnoredRTT<'0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'>;
+export type ImageRTT2 = ImageRTT<'1' | '2'>;
+export type ImageRTT3 = ImageRTT<'1' | '2' | '3'>;
+export type ImageRTT4 = ImageRTT<'1' | '2' | '3' | '4'>;
+export type ImageRTT5 = ImageRTT<'1' | '2' | '3' | '4' | '5'>;
+export type ImageRTT6 = ImageRTT<'1' | '2' | '3' | '4' | '5' | '6'>;
+export type ImageRTT7 = ImageRTT<'1' | '2' | '3' | '4' | '5' | '6' | '7'>;
+export type ImageRTT8 = ImageRTT<'1' | '2' | '3' | '4' | '5' | '6' | '7' | '8'>;
+export type ImageRTT9 = ImageRTT<'1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'>;

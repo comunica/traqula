@@ -1,6 +1,6 @@
 import type { TokenType } from 'chevrotain';
 import * as l from '../lexer';
-import type { IriTerm, NegatedElt, PropertyPath, PropertyPathModified, PropertyPathNegated } from '../RoundTripTypes';
+import type { TermIri, PathNegatedElt, Path, PathModified, PathNegated } from '../RoundTripTypes';
 import type {
   SparqlGrammarRule,
   SparqlRule,
@@ -12,7 +12,7 @@ import { iri, verbA } from './literals';
 /**
  * [[88]](https://www.w3.org/TR/sparql11-query/#rPath)
  */
-export const path: SparqlRule<'path', PropertyPath> = <const> {
+export const path: SparqlRule<'path', Path> = <const> {
   name: 'path',
   impl: ({ SUBRULE }) => () => SUBRULE(pathAlternative, undefined),
   gImpl: ({ SUBRULE: s }) => (ast, { factory: F }) => {
@@ -59,13 +59,13 @@ export function pathHelper<T extends string>(
   name: T,
   SEP: TokenType,
   pathType: '|' | '/',
-  subRule: SparqlGrammarRule<string, PropertyPath>,
-): SparqlGrammarRule<T, PropertyPath | IriTerm> {
+  subRule: SparqlGrammarRule<string, Path>,
+): SparqlGrammarRule<T, Path | TermIri> {
   return {
     name,
     impl: ({ CONSUME, SUBRULE, MANY }) => ({ factory: F }) => {
       const head = SUBRULE(subRule, undefined);
-      const tail: [ITOS, PropertyPath][] = [];
+      const tail: [ITOS, Path][] = [];
 
       MANY(() => {
         const i0 = SUBRULE(blank, undefined);
@@ -89,9 +89,9 @@ export function pathHelper<T extends string>(
 /**
  * [[92]](https://www.w3.org/TR/sparql11-query/#rPathEltOrInverse)
  */
-export const pathEltOrInverse: SparqlGrammarRule<'pathEltOrInverse', PropertyPathModified | PropertyPath> = <const> {
+export const pathEltOrInverse: SparqlGrammarRule<'pathEltOrInverse', PathModified | Path> = <const> {
   name: 'pathEltOrInverse',
-  impl: ({ CONSUME, SUBRULE1, SUBRULE2, OR }) => ({ factory: F }) => OR<PropertyPath | IriTerm>([
+  impl: ({ CONSUME, SUBRULE1, SUBRULE2, OR }) => ({ factory: F }) => OR<Path | TermIri>([
     { ALT: () => SUBRULE1(pathElt, undefined) },
     { ALT: () => {
       const i0 = SUBRULE1(blank, undefined);
@@ -115,7 +115,7 @@ export const pathAlternative = pathHelper('pathAlternative', l.symbols.pipe, '|'
 /**
  * [[91]](https://www.w3.org/TR/sparql11-query/#rPathElt)
  */
-export const pathElt: SparqlGrammarRule<'pathElt', PropertyPathModified | PropertyPath> = <const> {
+export const pathElt: SparqlGrammarRule<'pathElt', PathModified | Path> = <const> {
   name: 'pathElt',
   impl: ({ SUBRULE, OPTION }) => ({ factory: F }) => {
     const item = SUBRULE(pathPrimary, undefined);
@@ -154,9 +154,9 @@ export const pathMod: SparqlGrammarRule<'pathMod', [ITOS, '*' | '+' | '?']> = <c
 /**
  * [[94]](https://www.w3.org/TR/sparql11-query/#rPathPrimary)
  */
-export const pathPrimary: SparqlGrammarRule<'pathPrimary', PropertyPath> = <const> {
+export const pathPrimary: SparqlGrammarRule<'pathPrimary', Path> = <const> {
   name: 'pathPrimary',
-  impl: ({ SUBRULE, CONSUME, OR, SUBRULE1, SUBRULE2 }) => ({ factory: F }) => OR<PropertyPath>([
+  impl: ({ SUBRULE, CONSUME, OR, SUBRULE1, SUBRULE2 }) => ({ factory: F }) => OR<Path>([
     { ALT: () => SUBRULE(iri, undefined) },
     { ALT: () => SUBRULE(verbA, undefined) },
     { ALT: () => SUBRULE(pathNegatedPropertySet, undefined) },
@@ -175,12 +175,12 @@ export const pathPrimary: SparqlGrammarRule<'pathPrimary', PropertyPath> = <cons
  * [[95]](https://www.w3.org/TR/sparql11-query/#rPathNegatedPropertySet)
  */
 export const pathNegatedPropertySet:
-SparqlRule<'pathNegatedPropertySet', PropertyPathNegated> = <const> {
+SparqlRule<'pathNegatedPropertySet', PathNegated> = <const> {
   name: 'pathNegatedPropertySet',
   impl: ({ CONSUME, SUBRULE1, SUBRULE2, SUBRULE3, OR, MANY }) => ({ factory: F }) => {
     const i0 = SUBRULE1(blank, undefined);
     CONSUME(l.symbols.exclamation);
-    return OR<PropertyPathNegated>([
+    return OR<PathNegated>([
       { ALT: () => {
         const noAlternative = SUBRULE1(pathOneInPropertySet, undefined);
         return F.path('!', noAlternative, i0);
@@ -191,7 +191,7 @@ SparqlRule<'pathNegatedPropertySet', PropertyPathNegated> = <const> {
           CONSUME(l.symbols.LParen);
 
           const head = SUBRULE2(pathOneInPropertySet, undefined);
-          const tail: [ITOS, IriTerm | NegatedElt][] = [];
+          const tail: [ITOS, TermIri | PathNegatedElt][] = [];
           MANY(() => {
             const iSup = SUBRULE3(blank, undefined);
             const item = SUBRULE2(pathOneInPropertySet, undefined);
@@ -251,17 +251,17 @@ SparqlRule<'pathNegatedPropertySet', PropertyPathNegated> = <const> {
 /**
  * [[96]](https://www.w3.org/TR/sparql11-query/#rPathOneInPropertySet)
  */
-export const pathOneInPropertySet: SparqlRule<'pathOneInPropertySet', IriTerm | NegatedElt> = <const> {
+export const pathOneInPropertySet: SparqlRule<'pathOneInPropertySet', TermIri | PathNegatedElt> = <const> {
   name: 'pathOneInPropertySet',
   impl: ({ CONSUME, SUBRULE1, SUBRULE2, OR1, OR2 }) => ({ factory: F }) =>
-    OR1<IriTerm | NegatedElt>([
+    OR1<TermIri | PathNegatedElt>([
       { ALT: () => SUBRULE1(iri, undefined) },
       { ALT: () => SUBRULE1(verbA, undefined) },
       {
         ALT: () => {
           const i0 = SUBRULE1(blank, undefined);
           CONSUME(l.symbols.hat);
-          const item = OR2<IriTerm>([
+          const item = OR2<TermIri>([
             { ALT: () => SUBRULE2(iri, undefined) },
             { ALT: () => SUBRULE2(verbA, undefined) },
           ]);

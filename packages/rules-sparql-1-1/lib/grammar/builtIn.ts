@@ -19,15 +19,16 @@ import {
 import * as l from '../lexer';
 import type {
   Expression,
+  ExpressionAggregate,
   ExpressionAggregateDefault,
   ExpressionAggregateOnWildcard,
   ExpressionAggregateSeparator,
 } from '../RoundTripTypes';
-import type { AggregateExpression, SparqlGrammarRule, SparqlRule } from '../Sparql11types';
+import type { SparqlGrammarRule, SparqlRule } from '../Sparql11types';
 import type { ITOS } from '../TypeHelpersRTT';
 import { Wildcard } from '../Wildcard';
 import { expression } from './expression';
-import { blank } from './general';
+import { blank, genB } from './general';
 import { string } from './literals';
 
 export const builtInStr = funcExpr1(l.builtIn.str);
@@ -171,7 +172,7 @@ export function builtInCallList(SUBRULE: ImplArgs['SUBRULE']): IOrAlt<Expression
 /**
  * [[121]](https://www.w3.org/TR/sparql11-query/#rBuiltInCall)
  */
-export const builtInCall: SparqlGrammarRule<'builtInCall', Expression> = <const> {
+export const builtInCall: SparqlGrammarRule<'builtInCall', Expression> = <const>{
   name: 'builtInCall',
   impl: ({ OR, SUBRULE, cache }) => () => {
     const cached = <IOrAlt<Expression>[]>cache.get(builtInCall);
@@ -224,22 +225,24 @@ SparqlGrammarRule<'builtInCount', ExpressionAggregateOnWildcard | ExpressionAggr
       img2 = CONSUME(l.distinct).image;
     });
 
-    const expressionVal = OR<[ Expression ] | [ITOS, Wildcard]>([
-      { ALT: () => {
-        const i3 = SUBRULE4(blank, undefined);
-        CONSUME(l.symbols.star);
-        return [ i3, new Wildcard() ];
-      } },
+    const expressionVal = OR<[Expression] | [ITOS, Wildcard]>([
+      {
+        ALT: () => {
+          const i3 = SUBRULE4(blank, undefined);
+          CONSUME(l.symbols.star);
+          return [ i3, new Wildcard() ];
+        },
+      },
       { ALT: () => [ SUBRULE(expression, undefined) ]},
     ]);
     const i4 = SUBRULE5(blank, undefined);
     CONSUME(l.symbols.RParen);
 
     if (expressionVal[1] === undefined) {
-      const expr = <Expression> expressionVal[0];
-      return F.aggregate(i0, i1, i2, i4, img1, img2, [ expr ]);
+      const expr = <Expression>expressionVal[0];
+      return F.aggregate(i0, i1, i2, i4, img1, img2, expr);
     }
-    return F.aggregate(i0, i1, i2, <ITOS> expressionVal[0], i4, img1, img2, [ expressionVal[1] ]);
+    return F.aggregate(i0, i1, i2, <ITOS>expressionVal[0], i4, img1, img2, expressionVal[1]);
   },
 };
 export const aggregateSum = baseAggregateFunc(l.builtIn.sum);
@@ -248,7 +251,7 @@ export const aggregateMax = baseAggregateFunc(l.builtIn.max);
 export const aggregateAvg = baseAggregateFunc(l.builtIn.avg);
 export const aggregateSample = baseAggregateFunc(l.builtIn.sample);
 export const aggregateGroup_concat:
-SparqlGrammarRule<'builtInGroup_concat', ExpressionAggregateDefault | ExpressionAggregateSeparator> = <const> {
+SparqlGrammarRule<'builtInGroup_concat', ExpressionAggregateDefault | ExpressionAggregateSeparator> = <const>{
   name: unCapitalize(l.builtIn.groupConcat.name),
   impl: ({ CONSUME, OPTION1, SUBRULE, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4, SUBRULE5, SUBRULE6, OPTION2 }) =>
     ({ factory: F }) => {
@@ -290,24 +293,24 @@ SparqlGrammarRule<'builtInGroup_concat', ExpressionAggregateDefault | Expression
           img2,
           sep.img3,
           sep.img4,
-          [ expr ],
+          expr,
           sep.separator,
         ) :
-        F.aggregate(i0, i1, i2, i7, img1, img2, [ expr ]);
+        F.aggregate(i0, i1, i2, i7, img1, img2, expr);
     },
 };
 
 /**
  * [[127]](https://www.w3.org/TR/sparql11-query/#rBuiltInCall)
  */
-export const aggregate: SparqlRule<'aggregate', AggregateExpression> = <const> {
+export const aggregate: SparqlRule<'aggregate', ExpressionAggregate> = <const>{
   name: 'aggregate',
   impl: ({ ACTION, SUBRULE, OR }) => (C) => {
     // https://www.w3.org/2013/sparql-errata#errata-query-5 - Or note 15 in SPARQL1.2 spec
     //  An aggregate function is not allowed within an aggregate function.
     const wasInAggregate = ACTION(() => C.parseMode.has('inAggregate'));
     ACTION(() => C.parseMode.add('inAggregate'));
-    const result = OR<AggregateExpression>([
+    const result = OR<ExpressionAggregate>([
       { ALT: () => SUBRULE(aggregateCount, undefined) },
       { ALT: () => SUBRULE(aggregateSum, undefined) },
       { ALT: () => SUBRULE(aggregateMin, undefined) },
@@ -329,20 +332,43 @@ export const aggregate: SparqlRule<'aggregate', AggregateExpression> = <const> {
 
     return result;
   },
-  gImpl: ({ SUBRULE }) => (ast) => {
-    const builder = [ ast.expression, '(' ];
-    if (ast.distinct) {
-      builder.push('DISTINCT');
-    }
-    if ('termType' in ast.expression && ast.expression.termType === 'Wildcard') {
-      builder.push('*');
+  gImpl: ({ SUBRULE: s }) => (ast, { factory: F }) => {
+    const builder = [
+      genB(s, ast.RTT.i0),
+      ast.RTT.img1,
+      genB(s, ast.RTT.i1),
+      '(',
+      genB(s, ast.RTT.i2),
+      ast.RTT.img2,
+    ];
+    if (F.isExpressionAggregateOnWildcard(ast)) {
+      builder.push(
+        genB(s, ast.RTT.i3),
+        '*',
+        genB(s, ast.RTT.i4),
+        ')',
+      );
+    } else if (F.isExpressionAggregateSeparator(ast)) {
+      builder.push(
+        ...ast.expression.map(expr => s(expression, expr, undefined)),
+        genB(s, ast.RTT.i3),
+        ';',
+        genB(s, ast.RTT.i4),
+        ast.RTT.img3,
+        genB(s, ast.RTT.i5),
+        '=',
+        genB(s, ast.RTT.i6),
+        ast.RTT.img4,
+        genB(s, ast.RTT.i7),
+        ')',
+      );
     } else {
-      builder.push(SUBRULE(expression, ast.expression, undefined));
+      builder.push(
+        ...ast.expression.map(expr => s(expression, expr, undefined)),
+        genB(s, ast.RTT.i3),
+        ')',
+      );
     }
-    if (ast.separator && ast.separator !== ' ') {
-      builder.push(';', 'SEPARATOR', '=', SUBRULE(string, ast.separator, undefined));
-    }
-    builder.push(')');
-    return builder.join(' ');
+    return builder.join('');
   },
 };

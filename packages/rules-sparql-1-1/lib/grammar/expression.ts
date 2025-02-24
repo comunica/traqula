@@ -6,8 +6,10 @@ import type {
   SparqlGrammarRule,
   SparqlRule,
 } from '../Sparql11types';
+import type { ITOS } from '../TypeHelpersRTT';
 import { aggregate, builtInCall } from './builtIn';
 import {
+  blank,
   var_,
   varOrTerm,
 } from './general';
@@ -85,30 +87,38 @@ export const argList: SparqlRule<'argList', IArgList> = <const> {
   },
 };
 
-export const expressionList: SparqlGrammarRule<'expressionList', Expression[]> = <const> {
+/**
+ * [[72]](https://www.w3.org/TR/sparql11-query/#rConstructTemplate)
+ */
+export const expressionList: SparqlGrammarRule<'expressionList', { val: Expression[]; ignored: ITOS[] } > = <const> {
   name: 'expressionList',
-  impl: ({ CONSUME, SUBRULE, MANY_SEP, OR }) => () => OR([
-    {
-      ALT: () => {
-        CONSUME(l.terminals.nil);
-        return [];
-      },
-    },
-    {
-      ALT: () => {
-        const args: Expression[] = [];
+  impl: ({ CONSUME, MANY, OR, SUBRULE1, SUBRULE2 }) => ({ factory: F }) => {
+    const i0 = SUBRULE1(blank, undefined);
+    return OR([
+      { ALT: () => {
+        const nil = CONSUME(l.terminals.nil).image.slice(1, -1);
+        const i1: ITOS = [ F.blankSpace(nil) ];
+        return { val: [], ignored: [ i0, i1 ]};
+      } },
+      { ALT: () => {
         CONSUME(l.symbols.LParen);
-        MANY_SEP({
-          SEP: l.symbols.comma,
-          DEF: () => {
-            args.push(SUBRULE(expression, undefined));
-          },
+        const ignored = [ i0 ];
+        const expr1 = SUBRULE1(expression, undefined);
+        const args: Expression[] = [ expr1 ];
+        MANY(() => {
+          const i1 = SUBRULE2(blank, undefined);
+          CONSUME(l.symbols.comma);
+          const expr = SUBRULE2(expression, undefined);
+          ignored.push(i1);
+          args.push(expr);
         });
+        const ix = SUBRULE2(blank, undefined);
+        ignored.push(ix);
         CONSUME(l.symbols.RParen);
-        return args;
-      },
-    },
-  ]),
+        return { val: args, ignored };
+      } },
+    ]);
+  },
 };
 
 /**

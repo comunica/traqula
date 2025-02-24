@@ -10,7 +10,7 @@ type ExpressionAggregateBase = ExpressionBase & r.ImageRTT2 & r.IgnoredRTT3 & {
   distinct: boolean;
 };
 export type ExpressionAggregateDefault = ExpressionAggregateBase & {
-  expression: Expression[];
+  expression: [Expression];
   aggregation: string;
 };
 export type ExpressionAggregateOnWildcard = ExpressionAggregateBase & r.IgnoredRTT4 & {
@@ -18,7 +18,7 @@ export type ExpressionAggregateOnWildcard = ExpressionAggregateBase & r.IgnoredR
   aggregation: string;
 };
 export type ExpressionAggregateSeparator = ExpressionAggregateBase & r.ImageRTT4 & r.IgnoredRTT7 & {
-  expression: Expression[];
+  expression: [Expression];
   aggregation: string;
   separator: string;
 };
@@ -28,7 +28,7 @@ export type ExpressionAggregate =
   | ExpressionAggregateSeparator;
 
 export type ExpressionOperation = ExpressionBase & r.ImageRTT & {
-  type: 'operation';
+  expressionType: 'operation';
   operator: string;
   args: Expression[];
   RTT: {
@@ -40,7 +40,7 @@ export type ExpressionOperation = ExpressionBase & r.ImageRTT & {
 };
 
 export type ExpressionPatternOperation = ExpressionBase & {
-  type: 'patternOperation';
+  expressionType: 'patternOperation';
   operator: string;
   // Can be a pattern in case of exists and not exists
   args: Pattern[];

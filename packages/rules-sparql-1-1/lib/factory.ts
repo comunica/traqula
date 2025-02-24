@@ -31,7 +31,7 @@ import type {
 } from './RoundTripTypes';
 import type * as r from './TypeHelpersRTT';
 import type { ITOS } from './TypeHelpersRTT';
-import type { Wildcard } from './Wildcard';
+import { Wildcard } from './Wildcard';
 
 export class TraqulaFactory extends BlankSpaceFactory {
   private blankNodeCounter = 0;
@@ -89,12 +89,24 @@ export class TraqulaFactory extends BlankSpaceFactory {
     return 'preBracket' in x.RTT;
   }
 
+  public isExpressionAggregateSeparator(x: ExpressionAggregate): x is ExpressionAggregateSeparator {
+    return 'separator' in x;
+  }
+
+  public isExpressionAggregateOnWildcard(x: ExpressionAggregate): x is ExpressionAggregateOnWildcard {
+    return x.expression.length === 1 && this.isTerm(x.expression[0]) && new Wildcard().equals(x.expression[0]);
+  }
+
+  public isExpressionAggregateDefault(x: ExpressionAggregate): x is ExpressionAggregateDefault {
+    return !this.isExpressionAggregateOnWildcard(x) && !this.isExpressionAggregateSeparator(x);
+  }
+
   public aggregate(i0: r.ITOS, i1: r.ITOS, i2: r.ITOS | undefined, i3: r.ITOS, img1: string, img2: string | undefined,
-    expression: Expression[]): ExpressionAggregateDefault;
+    expression: Expression): ExpressionAggregateDefault;
   public aggregate(i0: r.ITOS, i1: r.ITOS, i2: r.ITOS | undefined, i3: r.ITOS, i4: r.ITOS, img1: string,
-    img2: string | undefined, expression: [Wildcard]): ExpressionAggregateOnWildcard;
+    img2: string | undefined, expression: Wildcard): ExpressionAggregateOnWildcard;
   public aggregate(i0: r.ITOS, i1: r.ITOS, i2: r.ITOS | undefined, i3: r.ITOS, i4: r.ITOS, i5: r.ITOS, i6: r.ITOS,
-    i7: ITOS, img1: string, img2: string | undefined, img3: string, img4: string, expression: Expression[],
+    i7: ITOS, img1: string, img2: string | undefined, img3: string, img4: string, expression: Expression,
     separator: string): ExpressionAggregateSeparator;
   public aggregate(
     i0: r.ITOS,
@@ -103,13 +115,13 @@ export class TraqulaFactory extends BlankSpaceFactory {
     i3: r.ITOS,
     img1ori4: string | r.ITOS,
     img2or1ori5: string | r.ITOS | undefined,
-    expressionOrImg2Ori6: Expression[] | string | r.ITOS | undefined,
-    expressionOri7?: [Wildcard] | r.ITOS,
+    expressionOrImg2Ori6: Expression | string | r.ITOS | undefined,
+    expressionOri7?: Wildcard | r.ITOS,
     img1?: string,
     img2?: string,
     img3?: string,
     img4?: string,
-    expression?: Expression[],
+    expression?: Expression,
     separator?: string,
   ): ExpressionAggregate {
     if (typeof img1ori4 === 'string' &&
@@ -121,7 +133,7 @@ export class TraqulaFactory extends BlankSpaceFactory {
         expressionType: 'aggregate',
         aggregation: img1ori4.toLowerCase(),
         distinct: img2or1ori5 !== undefined,
-        expression: <Expression[]> expressionOrImg2Ori6,
+        expression: [ <Expression> expressionOrImg2Ori6 ],
         RTT: this.ignores(this.image({}, img1ori4, img2or1ori5 ?? ''), i0, i1, i2 ?? [], i3),
       } satisfies ExpressionAggregateDefault;
     }
@@ -134,7 +146,7 @@ export class TraqulaFactory extends BlankSpaceFactory {
         expressionType: 'aggregate',
         aggregation: img2or1ori5.toLowerCase(),
         distinct: expressionOrImg2Ori6 !== undefined,
-        expression: <[Wildcard]> expressionOri7,
+        expression: [ <Wildcard> expressionOri7 ],
         RTT: this.ignores(this.image({}, img2or1ori5, expressionOrImg2Ori6 ?? ''), i0, i1, i2 ?? [], i3, img1ori4),
       } satisfies ExpressionAggregateOnWildcard;
     }
@@ -153,7 +165,7 @@ export class TraqulaFactory extends BlankSpaceFactory {
         expressionType: 'aggregate',
         aggregation: img1.toLowerCase(),
         distinct: img2 !== undefined,
-        expression,
+        expression: [ expression ],
         separator,
         RTT: this.ignores(
           this.image({}, img1, img2 ?? '', img3, img4),

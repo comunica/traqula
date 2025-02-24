@@ -18,7 +18,7 @@ export const path: SparqlRule<'path', Path> = <const> {
   gImpl: ({ SUBRULE: s }) => (ast, { factory: F }) => {
     const builder: string[] = [];
     if (F.isBrackettedRTT(ast)) {
-      builder.push(...ast.RTT.preBracket.reverse().map(([ front ]) => genB(s, front)));
+      builder.push(...ast.RTT.preBracket.reverse().flatMap(([ front ]) => [ genB(s, front), '(' ]));
     }
 
     if (F.isTerm(ast) && F.isIriTerm(ast)) {
@@ -49,7 +49,7 @@ export const path: SparqlRule<'path', Path> = <const> {
     }
 
     if (F.isBrackettedRTT(ast)) {
-      builder.push(...ast.RTT.preBracket.reverse().map(([ , back ]) => genB(s, back)));
+      builder.push(...ast.RTT.preBracket.reverse().flatMap(([ , back ]) => [ genB(s, back), ')' ]));
     }
     return builder.join('');
   },

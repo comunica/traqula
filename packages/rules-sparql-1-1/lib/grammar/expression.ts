@@ -1,18 +1,22 @@
 import type { ImplArgs } from '@traqula/core';
 import * as l from '../lexer';
-import type { Expression } from '../RoundTripTypes';
 import type {
-  Pattern,
+  Expression,
+  ExpressionFunctionCall,
+  ExpressionOperation,
+  TermIri,
+  TermLiteralPrimitive,
+} from '../RoundTripTypes';
+import type {
   SparqlGrammarRule,
   SparqlRule,
 } from '../Sparql11types';
 import type { ITOS } from '../TypeHelpersRTT';
-import { aggregate, builtInCall } from './builtIn';
+import { builtInCall } from './builtIn';
 import {
   blank,
   genB,
   var_,
-  varOrTerm,
 } from './general';
 import {
   booleanLiteral,
@@ -22,19 +26,9 @@ import {
   numericLiteralPositive,
   rdfLiteral,
 } from './literals';
-import { groupGraphPattern } from './whereClause';
 
-export type Operation = '||' | '&&' | RelationalOperator | AdditiveOperator | aggregatorOperator | buildInOperator;
-export type RelationalOperator = '=' | '!=' | '<' | '>' | '<=' | '>=' | 'in' | 'notin';
-export type AdditiveOperator = '+' | '-' | '*' | '/';
-export type unaryOperator = '!' | '+' | '-';
-export type buildInOperator = 'STR' | 'LANG' | 'LANGMATCHES' | 'DATATYPE' | 'BOUND' | 'IRI' | 'URI' | 'BNODE' |
-  'RAND' | 'ABS' | 'CEIL' | 'FLOOR' | 'ROUND' | 'CONCAT' | 'STRLEN' | 'UCASE' | 'LCASE' | 'ENCODE_FOR_URI' |
-  'CONTAINS' | 'STRSTARTS' | 'STRENDS' | 'STRBEFORE' | 'STRAFTER' | 'YEAR' | 'MONTH' | 'DAY' | 'HOURS' | 'MINUTES' |
-  'SECONDS' | 'TIMEZONE' | 'TZ' | 'NOW' | 'UUID' | 'STRUUID' | 'MD5' | 'SHA1' | 'SHA256' | 'SHA384' | 'SHA512' |
-  'COALESCE' | 'IF' | 'STRLANG' | 'STRDT' | 'sameTerm' | 'isIRI' | 'isURI' | 'isBLANK' | 'isLITERAL' | 'isNUMERIC' |
-  'REGEX' | 'SUBSTR' | 'REPLACE' | 'EXISTS' | 'NOT EXISTS';
-export type aggregatorOperator = 'COUNT' | 'SUM' | 'MIN' | 'MAX' | 'AVG' | 'SAMPLE' | 'GROUP_CONCAT';
+const infixOperators = <const> [ '||', '&&', '=', '!=', '<', '>', '<=', '>=', 'in', 'notin', '+', '-', '*', '/' ];
+const prefixOperator = <const> [ '!', 'UPLUS', 'UMINUS' ];
 
 /**
  * [[71]](https://www.w3.org/TR/sparql11-query/#rArgList)
@@ -145,69 +139,49 @@ export const expressionList: SparqlGrammarRule<'expressionList', { val: Expressi
 export const expression: SparqlRule<'expression', Expression> = <const> {
   name: 'expression',
   impl: ({ SUBRULE }) => () => SUBRULE(conditionalOrExpression, undefined),
-  gImpl: ({ SUBRULE }) => (ast) => {
-    if (Array.isArray(ast)) {
-      return ast.map(arg => SUBRULE(expression, arg, undefined)).join(', ');
+  gImpl: ({ SUBRULE: s }) => (ast, { factory: F }) => {
+    const builder: string[] = [];
+    if (F.isBrackettedRTT(ast)) {
+      builder.push(...ast.RTT.preBracket.flatMap(([ pre ]) => [ genB(s, pre), '(' ]));
     }
-    if ('type' in ast) {
-      if (ast.type === 'operation') {
-        if ([ '||', '&&', '=', '!=', '<', '>', '<=', '>=', 'in', '+', '-', '*', '/' ].includes(ast.operator)) {
-          const [ left, right ] = <[Expression, Expression]>ast.args;
-          return `( ${SUBRULE(expression, left, undefined)} ${ast.operator} ${SUBRULE(expression, right, undefined)} )`;
-        }
-        if (ast.operator === 'notin') {
-          const [ left, right ] = <[Expression, Expression]>ast.args;
-          return `( ${SUBRULE(expression, left, undefined)} NOT IN ${SUBRULE(expression, right, undefined)} )`;
-        }
-        if ([ '!', 'UPLUS', 'UMINUS' ].includes(ast.operator)) {
-          const [ expr ] = <[Expression]>ast.args;
-          return `${ast.operator}${SUBRULE(expression, expr, undefined)}`;
-        }
-        if ([ 'in', 'notin' ].includes(ast.operator)) {
-          // ExpressionList
-          const [ first, rest ] = <Expression[]>ast.args;
-          const operator = ast.operator === 'in' ? 'IN' : 'NOT IN';
-          return `${SUBRULE(expression, first, undefined)} ${operator} ( ${SUBRULE(expression, rest, undefined)} )`;
-        }
-        if ([ 'exists', 'notexists' ].includes(ast.operator)) {
-          const patterns = <[Pattern]>ast.args;
-          const operator = ast.operator === 'exists' ? 'EXISTS' : 'NOT EXISTS';
-          return `${operator} ${SUBRULE(groupGraphPattern, { type: 'group', patterns }, undefined)}`;
-        }
-        return `${ast.operator}( ${ast.args.map(arg => SUBRULE(expression, <Expression>arg, undefined)).join(', ')} )`;
-      }
-      if (ast.type === 'functionCall') {
-        return SUBRULE(iriOrFunction, ast, undefined);
-      }
-      if (ast.type === 'aggregate') {
-        return SUBRULE(aggregate, ast, undefined);
-      }
+
+    if (F.isExpressionOperator(ast)) {
+      // Builder.push(s(iriOrFunction, ast.function, undefined));
+    } else if (F.isExpressionPatternOperator(ast)) {
+      // Builder.push(s(iriOrFunction, ast.function, undefined));
+    } else if (F.isExpressionFunctionCall(ast)) {
+      builder.push(s(iriOrFunction, ast.function, undefined));
+    } else if (F.isExpressionAggregate(ast)) {
+      // Builder.push(s(iriOrFunction, ast.function, undefined));
+    } else if (F.isTermIri(ast)) {
+      builder.push(s(iri, ast, undefined));
+    } else if (F.isTermVariable(ast)) {
+      builder.push(s(var_, ast, undefined));
+    } else {
+      builder.push(s(rdfLiteral, ast, undefined));
     }
-    return SUBRULE(varOrTerm, ast, undefined);
+
+    if (F.isBrackettedRTT(ast)) {
+      builder.push(...ast.RTT.preBracket.flatMap(([ , post ]) => [ genB(s, post), '(' ]));
+    }
+    return builder.join('');
   },
 };
 
-interface LeftDeepBuildArgs<T extends string = string> {
-  expr: Expression;
-  operator: T;
-}
+type LeftDeepBuildArgs = (left: Expression) => ExpressionOperation;
 
-function constructLeftDeep<T extends string = string>(
+function constructLeftDeep(
   startGenerator: () => Expression,
-  restGenerator: () => LeftDeepBuildArgs<T>,
+  restGenerator: () => LeftDeepBuildArgs,
   ACTION: ImplArgs['ACTION'],
   MANY: ImplArgs['MANY'],
-): Expression {
-// By using iterExpression, we avoid creating unnecessary arrays
+): ExpressionOperation | Expression {
+  // By using iterExpression, we avoid creating unnecessary arrays
   let iterExpr = startGenerator();
   MANY(() => {
     const res = restGenerator();
     ACTION(() => {
-      iterExpr = {
-        type: 'operation',
-        operator: res.operator,
-        args: [ iterExpr, res.expr ],
-      };
+      iterExpr = res(iterExpr);
     });
   });
   return iterExpr;
@@ -216,17 +190,30 @@ function constructLeftDeep<T extends string = string>(
 /**
  * [[111]](https://www.w3.org/TR/sparql11-query/#rConditionalOrExpression)
  */
-export const conditionalOrExpression: SparqlGrammarRule<'conditionalOrExpression', Expression> = <const> {
-  name: 'conditionalOrExpression',
-  impl: ({ ACTION, MANY, CONSUME, SUBRULE1, SUBRULE2 }) => () =>
-    constructLeftDeep(() => SUBRULE1(conditionalAndExpression, undefined), () => {
-      CONSUME(l.symbols.logicOr);
-      return {
-        expr: SUBRULE2(conditionalAndExpression, undefined),
-        operator: '||',
-      };
-    }, ACTION, MANY),
-};
+export const conditionalOrExpression: SparqlGrammarRule<'conditionalOrExpression', ExpressionOperation | Expression> =
+  <const> {
+    name: 'conditionalOrExpression',
+    impl: ({ ACTION, MANY, CONSUME, SUBRULE1, SUBRULE2 }) => () => constructLeftDeep(
+      () => SUBRULE1(conditionalAndExpression, undefined),
+      () => {
+        const i0 = SUBRULE1(blank, undefined);
+        const img1 = CONSUME(l.symbols.logicOr).image;
+        const args = SUBRULE2(conditionalAndExpression, undefined);
+        return left => ({
+          type: 'expression',
+          expressionType: 'operation',
+          args: [ left, args ],
+          operator: '||',
+          RTT: {
+            img1,
+            ignored: [ i0 ],
+          },
+        } satisfies ExpressionOperation);
+      },
+      ACTION,
+      MANY,
+    ),
+  };
 
 /**
  * [[112]](https://www.w3.org/TR/sparql11-query/#rConditionalAndExpression)
@@ -236,11 +223,20 @@ export const conditionalAndExpression: SparqlGrammarRule<'conditionalAndExpressi
   impl: ({ ACTION, MANY, SUBRULE1, SUBRULE2, CONSUME }) => () => constructLeftDeep(
     () => SUBRULE1(valueLogical, undefined),
     () => {
-      CONSUME(l.symbols.logicAnd);
-      return {
-        expr: SUBRULE2(valueLogical, undefined),
+      const i0 = SUBRULE1(blank, undefined);
+      const img1 = CONSUME(l.symbols.logicAnd).image;
+      const arg = SUBRULE2(valueLogical, undefined);
+      return left => ({
+        type: 'expression',
+        expressionType: 'operation',
+        args: [ left, arg ],
         operator: '&&',
-      };
+        expr: arg,
+        RTT: {
+          img1,
+          ignored: [ i0 ],
+        },
+      });
     },
     ACTION,
     MANY,
@@ -258,77 +254,87 @@ export const valueLogical: SparqlGrammarRule<'valueLogical', Expression> = <cons
 /**
  * [[114]](https://www.w3.org/TR/sparql11-query/#rRelationalExpression)
  */
-export const relationalExpression: SparqlGrammarRule<'relationalExpression', Expression> = <const> {
+export const relationalExpression:
+SparqlGrammarRule<'relationalExpression', ExpressionOperation | Expression> = <const>{
   name: 'relationalExpression',
-  impl: ({ ACTION, CONSUME, SUBRULE1, SUBRULE2, OPTION, OR, SUBRULE3, SUBRULE4, SUBRULE5, SUBRULE6, SUBRULE7 }) =>
+  impl: ({ CONSUME, SUBRULE1, SUBRULE2, OPTION, OR, SUBRULE3, SUBRULE4, SUBRULE5, SUBRULE6, SUBRULE7 }) =>
     () => {
       const args1 = SUBRULE1(numericExpression, undefined);
-      const arg2 = OPTION(() => OR<{ operator: RelationalOperator; args: Expression }>([
-        {
-          ALT: () => {
-            CONSUME(l.symbols.equal);
+      return OPTION<ExpressionOperation>(() => {
+        const i0 = SUBRULE1(blank, undefined);
+        const ret = (operator: string, expr: Expression): ExpressionOperation => ({
+          type: 'expression',
+          expressionType: 'operation',
+          operator,
+          args: [ args1, expr ],
+          RTT: {
+            ignored: [ i0 ],
+            img1: operator,
+          },
+        });
+        return OR<ExpressionOperation>([
+          { ALT: () => {
+            const img1 = CONSUME(l.symbols.equal).image;
             const expr = SUBRULE2(numericExpression, undefined);
-            return { operator: '=', args: expr };
-          },
-        },
-        {
-          ALT: () => {
-            CONSUME(l.symbols.notEqual);
+            return ret(img1, expr);
+          } },
+          { ALT: () => {
+            const img1 = CONSUME(l.symbols.notEqual).image;
             const expr = SUBRULE3(numericExpression, undefined);
-            return { operator: '!=', args: expr };
-          },
-        },
-        {
-          ALT: () => {
-            CONSUME(l.symbols.lessThan);
+            return ret(img1, expr);
+          } },
+          { ALT: () => {
+            const img1 = CONSUME(l.symbols.lessThan).image;
             const expr = SUBRULE4(numericExpression, undefined);
-            return { operator: '<', args: expr };
-          },
-        },
-        {
-          ALT: () => {
-            CONSUME(l.symbols.greaterThan);
+            return ret(img1, expr);
+          } },
+          { ALT: () => {
+            const img1 = CONSUME(l.symbols.greaterThan).image;
             const expr = SUBRULE5(numericExpression, undefined);
-            return { operator: '>', args: expr };
-          },
-        },
-        {
-          ALT: () => {
-            CONSUME(l.symbols.lessThanEqual);
+            return ret(img1, expr);
+          } },
+          { ALT: () => {
+            const img1 = CONSUME(l.symbols.lessThanEqual).image;
             const expr = SUBRULE6(numericExpression, undefined);
-            return { operator: '<=', args: expr };
-          },
-        },
-        {
-          ALT: () => {
-            CONSUME(l.symbols.greaterThanEqual);
+            return ret(img1, expr);
+          } },
+          { ALT: () => {
+            const img1 = CONSUME(l.symbols.greaterThanEqual).image;
             const expr = SUBRULE7(numericExpression, undefined);
-            return { operator: '>=', args: expr };
+            return ret(img1, expr);
           },
-        },
-        {
-          ALT: () => {
-            CONSUME(l.in_);
+          },
+          { ALT: () => {
+            const img1 = CONSUME(l.in_).image;
             const args = SUBRULE1(expressionList, undefined);
-            return { operator: 'in', args };
+            return {
+              type: 'expression',
+              expressionType: 'operation',
+              operator: 'in',
+              args: args.val,
+              RTT: {
+                img1,
+                ignored: [ i0, ...args.ignored ],
+              },
+            };
           },
-        },
-        {
-          ALT: () => {
-            CONSUME(l.notIn);
+          },
+          { ALT: () => {
+            const img1 = CONSUME(l.notIn).image;
             const args = SUBRULE2(expressionList, undefined);
-            return { operator: 'notin', args };
-          },
-        },
-      ]));
-      if (!arg2) {
-        return args1;
-      }
-      return ACTION(() => ({
-        type: 'operation',
-        operator: arg2.operator,
-        args: [ args1, arg2.args ],
-      }));
+            return {
+              type: 'expression',
+              expressionType: 'operation',
+              operator: 'notin',
+              args: args.val,
+              RTT: {
+                img1,
+                ignored: [ i0, ...args.ignored ],
+              },
+            };
+          } },
+        ]);
+      }) ?? args1;
     },
 };
 
@@ -348,90 +354,92 @@ export const additiveExpression: SparqlGrammarRule<'additiveExpression', Express
   impl: ({ ACTION, SUBRULE, CONSUME, SUBRULE1, SUBRULE2, SUBRULE3, MANY1, MANY2, OR1, OR2, OR3 }) => () =>
     constructLeftDeep(
       () => SUBRULE1(multiplicativeExpression, undefined),
-      () => OR1([
-        {
-          ALT: () => {
+      () => {
+        const i0 = SUBRULE1(blank, undefined);
+        const res = (operator: '+' | '-' | '*' | '/', expr: Expression) => (left: Expression): ExpressionOperation => ({
+          type: 'expression',
+          expressionType: 'operation',
+          operator,
+          args: [ left, expr ],
+          RTT: {
+            img1: operator,
+            ignored: [ i0 ],
+          },
+        });
+        return OR1<(left: Expression) => ExpressionOperation>([
+          { ALT: () => {
             CONSUME(l.symbols.opPlus);
-            return {
-              operator: '+',
-              expr: SUBRULE2(multiplicativeExpression, undefined),
-            };
-          },
-        },
-        {
-          ALT: () => {
+            const arg = SUBRULE2(multiplicativeExpression, undefined);
+            return res('+', arg);
+          } },
+          { ALT: () => {
             CONSUME(l.symbols.opMinus);
-            return {
-              operator: '-',
-              expr: SUBRULE3(multiplicativeExpression, undefined),
-            };
-          },
-        },
-        {
-          ALT: () => {
+            const arg = SUBRULE3(multiplicativeExpression, undefined);
+            return res('-', arg);
+          } },
+          { ALT: () => {
             // The operator of this alternative is actually parsed as part of the signed numeric literal. (note #6)
-            const { operator, args } = OR2([
-              {
-                ALT: () => {
-                  // Note #6. No spaces are allowed between the sign and a number.
-                  // In this rule however, we do not want to care about this.
-                  const integer = SUBRULE(numericLiteralPositive, undefined);
-                  return ACTION(() => {
-                    integer.value = integer.value.replace(/^\+/u, '');
-                    return {
-                      operator: '+',
-                      args: [ integer ],
-                    };
-                  });
-                },
-              },
-              {
-                ALT: () => {
-                  const integer = SUBRULE(numericLiteralNegative, undefined);
-                  return ACTION(() => {
-                    integer.value = integer.value.replace(/^-/u, '');
-                    return {
-                      operator: '-',
-                      args: [ integer ],
-                    };
-                  });
-                },
-              },
+            const { operator, startInt } = OR2<{ operator: '+' | '-'; startInt: TermLiteralPrimitive }>([
+              { ALT: () => {
+                // Note #6. No spaces are allowed between the sign and a number.
+                // In this rule however, we do not want to care about this.
+                const integer = SUBRULE(numericLiteralPositive, undefined);
+                return ACTION(() => {
+                  integer.value = integer.value.replace(/^\+/u, '');
+                  return <const> {
+                    operator: '+',
+                    startInt: integer,
+                  };
+                });
+              } },
+              { ALT: () => {
+                const integer = SUBRULE(numericLiteralNegative, undefined);
+                return ACTION(() => {
+                  integer.value = integer.value.replace(/^-/u, '');
+                  return <const> {
+                    operator: '-',
+                    startInt: integer,
+                  };
+                });
+              } },
             ]);
             const expr = constructLeftDeep(
-              () => ACTION(() => args[0]),
-              () => OR3<{ expr: Expression; operator: string }>([
-                {
-                  ALT: () => {
+              () => ACTION(() => startInt),
+              () => {
+                const iInner = SUBRULE1(blank, undefined);
+                const resInner = (operatorInner: '*' | '/', exprInner: Expression) =>
+                  (leftInner: Expression): ExpressionOperation => ({
+                    type: 'expression',
+                    expressionType: 'operation',
+                    operator: operatorInner,
+                    args: [ leftInner, exprInner ],
+                    RTT: {
+                      img1: operatorInner,
+                      ignored: [ iInner ],
+                    },
+                  });
+                return OR3([
+                  { ALT: () => {
                     CONSUME(l.symbols.star);
                     const expr = SUBRULE1(unaryExpression, undefined);
-                    return {
-                      operator: '*',
-                      expr,
-                    };
-                  },
-                },
-                {
-                  ALT: () => {
+                    return resInner('*', expr);
+                  } },
+                  { ALT: () => {
                     CONSUME(l.symbols.slash);
                     const expr = SUBRULE2(unaryExpression, undefined);
-                    return {
-                      operator: '/',
-                      expr,
-                    };
+                    return resInner('/', expr);
                   },
-                },
-              ]),
+                  },
+                ]);
+              },
               ACTION,
               MANY2,
             );
-            return {
-              operator,
-              expr,
-            };
+            return res(operator, expr);
           },
-        },
-      ]),
+          },
+        ]);
+      },
       ACTION,
       MANY1,
     ),
@@ -444,28 +452,31 @@ export const multiplicativeExpression: SparqlGrammarRule<'multiplicativeExpressi
   name: 'multiplicativeExpression',
   impl: ({ ACTION, CONSUME, MANY, SUBRULE1, SUBRULE2, SUBRULE3, OR }) => () => constructLeftDeep(
     () => SUBRULE1(unaryExpression, undefined),
-    () => OR<LeftDeepBuildArgs>([
-      {
-        ALT: () => {
+    () => {
+      const i0 = SUBRULE1(blank, undefined);
+      const res = (operator: '*' | '/', expr: Expression) => (left: Expression): ExpressionOperation => ({
+        type: 'expression',
+        expressionType: 'operation',
+        operator,
+        args: [ left, expr ],
+        RTT: {
+          img1: operator,
+          ignored: [ i0 ],
+        },
+      });
+      return OR([
+        { ALT: () => {
           CONSUME(l.symbols.star);
           const expr = SUBRULE2(unaryExpression, undefined);
-          return {
-            operator: '*',
-            expr,
-          };
-        },
-      },
-      {
-        ALT: () => {
+          return res('*', expr);
+        } },
+        { ALT: () => {
           CONSUME(l.symbols.slash);
           const expr = SUBRULE3(unaryExpression, undefined);
-          return {
-            operator: '/',
-            expr,
-          };
-        },
-      },
-    ]),
+          return res('/', expr);
+        } },
+      ]);
+    },
     ACTION,
     MANY,
   ),
@@ -476,41 +487,38 @@ export const multiplicativeExpression: SparqlGrammarRule<'multiplicativeExpressi
  */
 export const unaryExpression: SparqlGrammarRule<'unaryExpression', Expression> = <const> {
   name: 'unaryExpression',
-  impl: ({ CONSUME, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4, OR }) => () => OR<Expression>([
-    {
-      ALT: () => {
-        CONSUME(l.symbols.exclamation);
-        const expr = SUBRULE1(primaryExpression, undefined);
-        return {
-          type: 'operation',
-          operator: '!',
-          args: [ expr ],
-        };
-      },
-    },
-    {
-      ALT: () => {
-        CONSUME(l.symbols.opPlus);
-        const expr = SUBRULE2(primaryExpression, undefined);
-        return {
-          type: 'operation',
-          operator: 'UPLUS',
-          args: [ expr ],
-        };
-      },
-    },
-    {
-      ALT: () => {
-        CONSUME(l.symbols.opMinus);
-        const expr = SUBRULE3(primaryExpression, undefined);
-        return {
-          type: 'operation',
-          operator: 'UMINUS',
-          args: [ expr ],
-        };
-      },
-    },
-    { ALT: () => SUBRULE4(primaryExpression, undefined) },
+  impl: ({ CONSUME, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4, OR1, OR2 }) => () => OR1<Expression>([
+    { ALT: () => SUBRULE1(primaryExpression, undefined) },
+    { ALT: () => {
+      const i0 = SUBRULE1(blank, undefined);
+      const res = (operator: '!' | '+' | '-', expr: Expression): ExpressionOperation => ({
+        type: 'expression',
+        expressionType: 'operation',
+        operator: operator === '!' ? '!' : (operator === '+' ? 'UPLUS' : 'UMINUS'),
+        args: [ expr ],
+        RTT: {
+          img1: operator,
+          ignored: [ i0 ],
+        },
+      });
+      return OR2<ExpressionOperation>([
+        { ALT: () => {
+          CONSUME(l.symbols.exclamation);
+          const expr = SUBRULE2(primaryExpression, undefined);
+          return res('!', expr);
+        } },
+        { ALT: () => {
+          CONSUME(l.symbols.opPlus);
+          const expr = SUBRULE3(primaryExpression, undefined);
+          return res('+', expr);
+        } },
+        { ALT: () => {
+          CONSUME(l.symbols.opMinus);
+          const expr = SUBRULE4(primaryExpression, undefined);
+          return res('-', expr);
+        } },
+      ]);
+    } },
   ]),
 };
 
@@ -535,34 +543,43 @@ export const primaryExpression: SparqlGrammarRule<'primaryExpression', Expressio
  */
 export const brackettedExpression: SparqlGrammarRule<'brackettedExpression', Expression> = <const> {
   name: 'brackettedExpression',
-  impl: ({ SUBRULE, CONSUME }) => () => {
+  impl: ({ SUBRULE, CONSUME, SUBRULE1, SUBRULE2 }) => ({ factory: F }) => {
+    const i0 = SUBRULE1(blank, undefined);
     CONSUME(l.symbols.LParen);
     const expr = SUBRULE(expression, undefined);
+    const i1 = SUBRULE2(blank, undefined);
     CONSUME(l.symbols.RParen);
-
-    return expr;
+    return F.bracketted(expr, i0, i1);
   },
 };
 
 /**
  * [[128]](https://www.w3.org/TR/sparql11-query/#ririOrFunction)
  */
-export const iriOrFunction: SparqlRule<'iriOrFunction', IriTerm | (IArgList & { function: IriTerm })> = <const> {
+export const iriOrFunction: SparqlRule<'iriOrFunction', TermIri | ExpressionFunctionCall> = <const> {
   name: 'iriOrFunction',
   impl: ({ SUBRULE, OPTION }) => () => {
     const iriVal = SUBRULE(iri, undefined);
-    const args = OPTION(() => SUBRULE(argList, undefined));
-    return args ?
-        {
-          ...args,
-          function: iriVal,
-        } :
-      iriVal;
+    return OPTION<ExpressionFunctionCall>(() => {
+      const args = SUBRULE(argList, undefined);
+      // TODO: reject distinct when in no Aggregate mode
+      return {
+        type: 'expression',
+        expressionType: 'functionCall',
+        function: iriVal,
+        args: args.args,
+        distinct: args.img1 !== '',
+        RTT: {
+          img1: args.img1,
+          ignored: args.ignored,
+        },
+      };
+    }) ?? iriVal;
   },
-  gImpl: ({ SUBRULE }) => (ast) => {
-    if ('function' in ast) {
-      return `${SUBRULE(iri, ast.function, undefined)}${SUBRULE(argList, ast, undefined)}`;
-    }
-    return SUBRULE(iri, ast, undefined);
-  },
+  gImpl: ({ SUBRULE }) => (ast, { factory: F }) => F.isExpressionFunctionCall(ast) ?
+      [
+        SUBRULE(iri, ast.function, undefined),
+        SUBRULE(argList, { img1: ast.RTT.img1, args: ast.args, ignored: ast.RTT.ignored }, undefined),
+      ].join('') :
+    SUBRULE(iri, ast, undefined),
 };

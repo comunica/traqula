@@ -33,7 +33,7 @@ export type ExpressionOperation = ExpressionBase & r.ImageRTT & {
   args: Expression[];
   RTT: {
     /**
-     * Having length = min(2, args.length +1)
+     * For builtInCall Having length = min(2, args.length +1)
      */
     ignored: r.ITOS[];
   };
@@ -46,22 +46,28 @@ export type ExpressionPatternOperation = ExpressionBase & r.ImageRTT & r.Ignored
   args: Pattern[];
 };
 
-export interface ExpressionFunctionCall extends ExpressionBase {
+export type ExpressionFunctionCall = ExpressionBase & r.ImageRTT & {
   expressionType: 'functionCall';
   function: TermIri;
+  distinct: boolean;
   args: Expression[];
-}
+  RTT: {
+    ignored: r.ITOS[];
+  };
+};
 
 export type Expression = BrackettedRTT & (
   | ExpressionOperation
+  | ExpressionPatternOperation
   | ExpressionFunctionCall
   | ExpressionAggregate
-  // Used in `IN` operator
-  | Expression[]
   | TermIri
   | TermVariable
   | TermLiteral);
 
+/**
+ * Each tuple handles a single bracket recursion
+ */
 export type BrackettedRTT = { RTT: { preBracket?: [r.ITOS, r.ITOS][] }};
 
 type PropertyPathBase = { type: 'path' };

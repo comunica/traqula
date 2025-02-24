@@ -29,6 +29,9 @@ import type {
   ExpressionAggregateSeparator,
   ExpressionAggregate,
   Pattern,
+  ExpressionFunctionCall,
+  ExpressionOperation,
+  ExpressionPatternOperation,
 } from './RoundTripTypes';
 import type * as r from './TypeHelpersRTT';
 import { Wildcard } from './Wildcard';
@@ -91,6 +94,34 @@ export class TraqulaFactory extends BlankSpaceFactory {
 
   public isBrackettedRTT(x: { RTT: object }): x is { RTT: { preBracket: [r.ITOS, r.ITOS][] }} {
     return 'preBracket' in x.RTT;
+  }
+
+  public isExpressionOperator(x: Expression): x is ExpressionOperation {
+    return x.type === 'expression' && x.expressionType === 'operation';
+  }
+
+  public isExpressionPatternOperator(x: Expression): x is ExpressionPatternOperation {
+    return x.type === 'expression' && x.expressionType === 'patternOperation';
+  }
+
+  public isExpressionAggregate(x: Expression): x is ExpressionAggregate {
+    return x.type === 'expression' && x.expressionType === 'aggregate';
+  }
+
+  public isTermIri(x: Expression | Term): x is TermIri {
+    return this.isTerm(x) && x.termType === 'NamedNode';
+  }
+
+  public isTermVariable(x: Expression | Term): x is TermVariable {
+    return this.isTerm(x) && x.termType === 'Variable';
+  }
+
+  public isTermLiteral(x: Expression | Term): x is TermLiteral {
+    return this.isTerm(x) && x.termType === 'Literal';
+  }
+
+  public isExpressionFunctionCall(x: Expression): x is ExpressionFunctionCall {
+    return x.type === 'expression' && x.expressionType === 'functionCall';
   }
 
   public isExpressionAggregateSeparator(x: ExpressionAggregate): x is ExpressionAggregateSeparator {
@@ -179,7 +210,7 @@ export class TraqulaFactory extends BlankSpaceFactory {
           i3,
           img1ori4,
           img2or1ori5,
-          <r.ITOS> expressionOrImg2Ori6,
+          expressionOrImg2Ori6,
           <r.ITOS> expressionOri7,
         ),
       } satisfies ExpressionAggregateSeparator;

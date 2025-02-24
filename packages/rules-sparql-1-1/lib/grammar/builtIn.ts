@@ -3,19 +3,7 @@ import type { ImplArgs } from '@traqula/core';
 import {
   unCapitalize,
 } from '@traqula/core';
-import type { RuleDefExpressionFunctionX } from '../expressionHelpers';
-import {
-  baseAggregateFunc,
-  funcExpr1,
-  funcExpr2,
-  funcExpr2or3,
-  funcExpr3,
-  funcExpr3or4,
-  funcExprList1,
-  funcGroupGraphPattern,
-  funcNil1,
-  funcVar1,
-} from '../expressionHelpers';
+import { funcExprOrNil1, baseAggregateFunc, funcExpr1, funcExpr2, funcExpr2or3, funcExpr3, funcExpr3or4, funcExprList1, funcGroupGraphPattern, funcNil1, funcVar1 } from '../expressionHelpers';
 import * as l from '../lexer';
 import type {
   Expression,
@@ -38,35 +26,7 @@ export const builtInDatatype = funcExpr1(l.builtIn.datatype);
 export const builtInBound = funcVar1(l.builtIn.bound);
 export const builtInIri = funcExpr1(l.builtIn.iri);
 export const builtInUri = funcExpr1(l.builtIn.uri);
-// Todo: so ugly, just to be compatible with sparqlJS
-export const builtInBnodeSparqlJs: RuleDefExpressionFunctionX<Uncapitalize<'builtInBnode'>, [] | [Expression]> = {
-  name: 'builtInBnode',
-  impl: ({ CONSUME, OR, SUBRULE }) => () => {
-    const operator = CONSUME(l.builtIn.bnode);
-    const args = OR<[] | [Expression]>([
-      {
-        ALT: () => {
-          CONSUME(l.symbols.LParen);
-          const arg = SUBRULE(expression, undefined);
-          CONSUME(l.symbols.RParen);
-          return [ arg ];
-        },
-      },
-      {
-        ALT: () => {
-          CONSUME(l.terminals.nil);
-          return [];
-        },
-      },
-    ]);
-    return {
-      type: 'operation',
-      operator: operator.image,
-      args,
-    };
-  },
-};
-// Export const builtInBnode = funcExprOrNil1(l.builtIn.bnode);
+export const builtInBnodeSparqlJs = funcExprOrNil1(l.builtIn.bnode);
 export const builtInRand = funcNil1(l.builtIn.rand);
 export const builtInAbs = funcExpr1(l.builtIn.abs);
 export const builtInCeil = funcExpr1(l.builtIn.ceil);

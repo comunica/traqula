@@ -50,7 +50,8 @@ export const a = createToken({ name: 'a', pattern: 'a', label: 'type declaration
 export const true_ = createToken({ name: 'True', pattern: /true/i, label: 'true' });
 export const false_ = createToken({ name: 'False', pattern: /false/i, label: 'false' });
 export const in_ = createToken({ name: 'In', pattern: /in/i, label: 'IN' });
-export const notIn = createToken({ name: 'NotIn', pattern: /not in/i, label: 'NOT IN' });
+// eslint-disable-next-line unicorn/better-regex,no-control-regex
+export const notIn = createToken({ name: 'NotIn', pattern: /not[\u0020\u0009\u000D\u000A]+in/i, label: 'NOT IN' });
 export const separator = createToken({ name: 'Separator', pattern: /separator/i, label: 'SEPARATOR' });
 
 export const allBaseTokens = LexerBuilder.create().add(

@@ -10,6 +10,7 @@ import type { ITOS } from '../TypeHelpersRTT';
 import { aggregate, builtInCall } from './builtIn';
 import {
   blank,
+  genB,
   var_,
   varOrTerm,
 } from './general';
@@ -39,51 +40,68 @@ export type aggregatorOperator = 'COUNT' | 'SUM' | 'MIN' | 'MAX' | 'AVG' | 'SAMP
  * [[71]](https://www.w3.org/TR/sparql11-query/#rArgList)
  */
 export interface IArgList {
-  type: 'functionCall';
   args: Expression[];
-  distinct?: boolean;
+  ignored: ITOS[];
+  img1: string;
 }
 export const argList: SparqlRule<'argList', IArgList> = <const> {
   name: 'argList',
-  impl: ({ CONSUME, SUBRULE1, OPTION, OR, MANY_SEP }) => () => OR<IArgList>([
-    {
-      ALT: () => {
-        CONSUME(l.terminals.nil);
+  impl: ({ CONSUME, SUBRULE1, SUBRULE2, SUBRULE3, OPTION, OR, MANY }) => ({ factory: F }) => {
+    const i0 = SUBRULE1(blank, undefined);
+    const ignored = [ i0 ];
+    return OR<IArgList>([
+      { ALT: () => {
+        const nil = CONSUME(l.terminals.nil).image.slice(1, -1);
+        const i1 = [ F.blankSpace(nil) ];
+        ignored.push(i1);
         return {
-          type: 'functionCall',
           args: [],
           distinct: false,
+          ignored,
+          img1: '',
         };
-      },
-    },
-    {
-      ALT: () => {
-        const args: Expression[] = [];
+      } },
+      { ALT: () => {
         CONSUME(l.symbols.LParen);
-        const distinct = OPTION(() => CONSUME(l.distinct)) && true;
-
-        MANY_SEP({
-          DEF: () => args.push(SUBRULE1(expression, undefined)),
-          SEP: l.symbols.comma,
+        let img1 = '';
+        let i1: ITOS = [];
+        OPTION(() => {
+          i1 = SUBRULE1(blank, undefined);
+          img1 = CONSUME(l.distinct).image;
         });
-        CONSUME(l.symbols.RParen);
+        ignored.push(i1);
 
+        const arg1 = SUBRULE1(expression, undefined);
+        const args = [ arg1 ];
+        MANY(() => {
+          const i = SUBRULE2(blank, undefined);
+          CONSUME(l.symbols.comma);
+          const arg = SUBRULE2(expression, undefined);
+          ignored.push(i);
+          args.push(arg);
+        });
+        const ix = SUBRULE3(blank, undefined);
+        ignored.push(ix);
+        CONSUME(l.symbols.RParen);
         return {
-          type: 'functionCall',
           args,
-          distinct: Boolean(distinct),
+          img1,
+          ignored,
         };
-      },
-    },
-  ]),
-  gImpl: ({ SUBRULE }) => (ast) => {
-    const builder = [ '(' ];
-    if (ast.distinct) {
-      builder.push('DISTINCT');
+      } },
+    ]);
+  },
+  gImpl: ({ SUBRULE: s }) => (ast) => {
+    const builder = [ genB(s, ast.ignored[0]), '(', ast.ignored[1], ast.img1 ];
+    if (ast.args.length > 0) {
+      builder.push(s(expression, ast.args[0], undefined));
+      for (const [ argIndex, arg ] of ast.args.slice(1).entries()) {
+        const ignored = ast.ignored[argIndex + 2];
+        builder.push(genB(s, ignored), ',', s(expression, arg, undefined));
+      }
     }
-    builder.push(SUBRULE(expression, ast.args, undefined));
-    builder.push(')');
-    return builder.join(' ');
+    builder.push(genB(s, ast.ignored.at(-1)!), ')');
+    return builder.join('');
   },
 };
 

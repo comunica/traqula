@@ -39,7 +39,7 @@ export type ExpressionOperation = ExpressionBase & r.ImageRTT & {
   };
 };
 
-export type ExpressionPatternOperation = ExpressionBase & {
+export type ExpressionPatternOperation = ExpressionBase & r.ImageRTT & r.IgnoredRTT & {
   expressionType: 'patternOperation';
   operator: string;
   // Can be a pattern in case of exists and not exists

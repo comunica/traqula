@@ -28,15 +28,19 @@ import type {
   ExpressionAggregateOnWildcard,
   ExpressionAggregateSeparator,
   ExpressionAggregate,
+  Pattern,
 } from './RoundTripTypes';
 import type * as r from './TypeHelpersRTT';
-import type { ITOS } from './TypeHelpersRTT';
 import { Wildcard } from './Wildcard';
 
 export class TraqulaFactory extends BlankSpaceFactory {
   private blankNodeCounter = 0;
   public constructor() {
     super();
+  }
+
+  public deGroupSingle(group: any): Pattern {
+    return group.patterns.length === 1 ? group.patterns[0] : group;
   }
 
   public prefix(i0: r.ITOS, img1: string, i1: r.ITOS, i2: r.ITOS, key: string, value: TermIriFull):
@@ -106,7 +110,7 @@ export class TraqulaFactory extends BlankSpaceFactory {
   public aggregate(i0: r.ITOS, i1: r.ITOS, i2: r.ITOS | undefined, i3: r.ITOS, i4: r.ITOS, img1: string,
     img2: string | undefined, expression: Wildcard): ExpressionAggregateOnWildcard;
   public aggregate(i0: r.ITOS, i1: r.ITOS, i2: r.ITOS | undefined, i3: r.ITOS, i4: r.ITOS, i5: r.ITOS, i6: r.ITOS,
-    i7: ITOS, img1: string, img2: string | undefined, img3: string, img4: string, expression: Expression,
+    i7: r.ITOS, img1: string, img2: string | undefined, img3: string, img4: string, expression: Expression,
     separator: string): ExpressionAggregateSeparator;
   public aggregate(
     i0: r.ITOS,
@@ -175,8 +179,8 @@ export class TraqulaFactory extends BlankSpaceFactory {
           i3,
           img1ori4,
           img2or1ori5,
-          <ITOS> expressionOrImg2Ori6,
-          <ITOS> expressionOri7,
+          <r.ITOS> expressionOrImg2Ori6,
+          <r.ITOS> expressionOri7,
         ),
       } satisfies ExpressionAggregateSeparator;
     }

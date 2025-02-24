@@ -8,12 +8,11 @@ import type {
   Expression,
   ExpressionAggregateDefault,
   ExpressionOperation,
-  Pattern,
+  ExpressionPatternOperation,
   TermVariable,
 } from './RoundTripTypes';
 import type { SparqlGrammarRule } from './Sparql11types';
 import type { ITOS } from './TypeHelpersRTT';
-import { deGroupSingle } from './utils';
 
 export type ExpressionFunctionX<U extends Expression[]> = ExpressionOperation & {
   args: U;
@@ -310,20 +309,23 @@ RuleDefExpressionFunctionX<
 }
 
 export function funcGroupGraphPattern<T extends string>(func: TokenType & { name: T }):
-RuleDefExpressionFunctionX<
-  Uncapitalize<T>,
-  [ Pattern ]
-> {
+SparqlGrammarRule<Uncapitalize<T>, ExpressionPatternOperation> {
   return {
     name: unCapitalize(func.name),
-    impl: ({ ACTION, SUBRULE, CONSUME }) => () => {
-      const operator = CONSUME(func);
+    impl: ({ SUBRULE, CONSUME }) => ({ factory: F }) => {
+      const i0 = SUBRULE(blank, undefined);
+      const operator = CONSUME(func).image;
       const group = SUBRULE(groupGraphPattern, undefined);
-      return ACTION(() => ({
-        type: 'operation',
-        operator: formatOperator(operator.image),
-        args: [ deGroupSingle(group) ],
-      }));
+      return {
+        type: 'expression',
+        expressionType: 'patternOperation',
+        operator: formatOperator(operator),
+        args: [ F.deGroupSingle(group) ],
+        RTT: {
+          img1: operator,
+          i0,
+        },
+      };
     },
   };
 }

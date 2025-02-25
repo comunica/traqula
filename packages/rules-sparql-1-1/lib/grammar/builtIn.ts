@@ -3,7 +3,19 @@ import type { ImplArgs } from '@traqula/core';
 import {
   unCapitalize,
 } from '@traqula/core';
-import { funcExprOrNil1, baseAggregateFunc, funcExpr1, funcExpr2, funcExpr2or3, funcExpr3, funcExpr3or4, funcExprList1, funcGroupGraphPattern, funcNil1, funcVar1 } from '../expressionHelpers';
+import {
+  funcExprOrNil1,
+  baseAggregateFunc,
+  funcExpr1,
+  funcExpr2,
+  funcExpr2or3,
+  funcExpr3,
+  funcExpr3or4,
+  funcExprList1,
+  funcGroupGraphPattern,
+  funcNil1,
+  funcVar1,
+} from '../expressionHelpers';
 import * as l from '../lexer';
 import type {
   Expression,

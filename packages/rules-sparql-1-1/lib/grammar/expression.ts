@@ -27,8 +27,8 @@ import {
   rdfLiteral,
 } from './literals';
 
-const infixOperators = <const> [ '||', '&&', '=', '!=', '<', '>', '<=', '>=', 'in', 'notin', '+', '-', '*', '/' ];
-const prefixOperator = <const> [ '!', 'UPLUS', 'UMINUS' ];
+const infixOperators = new Set([ '||', '&&', '=', '!=', '<', '>', '<=', '>=', 'in', 'notin', '+', '-', '*', '/' ]);
+const prefixOperator = new Set([ '!', 'UPLUS', 'UMINUS' ]);
 
 /**
  * [[71]](https://www.w3.org/TR/sparql11-query/#rArgList)
@@ -102,7 +102,7 @@ export const argList: SparqlRule<'argList', IArgList> = <const> {
 /**
  * [[72]](https://www.w3.org/TR/sparql11-query/#rConstructTemplate)
  */
-export const expressionList: SparqlGrammarRule<'expressionList', { val: Expression[]; ignored: ITOS[] } > = <const> {
+export const expressionList: SparqlRule<'expressionList', { val: Expression[]; ignored: ITOS[] } > = <const> {
   name: 'expressionList',
   impl: ({ CONSUME, MANY, OR, SUBRULE1, SUBRULE2 }) => ({ factory: F }) => {
     const i0 = SUBRULE1(blank, undefined);
@@ -131,6 +131,7 @@ export const expressionList: SparqlGrammarRule<'expressionList', { val: Expressi
       } },
     ]);
   },
+  gImpl: () => () => '',
 };
 
 /**
@@ -146,7 +147,29 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
     }
 
     if (F.isExpressionOperator(ast)) {
-      // Builder.push(s(iriOrFunction, ast.function, undefined));
+      if (infixOperators.has(ast.operator)) {
+        // Operator is infix
+        builder.push(
+          s(expression, ast.args[0], undefined),
+          genB(s, ast.RTT.ignored[0]),
+          ast.RTT.img1,
+          s(expressionList, { val: ast.args.slice(1), ignored: ast.RTT.ignored.slice(1) }, undefined),
+        );
+      } else if (prefixOperator.has(ast.operator)) {
+        // Operator is prefix
+        builder.push(
+          genB(s, ast.RTT.ignored[0]),
+          ast.RTT.img1,
+          s(expression, ast.args[0], undefined),
+        );
+      } else {
+        // Operator is function
+        builder.push(
+          genB(s, ast.RTT.ignored[0]),
+          ast.RTT.img1,
+          s(expressionList, { val: ast.args, ignored: ast.RTT.ignored.slice(1) }, undefined),
+        );
+      }
     } else if (F.isExpressionPatternOperator(ast)) {
       // Builder.push(s(iriOrFunction, ast.function, undefined));
     } else if (F.isExpressionFunctionCall(ast)) {
@@ -311,7 +334,7 @@ SparqlGrammarRule<'relationalExpression', ExpressionOperation | Expression> = <c
               type: 'expression',
               expressionType: 'operation',
               operator: 'in',
-              args: args.val,
+              args: [ args1, ...args.val ],
               RTT: {
                 img1,
                 ignored: [ i0, ...args.ignored ],
@@ -326,7 +349,7 @@ SparqlGrammarRule<'relationalExpression', ExpressionOperation | Expression> = <c
               type: 'expression',
               expressionType: 'operation',
               operator: 'notin',
-              args: args.val,
+              args: [ args1, ...args.val ],
               RTT: {
                 img1,
                 ignored: [ i0, ...args.ignored ],

@@ -1,6 +1,41 @@
 import type * as r from './TypeHelpersRTT';
 import type { Wildcard } from './Wildcard';
 
+export type PatternBind = r.IgnoredRTT3 & r.ImageRTT & PatternBase & {
+  variable: TermVariable;
+  value: GraphTerm;
+};
+
+export type SolutionModifiers = {
+  group?: SolutionModifierGroup;
+  having?: SolutionModifierHaving;
+  order?: SolutionModifierOrder;
+  limitOffset?: SolutionModifierLimitOffset;
+};
+export type SolutionModifierBase = { type: 'solutionModifier'; modifierType: string };
+export type SolutionModifierGroupBind = r.IgnoredRTT2 & r.ImageRTT & {
+  variable: TermVariable;
+  value: Expression;
+};
+export type SolutionModifierGroup = r.IgnoredRTT1 & r.ImageRTT2 & SolutionModifierBase & {
+  modifierType: 'group';
+  groupings: (Expression | SolutionModifierGroupBind)[];
+};
+export type SolutionModifierHaving = r.IgnoredRTT & r.ImageRTT & SolutionModifierBase & {
+  modifierType: 'having';
+  having: Expression[];
+};
+export type Ordering =
+  | Expression
+  | (r.ImageRTT & r.IgnoredRTT & { descending: boolean; expression: Expression });
+export type SolutionModifierOrder = r.IgnoredRTT1 & r.ImageRTT2 & SolutionModifierBase & {
+  modifierType: 'order';
+  orderDefs: Ordering[];
+};
+export type SolutionModifierLimitOffset = r.ImageRTT2 & r.IgnoredRTT3 & SolutionModifierBase
+  & { modifierType: 'limitOffset' }
+  & ({ limit: number; offset: number | undefined } | { limit: number | undefined; offset: number });
+
 export type ExpressionBase = { type: 'expression' };
 /**
  * RTT.img2 image and RTT.i2 can be ignored if not distinct.

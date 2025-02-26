@@ -96,6 +96,18 @@ export class TraqulaFactory extends BlankSpaceFactory {
     return 'preBracket' in x.RTT;
   }
 
+  public isExpression(x: object): x is Expression {
+    if ('type' in x) {
+      if (x.type === 'expression') {
+        return true;
+      }
+      if (this.isTerm(x)) {
+        return this.isTermIri(x) || this.isTermVariable(x) || this.isTermLiteral(x);
+      }
+    }
+    return false;
+  }
+
   public isExpressionOperator(x: Expression): x is ExpressionOperation {
     return x.type === 'expression' && x.expressionType === 'operation';
   }

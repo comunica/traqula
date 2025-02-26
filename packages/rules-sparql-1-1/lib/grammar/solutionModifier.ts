@@ -1,115 +1,146 @@
 import * as l from '../lexer';
-import type { Expression, Grouping, Ordering, SelectQuery, SparqlGrammarRule, SparqlRule } from '../Sparql11types';
+import type {
+  Expression,
+  SolutionModifierGroup,
+  SolutionModifierGroupBind,
+  SolutionModifierHaving,
+  SolutionModifierOrder,
+  Ordering,
+  SolutionModifierLimitOffset,
+  SolutionModifiers,
+} from '../RoundTripTypes';
+import type { SparqlGrammarRule, SparqlRule } from '../Sparql11types';
+import type { Ignores1, Images, ITOS, Wrap } from '../TypeHelpersRTT';
 import { builtInCall } from './builtIn';
 import { brackettedExpression, expression } from './expression';
-import { var_ } from './general';
+import { blank, genB, var_ } from './general';
 import { constraint, functionCall } from './whereClause';
 
 /**
  * [[18]](https://www.w3.org/TR/sparql11-query/#rSolutionModifier)
  */
-export type ISolutionModifier = Pick<SelectQuery, 'group' | 'having' | 'order' | 'limit' | 'offset'>;
-export const solutionModifier: SparqlRule<'solutionModifier', ISolutionModifier> = <const> {
+export const solutionModifier: SparqlRule<'solutionModifier', SolutionModifiers> = <const> {
   name: 'solutionModifier',
   impl: ({ ACTION, SUBRULE, OPTION1, OPTION2, OPTION3, OPTION4 }) => () => {
     const group = OPTION1(() => SUBRULE(groupClause, undefined));
     const having = OPTION2(() => SUBRULE(havingClause, undefined));
     const order = OPTION3(() => SUBRULE(orderClause, undefined));
-    const limitAndOffset = OPTION4(() => SUBRULE(limitOffsetClauses, undefined));
-
+    const limitOffset = OPTION4(() => SUBRULE(limitOffsetClauses, undefined));
     return ACTION(() => ({
-      ...limitAndOffset,
+      ...(limitOffset && { limitOffset }),
       ...(group && { group }),
       ...(having && { having }),
       ...(order && { order }),
     }));
   },
-  gImpl: ({ SUBRULE }) => (ast) => {
-    const group = ast.group ? SUBRULE(groupClause, ast.group, undefined) : '';
-    const having = ast.having ? SUBRULE(havingClause, ast.having, undefined) : '';
-    const order = ast.order ? SUBRULE(orderClause, ast.order, undefined) : '';
-    const limit = SUBRULE(limitOffsetClauses, ast, undefined);
-
-    return [ group, having, order, limit ].filter(Boolean).join(' ');
-  },
+  gImpl: ({ SUBRULE }) => ast => [
+    ast.group ? SUBRULE(groupClause, ast.group, undefined) : '',
+    ast.having ? SUBRULE(havingClause, ast.having, undefined) : '',
+    ast.order ? SUBRULE(orderClause, ast.order, undefined) : '',
+    ast.limitOffset ? SUBRULE(limitOffsetClauses, ast.limitOffset, undefined) : '',
+  ].join(''),
 };
 
 /**
  * [[19]](https://www.w3.org/TR/sparql11-query/#rGroupClause)
  */
-export const groupClause: SparqlRule<'groupClause', Grouping[]> = <const> {
+export const groupClause: SparqlRule<'groupClause', SolutionModifierGroup> = <const> {
   name: 'groupClause',
   impl: ({ AT_LEAST_ONE, SUBRULE, CONSUME }) => () => {
-    const groupings: Grouping[] = [];
-    CONSUME(l.groupBy);
+    const groupings: (Expression | SolutionModifierGroupBind)[] = [];
+    const i0 = SUBRULE(blank, undefined);
+    const img1 = CONSUME(l.groupByGroup).image;
+    const i1 = SUBRULE(blank, undefined);
+    const img2 = CONSUME(l.by).image;
     AT_LEAST_ONE(() => {
       groupings.push(SUBRULE(groupCondition, undefined));
     });
 
-    return groupings;
+    return {
+      type: 'solutionModifier',
+      modifierType: 'group',
+      groupings,
+      RTT: {
+        img1,
+        img2,
+        i0,
+        i1,
+      },
+    };
   },
-  gImpl: ({ SUBRULE }) => ast =>
-    `GROUP BY ${ast.map(group => SUBRULE(groupCondition, group, undefined)).join(' ')}`,
+  gImpl: ({ SUBRULE }) => ast => [
+    genB(SUBRULE, ast.RTT.i0),
+    ast.RTT.img1,
+    genB(SUBRULE, ast.RTT.i1),
+    ast.RTT.img2,
+  ].join(''),
 };
 
 /**
  * [[20]](https://www.w3.org/TR/sparql11-query/#rGroupCondition)
  */
-export const groupCondition: SparqlRule<'groupCondition', Grouping> = <const> {
+export const groupCondition: SparqlRule<'groupCondition', Expression | SolutionModifierGroupBind> = <const> {
   name: 'groupCondition',
-  impl: ({ SUBRULE, CONSUME, SUBRULE1, SUBRULE2, OPTION, OR }) => () => OR<Grouping>([
-    { ALT: () => {
-      const expression = SUBRULE(builtInCall, undefined);
-      return {
-        expression,
-      };
-    } },
-    { ALT: () => {
-      const expression = SUBRULE(functionCall, undefined);
-      return {
-        expression,
-      };
-    } },
-    {
-      ALT: () => {
+  impl: ({ SUBRULE, CONSUME, SUBRULE1, SUBRULE2, OPTION, OR }) => ({ factory: F }) =>
+    OR<Expression | SolutionModifierGroupBind>([
+      { ALT: () => SUBRULE(builtInCall, undefined) },
+      { ALT: () => SUBRULE(functionCall, undefined) },
+      { ALT: () => SUBRULE2(var_, undefined) },
+      { ALT: () => {
+      // Creates a bracketted expression or a Bind.
+        const i0 = SUBRULE(blank, undefined);
         CONSUME(l.symbols.LParen);
         const expressionValue = SUBRULE(expression, undefined);
         const variable = OPTION(() => {
-          CONSUME(l.as);
-          return SUBRULE1(var_, undefined);
+          const i1 = SUBRULE1(blank, undefined);
+          const img1 = CONSUME(l.as).image;
+          const variable = SUBRULE1(var_, undefined);
+          return { variable, i1, img1 };
         });
+        const i2 = SUBRULE2(blank, undefined);
         CONSUME(l.symbols.RParen);
-
-        return {
-          expression: expressionValue,
-          variable,
-        };
-      },
-    },
-    { ALT: () => {
-      const expression = SUBRULE2(var_, undefined);
-      return {
-        expression,
-      };
-    } },
-  ]),
-  gImpl: ({ SUBRULE }) => (ast) => {
-    if (ast.variable) {
-      return `(${SUBRULE(expression, ast.expression, undefined)} AS ${SUBRULE(var_, ast.variable, undefined)})`;
+        return variable ?
+{
+  variable: variable.variable,
+  value: expressionValue,
+  RTT: {
+    img1: variable.img1,
+    i0,
+    i1: variable.i1,
+    i2,
+  },
+} satisfies SolutionModifierGroupBind :
+          F.bracketted(expressionValue, i0, i2);
+      } },
+    ]),
+  gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
+    if (F.isExpression(ast)) {
+      return SUBRULE(expression, ast, undefined);
     }
-    return SUBRULE(expression, ast.expression, undefined);
+    // Is Bind
+    return [
+      genB(SUBRULE, ast.RTT.i0),
+      '(',
+      SUBRULE(expression, ast.value, undefined),
+      genB(SUBRULE, ast.RTT.i1),
+      ast.RTT.img1,
+      SUBRULE(var_, ast.variable, undefined),
+      genB(SUBRULE, ast.RTT.i2),
+      ')',
+    ].join('');
   },
 };
 
 /**
  * [[21]](https://www.w3.org/TR/sparql11-query/#rHavingClause)
  */
-export const havingClause: SparqlRule<'havingClause', Expression[]> = <const> {
+export const havingClause: SparqlRule<'havingClause', SolutionModifierHaving> = <const> {
   name: 'havingClause',
   impl: ({ ACTION, AT_LEAST_ONE, SUBRULE, CONSUME }) => (C) => {
-    const expressions: Expression[] = [];
+    const i0 = SUBRULE(blank, undefined);
+    const img1 = CONSUME(l.having).image;
 
-    CONSUME(l.having);
+    const expressions: Expression[] = [];
     const couldParseAgg = ACTION(() =>
       C.parseMode.has('canParseAggregate') || !C.parseMode.add('canParseAggregate'));
     AT_LEAST_ONE(() => {
@@ -117,10 +148,18 @@ export const havingClause: SparqlRule<'havingClause', Expression[]> = <const> {
     });
     ACTION(() => !couldParseAgg && C.parseMode.delete('canParseAggregate'));
 
-    return expressions;
+    return {
+      type: 'solutionModifier',
+      modifierType: 'having',
+      having: expressions,
+      RTT: {
+        img1,
+        i0,
+      },
+    };
   },
   gImpl: ({ SUBRULE }) => ast =>
-    `HAVING ${ast.map(having => `( ${SUBRULE(expression, having, undefined)} )`).join(' ')}`,
+    `HAVING ${ast.having.map(having => `( ${SUBRULE(expression, having, undefined)} )`).join(' ')}`,
 };
 
 /**
@@ -134,12 +173,15 @@ export const havingCondition: SparqlGrammarRule<'havingCondition', Expression> =
 /**
  * [[23]](https://www.w3.org/TR/sparql11-query/#rOrderClause)
  */
-export const orderClause: SparqlRule<'orderClause', Ordering[]> = <const> {
+export const orderClause: SparqlRule<'orderClause', SolutionModifierOrder> = <const> {
   name: 'orderClause',
   impl: ({ ACTION, AT_LEAST_ONE, SUBRULE, CONSUME }) => (C) => {
-    const orderings: Ordering[] = [];
+    const i0 = SUBRULE(blank, undefined);
+    const img1 = CONSUME(l.order).image;
+    const i1 = SUBRULE(blank, undefined);
+    const img2 = CONSUME(l.by).image;
 
-    CONSUME(l.order);
+    const orderings: Ordering[] = [];
     const couldParseAgg = ACTION(() =>
       C.parseMode.has('canParseAggregate') || !C.parseMode.add('canParseAggregate'));
     AT_LEAST_ONE(() => {
@@ -147,10 +189,24 @@ export const orderClause: SparqlRule<'orderClause', Ordering[]> = <const> {
     });
     ACTION(() => !couldParseAgg && C.parseMode.delete('canParseAggregate'));
 
-    return orderings;
+    return {
+      type: 'solutionModifier',
+      modifierType: 'order',
+      orderDefs: orderings,
+      RTT: {
+        i0,
+        i1,
+        img1,
+        img2,
+      },
+    };
   },
-  gImpl: ({ SUBRULE }) => ast =>
-    `ORDER BY ${ast.map(order => SUBRULE(orderCondition, order, undefined)).join(' ')}`,
+  gImpl: ({ SUBRULE }) => ast => [
+    genB(SUBRULE, ast.RTT.i0),
+    ast.RTT.img1,
+    genB(SUBRULE, ast.RTT.i1),
+    ast.RTT.img2,
+  ].join(''),
 };
 
 /**
@@ -158,47 +214,42 @@ export const orderClause: SparqlRule<'orderClause', Ordering[]> = <const> {
  */
 export const orderCondition: SparqlRule<'orderCondition', Ordering> = <const> {
   name: 'orderCondition',
-  impl: ({ SUBRULE, CONSUME, OR1, OR2 }) => () => OR1([
-    {
-      ALT: () => {
-        const descending = OR2([
-          { ALT: () => {
-            CONSUME(l.orderAsc);
-            return false;
-          } },
-          { ALT: () => {
-            CONSUME(l.orderDesc);
-            return true;
-          } },
-        ]);
-        const expr = SUBRULE(brackettedExpression, undefined);
+  impl: ({ SUBRULE, CONSUME, OR1, OR2 }) => () => OR1<Ordering>([
+    { ALT: () => {
+      const i0 = SUBRULE(blank, undefined);
+      const [ img1, descending ] = OR2([
+        { ALT: () => {
+          const img1 = CONSUME(l.orderAsc).image;
+          return [ img1, false ];
+        } },
+        { ALT: () => {
+          const img2 = CONSUME(l.orderDesc).image;
+          return [ img2, false ];
+        } },
+      ]);
+      const expr = SUBRULE(brackettedExpression, undefined);
 
-        return {
-          expression: expr,
-          descending,
-        };
-      },
-    },
-    { ALT: () => {
-      const expr = SUBRULE(constraint, undefined);
       return {
         expression: expr,
+        descending,
+        RTT: {
+          img1,
+          i0,
+        },
       };
     } },
-    { ALT: () => {
-      const expr = SUBRULE(var_, undefined);
-      return {
-        expression: expr,
-      };
-    } },
+    { ALT: () => SUBRULE(constraint, undefined) },
+    { ALT: () => SUBRULE(var_, undefined) },
   ]),
-  gImpl: ({ SUBRULE }) => (ast) => {
-    const builder: string[] = [];
-    if (ast.descending) {
-      builder.push('DESC');
+  gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
+    if (F.isExpression(ast)) {
+      return SUBRULE(expression, ast, undefined);
     }
-    builder.push('(', SUBRULE(expression, ast.expression, undefined), ')');
-    return builder.join(' ');
+    return [
+      genB(SUBRULE, ast.RTT.i0),
+      ast.RTT.img1,
+      SUBRULE(expression, ast.expression, undefined),
+    ].join('');
   },
 };
 
@@ -206,60 +257,92 @@ export const orderCondition: SparqlRule<'orderCondition', Ordering> = <const> {
  * Parses limit and or offset in any order.
  * [[25]](https://www.w3.org/TR/sparql11-query/#rLimitOffsetClauses)
  */
-export const limitOffsetClauses: SparqlRule<'limitOffsetClauses', Pick<SelectQuery, 'limit' | 'offset'>> = <const> {
+export const limitOffsetClauses: SparqlRule<'limitOffsetClauses', SolutionModifierLimitOffset> = <const> {
   name: 'limitOffsetClauses',
-  impl: ({ SUBRULE1, SUBRULE2, OPTION1, OPTION2, OR }) => () => OR<Pick<SelectQuery, 'limit' | 'offset'>>([
-    {
-      ALT: () => {
+  impl: ({ SUBRULE1, SUBRULE2, OPTION1, OPTION2, OR }) => () => {
+    function ret(
+      limit: number | undefined,
+      offset: number | undefined,
+      i0: ITOS,
+      i1: ITOS,
+      img1: string,
+      i2?: ITOS,
+      i3?: ITOS,
+      img2?: string,
+    ): SolutionModifierLimitOffset {
+      return <SolutionModifierLimitOffset> {
+        type: 'solutionModifier',
+        modifierType: 'limitOffset',
+        limit,
+        offset,
+        RTT: { i0, i1, img1, i2: i2 ?? [], i3: i3 ?? [], img2: img2 ?? '' },
+      };
+    }
+    return OR([
+      { ALT: () => {
         const limit = SUBRULE1(limitClause, undefined);
         const offset = OPTION1(() => SUBRULE1(offsetClause, undefined));
-        return {
-          limit,
-          offset,
-        };
-      },
-    },
-    {
-      ALT: () => {
+        return ret(limit.val, offset?.val, limit.i0, limit.i1, limit.img1, offset?.i0, offset?.i1, offset?.img1);
+      } },
+      { ALT: () => {
         const offset = SUBRULE2(offsetClause, undefined);
         const limit = OPTION2(() => SUBRULE2(limitClause, undefined));
-        return {
-          limit,
-          offset,
-        };
-      },
-    },
-  ]),
-  gImpl: () => (ast) => {
-    const builder: string[] = [];
-    if (ast.limit) {
-      builder.push(`LIMIT ${String(ast.limit)}`);
+        return ret(limit?.val, offset.val, offset.i0, offset.i1, offset.img1, limit?.i0, limit?.i1, limit?.img1);
+      } },
+    ]);
+  },
+  gImpl: ({ SUBRULE: s }) => (ast) => {
+    const builder = [
+      genB(s, ast.RTT.i0),
+      ast.RTT.img1,
+      genB(s, ast.RTT.i1),
+    ];
+    if (ast.limit !== undefined && ast.RTT.img1.toLowerCase() === 'limit') {
+      builder.push(
+        String(ast.limit),
+        genB(s, ast.RTT.i2),
+        ast.RTT.img2,
+        genB(s, ast.RTT.i3),
+        ast.offset === undefined ? '' : String(ast.offset),
+      );
     }
-    if (ast.offset) {
-      builder.push(`OFFSET ${String(ast.offset)}`);
+    if (ast.offset !== undefined && ast.RTT.img1.toLowerCase() === 'offset') {
+      builder.push(
+        String(ast.offset),
+        genB(s, ast.RTT.i2),
+        ast.RTT.img2,
+        genB(s, ast.RTT.i3),
+        ast.limit === undefined ? '' : String(ast.limit),
+      );
     }
-    return builder.join(' ');
+    return builder.join('');
   },
 };
 
 /**
  * [[26]](https://www.w3.org/TR/sparql11-query/#rLimitClause)
  */
-export const limitClause: SparqlGrammarRule<'limitClause', number> = <const> {
+export const limitClause: SparqlGrammarRule<'limitClause', Wrap<number> & Ignores1 & Images> = <const> {
   name: 'limitClause',
-  impl: ({ CONSUME }) => () => {
-    CONSUME(l.limit);
-    return Number.parseInt(CONSUME(l.terminals.integer).image, 10);
+  impl: ({ CONSUME, SUBRULE1, SUBRULE2 }) => () => {
+    const i0 = SUBRULE1(blank, undefined);
+    const img1 = CONSUME(l.limit).image;
+    const i1 = SUBRULE2(blank, undefined);
+    const val = Number.parseInt(CONSUME(l.terminals.integer).image, 10);
+    return { val, img1, i1, i0 };
   },
 };
 
 /**
  * [[27]](https://www.w3.org/TR/sparql11-query/#rWhereClause)
  */
-export const offsetClause: SparqlGrammarRule<'offsetClause', number> = <const> {
+export const offsetClause: SparqlGrammarRule<'offsetClause', Wrap<number> & Ignores1 & Images> = <const> {
   name: <const> 'offsetClause',
-  impl: ({ CONSUME }) => () => {
-    CONSUME(l.offset);
-    return Number.parseInt(CONSUME(l.terminals.integer).image, 10);
+  impl: ({ CONSUME, SUBRULE1, SUBRULE2 }) => () => {
+    const i0 = SUBRULE1(blank, undefined);
+    const img1 = CONSUME(l.offset).image;
+    const i1 = SUBRULE2(blank, undefined);
+    const val = Number.parseInt(CONSUME(l.terminals.integer).image, 10);
+    return { val, img1, i1, i0 };
   },
 };

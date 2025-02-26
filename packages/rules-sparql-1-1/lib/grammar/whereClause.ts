@@ -1,14 +1,12 @@
 import * as l from '../lexer';
+import type { Expression, ExpressionFunctionCall } from '../RoundTripTypes';
 import type {
   BindPattern,
   BlankTerm,
   BlockPattern,
-  Expression,
   FilterPattern,
-  FunctionCallExpression,
   GraphPattern,
   GroupPattern,
-  IriTerm,
   LiteralTerm,
   MinusPattern,
   OptionalPattern,
@@ -506,14 +504,21 @@ export const constraint: SparqlGrammarRule<'constraint', Expression> = <const> {
 /**
  * [[70]](https://www.w3.org/TR/sparql11-query/#rFunctionCall)
  */
-export const functionCall: SparqlGrammarRule<'functionCall', FunctionCallExpression> = <const> {
+export const functionCall: SparqlGrammarRule<'functionCall', ExpressionFunctionCall> = <const> {
   name: 'functionCall',
-  impl: ({ ACTION, SUBRULE }) => () => {
+  impl: ({ SUBRULE }) => () => {
     const func = SUBRULE(iri, undefined);
     const args = SUBRULE(argList, undefined);
-    return ACTION(() => ({
-      ...args,
+    return {
+      type: 'expression',
+      expressionType: 'functionCall',
+      args: args.args,
       function: func,
-    }));
+      distinct: args.img1 !== '',
+      RTT: {
+        ignored: args.ignored,
+        img1: args.img1,
+      },
+    };
   },
 };

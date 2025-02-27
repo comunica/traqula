@@ -1,5 +1,5 @@
+import type { BlankTerm, IriTerm, LiteralTerm } from './Sparql11types';
 import type * as r from './TypeHelpersRTT';
-import type { ITOS } from './TypeHelpersRTT';
 import type { Wildcard } from './Wildcard';
 
 /**
@@ -9,11 +9,11 @@ import type { Wildcard } from './Wildcard';
  */
 export type RTTTripleBase =
   | { shareSubjectDef: false; sharePrefixDef: false }
-  | { shareSubjectDef: true; sharePrefixDef: true; i0: ITOS }
+  | { shareSubjectDef: true; sharePrefixDef: true; i0: r.ITOS }
   // Rather special approach here since the rule allows repetition of ;.
   // As such, a triple ; sequences after, and only the first one will require a normal ITOS.
   // CONTRACT: ool;y first item in chain of ; has i0 !== [].
-  | { shareSubjectDef: true; sharePrefixDef: false; i0: ITOS; ignoredAfter: ITOS[] };
+  | { shareSubjectDef: true; sharePrefixDef: false; i0: r.ITOS; ignoredAfter: r.ITOS[] };
 export type RTTTriplePartStartCollection = r.Ignores1 & {
   collectionSize: number;
 };
@@ -29,20 +29,63 @@ export type Triple = {
   RTT: RTTTripleBase;
 };
 
-export type PatternBase = { type: 'pattern' };
+export type PatternBase = { type: 'pattern'; patternType: string };
+export type PatternFilter = r.ImageRTT & r.IgnoredRTT & PatternBase & {
+  patternType: 'filter';
+  expression: Expression;
+};
+export type PatternMinus = r.ImageRTT & r.IgnoredRTT2 & PatternBase & {
+  patternType: 'minus';
+  patterns: Pattern[];
+};
+export type PatternGroup = r.IgnoredRTT1 & PatternBase & {
+  patternType: 'group';
+  patterns: Pattern[];
+};
+export type PatternOptional = r.IgnoredRTT & r.ImageRTT & PatternBase & {
+  patternType: 'optional';
+  patterns: Pattern[];
+};
+export type PatternUnion = PatternBase & {
+  patternType: 'union';
+  patterns: Pattern[];
+  RTT: {
+    images: string[];
+    ignores: r.ITOS[];
+  };
+};
 export type PatternBgp = PatternBase & {
   patternType: 'bgp';
   triples: Triple[];
   RTT: {
-    ignored: ITOS[];
+    ignored: r.ITOS[];
   };
 };
-export type Pattern = PatternBgp;
-
-export type PatternBind = r.IgnoredRTT3 & r.ImageRTT & PatternBase & {
+export type PatternBind = r.IgnoredRTT3 & r.ImageRTT2 & PatternBase & {
+  patternType: 'bind';
+  expression: Expression;
   variable: TermVariable;
-  value: GraphTerm;
 };
+export type PatternService = r.IgnoredRTT3 & r.ImageRTT2 & PatternBase & {
+  patternType: 'service';
+  name: TermIri | TermVariable;
+  silent: boolean;
+  patterns: Pattern[];
+};
+export type ValuePatternRow = Record<string, IriTerm | BlankTerm | LiteralTerm | undefined>;
+export type PatternValues = r.IgnoredRTT & r.ImageRTT & PatternBase & {
+  patternType: 'values';
+  values: ValuePatternRow[];
+};
+export type Pattern = CurliedRTT & (
+  | PatternBgp
+  | PatternFilter
+  | PatternGroup
+  | PatternOptional
+  | PatternUnion
+  | PatternBind
+  | PatternValues
+);
 
 export type SolutionModifiers = {
   group?: SolutionModifierGroup;
@@ -142,6 +185,7 @@ export type Expression = BrackettedRTT & (
  * Each tuple handles a single bracket recursion
  */
 export type BrackettedRTT = { RTT: { preBracket?: [r.ITOS, r.ITOS][] }};
+export type CurliedRTT = { RTT: { preCurls?: [r.ITOS, r.ITOS][] }};
 
 type PropertyPathBase = { type: 'path' };
 export type PropertyPathChain = PropertyPathBase & {

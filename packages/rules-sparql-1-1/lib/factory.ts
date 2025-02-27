@@ -33,6 +33,12 @@ import type {
   ExpressionOperation,
   ExpressionPatternOperation,
   Triple,
+  PatternFilter,
+  PatternUnion,
+  PatternGroup,
+  PatternMinus,
+  PatternBind,
+  PatternService,
 } from './RoundTripTypes';
 import type * as r from './TypeHelpersRTT';
 import { Wildcard } from './Wildcard';
@@ -41,10 +47,6 @@ export class TraqulaFactory extends BlankSpaceFactory {
   private blankNodeCounter = 0;
   public constructor() {
     super();
-  }
-
-  public deGroupSingle(group: any): Pattern {
-    return group.patterns.length === 1 ? group.patterns[0] : group;
   }
 
   public prefix(i0: r.ITOS, img1: string, i1: r.ITOS, i2: r.ITOS, key: string, value: TermIriFull):
@@ -156,11 +158,82 @@ export class TraqulaFactory extends BlankSpaceFactory {
       predicate,
       object,
       RTT: RTT ?? {
-        i0: [],
         shareSubjectDef: false,
         sharePrefixDef: false,
       },
     };
+  }
+
+  public patternFilter(i0: r.ITOS, img1: string, expression: Expression): PatternFilter {
+    return this.rttImage(this.rttIgnore({
+      type: 'pattern',
+      patternType: 'filter',
+      expression,
+    }, i0), img1);
+  }
+
+  public patternBind(
+    i0: r.ITOS,
+    i1: r.ITOS,
+    i2: r.ITOS,
+    i3: r.ITOS,
+    img1: string,
+    img2: string,
+    expression: Expression,
+    variable: TermVariable,
+  ): PatternBind {
+    return this.rttImage(this.rttIgnore({
+      type: 'pattern',
+      patternType: 'bind',
+      expression,
+      variable,
+    }, i0, i1, i2, i3), img1, img2);
+  }
+
+  public patternUnion(ignores: r.ITOS[], images: string[], patterns: Pattern[]): PatternUnion {
+    return {
+      type: 'pattern',
+      patternType: 'union',
+      patterns,
+      RTT: { ignores, images },
+    };
+  }
+
+  public patternMinus(i0: r.ITOS, i1: r.ITOS, i2: r.ITOS, img1: string, patterns: Pattern[]): PatternMinus {
+    return {
+      type: 'pattern',
+      patternType: 'minus',
+      patterns,
+      RTT: { i0, i1, i2, img1 },
+    };
+  }
+
+  public patternService(
+    i0: r.ITOS,
+    i1: r.ITOS,
+    i2: r.ITOS,
+    i3: r.ITOS,
+    img1: string,
+    img2: string,
+    name: TermIri | TermVariable,
+    patterns: Pattern[],
+  ): PatternService {
+    return {
+      type: 'pattern',
+      patternType: 'service',
+      silent: img2.toLowerCase() === 'silent',
+      name,
+      patterns,
+      RTT: { i0, i1, i2, i3, img1, img2 },
+    };
+  }
+
+  public deGroupSingle(group: PatternGroup): Pattern {
+    if (group.patterns.length > 1) {
+      return group;
+    }
+    const { i0, i1 } = group.RTT;
+    return this.curlied(group.patterns[0], i0, i1);
   }
 
   public aggregate(i0: r.ITOS, i1: r.ITOS, i2: r.ITOS | undefined, i3: r.ITOS, img1: string, img2: string | undefined,
@@ -259,6 +332,21 @@ export class TraqulaFactory extends BlankSpaceFactory {
       RTT: {
         ...x.RTT,
         preBracket: [[ i0, i1 ]],
+      },
+    };
+  }
+
+  public curlied<T extends object & { RTT?: { preCurls?: [r.ITOS, r.ITOS][] }}>(x: T, i0: r.ITOS, i1: r.ITOS):
+    T & { RTT: { preCurls: [r.ITOS, r.ITOS][] }} {
+    if (x.RTT !== undefined && x.RTT.preCurls !== undefined) {
+      x.RTT.preCurls.push([ i0, i1 ]);
+      return <T & { RTT: { preCurls: [r.ITOS, r.ITOS][] }}> x;
+    }
+    return {
+      ...x,
+      RTT: {
+        ...x.RTT,
+        preCurls: [[ i0, i1 ]],
       },
     };
   }

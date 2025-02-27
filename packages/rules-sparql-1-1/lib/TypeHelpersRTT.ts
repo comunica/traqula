@@ -7,6 +7,7 @@ export type BlankSpace = { bs: string };
  * The comment can NEVER contain a newline - generators should ALWAYS append a newline
  */
 export type Comment = { comment: string };
+export type Image = { image: string };
 /**
  * Ignored Tracking Object
  */
@@ -15,6 +16,10 @@ export type ITO = BlankSpace | Comment;
  * Ignored Track Object Sequence.
  */
 export type ITOS = ITO[];
+/**
+ * Complete Track Object Sequence
+ */
+export type CTOS = (BlankSpace | Comment | Image)[];
 /**
  * Before Ignored Track Object Sequence
  */

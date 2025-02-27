@@ -201,7 +201,7 @@ export const string: SparqlRule<'string', Reconstructed<string>> = <const> {
             return char;
         }
       });
-      return F.ignores(F.image(F.wrap(value), image), w0);
+      return F.ignores(F.images(F.wrap(value), image), w0);
     });
   },
   gImpl: ({ SUBRULE: s }) => ast => `${genB(s, ast.i0)}${ast.img1}`,
@@ -218,10 +218,10 @@ export const iri: SparqlRule<'iri', TermIri> = <const> {
     { ALT: () => SUBRULE(prefixedName, undefined) },
   ]),
   gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
-    if (F.isPrimitiveIriTerm(ast)) {
+    if (F.isTermIriPrimitive(ast)) {
       return SUBRULE(verbA, ast, undefined);
     }
-    if (F.isPrefixedIriTerm(ast)) {
+    if (F.istermIriPrefixed(ast)) {
       return SUBRULE(prefixedName, ast, undefined);
     }
     return SUBRULE(iriFull, ast, undefined);

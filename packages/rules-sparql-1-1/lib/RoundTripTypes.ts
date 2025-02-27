@@ -1,5 +1,43 @@
 import type * as r from './TypeHelpersRTT';
+import type { ITOS } from './TypeHelpersRTT';
 import type { Wildcard } from './Wildcard';
+
+/**
+ * ShareSubjectDef: ; or ,
+ * sharePrefixDef: ,
+ * i0 should be [] when false, false
+ */
+export type RTTTripleBase =
+  | { shareSubjectDef: false; sharePrefixDef: false }
+  | { shareSubjectDef: true; sharePrefixDef: true; i0: ITOS }
+  // Rather special approach here since the rule allows repetition of ;.
+  // As such, a triple ; sequences after, and only the first one will require a normal ITOS.
+  // CONTRACT: ool;y first item in chain of ; has i0 !== [].
+  | { shareSubjectDef: true; sharePrefixDef: false; i0: ITOS; ignoredAfter: ITOS[] };
+export type RTTTriplePartStartCollection = r.Ignores1 & {
+  collectionSize: number;
+};
+export type RTTTriplePartStartBlankNodeList = r.Ignores1 & {
+  blankNodeListSize: number;
+};
+export type RTTTriplePart = RTTTriplePartStartCollection | RTTTriplePartStartBlankNodeList;
+
+export type Triple = {
+  subject: Term & { RTT?: { triplePart?: RTTTriplePart }};
+  predicate: TermIri | TermVariable | Path;
+  object: Term & { RTT?: { triplePart?: RTTTriplePart }};
+  RTT: RTTTripleBase;
+};
+
+export type PatternBase = { type: 'pattern' };
+export type PatternBgp = PatternBase & {
+  patternType: 'bgp';
+  triples: Triple[];
+  RTT: {
+    ignored: ITOS[];
+  };
+};
+export type Pattern = PatternBgp;
 
 export type PatternBind = r.IgnoredRTT3 & r.ImageRTT & PatternBase & {
   variable: TermVariable;
@@ -147,19 +185,6 @@ export type Path = BrackettedRTT & (
   | PropertyPathChain
   | PathModified
   | PathNegated);
-
-export type Triple = {
-  subject: Term;
-  predicate: TermIri | TermVariable | Path;
-  object: Term;
-};
-
-export type PatternBase = { type: 'pattern' };
-export type BgpPattern = r.IgnoredRTT & PatternBase & {
-  patternType: 'bgp';
-  triples: Triple[];
-};
-export type Pattern = BgpPattern;
 
 type ContextDefinitionBase = { type: 'contextDef' };
 export type ContextDefinitionPrefixDecl = r.IgnoredRTT2 & r.ImageRTT & ContextDefinitionBase & {

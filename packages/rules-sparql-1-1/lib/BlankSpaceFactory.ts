@@ -21,6 +21,7 @@ import type {
   Ignores7,
   Ignores8,
   Ignores9,
+  Image,
   ImageRTT,
   ImageRTT2,
   ImageRTT3,
@@ -62,8 +63,16 @@ export class BlankSpaceFactory {
     return { comment };
   }
 
+  public image(image: string): Image {
+    return { image };
+  }
+
   public wrap<T>(val: T): Wrap<T> {
     return { val };
+  }
+
+  public itos(): ITOS {
+    return [ this.blankSpace(' ') ];
   }
 
   public ignores<T extends object>(value: T, ignored0: ITOS): T & Ignores;
@@ -94,21 +103,21 @@ export class BlankSpaceFactory {
     return result;
   }
 
-  public image<T extends object>(value: T, image1: string): T & Images;
-  public image<T extends object>(value: T, image1: string, image2: string): T & Images2;
-  public image<T extends object>(value: T, image1: string, image2: string, image3: string): T & Images3;
-  public image<T extends object>(value: T, image1: string, image2: string, image3: string, image4: string): T & Images4;
-  public image<T extends object>(value: T, image1: string, image2: string, image3: string, image4: string,
+  public images<T extends object>(value: T, image1: string): T & Images;
+  public images<T extends object>(value: T, image1: string, image2: string): T & Images2;
+  public images<T extends object>(value: T, image1: string, image2: string, image3: string): T & Images3;
+  public images<T extends object>(value: T, image1: string, image2: string, image3: string, image4: string): T & Images4;
+  public images<T extends object>(value: T, image1: string, image2: string, image3: string, image4: string,
     image5: string): T & Images5;
-  public image<T extends object>(value: T, image1: string, image2: string, image3: string, image4: string,
+  public images<T extends object>(value: T, image1: string, image2: string, image3: string, image4: string,
     image5: string, image6: string): T & Images6;
-  public image<T extends object>(value: T, image1: string, image2: string, image3: string, image4: string,
+  public images<T extends object>(value: T, image1: string, image2: string, image3: string, image4: string,
     image5: string, image6: string, image7: string): T & Images7;
-  public image<T extends object>(value: T, image1: string, image2: string, image3: string, image4: string,
+  public images<T extends object>(value: T, image1: string, image2: string, image3: string, image4: string,
     image5: string, image6: string, image7: string, image8: string): T & Images8;
-  public image<T extends object>(value: T, image1: string, image2: string, image3: string, image4: string,
+  public images<T extends object>(value: T, image1: string, image2: string, image3: string, image4: string,
     image5: string, image6: string, image7: string, image8: string, image9: string): T & Images9;
-  public image<T extends object>(value: T, ...images: string[]): Record<any, any> {
+  public images<T extends object>(value: T, ...images: string[]): Record<any, any> {
     if (images.length > 9) {
       throw new Error('Too many images');
     }

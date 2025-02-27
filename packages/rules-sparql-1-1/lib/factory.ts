@@ -32,6 +32,7 @@ import type {
   ExpressionFunctionCall,
   ExpressionOperation,
   ExpressionPatternOperation,
+  Triple,
 } from './RoundTripTypes';
 import type * as r from './TypeHelpersRTT';
 import { Wildcard } from './Wildcard';
@@ -80,15 +81,11 @@ export class TraqulaFactory extends BlankSpaceFactory {
     return 'type' in x && x.type === 'term';
   }
 
-  public isIriTerm(x: Term): x is TermIri {
-    return x.termType === 'NamedNode';
-  }
-
-  public isPrimitiveIriTerm(x: TermIri): x is TermIriPrimitive {
+  public isTermIriPrimitive(x: TermIri): x is TermIriPrimitive {
     return 'img1' in x.RTT;
   }
 
-  public isPrefixedIriTerm(x: TermIri): x is TermIriPrefixed {
+  public istermIriPrefixed(x: TermIri): x is TermIriPrefixed {
     return 'prefix' in x;
   }
 
@@ -148,6 +145,24 @@ export class TraqulaFactory extends BlankSpaceFactory {
     return !this.isExpressionAggregateOnWildcard(x) && !this.isExpressionAggregateSeparator(x);
   }
 
+  public triple(
+    subject: Triple['subject'],
+    predicate: Triple['predicate'],
+    object: Triple['object'],
+    RTT?: Triple['RTT'],
+  ): Triple {
+    return {
+      subject,
+      predicate,
+      object,
+      RTT: RTT ?? {
+        i0: [],
+        shareSubjectDef: false,
+        sharePrefixDef: false,
+      },
+    };
+  }
+
   public aggregate(i0: r.ITOS, i1: r.ITOS, i2: r.ITOS | undefined, i3: r.ITOS, img1: string, img2: string | undefined,
     expression: Expression): ExpressionAggregateDefault;
   public aggregate(i0: r.ITOS, i1: r.ITOS, i2: r.ITOS | undefined, i3: r.ITOS, i4: r.ITOS, img1: string,
@@ -181,7 +196,7 @@ export class TraqulaFactory extends BlankSpaceFactory {
         aggregation: img1ori4.toLowerCase(),
         distinct: img2or1ori5 !== undefined,
         expression: [ <Expression> expressionOrImg2Ori6 ],
-        RTT: this.ignores(this.image({}, img1ori4, img2or1ori5 ?? ''), i0, i1, i2 ?? [], i3),
+        RTT: this.ignores(this.images({}, img1ori4, img2or1ori5 ?? ''), i0, i1, i2 ?? [], i3),
       } satisfies ExpressionAggregateDefault;
     }
     if (Array.isArray(img1ori4) &&
@@ -194,7 +209,7 @@ export class TraqulaFactory extends BlankSpaceFactory {
         aggregation: img2or1ori5.toLowerCase(),
         distinct: expressionOrImg2Ori6 !== undefined,
         expression: [ <Wildcard> expressionOri7 ],
-        RTT: this.ignores(this.image({}, img2or1ori5, expressionOrImg2Ori6 ?? ''), i0, i1, i2 ?? [], i3, img1ori4),
+        RTT: this.ignores(this.images({}, img2or1ori5, expressionOrImg2Ori6 ?? ''), i0, i1, i2 ?? [], i3, img1ori4),
       } satisfies ExpressionAggregateOnWildcard;
     }
     if (Array.isArray(img1ori4) &&
@@ -215,7 +230,7 @@ export class TraqulaFactory extends BlankSpaceFactory {
         expression: [ expression ],
         separator,
         RTT: this.ignores(
-          this.image({}, img1, img2 ?? '', img3, img4),
+          this.images({}, img1, img2 ?? '', img3, img4),
           i0,
           i1,
           i2 ?? [],

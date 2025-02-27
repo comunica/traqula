@@ -141,17 +141,11 @@ export const varOrTerm: SparqlRule<'varOrTerm', Term> = <const> {
     { GATE: () => C.parseMode.has('canParseVars'), ALT: () => SUBRULE(var_, undefined) },
     { ALT: () => SUBRULE(graphTerm, undefined) },
   ]),
-  gImpl: ({ SUBRULE }) => (ast) => {
-    if (ast.termType === 'Variable') {
+  gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
+    if (F.isTermVariable(ast)) {
       return SUBRULE(var_, ast, undefined);
     }
-    if (ast.termType === 'NamedNode') {
-      return SUBRULE(iri, <TermIri> ast, undefined);
-    }
-    if (ast.termType === 'BlankNode') {
-      return SUBRULE(blankNode, ast, undefined);
-    }
-    return SUBRULE(rdfLiteral, ast, undefined);
+    return SUBRULE(graphTerm, ast, undefined);
   },
 };
 
@@ -193,25 +187,22 @@ export const graphTerm: SparqlRule<'graphTerm', GraphTerm> = <const> {
     { ALT: () => SUBRULE(numericLiteral, undefined) },
     { ALT: () => SUBRULE(booleanLiteral, undefined) },
     { GATE: () => parseMode.has('canCreateBlankNodes'), ALT: () => SUBRULE(blankNode, undefined) },
-    {
-      ALT: () => {
-        const i0 = SUBRULE(blank, undefined);
-        const img1 = CONSUME(l.terminals.nil).image;
-        return {
-          ...F.namedNode(i0, CommonIRIs.NIL),
-          RTT: { i0, img1 },
-        } satisfies TermIriPrimitive;
-      },
-    },
+    { ALT: () => {
+      const i0 = SUBRULE(blank, undefined);
+      const img1 = CONSUME(l.terminals.nil).image;
+      return {
+        ...F.namedNode(i0, CommonIRIs.NIL),
+        RTT: { i0, img1 },
+      } satisfies TermIriPrimitive;
+    } },
   ]),
-  gImpl: ({ SUBRULE }) => (ast) => {
-    switch (ast.termType) {
-      case 'BlankNode':
-        return SUBRULE(blankNode, ast, undefined);
-      case 'NamedNode':
-        return SUBRULE(iri, ast, undefined);
-      case 'Literal':
-        return SUBRULE(rdfLiteral, ast, undefined);
+  gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
+    if (F.isTermIri(ast)) {
+      return SUBRULE(iri, ast, undefined);
     }
+    if (F.isTermLiteral(ast)) {
+      return SUBRULE(rdfLiteral, ast, undefined);
+    }
+    return SUBRULE(blankNode, ast, undefined);
   },
 };

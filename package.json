@@ -33,7 +33,7 @@
     "esbuild": "^0.25.0",
     "eslint": "^8.57.0",
     "husky": "^9.1.7",
-    "lerna": "8.2.0",
+    "lerna": "8.2.1",
     "manual-git-changelog": "^1.0.2",
     "rdf-test-suite": "^2.0.0",
     "typedoc": "^0.27.6",

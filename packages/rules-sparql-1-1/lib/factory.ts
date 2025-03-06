@@ -423,6 +423,16 @@ export class TraqulaFactory extends BlankSpaceFactory {
     }, i0);
   }
 
+  public namedNodePrimitive(i0: r.ITOS, img1: string, value: string): TermIriPrimitive {
+    return {
+      ...this.namedNode(i0, value),
+      RTT: {
+        i0,
+        img1,
+      },
+    };
+  }
+
   public blankNode(i0: r.ITOS, label: string): TermBlankLabeled;
   public blankNode(i0: r.ITOS, label: undefined, image: string): TermBlankAnon;
   public blankNode(i0: r.ITOS, label: string | undefined, image?: string): TermBlankAnon | TermBlankLabeled {

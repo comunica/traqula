@@ -301,13 +301,7 @@ export const verbA: SparqlRule<'VerbA', TermIriPrimitive> = <const> {
   impl: ({ CONSUME, SUBRULE }) => ({ factory: F }) => {
     const i0 = SUBRULE(blank, undefined);
     const img1 = CONSUME(l.a).image;
-    return {
-      ...F.namedNode(i0, CommonIRIs.TYPE),
-      RTT: {
-        i0,
-        img1,
-      },
-    };
+    return F.namedNodePrimitive(i0, img1, CommonIRIs.TYPE);
   },
   gImpl: ({ SUBRULE: s }) => ast => `${genB(s, ast.RTT.i0)}${ast.RTT.img1}`,
 };

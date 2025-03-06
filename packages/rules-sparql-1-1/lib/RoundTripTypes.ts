@@ -1,4 +1,4 @@
-import type { BlankTerm, IriTerm, LiteralTerm } from './Sparql11types';
+import type { SelectQuery } from './Sparql11types';
 import type * as r from './TypeHelpersRTT';
 import type { Wildcard } from './Wildcard';
 
@@ -41,9 +41,17 @@ export type PatternMinus = r.ImageRTT & r.IgnoredRTT2 & PatternBase & {
 export type PatternGroup = r.IgnoredRTT1 & PatternBase & {
   patternType: 'group';
   patterns: Pattern[];
+  RTT: {
+    dotTracker: [number, r.ITOS][];
+  };
 };
 export type PatternOptional = r.IgnoredRTT & r.ImageRTT & PatternBase & {
   patternType: 'optional';
+  patterns: Pattern[];
+};
+export type PatternGraph = r.IgnoredRTT & r.ImageRTT & PatternBase & {
+  patternType: 'graph';
+  name: TermIri | TermVariable;
   patterns: Pattern[];
 };
 export type PatternUnion = PatternBase & {
@@ -72,19 +80,30 @@ export type PatternService = r.IgnoredRTT3 & r.ImageRTT2 & PatternBase & {
   silent: boolean;
   patterns: Pattern[];
 };
-export type ValuePatternRow = Record<string, IriTerm | BlankTerm | LiteralTerm | undefined>;
+export type ValuePatternRow = Record<string, TermIri | TermBlank | TermLiteral | undefined>;
 export type PatternValues = r.IgnoredRTT & r.ImageRTT & PatternBase & {
   patternType: 'values';
   values: ValuePatternRow[];
+  RTT: {
+    varBrackets: [r.ITOS, r.ITOS] | [];
+    vars: TermVariable[];
+    valueBrackets: [r.ITOS, r.ITOS];
+    valueInnerBrackets: [r.ITOS, r.ITOS][];
+    undefRtt: [number, string, r.ITOS][];
+  };
 };
 export type Pattern = CurliedRTT & (
   | PatternBgp
-  | PatternFilter
   | PatternGroup
-  | PatternOptional
   | PatternUnion
+  | PatternOptional
+  | PatternMinus
+  | PatternGraph
+  | PatternService
+  | PatternFilter
   | PatternBind
   | PatternValues
+  | Omit<SelectQuery, 'prefixes'>
 );
 
 export type SolutionModifiers = {

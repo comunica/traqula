@@ -39,6 +39,7 @@ import type {
   PatternMinus,
   PatternBind,
   PatternService,
+  TermBlank,
 } from './RoundTripTypes';
 import type * as r from './TypeHelpersRTT';
 import { Wildcard } from './Wildcard';
@@ -87,8 +88,12 @@ export class TraqulaFactory extends BlankSpaceFactory {
     return 'img1' in x.RTT;
   }
 
-  public istermIriPrefixed(x: TermIri): x is TermIriPrefixed {
+  public isTermIriPrefixed(x: TermIri): x is TermIriPrefixed {
     return 'prefix' in x;
+  }
+
+  public isTermBlankImplicit(x: TermBlank): x is TermBlankImplicit {
+    return 'count' in x;
   }
 
   public isBrackettedRTT(x: { RTT: object }): x is { RTT: { preBracket: [r.ITOS, r.ITOS][] }} {

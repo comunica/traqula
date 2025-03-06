@@ -8,6 +8,7 @@ import type {
   TermIriFull,
   TermLiteralPrimitive,
   TermIriPrimitive,
+  TermBlank,
 } from '../RoundTripTypes';
 
 import type { SparqlGrammarRule, SparqlRule } from '../Sparql11types';
@@ -221,7 +222,7 @@ export const iri: SparqlRule<'iri', TermIri> = <const> {
     if (F.isTermIriPrimitive(ast)) {
       return SUBRULE(verbA, ast, undefined);
     }
-    if (F.istermIriPrefixed(ast)) {
+    if (F.isTermIriPrefixed(ast)) {
       return SUBRULE(prefixedName, ast, undefined);
     }
     return SUBRULE(iriFull, ast, undefined);
@@ -267,7 +268,7 @@ export const canCreateBlankNodes = Symbol('canCreateBlankNodes');
  * Parses blank note and throws an error if 'canCreateBlankNodes' is not in the current parserMode.
  * [[138]](https://www.w3.org/TR/sparql11-query/#rBlankNode)
  */
-export const blankNode: SparqlRule<'blankNode', TermBlankExplicit> = <const> {
+export const blankNode: SparqlRule<'blankNode', TermBlank> = <const> {
   name: 'blankNode',
   impl: ({ ACTION, CONSUME, OR, SUBRULE }) => ({ factory: F, parseMode }) => {
     const i0 = SUBRULE(blank, undefined);
@@ -292,8 +293,12 @@ export const blankNode: SparqlRule<'blankNode', TermBlankExplicit> = <const> {
     });
     return result;
   },
-  gImpl: ({ SUBRULE: s }) => ast =>
-    ast.label === undefined ? `${genB(s, ast.RTT.i0)}${ast.RTT.img1}` : `${genB(s, ast.RTT.i0)}_:${ast.label}`,
+  gImpl: ({ SUBRULE: s }) => (ast, { factory: F }) => {
+    if (F.isTermBlankImplicit(ast)) {
+      throw new Error('Cannot serialize implicitly created blank nodes');
+    }
+    return ast.label === undefined ? `${genB(s, ast.RTT.i0)}${ast.RTT.img1}` : `${genB(s, ast.RTT.i0)}_:${ast.label}`;
+  },
 };
 
 export const verbA: SparqlRule<'VerbA', TermIriPrimitive> = <const> {

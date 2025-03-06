@@ -21,7 +21,7 @@ export const path: SparqlRule<'path', Path> = <const> {
       builder.push(...ast.RTT.preBracket.reverse().flatMap(([ front ]) => [ genB(s, front), '(' ]));
     }
 
-    if (F.isTerm(ast) && F.isIriTerm(ast)) {
+    if (F.isTerm(ast) && F.isTermIri(ast)) {
       builder.push(s(iri, ast, undefined));
     } else {
       switch (ast.pathType) {

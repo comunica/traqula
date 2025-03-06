@@ -2,6 +2,16 @@ import type { SelectQuery } from './Sparql11types';
 import type * as r from './TypeHelpersRTT';
 import type { Wildcard } from './Wildcard';
 
+export type DatasetClause = {
+  type: 'datasetClause';
+  default: TermIri[];
+  named: TermIri[];
+  RTT: {
+    namedIndexes: number[];
+    completion: r.CTOS[];
+  };
+};
+
 /**
  * ShareSubjectDef: ; or ,
  * sharePrefixDef: ,
@@ -12,7 +22,7 @@ export type RTTTripleBase =
   | { shareSubjectDef: true; sharePrefixDef: true; i0: r.ITOS }
   // Rather special approach here since the rule allows repetition of ;.
   // As such, a triple ; sequences after, and only the first one will require a normal ITOS.
-  // CONTRACT: ool;y first item in chain of ; has i0 !== [].
+  // CONTRACT: only first item in chain of ; has i0 !== [].
   | { shareSubjectDef: true; sharePrefixDef: false; i0: r.ITOS; ignoredAfter: r.ITOS[] };
 export type RTTTriplePartStartCollection = r.Ignores1 & {
   collectionSize: number;

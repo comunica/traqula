@@ -1,32 +1,18 @@
-import type { ImplArgs } from '@traqula/core';
+import type { RuleDefReturn } from '@traqula/core';
 import * as l from '../../lexer';
+import type { PatternBind, PatternValues, Query, QuerySelect, SubSelect, TermVariable } from '../../RoundTripTypes';
 import type {
-  AggregateExpression,
-  AskQuery,
-  ConstructQuery,
-  DescribeQuery,
-  Expression,
-  Grouping,
-  IriTerm,
-  Pattern,
-  Query,
-  SelectQuery,
   SparqlGrammarRule,
   SparqlRule,
-  Triple,
-  ValuePatternRow,
-  Variable,
-  VariableExpression,
-  VariableTerm,
 } from '../../Sparql11types';
 import { Wildcard } from '../../Wildcard';
-import { datasetClause, type IDatasetClause } from '../dataSetClause';
+import { datasetClauses } from '../dataSetClause';
 import { expression } from '../expression';
-import { prologue, var_, varOrIri, varOrTerm } from '../general';
+import { blank, prologue, var_, varOrIri, varOrTerm } from '../general';
 import { iri } from '../literals';
 import { solutionModifier } from '../solutionModifier';
 import { triplesBlock, triplesTemplate } from '../tripleBlock';
-import { dataBlock, groupGraphPattern, inlineDataFull, whereClause } from '../whereClause';
+import { groupGraphPattern, inlineData, whereClause } from '../whereClause';
 
 /**
  * [[1]](https://www.w3.org/TR/sparql11-query/#rQueryUnit)
@@ -35,6 +21,8 @@ export const queryUnit: SparqlGrammarRule<'queryUnit', Query> = <const> {
   name: 'queryUnit',
   impl: ({ SUBRULE }) => () => SUBRULE(query, undefined),
 };
+
+export type HandledByBase = 'type' | 'context' | 'values';
 
 /**
  * [[2]](https://www.w3.org/TR/sparql11-query/#rQuery)
@@ -58,313 +46,140 @@ export const query: SparqlRule<'query', Query> = <const> {
       ...(values && { values }),
     }));
   },
-  gImpl: ({ SUBRULE }) => (ast) => {
-    const prologueString = SUBRULE(prologue, ast, undefined);
-    let queryString = '';
-    switch (ast.queryType) {
-      case 'SELECT':
-        queryString = SUBRULE(selectQuery, ast, undefined);
-        break;
-      case 'CONSTRUCT':
-        queryString = SUBRULE(constructQuery, ast, undefined);
-        break;
-      case 'DESCRIBE':
-        queryString = SUBRULE(describeQuery, ast, undefined);
-        break;
-      case 'ASK':
-        queryString = SUBRULE(askQuery, ast, undefined);
-        break;
-    }
-    const valuesString = ast.values ? SUBRULE(valuesClause, ast.values, undefined) : '';
-    return [ prologueString, queryString, valuesString ].filter(Boolean).join(' ');
-  },
+  gImpl: () => () => '',
 };
-
-export type HandledByBase = 'values' | 'type' | 'base' | 'prefixes';
-
-function extractFromOfDataSetClauses(ACTION: ImplArgs['ACTION'], MANY: ImplArgs['MANY'], SUBRULE: ImplArgs['SUBRULE']):
-{ default: IriTerm[]; named: IriTerm[] } | undefined {
-  const datasetClauses: IDatasetClause[] = [];
-  MANY(() => {
-    datasetClauses.push(SUBRULE(datasetClause, undefined));
-  });
-  return ACTION(() => {
-    const from: { default: IriTerm[]; named: IriTerm[] } = {
-      default: [],
-      named: [],
-    };
-    for (const datasetClause of datasetClauses) {
-      if (datasetClause.type === 'default') {
-        from.default.push(datasetClause.value);
-      } else {
-        from.named.push(datasetClause.value);
-      }
-    }
-    return (from.default.length === 0 && from.named.length === 0) ? undefined : from;
-  });
-}
-
-/**
- * Get all 'aggregate' rules from an expression
- */
-function getAggregatesOfExpression(expression: Expression | Pattern): AggregateExpression[] {
-  if ('type' in expression) {
-    if (expression.type === 'aggregate') {
-      return [ expression ];
-    }
-    if (expression.type === 'operation') {
-      const aggregates: AggregateExpression[] = [];
-      for (const arg of expression.args) {
-        aggregates.push(...getAggregatesOfExpression(arg));
-      }
-      return aggregates;
-    }
-  }
-  return [];
-}
-
-/**
- * Return the id of an expression
- */
-function getExpressionId(expression: Grouping | VariableTerm | VariableExpression): string | undefined {
-  // Check if grouping
-  if ('variable' in expression && expression.variable) {
-    return expression.variable.value;
-  }
-  if ('value' in expression) {
-    return expression.value;
-  }
-  return 'value' in expression.expression ? expression.expression.value : undefined;
-}
-/**
- * Get all variables used in an expression
- */
-function getVariablesFromExpression(expression: Expression): Set<VariableTerm> {
-  const variables = new Set<VariableTerm>();
-  const visitExpression = (expr: Expression | Pattern | undefined): void => {
-    if (!expr) {
-      return;
-    }
-    if ('termType' in expr && expr.termType === 'Variable') {
-      variables.add(expr);
-    } else if ('type' in expr && expr.type === 'operation') {
-      for (const rec of expr.args) {
-        visitExpression(rec);
-      }
-    }
-  };
-  visitExpression(expression);
-  return variables;
-}
 
 /**
  * [[7]](https://www.w3.org/TR/sparql11-query/#rSelectQuery)
  */
-export const selectQuery: SparqlRule<'selectQuery', Omit<SelectQuery, HandledByBase>> = <const> {
+export const selectQuery: SparqlRule<'selectQuery', Omit<QuerySelect, HandledByBase>> = <const> {
   name: 'selectQuery',
-  impl: ({ ACTION, SUBRULE, MANY }) => (C) => {
+  impl: ({ ACTION, SUBRULE }) => () => {
     const selectVal = SUBRULE(selectClause, undefined);
-    const from = extractFromOfDataSetClauses(ACTION, MANY, SUBRULE);
+    const from = SUBRULE(datasetClauses, undefined);
     const where = SUBRULE(whereClause, undefined);
     const modifier = SUBRULE(solutionModifier, undefined);
 
-    ACTION(() => {
-      if (selectVal.variables.length === 1 && selectVal.variables[0] instanceof Wildcard) {
-        if (modifier.group !== undefined) {
-          throw new Error('GROUP BY not allowed with wildcard');
-        }
-        return;
-      }
-      const variables = <Variable[]> selectVal.variables;
-      // Check for projection of ungrouped variable
-      // Check can be skipped in case of wildcard select.
-      if (!C.skipValidation) {
-        const hasCountAggregate = variables.flatMap(
-          varVal => 'termType' in varVal ? [] : getAggregatesOfExpression(varVal.expression),
-        ).some(agg => agg.aggregation === 'count' && !(agg.expression instanceof Wildcard));
-        if (hasCountAggregate || modifier.group) {
-          // We have to check whether
-          //  1. Variables used in projection are usable given the group by clause
-          //  2. A selectCount will create an implicit group by clause.
-          for (const selectVar of variables) {
-            if ('termType' in selectVar) {
-              if (!modifier.group || !modifier.group.map(groupvar => getExpressionId(groupvar))
-                .includes((getExpressionId(selectVar)))) {
-                throw new Error('Variable not allowed in projection');
-              }
-            } else if (getAggregatesOfExpression(selectVar.expression).length === 0) {
-              const usedvars = getVariablesFromExpression(selectVar.expression);
-              for (const usedvar of usedvars) {
-                if (!modifier.group || !modifier.group.map || !modifier.group.map(groupVar => getExpressionId(groupVar))
-                  .includes(getExpressionId(usedvar))) {
-                  throw new Error(`Use of ungrouped variable in projection of operation (?${getExpressionId(usedvar)})`);
-                }
-              }
-            }
-          }
-        }
-      }
-      // Check if id of each AS-selected column is not yet bound by subquery
-      const subqueries = where.filter(pattern => pattern.type === 'query');
-      if (subqueries.length > 0) {
-        const selectedVarIds: string[] = [];
-        for (const selectedVar of variables) {
-          if ('variable' in selectedVar) {
-            selectedVarIds.push(selectedVar.variable.value);
-          }
-        }
-        const vars = subqueries.flatMap(sub => <(Variable | Wildcard)[]>sub.variables)
-          .map(v => 'value' in v ? v.value : v.variable.value);
-        const subqueryIds = new Set(vars);
-        for (const selectedVarId of selectedVarIds) {
-          if (subqueryIds.has(selectedVarId)) {
-            throw new Error(`Target id of 'AS' (?${selectedVarId}) already used in subquery`);
-          }
-        }
-      }
+    return ACTION(() => {
+      const { val, ...RTT } = selectVal;
+      return {
+        queryType: 'select',
+        where: where.val,
+        solutionModifiers: modifier,
+        datasets: from,
+        variables: val,
+        ...(RTT.img2.toLowerCase() === 'distinct' && { distinct: true }),
+        ...(RTT.img2.toLowerCase() === 'reduced' && { reduced: true }),
+        RTT: {
+          ...RTT,
+          where: [ where.i0, where.img1 ],
+        },
+      };
     });
-
-    return {
-      ...selectVal,
-      queryType: 'SELECT',
-      ...(from && { from }),
-      where,
-      ...modifier,
-    };
   },
-  gImpl: ({ SUBRULE }) => (ast) => {
-    const selectString = SUBRULE(selectClause, ast, undefined);
-
-    const fromDefaultString = ast.from?.default.map(clause =>
-      `FROM ${SUBRULE(iri, clause, undefined)}`).join(' ') ?? '';
-
-    const fromNamedString = ast.from?.named.map(clause =>
-      `FROM NAMED ${SUBRULE(iri, clause, undefined)}`).join(' ') ?? '';
-
-    const whereString = ast.where ?
-      `WHERE ${SUBRULE(groupGraphPattern, { type: 'group', patterns: ast.where }, undefined)}` :
-      '';
-
-    const modifierString = SUBRULE(solutionModifier, ast, undefined);
-    return [ selectString, fromDefaultString, fromNamedString, whereString, modifierString ].filter(Boolean).join(' ');
-  },
+  gImpl: () => () => '',
 };
 
 /**
  * [[8]](https://www.w3.org/TR/sparql11-query/#rSubSelect)
  */
-export const subSelect: SparqlGrammarRule<'subSelect', Omit<SelectQuery, 'prefixes'>> = <const> {
+export const subSelect: SparqlGrammarRule<'subSelect', Omit<QuerySelect, 'context' | 'datasets'>> = <const> {
   name: 'subSelect',
   impl: ({ ACTION, SUBRULE }) => () => {
-    const clause = SUBRULE(selectClause, undefined);
+    const selectVal = SUBRULE(selectClause, undefined);
     const where = SUBRULE(whereClause, undefined);
-    const modifiers = SUBRULE(solutionModifier, undefined);
+    const modifier = SUBRULE(solutionModifier, undefined);
     const values = SUBRULE(valuesClause, undefined);
 
-    return ACTION(() => ({
-      ...modifiers,
-      ...clause,
-      type: 'query',
-      queryType: 'SELECT',
-      where,
-      ...(values && { values }),
-    }));
+    return ACTION(() => {
+      const { val, ...RTT } = selectVal;
+      return {
+        type: 'query',
+        queryType: 'select',
+        where: where.val,
+        solutionModifiers: modifier,
+        variables: val,
+        ...(values && { values }),
+        ...(RTT.img2.toLowerCase() === 'distinct' && { distinct: true }),
+        ...(RTT.img2.toLowerCase() === 'reduced' && { reduced: true }),
+        RTT: {
+          ...RTT,
+          where: [ where.i0, where.img1 ],
+        },
+      };
+    });
   },
 };
 
 /**
  * [[9]](https://www.w3.org/TR/sparql11-query/#rSelectClause)
  */
-export interface ISelectClause {
-  variables: Variable[] | [Wildcard];
-  distinct?: true;
-  reduced?: true;
-}
-export const selectClause: SparqlRule<'selectClause', ISelectClause> = <const> {
+export const selectClause: SparqlRule<'selectClause', SubSelect> = <const> {
   name: 'selectClause',
   impl: ({ ACTION, AT_LEAST_ONE, SUBRULE, CONSUME, SUBRULE1, SUBRULE2, OPTION, OR1, OR2, OR3 }) => (C) => {
-    CONSUME(l.select);
-    const couldParseAgg = ACTION(() =>
-      C.parseMode.has('canParseAggregate') || !C.parseMode.add('canParseAggregate'));
+    const i0 = SUBRULE(blank, undefined);
+    const img1 = CONSUME(l.select).image;
+    const couldParseAgg = ACTION(() => C.parseMode.has('canParseAggregate') || !C.parseMode.add('canParseAggregate'));
 
-    const distinctOrReduced = OPTION(() => OR1<Partial<{ distinct: true; reduced: true }>>([
-      { ALT: () => {
-        CONSUME(l.distinct);
-        return { distinct: true };
-      } },
-      { ALT: () => {
-        CONSUME(l.reduced);
-        return { reduced: true };
-      } },
-    ]));
-    const variables = OR2<ISelectClause['variables']>([
+    const img2 = OPTION(() => {
+      const i1 = SUBRULE(blank, undefined);
+      const img2 = OR1([
+        { ALT: () => CONSUME(l.distinct).image },
+        { ALT: () => CONSUME(l.reduced).image },
+      ]);
+      return <const> [ i1, img2 ];
+    }) ?? [[], '' ];
+
+    const val = OR2<RuleDefReturn<typeof selectClause>['val']>([
       { ALT: () => {
         CONSUME(l.symbols.star);
         return [ new Wildcard() ];
       } },
       { ALT: () => {
-        const usedVars: VariableTerm[] = [];
-        const result: Variable[] = [];
+        const usedVars: TermVariable[] = [];
+        const variables: (TermVariable | PatternBind)[] = [];
         AT_LEAST_ONE(() => OR3([
           { ALT: () => {
             const raw = SUBRULE1(var_, undefined);
             ACTION(() => {
-              if (usedVars.some(v => v.equals(raw))) {
+              if (usedVars.some(v => v.value === raw.value)) {
                 throw new Error(`Variable ${raw.value} used more than once in SELECT clause`);
               }
               usedVars.push(raw);
-              result.push(raw);
+              variables.push(raw);
             });
           } },
           { ALT: () => {
+            const i0 = SUBRULE(blank, undefined);
             CONSUME(l.symbols.LParen);
             const expr = SUBRULE(expression, undefined);
-            CONSUME(l.as);
+            const i1 = SUBRULE(blank, undefined);
+            const img1 = CONSUME(l.as).image;
             const variable = SUBRULE2(var_, undefined);
+            const i2 = SUBRULE(blank, undefined);
             CONSUME(l.symbols.RParen);
             ACTION(() => {
-              if (usedVars.some(v => v.equals(variable))) {
+              if (usedVars.some(v => v.value === variable.value)) {
                 throw new Error(`Variable ${variable.value} used more than once in SELECT clause`);
               }
               usedVars.push(variable);
-              result.push({
-                expression: expr,
-                variable,
-              } satisfies VariableExpression);
+              variables.push(C.factory.patternBind([], i0, i1, i2, '', img1, expr, variable));
             });
           } },
         ]));
-        return result;
+        return variables;
       } },
     ]);
     ACTION(() => !couldParseAgg && C.parseMode.delete('canParseAggregate'));
-    return ACTION(() => ({
-      ...distinctOrReduced,
-      variables,
-    }));
+    return {
+      val,
+      i0,
+      i1: img2[0],
+      img1,
+      img2: img2[1],
+    };
   },
-  gImpl: ({ SUBRULE }) => (ast) => {
-    const builder = [ 'SELECT' ];
-    if (ast.distinct) {
-      builder.push('DISTINCT');
-    } else if (ast.reduced) {
-      builder.push('REDUCED');
-    }
-
-    if (ast.variables.length === 1 && ast.variables[0] instanceof Wildcard) {
-      builder.push('*');
-    } else {
-      for (const variable of <Variable[]> ast.variables) {
-        if ('expression' in variable) {
-          builder.push(`( ${SUBRULE(expression, variable.expression, undefined)} AS ${SUBRULE(var_, variable.variable, undefined)} )`);
-        } else {
-          builder.push(SUBRULE(var_, variable, undefined));
-        }
-      }
-    }
-
-    return builder.join(' ');
-  },
+  gImpl: () => () => '',
 };
 
 /**
@@ -524,18 +339,11 @@ export const askQuery: SparqlRule<'askQuery', Omit<AskQuery, HandledByBase>> = <
 /**
  * [[28]](https://www.w3.org/TR/sparql11-query/#rValuesClause)
  */
-export const valuesClause: SparqlRule<'valuesClause', ValuePatternRow[] | undefined> = <const> {
+export const valuesClause: SparqlRule<'valuesClause', PatternValues | undefined> = <const> {
   name: 'valuesClause',
-  impl: ({ SUBRULE, CONSUME, OPTION }) => () => OPTION(() => {
-    CONSUME(l.values);
-    return SUBRULE(dataBlock, undefined);
-  }),
-  gImpl: ({ SUBRULE }) => (ast) => {
-    if (ast) {
-      return `VALUES ${SUBRULE(inlineDataFull, ast, undefined)}`;
-    }
-    return '';
-  },
+  impl: ({ OPTION, SUBRULE }) => () => OPTION(() =>
+    OPTION(() => SUBRULE(inlineData, undefined))),
+  gImpl: ({ SUBRULE }) => ast => ast ? SUBRULE(inlineData, ast, undefined) : '',
 };
 
 /**

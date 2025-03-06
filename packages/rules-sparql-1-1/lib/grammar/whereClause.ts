@@ -24,7 +24,7 @@ import type {
   SparqlGrammarRule,
   SparqlRule,
 } from '../Sparql11types';
-import type { ITOS, Wrap } from '../TypeHelpersRTT';
+import type { Ignores, Images, ITOS, Wrap } from '../TypeHelpersRTT';
 import { builtInCall } from './builtIn';
 import { argList, brackettedExpression, expression } from './expression';
 import { blank, graphTerm, var_, varOrIri, varOrTerm } from './general';
@@ -35,14 +35,16 @@ import { triplesBlock } from './tripleBlock';
 /**
  * [[17]](https://www.w3.org/TR/sparql11-query/#rWhereClause)
  */
-export const whereClause: SparqlGrammarRule<'whereClause', Pattern[]> = <const> {
+export const whereClause: SparqlGrammarRule<'whereClause', Wrap<Pattern[]> & Images & Ignores> = <const> {
   name: 'whereClause',
   impl: ({ ACTION, SUBRULE, CONSUME, OPTION }) => () => {
-    OPTION(() => {
-      CONSUME(l.where);
-    });
+    const { i0, img1 } = OPTION(() => {
+      const i0 = SUBRULE(blank, undefined);
+      const img1 = CONSUME(l.where).image;
+      return { i0, img1 };
+    }) ?? { i0: [], img1: '' };
     const group = SUBRULE(groupGraphPattern, undefined);
-    return ACTION(() => group.patterns);
+    return ACTION(() => ({ val: group.patterns, img1, i0 }));
   },
 };
 
@@ -268,7 +270,7 @@ export const bind: SparqlRule<'bind', PatternBind> = <const> {
 /**
  * [[61]](https://www.w3.org/TR/sparql11-query/#rInlineData)
  */
-export const inlineData: SparqlGrammarRule<'inlineData', PatternValues> = <const> {
+export const inlineData: SparqlRule<'inlineData', PatternValues> = <const> {
   name: 'inlineData',
   impl: ({ SUBRULE, CONSUME }) => () => {
     const i0 = SUBRULE(blank, undefined);
@@ -286,6 +288,7 @@ export const inlineData: SparqlGrammarRule<'inlineData', PatternValues> = <const
       },
     };
   },
+  gImpl: () => () => '',
 };
 
 /**

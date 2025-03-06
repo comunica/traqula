@@ -1,6 +1,29 @@
-import type { SelectQuery } from './Sparql11types';
 import type * as r from './TypeHelpersRTT';
+import type { Ignores1, Images2, Wrap } from './TypeHelpersRTT';
 import type { Wildcard } from './Wildcard';
+
+export type QueryBase = {
+  type: 'query';
+  context?: ContextDefinition[];
+  values?: PatternValues;
+
+  queryType: string;
+  solutionModifiers?: SolutionModifiers;
+  datasets?: DatasetClause;
+  where?: Pattern[];
+  RTT: {
+    where: [r.ITOS, string];
+  };
+};
+export type QuerySelect = QueryBase & r.ImageRTT2 & r.IgnoredRTT1 & {
+  queryType: 'select';
+  variables: (TermVariable | PatternBind)[] | [Wildcard];
+  distinct?: true;
+  reduced?: true;
+};
+
+export type Query =
+  | QuerySelect;
 
 export type DatasetClause = {
   type: 'datasetClause';
@@ -102,6 +125,7 @@ export type PatternValues = r.IgnoredRTT & r.ImageRTT & PatternBase & {
     undefRtt: [number, string, r.ITOS][];
   };
 };
+export type SubSelect = Wrap<QuerySelect['variables']> & Images2 & Ignores1;
 export type Pattern = CurliedRTT & (
   | PatternBgp
   | PatternGroup
@@ -113,7 +137,7 @@ export type Pattern = CurliedRTT & (
   | PatternFilter
   | PatternBind
   | PatternValues
-  | Omit<SelectQuery, 'prefixes'>
+  | SubSelect
 );
 
 export type SolutionModifiers = {

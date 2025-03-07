@@ -18,9 +18,9 @@ import type {
   PatternValues,
   ValuePatternRow,
   TermVariable,
+  SubSelect,
 } from '../RoundTripTypes';
 import type {
-  SelectQuery,
   SparqlGrammarRule,
   SparqlRule,
 } from '../Sparql11types';
@@ -56,7 +56,7 @@ export const groupGraphPattern: SparqlRule<'groupGraphPattern', PatternGroup> = 
   impl: ({ SUBRULE, SUBRULE1, SUBRULE2, CONSUME, OR }) => () => {
     const i0 = SUBRULE1(blank, undefined);
     CONSUME(l.symbols.LCurly);
-    const patterns = OR<Omit<SelectQuery, 'prefixes'> | RuleDefReturn<typeof groupGraphPatternSub>>([
+    const patterns = OR<SubSelect | RuleDefReturn<typeof groupGraphPatternSub>>([
       { ALT: () => SUBRULE(subSelect, undefined) },
       { ALT: () => SUBRULE(groupGraphPatternSub, undefined) },
     ]);

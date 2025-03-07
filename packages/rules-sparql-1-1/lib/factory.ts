@@ -238,6 +238,7 @@ export class TraqulaFactory extends BlankSpaceFactory {
       return group;
     }
     const { i0, i1 } = group.RTT;
+    // TODO: what if array is empty??? -> Check what construct does
     return this.curlied(group.patterns[0], i0, i1);
   }
 

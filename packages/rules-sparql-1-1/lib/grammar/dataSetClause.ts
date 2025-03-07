@@ -1,12 +1,12 @@
 import type { RuleDefReturn } from '@traqula/core';
 import * as l from '../lexer';
-import type { DatasetClause, TermIri } from '../RoundTripTypes';
+import type { DatasetClauses, TermIri } from '../RoundTripTypes';
 import type { SparqlGrammarRule, SparqlRule } from '../Sparql11types';
 import type { CTOS, Ignores, Images, Wrap } from '../TypeHelpersRTT';
 import { blank } from './general';
 import { iri } from './literals';
 
-export const datasetClauses: SparqlRule<'datasetClauses', DatasetClause> = <const> {
+export const datasetClauses: SparqlRule<'datasetClauses', DatasetClauses> = <const> {
   name: 'datasetClauses',
   impl: ({ ACTION, MANY, SUBRULE }) => () => {
     const iter = 0;
@@ -29,11 +29,11 @@ export const datasetClauses: SparqlRule<'datasetClauses', DatasetClause> = <cons
       });
     });
     return {
-      type: 'datasetClause',
+      type: 'datasetClauses',
       default: _default,
       named,
       RTT: { namedIndexes, completion },
-    };
+    } satisfies DatasetClauses;
   },
   gImpl: () => () => '',
 };

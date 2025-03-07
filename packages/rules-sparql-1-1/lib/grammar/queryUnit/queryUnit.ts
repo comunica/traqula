@@ -1,10 +1,20 @@
 import type { RuleDefReturn } from '@traqula/core';
 import * as l from '../../lexer';
-import type { PatternBind, PatternValues, Query, QuerySelect, SubSelect, TermVariable } from '../../RoundTripTypes';
+import type {
+  PatternBgp,
+  PatternBind,
+  PatternValues,
+  Query,
+  QueryConstruct,
+  QuerySelect,
+  SubSelect,
+  TermVariable,
+} from '../../RoundTripTypes';
 import type {
   SparqlGrammarRule,
   SparqlRule,
 } from '../../Sparql11types';
+import type { Ignores1, Images2, Wrap } from '../../TypeHelpersRTT';
 import { Wildcard } from '../../Wildcard';
 import { datasetClauses } from '../dataSetClause';
 import { expression } from '../expression';
@@ -73,6 +83,7 @@ export const selectQuery: SparqlRule<'selectQuery', Omit<QuerySelect, HandledByB
         RTT: {
           ...RTT,
           where: [ where.i0, where.img1 ],
+          whereBraces: [],
         },
       };
     });
@@ -83,7 +94,7 @@ export const selectQuery: SparqlRule<'selectQuery', Omit<QuerySelect, HandledByB
 /**
  * [[8]](https://www.w3.org/TR/sparql11-query/#rSubSelect)
  */
-export const subSelect: SparqlGrammarRule<'subSelect', Omit<QuerySelect, 'context' | 'datasets'>> = <const> {
+export const subSelect: SparqlGrammarRule<'subSelect', SubSelect> = <const> {
   name: 'subSelect',
   impl: ({ ACTION, SUBRULE }) => () => {
     const selectVal = SUBRULE(selectClause, undefined);
@@ -105,6 +116,7 @@ export const subSelect: SparqlGrammarRule<'subSelect', Omit<QuerySelect, 'contex
         RTT: {
           ...RTT,
           where: [ where.i0, where.img1 ],
+          whereBraces: [],
         },
       };
     });
@@ -114,7 +126,7 @@ export const subSelect: SparqlGrammarRule<'subSelect', Omit<QuerySelect, 'contex
 /**
  * [[9]](https://www.w3.org/TR/sparql11-query/#rSelectClause)
  */
-export const selectClause: SparqlRule<'selectClause', SubSelect> = <const> {
+export const selectClause: SparqlRule<'selectClause', Wrap<QuerySelect['variables']> & Images2 & Ignores1> = <const> {
   name: 'selectClause',
   impl: ({ ACTION, AT_LEAST_ONE, SUBRULE, CONSUME, SUBRULE1, SUBRULE2, OPTION, OR1, OR2, OR3 }) => (C) => {
     const i0 = SUBRULE(blank, undefined);
@@ -185,69 +197,73 @@ export const selectClause: SparqlRule<'selectClause', SubSelect> = <const> {
 /**
  * [[10]](https://www.w3.org/TR/sparql11-query/#rConstructQuery)
  */
-export const constructQuery: SparqlRule<'constructQuery', Omit<ConstructQuery, HandledByBase>> = <const> {
+export const constructQuery: SparqlRule<'constructQuery', Omit<QueryConstruct, HandledByBase>> = <const> {
   name: 'constructQuery',
-  impl: ({ ACTION, SUBRULE, CONSUME, SUBRULE1, SUBRULE2, MANY1, MANY2, OPTION, OR }) => () => {
-    CONSUME(l.construct);
-    return OR<Omit<ConstructQuery, HandledByBase>>([
-      {
-        ALT: () => {
-          const template = SUBRULE(constructTemplate, undefined);
-          const from = extractFromOfDataSetClauses(ACTION, MANY1, SUBRULE1);
-          const where = SUBRULE(whereClause, undefined);
-          const modifiers = SUBRULE1(solutionModifier, undefined);
-          return ACTION(() => ({
-            ...modifiers,
-            queryType: 'CONSTRUCT',
-            template,
-            from,
-            where,
-          }));
-        },
-      },
-      {
-        ALT: () => {
-          const from = extractFromOfDataSetClauses(ACTION, MANY2, SUBRULE2);
-          CONSUME(l.where);
-          CONSUME(l.symbols.LCurly);
-          const template = OPTION(() => SUBRULE(triplesTemplate, undefined));
-          CONSUME(l.symbols.RCurly);
-          const modifiers = SUBRULE2(solutionModifier, undefined);
-          const where: Pattern[] = template ?
-              [{
-                type: 'bgp',
-                triples: template,
-              }] :
-              [];
+  impl: ({ ACTION, SUBRULE, CONSUME, SUBRULE1, SUBRULE2, MANY2, OPTION, OR }) => () => {
+    const i0 = SUBRULE(blank, undefined);
+    const img1 = CONSUME(l.construct).image;
+    return OR<Omit<QueryConstruct, HandledByBase>>([
+      { ALT: () => {
+        const template = SUBRULE(constructTemplate, undefined);
+        const from = SUBRULE(datasetClauses, undefined);
+        const where = SUBRULE(whereClause, undefined);
+        const modifiers = SUBRULE1(solutionModifier, undefined);
+        return ACTION(() => {
+          const { val, ...RTT } = where;
+          return {
+            queryType: 'construct',
+            template: template ?? [],
+            datasets: from,
+            where: val,
+            solutionModifiers: modifiers,
+            RTT: {
+              ...RTT,
+              whereBraces: [],
+              i0,
+              img1,
+              where: [ RTT.i0, RTT.img1 ],
+            },
+          } satisfies Omit<QueryConstruct, HandledByBase>;
+        });
+      } },
+      { ALT: () => {
+        const from = SUBRULE2(datasetClauses, undefined);
+        const i1 = SUBRULE(blank, undefined);
+        const img2 = CONSUME(l.where).image;
+        const i2 = SUBRULE(blank, undefined);
+        CONSUME(l.symbols.LCurly);
+        const template = OPTION(() => SUBRULE(triplesTemplate, undefined));
+        const i3 = SUBRULE(blank, undefined);
+        CONSUME(l.symbols.RCurly);
+        const modifiers = SUBRULE2(solutionModifier, undefined);
+        const where: [PatternBgp] | [] = template ?
+            [{
+              type: 'pattern',
+              patternType: 'bgp',
+              triples: template.val,
+              RTT: {
+                ignored: template.ignored,
+              },
+            }] :
+            [];
 
-          return ACTION(() => ({
-            ...modifiers,
-            queryType: 'CONSTRUCT',
-            from,
-            template,
-            where,
-          }));
-        },
-      },
+        return ACTION(() => ({
+          queryType: 'construct',
+          template: template ? template.val : [],
+          datasets: from,
+          where,
+          solutionModifiers: modifiers,
+          RTT: {
+            whereBraces: [{ idx: 0, braceSpaces: [[ i2, i3 ]]}],
+            img1,
+            i0,
+            where: [ i1, img2 ],
+          },
+        } satisfies Omit<QueryConstruct, HandledByBase>));
+      } },
     ]);
   },
-  gImpl: ({ SUBRULE }) => (ast) => {
-    const constructString = SUBRULE(constructTemplate, ast.template, undefined);
-
-    const fromDefaultString = ast.from?.default.map(clause =>
-      `FROM ${SUBRULE(iri, clause, undefined)}`).join(' ') ?? '';
-
-    const fromNamedString = ast.from?.named.map(clause =>
-      `FROM NAMED ${SUBRULE(iri, clause, undefined)}`).join(' ') ?? '';
-
-    const whereString = ast.where ?
-      `WHERE ${SUBRULE(groupGraphPattern, { type: 'group', patterns: ast.where }, undefined)}` :
-      '';
-
-    const modifierString = SUBRULE(solutionModifier, ast, undefined);
-    return [ 'CONSTRUCT', constructString, fromDefaultString, fromNamedString, whereString, modifierString ]
-      .filter(Boolean).join(' ');
-  },
+  gImpl: () => () => '',
 };
 
 /**

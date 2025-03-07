@@ -1,5 +1,4 @@
 import type * as r from './TypeHelpersRTT';
-import type { Ignores1, Images2, Wrap } from './TypeHelpersRTT';
 import type { Wildcard } from './Wildcard';
 
 export type QueryBase = {
@@ -9,10 +8,11 @@ export type QueryBase = {
 
   queryType: string;
   solutionModifiers?: SolutionModifiers;
-  datasets?: DatasetClause;
+  datasets?: DatasetClauses;
   where?: Pattern[];
   RTT: {
     where: [r.ITOS, string];
+    whereBraces: BracketWrapper;
   };
 };
 export type QuerySelect = QueryBase & r.ImageRTT2 & r.IgnoredRTT1 & {
@@ -21,12 +21,17 @@ export type QuerySelect = QueryBase & r.ImageRTT2 & r.IgnoredRTT1 & {
   distinct?: true;
   reduced?: true;
 };
+export type QueryConstruct = QueryBase & r.ImageRTT & r.IgnoredRTT & {
+  queryType: 'construct';
+  template: Triple[];
+};
 
 export type Query =
-  | QuerySelect;
+  | QuerySelect
+  | QueryConstruct;
 
-export type DatasetClause = {
-  type: 'datasetClause';
+export type DatasetClauses = {
+  type: 'datasetClauses';
   default: TermIri[];
   named: TermIri[];
   RTT: {
@@ -125,7 +130,9 @@ export type PatternValues = r.IgnoredRTT & r.ImageRTT & PatternBase & {
     undefRtt: [number, string, r.ITOS][];
   };
 };
-export type SubSelect = Wrap<QuerySelect['variables']> & Images2 & Ignores1;
+export type SubSelect = Omit<QuerySelect, 'context' | 'datasets'>;
+// Curlies are pushed up instead of down because the syntax `{ { } }` is valid,
+// but does not resolve in a pattern
 export type Pattern = CurliedRTT & (
   | PatternBgp
   | PatternGroup
@@ -237,8 +244,9 @@ export type Expression = BrackettedRTT & (
 /**
  * Each tuple handles a single bracket recursion
  */
+export type BracketWrapper = { idx: number; braceSpaces: [r.ITOS, r.ITOS][] }[];
 export type BrackettedRTT = { RTT: { preBracket?: [r.ITOS, r.ITOS][] }};
-export type CurliedRTT = { RTT: { preCurls?: [r.ITOS, r.ITOS][] }};
+export type CurliedRTT = { RTT: { preCurls?: BracketWrapper }};
 
 type PropertyPathBase = { type: 'path' };
 export type PropertyPathChain = PropertyPathBase & {

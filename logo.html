@@ -1,19 +1,26 @@
+<!--link to font /origicide/Origicide.ttf -->
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Rubik+Wet+Paint&display=swap');
+    @font-face {
+        font-family: 'Rubik Wet Paint';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url(./style/Rubik-Wet-Paint/HTx0L20uMDGHgdULcpTF3Oe4d_-1_Db2.woff2) format('woff2');
+        unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
     .container {
-        margin: 10px auto 0 auto;
-        border-radius: 10px;
-        width: 200px;
-        height: 100px;
+        border-radius: 50px;
+        width: 1000px;
+        height: 500px;
+        font: 125px Rubik Wet Paint, sans-serif;
         position: relative;
-        font: 25px 'Rubik Wet Paint', sans-serif;
         color: white;
         background: #9c0510;
     }
     .bat, .swap, .dracula {
         position: absolute;
         transform: translate(-50%, -50%);
-        top: 35%;
+        top: 40%;
     }
     .bat {
         left: 20%;
@@ -26,7 +33,7 @@
         left: 50%;
         transform: translate(-50%, -50%);
         width: 18%;
-        fill: white;
+        fill:white;
     }
     .dracula {
         transition: left 1s, top 1s;
@@ -46,7 +53,7 @@
     }
     .brand {
         position: absolute;
-        top: 60%;
+        top: 65%;
         width: 100%;
         text-align: center;
     }
@@ -65,14 +72,3 @@
     </svg>
     <span class="brand">TRAQULA</span>
 </div>
-
-# TRAQULA
-
-TRAQULA is a transpiler for query languages for TypeScript.
-
-Most code can be found in the `/packages` directory.
-In the `/engines` directory, you can find a list of packages ready for end-consumers.
-These include:
-* A [SPARQL 1.1](https://www.w3.org/TR/sparql11-query/#grammar) parser
-* A [SPARQL 1.2](https://www.w3.org/TR/sparql12-query/#grammar) parser
-* A [SPARQL 1.1](https://www.w3.org/TR/sparql11-query/#grammar) parser capable of paring the [ADJUST](https://github.com/w3c/sparql-dev/blob/main/SEP/SEP-0002/sep-0002.md) function

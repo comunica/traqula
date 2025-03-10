@@ -1,6 +1,6 @@
-<div style="display: flex; justify-content: center;">
+<p align="center">
     <img alt="TRAQULA logo" height="200px" style="border-radius: 20px" src="logo-pure-test.svg">
-</div>
+</p>
 
 # TRAQULA
 

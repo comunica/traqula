@@ -76,3 +76,6 @@ These include:
 * A [SPARQL 1.1](https://www.w3.org/TR/sparql11-query/#grammar) parser
 * A [SPARQL 1.2](https://www.w3.org/TR/sparql12-query/#grammar) parser
 * A [SPARQL 1.1](https://www.w3.org/TR/sparql11-query/#grammar) parser capable of paring the [ADJUST](https://github.com/w3c/sparql-dev/blob/main/SEP/SEP-0002/sep-0002.md) function
+  
+* 
+<img src="logo.svg" width="400" height="400" alt="css-in-readme">

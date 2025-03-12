@@ -15,7 +15,7 @@ export type QueryBase = {
     whereBraces: BracketWrapper;
   };
 };
-export type QuerySelect = QueryBase & r.ImageRTT2 & r.IgnoredRTT1 & {
+export type QuerySelect = QueryBase & r.ImageRTT2 & r.IgnoredRTT2 & {
   queryType: 'select';
   variables: (TermVariable | PatternBind)[] | [Wildcard];
   distinct?: true;
@@ -24,11 +24,24 @@ export type QuerySelect = QueryBase & r.ImageRTT2 & r.IgnoredRTT1 & {
 export type QueryConstruct = QueryBase & r.ImageRTT & r.IgnoredRTT & {
   queryType: 'construct';
   template: Triple[];
+  RTT: {
+    templateIgnored: r.ITOS[];
+    templateBraces: [r.ITOS, r.ITOS];
+  };
+};
+export type QueryDescribe = QueryBase & r.ImageRTT & r.IgnoredRTT1 & {
+  queryType: 'describe';
+  variables: (TermVariable | TermIri)[] | [Wildcard];
+};
+export type QueryAsk = QueryBase & r.ImageRTT & r.IgnoredRTT & {
+  queryType: 'ask';
 };
 
 export type Query =
   | QuerySelect
-  | QueryConstruct;
+  | QueryConstruct
+  | QueryDescribe
+  | QueryAsk;
 
 export type DatasetClauses = {
   type: 'datasetClauses';

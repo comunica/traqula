@@ -1,6 +1,47 @@
 import type * as r from './TypeHelpersRTT';
 import type { Wildcard } from './Wildcard';
 
+export type GraphRefBase = {
+  type: 'graphRef';
+  graphRefType: string;
+};
+export type GraphRefDefault = GraphRefBase & r.ReconstructRTT & {
+  graphRefType: 'default';
+};
+export type GraphRefNamed = GraphRefBase & r.ReconstructRTT & {
+  graphRefType: 'named';
+};
+export type GraphRefAll = GraphRefBase & r.ReconstructRTT & {
+  graphRefType: 'all';
+};
+export type GraphRefSpecific = GraphRefBase & r.ReconstructRTT & {
+  graphRefType: 'specific';
+  graph: TermIri;
+};
+export type GraphRef =
+  | GraphRefDefault
+  | GraphRefNamed
+  | GraphRefAll
+  | GraphRefSpecific;
+
+export type UpdateOperationBase = { type: 'updateOperation'; operationType: string };
+export type UpdateOperationLoad = UpdateOperationBase & r.ImageRTT3 & r.IgnoredRTT2 & {
+  operationType: 'load';
+  silent: boolean;
+  source: TermIri;
+  destination?: GraphRefSpecific;
+};
+export type UpdateOperationClearDrop = UpdateOperationBase & r.ImageRTT2 & r.IgnoredRTT1 & {
+  operationType: 'clear' | 'drop';
+  silent: boolean;
+  destination: GraphRef;
+};
+
+export type UpdateBase = {
+  type: 'update';
+  context?: ContextDefinition[];
+};
+
 export type QueryBase = {
   type: 'query';
   context?: ContextDefinition[];

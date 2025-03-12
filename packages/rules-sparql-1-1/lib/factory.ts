@@ -40,6 +40,10 @@ import type {
   PatternBind,
   PatternService,
   TermBlank,
+  UpdateOperationLoad,
+  GraphRefSpecific,
+  UpdateOperationClearDrop,
+  GraphRef,
 } from './RoundTripTypes';
 import type * as r from './TypeHelpersRTT';
 import { Wildcard } from './Wildcard';
@@ -460,6 +464,31 @@ export class TraqulaFactory extends BlankSpaceFactory {
       type: 'term',
       termType: 'BlankNode',
       count: count ?? this.blankNodeCounter++,
+    };
+  }
+
+  public updateOperationLoad(arg: { source: TermIri; destination?: GraphRefSpecific } & r.Ignores2 & r.Images3):
+  UpdateOperationLoad {
+    const { source, destination = undefined, ...RTT } = arg;
+    return {
+      type: 'updateOperation',
+      operationType: 'load',
+      silent: arg.img2.toLowerCase() === 'silent',
+      source,
+      ...(destination && { destination }),
+      RTT,
+    };
+  }
+
+  public updateOperationClearDrop(arg: { destination: GraphRef } & r.Ignores1 & r.Images2):
+  UpdateOperationClearDrop {
+    const { destination, ...RTT } = arg;
+    return {
+      type: 'updateOperation',
+      operationType: RTT.img1.toLowerCase() === 'clear' ? 'clear' : 'drop',
+      silent: arg.img2.toLowerCase() === 'silent',
+      destination,
+      RTT,
     };
   }
 

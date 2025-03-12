@@ -2,8 +2,8 @@ import type { RuleDefReturn } from '@traqula/core';
 import { unCapitalize } from '@traqula/core';
 import type { TokenType } from 'chevrotain';
 import * as l from '../../lexer';
+import type { GraphRef, GraphRefSpecific, UpdateOperationClearDrop, UpdateOperationLoad } from '../../RoundTripTypes';
 import type {
-  ClearDropOperation,
   CopyMoveAddOperation,
   CreateOperation,
   DeleteOperation,
@@ -13,7 +13,6 @@ import type {
   GraphReference,
   InsertOperation,
   IriTerm,
-  LoadOperation,
   ModifyOperation,
   Quads,
   SparqlGrammarRule,
@@ -21,7 +20,7 @@ import type {
   Update,
   UpdateOperation,
 } from '../../Sparql11types';
-import { prologue, varOrIri, varOrTerm } from '../general';
+import { blank, prologue, varOrIri, varOrTerm } from '../general';
 import { iri } from '../literals';
 import { triplesBlock, triplesTemplate } from '../tripleBlock';
 import { groupGraphPattern } from '../whereClause';
@@ -138,85 +137,64 @@ export const update1: SparqlRule<'update1', UpdateOperation> = <const> {
 /**
  * [[31]](https://www.w3.org/TR/sparql11-query/#rLoad)
  */
-export const load: SparqlRule<'load', LoadOperation> = <const> {
+export const load: SparqlRule<'load', UpdateOperationLoad> = <const> {
   name: 'load',
-  impl: ({ SUBRULE, CONSUME, OPTION1, OPTION2 }) => () => {
-    CONSUME(l.load);
-    const silent = Boolean(OPTION1(() => CONSUME(l.silent)));
+  impl: ({ SUBRULE, CONSUME, OPTION1, OPTION2 }) => ({ factory: F }) => {
+    const i0 = SUBRULE(blank, undefined);
+    const img1 = CONSUME(l.load).image;
+    const silent = OPTION1(() => {
+      const i1 = SUBRULE(blank, undefined);
+      const img2 = CONSUME(l.silent).image;
+      return <const> [ i1, img2 ];
+    }) ?? [[], '' ];
     const source = SUBRULE(iri, undefined);
     const destination = OPTION2(() => {
-      CONSUME(l.loadInto);
-      return SUBRULE(graphRef, undefined);
-    });
-    return {
-      type: 'load',
-      silent,
+      const i2 = SUBRULE(blank, undefined);
+      const img3 = CONSUME(l.loadInto).image;
+      const graph = SUBRULE(graphRef, undefined);
+      return <const> [ i2, img3, graph ];
+    }) ?? [[], '', undefined ];
+    return F.updateOperationLoad({
       source,
-      ...(destination && { destination }),
-    };
+      ...(destination[2] && { destination: destination[2] }),
+      i0,
+      img1,
+      img2: silent[1],
+      i1: silent[0],
+      i2: destination[0],
+      img3: destination[1],
+    });
   },
-  gImpl: ({ SUBRULE }) => (ast) => {
-    const builder = [ 'LOAD' ];
-    if (ast.silent) {
-      builder.push('SILENT');
-    }
-    builder.push(SUBRULE(iri, ast.source, undefined));
-    if (ast.destination) {
-      builder.push('INTO', SUBRULE(graphRef, ast.destination, undefined));
-    }
-    return builder.join(' ');
-  },
+  gImpl: () => () => '',
 };
+
+function clearOrDrop<T extends 'clear' | 'drop'>(name: T, operation: TokenType):
+SparqlGrammarRule<T, UpdateOperationClearDrop> {
+  return {
+    name,
+    impl: ({ SUBRULE, CONSUME, OPTION }) => ({ factory: F }) => {
+      const i0 = SUBRULE(blank, undefined);
+      const img1 = CONSUME(operation).image;
+      const silent = (OPTION(() => {
+        const i1 = SUBRULE(blank, undefined);
+        const img2 = CONSUME(l.silent).image;
+        return <const> [ i1, img2 ];
+      }) ?? [[], '' ]);
+      const destination = SUBRULE(graphRefAll, undefined);
+      return F.updateOperationClearDrop({ i0, img1, destination, i1: silent[0], img2: silent[1] });
+    },
+  };
+}
 
 /**
  * [[32]](https://www.w3.org/TR/sparql11-query/#rClear)
  */
-export const clear: SparqlRule<'clear', ClearDropOperation> = <const> {
-  name: 'clear',
-  impl: ({ SUBRULE, CONSUME, OPTION }) => () => {
-    CONSUME(l.clear);
-    const silent = Boolean(OPTION(() => CONSUME(l.silent)));
-    const graph = SUBRULE(graphRefAll, undefined);
-    return {
-      type: 'clear',
-      silent,
-      graph,
-    };
-  },
-  gImpl: ({ SUBRULE }) => (ast) => {
-    const builder = [ 'CLEAR' ];
-    if (ast.silent) {
-      builder.push('SILENT');
-    }
-    builder.push(SUBRULE(graphRefAll, ast.graph, undefined));
-    return builder.join(' ');
-  },
-};
+export const clear = clearOrDrop('clear', l.clear);
 
 /**
  * [[33]](https://www.w3.org/TR/sparql11-query/#rDrop)
  */
-export const drop: SparqlRule<'drop', ClearDropOperation> = <const> {
-  name: 'drop',
-  impl: ({ SUBRULE, CONSUME, OPTION }) => () => {
-    CONSUME(l.drop);
-    const silent = Boolean(OPTION(() => CONSUME(l.silent)));
-    const graph = SUBRULE(graphRefAll, undefined);
-    return {
-      type: 'drop',
-      silent,
-      graph,
-    };
-  },
-  gImpl: ({ SUBRULE }) => (ast) => {
-    const builder = [ 'DROP' ];
-    if (ast.silent) {
-      builder.push('SILENT');
-    }
-    builder.push(SUBRULE(graphRefAll, ast.graph, undefined));
-    return builder.join(' ');
-  },
-};
+export const drop = clearOrDrop('drop', l.drop);
 
 /**
  * [[34]](https://www.w3.org/TR/sparql11-query/#rCreate)
@@ -504,20 +482,26 @@ export const graphOrDefault: SparqlRule<'graphOrDefault', GraphOrDefault> = <con
 /**
  * [[46]](https://www.w3.org/TR/sparql11-query/#rGraphRef)
  */
-export const graphRef: SparqlRule<'graphRef', IriTerm> = <const> {
+export const graphRef: SparqlRule<'graphRef', GraphRefSpecific> = <const> {
   name: 'graphRef',
   impl: ({ SUBRULE, CONSUME }) => () => {
-    CONSUME(l.graph.graph);
-    return SUBRULE(iri, undefined);
+    const i0 = SUBRULE(blank, undefined);
+    const img1 = CONSUME(l.graph.graph).image;
+    const val = SUBRULE(iri, undefined);
+    return {
+      graph: val,
+      type: 'graphRef',
+      graphRefType: 'specific',
+      RTT: { img1, i0 },
+    };
   },
-  gImpl: ({ SUBRULE }) => ast =>
-    `GRAPH ${SUBRULE(iri, ast, undefined)}`,
+  gImpl: () => () => '',
 };
 
 /**
  * [[47]](https://www.w3.org/TR/sparql11-query/#rGraphRefAll)
  */
-export const graphRefAll: SparqlRule<'graphRefAll', GraphReference> = <const> {
+export const graphRefAll: SparqlRule<'graphRefAll', GraphRef> = <const> {
   name: 'graphRefAll',
   impl: ({ SUBRULE, CONSUME, OR }) => () => OR<GraphReference>([
     { ALT: () => {

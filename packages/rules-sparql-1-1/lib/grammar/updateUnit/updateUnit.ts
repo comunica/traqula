@@ -3,10 +3,16 @@ import { unCapitalize } from '@traqula/core';
 import type { TokenType } from 'chevrotain';
 import * as l from '../../lexer';
 import type {
+  ContextDefinition,
   GraphQuads,
   GraphRef,
+  GraphRefAll,
+  GraphRefDefault,
+  GraphRefNamed,
   GraphRefSpecific,
   Quads,
+  Update,
+  UpdateOperation,
   UpdateOperationAddMoveCopy,
   UpdateOperationClearDrop,
   UpdateOperationCreate,
@@ -19,6 +25,7 @@ import type {
   SparqlRule,
 } from '../../Sparql11types';
 import type { Ignores1, ITOS, Reconstruct, Wrap } from '../../TypeHelpersRTT';
+import { usingClauses } from '../dataSetClause';
 import { blank, prologue, varOrIri } from '../general';
 import { iri } from '../literals';
 import { triplesTemplate } from '../tripleBlock';
@@ -27,58 +34,48 @@ import { groupGraphPattern } from '../whereClause';
 /**
  * [[3]](https://www.w3.org/TR/sparql11-query/#rUpdateUnit)
  */
-export const updateUnit: SparqlGrammarRule<'updateUnit', Update> = <const> {
+export const updateUnit: SparqlGrammarRule<'updateUnit', Update | ContextDefinition[]> = <const> {
   name: 'updateUnit',
-  impl: ({ ACTION, SUBRULE }) => () => {
-    const data = SUBRULE(update, undefined);
-
-    ACTION(() => data.updates.reverse());
-    return data;
-  },
+  impl: ({ SUBRULE }) => () => SUBRULE(update, undefined),
 };
 
 /**
  * [[29]](https://www.w3.org/TR/sparql11-query/#rUpdate)
  */
-export const update: SparqlRule<'update', Update> = <const> {
+export const update: SparqlRule<'update', Update | ContextDefinition[]> = <const> {
   name: 'update',
-  impl: ({ ACTION, SUBRULE, SUBRULE1, SUBRULE2, CONSUME, OPTION1, MANY }) => () => {
-    const prologueValues = SUBRULE1(prologue, undefined);
-    const result: Update = {
-      type: 'update',
-      base: prologueValues.base,
-      prefixes: prologueValues.prefixes,
-      updates: [],
-    };
+  impl: ({ SUBRULE, SUBRULE1, SUBRULE2, CONSUME, OPTION1, MANY }) => () => {
+    let prologueValues = SUBRULE1(prologue, undefined);
+    const updates: Update['updates'] = [];
 
     let parsedSemi = true;
     MANY({
       GATE: () => parsedSemi,
       DEF: () => {
         const updateOperation = SUBRULE(update1, undefined);
-        result.updates.push(updateOperation);
+
+        updates.push({
+          context: prologueValues,
+          operation: updateOperation,
+          i0: [],
+        });
 
         OPTION1(() => {
+          const ix = SUBRULE(blank, undefined);
           CONSUME(l.symbols.semi);
-          parsedSemi = true;
-          SUBRULE2(prologue, undefined);
+          updates.at(-1)!.i0 = ix;
 
-          ACTION(() => {
-            result.base = prologueValues.base ?? result.base;
-            result.prefixes = prologueValues.prefixes ?
-                { ...result.prefixes, ...prologueValues.prefixes } :
-              result.prefixes;
-          });
+          parsedSemi = true;
+          prologueValues = SUBRULE2(prologue, undefined);
         });
       },
     });
-    return result;
+    return {
+      type: 'update',
+      updates,
+    };
   },
-  gImpl: ({ SUBRULE }) => (ast) => {
-    const prologueString = SUBRULE(prologue, ast, undefined);
-    const updates = ast.updates.map(update => SUBRULE(update1, update, undefined)).join(' ; ');
-    return `${prologueString} ${updates}`;
-  },
+  gImpl: () => () => '',
 };
 
 /**
@@ -99,38 +96,7 @@ export const update1: SparqlRule<'update1', UpdateOperation> = <const> {
     { ALT: () => SUBRULE(deleteWhere, undefined) },
     { ALT: () => SUBRULE(modify, undefined) },
   ]),
-  gImpl: ({ SUBRULE }) => (ast) => {
-    if ('type' in ast) {
-      // ManagementOperation
-      switch (ast.type) {
-        case 'load':
-          return SUBRULE(load, ast, undefined);
-        case 'clear':
-          return SUBRULE(clear, ast, undefined);
-        case 'drop':
-          return SUBRULE(drop, ast, undefined);
-        case 'add':
-          return SUBRULE(add, ast, undefined);
-        case 'move':
-          return SUBRULE(move, ast, undefined);
-        case 'copy':
-          return SUBRULE(copy, ast, undefined);
-        case 'create':
-          return SUBRULE(create, ast, undefined);
-      }
-    }
-    // InsertDeleteOperation
-    switch (ast.updateType) {
-      case 'insert':
-        return SUBRULE(insertData, ast, undefined);
-      case 'delete':
-        return SUBRULE(deleteData, ast, undefined);
-      case 'deletewhere':
-        return SUBRULE(deleteWhere, ast, undefined);
-      case 'insertdelete':
-        return SUBRULE(modify, ast, undefined);
-    }
-  },
+  gImpl: () => () => '',
 };
 
 /**
@@ -365,71 +331,52 @@ export const deleteWhere = insertDeleteDelWhere('deleteWhere', l.deleteClause, l
  */
 export const modify: SparqlRule<'modify', UpdateOperationModify> = <const> {
   name: 'modify',
-  impl: ({ ACTION, CONSUME, MANY, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4, SUBRULE5, OPTION1, OPTION2, OR }) => () => {
+  impl: ({ CONSUME, SUBRULE1, SUBRULE2, SUBRULE3, OPTION1, OPTION2, OR }) => ({ factory: F }) => {
     const graph = OPTION1(() => {
       const i0 = SUBRULE1(blank, undefined);
       const img1 = CONSUME(l.modifyWith).image;
       const graph = SUBRULE1(iri, undefined);
       return { i0, img1, graph };
     });
-    const { insert, delete: del } = OR([
-      {
-        ALT: () => {
-          const del = SUBRULE(deleteClause, undefined);
-          const insert = OPTION2(() => SUBRULE1(insertClause, undefined)) ?? [];
-          return { delete: del, insert };
-        },
-      },
+    const { insert, del } = OR<{
+      del: RuleDefReturn<typeof deleteClause> | undefined;
+      insert: RuleDefReturn<typeof insertClause> | undefined;
+    }>([
+      { ALT: () => {
+        const del = SUBRULE1(deleteClause, undefined);
+        const insert = OPTION2(() => SUBRULE1(insertClause, undefined));
+        return { del, insert };
+      } },
       { ALT: () => {
         const insert = SUBRULE2(insertClause, undefined);
-        return { insert, delete: []};
+        return { insert, del: undefined };
       } },
     ]);
-    const usingArr: RuleDefReturn<typeof usingClause>[] = [];
-    MANY(() => {
-      usingArr.push(SUBRULE(usingClause, undefined));
-    });
-    CONSUME(l.where);
-    const where = SUBRULE(groupGraphPattern, undefined);
+    const using = SUBRULE1(usingClauses, undefined);
+    const i3 = SUBRULE3(blank, undefined);
+    const img4 = CONSUME(l.where).image;
+    const where = SUBRULE1(groupGraphPattern, undefined);
 
-    return ACTION(() => {
-      const def: IriTerm[] = [];
-      const named: IriTerm[] = [];
-      for (const { value, type } of usingArr) {
-        if (type === 'default') {
-          def.push(value);
-        } else {
-          named.push(value);
-        }
-      }
-      return {
-        updateType: 'insertdelete',
-        graph,
-        insert,
-        delete: del,
-        using: usingArr.length > 0 ? { default: def, named } : undefined,
-        where: where.patterns,
-      };
+    return F.updateOperationModify({
+      graph: graph?.graph,
+      insert: insert?.val ?? [],
+      delete: del?.val ?? [],
+      from: using,
+      where: where.patterns,
+      i0: graph?.i0 ?? [],
+      img1: graph?.img1 ?? '',
+      i1: del?.i0 ?? [],
+      img2: del?.img1 ?? '',
+      deleteBraces: del?.deleteBraces ?? [],
+      i2: insert?.i0 ?? [],
+      img3: insert?.img1 ?? '',
+      insertBraces: insert?.insertBraces ?? [],
+      i3,
+      img4,
+      patternBraces: [],
     });
   },
-  gImpl: ({ SUBRULE }) => (ast) => {
-    const builder: string[] = [];
-    if (ast.graph) {
-      builder.push(`WITH ${SUBRULE(iri, ast.graph, undefined)}`);
-    }
-    if (ast.delete.length > 0) {
-      builder.push(`DELETE { ${SUBRULE(quadData, ast.delete, undefined)} }`);
-    }
-    if (ast.insert.length > 0) {
-      builder.push(`INSERT { ${SUBRULE(quadData, ast.insert, undefined)} }`);
-    }
-    if (ast.using) {
-      builder.push(...ast.using.default.map(val => `USING ${SUBRULE(iri, val, undefined)}`));
-      builder.push(...ast.using.named.map(val => `USING NAMED ${SUBRULE(iri, val, undefined)}`));
-    }
-    builder.push('WHERE', SUBRULE(groupGraphPattern, { type: 'group', patterns: ast.where }, undefined));
-    return builder.join(' ');
-  },
+  gImpl: () => () => '',
 };
 
 /**
@@ -482,55 +429,35 @@ SparqlGrammarRule<'insertClause', Wrap<Quads[]> & Reconstruct & { insertBraces: 
 };
 
 /**
- * [[44]](https://www.w3.org/TR/sparql11-query/#rUsingClause)
- */
-export const usingClause: SparqlGrammarRule<'usingClause', { value: IriTerm; type: 'default' | 'named' }> = <const> {
-  name: 'usingClause',
-  impl: ({ CONSUME, SUBRULE1, SUBRULE2, OR }) => () => {
-    CONSUME(l.usingClause);
-    return OR<RuleDefReturn<typeof usingClause>>([
-      { ALT: () => {
-        const value = SUBRULE1(iri, undefined);
-        return { value, type: 'default' };
-      } },
-      {
-        ALT: () => {
-          CONSUME(l.graph.named);
-          const value = SUBRULE2(iri, undefined);
-          return { value, type: 'named' };
-        },
-      },
-    ]);
-  },
-};
-
-/**
  * [[45]](https://www.w3.org/TR/sparql11-query/#rGraphOrDefault)
  */
-export const graphOrDefault: SparqlRule<'graphOrDefault', GraphOrDefault | GraphRefSpecific> = <const> {
+export const graphOrDefault: SparqlRule<'graphOrDefault', GraphRefDefault | GraphRefSpecific> = <const> {
   name: 'graphOrDefault',
-  impl: ({ SUBRULE, CONSUME, OPTION, OR }) => () => OR<GraphOrDefault>([
+  impl: ({ SUBRULE1, SUBRULE2, CONSUME, OPTION, OR }) => () => OR<GraphRefDefault | GraphRefSpecific>([
     { ALT: () => {
-      CONSUME(l.graph.default_);
-      return { type: 'graph', default: true };
+      const i0 = SUBRULE1(blank, undefined);
+      const img1 = CONSUME(l.graph.default_).image;
+      return { type: 'graphRef', graphRefType: 'default', RTT: { i0, img1 }} satisfies GraphRefDefault;
     } },
-    {
-      ALT: () => {
-        OPTION(() => CONSUME(l.graph.graph));
-        const name = SUBRULE(iri, undefined);
-        return {
-          type: 'graph',
-          name,
-        };
-      },
-    },
+    { ALT: () => {
+      const graph = OPTION(() => {
+        const i0 = SUBRULE2(blank, undefined);
+        const img1 = CONSUME(l.graph.graph).image;
+        return <const> [ i0, img1 ];
+      }) ?? [[], '' ];
+      const name = SUBRULE1(iri, undefined);
+      return {
+        type: 'graphRef',
+        graphRefType: 'specific',
+        graph: name,
+        RTT: {
+          i0: graph[0],
+          img1: graph[1],
+        },
+      } satisfies GraphRefSpecific;
+    } },
   ]),
-  gImpl: ({ SUBRULE }) => (ast) => {
-    if (ast.default) {
-      return 'DEFAULT';
-    }
-    return SUBRULE(iri, <IriTerm> ast.name, undefined);
-  },
+  gImpl: () => () => '',
 };
 
 /**
@@ -557,36 +484,28 @@ export const graphRef: SparqlRule<'graphRef', GraphRefSpecific> = <const> {
  */
 export const graphRefAll: SparqlRule<'graphRefAll', GraphRef> = <const> {
   name: 'graphRefAll',
-  impl: ({ SUBRULE, CONSUME, OR }) => () => OR<GraphReference>([
+  impl: ({ SUBRULE, CONSUME, OR1, OR2 }) => () => OR1<GraphRef>([
+    { ALT: () => SUBRULE(graphRef, undefined) },
     { ALT: () => {
-      const name = SUBRULE(graphRef, undefined);
-      return { type: 'graph', name };
+      const i0 = SUBRULE(blank, undefined);
+      return OR2<GraphRef>([
+        { ALT: () => {
+          const img1 = CONSUME(l.graph.default_).image;
+          return { type: 'graphRef', graphRefType: 'default', RTT: { i0, img1 }} satisfies GraphRefDefault;
+        } },
+        { ALT: () => {
+          const img1 = CONSUME(l.graph.named).image;
+          return { type: 'graphRef', graphRefType: 'named', RTT: { i0, img1 }} satisfies GraphRefNamed;
+        } },
+        { ALT: () => {
+          const img1 = CONSUME(l.graph.graphAll).image;
+          return { type: 'graphRef', graphRefType: 'all', RTT: { i0, img1 }} satisfies GraphRefAll;
+        } },
+      ]);
     } },
-    { ALT: () => {
-      CONSUME(l.graph.default_);
-      return { default: true };
-    } },
-    { ALT: () => {
-      CONSUME(l.graph.named);
-      return { named: true };
-    } },
-    { ALT: () => {
-      CONSUME(l.graph.graphAll);
-      return { all: true };
-    } },
+
   ]),
-  gImpl: ({ SUBRULE }) => (ast) => {
-    if (ast.all) {
-      return 'ALL';
-    }
-    if (ast.default) {
-      return 'DEFAULT';
-    }
-    if (ast.named) {
-      return 'NAMED';
-    }
-    return SUBRULE(graphRef, <IriTerm> ast.name, undefined);
-  },
+  gImpl: () => () => '',
 };
 
 /**

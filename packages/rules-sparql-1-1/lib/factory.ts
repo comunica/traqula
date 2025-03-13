@@ -49,6 +49,8 @@ import type {
   UpdateOperationAddMoveCopy,
   UpdateOperationInsertDeleteDelWhere,
   Quads,
+  UpdateOperationModify,
+  BracketWrapper,
 } from './RoundTripTypes';
 import type * as r from './TypeHelpersRTT';
 import { Wildcard } from './Wildcard';
@@ -283,7 +285,7 @@ export class TraqulaFactory extends BlankSpaceFactory {
         expressionType: 'aggregate',
         aggregation: img1ori4.toLowerCase(),
         distinct: img2or1ori5 !== undefined,
-        expression: [ <Expression> expressionOrImg2Ori6 ],
+        expression: [ <Expression> <unknown> expressionOrImg2Ori6 ],
         RTT: this.ignores(this.images({}, img1ori4, img2or1ori5 ?? ''), i0, i1, i2 ?? [], i3),
       } satisfies ExpressionAggregateDefault;
     }
@@ -351,10 +353,9 @@ export class TraqulaFactory extends BlankSpaceFactory {
     };
   }
 
-  public curlied<T extends object & { RTT?: { preCurls?: [r.ITOS, r.ITOS][] }}>(x: T, i0: r.ITOS, i1: r.ITOS):
+  public curlied<T extends object & { RTT?: { preCurls?: BracketWrapper }}>(x: T, i0: r.ITOS, i1: r.ITOS):
     T & { RTT: { preCurls: [r.ITOS, r.ITOS][] }} {
     if (x.RTT !== undefined && x.RTT.preCurls !== undefined) {
-      x.RTT.preCurls.push([ i0, i1 ]);
       return <T & { RTT: { preCurls: [r.ITOS, r.ITOS][] }}> x;
     }
     return {
@@ -537,6 +538,22 @@ export class TraqulaFactory extends BlankSpaceFactory {
       type: 'updateOperation',
       operationType: op1 === 'insert' ? 'insertdata' : (op2 === 'data' ? 'deletedata' : 'deletewhere'),
       data,
+      RTT,
+    };
+  }
+
+  public updateOperationModify(arg: Omit<UpdateOperationModify, 'type' | 'operationType' | 'RTT'> &
+    Pick<UpdateOperationModify['RTT'], 'deleteBraces' | 'insertBraces' | 'patternBraces'> & r.Ignores3 & r.Images4):
+    UpdateOperationModify {
+    const { insert, delete: del, graph, where, from, ...RTT } = arg;
+    return {
+      type: 'updateOperation',
+      operationType: 'modify',
+      insert,
+      delete: del,
+      graph,
+      where,
+      from,
       RTT,
     };
   }

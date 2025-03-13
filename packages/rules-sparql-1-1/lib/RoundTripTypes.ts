@@ -68,23 +68,34 @@ export type UpdateOperationInsertDeleteDelWhere = UpdateOperationBase & r.ImageR
 /**
  * RTT order: WITH, DELETE, INSERT, USING, WHERE
  */
-export type UpdateOperationModify = UpdateOperationBase & r.ImageRTT5 & r.IgnoredRTT1 & {
+export type UpdateOperationModify = UpdateOperationBase & r.ImageRTT4 & r.IgnoredRTT3 & {
   operationType: 'modify';
+  graph: TermIri | undefined;
   insert: Quads[];
   delete: Quads[];
-  graph: TermIri;
-  where: Pattern[];
   from: DatasetClauses;
+  where: Pattern[];
   RTT: {
     deleteBraces: [r.ITOS, r.ITOS] | [];
     insertBraces: [r.ITOS, r.ITOS] | [];
     patternBraces: BracketWrapper;
   };
 };
+export type UpdateOperation =
+  | UpdateOperationLoad
+  | UpdateOperationClearDrop
+  | UpdateOperationCreate
+  | UpdateOperationAddMoveCopy
+  | UpdateOperationInsertDeleteDelWhere
+  | UpdateOperationModify;
 
-export type UpdateBase = {
+export type Update = {
   type: 'update';
-  context?: ContextDefinition[];
+  updates: {
+    operation: UpdateOperation;
+    context: ContextDefinition[];
+    i0: r.ITOS;
+  }[];
 };
 
 export type QueryBase = {

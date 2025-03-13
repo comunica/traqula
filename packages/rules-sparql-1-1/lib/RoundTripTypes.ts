@@ -24,6 +24,18 @@ export type GraphRef =
   | GraphRefAll
   | GraphRefSpecific;
 
+export type Quads = PatternBgp | GraphQuads;
+
+export type GraphQuads = r.ImageRTT & r.IgnoredRTT & {
+  type: 'graph';
+  graph: TermIri | TermVariable;
+  triples: Triple[];
+  RTT: {
+    tripleBraces: [r.ITOS, r.ITOS];
+    ignored: r.ITOS[];
+  };
+};
+
 export type UpdateOperationBase = { type: 'updateOperation'; operationType: string };
 export type UpdateOperationLoad = UpdateOperationBase & r.ImageRTT3 & r.IgnoredRTT2 & {
   operationType: 'load';
@@ -35,6 +47,39 @@ export type UpdateOperationClearDrop = UpdateOperationBase & r.ImageRTT2 & r.Ign
   operationType: 'clear' | 'drop';
   silent: boolean;
   destination: GraphRef;
+};
+export type UpdateOperationCreate = Omit<UpdateOperationClearDrop, 'operationType' | 'destination'> & {
+  operationType: 'create';
+  destination: GraphRefSpecific;
+};
+export type UpdateOperationAddMoveCopy = UpdateOperationBase & r.ImageRTT3 & r.IgnoredRTT2 & {
+  operationType: 'add' | 'move' | 'copy';
+  silent: boolean;
+  source: GraphRefDefault | GraphRefSpecific;
+  destination: GraphRefDefault | GraphRefSpecific;
+};
+export type UpdateOperationInsertDeleteDelWhere = UpdateOperationBase & r.ImageRTT2 & r.IgnoredRTT1 & {
+  operationType: 'insertdata' | 'deletedata' | 'deletewhere';
+  data: Quads[];
+  RTT: {
+    dataBraces: [r.ITOS, r.ITOS];
+  };
+};
+/**
+ * RTT order: WITH, DELETE, INSERT, USING, WHERE
+ */
+export type UpdateOperationModify = UpdateOperationBase & r.ImageRTT5 & r.IgnoredRTT1 & {
+  operationType: 'modify';
+  insert: Quads[];
+  delete: Quads[];
+  graph: TermIri;
+  where: Pattern[];
+  from: DatasetClauses;
+  RTT: {
+    deleteBraces: [r.ITOS, r.ITOS] | [];
+    insertBraces: [r.ITOS, r.ITOS] | [];
+    patternBraces: BracketWrapper;
+  };
 };
 
 export type UpdateBase = {

@@ -2,27 +2,26 @@ import type { RuleDefReturn } from '@traqula/core';
 import { unCapitalize } from '@traqula/core';
 import type { TokenType } from 'chevrotain';
 import * as l from '../../lexer';
-import type { GraphRef, GraphRefSpecific, UpdateOperationClearDrop, UpdateOperationLoad } from '../../RoundTripTypes';
 import type {
-  CopyMoveAddOperation,
-  CreateOperation,
-  DeleteOperation,
-  DeleteWhereOperation,
-  GraphOrDefault,
   GraphQuads,
-  GraphReference,
-  InsertOperation,
-  IriTerm,
-  ModifyOperation,
+  GraphRef,
+  GraphRefSpecific,
   Quads,
+  UpdateOperationAddMoveCopy,
+  UpdateOperationClearDrop,
+  UpdateOperationCreate,
+  UpdateOperationInsertDeleteDelWhere,
+  UpdateOperationLoad,
+  UpdateOperationModify,
+} from '../../RoundTripTypes';
+import type {
   SparqlGrammarRule,
   SparqlRule,
-  Update,
-  UpdateOperation,
 } from '../../Sparql11types';
-import { blank, prologue, varOrIri, varOrTerm } from '../general';
+import type { Ignores1, ITOS, Reconstruct, Wrap } from '../../TypeHelpersRTT';
+import { blank, prologue, varOrIri } from '../general';
 import { iri } from '../literals';
-import { triplesBlock, triplesTemplate } from '../tripleBlock';
+import { triplesTemplate } from '../tripleBlock';
 import { groupGraphPattern } from '../whereClause';
 
 /**
@@ -168,10 +167,10 @@ export const load: SparqlRule<'load', UpdateOperationLoad> = <const> {
   gImpl: () => () => '',
 };
 
-function clearOrDrop<T extends 'clear' | 'drop'>(name: T, operation: TokenType):
-SparqlGrammarRule<T, UpdateOperationClearDrop> {
+function clearOrDrop<T extends 'Clear' | 'Drop'>(operation: TokenType & { name: T }):
+SparqlGrammarRule<Uncapitalize<T>, UpdateOperationClearDrop> {
   return {
-    name,
+    name: unCapitalize(operation.name),
     impl: ({ SUBRULE, CONSUME, OPTION }) => ({ factory: F }) => {
       const i0 = SUBRULE(blank, undefined);
       const img1 = CONSUME(operation).image;
@@ -189,57 +188,58 @@ SparqlGrammarRule<T, UpdateOperationClearDrop> {
 /**
  * [[32]](https://www.w3.org/TR/sparql11-query/#rClear)
  */
-export const clear = clearOrDrop('clear', l.clear);
+export const clear = clearOrDrop(l.clear);
 
 /**
  * [[33]](https://www.w3.org/TR/sparql11-query/#rDrop)
  */
-export const drop = clearOrDrop('drop', l.drop);
+export const drop = clearOrDrop(l.drop);
 
 /**
  * [[34]](https://www.w3.org/TR/sparql11-query/#rCreate)
  */
-export const create: SparqlRule<'create', CreateOperation> = <const> {
+export const create: SparqlRule<'create', UpdateOperationCreate> = <const> {
   name: 'create',
-  impl: ({ SUBRULE, CONSUME, OPTION }) => () => {
-    CONSUME(l.create);
-    const silent = Boolean(OPTION(() => CONSUME(l.silent)));
-    const graph = SUBRULE(graphRef, undefined);
-    return {
-      type: 'create',
-      silent,
-      graph: {
-        type: 'graph',
-        name: graph,
-      },
-    };
+  impl: ({ SUBRULE, CONSUME, OPTION }) => ({ factory: F }) => {
+    const i0 = SUBRULE(blank, undefined);
+    const img1 = CONSUME(l.create).image;
+    const silent = OPTION(() => {
+      const i1 = SUBRULE(blank, undefined);
+      const img2 = CONSUME(l.silent).image;
+      return <const> [ i1, img2 ];
+    }) ?? [[], '' ];
+    const destination = SUBRULE(graphRef, undefined);
+    return F.updateOperationCreate({ i0, img1, img2: silent[1], i1: silent[0], destination });
   },
-  gImpl: ({ SUBRULE }) => (ast) => {
-    const builder = [ 'CREATE' ];
-    if (ast.silent) {
-      builder.push('SILENT');
-    }
-    builder.push(SUBRULE(graphRef, <IriTerm> ast.graph.name, undefined));
-    return builder.join(' ');
-  },
+  gImpl: () => () => '',
 };
 
 function copyMoveAddOperation<T extends 'Copy' | 'Move' | 'Add'>(operation: TokenType & { name: T }):
-SparqlRule<Uncapitalize<T>, CopyMoveAddOperation> {
+SparqlRule<Uncapitalize<T>, UpdateOperationAddMoveCopy> {
   return {
     name: unCapitalize(operation.name),
-    impl: ({ CONSUME, SUBRULE1, SUBRULE2, OPTION }) => () => {
-      CONSUME(operation);
-      const silent = Boolean(OPTION(() => CONSUME(l.silent)));
+    impl: ({ CONSUME, SUBRULE1, SUBRULE2, SUBRULE3, OPTION }) => ({ factory: F }) => {
+      const i0 = SUBRULE1(blank, undefined);
+      const img1 = CONSUME(operation).image;
+      const silent = OPTION(() => {
+        const i1 = SUBRULE2(blank, undefined);
+        const img2 = CONSUME(l.silent).image;
+        return <const> [ i1, img2 ];
+      }) ?? [[], '' ];
       const source = SUBRULE1(graphOrDefault, undefined);
-      CONSUME(l.to);
+      const i2 = SUBRULE3(blank, undefined);
+      const img3 = CONSUME(l.to).image;
       const destination = SUBRULE2(graphOrDefault, undefined);
-      return {
-        type: unCapitalize(operation.name),
-        silent,
+      return F.updateOperationAddMoveCopy({
+        i0,
+        img1,
+        i1: silent[0],
+        img2: silent[1],
         source,
+        i2,
+        img3,
         destination,
-      };
+      });
     },
     gImpl: ({ SUBRULE }) => (ast) => {
       const builder = [ operation.name.toUpperCase() ];
@@ -269,76 +269,108 @@ export const move = copyMoveAddOperation(l.move);
 export const copy = copyMoveAddOperation(l.copy);
 
 /**
- * [[38]](https://www.w3.org/TR/sparql11-query/#rInsertData)
+ * [[48]](https://www.w3.org/TR/sparql11-query/#rQuadPattern)
  */
-export const insertData: SparqlRule<'insertData', InsertOperation> = <const> {
-  name: 'insertData',
-  impl: ({ SUBRULE, CONSUME }) => () => {
-    CONSUME(l.insertClause);
-    CONSUME(l.dataClause);
-    const insert = SUBRULE(quadData, undefined);
+export const quadPattern: SparqlGrammarRule<'quadPattern', Wrap<Quads[]> & Ignores1> = <const> {
+  name: 'quadPattern',
+  impl: ({ SUBRULE1, SUBRULE2, CONSUME }) => () => {
+    const i0 = SUBRULE1(blank, undefined);
+    CONSUME(l.symbols.LCurly);
+    const val = SUBRULE1(quads, undefined);
+    const i1 = SUBRULE2(blank, undefined);
+    CONSUME(l.symbols.RCurly);
+    return { i0, val, i1 };
+  },
+};
+
+/**
+ * [[49]](https://www.w3.org/TR/sparql11-query/#rQuadData)
+ */
+export const quadData: SparqlRule<'quadData', Wrap<Quads[]> & Ignores1> = <const> {
+  name: 'quadData',
+  impl: ({ ACTION, SUBRULE1, SUBRULE2, CONSUME }) => (C) => {
+    const i0 = SUBRULE1(blank, undefined);
+    CONSUME(l.symbols.LCurly);
+
+    const couldParseVars = ACTION(() => C.parseMode.delete('canParseVars'));
+    const val = SUBRULE1(quads, undefined);
+    ACTION(() => couldParseVars && C.parseMode.add('canParseVars'));
+
+    const i1 = SUBRULE2(blank, undefined);
+    CONSUME(l.symbols.RCurly);
     return {
-      updateType: 'insert',
-      insert,
+      val,
+      i0,
+      i1,
     };
   },
-  gImpl: ({ SUBRULE }) => ast =>
-    `INSERT DATA { ${SUBRULE(quadData, ast.insert, undefined)} }`,
+  gImpl: () => () => '',
 };
+
+function insertDeleteDelWhere<T extends 'insertData' | 'deleteData' | 'deleteWhere'>(
+  name: T,
+  cons1: TokenType,
+  cons2: TokenType,
+  dataRule: SparqlGrammarRule<any, Wrap<Quads[]> & Ignores1>,
+): SparqlGrammarRule<T, UpdateOperationInsertDeleteDelWhere> {
+  return {
+    name,
+    impl: ({ ACTION, SUBRULE1, SUBRULE2, CONSUME }) => (C) => {
+      const i0 = SUBRULE1(blank, undefined);
+      const img1 = CONSUME(cons1).image;
+      const i1 = SUBRULE2(blank, undefined);
+      const img2 = CONSUME(cons2).image;
+
+      let couldCreateBlankNodes = true;
+      if (name !== 'insertData') {
+        couldCreateBlankNodes = ACTION(() => C.parseMode.delete('canCreateBlankNodes'));
+      }
+      const data = SUBRULE1(dataRule, undefined);
+      if (name !== 'insertData') {
+        ACTION(() => couldCreateBlankNodes && C.parseMode.add('canCreateBlankNodes'));
+      }
+
+      return ACTION(() => {
+        const { val, i0: di0, i1: di1 } = data;
+        return C.factory.updateOperationInsertDeleteDelWhere({
+          data: val,
+          i0,
+          img1,
+          i1,
+          img2,
+          dataBraces: [ di0, di1 ],
+        });
+      });
+    },
+  };
+}
+
+/**
+ * [[38]](https://www.w3.org/TR/sparql11-query/#rInsertData)
+ */
+export const insertData = insertDeleteDelWhere('insertData', l.insertClause, l.dataClause, quadData);
 
 /**
  * [[39]](https://www.w3.org/TR/sparql11-query/#rDeleteData)
  */
-export const deleteData: SparqlRule<'deleteData', DeleteOperation> = <const> {
-  name: 'deleteData',
-  impl: ({ ACTION, SUBRULE, CONSUME }) => (C) => {
-    CONSUME(l.deleteClause);
-    CONSUME(l.dataClause);
-
-    const couldCreateBlankNodes = ACTION(() => C.parseMode.delete('canCreateBlankNodes'));
-    const del = SUBRULE(quadData, undefined);
-    ACTION(() => couldCreateBlankNodes && C.parseMode.add('canCreateBlankNodes'));
-
-    return {
-      updateType: 'delete',
-      delete: del,
-    };
-  },
-  gImpl: ({ SUBRULE }) => ast =>
-    `DELETE DATA { ${SUBRULE(quadData, ast.delete, undefined)} }`,
-};
+export const deleteData = insertDeleteDelWhere('deleteData', l.deleteClause, l.dataClause, quadData);
 
 /**
  * [[40]](https://www.w3.org/TR/sparql11-query/#rDeleteWhere)
  */
-export const deleteWhere: SparqlRule<'deleteWhere', DeleteWhereOperation> = <const> {
-  name: 'deleteWhere',
-  impl: ({ ACTION, SUBRULE, CONSUME }) => (C) => {
-    CONSUME(l.deleteClause);
-    CONSUME(l.where);
-
-    const couldCreateBlankNodes = ACTION(() => C.parseMode.delete('canCreateBlankNodes'));
-    const del = SUBRULE(quadPattern, undefined);
-    ACTION(() => couldCreateBlankNodes && C.parseMode.add('canCreateBlankNodes'));
-
-    return {
-      updateType: 'deletewhere',
-      delete: del,
-    };
-  },
-  gImpl: ({ SUBRULE }) => ast =>
-    `DELETE WHERE { ${SUBRULE(quadData, ast.delete, undefined)} }`,
-};
+export const deleteWhere = insertDeleteDelWhere('deleteWhere', l.deleteClause, l.where, quadPattern);
 
 /**
  * [[41]](https://www.w3.org/TR/sparql11-query/#rModify)
  */
-export const modify: SparqlRule<'modify', ModifyOperation> = <const> {
+export const modify: SparqlRule<'modify', UpdateOperationModify> = <const> {
   name: 'modify',
-  impl: ({ ACTION, SUBRULE, CONSUME, MANY, SUBRULE1, SUBRULE2, OPTION1, OPTION2, OR }) => () => {
+  impl: ({ ACTION, CONSUME, MANY, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4, SUBRULE5, OPTION1, OPTION2, OR }) => () => {
     const graph = OPTION1(() => {
-      CONSUME(l.modifyWith);
-      return SUBRULE(iri, undefined);
+      const i0 = SUBRULE1(blank, undefined);
+      const img1 = CONSUME(l.modifyWith).image;
+      const graph = SUBRULE1(iri, undefined);
+      return { i0, img1, graph };
     });
     const { insert, delete: del } = OR([
       {
@@ -403,27 +435,49 @@ export const modify: SparqlRule<'modify', ModifyOperation> = <const> {
 /**
  * [[42]](https://www.w3.org/TR/sparql11-query/#rDeleteClause)
  */
-export const deleteClause: SparqlGrammarRule<'deleteClause', Quads[]> = <const> {
+export const deleteClause:
+SparqlGrammarRule<'deleteClause', Wrap<Quads[]> & Reconstruct & { deleteBraces: [ITOS, ITOS]}> = <const> {
   name: 'deleteClause',
   impl: ({ ACTION, SUBRULE, CONSUME }) => (C) => {
-    CONSUME(l.deleteClause);
+    const i0 = SUBRULE(blank, undefined);
+    const img1 = CONSUME(l.deleteClause).image;
 
     const couldCreateBlankNodes = ACTION(() => C.parseMode.delete('canCreateBlankNodes'));
     const del = SUBRULE(quadPattern, undefined);
     ACTION(() => couldCreateBlankNodes && C.parseMode.add('canCreateBlankNodes'));
 
-    return del;
+    return ACTION(() => {
+      const { i0: di0, i1: di1, val } = del;
+      return {
+        val,
+        i0,
+        img1,
+        deleteBraces: [ di0, di1 ],
+      };
+    });
   },
 };
 
 /**
  * [[43]](https://www.w3.org/TR/sparql11-query/#rInsertClause)
  */
-export const insertClause: SparqlGrammarRule<'insertClause', Quads[]> = <const> {
+export const insertClause:
+SparqlGrammarRule<'insertClause', Wrap<Quads[]> & Reconstruct & { insertBraces: [ITOS, ITOS]}> = <const> {
   name: 'insertClause',
-  impl: ({ SUBRULE, CONSUME }) => () => {
-    CONSUME(l.insertClause);
-    return SUBRULE(quadPattern, undefined);
+  impl: ({ ACTION, SUBRULE, CONSUME }) => () => {
+    const i0 = SUBRULE(blank, undefined);
+    const img1 = CONSUME(l.insertClause).image;
+    const insert = SUBRULE(quadPattern, undefined);
+
+    return ACTION(() => {
+      const { i0: di0, i1: di1, val } = insert;
+      return {
+        val,
+        i0,
+        img1,
+        insertBraces: [ di0, di1 ],
+      };
+    });
   },
 };
 
@@ -453,7 +507,7 @@ export const usingClause: SparqlGrammarRule<'usingClause', { value: IriTerm; typ
 /**
  * [[45]](https://www.w3.org/TR/sparql11-query/#rGraphOrDefault)
  */
-export const graphOrDefault: SparqlRule<'graphOrDefault', GraphOrDefault> = <const> {
+export const graphOrDefault: SparqlRule<'graphOrDefault', GraphOrDefault | GraphRefSpecific> = <const> {
   name: 'graphOrDefault',
   impl: ({ SUBRULE, CONSUME, OPTION, OR }) => () => OR<GraphOrDefault>([
     { ALT: () => {
@@ -536,38 +590,6 @@ export const graphRefAll: SparqlRule<'graphRefAll', GraphRef> = <const> {
 };
 
 /**
- * [[48]](https://www.w3.org/TR/sparql11-query/#rQuadPattern)
- */
-export const quadPattern: SparqlGrammarRule<'quadPattern', Quads[]> = <const> {
-  name: 'quadPattern',
-  impl: ({ SUBRULE, CONSUME }) => () => {
-    CONSUME(l.symbols.LCurly);
-    const val = SUBRULE(quads, undefined);
-    CONSUME(l.symbols.RCurly);
-    return val;
-  },
-};
-
-/**
- * [[49]](https://www.w3.org/TR/sparql11-query/#rQuadData)
- */
-export const quadData: SparqlRule<'quadData', Quads[]> = <const> {
-  name: 'quadData',
-  impl: ({ ACTION, SUBRULE, CONSUME }) => (C) => {
-    CONSUME(l.symbols.LCurly);
-
-    const couldParseVars = ACTION(() => C.parseMode.delete('canParseVars'));
-    const val = SUBRULE(quads, undefined);
-    ACTION(() => couldParseVars && C.parseMode.add('canParseVars'));
-
-    CONSUME(l.symbols.RCurly);
-    return val;
-  },
-  gImpl: ({ SUBRULE }) => ast =>
-    `{ ${SUBRULE(quads, ast, undefined)} }`,
-};
-
-/**
  * [[50]](https://www.w3.org/TR/sparql11-query/#rQuads)
  */
 export const quads: SparqlRule<'quads', Quads[]> = <const> {
@@ -578,32 +600,39 @@ export const quads: SparqlRule<'quads', Quads[]> = <const> {
     OPTION1(() => {
       const triples = SUBRULE1(triplesTemplate, undefined);
       quads.push({
-        type: 'bgp',
-        triples,
+        type: 'pattern',
+        patternType: 'bgp',
+        triples: triples.val,
+        RTT: {
+          ignored: triples.ignored,
+        },
       });
     });
 
     MANY(() => {
-      quads.push(SUBRULE(quadsNotTriples, undefined));
-      OPTION2(() => CONSUME(l.symbols.dot));
+      const notTriples = SUBRULE(quadsNotTriples, undefined);
+      OPTION2(() => {
+        const ix = SUBRULE2(blank, undefined);
+        CONSUME(l.symbols.dot);
+        notTriples.RTT.ignored.push(ix);
+      });
+      quads.push(notTriples);
       OPTION3(() => {
         const triples = SUBRULE2(triplesTemplate, undefined);
         quads.push({
-          type: 'bgp',
-          triples,
+          type: 'pattern',
+          patternType: 'bgp',
+          triples: triples.val,
+          RTT: {
+            ignored: triples.ignored,
+          },
         });
       });
     });
 
     return quads;
   },
-  gImpl: ({ SUBRULE }) => ast =>
-    ast.map((quad) => {
-      if (quad.type === 'bgp') {
-        return SUBRULE(triplesBlock, quad, undefined);
-      }
-      return SUBRULE(quadsNotTriples, quad, undefined);
-    }).join(' '),
+  gImpl: () => () => '',
 };
 
 /**
@@ -611,19 +640,27 @@ export const quads: SparqlRule<'quads', Quads[]> = <const> {
  */
 export const quadsNotTriples: SparqlRule<'quadsNotTriples', GraphQuads> = <const> {
   name: 'quadsNotTriples',
-  impl: ({ SUBRULE, CONSUME, OPTION }) => () => {
-    CONSUME(l.graph.graph);
-    const name = SUBRULE(varOrIri, undefined);
+  impl: ({ SUBRULE1, SUBRULE2, SUBRULE3, CONSUME, OPTION }) => () => {
+    const i0 = SUBRULE1(blank, undefined);
+    const img1 = CONSUME(l.graph.graph).image;
+    const name = SUBRULE1(varOrIri, undefined);
+    const i1 = SUBRULE2(blank, undefined);
     CONSUME(l.symbols.LCurly);
-    const triples = OPTION(() => SUBRULE(triplesTemplate, undefined)) ?? [];
+    const triples = OPTION(() => SUBRULE1(triplesTemplate, undefined));
+    const i2 = SUBRULE3(blank, undefined);
     CONSUME(l.symbols.RCurly);
 
     return {
       type: 'graph',
-      name,
-      triples,
+      graph: name,
+      triples: triples?.val ?? [],
+      RTT: {
+        i0,
+        img1,
+        tripleBraces: [ i1, i2 ],
+        ignored: triples?.ignored ?? [],
+      },
     };
   },
-  gImpl: ({ SUBRULE }) => ast =>
-    `GRAPH ${SUBRULE(varOrTerm, ast.name, undefined)} { ${SUBRULE(triplesBlock, { ...ast, type: 'bgp' }, undefined)} }`,
+  gImpl: () => () => '',
 };

@@ -44,6 +44,11 @@ import type {
   GraphRefSpecific,
   UpdateOperationClearDrop,
   GraphRef,
+  UpdateOperationCreate,
+  GraphRefDefault,
+  UpdateOperationAddMoveCopy,
+  UpdateOperationInsertDeleteDelWhere,
+  Quads,
 } from './RoundTripTypes';
 import type * as r from './TypeHelpersRTT';
 import { Wildcard } from './Wildcard';
@@ -488,6 +493,50 @@ export class TraqulaFactory extends BlankSpaceFactory {
       operationType: RTT.img1.toLowerCase() === 'clear' ? 'clear' : 'drop',
       silent: arg.img2.toLowerCase() === 'silent',
       destination,
+      RTT,
+    };
+  }
+
+  public updateOperationCreate(arg: { destination: GraphRefSpecific } & r.Ignores1 & r.Images2): UpdateOperationCreate {
+    const { destination, ...RTT } = arg;
+    return {
+      type: 'updateOperation',
+      operationType: 'create',
+      silent: arg.img2.toLowerCase() === 'silent',
+      destination,
+      RTT,
+    };
+  }
+
+  public updateOperationAddMoveCopy(arg: {
+    source: GraphRefDefault | GraphRefSpecific;
+    destination: GraphRefDefault | GraphRefSpecific;
+  } & r.Ignores2 & r.Images3):
+    UpdateOperationAddMoveCopy {
+    const { source, destination, ...RTT } = arg;
+    const operationType = arg.img1.toLowerCase();
+    return {
+      type: 'updateOperation',
+      operationType: operationType === 'add' ? 'add' : (operationType === 'move' ? 'move' : 'copy'),
+      silent: arg.img2.toLowerCase() === 'silent',
+      source,
+      destination,
+      RTT,
+    };
+  }
+
+  public updateOperationInsertDeleteDelWhere(arg: {
+    data: Quads[];
+    dataBraces: [r.ITOS, r.ITOS];
+  } & r.Ignores1 & r.Images2):
+    UpdateOperationInsertDeleteDelWhere {
+    const { data, ...RTT } = arg;
+    const op1 = arg.img1.toLowerCase();
+    const op2 = arg.img2.toLowerCase();
+    return {
+      type: 'updateOperation',
+      operationType: op1 === 'insert' ? 'insertdata' : (op2 === 'data' ? 'deletedata' : 'deletewhere'),
+      data,
       RTT,
     };
   }

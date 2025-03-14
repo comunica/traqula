@@ -19,6 +19,7 @@ import type {
   ValuePatternRow,
   TermVariable,
   SubSelect,
+  EmptyGroup,
 } from '../RoundTripTypes';
 import type {
   SparqlGrammarRule,
@@ -35,7 +36,7 @@ import { triplesBlock } from './tripleBlock';
 /**
  * [[17]](https://www.w3.org/TR/sparql11-query/#rWhereClause)
  */
-export const whereClause: SparqlGrammarRule<'whereClause', Wrap<Pattern[]> & Images & Ignores> = <const> {
+export const whereClause: SparqlGrammarRule<'whereClause', Wrap<PatternGroup> & Images & Ignores> = <const> {
   name: 'whereClause',
   impl: ({ ACTION, SUBRULE, CONSUME, OPTION }) => () => {
     const { i0, img1 } = OPTION(() => {
@@ -44,7 +45,7 @@ export const whereClause: SparqlGrammarRule<'whereClause', Wrap<Pattern[]> & Ima
       return { i0, img1 };
     }) ?? { i0: [], img1: '' };
     const group = SUBRULE(groupGraphPattern, undefined);
-    return ACTION(() => ({ val: group.patterns, img1, i0 }));
+    return ACTION(() => ({ val: group, img1, i0 }));
   },
 };
 
@@ -63,50 +64,45 @@ export const groupGraphPattern: SparqlRule<'groupGraphPattern', PatternGroup> = 
     const i1 = SUBRULE2(blank, undefined);
     CONSUME(l.symbols.RCurly);
 
-    const temp = <RuleDefReturn<typeof groupGraphPatternSub>> patterns;
-    return {
-      type: 'pattern',
-      patternType: 'group',
-      patterns: temp.val,
-      RTT: {
-        i0,
-        i1,
-        dotTracker: temp.dotTracker,
-      },
-    };
+    if ('type' in patterns) {
+      return {
+        type: 'pattern',
+        patternType: 'group',
+        patterns: [ patterns ],
+        RTT: {
+          i0,
+          i1,
+          dotTracker: {},
+          emptyGroups: {},
+        },
+      };
+    }
+    return patterns([ i0, i1 ]);
   },
   gImpl: () => () => '',
 };
 
-// Function findBoundVarsFromGroupGraphPattern(pattern: Pattern, boundedVars: Set<string>): void {
-//   if ('triples' in pattern) {
-//     for (const triple of pattern.triples) {
-//       if (isVariable(triple.subject)) {
-//         boundedVars.add(triple.subject.value);
-//       }
-//       if (isVariable(triple.predicate)) {
-//         boundedVars.add(triple.predicate.value);
-//       }
-//       if (isVariable(triple.object)) {
-//         boundedVars.add(triple.object.value);
-//       }
-//     }
-//   } else if ('patterns' in pattern) {
-//     for (const pat of pattern.patterns) {
-//       findBoundVarsFromGroupGraphPattern(pat, boundedVars);
-//     }
-//   }
-// }
+// Type Patch1<StartType extends {[K in Name]: any }, Name extends keyof StartType, NewType> =
+//   {[K in keyof StartType]: K extends Name ? NewType : StartType[K] };
+//
+// type Patch2<
+//   StartType extends {[K1 in Name1]: {[K2 in Name2]: any }},
+// Name1 extends keyof StartType,
+// Name2 extends keyof StartType[Name1],
+// NewType,
+// > =
+//   {[K1 in keyof StartType]: K1 extends Name1 ? Patch1<StartType[K1], Name2, NewType> : StartType[K1] };
 
 /**
  * [[54]](https://www.w3.org/TR/sparql11-query/#rGroupGraphPatternSub)
  */
 export const groupGraphPatternSub:
-SparqlGrammarRule<'groupGraphPatternSub', Wrap<Pattern[]> & Pick<PatternGroup['RTT'], 'dotTracker'> > = <const> {
+SparqlGrammarRule<'groupGraphPatternSub', (braces: [ITOS, ITOS]) => PatternGroup> = <const> {
   name: 'groupGraphPatternSub',
-  impl: ({ ACTION, SUBRULE, CONSUME, MANY, SUBRULE1, SUBRULE2, OPTION1, OPTION2, OPTION3 }) => () => {
+  impl: ({ ACTION, SUBRULE, CONSUME, MANY, SUBRULE1, SUBRULE2, OPTION1, OPTION2, OPTION3 }) => ({ factory: F }) => {
     const patterns: Pattern[] = [];
-    const dotTracker: [number, ITOS][] = [];
+    const dotTracker: Record<number, ITOS> = {};
+    const emptyGroups: Record<number, EmptyGroup[]> = {};
 
     const bgpPattern = OPTION1(() => SUBRULE1(triplesBlock, undefined));
     ACTION(() => {
@@ -116,12 +112,31 @@ SparqlGrammarRule<'groupGraphPatternSub', Wrap<Pattern[]> & Pick<PatternGroup['R
     });
     MANY(() => {
       const notTriples = SUBRULE(graphPatternNotTriples, undefined);
-      patterns.push(notTriples);
-      OPTION2(() => {
+
+      const dot = OPTION2(() => {
         const ix = SUBRULE1(blank, undefined);
         CONSUME(l.symbols.dot);
-        dotTracker.push([ patterns.length, ix ]);
+        return ix;
       });
+      if (F.isPatternGroup(notTriples) && notTriples.patterns.length < 2) {
+        const degrouped = F.deGroup(notTriples)(dot);
+        if (F.isPattern(degrouped)) {
+          // Degrouped handles own dot.
+          patterns.push(notTriples);
+        } else {
+          const key = patterns.length;
+          if (!emptyGroups[key]) {
+            emptyGroups[key] = [];
+          }
+          emptyGroups[key].push(degrouped);
+        }
+      } else {
+        if (dot) {
+          dotTracker[patterns.length] = dot;
+        }
+        patterns.push(notTriples);
+      }
+
       const moreTriples = OPTION3(() => SUBRULE2(triplesBlock, undefined));
       ACTION(() => {
         if (moreTriples) {
@@ -148,20 +163,26 @@ SparqlGrammarRule<'groupGraphPatternSub', Wrap<Pattern[]> & Pick<PatternGroup['R
     //   }
     // });
 
-    return {
-      val: patterns,
-      dotTracker,
-    };
+    return ([ i0, i1 ]) => ({
+      type: 'pattern',
+      patternType: 'group',
+      patterns,
+      RTT: {
+        i0,
+        i1,
+        dotTracker,
+        emptyGroups,
+      },
+    }) satisfies PatternGroup;
   },
 };
 
 /**
  * [[56]](https://www.w3.org/TR/sparql11-query/#rGraphPatternNotTriples)
  */
-type GraphPatternNotTriplesReturn = Pattern;
-export const graphPatternNotTriples: SparqlRule<'graphPatternNotTriples', GraphPatternNotTriplesReturn> = {
+export const graphPatternNotTriples: SparqlRule<'graphPatternNotTriples', Pattern> = {
   name: 'graphPatternNotTriples',
-  impl: ({ SUBRULE, OR }) => () => OR<GraphPatternNotTriplesReturn>([
+  impl: ({ SUBRULE, OR }) => () => OR<Pattern>([
     { ALT: () => SUBRULE(groupOrUnionGraphPattern, undefined) },
     { ALT: () => SUBRULE(optionalGraphPattern, undefined) },
     { ALT: () => SUBRULE(minusGraphPattern, undefined) },
@@ -512,7 +533,7 @@ export const groupOrUnionGraphPattern: SparqlRule<'groupOrUnionGraphPattern', Pa
 
       return groups.length === 1 ?
         groups[0] :
-        F.patternUnion(ignored, images, groups.map(group => F.deGroupSingle(group)));
+        F.patternUnion(ignored, images, groups.map(group => F.deGroupSingle(group)(undefined)));
     },
     gImpl: () => () => '',
   };

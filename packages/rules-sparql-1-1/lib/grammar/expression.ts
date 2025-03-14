@@ -581,17 +581,20 @@ export const brackettedExpression: SparqlGrammarRule<'brackettedExpression', Exp
  */
 export const iriOrFunction: SparqlRule<'iriOrFunction', TermIri | ExpressionFunctionCall> = <const> {
   name: 'iriOrFunction',
-  impl: ({ SUBRULE, OPTION }) => () => {
+  impl: ({ SUBRULE, OPTION }) => (C) => {
     const iriVal = SUBRULE(iri, undefined);
     return OPTION<ExpressionFunctionCall>(() => {
       const args = SUBRULE(argList, undefined);
-      // TODO: reject distinct when in no Aggregate mode
+      const distinct = args.img1 !== '';
+      if (!C.parseMode.has('canParseAggregate') && distinct) {
+        throw new Error(`DISTINCT implies that this function is an aggregated function, which is not allowed in this context.`);
+      }
       return {
         type: 'expression',
         expressionType: 'functionCall',
         function: iriVal,
         args: args.args,
-        distinct: args.img1 !== '',
+        distinct,
         RTT: {
           img1: args.img1,
           ignored: args.ignored,

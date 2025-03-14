@@ -1,4 +1,5 @@
 import type * as r from './TypeHelpersRTT';
+import type { ITOS } from './TypeHelpersRTT';
 import type { Wildcard } from './Wildcard';
 
 export type GraphRefBase = {
@@ -186,11 +187,20 @@ export type PatternMinus = r.ImageRTT & r.IgnoredRTT2 & PatternBase & {
   patternType: 'minus';
   patterns: Pattern[];
 };
+
+/**
+ * Tracks the dot for this empty group - dot after braces
+ */
+export type EmptyGroup = { braces: [r.ITOS, r.ITOS]; patterns: EmptyGroup[]; dotIgnore: ITOS | undefined };
 export type PatternGroup = r.IgnoredRTT1 & PatternBase & {
   patternType: 'group';
   patterns: Pattern[];
   RTT: {
-    dotTracker: [number, r.ITOS][];
+    /**
+     * You can put a dot after persisting
+     */
+    dotTracker: Record<number, ITOS>;
+    emptyGroups: Record<number, EmptyGroup[]>;
   };
 };
 export type PatternOptional = r.IgnoredRTT & r.ImageRTT & PatternBase & {
@@ -241,9 +251,23 @@ export type PatternValues = r.IgnoredRTT & r.ImageRTT & PatternBase & {
   };
 };
 export type SubSelect = Omit<QuerySelect, 'context' | 'datasets'>;
-// Curlies are pushed up instead of down because the syntax `{ { } }` is valid,
-// but does not resolve in a pattern
-export type Pattern = CurliedRTT & (
+// Curlies are pushed up instead of down because the syntax `{ { } { } }` is valid, but does not resolve in a pattern
+// postEmpty is always [] except for the last pattern in a group
+export type Pattern = { RTT: {
+  // One object is one deconstructed group
+  unGroupedInfo?: {
+    // First item is one closest to the pattern
+    containedIn: {
+      preBrace: r.ITOS;
+      postBrace: r.ITOS;
+      // Dot after braces
+      dot: r.ITOS | undefined;
+      preEmpty: EmptyGroup[];
+      postEmpty: EmptyGroup[];
+    }[];
+    patternDot: r.ITOS | undefined;
+  };
+}; } & (
   | PatternBgp
   | PatternGroup
   | PatternUnion

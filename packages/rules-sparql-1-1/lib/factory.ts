@@ -51,6 +51,8 @@ import type {
   Quads,
   UpdateOperationModify,
   BracketWrapper,
+  EmptyGroup,
+  Query,
 } from './RoundTripTypes';
 import type * as r from './TypeHelpersRTT';
 import { Wildcard } from './Wildcard';
@@ -180,6 +182,18 @@ export class TraqulaFactory extends BlankSpaceFactory {
     };
   }
 
+  public isPatternGroup(x: Pattern): x is PatternGroup {
+    return x.type === 'pattern' && x.patternType === 'group';
+  }
+
+  public isPattern(x: any): x is Pattern {
+    return x.type === 'pattern';
+  }
+
+  public isQuery(x: any): x is Query {
+    return x.type === 'query';
+  }
+
   public patternFilter(i0: r.ITOS, img1: string, expression: Expression): PatternFilter {
     return this.rttImage(this.rttIgnore({
       type: 'pattern',
@@ -244,13 +258,52 @@ export class TraqulaFactory extends BlankSpaceFactory {
     };
   }
 
-  public deGroupSingle(group: PatternGroup): Pattern {
-    if (group.patterns.length > 1) {
-      return group;
+  public deGroupSingle(group: PatternGroup & Pattern): (dot: r.ITOS | undefined) => Pattern {
+    if (group.patterns.length === 1) {
+      const preEmpty = group.RTT.emptyGroups[0] ?? [];
+      const postEmpty = group.RTT.emptyGroups[1] ?? [];
+      const patternDot = group.RTT.dotTracker[0] ?? undefined;
+      return (dot) => {
+        const pattern = group.patterns[0];
+        const container = {
+          preEmpty,
+          postEmpty,
+          preBrace: group.RTT.i0,
+          postBrace: group.RTT.i1,
+          dot,
+        };
+        if ('unGroupedInfo' in pattern.RTT && pattern.RTT.unGroupedInfo !== undefined) {
+          pattern.RTT.unGroupedInfo.containedIn.push(container);
+        } else {
+          pattern.RTT.unGroupedInfo = {
+            containedIn: [ container ],
+            patternDot,
+          };
+        }
+        return pattern;
+      };
     }
-    const { i0, i1 } = group.RTT;
-    // TODO: what if array is empty??? -> Check what construct does
-    return this.curlied(group.patterns[0], i0, i1);
+    return () => group;
+  }
+
+  /**
+   * 1. An empty group results in an {@link EmptyGroup} describing itself
+   * 2. A group with one pattern is useless - It returns
+   *  a. the pattern,
+   *  b. its now orphaned dot,
+   *  c. Empty groups, and
+   *  d. its braces.
+   * 3. A group with more than one pattern is returned as is.
+   */
+  public deGroup(group: PatternGroup & Pattern): ((dot: r.ITOS | undefined) => EmptyGroup | Pattern) {
+    if (group.patterns.length === 0) {
+      return dot => ({
+        patterns: group.RTT.emptyGroups[0] ?? [],
+        braces: [ group.RTT.i0, group.RTT.i1 ],
+        dotIgnore: dot,
+      } satisfies EmptyGroup);
+    }
+    return this.deGroupSingle(group);
   }
 
   public aggregate(i0: r.ITOS, i1: r.ITOS, i2: r.ITOS | undefined, i3: r.ITOS, img1: string, img2: string | undefined,

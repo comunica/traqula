@@ -66,7 +66,6 @@ export const allBaseTokens = LexerBuilder.create().add(
   ask,
   from,
   where,
-  groupBy,
   having,
   order,
   orderAsc,

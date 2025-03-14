@@ -77,7 +77,7 @@ export const selectQuery: SparqlRule<'selectQuery', Omit<QuerySelect, HandledByB
       const { val, ...RTT } = selectVal;
       return {
         queryType: 'select',
-        where: where.val,
+        where: where.val.patterns,
         solutionModifiers: modifier,
         datasets: from,
         variables: val,
@@ -110,7 +110,7 @@ export const subSelect: SparqlGrammarRule<'subSelect', SubSelect> = <const> {
       return {
         type: 'query',
         queryType: 'select',
-        where: where.val,
+        where: where.val.patterns,
         solutionModifiers: modifier,
         variables: val,
         ...(values && { values }),
@@ -220,7 +220,7 @@ export const constructQuery: SparqlRule<'constructQuery', Omit<QueryConstruct, H
             queryType: 'construct',
             template: template.val,
             datasets: from,
-            where: val,
+            where: val.patterns,
             solutionModifiers: modifiers,
             RTT: {
               ...RTT,
@@ -303,7 +303,7 @@ export const describeQuery: SparqlRule<'describeQuery', Omit<QueryDescribe, Hand
       queryType: 'describe',
       variables,
       datasets: from,
-      ...(where && { where: where.val }),
+      ...(where && { where: where.val.patterns }),
       solutionModifiers: modifiers,
       RTT: {
         where: where ? [ where.i0, where.img1 ] : [[], '' ],
@@ -332,7 +332,7 @@ export const askQuery: SparqlRule<'askQuery', Omit<QueryAsk, HandledByBase>> = <
     return ACTION(() => ({
       queryType: 'ask',
       datasets: from,
-      where: where.val,
+      where: where.val.patterns,
       solutionModifiers: modifiers,
       RTT: {
         where: where ? [ where.i0, where.img1 ] : [[], '' ],

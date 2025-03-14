@@ -77,7 +77,7 @@ export const prologue: SparqlRule<'prologue', ContextDefinition[]> = <const> {
  * Registers base IRI in the context and returns it.
  * [[5]](https://www.w3.org/TR/sparql11-query/#rBaseDecl)
  */
-const baseDecl: SparqlRule<'baseDecl', ContextDefinitionBaseDecl> = <const> {
+export const baseDecl: SparqlRule<'baseDecl', ContextDefinitionBaseDecl> = <const> {
   name: 'baseDecl',
   impl: ({ CONSUME, SUBRULE }) => ({ factory: F }) => {
     const i0 = SUBRULE(blank, undefined);

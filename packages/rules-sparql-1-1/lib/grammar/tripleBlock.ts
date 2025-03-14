@@ -9,7 +9,7 @@ import type { ITOS, Wrap } from '../TypeHelpersRTT';
 import { blank, var_, varOrTerm, verb } from './general';
 import { path } from './propertyPaths';
 
-interface TriplePart {
+export interface TriplePart {
   node: Triple['subject'] | Triple['object'];
   triples: Triple[];
 }

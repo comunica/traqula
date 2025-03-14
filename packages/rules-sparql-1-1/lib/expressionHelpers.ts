@@ -236,7 +236,7 @@ export function funcExpr2or3<T extends string>(func: TokenType & { name: T }):
 RuleDefExpressionFunctionX<Uncapitalize<T>, [Expression, Expression] | [Expression, Expression, Expression]> {
   return {
     name: unCapitalize(func.name),
-    impl: ({ CONSUME, SUBRULE1, SUBRULE2, SUBRULE3, CONSUME1, OPTION, CONSUME2 }) => ({ factory: F }) => {
+    impl: ({ CONSUME, SUBRULE1, SUBRULE2, SUBRULE3, CONSUME1, OPTION, CONSUME2 }) => () => {
       const i0 = SUBRULE1(blank, undefined);
       const operator = CONSUME(func).image;
       const i1 = SUBRULE2(blank, undefined);
@@ -320,12 +320,12 @@ SparqlGrammarRule<Uncapitalize<T>, ExpressionPatternOperation> {
         type: 'expression',
         expressionType: 'patternOperation',
         operator: formatOperator(operator),
-        args: [ F.deGroupSingle(group) ],
+        args: [ F.deGroupSingle(group)(undefined) ],
         RTT: {
           img1: operator,
           i0,
         },
-      };
+      } satisfies ExpressionPatternOperation;
     },
   };
 }

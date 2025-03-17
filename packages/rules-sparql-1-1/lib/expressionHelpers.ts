@@ -21,15 +21,11 @@ export type ExpressionFunctionX<U extends Expression[]> = ExpressionOperation & 
 export type RuleDefExpressionFunctionX<T extends string, U extends Expression[]>
   = SparqlGrammarRule<T, ExpressionFunctionX<U>>;
 
-function formatOperator(operator: string): string {
-  return operator.toLowerCase().replaceAll(' ', '');
-}
-
 export function funcExpr1<T extends string>(func: TokenType & { name: T }):
 RuleDefExpressionFunctionX<Uncapitalize<T>, [Expression]> {
   return {
     name: unCapitalize(func.name),
-    impl: ({ SUBRULE, CONSUME, SUBRULE1, SUBRULE2, SUBRULE3 }) => () => {
+    impl: ({ ACTION, SUBRULE, CONSUME, SUBRULE1, SUBRULE2, SUBRULE3 }) => (C) => {
       const i0 = SUBRULE1(blank, undefined);
       const operator = CONSUME(func).image;
       const i1 = SUBRULE2(blank, undefined);
@@ -37,17 +33,8 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, [Expression]> {
       const arg = SUBRULE(expression, undefined);
       const i2 = SUBRULE3(blank, undefined);
       CONSUME(l.symbols.RParen);
-
-      return {
-        type: 'expression',
-        expressionType: 'operation',
-        operator: formatOperator(operator),
-        args: [ arg ],
-        RTT: {
-          img1: operator,
-          ignored: [ i0, i1, i2 ],
-        },
-      };
+      return ACTION(() =>
+        C.factory.expressionOperation({ args: [ arg ], img1: operator, ignored: [ i0, i1, i2 ]}));
     },
   };
 }
@@ -56,7 +43,7 @@ export function funcExpr2<T extends string>(func: TokenType & { name: T }):
 RuleDefExpressionFunctionX<Uncapitalize<T>, [Expression, Expression]> {
   return {
     name: unCapitalize(func.name),
-    impl: ({ CONSUME, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4 }) => () => {
+    impl: ({ ACTION, CONSUME, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4 }) => (C) => {
       const i0 = SUBRULE1(blank, undefined);
       const operator = CONSUME(func).image;
       const i1 = SUBRULE2(blank, undefined);
@@ -67,16 +54,8 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, [Expression, Expression]> {
       const arg2 = SUBRULE2(expression, undefined);
       const i3 = SUBRULE4(blank, undefined);
       CONSUME(l.symbols.RParen);
-      return {
-        type: 'expression',
-        expressionType: 'operation',
-        operator: formatOperator(operator),
-        args: [ arg1, arg2 ],
-        RTT: {
-          img1: operator,
-          ignored: [ i0, i1, i2, i3 ],
-        },
-      };
+      return ACTION(() =>
+        C.factory.expressionOperation({ args: [ arg1, arg2 ], img1: operator, ignored: [ i0, i1, i2, i3 ]}));
     },
   };
 }
@@ -85,7 +64,7 @@ export function funcExpr3<T extends string>(func: TokenType & { name: T }):
 RuleDefExpressionFunctionX<Uncapitalize<T>, [Expression, Expression, Expression]> {
   return {
     name: unCapitalize(func.name),
-    impl: ({ CONSUME, CONSUME1, CONSUME2, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4, SUBRULE5 }) => () => {
+    impl: ({ ACTION, CONSUME, CONSUME1, CONSUME2, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4, SUBRULE5 }) => (C) => {
       const i0 = SUBRULE1(blank, undefined);
       const operator = CONSUME(func).image;
       const i1 = SUBRULE2(blank, undefined);
@@ -100,16 +79,8 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, [Expression, Expression, Expression]
       const i4 = SUBRULE5(blank, undefined);
       CONSUME(l.symbols.RParen);
 
-      return {
-        type: 'expression',
-        expressionType: 'operation',
-        operator: formatOperator(operator),
-        args: [ arg1, arg2, arg3 ],
-        RTT: {
-          img1: operator,
-          ignored: [ i0, i1, i2, i3, i4 ],
-        },
-      };
+      return ACTION(() =>
+        C.factory.expressionOperation({ args: [ arg1, arg2, arg3 ], img1: operator, ignored: [ i0, i1, i2, i3, i4 ]}));
     },
   };
 }
@@ -118,7 +89,7 @@ export function funcVar1<T extends string>(func: TokenType & { name: T }):
 RuleDefExpressionFunctionX<Uncapitalize<T>, [TermVariable]> {
   return {
     name: unCapitalize(func.name),
-    impl: ({ SUBRULE, CONSUME, SUBRULE1, SUBRULE2, SUBRULE3 }) => () => {
+    impl: ({ ACTION, SUBRULE, CONSUME, SUBRULE1, SUBRULE2, SUBRULE3 }) => (C) => {
       const i0 = SUBRULE1(blank, undefined);
       const operator = CONSUME(func).image;
       const i1 = SUBRULE2(blank, undefined);
@@ -126,16 +97,8 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, [TermVariable]> {
       const arg = SUBRULE(var_, undefined);
       const i2 = SUBRULE3(blank, undefined);
       CONSUME(l.symbols.RParen);
-      return {
-        type: 'expression',
-        expressionType: 'operation',
-        operator: formatOperator(operator),
-        args: [ arg ],
-        RTT: {
-          img1: operator,
-          ignored: [ i0, i1, i2 ],
-        },
-      };
+      return ACTION(() =>
+        C.factory.expressionOperation({ args: [ arg ], img1: operator, ignored: [ i0, i1, i2 ]}));
     },
   };
 }
@@ -144,43 +107,27 @@ export function funcExprOrNil1<T extends string>(func: TokenType & { name: T }):
 RuleDefExpressionFunctionX<Uncapitalize<T>, [] | [Expression]> {
   return {
     name: unCapitalize(func.name),
-    impl: ({ CONSUME, OR, SUBRULE, SUBRULE1, SUBRULE2, SUBRULE3 }) => ({ factory: F }) => {
+    impl: ({ ACTION, CONSUME, OR, SUBRULE, SUBRULE1, SUBRULE2, SUBRULE3 }) => (C) => {
       const i0 = SUBRULE1(blank, undefined);
       const operator = CONSUME(func).image;
       const i1 = SUBRULE2(blank, undefined);
-      const base = <const> {
-        type: 'expression',
-        expressionType: 'operation',
-        operator: formatOperator(operator),
-      };
       return OR<ExpressionFunctionX<[] | [Expression]>>([
         { ALT: () => {
           CONSUME(l.symbols.LParen);
           const arg = SUBRULE(expression, undefined);
           const i2 = SUBRULE3(blank, undefined);
           CONSUME(l.symbols.RParen);
-          return {
-            ...base,
-            args: [ arg ],
-            RTT: {
-              img1: operator,
-              ignored: [ i0, i1, i2 ],
-            },
-          };
+          return ACTION(() =>
+            C.factory.expressionOperation({ args: [ arg ], img1: operator, ignored: [ i0, i1, i2 ]}));
         } },
         { ALT: () => {
           const nil = CONSUME(l.terminals.nil).image.slice(1, -1);
-          const i2: ITOS = [ F.blankSpace(nil) ];
-          return {
-            ...base,
+          return ACTION(() => C.factory.expressionOperation({
             args: [],
-            RTT: {
-              img1: operator,
-              ignored: [ i0, i1, i2 ],
-            },
-          };
-        },
-        },
+            img1: operator,
+            ignored: [ i0, i1, [ C.factory.blankSpace(nil) ]],
+          }));
+        } },
       ]);
     },
   };
@@ -190,22 +137,16 @@ export function funcNil1<T extends string>(func: TokenType & { name: T }):
 RuleDefExpressionFunctionX<Uncapitalize<T>, []> {
   return {
     name: unCapitalize(func.name),
-    impl: ({ CONSUME, SUBRULE1, SUBRULE2 }) => ({ factory: F }) => {
+    impl: ({ ACTION, CONSUME, SUBRULE1, SUBRULE2 }) => (C) => {
       const i0 = SUBRULE1(blank, undefined);
       const operator = CONSUME(func).image;
       const i1 = SUBRULE2(blank, undefined);
       const nil = CONSUME(l.terminals.nil).image.slice(1, -1);
-      const i2: ITOS = [ F.blankSpace(nil) ];
-      return {
-        type: 'expression',
-        expressionType: 'operation',
-        operator: formatOperator(operator),
-        args: [],
-        RTT: {
-          img1: operator,
-          ignored: [ i0, i1, i2 ],
-        },
-      };
+      return ACTION(() => C.factory.expressionOperation({
+        args: [ ],
+        img1: operator,
+        ignored: [ i0, i1, [ C.factory.blankSpace(nil) ]],
+      }));
     },
   };
 }
@@ -214,20 +155,12 @@ export function funcExprList1<T extends string>(func: TokenType & { name: T }):
 RuleDefExpressionFunctionX<Uncapitalize<T>, Expression[]> {
   return {
     name: unCapitalize(func.name),
-    impl: ({ CONSUME, SUBRULE }) => () => {
+    impl: ({ ACTION, CONSUME, SUBRULE }) => (C) => {
       const i0 = SUBRULE(blank, undefined);
       const operator = CONSUME(func).image;
       const args = SUBRULE(expressionList, undefined);
-      return {
-        type: 'expression',
-        expressionType: 'operation',
-        operator: formatOperator(operator),
-        args: args.val,
-        RTT: {
-          img1: operator,
-          ignored: [ i0, ...args.ignored ],
-        },
-      };
+      return ACTION(() =>
+        C.factory.expressionOperation({ args: args.val, img1: operator, ignored: [ i0, ...args.ignored ]}));
     },
   };
 }
@@ -236,34 +169,30 @@ export function funcExpr2or3<T extends string>(func: TokenType & { name: T }):
 RuleDefExpressionFunctionX<Uncapitalize<T>, [Expression, Expression] | [Expression, Expression, Expression]> {
   return {
     name: unCapitalize(func.name),
-    impl: ({ CONSUME, SUBRULE1, SUBRULE2, SUBRULE3, CONSUME1, OPTION, CONSUME2 }) => () => {
-      const i0 = SUBRULE1(blank, undefined);
-      const operator = CONSUME(func).image;
-      const i1 = SUBRULE2(blank, undefined);
-      CONSUME(l.symbols.LParen);
-      const arg1 = SUBRULE1(expression, undefined);
-      const i2 = SUBRULE3(blank, undefined);
-      CONSUME1(l.symbols.comma);
-      const arg2 = SUBRULE2(expression, undefined);
-      const arg3 = OPTION(() => {
-        const i3 = SUBRULE3(blank, undefined);
-        CONSUME2(l.symbols.comma);
-        const arg3 = SUBRULE3(expression, undefined);
-        return { i3, arg3 };
-      });
-      const i4 = SUBRULE3(blank, undefined);
-      CONSUME(l.symbols.RParen);
-      return {
-        type: 'expression',
-        expressionType: 'operation',
-        operator: formatOperator(operator),
-        args: arg3 ? [ arg1, arg2, arg3.arg3 ] : [ arg1, arg2 ],
-        RTT: {
+    impl: ({ ACTION, CONSUME, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4, SUBRULE5, CONSUME1, OPTION, CONSUME2 }) =>
+      (C) => {
+        const i0 = SUBRULE1(blank, undefined);
+        const operator = CONSUME(func).image;
+        const i1 = SUBRULE2(blank, undefined);
+        CONSUME(l.symbols.LParen);
+        const arg1 = SUBRULE1(expression, undefined);
+        const i2 = SUBRULE3(blank, undefined);
+        CONSUME1(l.symbols.comma);
+        const arg2 = SUBRULE2(expression, undefined);
+        const arg3 = OPTION(() => {
+          const i3 = SUBRULE4(blank, undefined);
+          CONSUME2(l.symbols.comma);
+          const arg3 = SUBRULE3(expression, undefined);
+          return { i3, arg3 };
+        });
+        const i4 = SUBRULE5(blank, undefined);
+        CONSUME(l.symbols.RParen);
+        return ACTION(() => C.factory.expressionOperation({
+          args: arg3 ? [ arg1, arg2, arg3.arg3 ] : [ arg1, arg2 ],
           img1: operator,
           ignored: arg3 ? [ i0, i1, i2, arg3.i3, i4 ] : [ i0, i1, i2, i4 ],
-        },
-      };
-    },
+        }));
+      },
   };
 }
 
@@ -274,37 +203,46 @@ RuleDefExpressionFunctionX<
 > {
   return {
     name: unCapitalize(func.name),
-    impl: ({ CONSUME, SUBRULE1, SUBRULE2, SUBRULE3, CONSUME1, OPTION, CONSUME2, SUBRULE4, CONSUME3 }) => () => {
-      const i0 = SUBRULE1(blank, undefined);
-      const operator = CONSUME(func).image;
-      const i1 = SUBRULE2(blank, undefined);
-      CONSUME(l.symbols.LParen);
-      const arg1 = SUBRULE1(expression, undefined);
-      const i2 = SUBRULE3(blank, undefined);
-      CONSUME1(l.symbols.comma);
-      const arg2 = SUBRULE2(expression, undefined);
-      const i3 = SUBRULE4(blank, undefined);
-      CONSUME2(l.symbols.comma);
-      const arg3 = SUBRULE3(expression, undefined);
-      const arg4 = OPTION(() => {
-        const i4 = SUBRULE3(blank, undefined);
-        CONSUME3(l.symbols.comma);
-        const arg4 = SUBRULE4(expression, undefined);
-        return { arg4, i4 };
-      });
-      const i5 = SUBRULE4(blank, undefined);
-      CONSUME(l.symbols.RParen);
-      return {
-        type: 'expression',
-        expressionType: 'operation',
-        operator: formatOperator(operator),
-        args: arg4 ? [ arg1, arg2, arg3, arg4.arg4 ] : [ arg1, arg2, arg3 ],
-        RTT: {
+    impl: ({
+      ACTION,
+      CONSUME,
+      SUBRULE1,
+      SUBRULE2,
+      SUBRULE3,
+      SUBRULE4,
+      SUBRULE5,
+      SUBRULE6,
+      CONSUME1,
+      OPTION,
+      CONSUME2,
+      CONSUME3,
+    }) =>
+      (C) => {
+        const i0 = SUBRULE1(blank, undefined);
+        const operator = CONSUME(func).image;
+        const i1 = SUBRULE2(blank, undefined);
+        CONSUME(l.symbols.LParen);
+        const arg1 = SUBRULE1(expression, undefined);
+        const i2 = SUBRULE3(blank, undefined);
+        CONSUME1(l.symbols.comma);
+        const arg2 = SUBRULE2(expression, undefined);
+        const i3 = SUBRULE4(blank, undefined);
+        CONSUME2(l.symbols.comma);
+        const arg3 = SUBRULE3(expression, undefined);
+        const arg4 = OPTION(() => {
+          const i4 = SUBRULE5(blank, undefined);
+          CONSUME3(l.symbols.comma);
+          const arg4 = SUBRULE4(expression, undefined);
+          return { arg4, i4 };
+        });
+        const i5 = SUBRULE6(blank, undefined);
+        CONSUME(l.symbols.RParen);
+        return ACTION(() => C.factory.expressionOperation({
+          args: arg4 ? [ arg1, arg2, arg3, arg4.arg4 ] : [ arg1, arg2, arg3 ],
           img1: operator,
           ignored: arg4 ? [ i0, i1, i2, i3, arg4.i4, i5 ] : [ i0, i1, i2, i3, i5 ],
-        },
-      };
-    },
+        }));
+      },
   };
 }
 
@@ -312,20 +250,15 @@ export function funcGroupGraphPattern<T extends string>(func: TokenType & { name
 SparqlGrammarRule<Uncapitalize<T>, ExpressionPatternOperation> {
   return {
     name: unCapitalize(func.name),
-    impl: ({ SUBRULE, CONSUME }) => ({ factory: F }) => {
+    impl: ({ ACTION, SUBRULE, CONSUME }) => (C) => {
       const i0 = SUBRULE(blank, undefined);
       const operator = CONSUME(func).image;
       const group = SUBRULE(groupGraphPattern, undefined);
-      return {
-        type: 'expression',
-        expressionType: 'patternOperation',
-        operator: formatOperator(operator),
-        args: [ F.deGroupSingle(group)(undefined) ],
-        RTT: {
-          img1: operator,
-          i0,
-        },
-      } satisfies ExpressionPatternOperation;
+      return ACTION(() => C.factory.expressionPatternOperation({
+        i0,
+        img1: operator,
+        args: [ C.factory.deGroupSingle(group)(undefined) ],
+      }));
     },
   };
 }
@@ -336,7 +269,7 @@ export function baseAggregateFunc<T extends string>(func: TokenType & { name: T 
 RuleDefExpressionAggregatorX<Uncapitalize<T>> {
   return {
     name: unCapitalize(func.name),
-    impl: ({ CONSUME, SUBRULE, OPTION, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4 }) => ({ factory: F }) => {
+    impl: ({ ACTION, CONSUME, SUBRULE, OPTION, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4 }) => (C) => {
       const i0 = SUBRULE1(blank, undefined);
       const img1 = CONSUME(func).image;
       const i1 = SUBRULE2(blank, undefined);
@@ -351,7 +284,7 @@ RuleDefExpressionAggregatorX<Uncapitalize<T>> {
       const i3 = SUBRULE4(blank, undefined);
       CONSUME(l.symbols.RParen);
 
-      return F.aggregate(i0, i1, i2, i3, img1, img2, expr1);
+      return ACTION(() => C.factory.aggregate(i0, i1, i2, i3, img1, img2, expr1));
     },
   };
 }

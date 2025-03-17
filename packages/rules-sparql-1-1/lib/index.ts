@@ -7,3 +7,4 @@ export * from './SparqlParser';
 export * from './Wildcard';
 export * from './RoundTripTypes';
 export * from './TypeHelpersRTT';
+export * from './factory';

@@ -185,7 +185,7 @@ export const notExistsFunc = funcGroupGraphPattern(l.builtIn.notexists);
 export const aggregateCount:
 SparqlGrammarRule<'builtInCount', ExpressionAggregateOnWildcard | ExpressionAggregateDefault> = {
   name: unCapitalize(l.builtIn.count.name),
-  impl: ({ CONSUME, SUBRULE, OR, OPTION, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4, SUBRULE5 }) => ({ factory: F }) => {
+  impl: ({ ACTION, CONSUME, SUBRULE, OR, OPTION, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4, SUBRULE5 }) => (C) => {
     const i0 = SUBRULE1(blank, undefined);
     const img1 = CONSUME(l.builtIn.count).image;
     const i1 = SUBRULE2(blank, undefined);
@@ -212,9 +212,10 @@ SparqlGrammarRule<'builtInCount', ExpressionAggregateOnWildcard | ExpressionAggr
 
     if (expressionVal[1] === undefined) {
       const expr = <Expression>expressionVal[0];
-      return F.aggregate(i0, i1, i2, i4, img1, img2, expr);
+      return ACTION(() => C.factory.aggregate(i0, i1, i2, i4, img1, img2, expr));
     }
-    return F.aggregate(i0, i1, i2, <ITOS>expressionVal[0], i4, img1, img2, expressionVal[1]);
+    return ACTION(() =>
+      C.factory.aggregate(i0, i1, i2, <ITOS>expressionVal[0], i4, img1, img2, expressionVal[1]!));
   },
 };
 export const aggregateSum = baseAggregateFunc(l.builtIn.sum);
@@ -225,8 +226,8 @@ export const aggregateSample = baseAggregateFunc(l.builtIn.sample);
 export const aggregateGroup_concat:
 SparqlGrammarRule<'builtInGroup_concat', ExpressionAggregateDefault | ExpressionAggregateSeparator> = <const>{
   name: unCapitalize(l.builtIn.groupConcat.name),
-  impl: ({ CONSUME, OPTION1, SUBRULE, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4, SUBRULE5, SUBRULE6, OPTION2 }) =>
-    ({ factory: F }) => {
+  impl: ({ ACTION, CONSUME, OPTION1, SUBRULE, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4, SUBRULE5, SUBRULE6, OPTION2 }) =>
+    (C) => {
       const i0 = SUBRULE1(blank, undefined);
       const img1 = CONSUME(l.builtIn.groupConcat).image;
       const i1 = SUBRULE2(blank, undefined);
@@ -251,8 +252,8 @@ SparqlGrammarRule<'builtInGroup_concat', ExpressionAggregateDefault | Expression
       const i7 = SUBRULE(blank, undefined);
       CONSUME(l.symbols.RParen);
 
-      return sep ?
-        F.aggregate(
+      return ACTION(() => sep ?
+        C.factory.aggregate(
           i0,
           i1,
           i2,
@@ -268,7 +269,7 @@ SparqlGrammarRule<'builtInGroup_concat', ExpressionAggregateDefault | Expression
           expr,
           sep.separator,
         ) :
-        F.aggregate(i0, i1, i2, i7, img1, img2, expr);
+        C.factory.aggregate(i0, i1, i2, i7, img1, img2, expr));
     },
 };
 

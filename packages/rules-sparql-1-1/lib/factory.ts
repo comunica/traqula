@@ -165,6 +165,40 @@ export class TraqulaFactory extends BlankSpaceFactory {
     return !this.isExpressionAggregateOnWildcard(x) && !this.isExpressionAggregateSeparator(x);
   }
 
+  public formatOperator(operator: string): string {
+    return operator.toLowerCase().replaceAll(' ', '');
+  }
+
+  public expressionOperation<Args extends Expression[]>(
+    arg: { args: Args } & Pick<ExpressionOperation['RTT'], 'img1' | 'ignored'>,
+  ): ExpressionOperation & { args: Args } {
+    return {
+      type: 'expression',
+      expressionType: 'operation',
+      operator: this.formatOperator(arg.img1),
+      args: arg.args,
+      RTT: {
+        ignored: arg.ignored,
+        img1: arg.img1,
+      },
+    };
+  }
+
+  public expressionPatternOperation<Args extends Pattern[]>(
+    arg: { args: Args } & Pick<ExpressionPatternOperation['RTT'], 'i0' | 'img1'>,
+  ): ExpressionPatternOperation & { args: Args } {
+    return {
+      type: 'expression',
+      expressionType: 'patternOperation',
+      operator: this.formatOperator(arg.img1),
+      args: arg.args,
+      RTT: {
+        i0: arg.i0,
+        img1: arg.img1,
+      },
+    };
+  }
+
   public triple(
     subject: Triple['subject'],
     predicate: Triple['predicate'],

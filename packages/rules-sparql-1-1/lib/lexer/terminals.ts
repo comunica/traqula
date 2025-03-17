@@ -64,7 +64,7 @@ export const anon = createToken({ name: 'Anon', pattern: anonPattern });
  * In order to keep the complexity of the parser down (maxLookahead),
  * we need to track whitespace and comments as a single token.
  */
-export const ignoredSpace = createToken({ name: 'Ws', pattern: /(?:[\u0020\u0009\u000D\u000A]|#[^\n]*\n)+/ });
+export const ignoredSpace = createToken({ name: 'IgnoredSpace', pattern: /(?:[\u0020\u0009\u000D\u000A]|#[^\n]*\n)+/ });
 
 export const allTerminals = LexerBuilder.create().add(
   iriRef,

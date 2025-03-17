@@ -25,8 +25,8 @@ export function genB(subrule: Parameters<GeneratorRule<any, any, ITOS>['gImpl']>
 /**
  * Parses blank space and comments. - Subrule needs to be called before every CONSUME!
  */
-export const blank: SparqlRule<'itos', ITOS> = <const> {
-  name: 'itos',
+export const blank: SparqlRule<'blank', ITOS> = <const> {
+  name: 'blank',
   impl: ({ ACTION, CONSUME, OPTION }) => () => {
     const image = OPTION(() => CONSUME(l.terminals.ignoredSpace).image);
     return ACTION(() => {
@@ -43,7 +43,8 @@ export const blank: SparqlRule<'itos', ITOS> = <const> {
           iter = iter.slice(ws.length);
         }
         if (comment) {
-          res.push({ comment: comment.slice(0, -1) });
+          // Prune # and \n
+          res.push({ comment: comment.slice(1, -1) });
           iter = iter.slice(comment.length);
         }
       }
@@ -79,11 +80,11 @@ export const prologue: SparqlRule<'prologue', ContextDefinition[]> = <const> {
  */
 export const baseDecl: SparqlRule<'baseDecl', ContextDefinitionBaseDecl> = <const> {
   name: 'baseDecl',
-  impl: ({ CONSUME, SUBRULE }) => ({ factory: F }) => {
+  impl: ({ ACTION, CONSUME, SUBRULE }) => (C) => {
     const i0 = SUBRULE(blank, undefined);
     const image = CONSUME(l.baseDecl).image;
     const val = SUBRULE(iriFull, undefined);
-    return F.baseDecl(i0, image, val);
+    return ACTION(() => C.factory.baseDecl(i0, image, val));
   },
   gImpl: ({ SUBRULE: s }) => ast => [
     genB(s, ast.RTT.i0),
@@ -98,7 +99,7 @@ export const baseDecl: SparqlRule<'baseDecl', ContextDefinitionBaseDecl> = <cons
  */
 export const prefixDecl: SparqlRule<'prefixDecl', ContextDefinitionPrefixDecl> = <const> {
   name: 'prefixDecl',
-  impl: ({ CONSUME, SUBRULE, SUBRULE1, SUBRULE2, SUBRULE3 }) => ({ factory: F }) => {
+  impl: ({ ACTION, CONSUME, SUBRULE, SUBRULE1, SUBRULE2, SUBRULE3 }) => (C) => {
     const i0 = SUBRULE1(blank, undefined);
     const img1 = CONSUME(l.prefixDecl).image;
     const i1 = SUBRULE2(blank, undefined);
@@ -106,7 +107,7 @@ export const prefixDecl: SparqlRule<'prefixDecl', ContextDefinitionPrefixDecl> =
     const i2 = SUBRULE3(blank, undefined);
     const value = SUBRULE(iriFull, undefined);
 
-    return F.prefix(i0, img1, i1, i2, name, value);
+    return ACTION(() => C.factory.prefix(i0, img1, i1, i2, name, value));
   },
   gImpl: ({ SUBRULE: s }) => ast => [
     genB(s, ast.RTT.i0),
@@ -126,9 +127,7 @@ export const verb: SparqlGrammarRule<'verb', TermVariable | TermIri> = <const> {
   name: 'verb',
   impl: ({ SUBRULE, OR }) => () => OR([
     { ALT: () => SUBRULE(varOrIri, undefined) },
-    {
-      ALT: () => SUBRULE(verbA, undefined),
-    },
+    { ALT: () => SUBRULE(verbA, undefined) },
   ]),
 };
 
@@ -165,13 +164,13 @@ export const varOrIri: SparqlGrammarRule<'varOrIri', TermIri | TermVariable> = <
  */
 export const var_: SparqlRule<'var', TermVariable> = <const> {
   name: 'var',
-  impl: ({ CONSUME, OR, SUBRULE }) => ({ factory: F }) => {
+  impl: ({ ACTION, CONSUME, OR, SUBRULE }) => (C) => {
     const i0 = SUBRULE(blank, undefined);
     const image = OR([
       { ALT: () => CONSUME(l.terminals.var1).image },
       { ALT: () => CONSUME(l.terminals.var2).image },
     ]);
-    return F.variable(i0, image);
+    return ACTION(() => C.factory.variable(i0, image));
   },
   gImpl: () => ast => `?${ast.value}`,
 };
@@ -181,19 +180,19 @@ export const var_: SparqlRule<'var', TermVariable> = <const> {
  */
 export const graphTerm: SparqlRule<'graphTerm', GraphTerm> = <const> {
   name: 'graphTerm',
-  impl: ({ SUBRULE, CONSUME, OR }) => ({ factory: F, parseMode }) => OR<GraphTerm>([
+  impl: ({ ACTION, SUBRULE, CONSUME, OR }) => C => OR<GraphTerm>([
     { ALT: () => SUBRULE(iri, undefined) },
     { ALT: () => SUBRULE(rdfLiteral, undefined) },
     { ALT: () => SUBRULE(numericLiteral, undefined) },
     { ALT: () => SUBRULE(booleanLiteral, undefined) },
-    { GATE: () => parseMode.has('canCreateBlankNodes'), ALT: () => SUBRULE(blankNode, undefined) },
+    { GATE: () => C.parseMode.has('canCreateBlankNodes'), ALT: () => SUBRULE(blankNode, undefined) },
     { ALT: () => {
       const i0 = SUBRULE(blank, undefined);
       const img1 = CONSUME(l.terminals.nil).image;
-      return {
-        ...F.namedNode(i0, CommonIRIs.NIL),
+      return ACTION(() => ({
+        ...C.factory.namedNode(i0, CommonIRIs.NIL),
         RTT: { i0, img1 },
-      } satisfies TermIriPrimitive;
+      } satisfies TermIriPrimitive));
     } },
   ]),
   gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {

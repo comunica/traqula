@@ -343,7 +343,7 @@ export type ExpressionOperation = ExpressionBase & r.ImageRTT & {
   args: Expression[];
   RTT: {
     /**
-     * For builtInCall Having length = min(2, args.length +1)
+     * For builtInCall Having length = min(3, args.length +1) - ...Name...(xxx...)
      */
     ignored: r.ITOS[];
   };

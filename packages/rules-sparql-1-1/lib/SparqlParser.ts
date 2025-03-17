@@ -7,7 +7,7 @@ interface Parser<ParseRet> {
   path: (input: string, context: SparqlContext, arg: undefined) => TermIri | Path;
 }
 
-function completeParseContext(context: Partial<SparqlContext>): SparqlContext {
+export function completeParseContext(context: Partial<SparqlContext>): SparqlContext {
   return {
     factory: context.factory ?? new TraqulaFactory(),
     baseIRI: context.baseIRI,

@@ -2,6 +2,7 @@ import { Builder } from '@traqula/core';
 import { gram } from '@traqula/rules-sparql-1-1';
 
 const rulesNoBuiltIn = <const> [
+  gram.blank,
   gram.expression,
   gram.conditionalOrExpression,
   gram.conditionalAndExpression,
@@ -70,6 +71,8 @@ export const expressionParserBuilder = Builder.createBuilder(rulesNoBuiltIn)
     gram.builtInSha1,
     gram.builtInSha256,
     gram.builtInSha384,
+  )
+  .addMany(
     gram.builtInSha512,
     gram.builtInCoalesce,
     gram.builtInIf,
@@ -93,6 +96,7 @@ export const expressionParserBuilder = Builder.createBuilder(rulesNoBuiltIn)
     gram.aggregateGroup_concat,
     gram.aggregate,
     gram.iri,
+    gram.iriFull,
     gram.prefixedName,
     gram.argList,
     gram.string,

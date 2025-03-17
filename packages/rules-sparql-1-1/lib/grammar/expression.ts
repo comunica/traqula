@@ -478,7 +478,7 @@ export const multiplicativeExpression: SparqlGrammarRule<'multiplicativeExpressi
     () => SUBRULE1(unaryExpression, undefined),
     () => {
       const i0 = SUBRULE1(blank, undefined);
-      const res = (operator: '*' | '/', expr: Expression) => (left: Expression): ExpressionOperation => ({
+      const constructRes = (operator: '*' | '/', expr: Expression) => (left: Expression): ExpressionOperation => ({
         type: 'expression',
         expressionType: 'operation',
         operator,
@@ -492,12 +492,12 @@ export const multiplicativeExpression: SparqlGrammarRule<'multiplicativeExpressi
         { ALT: () => {
           CONSUME(l.symbols.star);
           const expr = SUBRULE2(unaryExpression, undefined);
-          return res('*', expr);
+          return constructRes('*', expr);
         } },
         { ALT: () => {
           CONSUME(l.symbols.slash);
           const expr = SUBRULE3(unaryExpression, undefined);
-          return res('/', expr);
+          return constructRes('/', expr);
         } },
       ]);
     },

@@ -36,7 +36,7 @@
     "lerna": "8.2.1",
     "manual-git-changelog": "^1.0.2",
     "rdf-test-suite": "^2.0.0",
-    "typedoc": "^0.27.6",
+    "typedoc": "^0.28.0",
     "typescript": "^5.7.3",
     "vite": "^6.0.11",
     "vitest": "^3.0.5"

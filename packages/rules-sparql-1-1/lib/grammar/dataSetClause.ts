@@ -14,8 +14,8 @@ export function datasetClauseUsing<RuleName extends 'usingClause' | 'datasetClau
   return {
     name,
     impl: ({ ACTION, SUBRULE, CONSUME, OR }) => ({ factory: F }) => {
-      const i0 = SUBRULE(blank, undefined);
       const img1 = CONSUME(token).image;
+      const i0 = SUBRULE(blank, undefined);
       return OR<RuleDefReturn<typeof datasetClause>>([
         { ALT: () => {
           const iri = SUBRULE(defaultGraphClause, undefined);
@@ -96,8 +96,8 @@ export const usingClauses = datasetClausesUsings(<const> 'usingClauses', usingCl
 export const namedGraphClause: SparqlGrammarRule<'namedGraphClause', Wrap<TermIri> & Ignores & Images> = <const> {
   name: 'namedGraphClause',
   impl: ({ SUBRULE, CONSUME }) => () => {
-    const i0 = SUBRULE(blank, undefined);
     const img1 = CONSUME(l.graph.named).image;
+    const i0 = SUBRULE(blank, undefined);
     const iri = SUBRULE(sourceSelector, undefined);
     return { val: iri, img1, i0 };
   },

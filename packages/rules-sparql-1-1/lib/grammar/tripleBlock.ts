@@ -30,8 +30,8 @@ SparqlGrammarRule<string, Wrap<Triple[]> & { ignored: ITOS[] }>['impl'] {
           triples.push(...template);
         });
         OPTION(() => {
-          const i0 = SUBRULE(blank, undefined);
           CONSUME(l.symbols.dot);
+          const i0 = SUBRULE(blank, undefined);
           ignored.push(i0);
           parsedDot = true;
         });
@@ -135,9 +135,9 @@ function propertyListNotEmptyImplementation<T extends string>(
     name,
     impl: ({ ACTION, CONSUME, AT_LEAST_ONE, SUBRULE1, MANY2, OR1 }) => (_, arg) => {
       const result: Triple[] = [];
-
-      let i0 = SUBRULE1(blank, undefined);
+      let i0: ITOS = [];
       let parsedSemi = true;
+
       AT_LEAST_ONE({
         GATE: () => parsedSemi,
         DEF: () => {
@@ -155,8 +155,8 @@ function propertyListNotEmptyImplementation<T extends string>(
 
           const ignored: ITOS[] = [];
           MANY2(() => {
-            const ix = SUBRULE1(blank, undefined);
             CONSUME(l.symbols.semi);
+            const ix = SUBRULE1(blank, undefined);
             parsedSemi = true;
             ignored.push(ix);
           });
@@ -218,8 +218,8 @@ SparqlGrammarRule<T, Triple[], Pick<Triple, 'subject' | 'predicate'>> {
           const objectTriples = SUBRULE(allowPaths ? objectPath : object, arg);
 
           OPTION(() => {
-            ix = SUBRULE(blank, undefined);
             CONSUME(l.symbols.comma);
+            ix = SUBRULE(blank, undefined);
             parsedComma = true;
           });
 
@@ -289,8 +289,8 @@ function blankNodePropertyListImpl<T extends string>(name: T, allowPaths: boolea
   return {
     name,
     impl: ({ ACTION, SUBRULE, CONSUME, SUBRULE1, SUBRULE2 }) => (C) => {
-      const i0 = SUBRULE1(blank, undefined);
       CONSUME(l.symbols.LSquare);
+      const i0 = SUBRULE1(blank, undefined);
       const blankNode = ACTION(() => ({
         ...C.factory.blankNodeImplicit(),
         RTT: {
@@ -305,8 +305,8 @@ function blankNodePropertyListImpl<T extends string>(name: T, allowPaths: boolea
         allowPaths ? propertyListPathNotEmpty : propertyListNotEmpty,
         { subject: blankNode },
       );
-      const i1 = SUBRULE2(blank, undefined);
       CONSUME(l.symbols.RSquare);
+      const i1 = SUBRULE2(blank, undefined);
 
       return ACTION(() => {
         blankNode.RTT.triplePart.blankNodeListSize = propList.length;
@@ -334,13 +334,13 @@ function collectionImpl<T extends string>(name: T, allowPaths: boolean): SparqlG
       // here called a [RDF collection](https://www.w3.org/TR/sparql11-query/#collections).
       const terms: TriplePart[] = [];
 
-      const i0 = SUBRULE1(blank, undefined);
       CONSUME(l.symbols.LParen);
+      const i0 = SUBRULE1(blank, undefined);
       AT_LEAST_ONE(() => {
         terms.push(SUBRULE(allowPaths ? graphNodePath : graphNode, undefined));
       });
-      const i1 = SUBRULE2(blank, undefined);
       CONSUME(l.symbols.RParen);
+      const i1 = SUBRULE2(blank, undefined);
 
       return ACTION(() => {
         const triples: Triple[] = [];

@@ -132,24 +132,24 @@ export const subSelect: SparqlGrammarRule<'subSelect', SubSelect> = <const> {
 export const selectClause: SparqlRule<'selectClause', Wrap<QuerySelect['variables']> & Images2 & Ignores2> = <const> {
   name: 'selectClause',
   impl: ({ ACTION, AT_LEAST_ONE, SUBRULE, CONSUME, SUBRULE1, SUBRULE2, OPTION, OR1, OR2, OR3 }) => (C) => {
-    const i0 = SUBRULE(blank, undefined);
     const img1 = CONSUME(l.select).image;
+    const i0 = SUBRULE(blank, undefined);
     const couldParseAgg = ACTION(() => C.parseMode.has('canParseAggregate') || !C.parseMode.add('canParseAggregate'));
 
     const img2 = OPTION(() => {
-      const i1 = SUBRULE(blank, undefined);
       const img2 = OR1([
         { ALT: () => CONSUME(l.distinct).image },
         { ALT: () => CONSUME(l.reduced).image },
       ]);
+      const i1 = SUBRULE(blank, undefined);
       return <const> [ i1, img2 ];
     }) ?? [[], '' ];
 
     let i2: ITOS = [];
     const val = OR2<RuleDefReturn<typeof selectClause>['val']>([
       { ALT: () => {
-        i2 = SUBRULE(blank, undefined);
         CONSUME(l.symbols.star);
+        i2 = SUBRULE(blank, undefined);
         return [ new Wildcard() ];
       } },
       { ALT: () => {
@@ -167,14 +167,14 @@ export const selectClause: SparqlRule<'selectClause', Wrap<QuerySelect['variable
             });
           } },
           { ALT: () => {
-            const i0 = SUBRULE(blank, undefined);
             CONSUME(l.symbols.LParen);
+            const i0 = SUBRULE(blank, undefined);
             const expr = SUBRULE(expression, undefined);
-            const i1 = SUBRULE(blank, undefined);
             const img1 = CONSUME(l.as).image;
+            const i1 = SUBRULE(blank, undefined);
             const variable = SUBRULE2(var_, undefined);
-            const i2 = SUBRULE(blank, undefined);
             CONSUME(l.symbols.RParen);
+            const i2 = SUBRULE(blank, undefined);
             ACTION(() => {
               if (usedVars.some(v => v.value === variable.value)) {
                 throw new Error(`Variable ${variable.value} used more than once in SELECT clause`);
@@ -206,8 +206,8 @@ export const selectClause: SparqlRule<'selectClause', Wrap<QuerySelect['variable
 export const constructQuery: SparqlRule<'constructQuery', Omit<QueryConstruct, HandledByBase>> = <const> {
   name: 'constructQuery',
   impl: ({ ACTION, SUBRULE, CONSUME, SUBRULE1, SUBRULE2, OR }) => () => {
-    const i0 = SUBRULE(blank, undefined);
     const img1 = CONSUME(l.construct).image;
+    const i0 = SUBRULE(blank, undefined);
     return OR<Omit<QueryConstruct, HandledByBase>>([
       { ALT: () => {
         const template = SUBRULE(constructTemplate, undefined);
@@ -236,8 +236,8 @@ export const constructQuery: SparqlRule<'constructQuery', Omit<QueryConstruct, H
       } },
       { ALT: () => {
         const from = SUBRULE2(datasetClauses, undefined);
-        const i1 = SUBRULE(blank, undefined);
         const img2 = CONSUME(l.where).image;
+        const i1 = SUBRULE(blank, undefined);
         // ConstructTemplate is same as '{' TriplesTemplate? '}'
         const template = SUBRULE(constructTemplate, undefined);
         const modifiers = SUBRULE2(solutionModifier, undefined);
@@ -279,8 +279,8 @@ export const constructQuery: SparqlRule<'constructQuery', Omit<QueryConstruct, H
 export const describeQuery: SparqlRule<'describeQuery', Omit<QueryDescribe, HandledByBase>> = <const> {
   name: 'describeQuery',
   impl: ({ ACTION, AT_LEAST_ONE, SUBRULE, CONSUME, OPTION, OR }) => () => {
-    const i0 = SUBRULE(blank, undefined);
     const img1 = CONSUME(l.describe).image;
+    const i0 = SUBRULE(blank, undefined);
     let i1: ITOS = [];
     const variables = OR<QueryDescribe['variables']>([
       { ALT: () => {
@@ -291,8 +291,8 @@ export const describeQuery: SparqlRule<'describeQuery', Omit<QueryDescribe, Hand
         return variables;
       } },
       { ALT: () => {
-        i1 = SUBRULE(blank, undefined);
         CONSUME(l.symbols.star);
+        i1 = SUBRULE(blank, undefined);
         return [ new Wildcard() ];
       } },
     ]);
@@ -324,8 +324,8 @@ export const describeQuery: SparqlRule<'describeQuery', Omit<QueryDescribe, Hand
 export const askQuery: SparqlRule<'askQuery', Omit<QueryAsk, HandledByBase>> = <const> {
   name: 'askQuery',
   impl: ({ ACTION, SUBRULE, CONSUME }) => () => {
-    const i0 = SUBRULE(blank, undefined);
     const img1 = CONSUME(l.ask).image;
+    const i0 = SUBRULE(blank, undefined);
     const from = SUBRULE(datasetClauses, undefined);
     const where = SUBRULE(whereClause, undefined);
     const modifiers = SUBRULE(solutionModifier, undefined);
@@ -363,11 +363,11 @@ export const constructTemplate:
 SparqlRule<'constructTemplate', Wrap<Triple[]> & Ignores1 & { ignored: ITOS[] }> = <const> {
   name: 'constructTemplate',
   impl: ({ SUBRULE1, SUBRULE2, CONSUME, OPTION }) => () => {
-    const i0 = SUBRULE1(blank, undefined);
     CONSUME(l.symbols.LCurly);
+    const i0 = SUBRULE1(blank, undefined);
     const triples = OPTION(() => SUBRULE1(constructTriples, undefined));
-    const i1 = SUBRULE2(blank, undefined);
     CONSUME(l.symbols.RCurly);
+    const i1 = SUBRULE2(blank, undefined);
     return { val: triples?.val ?? [], i0, i1, ignored: triples?.ignored ?? []};
   },
   gImpl: () => () => '',

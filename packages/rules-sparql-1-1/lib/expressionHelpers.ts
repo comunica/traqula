@@ -26,13 +26,13 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, [Expression]> {
   return {
     name: unCapitalize(func.name),
     impl: ({ ACTION, SUBRULE, CONSUME, SUBRULE1, SUBRULE2, SUBRULE3 }) => (C) => {
-      const i0 = SUBRULE1(blank, undefined);
       const operator = CONSUME(func).image;
-      const i1 = SUBRULE2(blank, undefined);
+      const i0 = SUBRULE1(blank, undefined);
       CONSUME(l.symbols.LParen);
+      const i1 = SUBRULE2(blank, undefined);
       const arg = SUBRULE(expression, undefined);
-      const i2 = SUBRULE3(blank, undefined);
       CONSUME(l.symbols.RParen);
+      const i2 = SUBRULE3(blank, undefined);
       return ACTION(() =>
         C.factory.expressionOperation({ args: [ arg ], img1: operator, ignored: [ i0, i1, i2 ]}));
     },
@@ -44,16 +44,16 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, [Expression, Expression]> {
   return {
     name: unCapitalize(func.name),
     impl: ({ ACTION, CONSUME, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4 }) => (C) => {
-      const i0 = SUBRULE1(blank, undefined);
       const operator = CONSUME(func).image;
-      const i1 = SUBRULE2(blank, undefined);
+      const i0 = SUBRULE1(blank, undefined);
       CONSUME(l.symbols.LParen);
+      const i1 = SUBRULE2(blank, undefined);
       const arg1 = SUBRULE1(expression, undefined);
-      const i2 = SUBRULE3(blank, undefined);
       CONSUME(l.symbols.comma);
+      const i2 = SUBRULE3(blank, undefined);
       const arg2 = SUBRULE2(expression, undefined);
-      const i3 = SUBRULE4(blank, undefined);
       CONSUME(l.symbols.RParen);
+      const i3 = SUBRULE4(blank, undefined);
       return ACTION(() =>
         C.factory.expressionOperation({ args: [ arg1, arg2 ], img1: operator, ignored: [ i0, i1, i2, i3 ]}));
     },
@@ -65,19 +65,19 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, [Expression, Expression, Expression]
   return {
     name: unCapitalize(func.name),
     impl: ({ ACTION, CONSUME, CONSUME1, CONSUME2, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4, SUBRULE5 }) => (C) => {
-      const i0 = SUBRULE1(blank, undefined);
       const operator = CONSUME(func).image;
-      const i1 = SUBRULE2(blank, undefined);
+      const i0 = SUBRULE1(blank, undefined);
       CONSUME(l.symbols.LParen);
+      const i1 = SUBRULE2(blank, undefined);
       const arg1 = SUBRULE1(expression, undefined);
-      const i2 = SUBRULE3(blank, undefined);
       CONSUME1(l.symbols.comma);
+      const i2 = SUBRULE3(blank, undefined);
       const arg2 = SUBRULE2(expression, undefined);
-      const i3 = SUBRULE4(blank, undefined);
       CONSUME2(l.symbols.comma);
+      const i3 = SUBRULE4(blank, undefined);
       const arg3 = SUBRULE3(expression, undefined);
-      const i4 = SUBRULE5(blank, undefined);
       CONSUME(l.symbols.RParen);
+      const i4 = SUBRULE5(blank, undefined);
 
       return ACTION(() =>
         C.factory.expressionOperation({ args: [ arg1, arg2, arg3 ], img1: operator, ignored: [ i0, i1, i2, i3, i4 ]}));
@@ -90,13 +90,13 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, [TermVariable]> {
   return {
     name: unCapitalize(func.name),
     impl: ({ ACTION, SUBRULE, CONSUME, SUBRULE1, SUBRULE2, SUBRULE3 }) => (C) => {
-      const i0 = SUBRULE1(blank, undefined);
       const operator = CONSUME(func).image;
-      const i1 = SUBRULE2(blank, undefined);
+      const i0 = SUBRULE1(blank, undefined);
       CONSUME(l.symbols.LParen);
+      const i1 = SUBRULE2(blank, undefined);
       const arg = SUBRULE(var_, undefined);
-      const i2 = SUBRULE3(blank, undefined);
       CONSUME(l.symbols.RParen);
+      const i2 = SUBRULE3(blank, undefined);
       return ACTION(() =>
         C.factory.expressionOperation({ args: [ arg ], img1: operator, ignored: [ i0, i1, i2 ]}));
     },
@@ -108,20 +108,21 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, [] | [Expression]> {
   return {
     name: unCapitalize(func.name),
     impl: ({ ACTION, CONSUME, OR, SUBRULE, SUBRULE1, SUBRULE2, SUBRULE3 }) => (C) => {
-      const i0 = SUBRULE1(blank, undefined);
       const operator = CONSUME(func).image;
-      const i1 = SUBRULE2(blank, undefined);
+      const i0 = SUBRULE1(blank, undefined);
       return OR<ExpressionFunctionX<[] | [Expression]>>([
         { ALT: () => {
           CONSUME(l.symbols.LParen);
+          const i1 = SUBRULE2(blank, undefined);
           const arg = SUBRULE(expression, undefined);
-          const i2 = SUBRULE3(blank, undefined);
           CONSUME(l.symbols.RParen);
+          const i2 = SUBRULE3(blank, undefined);
           return ACTION(() =>
             C.factory.expressionOperation({ args: [ arg ], img1: operator, ignored: [ i0, i1, i2 ]}));
         } },
         { ALT: () => {
           const nil = CONSUME(l.terminals.nil).image.slice(1, -1);
+          const i1 = SUBRULE2(blank, undefined);
           return ACTION(() => C.factory.expressionOperation({
             args: [],
             img1: operator,
@@ -138,10 +139,10 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, []> {
   return {
     name: unCapitalize(func.name),
     impl: ({ ACTION, CONSUME, SUBRULE1, SUBRULE2 }) => (C) => {
-      const i0 = SUBRULE1(blank, undefined);
       const operator = CONSUME(func).image;
-      const i1 = SUBRULE2(blank, undefined);
+      const i0 = SUBRULE1(blank, undefined);
       const nil = CONSUME(l.terminals.nil).image.slice(1, -1);
+      const i1 = SUBRULE2(blank, undefined);
       return ACTION(() => C.factory.expressionOperation({
         args: [ ],
         img1: operator,
@@ -156,8 +157,8 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, Expression[]> {
   return {
     name: unCapitalize(func.name),
     impl: ({ ACTION, CONSUME, SUBRULE }) => (C) => {
-      const i0 = SUBRULE(blank, undefined);
       const operator = CONSUME(func).image;
+      const i0 = SUBRULE(blank, undefined);
       const args = SUBRULE(expressionList, undefined);
       return ACTION(() =>
         C.factory.expressionOperation({ args: args.val, img1: operator, ignored: [ i0, ...args.ignored ]}));
@@ -171,22 +172,22 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, [Expression, Expression] | [Expressi
     name: unCapitalize(func.name),
     impl: ({ ACTION, CONSUME, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4, SUBRULE5, CONSUME1, OPTION, CONSUME2 }) =>
       (C) => {
-        const i0 = SUBRULE1(blank, undefined);
         const operator = CONSUME(func).image;
-        const i1 = SUBRULE2(blank, undefined);
+        const i0 = SUBRULE1(blank, undefined);
         CONSUME(l.symbols.LParen);
+        const i1 = SUBRULE2(blank, undefined);
         const arg1 = SUBRULE1(expression, undefined);
-        const i2 = SUBRULE3(blank, undefined);
         CONSUME1(l.symbols.comma);
+        const i2 = SUBRULE3(blank, undefined);
         const arg2 = SUBRULE2(expression, undefined);
         const arg3 = OPTION(() => {
-          const i3 = SUBRULE4(blank, undefined);
           CONSUME2(l.symbols.comma);
+          const i3 = SUBRULE4(blank, undefined);
           const arg3 = SUBRULE3(expression, undefined);
           return { i3, arg3 };
         });
-        const i4 = SUBRULE5(blank, undefined);
         CONSUME(l.symbols.RParen);
+        const i4 = SUBRULE5(blank, undefined);
         return ACTION(() => C.factory.expressionOperation({
           args: arg3 ? [ arg1, arg2, arg3.arg3 ] : [ arg1, arg2 ],
           img1: operator,
@@ -218,25 +219,25 @@ RuleDefExpressionFunctionX<
       CONSUME3,
     }) =>
       (C) => {
-        const i0 = SUBRULE1(blank, undefined);
         const operator = CONSUME(func).image;
-        const i1 = SUBRULE2(blank, undefined);
+        const i0 = SUBRULE1(blank, undefined);
         CONSUME(l.symbols.LParen);
+        const i1 = SUBRULE2(blank, undefined);
         const arg1 = SUBRULE1(expression, undefined);
-        const i2 = SUBRULE3(blank, undefined);
         CONSUME1(l.symbols.comma);
+        const i2 = SUBRULE3(blank, undefined);
         const arg2 = SUBRULE2(expression, undefined);
-        const i3 = SUBRULE4(blank, undefined);
         CONSUME2(l.symbols.comma);
+        const i3 = SUBRULE4(blank, undefined);
         const arg3 = SUBRULE3(expression, undefined);
         const arg4 = OPTION(() => {
-          const i4 = SUBRULE5(blank, undefined);
           CONSUME3(l.symbols.comma);
+          const i4 = SUBRULE5(blank, undefined);
           const arg4 = SUBRULE4(expression, undefined);
           return { arg4, i4 };
         });
-        const i5 = SUBRULE6(blank, undefined);
         CONSUME(l.symbols.RParen);
+        const i5 = SUBRULE6(blank, undefined);
         return ACTION(() => C.factory.expressionOperation({
           args: arg4 ? [ arg1, arg2, arg3, arg4.arg4 ] : [ arg1, arg2, arg3 ],
           img1: operator,
@@ -251,8 +252,8 @@ SparqlGrammarRule<Uncapitalize<T>, ExpressionPatternOperation> {
   return {
     name: unCapitalize(func.name),
     impl: ({ ACTION, SUBRULE, CONSUME }) => (C) => {
-      const i0 = SUBRULE(blank, undefined);
       const operator = CONSUME(func).image;
+      const i0 = SUBRULE(blank, undefined);
       const group = SUBRULE(groupGraphPattern, undefined);
       return ACTION(() => C.factory.expressionPatternOperation({
         i0,
@@ -270,19 +271,19 @@ RuleDefExpressionAggregatorX<Uncapitalize<T>> {
   return {
     name: unCapitalize(func.name),
     impl: ({ ACTION, CONSUME, SUBRULE, OPTION, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4 }) => (C) => {
-      const i0 = SUBRULE1(blank, undefined);
       const img1 = CONSUME(func).image;
-      const i1 = SUBRULE2(blank, undefined);
+      const i0 = SUBRULE1(blank, undefined);
       CONSUME(l.symbols.LParen);
+      const i1 = SUBRULE2(blank, undefined);
       let i2: ITOS | undefined;
       let img2: string | undefined;
       OPTION(() => {
-        i2 = SUBRULE3(blank, undefined);
         img2 = CONSUME(l.distinct).image;
+        i2 = SUBRULE3(blank, undefined);
       });
       const expr1 = SUBRULE(expression, undefined);
-      const i3 = SUBRULE4(blank, undefined);
       CONSUME(l.symbols.RParen);
+      const i3 = SUBRULE4(blank, undefined);
 
       return ACTION(() => C.factory.aggregate(i0, i1, i2, i3, img1, img2, expr1));
     },

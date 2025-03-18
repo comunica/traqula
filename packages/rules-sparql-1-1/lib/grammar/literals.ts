@@ -17,24 +17,21 @@ import { blank, genB } from './general';
 
 export const rdfLiteral: SparqlRule<'rdfLiteral', TermLiteral> = <const> {
   name: 'rdfLiteral',
-  impl: ({ ACTION, SUBRULE1, CONSUME, OPTION, OR }) => (C) => {
+  impl: ({ ACTION, SUBRULE1, SUBRULE2, CONSUME, OPTION, OR }) => (C) => {
     const value = SUBRULE1(string, undefined);
-    return OPTION(() => {
-      const i1 = SUBRULE1(blank, undefined);
-      return OR<TermLiteral>([
-        { ALT: () => {
-          const lang = CONSUME(l.terminals.langTag).image.slice(1);
-          return ACTION(() => C.factory.literalTerm(value.i0, value.img1, i1, value.val, lang));
-        } },
-        {
-          ALT: () => {
-            CONSUME(l.symbols.hathat);
-            const iriAndW = SUBRULE1(iri, undefined);
-            return ACTION(() => C.factory.literalTerm(value.i0, value.img1, i1, value.val, iriAndW));
-          },
-        },
-      ]);
-    }) ?? ACTION(() => C.factory.literalTerm(value.i0, value.img1, value.val));
+    return OPTION(() => OR<TermLiteral>([
+      { ALT: () => {
+        const lang = CONSUME(l.terminals.langTag).image.slice(1);
+        const i1 = SUBRULE1(blank, undefined);
+        return ACTION(() => C.factory.literalTerm(value.i0, value.img1, i1, value.val, lang));
+      } },
+      { ALT: () => {
+        CONSUME(l.symbols.hathat);
+        const i1 = SUBRULE2(blank, undefined);
+        const iriAndW = SUBRULE1(iri, undefined);
+        return ACTION(() => C.factory.literalTerm(value.i0, value.img1, i1, value.val, iriAndW));
+      } },
+    ])) ?? ACTION(() => C.factory.literalTerm(value.i0, value.img1, value.val));
   },
   gImpl: ({ SUBRULE: s }) => (ast, { factory: F }) => {
     const builder = [ genB(s, ast.RTT.i0), ast.RTT.img1 ];
@@ -70,7 +67,6 @@ export const numericLiteral: SparqlGrammarRule<'numericLiteral', TermLiteralPrim
 export const numericLiteralUnsigned: SparqlGrammarRule<'numericLiteralUnsigned', TermLiteralPrimitive> = <const> {
   name: 'numericLiteralUnsigned',
   impl: ({ ACTION, CONSUME, OR, SUBRULE }) => (C) => {
-    const i0 = SUBRULE(blank, undefined);
     const x = OR<[string, string]>([
       { ALT: () => {
         const val = CONSUME(l.terminals.integer).image;
@@ -85,6 +81,7 @@ export const numericLiteralUnsigned: SparqlGrammarRule<'numericLiteralUnsigned',
         return [ val, CommonIRIs.DOUBLE ];
       } },
     ]);
+    const i0 = SUBRULE(blank, undefined);
     return ACTION(() => C.factory.literalTerm(i0, x[0], x[0], C.factory.namedNode([], x[1])));
   },
 };
@@ -96,7 +93,6 @@ export const numericLiteralUnsigned: SparqlGrammarRule<'numericLiteralUnsigned',
 export const numericLiteralPositive: SparqlGrammarRule<'numericLiteralPositive', TermLiteralPrimitive> = <const> {
   name: 'numericLiteralPositive',
   impl: ({ ACTION, CONSUME, OR, SUBRULE }) => (C) => {
-    const i0 = SUBRULE(blank, undefined);
     const x = OR<[string, string]>([
       { ALT: () => {
         const val = CONSUME(l.terminals.integerPositive).image;
@@ -111,6 +107,7 @@ export const numericLiteralPositive: SparqlGrammarRule<'numericLiteralPositive',
         return [ val, CommonIRIs.DOUBLE ];
       } },
     ]);
+    const i0 = SUBRULE(blank, undefined);
     return ACTION(() => C.factory.literalTerm(i0, x[0], x[0], C.factory.namedNode([], x[1])));
   },
 };
@@ -122,7 +119,6 @@ export const numericLiteralPositive: SparqlGrammarRule<'numericLiteralPositive',
 export const numericLiteralNegative: SparqlGrammarRule<'numericLiteralNegative', TermLiteralPrimitive> = <const> {
   name: 'numericLiteralNegative',
   impl: ({ ACTION, CONSUME, OR, SUBRULE }) => (C) => {
-    const i0 = SUBRULE(blank, undefined);
     const x = OR<[string, string]>([
       { ALT: () => {
         const val = CONSUME(l.terminals.integerNegative).image;
@@ -137,6 +133,7 @@ export const numericLiteralNegative: SparqlGrammarRule<'numericLiteralNegative',
         return [ val, CommonIRIs.DOUBLE ];
       } },
     ]);
+    const i0 = SUBRULE(blank, undefined);
     return ACTION(() => C.factory.literalTerm(i0, x[0], x[0], C.factory.namedNode([], x[1])));
   },
 };
@@ -148,11 +145,12 @@ export const numericLiteralNegative: SparqlGrammarRule<'numericLiteralNegative',
 export const booleanLiteral: SparqlGrammarRule<'booleanLiteral', TermLiteralPrimitive> = <const> {
   name: 'booleanLiteral',
   impl: ({ ACTION, CONSUME, OR, SUBRULE }) => (C) => {
-    const i0 = SUBRULE(blank, undefined);
     const image = OR([
       { ALT: () => CONSUME(l.true_).image },
       { ALT: () => CONSUME(l.false_).image },
     ]);
+    const i0 = SUBRULE(blank, undefined);
+
     return ACTION(() =>
       C.factory.literalTerm(i0, image, image.toLowerCase(), C.factory.namedNode([], CommonIRIs.BOOLEAN)));
   },
@@ -166,7 +164,6 @@ export const string: SparqlRule<'string', Reconstructed<string>> = <const> {
   name: 'string',
   impl: ({ ACTION, CONSUME, OR, SUBRULE }) => () => {
     let img1 = '';
-    const i0 = SUBRULE(blank, undefined);
     const rawString = OR([
       { ALT: () => {
         img1 = CONSUME(l.terminals.stringLiteral1).image;
@@ -185,6 +182,7 @@ export const string: SparqlRule<'string', Reconstructed<string>> = <const> {
         return img1.slice(3, -3);
       } },
     ]);
+    const i0 = SUBRULE(blank, undefined);
     // Handle string escapes (19.7). (19.2 is handled at input level.)
     return ACTION(() => {
       const value = rawString.replaceAll(/\\([tnrbf"'\\])/gu, (_, char: string) => {
@@ -233,8 +231,8 @@ export const iri: SparqlRule<'iri', TermIri> = <const> {
 export const iriFull: SparqlRule<'iriFull', TermIriFull> = <const> {
   name: 'iriFull',
   impl: ({ ACTION, SUBRULE, CONSUME }) => (C) => {
-    const i0 = SUBRULE(blank, undefined);
     const iriVal = CONSUME(l.terminals.iriRef).image.slice(1, -1);
+    const i0 = SUBRULE(blank, undefined);
     return ACTION(() => C.factory.namedNode(i0, iriVal));
   },
   gImpl: ({ SUBRULE: s }) => ast => `${genB(s, ast.RTT.i0)}<${ast.value}>`,
@@ -246,20 +244,21 @@ export const iriFull: SparqlRule<'iriFull', TermIriFull> = <const> {
  */
 export const prefixedName: SparqlRule<'prefixedName', TermIriPrefixed> = <const> {
   name: 'prefixedName',
-  impl: ({ ACTION, CONSUME, SUBRULE, OR }) => (C) => {
-    const i0 = SUBRULE(blank, undefined);
-    return OR<TermIriPrefixed>([
-      { ALT: () => {
-        const longName = CONSUME(l.terminals.pNameLn).image;
-        return ACTION(() => {
-          const [ prefix, localName ] = longName.split(':');
-          return ACTION(() => C.factory.namedNode(i0, localName, prefix));
-        });
-      } },
-      { ALT: () => ACTION(() =>
-        C.factory.namedNode(i0, '', CONSUME(l.terminals.pNameNs).image.slice(0, -1))) },
-    ]);
-  },
+  impl: ({ ACTION, CONSUME, SUBRULE, OR }) => C => OR<TermIriPrefixed>([
+    { ALT: () => {
+      const longName = CONSUME(l.terminals.pNameLn).image;
+      const i0 = SUBRULE(blank, undefined);
+      return ACTION(() => {
+        const [ prefix, localName ] = longName.split(':');
+        return C.factory.namedNode(i0, localName, prefix);
+      });
+    } },
+    { ALT: () => {
+      const shortName = CONSUME(l.terminals.pNameNs).image.slice(0, -1);
+      const i0 = SUBRULE(blank, undefined);
+      return C.factory.namedNode(i0, '', shortName);
+    } },
+  ]),
   gImpl: ({ SUBRULE: s }) => ast =>
     `${genB(s, ast.RTT.i0)}${ast.prefix}:${ast.value}`,
 };
@@ -272,15 +271,16 @@ export const canCreateBlankNodes = Symbol('canCreateBlankNodes');
  */
 export const blankNode: SparqlRule<'blankNode', TermBlank> = <const> {
   name: 'blankNode',
-  impl: ({ ACTION, CONSUME, OR, SUBRULE }) => (C) => {
-    const i0 = SUBRULE(blank, undefined);
+  impl: ({ ACTION, CONSUME, OR, SUBRULE1, SUBRULE2 }) => (C) => {
     const result = OR<TermBlankExplicit>([
       { ALT: () => {
         const label = CONSUME(l.terminals.blankNodeLabel).image.slice(2);
+        const i0 = SUBRULE1(blank, undefined);
         return ACTION(() => C.factory.blankNode(i0, label));
       } },
       { ALT: () => {
         const img = CONSUME(l.terminals.anon).image;
+        const i0 = SUBRULE2(blank, undefined);
         return ACTION(() => C.factory.blankNode(i0, undefined, img));
       } },
     ]);
@@ -302,8 +302,8 @@ export const blankNode: SparqlRule<'blankNode', TermBlank> = <const> {
 export const verbA: SparqlRule<'VerbA', TermIriPrimitive> = <const> {
   name: 'VerbA',
   impl: ({ ACTION, CONSUME, SUBRULE }) => (C) => {
-    const i0 = SUBRULE(blank, undefined);
     const img1 = CONSUME(l.a).image;
+    const i0 = SUBRULE(blank, undefined);
     return ACTION(() => C.factory.namedNodePrimitive(i0, img1, CommonIRIs.TYPE));
   },
   gImpl: ({ SUBRULE: s }) => ast => `${genB(s, ast.RTT.i0)}${ast.RTT.img1}`,

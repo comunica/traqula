@@ -81,8 +81,8 @@ export const prologue: SparqlRule<'prologue', ContextDefinition[]> = <const> {
 export const baseDecl: SparqlRule<'baseDecl', ContextDefinitionBaseDecl> = <const> {
   name: 'baseDecl',
   impl: ({ ACTION, CONSUME, SUBRULE }) => (C) => {
-    const i0 = SUBRULE(blank, undefined);
     const image = CONSUME(l.baseDecl).image;
+    const i0 = SUBRULE(blank, undefined);
     const val = SUBRULE(iriFull, undefined);
     return ACTION(() => C.factory.baseDecl(i0, image, val));
   },
@@ -100,12 +100,12 @@ export const baseDecl: SparqlRule<'baseDecl', ContextDefinitionBaseDecl> = <cons
 export const prefixDecl: SparqlRule<'prefixDecl', ContextDefinitionPrefixDecl> = <const> {
   name: 'prefixDecl',
   impl: ({ ACTION, CONSUME, SUBRULE, SUBRULE1, SUBRULE2, SUBRULE3 }) => (C) => {
-    const i0 = SUBRULE1(blank, undefined);
     const img1 = CONSUME(l.prefixDecl).image;
-    const i1 = SUBRULE2(blank, undefined);
+    const i0 = SUBRULE1(blank, undefined);
     const name = CONSUME(l.terminals.pNameNs).image.slice(0, -1);
-    const i2 = SUBRULE3(blank, undefined);
+    const i1 = SUBRULE2(blank, undefined);
     const value = SUBRULE(iriFull, undefined);
+    const i2 = SUBRULE3(blank, undefined);
 
     return ACTION(() => C.factory.prefix(i0, img1, i1, i2, name, value));
   },
@@ -165,11 +165,11 @@ export const varOrIri: SparqlGrammarRule<'varOrIri', TermIri | TermVariable> = <
 export const var_: SparqlRule<'var', TermVariable> = <const> {
   name: 'var',
   impl: ({ ACTION, CONSUME, OR, SUBRULE }) => (C) => {
-    const i0 = SUBRULE(blank, undefined);
     const image = OR([
       { ALT: () => CONSUME(l.terminals.var1).image },
       { ALT: () => CONSUME(l.terminals.var2).image },
     ]);
+    const i0 = SUBRULE(blank, undefined);
     return ACTION(() => C.factory.variable(i0, image));
   },
   gImpl: () => ast => `?${ast.value}`,
@@ -187,8 +187,8 @@ export const graphTerm: SparqlRule<'graphTerm', GraphTerm> = <const> {
     { ALT: () => SUBRULE(booleanLiteral, undefined) },
     { GATE: () => C.parseMode.has('canCreateBlankNodes'), ALT: () => SUBRULE(blankNode, undefined) },
     { ALT: () => {
-      const i0 = SUBRULE(blank, undefined);
       const img1 = CONSUME(l.terminals.nil).image;
+      const i0 = SUBRULE(blank, undefined);
       return ACTION(() => ({
         ...C.factory.namedNode(i0, CommonIRIs.NIL),
         RTT: { i0, img1 },

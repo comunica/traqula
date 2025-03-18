@@ -68,8 +68,8 @@ export function pathHelper<T extends string>(
       const tail: [ITOS, Path][] = [];
 
       MANY(() => {
-        const i0 = SUBRULE(blank, undefined);
         CONSUME(SEP);
+        const i0 = SUBRULE(blank, undefined);
         const item = SUBRULE(subRule, undefined);
         tail.push([ i0, item ]);
       });
@@ -94,8 +94,8 @@ export const pathEltOrInverse: SparqlGrammarRule<'pathEltOrInverse', PathModifie
   impl: ({ CONSUME, SUBRULE1, SUBRULE2, OR }) => ({ factory: F }) => OR<Path | TermIri>([
     { ALT: () => SUBRULE1(pathElt, undefined) },
     { ALT: () => {
-      const i0 = SUBRULE1(blank, undefined);
       CONSUME(l.symbols.hat);
+      const i0 = SUBRULE1(blank, undefined);
       const item = SUBRULE2(pathElt, undefined);
       return F.path('^', item, i0);
     } },
@@ -132,21 +132,13 @@ export const pathElt: SparqlGrammarRule<'pathElt', PathModified | Path> = <const
 export const pathMod: SparqlGrammarRule<'pathMod', [ITOS, '*' | '+' | '?']> = <const> {
   name: 'pathMod',
   impl: ({ CONSUME, OR, SUBRULE }) => () => {
-    const i0 = SUBRULE(blank, undefined);
     const mod = OR<'*' | '+' | '?'>([
-      { ALT: () => {
-        CONSUME(l.symbols.question);
-        return '?';
-      } },
-      { ALT: () => {
-        CONSUME(l.symbols.star);
-        return '*';
-      } },
-      { ALT: () => {
-        CONSUME(l.symbols.opPlus);
-        return '+';
-      } },
+      { ALT: () => <'?'> CONSUME(l.symbols.question).image },
+      { ALT: () => <'*'> CONSUME(l.symbols.star).image },
+      { ALT: () => <'+'> CONSUME(l.symbols.opPlus).image },
     ]);
+    const i0 = SUBRULE(blank, undefined);
+
     return [ i0, mod ];
   },
 };
@@ -161,11 +153,11 @@ export const pathPrimary: SparqlGrammarRule<'pathPrimary', Path> = <const> {
     { ALT: () => SUBRULE(verbA, undefined) },
     { ALT: () => SUBRULE(pathNegatedPropertySet, undefined) },
     { ALT: () => {
-      const i0 = SUBRULE1(blank, undefined);
       CONSUME(l.symbols.LParen);
+      const i0 = SUBRULE1(blank, undefined);
       const resRecursive = SUBRULE(path, undefined);
-      const i1 = SUBRULE2(blank, undefined);
       CONSUME(l.symbols.RParen);
+      const i1 = SUBRULE2(blank, undefined);
       return F.bracketted(resRecursive, i0, i1);
     } },
   ]),
@@ -178,8 +170,8 @@ export const pathNegatedPropertySet:
 SparqlRule<'pathNegatedPropertySet', PathNegated> = <const> {
   name: 'pathNegatedPropertySet',
   impl: ({ CONSUME, SUBRULE1, SUBRULE2, SUBRULE3, OR, MANY }) => ({ factory: F }) => {
-    const i0 = SUBRULE1(blank, undefined);
     CONSUME(l.symbols.exclamation);
+    const i0 = SUBRULE1(blank, undefined);
     return OR<PathNegated>([
       { ALT: () => {
         const noAlternative = SUBRULE1(pathOneInPropertySet, undefined);
@@ -187,19 +179,20 @@ SparqlRule<'pathNegatedPropertySet', PathNegated> = <const> {
       } },
       {
         ALT: () => {
-          const i1 = SUBRULE2(blank, undefined);
           CONSUME(l.symbols.LParen);
+          const i1 = SUBRULE2(blank, undefined);
 
           const head = SUBRULE2(pathOneInPropertySet, undefined);
           const tail: [ITOS, TermIri | PathNegatedElt][] = [];
           MANY(() => {
+            CONSUME(l.symbols.pipe);
             const iSup = SUBRULE3(blank, undefined);
             const item = SUBRULE2(pathOneInPropertySet, undefined);
             tail.push([ iSup, item ]);
           });
 
-          const i2 = SUBRULE3(blank, undefined);
           CONSUME(l.symbols.RParen);
+          const i2 = SUBRULE3(blank, undefined);
 
           if (tail.length === 0) {
             return F.path('!', head, [ i0, i1, i2 ]);
@@ -259,8 +252,8 @@ export const pathOneInPropertySet: SparqlRule<'pathOneInPropertySet', TermIri | 
       { ALT: () => SUBRULE1(verbA, undefined) },
       {
         ALT: () => {
-          const i0 = SUBRULE1(blank, undefined);
           CONSUME(l.symbols.hat);
+          const i0 = SUBRULE1(blank, undefined);
           const item = OR2<TermIri>([
             { ALT: () => SUBRULE2(iri, undefined) },
             { ALT: () => SUBRULE2(verbA, undefined) },

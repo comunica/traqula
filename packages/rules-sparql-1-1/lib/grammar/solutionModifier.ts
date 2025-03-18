@@ -48,10 +48,10 @@ export const groupClause: SparqlRule<'groupClause', SolutionModifierGroup> = <co
   name: 'groupClause',
   impl: ({ AT_LEAST_ONE, SUBRULE, CONSUME }) => () => {
     const groupings: (Expression | SolutionModifierGroupBind)[] = [];
-    const i0 = SUBRULE(blank, undefined);
     const img1 = CONSUME(l.groupByGroup).image;
-    const i1 = SUBRULE(blank, undefined);
+    const i0 = SUBRULE(blank, undefined);
     const img2 = CONSUME(l.by).image;
+    const i1 = SUBRULE(blank, undefined);
     AT_LEAST_ONE(() => {
       groupings.push(SUBRULE(groupCondition, undefined));
     });
@@ -88,17 +88,17 @@ export const groupCondition: SparqlRule<'groupCondition', Expression | SolutionM
       { ALT: () => SUBRULE2(var_, undefined) },
       { ALT: () => {
       // Creates a bracketted expression or a Bind.
-        const i0 = SUBRULE(blank, undefined);
         CONSUME(l.symbols.LParen);
+        const i0 = SUBRULE(blank, undefined);
         const expressionValue = SUBRULE(expression, undefined);
         const variable = OPTION(() => {
-          const i1 = SUBRULE1(blank, undefined);
           const img1 = CONSUME(l.as).image;
+          const i1 = SUBRULE1(blank, undefined);
           const variable = SUBRULE1(var_, undefined);
           return { variable, i1, img1 };
         });
-        const i2 = SUBRULE2(blank, undefined);
         CONSUME(l.symbols.RParen);
+        const i2 = SUBRULE2(blank, undefined);
         return variable ?
 {
   variable: variable.variable,
@@ -137,8 +137,8 @@ export const groupCondition: SparqlRule<'groupCondition', Expression | SolutionM
 export const havingClause: SparqlRule<'havingClause', SolutionModifierHaving> = <const> {
   name: 'havingClause',
   impl: ({ ACTION, AT_LEAST_ONE, SUBRULE, CONSUME }) => (C) => {
-    const i0 = SUBRULE(blank, undefined);
     const img1 = CONSUME(l.having).image;
+    const i0 = SUBRULE(blank, undefined);
 
     const expressions: Expression[] = [];
     const couldParseAgg = ACTION(() =>
@@ -176,10 +176,10 @@ export const havingCondition: SparqlGrammarRule<'havingCondition', Expression> =
 export const orderClause: SparqlRule<'orderClause', SolutionModifierOrder> = <const> {
   name: 'orderClause',
   impl: ({ ACTION, AT_LEAST_ONE, SUBRULE, CONSUME }) => (C) => {
-    const i0 = SUBRULE(blank, undefined);
     const img1 = CONSUME(l.order).image;
-    const i1 = SUBRULE(blank, undefined);
+    const i0 = SUBRULE(blank, undefined);
     const img2 = CONSUME(l.by).image;
+    const i1 = SUBRULE(blank, undefined);
 
     const orderings: Ordering[] = [];
     const couldParseAgg = ACTION(() =>
@@ -214,29 +214,30 @@ export const orderClause: SparqlRule<'orderClause', SolutionModifierOrder> = <co
  */
 export const orderCondition: SparqlRule<'orderCondition', Ordering> = <const> {
   name: 'orderCondition',
-  impl: ({ SUBRULE, CONSUME, OR1, OR2 }) => () => OR1<Ordering>([
+  impl: ({ ACTION, SUBRULE, CONSUME, OR1, OR2 }) => () => OR1<Ordering>([
     { ALT: () => {
-      const i0 = SUBRULE(blank, undefined);
-      const [ img1, descending ] = OR2([
+      const order = OR2([
         { ALT: () => {
           const img1 = CONSUME(l.orderAsc).image;
-          return [ img1, false ];
+          return { img1, desc: true };
         } },
         { ALT: () => {
-          const img2 = CONSUME(l.orderDesc).image;
-          return [ img2, false ];
+          const img1 = CONSUME(l.orderDesc).image;
+          return { img1, desc: true };
         } },
       ]);
+      const i0 = SUBRULE(blank, undefined);
+
       const expr = SUBRULE(brackettedExpression, undefined);
 
-      return {
+      return ACTION(() => ({
         expression: expr,
-        descending,
+        descending: order.desc,
         RTT: {
-          img1,
+          img1: order.img1,
           i0,
         },
-      };
+      }));
     } },
     { ALT: () => SUBRULE(constraint, undefined) },
     { ALT: () => SUBRULE(var_, undefined) },
@@ -325,10 +326,10 @@ export const limitOffsetClauses: SparqlRule<'limitOffsetClauses', SolutionModifi
 export const limitClause: SparqlGrammarRule<'limitClause', Wrap<number> & Ignores1 & Images> = <const> {
   name: 'limitClause',
   impl: ({ CONSUME, SUBRULE1, SUBRULE2 }) => () => {
-    const i0 = SUBRULE1(blank, undefined);
     const img1 = CONSUME(l.limit).image;
-    const i1 = SUBRULE2(blank, undefined);
+    const i0 = SUBRULE1(blank, undefined);
     const val = Number.parseInt(CONSUME(l.terminals.integer).image, 10);
+    const i1 = SUBRULE2(blank, undefined);
     return { val, img1, i1, i0 };
   },
 };
@@ -339,10 +340,10 @@ export const limitClause: SparqlGrammarRule<'limitClause', Wrap<number> & Ignore
 export const offsetClause: SparqlGrammarRule<'offsetClause', Wrap<number> & Ignores1 & Images> = <const> {
   name: <const> 'offsetClause',
   impl: ({ CONSUME, SUBRULE1, SUBRULE2 }) => () => {
-    const i0 = SUBRULE1(blank, undefined);
     const img1 = CONSUME(l.offset).image;
-    const i1 = SUBRULE2(blank, undefined);
+    const i0 = SUBRULE1(blank, undefined);
     const val = Number.parseInt(CONSUME(l.terminals.integer).image, 10);
+    const i1 = SUBRULE2(blank, undefined);
     return { val, img1, i1, i0 };
   },
 };

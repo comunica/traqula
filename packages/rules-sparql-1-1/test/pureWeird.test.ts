@@ -30,9 +30,12 @@ class MyParser extends EmbeddedActionsParser {
 
     this.gramB = this.RULE('gramB', () => {
       this.CONSUME(lexC);
-      this.MANY(() => {
-        this.SUBRULE(this.gramD, undefined);
-        this.CONSUME(lexE);
+      this.MANY({
+        // GATE: () => this.LA(2).tokenType === lexE || this.LA(3).tokenType === lexE,
+        DEF: () => {
+          this.CONSUME(lexE);
+          this.SUBRULE(this.gramD, undefined);
+        },
       });
       return <const> 'gramB';
     });
@@ -69,7 +72,7 @@ ${parser.errors.map(x => x.stack).join('\n')}`);
   it('bug recreation', ({ expect }) => {
     // WORKS: 'CF' and 'CDEF'
     // DOESN'T WORK, but should?: 'CDF' 'CDEDF'
-    const res = parse(`CDF`);
+    const res = parse(`CEDEF`);
     expect(res).toEqual('gramMain');
   });
 });

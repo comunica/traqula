@@ -3,17 +3,10 @@ grammar Test;
 compilationUnit
   : gramB gramD gramF EOF
   ;
-
-
 gramB
-  : gramC ( gramD gramE )*;
-
+  : gramC ( gramE gramD )*;
 gramD
-  : 'D'?
-  ;
-
+  : 'D'? ;
 gramC: 'C' ;
-
 gramE: 'E' ;
-
 gramF: 'F' ;

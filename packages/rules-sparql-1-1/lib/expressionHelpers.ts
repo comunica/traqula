@@ -107,7 +107,7 @@ export function funcExprOrNil1<T extends string>(func: TokenType & { name: T }):
 RuleDefExpressionFunctionX<Uncapitalize<T>, [] | [Expression]> {
   return {
     name: unCapitalize(func.name),
-    impl: ({ ACTION, CONSUME, OR, SUBRULE, SUBRULE1, SUBRULE2, SUBRULE3 }) => (C) => {
+    impl: ({ ACTION, CONSUME, OR, SUBRULE, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4 }) => (C) => {
       const operator = CONSUME(func).image;
       const i0 = SUBRULE1(blank, undefined);
       return OR<ExpressionFunctionX<[] | [Expression]>>([
@@ -122,7 +122,7 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, [] | [Expression]> {
         } },
         { ALT: () => {
           const nil = CONSUME(l.terminals.nil).image.slice(1, -1);
-          const i1 = SUBRULE2(blank, undefined);
+          const i1 = SUBRULE4(blank, undefined);
           return ACTION(() => C.factory.expressionOperation({
             args: [],
             img1: operator,

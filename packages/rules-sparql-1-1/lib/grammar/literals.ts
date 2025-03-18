@@ -244,10 +244,10 @@ export const iriFull: SparqlRule<'iriFull', TermIriFull> = <const> {
  */
 export const prefixedName: SparqlRule<'prefixedName', TermIriPrefixed> = <const> {
   name: 'prefixedName',
-  impl: ({ ACTION, CONSUME, SUBRULE, OR }) => C => OR<TermIriPrefixed>([
+  impl: ({ ACTION, CONSUME, SUBRULE1, SUBRULE2, OR }) => C => OR<TermIriPrefixed>([
     { ALT: () => {
       const longName = CONSUME(l.terminals.pNameLn).image;
-      const i0 = SUBRULE(blank, undefined);
+      const i0 = SUBRULE1(blank, undefined);
       return ACTION(() => {
         const [ prefix, localName ] = longName.split(':');
         return C.factory.namedNode(i0, localName, prefix);
@@ -255,8 +255,8 @@ export const prefixedName: SparqlRule<'prefixedName', TermIriPrefixed> = <const>
     } },
     { ALT: () => {
       const shortName = CONSUME(l.terminals.pNameNs).image.slice(0, -1);
-      const i0 = SUBRULE(blank, undefined);
-      return C.factory.namedNode(i0, '', shortName);
+      const i0 = SUBRULE2(blank, undefined);
+      return ACTION(() => C.factory.namedNode(i0, '', shortName));
     } },
   ]),
   gImpl: ({ SUBRULE: s }) => ast =>

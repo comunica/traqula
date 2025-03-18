@@ -14,16 +14,21 @@ describe('a SPARQL 1.1 expression parser', () => {
   const context = { prefixes: { ex: 'http://example.org/' }};
 
   it('builtin', ({ expect }) => {
-    const res = parse(`
+    const res = parse(`STR
 #a
-STR
-#b
 (?x
-)`, context);
-    expect(res).toEqual(F.expressionOperation({ args: [ F.variable([], '?x') ], img1: 'STR', ignored: [
-      [ F.blankSpace('\n'), F.comment('a') ],
-      [ F.blankSpace('\n'), F.comment('b') ],
-      [ F.blankSpace('\n') ],
-    ]}));
+#b
+)
+#c
+`, context);
+    expect(res).toEqual(F.expressionOperation({
+      img1: 'STR',
+      args: [ F.variable([ F.blankSpace('\n'), F.comment('b') ], '?x') ],
+      ignored: [
+        [ F.blankSpace('\n'), F.comment('a') ],
+        [],
+        [ F.blankSpace('\n'), F.comment('c') ],
+      ],
+    }));
   });
 });

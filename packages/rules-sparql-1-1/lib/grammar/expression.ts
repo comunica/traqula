@@ -40,7 +40,7 @@ export interface IArgList {
 }
 export const argList: SparqlRule<'argList', IArgList> = <const> {
   name: 'argList',
-  impl: ({ ACTION, CONSUME, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4, OPTION, OR, MANY }) => C => OR<IArgList>([
+  impl: ({ ACTION, CONSUME, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4, SUBRULE5, OPTION, OR, MANY }) => C => OR<IArgList>([
     { ALT: () => {
       const nil = CONSUME(l.terminals.nil).image.slice(1, -1);
       const i0 = SUBRULE1(blank, undefined);
@@ -58,13 +58,13 @@ export const argList: SparqlRule<'argList', IArgList> = <const> {
     } },
     { ALT: () => {
       CONSUME(l.symbols.LParen);
-      const i0 = SUBRULE1(blank, undefined);
+      const i0 = SUBRULE2(blank, undefined);
       const ignored = [ i0 ];
       let img1 = '';
       let i1: ITOS = [];
       OPTION(() => {
         img1 = CONSUME(l.distinct).image;
-        i1 = SUBRULE2(blank, undefined);
+        i1 = SUBRULE3(blank, undefined);
       });
       ignored.push(i1);
 
@@ -72,13 +72,13 @@ export const argList: SparqlRule<'argList', IArgList> = <const> {
       const args = [ arg1 ];
       MANY(() => {
         CONSUME(l.symbols.comma);
-        const i = SUBRULE3(blank, undefined);
+        const i = SUBRULE4(blank, undefined);
         const arg = SUBRULE2(expression, undefined);
         ignored.push(i);
         args.push(arg);
       });
       CONSUME(l.symbols.RParen);
-      const ix = SUBRULE4(blank, undefined);
+      const ix = SUBRULE5(blank, undefined);
       ignored.push(ix);
       return {
         args,
@@ -106,7 +106,7 @@ export const argList: SparqlRule<'argList', IArgList> = <const> {
  */
 export const expressionList: SparqlRule<'expressionList', { val: Expression[]; ignored: ITOS[] } > = <const> {
   name: 'expressionList',
-  impl: ({ ACTION, CONSUME, MANY, OR, SUBRULE1, SUBRULE2, SUBRULE3 }) => C => OR([
+  impl: ({ ACTION, CONSUME, MANY, OR, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4 }) => C => OR([
     { ALT: () => {
       const nil = CONSUME(l.terminals.nil).image.slice(1, -1);
       const i0 = SUBRULE1(blank, undefined);
@@ -114,19 +114,19 @@ export const expressionList: SparqlRule<'expressionList', { val: Expression[]; i
     } },
     { ALT: () => {
       CONSUME(l.symbols.LParen);
-      const i0 = SUBRULE1(blank, undefined);
+      const i0 = SUBRULE2(blank, undefined);
       const ignored = [ i0 ];
       const expr1 = SUBRULE1(expression, undefined);
       const args: Expression[] = [ expr1 ];
       MANY(() => {
         CONSUME(l.symbols.comma);
-        const i1 = SUBRULE2(blank, undefined);
+        const i1 = SUBRULE3(blank, undefined);
         const expr = SUBRULE2(expression, undefined);
         ignored.push(i1);
         args.push(expr);
       });
       CONSUME(l.symbols.RParen);
-      const ix = SUBRULE3(blank, undefined);
+      const ix = SUBRULE4(blank, undefined);
       ignored.push(ix);
       return { val: args, ignored };
     } },
@@ -280,13 +280,13 @@ export const valueLogical: SparqlGrammarRule<'valueLogical', Expression> = <cons
 export const relationalExpression:
 SparqlGrammarRule<'relationalExpression', ExpressionOperation | Expression> = <const>{
   name: 'relationalExpression',
-  impl: ({ ACTION, CONSUME, SUBRULE1, SUBRULE2, OPTION, OR }) =>
+  impl: ({ ACTION, CONSUME, SUBRULE1, SUBRULE2, OPTION, OR1, OR2, OR3 }) =>
     (C) => {
       const args1 = SUBRULE1(numericExpression, undefined);
-      return OPTION<ExpressionOperation>(() => OR<ExpressionOperation>([
+      return OPTION<ExpressionOperation>(() => OR1<ExpressionOperation>([
         { ALT: () => {
           // Stay in numeric;
-          const img1 = OR([
+          const img1 = OR2([
             { ALT: () => CONSUME(l.symbols.equal).image },
             { ALT: () => CONSUME(l.symbols.notEqual).image },
             { ALT: () => CONSUME(l.symbols.lessThan).image },
@@ -308,11 +308,11 @@ SparqlGrammarRule<'relationalExpression', ExpressionOperation | Expression> = <c
           };
         } },
         { ALT: () => {
-          const img1 = OR([
+          const img1 = OR3([
             { ALT: () => CONSUME(l.in_).image },
             { ALT: () => CONSUME(l.notIn).image },
           ]);
-          const i0 = SUBRULE1(blank, undefined);
+          const i0 = SUBRULE2(blank, undefined);
           const args = SUBRULE1(expressionList, undefined);
           return ACTION(() => ({
             type: 'expression',

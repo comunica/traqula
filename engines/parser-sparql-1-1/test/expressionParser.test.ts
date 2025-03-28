@@ -9,17 +9,36 @@ describe('a SPARQL 1.1 expression parser', () => {
     const parser = expressionParserBuilder.consumeToParser({
       tokenVocabulary: l.sparql11Tokens.build(),
     });
-    return parser.builtInStr(query, completeParseContext(context), undefined);
+    return parser.expression(query, completeParseContext(context), undefined);
   }
   const context = { prefixes: { ex: 'http://example.org/' }};
 
-  it('builtin', ({ expect }) => {
-    const res = parse(`STR
+  const value = [
+    `5 + 2
+# a
+`,
+    `STR
 #a
 (?x
 #b
 )
 #c
+`,
+    `STR
+#a
+(?x
+#b
+)
+#c
+
++ BNoDe ( )
+# Lonely
+`,
+  ];
+
+  it('builtin', ({ expect }) => {
+    const res = parse(`5 + 2
+# a
 `, context);
     expect(res).toEqual(F.expressionOperation({
       img1: 'STR',
@@ -27,7 +46,7 @@ describe('a SPARQL 1.1 expression parser', () => {
       ignored: [
         [ F.blankSpace('\n'), F.comment('a') ],
         [],
-        [ F.blankSpace('\n'), F.comment('c') ],
+        [ F.blankSpace('\n'), F.comment('b') ],
       ],
     }));
   });

@@ -2,6 +2,7 @@ import { Builder } from '@traqula/core';
 import { gram } from '@traqula/rules-sparql-1-1';
 
 const rules = <const> [
+  gram.blank,
   gram.objectList,
   gram.object,
   gram.graphNode,
@@ -16,6 +17,7 @@ const rules = <const> [
   gram.varOrIri,
   gram.var_,
   gram.iri,
+  gram.iriFull,
   gram.prefixedName,
   gram.graphTerm,
   gram.rdfLiteral,

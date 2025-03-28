@@ -508,7 +508,13 @@ export class TraqulaFactory extends BlankSpaceFactory {
     };
   }
 
+  /**
+   * A namednode with fully defined with a uri.
+   */
   public namedNode(i0: r.ITOS, value: string): TermIriFull;
+  /**
+   * A namednode defined using a prefix
+   */
   public namedNode(i0: r.ITOS, value: string, prefix: string): TermIriPrefixed;
   public namedNode(i0: r.ITOS, value: string, prefix?: string): TermIriFull | TermIriPrefixed {
     if (prefix === undefined) {

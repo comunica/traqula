@@ -245,10 +245,10 @@ function objectImpl<T extends string>(name: T, allowPaths: boolean):
 SparqlGrammarRule<T, Triple[], Pick<Triple, 'subject' | 'predicate'>> {
   return {
     name,
-    impl: ({ ACTION, SUBRULE }) => ({ factory: F }, arg) => {
+    impl: ({ ACTION, SUBRULE }) => (C, arg) => {
       const node = SUBRULE(allowPaths ? graphNodePath : graphNode, undefined);
       return ACTION(() => [
-        F.triple(arg.subject, arg.predicate, node.node),
+        C.factory.triple(arg.subject, arg.predicate, node.node),
         ...node.triples,
       ]);
     },

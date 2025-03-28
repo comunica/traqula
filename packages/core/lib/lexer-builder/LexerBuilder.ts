@@ -79,6 +79,10 @@ export class LexerBuilder<NAMES extends string = string> {
     return this;
   }
 
+  /**
+   * @param before token to move rest before
+   * @param tokens tokens to move before the first token
+   */
   public moveBefore<Name extends string>(
     before: NamedToken<NAMES>,
     ...tokens: CheckOverlap<Name, NAMES, never, NamedToken<Name>[]>

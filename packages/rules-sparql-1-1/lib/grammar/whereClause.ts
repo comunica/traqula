@@ -54,7 +54,7 @@ export const whereClause: SparqlGrammarRule<'whereClause', Wrap<PatternGroup> & 
  */
 export const groupGraphPattern: SparqlRule<'groupGraphPattern', PatternGroup> = <const> {
   name: 'groupGraphPattern',
-  impl: ({ SUBRULE, SUBRULE1, SUBRULE2, CONSUME, OR }) => () => {
+  impl: ({ ACTION, SUBRULE, SUBRULE1, SUBRULE2, CONSUME, OR }) => () => {
     CONSUME(l.symbols.LCurly);
     const i0 = SUBRULE1(blank, undefined);
     const patterns = OR<SubSelect | RuleDefReturn<typeof groupGraphPatternSub>>([
@@ -77,7 +77,7 @@ export const groupGraphPattern: SparqlRule<'groupGraphPattern', PatternGroup> = 
         },
       };
     }
-    return patterns([ i0, i1 ]);
+    return ACTION(() => patterns([ i0, i1 ]));
   },
   gImpl: () => () => '',
 };
@@ -99,7 +99,7 @@ export const groupGraphPattern: SparqlRule<'groupGraphPattern', PatternGroup> = 
 export const groupGraphPatternSub:
 SparqlGrammarRule<'groupGraphPatternSub', (braces: [ITOS, ITOS]) => PatternGroup> = <const> {
   name: 'groupGraphPatternSub',
-  impl: ({ ACTION, SUBRULE, CONSUME, MANY, SUBRULE1, SUBRULE2, OPTION1, OPTION2, OPTION3 }) => ({ factory: F }) => {
+  impl: ({ ACTION, SUBRULE, CONSUME, MANY, SUBRULE1, SUBRULE2, OPTION1, OPTION2, OPTION3 }) => (C) => {
     const patterns: Pattern[] = [];
     const dotTracker: Record<number, ITOS> = {};
     const emptyGroups: Record<number, EmptyGroup[]> = {};
@@ -118,27 +118,29 @@ SparqlGrammarRule<'groupGraphPatternSub', (braces: [ITOS, ITOS]) => PatternGroup
         const ix = SUBRULE1(blank, undefined);
         return ix;
       });
-      if (F.isPatternGroup(notTriples) && notTriples.patterns.length < 2) {
-        const degrouped = F.deGroup(notTriples)(dot);
-        if (F.isPattern(degrouped)) {
-          // Degrouped handles own dot.
-          patterns.push(notTriples);
-        } else {
-          const key = patterns.length;
-          if (!emptyGroups[key]) {
-            emptyGroups[key] = [];
-          }
-          emptyGroups[key].push(degrouped);
-        }
-      } else {
-        if (dot) {
-          dotTracker[patterns.length] = dot;
-        }
-        patterns.push(notTriples);
-      }
 
       const moreTriples = OPTION3(() => SUBRULE2(triplesBlock, undefined));
+
       ACTION(() => {
+        const F = C.factory;
+        if (F.isPatternGroup(notTriples) && notTriples.patterns.length < 2) {
+          const degrouped = F.deGroup(notTriples)(dot);
+          if (F.isPattern(degrouped)) {
+            // Degrouped handles own dot.
+            patterns.push(notTriples);
+          } else {
+            const key = patterns.length;
+            if (!emptyGroups[key]) {
+              emptyGroups[key] = [];
+            }
+            emptyGroups[key].push(degrouped);
+          }
+        } else {
+          if (dot) {
+            dotTracker[patterns.length] = dot;
+          }
+          patterns.push(notTriples);
+        }
         if (moreTriples) {
           patterns.push(moreTriples);
         }
@@ -248,7 +250,7 @@ export const graphGraphPattern: SparqlRule<'graphGraphPattern', PatternGraph> = 
  */
 export const serviceGraphPattern: SparqlRule<'serviceGraphPattern', PatternService> = <const> {
   name: 'serviceGraphPattern',
-  impl: ({ SUBRULE1, SUBRULE2, CONSUME, OPTION }) => ({ factory: F }) => {
+  impl: ({ ACTION, SUBRULE1, SUBRULE2, CONSUME, OPTION }) => (C) => {
     const img1 = CONSUME(l.service).image;
     const i0 = SUBRULE1(blank, undefined);
     const silent = OPTION(() => {
@@ -259,7 +261,8 @@ export const serviceGraphPattern: SparqlRule<'serviceGraphPattern', PatternServi
     const name = SUBRULE1(varOrIri, undefined);
     const group = SUBRULE1(groupGraphPattern, undefined);
 
-    return F.patternService(i0, silent.i1, group.RTT.i0, group.RTT.i1, img1, silent.img2, name, group.patterns);
+    return ACTION(() =>
+      C.factory.patternService(i0, silent.i1, group.RTT.i0, group.RTT.i1, img1, silent.img2, name, group.patterns));
   },
   gImpl: ({ SUBRULE }) => ast =>
     `SERVICE ${ast.silent ? 'SILENT ' : ''}${SUBRULE(varOrTerm, ast.name, undefined)}`,
@@ -270,7 +273,7 @@ export const serviceGraphPattern: SparqlRule<'serviceGraphPattern', PatternServi
  */
 export const bind: SparqlRule<'bind', PatternBind> = <const> {
   name: 'bind',
-  impl: ({ SUBRULE, CONSUME, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4 }) => ({ factory: F }) => {
+  impl: ({ ACTION, SUBRULE, CONSUME, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4 }) => (C) => {
     const img1 = CONSUME(l.bind).image;
     const i0 = SUBRULE1(blank, undefined);
     CONSUME(l.symbols.LParen);
@@ -282,7 +285,7 @@ export const bind: SparqlRule<'bind', PatternBind> = <const> {
     CONSUME(l.symbols.RParen);
     const i3 = SUBRULE4(blank, undefined);
 
-    return F.patternBind(i0, i1, i2, i3, img1, img2, expressionVal, variable);
+    return ACTION(() => C.factory.patternBind(i0, i1, i2, i3, img1, img2, expressionVal, variable));
   },
   gImpl: ({ SUBRULE }) => ast =>
     `BIND ( ${SUBRULE(expression, ast.expression, undefined)} AS ${SUBRULE(var_, ast.variable, undefined)} )`,
@@ -329,7 +332,7 @@ SparqlGrammarRule<'dataBlock', Pick<PatternValues, 'values'> & Omit<PatternValue
  */
 export const inlineDataOneVar: SparqlGrammarRule<'inlineDataOneVar', RuleDefReturn<typeof dataBlock>> = <const> {
   name: 'inlineDataOneVar',
-  impl: ({ ACTION, SUBRULE, SUBRULE1, SUBRULE2, CONSUME, MANY }) => ({ factory: F }) => {
+  impl: ({ ACTION, SUBRULE, SUBRULE1, SUBRULE2, CONSUME, MANY }) => (C) => {
     const res: ValuePatternRow[] = [];
     const undefRtt: [number, string, ITOS][] = [];
     const varVal = SUBRULE(var_, undefined);
@@ -338,6 +341,7 @@ export const inlineDataOneVar: SparqlGrammarRule<'inlineDataOneVar', RuleDefRetu
     MANY(() => {
       const value = SUBRULE(dataBlockValue, undefined);
       ACTION(() => {
+        const F = C.factory;
         if (F.isTermIri(value) && F.isTermIriPrimitive(value) && value.value === 'UNDEF') {
           undefRtt.push([ res.length, value.RTT.img1, value.RTT.i0 ]);
           res.push({
@@ -380,9 +384,14 @@ export const inlineDataFull: SparqlRule<'inlineDataFull', RuleDefReturn<typeof d
     SUBRULE2,
     SUBRULE3,
     SUBRULE4,
+    SUBRULE5,
+    SUBRULE6,
+    SUBRULE7,
+    SUBRULE8,
+    SUBRULE9,
     CONSUME1,
     CONSUME2,
-  }) => ({ factory: F }) => {
+  }) => (C) => {
     const res: ValuePatternRow[] = [];
     const valueInnerBrackets: [ITOS, ITOS][] = [];
     const vars: TermVariable[] = [];
@@ -392,18 +401,18 @@ export const inlineDataFull: SparqlRule<'inlineDataFull', RuleDefReturn<typeof d
         // Grammar rule 64 together with note 11 learns us that a nil should be followed by a nil in DataBlock.
         const nil = CONSUME1(l.terminals.nil).image.slice(1, -1);
         const i0 = SUBRULE1(blank, undefined);
-        const i1 = [ F.blankSpace(nil) ];
-        const i2 = SUBRULE2(blank, undefined);
+        const i1 = [ ACTION(() => C.factory.blankSpace(nil)) ];
         CONSUME1(l.symbols.LCurly);
+        const i2 = SUBRULE2(blank, undefined);
         MANY1(() => {
-          const iInner0 = SUBRULE3(blank, undefined);
           const valuesNil = CONSUME2(l.terminals.nil);
-          const iInner1 = [ F.blankSpace(valuesNil.image.slice(1, -1)) ];
+          const iInner0 = SUBRULE3(blank, undefined);
+          const iInner1 = [ ACTION(() => C.factory.blankSpace(valuesNil.image.slice(1, -1))) ];
           valueInnerBrackets.push([ iInner0, iInner1 ]);
           res.push({});
         });
-        const i3 = SUBRULE2(blank, undefined);
         CONSUME1(l.symbols.RCurly);
+        const i3 = SUBRULE4(blank, undefined);
         return {
           values: res,
           varBrackets: [ i0, i1 ],
@@ -416,25 +425,26 @@ export const inlineDataFull: SparqlRule<'inlineDataFull', RuleDefReturn<typeof d
       { ALT: () => {
         const res: ValuePatternRow[] = [];
         CONSUME1(l.symbols.LParen);
-        const i0 = SUBRULE1(blank, undefined);
+        const i0 = SUBRULE(blank, undefined);
         MANY2(() => {
           vars.push(SUBRULE(var_, undefined));
         });
         CONSUME1(l.symbols.RParen);
-        const i1 = SUBRULE2(blank, undefined);
+        const i1 = SUBRULE5(blank, undefined);
         CONSUME2(l.symbols.LCurly);
-        const i3 = SUBRULE3(blank, undefined);
+        const i3 = SUBRULE6(blank, undefined);
         MANY3(() => {
           let parsedValues = 0;
           const currentRow: ValuePatternRow = {};
           CONSUME2(l.symbols.LParen);
-          const iInner0 = SUBRULE4(blank, undefined);
+          const iInner0 = SUBRULE7(blank, undefined);
           MANY4(() => {
             if (parsedValues >= vars.length) {
               throw new Error('Number of dataBlockValues does not match number of variables. Too much values.');
             }
             const value = SUBRULE(dataBlockValue, undefined);
             ACTION(() => {
+              const F = C.factory;
               if (F.isTermIri(value) && F.isTermIriPrimitive(value) && value.value === 'UNDEF') {
                 undefRtt.push([ res.length * vars.length + parsedValues, value.RTT.img1, value.RTT.i0 ]);
                 currentRow[`?${vars[parsedValues].value}`] = undefined;
@@ -445,7 +455,7 @@ export const inlineDataFull: SparqlRule<'inlineDataFull', RuleDefReturn<typeof d
             });
           });
           CONSUME2(l.symbols.RParen);
-          const iInner1 = SUBRULE4(blank, undefined);
+          const iInner1 = SUBRULE8(blank, undefined);
           ACTION(() => {
             valueInnerBrackets.push([ iInner0, iInner1 ]);
             res.push(currentRow);
@@ -455,7 +465,7 @@ export const inlineDataFull: SparqlRule<'inlineDataFull', RuleDefReturn<typeof d
           });
         });
         CONSUME2(l.symbols.RCurly);
-        const i4 = SUBRULE2(blank, undefined);
+        const i4 = SUBRULE9(blank, undefined);
         return {
           vars,
           valueInnerBrackets,
@@ -475,7 +485,7 @@ export const inlineDataFull: SparqlRule<'inlineDataFull', RuleDefReturn<typeof d
  */
 export const dataBlockValue: SparqlRule<'dataBlockValue', TermIri | TermBlank | TermLiteral> = <const> {
   name: 'dataBlockValue',
-  impl: ({ SUBRULE, CONSUME, OR }) => ({ factory: F }) => OR<RuleDefReturn<typeof dataBlockValue>>([
+  impl: ({ ACTION, SUBRULE, CONSUME, OR }) => C => OR<RuleDefReturn<typeof dataBlockValue>>([
     { ALT: () => SUBRULE(iri, undefined) },
     { ALT: () => SUBRULE(rdfLiteral, undefined) },
     { ALT: () => SUBRULE(numericLiteral, undefined) },
@@ -483,7 +493,7 @@ export const dataBlockValue: SparqlRule<'dataBlockValue', TermIri | TermBlank | 
     { ALT: () => {
       const img1 = CONSUME(l.undef).image;
       const i0 = SUBRULE(blank, undefined);
-      return F.namedNodePrimitive(i0, img1, 'UNDEF');
+      return ACTION(() => C.factory.namedNodePrimitive(i0, img1, 'UNDEF'));
     } },
   ]),
   gImpl: ({ SUBRULE }) => (ast) => {
@@ -499,12 +509,12 @@ export const dataBlockValue: SparqlRule<'dataBlockValue', TermIri | TermBlank | 
  */
 export const minusGraphPattern: SparqlRule<'minusGraphPattern', PatternMinus> = <const> {
   name: 'minusGraphPattern',
-  impl: ({ ACTION, SUBRULE, CONSUME }) => ({ factory: F }) => {
+  impl: ({ ACTION, SUBRULE, CONSUME }) => (C) => {
     const img1 = CONSUME(l.minus).image;
     const i0 = SUBRULE(blank, undefined);
     const group = SUBRULE(groupGraphPattern, undefined);
 
-    return ACTION(() => F.patternMinus(i0, group.RTT.i0, group.RTT.i1, img1, group.patterns));
+    return ACTION(() => C.factory.patternMinus(i0, group.RTT.i0, group.RTT.i1, img1, group.patterns));
   },
   gImpl: () => () =>
     ``,
@@ -516,7 +526,7 @@ export const minusGraphPattern: SparqlRule<'minusGraphPattern', PatternMinus> = 
 export const groupOrUnionGraphPattern: SparqlRule<'groupOrUnionGraphPattern', PatternGroup | PatternUnion> =
   <const> {
     name: 'groupOrUnionGraphPattern',
-    impl: ({ MANY, SUBRULE1, SUBRULE2, CONSUME }) => ({ factory: F }) => {
+    impl: ({ ACTION, MANY, SUBRULE1, SUBRULE2, CONSUME }) => (C) => {
       const groups: PatternGroup[] = [];
       const ignored: ITOS[] = [];
       const images: string[] = [];
@@ -532,9 +542,13 @@ export const groupOrUnionGraphPattern: SparqlRule<'groupOrUnionGraphPattern', Pa
         groups.push(group);
       });
 
-      return groups.length === 1 ?
+      return ACTION(() => groups.length === 1 ?
         groups[0] :
-        F.patternUnion(ignored, images, groups.map(group => F.deGroupSingle(group)(undefined)));
+        C.factory.patternUnion(
+          ignored,
+          images,
+          groups.map(group => C.factory.deGroupSingle(group)(undefined)),
+        ));
     },
     gImpl: () => () => '',
   };
@@ -544,11 +558,11 @@ export const groupOrUnionGraphPattern: SparqlRule<'groupOrUnionGraphPattern', Pa
  */
 export const filter: SparqlRule<'filter', PatternFilter> = <const> {
   name: 'filter',
-  impl: ({ SUBRULE, CONSUME }) => ({ factory: F }) => {
+  impl: ({ ACTION, SUBRULE, CONSUME }) => (C) => {
     const img1 = CONSUME(l.filter).image;
     const i0 = SUBRULE(blank, undefined);
     const expression = SUBRULE(constraint, undefined);
-    return F.patternFilter(i0, img1, expression);
+    return ACTION(() => C.factory.patternFilter(i0, img1, expression));
   },
   gImpl: ({ SUBRULE }) => ast =>
     `FILTER ( ${SUBRULE(expression, ast.expression, undefined)} )`,

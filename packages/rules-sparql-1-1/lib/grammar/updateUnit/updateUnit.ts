@@ -102,22 +102,22 @@ export const update1: SparqlRule<'update1', UpdateOperation> = <const> {
  */
 export const load: SparqlRule<'load', UpdateOperationLoad> = <const> {
   name: 'load',
-  impl: ({ SUBRULE, CONSUME, OPTION1, OPTION2 }) => ({ factory: F }) => {
+  impl: ({ ACTION, SUBRULE1, SUBRULE2, SUBRULE3, CONSUME, OPTION1, OPTION2 }) => (C) => {
     const img1 = CONSUME(l.load).image;
-    const i0 = SUBRULE(blank, undefined);
+    const i0 = SUBRULE1(blank, undefined);
     const silent = OPTION1(() => {
       const img2 = CONSUME(l.silent).image;
-      const i1 = SUBRULE(blank, undefined);
+      const i1 = SUBRULE2(blank, undefined);
       return <const> [ i1, img2 ];
     }) ?? [[], '' ];
-    const source = SUBRULE(iri, undefined);
+    const source = SUBRULE1(iri, undefined);
     const destination = OPTION2(() => {
       const img3 = CONSUME(l.loadInto).image;
-      const i2 = SUBRULE(blank, undefined);
-      const graph = SUBRULE(graphRef, undefined);
+      const i2 = SUBRULE3(blank, undefined);
+      const graph = SUBRULE1(graphRef, undefined);
       return <const> [ i2, img3, graph ];
     }) ?? [[], '', undefined ];
-    return F.updateOperationLoad({
+    return ACTION(() => C.factory.updateOperationLoad({
       source,
       ...(destination[2] && { destination: destination[2] }),
       i0,
@@ -126,7 +126,7 @@ export const load: SparqlRule<'load', UpdateOperationLoad> = <const> {
       i1: silent[0],
       i2: destination[0],
       img3: destination[1],
-    });
+    }));
   },
   gImpl: () => () => '',
 };
@@ -135,16 +135,17 @@ function clearOrDrop<T extends 'Clear' | 'Drop'>(operation: TokenType & { name: 
 SparqlGrammarRule<Uncapitalize<T>, UpdateOperationClearDrop> {
   return {
     name: unCapitalize(operation.name),
-    impl: ({ SUBRULE, CONSUME, OPTION }) => ({ factory: F }) => {
+    impl: ({ ACTION, SUBRULE1, SUBRULE2, CONSUME, OPTION }) => (C) => {
       const img1 = CONSUME(operation).image;
-      const i0 = SUBRULE(blank, undefined);
+      const i0 = SUBRULE1(blank, undefined);
       const silent = (OPTION(() => {
         const img2 = CONSUME(l.silent).image;
-        const i1 = SUBRULE(blank, undefined);
+        const i1 = SUBRULE2(blank, undefined);
         return <const> [ i1, img2 ];
       }) ?? [[], '' ]);
-      const destination = SUBRULE(graphRefAll, undefined);
-      return F.updateOperationClearDrop({ i0, img1, destination, i1: silent[0], img2: silent[1] });
+      const destination = SUBRULE1(graphRefAll, undefined);
+      return ACTION(() =>
+        C.factory.updateOperationClearDrop({ i0, img1, destination, i1: silent[0], img2: silent[1] }));
     },
   };
 }
@@ -164,16 +165,17 @@ export const drop = clearOrDrop(l.drop);
  */
 export const create: SparqlRule<'create', UpdateOperationCreate> = <const> {
   name: 'create',
-  impl: ({ SUBRULE, CONSUME, OPTION }) => ({ factory: F }) => {
+  impl: ({ ACTION, SUBRULE1, SUBRULE2, CONSUME, OPTION }) => (C) => {
     const img1 = CONSUME(l.create).image;
-    const i0 = SUBRULE(blank, undefined);
+    const i0 = SUBRULE1(blank, undefined);
     const silent = OPTION(() => {
       const img2 = CONSUME(l.silent).image;
-      const i1 = SUBRULE(blank, undefined);
+      const i1 = SUBRULE2(blank, undefined);
       return <const> [ i1, img2 ];
     }) ?? [[], '' ];
-    const destination = SUBRULE(graphRef, undefined);
-    return F.updateOperationCreate({ i0, img1, img2: silent[1], i1: silent[0], destination });
+    const destination = SUBRULE1(graphRef, undefined);
+    return ACTION(() =>
+      C.factory.updateOperationCreate({ i0, img1, img2: silent[1], i1: silent[0], destination }));
   },
   gImpl: () => () => '',
 };
@@ -182,7 +184,7 @@ function copyMoveAddOperation<T extends 'Copy' | 'Move' | 'Add'>(operation: Toke
 SparqlRule<Uncapitalize<T>, UpdateOperationAddMoveCopy> {
   return {
     name: unCapitalize(operation.name),
-    impl: ({ CONSUME, SUBRULE1, SUBRULE2, SUBRULE3, OPTION }) => ({ factory: F }) => {
+    impl: ({ ACTION, CONSUME, SUBRULE1, SUBRULE2, SUBRULE3, OPTION }) => (C) => {
       const img1 = CONSUME(operation).image;
       const i0 = SUBRULE1(blank, undefined);
       const silent = OPTION(() => {
@@ -194,7 +196,7 @@ SparqlRule<Uncapitalize<T>, UpdateOperationAddMoveCopy> {
       const img3 = CONSUME(l.to).image;
       const i2 = SUBRULE3(blank, undefined);
       const destination = SUBRULE2(graphOrDefault, undefined);
-      return F.updateOperationAddMoveCopy({
+      return ACTION(() => C.factory.updateOperationAddMoveCopy({
         i0,
         img1,
         i1: silent[0],
@@ -203,7 +205,7 @@ SparqlRule<Uncapitalize<T>, UpdateOperationAddMoveCopy> {
         i2,
         img3,
         destination,
-      });
+      }));
     },
     gImpl: ({ SUBRULE }) => (ast) => {
       const builder = [ operation.name.toUpperCase() ];
@@ -329,7 +331,7 @@ export const deleteWhere = insertDeleteDelWhere('deleteWhere', l.deleteClause, l
  */
 export const modify: SparqlRule<'modify', UpdateOperationModify> = <const> {
   name: 'modify',
-  impl: ({ CONSUME, SUBRULE1, SUBRULE2, SUBRULE3, OPTION1, OPTION2, OR }) => ({ factory: F }) => {
+  impl: ({ ACTION, CONSUME, SUBRULE1, SUBRULE2, SUBRULE3, OPTION1, OPTION2, OR }) => (C) => {
     const graph = OPTION1(() => {
       const img1 = CONSUME(l.modifyWith).image;
       const i0 = SUBRULE1(blank, undefined);
@@ -355,7 +357,7 @@ export const modify: SparqlRule<'modify', UpdateOperationModify> = <const> {
     const i3 = SUBRULE3(blank, undefined);
     const where = SUBRULE1(groupGraphPattern, undefined);
 
-    return F.updateOperationModify({
+    return ACTION(() => C.factory.updateOperationModify({
       graph: graph?.graph,
       insert: insert?.val ?? [],
       delete: del?.val ?? [],
@@ -372,7 +374,7 @@ export const modify: SparqlRule<'modify', UpdateOperationModify> = <const> {
       i3,
       img4,
       patternBraces: [],
-    });
+    }));
   },
   gImpl: () => () => '',
 };
@@ -503,7 +505,7 @@ export const graphRefAll: SparqlRule<'graphRefAll', GraphRef> = <const> {
  */
 export const quads: SparqlRule<'quads', Quads[]> = <const> {
   name: 'quads',
-  impl: ({ SUBRULE, CONSUME, MANY, SUBRULE1, SUBRULE2, OPTION1, OPTION2, OPTION3 }) => () => {
+  impl: ({ ACTION, SUBRULE, CONSUME, MANY, SUBRULE1, SUBRULE2, OPTION1, OPTION2, OPTION3 }) => () => {
     const quads: Quads[] = [];
 
     OPTION1(() => {
@@ -523,7 +525,7 @@ export const quads: SparqlRule<'quads', Quads[]> = <const> {
       OPTION2(() => {
         CONSUME(l.symbols.dot);
         const ix = SUBRULE2(blank, undefined);
-        notTriples.RTT.ignored.push(ix);
+        ACTION(() => notTriples.RTT.ignored.push(ix));
       });
       quads.push(notTriples);
       OPTION3(() => {

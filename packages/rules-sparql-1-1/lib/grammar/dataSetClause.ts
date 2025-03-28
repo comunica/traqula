@@ -13,19 +13,27 @@ export function datasetClauseUsing<RuleName extends 'usingClause' | 'datasetClau
 ): SparqlGrammarRule<RuleName, { named: boolean; completion: CTOS; value: TermIri }> {
   return {
     name,
-    impl: ({ ACTION, SUBRULE, CONSUME, OR }) => ({ factory: F }) => {
+    impl: ({ ACTION, SUBRULE, CONSUME, OR }) => (C) => {
       const img1 = CONSUME(token).image;
       const i0 = SUBRULE(blank, undefined);
       return OR<RuleDefReturn<typeof datasetClause>>([
         { ALT: () => {
           const iri = SUBRULE(defaultGraphClause, undefined);
-          return { named: false, completion: [ ...i0, F.image(img1) ], value: iri };
+          return ACTION(() => ({
+            named: false,
+            completion: [ ...i0, C.factory.image(img1) ],
+            value: iri,
+          }));
         } },
         { ALT: () => {
           const namedClause = SUBRULE(namedGraphClause, undefined);
           return ACTION(() => {
             const { val, img1: img2, i0: i1 } = namedClause;
-            return { named: true, completion: [ ...i0, F.image(img1), ...i1, F.image(img2) ], value: val };
+            return ACTION(() => ({
+              named: true,
+              completion: [ ...i0, C.factory.image(img1), ...i1, C.factory.image(img2) ],
+              value: val,
+            }));
           });
         } },
       ]);

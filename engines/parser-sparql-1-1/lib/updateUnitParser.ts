@@ -11,7 +11,11 @@ export const updateParserBuilder = Builder.createBuilder(updateNoModifyParserBui
     gram.modify,
     gram.deleteClause,
     gram.insertClause,
+    gram.usingClauses,
     gram.usingClause,
+    gram.defaultGraphClause,
+    gram.sourceSelector,
+    gram.namedGraphClause,
     gram.groupGraphPattern,
   )
   // This substitutes all of propertyListNotEmpty

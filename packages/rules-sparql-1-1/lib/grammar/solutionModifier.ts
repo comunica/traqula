@@ -46,14 +46,14 @@ export const solutionModifier: SparqlRule<'solutionModifier', SolutionModifiers>
  */
 export const groupClause: SparqlRule<'groupClause', SolutionModifierGroup> = <const> {
   name: 'groupClause',
-  impl: ({ AT_LEAST_ONE, SUBRULE, CONSUME }) => () => {
+  impl: ({ AT_LEAST_ONE, SUBRULE1, SUBRULE2, CONSUME }) => () => {
     const groupings: (Expression | SolutionModifierGroupBind)[] = [];
     const img1 = CONSUME(l.groupByGroup).image;
-    const i0 = SUBRULE(blank, undefined);
+    const i0 = SUBRULE1(blank, undefined);
     const img2 = CONSUME(l.by).image;
-    const i1 = SUBRULE(blank, undefined);
+    const i1 = SUBRULE2(blank, undefined);
     AT_LEAST_ONE(() => {
-      groupings.push(SUBRULE(groupCondition, undefined));
+      groupings.push(SUBRULE1(groupCondition, undefined));
     });
 
     return {
@@ -81,7 +81,7 @@ export const groupClause: SparqlRule<'groupClause', SolutionModifierGroup> = <co
  */
 export const groupCondition: SparqlRule<'groupCondition', Expression | SolutionModifierGroupBind> = <const> {
   name: 'groupCondition',
-  impl: ({ SUBRULE, CONSUME, SUBRULE1, SUBRULE2, OPTION, OR }) => ({ factory: F }) =>
+  impl: ({ ACTION, SUBRULE, CONSUME, SUBRULE1, SUBRULE2, OPTION, OR }) => C =>
     OR<Expression | SolutionModifierGroupBind>([
       { ALT: () => SUBRULE(builtInCall, undefined) },
       { ALT: () => SUBRULE(functionCall, undefined) },
@@ -99,18 +99,21 @@ export const groupCondition: SparqlRule<'groupCondition', Expression | SolutionM
         });
         CONSUME(l.symbols.RParen);
         const i2 = SUBRULE2(blank, undefined);
-        return variable ?
-{
-  variable: variable.variable,
-  value: expressionValue,
-  RTT: {
-    img1: variable.img1,
-    i0,
-    i1: variable.i1,
-    i2,
-  },
-} satisfies SolutionModifierGroupBind :
-          F.bracketted(expressionValue, i0, i2);
+        return ACTION(() => {
+          if (variable) {
+            return {
+              variable: variable.variable,
+              value: expressionValue,
+              RTT: {
+                img1: variable.img1,
+                i0,
+                i1: variable.i1,
+                i2,
+              },
+            } satisfies SolutionModifierGroupBind;
+          }
+          return C.factory.bracketted(expressionValue, i0, i2);
+        });
       } },
     ]),
   gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
@@ -175,17 +178,17 @@ export const havingCondition: SparqlGrammarRule<'havingCondition', Expression> =
  */
 export const orderClause: SparqlRule<'orderClause', SolutionModifierOrder> = <const> {
   name: 'orderClause',
-  impl: ({ ACTION, AT_LEAST_ONE, SUBRULE, CONSUME }) => (C) => {
+  impl: ({ ACTION, AT_LEAST_ONE, SUBRULE1, SUBRULE2, CONSUME }) => (C) => {
     const img1 = CONSUME(l.order).image;
-    const i0 = SUBRULE(blank, undefined);
+    const i0 = SUBRULE1(blank, undefined);
     const img2 = CONSUME(l.by).image;
-    const i1 = SUBRULE(blank, undefined);
+    const i1 = SUBRULE2(blank, undefined);
 
     const orderings: Ordering[] = [];
     const couldParseAgg = ACTION(() =>
       C.parseMode.has('canParseAggregate') || !C.parseMode.add('canParseAggregate'));
     AT_LEAST_ONE(() => {
-      orderings.push(SUBRULE(orderCondition, undefined));
+      orderings.push(SUBRULE1(orderCondition, undefined));
     });
     ACTION(() => !couldParseAgg && C.parseMode.delete('canParseAggregate'));
 

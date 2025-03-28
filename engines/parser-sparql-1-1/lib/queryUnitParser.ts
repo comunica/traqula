@@ -14,6 +14,7 @@ const rules = <const> [
   gram.valuesClause,
   gram.baseDecl,
   gram.prefixDecl,
+  gram.datasetClauses,
 ];
 
 export const queryUnitParserBuilder = Builder.createBuilder(rules)

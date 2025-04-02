@@ -152,17 +152,16 @@ export type DatasetClauses = {
 };
 
 /**
- * ShareSubjectDef: ; or ,
- * sharePrefixDef: ,
+ * ShareSubjectDef === true: ; or ,
+ * sharePrefixDef === true: ,
  * i0 should be [] when false, false
  */
-export type RTTTripleBase =
-  | { shareSubjectDef: false; sharePrefixDef: false }
-  | { shareSubjectDef: true; sharePrefixDef: true; i0: r.ITOS }
-  // Rather special approach here since the rule allows repetition of ;.
-  // As such, a triple ; sequences after, and only the first one will require a normal ITOS.
-  // CONTRACT: only first item in chain of ; has i0 !== [].
-  | { shareSubjectDef: true; sharePrefixDef: false; i0: r.ITOS; ignoredAfter: r.ITOS[] };
+export type RTTTripleBase = {
+  trailing: r.ITOS[];
+  nextSharesObj: boolean;
+  nextSharesSubj: boolean;
+  blockEnd: boolean;
+};
 export type RTTTriplePartStartCollection = r.Ignores1 & {
   collectionSize: number;
 };

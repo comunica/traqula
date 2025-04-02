@@ -46,6 +46,14 @@ import type {
   Wrap,
 } from './TypeHelpersRTT';
 
+function test() {
+  [].forEach(x =>
+    console.log(x)
+    // test
+  );
+
+}
+
 export class BlankSpaceFactory {
   private isIgnores<Indexes extends Indexes0>(x: object, indexes: Indexes[]): x is Ignores<Indexes0> {
     return indexes.every(i => `i${i}` in x);

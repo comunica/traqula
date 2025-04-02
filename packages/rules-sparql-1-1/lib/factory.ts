@@ -651,9 +651,21 @@ export class TraqulaFactory extends BlankSpaceFactory {
     };
   }
 
+  /**
+   * String, no lang, no type
+   */
   public literalTerm(i0: r.ITOS, img: string, value: string): TermLiteralStr;
+  /**
+   * Primitive value of some type (programmatically inferred)
+   */
   public literalTerm(i0: r.ITOS, img: string, value: string, iri: TermIri): TermLiteralPrimitive;
+  /**
+   * String with a language tag
+   */
   public literalTerm(i0: r.ITOS, img: string, i1: r.ITOS, value: string, lang: string): TermLiteralLangStr;
+  /**
+   * Lexical form with a type
+   */
   public literalTerm(i0: r.ITOS, img: string, i1: r.ITOS, value: string, iri: TermIri): TermLiteralTyped;
   public literalTerm(
     i0: r.ITOS,
@@ -663,13 +675,14 @@ export class TraqulaFactory extends BlankSpaceFactory {
     langOrIri?: string | TermIri,
   ): TermLiteral {
     if (typeof i1OrValue === 'string') {
+      // TermLiteralStr or TermLiteralPrimitive
       if (valueOrIri === undefined) {
         return this.rttImage(this.rttIgnore({
           type: 'term',
           termType: 'Literal',
           value: i1OrValue,
           langOrIri: valueOrIri,
-        }, i0), img);
+        }, i0), img) satisfies TermLiteralStr;
       }
       if (typeof valueOrIri === 'object') {
         return this.rttImage(this.rttIgnore({
@@ -677,15 +690,26 @@ export class TraqulaFactory extends BlankSpaceFactory {
           termType: 'Literal',
           value: i1OrValue,
           langOrIri: valueOrIri,
-        }, i0), img);
+        }, i0), img) satisfies TermLiteralPrimitive;
       }
     } else if (typeof valueOrIri === 'string' && langOrIri !== undefined) {
+      // Must be this according to function signatures
+      if (typeof langOrIri === 'string') {
+        return this.rttImage(this.rttIgnore({
+          type: 'term',
+          termType: 'Literal',
+          value: valueOrIri,
+          // https://www.w3.org/TR/rdf12-concepts/#changes-12 (point 11)
+          // https://www.w3.org/TR/rdf11-concepts/#h3_section-Graph-Literal
+          langOrIri: langOrIri.toLowerCase(),
+        }, i0, i1OrValue), img) satisfies TermLiteralLangStr;
+      }
       return this.rttImage(this.rttIgnore({
         type: 'term',
         termType: 'Literal',
         value: valueOrIri,
         langOrIri,
-      }, i0, i1OrValue), img);
+      }, i0, i1OrValue), img) satisfies TermLiteralTyped;
     }
     throw new Error('Invalid arguments');
   }

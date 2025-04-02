@@ -126,7 +126,7 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, [] | [Expression]> {
           return ACTION(() => C.factory.expressionOperation({
             args: [],
             img1: operator,
-            ignored: [ i0, i1, [ C.factory.blankSpace(nil) ]],
+            ignored: [ i0, [ C.factory.blankSpace(nil) ], i1 ],
           }));
         } },
       ]);

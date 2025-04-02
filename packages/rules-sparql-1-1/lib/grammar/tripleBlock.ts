@@ -14,12 +14,40 @@ export interface TriplePart {
   triples: Triple[];
 }
 
+function lastTopLevelTriple(triples: Triple[]): Triple | undefined {
+  let index = 0;
+  let triple: Triple | undefined;
+  while (index < triples.length) {
+    triple = triples[index];
+    const { subject, object } = triples[index];
+    if ('RTT' in subject && subject.RTT && 'triplePart' in subject.RTT && subject.RTT.triplePart) {
+      if ('collectionSize' in subject.RTT.triplePart) {
+        index += subject.RTT.triplePart.collectionSize;
+      }
+      if ('blankNodeListSize' in subject.RTT.triplePart) {
+        index += subject.RTT.triplePart.blankNodeListSize;
+      }
+    }
+    if ('RTT' in object && object.RTT && 'triplePart' in object.RTT && object.RTT.triplePart) {
+      if ('collectionSize' in object.RTT.triplePart) {
+        index += object.RTT.triplePart.collectionSize;
+      }
+      if ('blankNodeListSize' in object.RTT.triplePart) {
+        index += object.RTT.triplePart.blankNodeListSize;
+      }
+    }
+    index++;
+  }
+  return triple;
+}
+
 function triplesDotSeperated(triplesSameSubjectSubrule: SparqlGrammarRule<string, Triple[]>):
-SparqlGrammarRule<string, Wrap<Triple[]> & { ignored: ITOS[] }>['impl'] {
+SparqlGrammarRule<string, Triple[]>['impl'] {
   return ({ ACTION, AT_LEAST_ONE, SUBRULE, CONSUME, OPTION }) => () => {
-    const triples: Triple[] = [];
+    const triples: Triple[][] = [];
     const ignored: ITOS[] = [];
 
+    const interation;
     let parsedDot = true;
     AT_LEAST_ONE({
       GATE: () => parsedDot,
@@ -32,6 +60,10 @@ SparqlGrammarRule<string, Wrap<Triple[]> & { ignored: ITOS[] }>['impl'] {
         OPTION(() => {
           CONSUME(l.symbols.dot);
           const i0 = SUBRULE(blank, undefined);
+
+          ACTION(() => {
+            lastTopLevelTriple(triples)?.RTT.shareSubjectDef = true;
+          });
           ignored.push(i0);
           parsedDot = true;
         });
@@ -213,7 +245,6 @@ SparqlGrammarRule<T, Triple[], Pick<Triple, 'subject' | 'predicate'>> {
       AT_LEAST_ONE({
         GATE: () => parsedComma || first,
         DEF: () => {
-          first = false;
           parsedComma = false;
           const objectTriples = SUBRULE(allowPaths ? objectPath : object, arg);
 
@@ -225,13 +256,17 @@ SparqlGrammarRule<T, Triple[], Pick<Triple, 'subject' | 'predicate'>> {
 
           ACTION(() => {
             const [ objectTriple, ...triples ] = objectTriples;
-            Object.assign(objectTriple.RTT, {
-              shareSubjectDef: true,
-              sharePrefixDef: true,
-              i0: ix,
-            });
+            if (!first) {
+              Object.assign(objectTriple.RTT, {
+                shareSubjectDef: true,
+                sharePrefixDef: true,
+                i0: ix,
+              });
+            }
             objects.push(objectTriple, ...triples);
           });
+
+          first = false;
         },
       });
       return objects;

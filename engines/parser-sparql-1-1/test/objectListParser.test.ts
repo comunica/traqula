@@ -5,15 +5,36 @@ import { objectListBuilder } from '../lib';
 
 describe('a SPARQL 1.1 objectlist parser', () => {
   const F = new TraqulaFactory();
+  const subject = F.namedNode([], 'http://example.org/subject');
+  const predicate = F.namedNode([], 'http://example.org/predicate');
+
   function parse(query: string, context: Partial<SparqlContext>): Triple[] {
     const parser = objectListBuilder.consumeToParser({
       tokenVocabulary: l.sparql11Tokens.build(),
     });
-    const subject = F.namedNode([], 'http://example.org/subject');
-    const predicate = F.namedNode([], 'http://example.org/predicate');
     return parser.objectList(query, completeParseContext(context), { subject, predicate });
   }
   const context = { prefixes: { ex: 'http://example.org/' }};
+
+  const firstTriple = F.triple(
+    subject,
+    predicate,
+    F.namedNode([], 'dust-in-the-wind'),
+  );
+
+  const tests: { query: string; ast: Triple[] | null; name: string }[] = [{
+    name: 'uri',
+    query: `<dust-in-the-wind>`,
+    ast: [ firstTriple ],
+  }, {
+    name: '2x uri',
+    query: `<dust-in-the-wind> , 
+    <right-now> 
+`,
+    ast: [
+      firstTriple,
+    ],
+  }];
 
   const values = [
     `<dust-in-the-wind>`,
@@ -51,18 +72,10 @@ describe('a SPARQL 1.1 objectlist parser', () => {
 `,
   ];
 
-  it('builtin', ({ expect }) => {
-    const res = parse(`<dust-in-the-wind> , 
-    ( <a> [] <b> )
-`, context);
-    expect(res).toEqual(F.expressionOperation({
-      img1: 'STR',
-      args: [ F.variable([ F.blankSpace('\n'), F.comment('b') ], '?x') ],
-      ignored: [
-        [ F.blankSpace('\n'), F.comment('a') ],
-        [],
-        [ F.blankSpace('\n'), F.comment('b') ],
-      ],
-    }));
-  });
+  for (const { name, query, ast } of tests) {
+    it(name, ({ expect }) => {
+      const res = parse(query, context);
+      expect(res).toEqual(ast);
+    });
+  }
 });

@@ -22,9 +22,13 @@ export type GeneratorRule<
 > = {
   name: NameType;
   gImpl: (def: RuleDefArg) =>
-  (ast: ReturnType, context: Context, params: ParamType) => string;
+  (ast: ReturnType, context: Context, params: ParamType) => void;
 };
 
 export interface RuleDefArg {
-  SUBRULE: <T, U>(cstDef: GeneratorRule<any, any, T, U>, input: T, arg: U) => string;
+  SUBRULE: <T, U>(cstDef: GeneratorRule<any, any, T, U>, input: T, arg: U) => void;
+  PRINT: (arg: string | [number, number]) => void;
+  CATCHUP: (until?: number) => void;
+  PUSH_SOURCE: (source: string) => void;
+  POP_SOURCE: () => void;
 }

@@ -1,13 +1,16 @@
 import type { Wildcard } from './Wildcard';
 
+/**
+ * A AST node. Nodes are indexable by their types.
+ */
 export type Node = {
   type: string;
-  location: undefined | SourceLocation;
+  loc: undefined | SourceLocation;
 };
 
 export type SourceLocation = {
   // When null, traverse the tree up until you find a non-null source
-  source: string | undefined;
+  source?: string | undefined;
   start: number;
   end: number;
 };

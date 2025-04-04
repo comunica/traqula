@@ -190,7 +190,7 @@ export class Builder<Context, Names extends string, RuleDefs extends ParseRuleMa
     lexerConfig?: ILexerConfig;
   }): ParserFromRules<Context, Names, RuleDefs> {
     const lexer: Lexer = new Lexer(tokenVocabulary, {
-      positionTracking: 'onlyStart',
+      positionTracking: 'full',
       recoveryEnabled: false,
       safeMode: true,
       // SkipValidations: true,

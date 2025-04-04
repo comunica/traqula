@@ -107,7 +107,7 @@ export const prefixDecl: SparqlRule<'prefixDecl', ContextDefinitionPrefixDecl> =
     const value = SUBRULE(iriFull, undefined);
     const i2 = SUBRULE3(blank, undefined);
 
-    return ACTION(() => C.factory.prefix(i0, img1, i1, i2, name, value));
+    return ACTION(() => C.factory.prefixDecl(i0, img1, i1, i2, name, value));
   },
   gImpl: ({ SUBRULE: s }) => ast => [
     genB(s, ast.RTT.i0),

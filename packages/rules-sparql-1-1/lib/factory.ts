@@ -1,116 +1,106 @@
-import { BlankSpaceFactory } from './BlankSpaceFactory';
 import type {
-  TermBlankAnon,
-  TermBlankImplicit,
-  TermBlankLabeled,
-  TermIriFull,
-  TermIri,
-  TermLiteral,
-  TermLiteralLangStr,
-  TermLiteralPrimitive,
-  TermLiteralStr,
-  TermLiteralTyped,
-  ContextDefinitionPrefixDecl,
-  TermIriPrefixed,
-  TermVariable,
-  ContextDefinitionBaseDecl,
-  TermIriPrimitive,
-  PathNegatedElt,
-  Path,
-  PathModified,
-  PropertyPathChain,
-  PathAlternativeLimited,
-  PathNegated,
   ContextDefinition,
-  Term,
-  ExpressionAggregateDefault,
+  ContextDefinitionBaseDecl,
+  ContextDefinitionPrefixDecl,
+  DatasetClauses,
   Expression,
+  ExpressionAggregate,
+  ExpressionAggregateDefault,
   ExpressionAggregateOnWildcard,
   ExpressionAggregateSeparator,
-  ExpressionAggregate,
-  Pattern,
   ExpressionFunctionCall,
   ExpressionOperation,
   ExpressionPatternOperation,
-  Triple,
+  GraphRef,
+  GraphRefDefault,
+  GraphRefSpecific,
+  Path,
+  PathAlternativeLimited,
+  PathModified,
+  PathNegated,
+  PathNegatedElt,
+  Pattern,
+  PatternBind,
   PatternFilter,
-  PatternUnion,
   PatternGroup,
   PatternMinus,
-  PatternBind,
   PatternService,
-  TermBlank,
-  UpdateOperationLoad,
-  GraphRefSpecific,
-  UpdateOperationClearDrop,
-  GraphRef,
-  UpdateOperationCreate,
-  GraphRefDefault,
-  UpdateOperationAddMoveCopy,
-  UpdateOperationInsertDeleteDelWhere,
+  PatternUnion,
+  PropertyPathChain,
   Quads,
-  UpdateOperationModify,
-  BracketWrapper,
-  EmptyGroup,
   Query,
+  SourceLocation,
+  Term,
+  TermBlank,
+  TermIri,
+  TermIriFull,
+  TermIriPrefixed,
+  TermLiteral,
+  TermLiteralLangStr,
+  TermLiteralStr,
+  TermLiteralTyped,
+  TermVariable,
+  Triple,
+  UpdateOperationAdd,
+  UpdateOperationClear,
+  UpdateOperationCopy,
+  UpdateOperationCreate,
+  UpdateOperationDeleteData,
+  UpdateOperationDeleteWhere,
+  UpdateOperationDrop,
+  UpdateOperationInsertData,
+  UpdateOperationLoad,
+  UpdateOperationModify,
+  UpdateOperationMove,
 } from './RoundTripTypes';
-import type * as r from './TypeHelpersRTT';
 import { Wildcard } from './Wildcard';
 
-export class TraqulaFactory extends BlankSpaceFactory {
+export class TraqulaFactory {
   private blankNodeCounter = 0;
-  public constructor() {
-    super();
-  }
+  public constructor() {}
 
-  public prefix(i0: r.ITOS, img1: string, i1: r.ITOS, i2: r.ITOS, key: string, value: TermIriFull):
-  ContextDefinitionPrefixDecl {
-    return this.rttImage(this.rttIgnore({
+  public prefixDecl(key: string, value: TermIriFull, location?: SourceLocation): ContextDefinitionPrefixDecl {
+    return {
       type: 'contextDef',
       contextType: 'prefix',
       key,
       value,
-    }, i0, i1, i2), img1);
+      location,
+    };
   }
 
-  public baseDecl(i0: r.ITOS, img1: string, value: TermIriFull): ContextDefinitionBaseDecl {
-    return this.rttImage(this.rttIgnore({
+  public baseDecl(img1: string, value: TermIriFull, location?: SourceLocation): ContextDefinitionBaseDecl {
+    return {
       type: 'contextDef',
       contextType: 'base',
       value,
-    }, i0), img1);
+      location,
+    };
   }
 
   public isBaseDecl(x: ContextDefinition): x is ContextDefinitionBaseDecl {
     return x.contextType === 'base';
   }
 
-  public variable(i0: r.ITOS, img1: string): TermVariable {
-    return this.rttImage(this.rttIgnore({
+  public isPrefixDecl(x: ContextDefinition): x is ContextDefinitionBaseDecl {
+    return x.contextType === 'prefix';
+  }
+
+  public variable(image: string, location?: SourceLocation): TermVariable {
+    return {
       type: 'term',
       termType: 'Variable',
-      value: img1.slice(1),
-    }, i0), img1);
+      value: image,
+      location,
+    };
   }
 
   public isTerm(x: object): x is Term {
     return 'type' in x && x.type === 'term';
   }
 
-  public isTermIriPrimitive(x: TermIri): x is TermIriPrimitive {
-    return 'img1' in x.RTT;
-  }
-
   public isTermIriPrefixed(x: TermIri): x is TermIriPrefixed {
     return 'prefix' in x;
-  }
-
-  public isTermBlankImplicit(x: TermBlank): x is TermBlankImplicit {
-    return 'count' in x;
-  }
-
-  public isBrackettedRTT(x: { RTT: object }): x is { RTT: { preBracket: [r.ITOS, r.ITOS][] }} {
-    return 'preBracket' in x.RTT;
   }
 
   public isExpression(x: object): x is Expression {
@@ -162,7 +152,7 @@ export class TraqulaFactory extends BlankSpaceFactory {
   }
 
   public isExpressionAggregateDefault(x: ExpressionAggregate): x is ExpressionAggregateDefault {
-    return !this.isExpressionAggregateOnWildcard(x) && !this.isExpressionAggregateSeparator(x);
+    return !this.isExpressionAggregateOnWildcard(x);
   }
 
   public formatOperator(operator: string): string {
@@ -170,32 +160,30 @@ export class TraqulaFactory extends BlankSpaceFactory {
   }
 
   public expressionOperation<Args extends Expression[]>(
-    arg: { args: Args } & Pick<ExpressionOperation['RTT'], 'img1' | 'ignored'>,
+    operator: string,
+    args: Args,
+    location?: SourceLocation,
   ): ExpressionOperation & { args: Args } {
     return {
       type: 'expression',
       expressionType: 'operation',
-      operator: this.formatOperator(arg.img1),
-      args: arg.args,
-      RTT: {
-        ignored: arg.ignored,
-        img1: arg.img1,
-      },
+      operator: this.formatOperator(operator),
+      args,
+      location,
     };
   }
 
   public expressionPatternOperation<Args extends Pattern[]>(
-    arg: { args: Args } & Pick<ExpressionPatternOperation['RTT'], 'i0' | 'img1'>,
+    operator: string,
+    args: Args,
+    location?: SourceLocation,
   ): ExpressionPatternOperation & { args: Args } {
     return {
       type: 'expression',
       expressionType: 'patternOperation',
-      operator: this.formatOperator(arg.img1),
-      args: arg.args,
-      RTT: {
-        i0: arg.i0,
-        img1: arg.img1,
-      },
+      operator: this.formatOperator(operator),
+      args,
+      location,
     };
   }
 
@@ -203,16 +191,14 @@ export class TraqulaFactory extends BlankSpaceFactory {
     subject: Triple['subject'],
     predicate: Triple['predicate'],
     object: Triple['object'],
-    RTT?: Triple['RTT'],
+    location?: SourceLocation,
   ): Triple {
     return {
+      type: 'triple',
       subject,
       predicate,
       object,
-      RTT: RTT ?? {
-        shareSubjectDef: false,
-        sharePrefixDef: false,
-      },
+      location,
     };
   }
 
@@ -228,417 +214,350 @@ export class TraqulaFactory extends BlankSpaceFactory {
     return x.type === 'query';
   }
 
-  public patternFilter(i0: r.ITOS, img1: string, expression: Expression): PatternFilter {
-    return this.rttImage(this.rttIgnore({
+  public patternFilter(expression: Expression, location?: SourceLocation): PatternFilter {
+    return {
       type: 'pattern',
       patternType: 'filter',
       expression,
-    }, i0), img1);
+      location,
+    };
   }
 
   public patternBind(
-    i0: r.ITOS,
-    i1: r.ITOS,
-    i2: r.ITOS,
-    i3: r.ITOS,
-    img1: string,
-    img2: string,
     expression: Expression,
     variable: TermVariable,
+    location?: SourceLocation,
   ): PatternBind {
-    return this.rttImage(this.rttIgnore({
+    return {
       type: 'pattern',
       patternType: 'bind',
       expression,
       variable,
-    }, i0, i1, i2, i3), img1, img2);
+      location,
+    };
   }
 
-  public patternUnion(ignores: r.ITOS[], images: string[], patterns: Pattern[]): PatternUnion {
+  public patternUnion(patterns: Pattern[], location?: SourceLocation): PatternUnion {
     return {
       type: 'pattern',
       patternType: 'union',
       patterns,
-      RTT: { ignores, images },
+      location,
     };
   }
 
-  public patternMinus(i0: r.ITOS, i1: r.ITOS, i2: r.ITOS, img1: string, patterns: Pattern[]): PatternMinus {
+  public patternMinus(patterns: Pattern[], location?: SourceLocation): PatternMinus {
     return {
       type: 'pattern',
       patternType: 'minus',
       patterns,
-      RTT: { i0, i1, i2, img1 },
+      location,
     };
   }
 
   public patternService(
-    i0: r.ITOS,
-    i1: r.ITOS,
-    i2: r.ITOS,
-    i3: r.ITOS,
-    img1: string,
-    img2: string,
     name: TermIri | TermVariable,
     patterns: Pattern[],
+    silent: boolean,
+    location?: SourceLocation,
   ): PatternService {
     return {
       type: 'pattern',
       patternType: 'service',
-      silent: img2.toLowerCase() === 'silent',
+      silent,
       name,
       patterns,
-      RTT: { i0, i1, i2, i3, img1, img2 },
+      location,
     };
   }
 
-  public deGroupSingle(group: PatternGroup & Pattern): (dot: r.ITOS | undefined) => Pattern {
+  public deGroupSingle(group: PatternGroup & Pattern): Pattern {
     if (group.patterns.length === 1) {
-      const preEmpty = group.RTT.emptyGroups[0] ?? [];
-      const postEmpty = group.RTT.emptyGroups[1] ?? [];
-      const patternDot = group.RTT.dotTracker[0] ?? undefined;
-      return (dot) => {
-        const pattern = group.patterns[0];
-        const container = {
-          preEmpty,
-          postEmpty,
-          preBrace: group.RTT.i0,
-          postBrace: group.RTT.i1,
-          dot,
-        };
-        if ('unGroupedInfo' in pattern.RTT && pattern.RTT.unGroupedInfo !== undefined) {
-          pattern.RTT.unGroupedInfo.containedIn.push(container);
-        } else {
-          pattern.RTT.unGroupedInfo = {
-            containedIn: [ container ],
-            patternDot,
-          };
-        }
-        return pattern;
-      };
+      return group.patterns[0];
     }
-    return () => group;
+    return group;
   }
 
-  /**
-   * 1. An empty group results in an {@link EmptyGroup} describing itself
-   * 2. A group with one pattern is useless - It returns
-   *  a. the pattern,
-   *  b. its now orphaned dot,
-   *  c. Empty groups, and
-   *  d. its braces.
-   * 3. A group with more than one pattern is returned as is.
-   */
-  public deGroup(group: PatternGroup & Pattern): ((dot: r.ITOS | undefined) => EmptyGroup | Pattern) {
-    if (group.patterns.length === 0) {
-      return dot => ({
-        patterns: group.RTT.emptyGroups[0] ?? [],
-        braces: [ group.RTT.i0, group.RTT.i1 ],
-        dotIgnore: dot,
-      } satisfies EmptyGroup);
-    }
-    return this.deGroupSingle(group);
-  }
-
-  public aggregate(i0: r.ITOS, i1: r.ITOS, i2: r.ITOS | undefined, i3: r.ITOS, img1: string, img2: string | undefined,
-    expression: Expression): ExpressionAggregateDefault;
-  public aggregate(i0: r.ITOS, i1: r.ITOS, i2: r.ITOS | undefined, i3: r.ITOS, i4: r.ITOS, img1: string,
-    img2: string | undefined, expression: Wildcard): ExpressionAggregateOnWildcard;
-  public aggregate(i0: r.ITOS, i1: r.ITOS, i2: r.ITOS | undefined, i3: r.ITOS, i4: r.ITOS, i5: r.ITOS, i6: r.ITOS,
-    i7: r.ITOS, img1: string, img2: string | undefined, img3: string, img4: string, expression: Expression,
-    separator: string): ExpressionAggregateSeparator;
   public aggregate(
-    i0: r.ITOS,
-    i1: r.ITOS,
-    i2: r.ITOS | undefined,
-    i3: r.ITOS,
-    img1ori4: string | r.ITOS,
-    img2or1ori5: string | r.ITOS | undefined,
-    expressionOrImg2Ori6: Expression | string | r.ITOS | undefined,
-    expressionOri7?: Wildcard | r.ITOS,
-    img1?: string,
-    img2?: string,
-    img3?: string,
-    img4?: string,
-    expression?: Expression,
-    separator?: string,
+    aggregation: string,
+    distinct: boolean,
+    arg: Expression,
+    separator: undefined,
+    location?: SourceLocation
+  ): ExpressionAggregateDefault;
+  public aggregate(
+    aggregation: string,
+    distinct: boolean,
+    arg: Wildcard,
+    separator: undefined,
+    location?: SourceLocation
+  ): ExpressionAggregateOnWildcard;
+  public aggregate(
+    aggregation: string,
+    distinct: boolean,
+    arg: Expression,
+    separator: string,
+    location?: SourceLocation
+  ): ExpressionAggregateSeparator;
+  public aggregate(
+    aggregation: string,
+    distinct: boolean,
+    arg: Expression | Wildcard,
+    separator: string | undefined,
+    location?: SourceLocation,
   ): ExpressionAggregate {
-    if (typeof img1ori4 === 'string' &&
-      (img2or1ori5 === undefined || typeof img2or1ori5 === 'string') &&
-      Array.isArray(expressionOrImg2Ori6)
-    ) {
-      return {
-        type: 'expression',
-        expressionType: 'aggregate',
-        aggregation: img1ori4.toLowerCase(),
-        distinct: img2or1ori5 !== undefined,
-        expression: [ <Expression> <unknown> expressionOrImg2Ori6 ],
-        RTT: this.ignores(this.images({}, img1ori4, img2or1ori5 ?? ''), i0, i1, i2 ?? [], i3),
-      } satisfies ExpressionAggregateDefault;
-    }
-    if (Array.isArray(img1ori4) &&
-      typeof img2or1ori5 === 'string' &&
-      (expressionOrImg2Ori6 === undefined || typeof expressionOrImg2Ori6 === 'string')
-    ) {
-      return {
-        type: 'expression',
-        expressionType: 'aggregate',
-        aggregation: img2or1ori5.toLowerCase(),
-        distinct: expressionOrImg2Ori6 !== undefined,
-        expression: [ <Wildcard> expressionOri7 ],
-        RTT: this.ignores(this.images({}, img2or1ori5, expressionOrImg2Ori6 ?? ''), i0, i1, i2 ?? [], i3, img1ori4),
-      } satisfies ExpressionAggregateOnWildcard;
-    }
-    if (Array.isArray(img1ori4) &&
-      Array.isArray(img2or1ori5) &&
-      Array.isArray(expressionOrImg2Ori6) &&
-      expressionOri7 !== undefined &&
-      img1 !== undefined &&
-      img3 !== undefined &&
-      img4 !== undefined &&
-      expression !== undefined &&
-      separator !== undefined
-    ) {
-      return {
-        type: 'expression',
-        expressionType: 'aggregate',
-        aggregation: img1.toLowerCase(),
-        distinct: img2 !== undefined,
-        expression: [ expression ],
-        separator,
-        RTT: this.ignores(
-          this.images({}, img1, img2 ?? '', img3, img4),
-          i0,
-          i1,
-          i2 ?? [],
-          i3,
-          img1ori4,
-          img2or1ori5,
-          expressionOrImg2Ori6,
-          <r.ITOS> expressionOri7,
-        ),
-      } satisfies ExpressionAggregateSeparator;
-    }
-    throw new Error('Invalid arguments');
-  }
-
-  /**
-   * If PreBracketed exists, this function will append the current values to it.
-   */
-  public bracketted<T extends object & { RTT?: { preBracket?: [r.ITOS, r.ITOS][] }}>(x: T, i0: r.ITOS, i1: r.ITOS):
-    T & { RTT: { preBracket: [r.ITOS, r.ITOS][] }} {
-    if (x.RTT !== undefined && x.RTT.preBracket !== undefined) {
-      x.RTT.preBracket.push([ i0, i1 ]);
-      return <T & { RTT: { preBracket: [r.ITOS, r.ITOS][] }}> x;
-    }
-    return {
-      ...x,
-      RTT: {
-        ...x.RTT,
-        preBracket: [[ i0, i1 ]],
-      },
+    const base = <const> {
+      type: 'expression',
+      expressionType: 'aggregate',
+      aggregation: this.formatOperator(aggregation),
+      distinct,
+      location,
     };
-  }
-
-  public curlied<T extends object & { RTT?: { preCurls?: BracketWrapper }}>(x: T, i0: r.ITOS, i1: r.ITOS):
-    T & { RTT: { preCurls: [r.ITOS, r.ITOS][] }} {
-    if (x.RTT !== undefined && x.RTT.preCurls !== undefined) {
-      return <T & { RTT: { preCurls: [r.ITOS, r.ITOS][] }}> x;
+    if (this.isExpression(arg)) {
+      if (separator === undefined) {
+        return { ...base, expression: [ arg ]} satisfies ExpressionAggregateDefault;
+      }
+      return { ...base, expression: [ arg ], separator } satisfies ExpressionAggregateSeparator;
     }
-    return {
-      ...x,
-      RTT: {
-        ...x.RTT,
-        preCurls: [[ i0, i1 ]],
-      },
-    };
+    return { ...base, expression: [ arg ]} satisfies ExpressionAggregateOnWildcard;
   }
 
-  public path(pathType: '!', items: TermIri | PathNegatedElt | PathAlternativeLimited, ignored: r.ITOS):
-  PathNegated;
-  public path(pathType: '!', items: TermIri | PathNegatedElt | PathAlternativeLimited,
-    ignored: [r.ITOS, r.ITOS, r.ITOS]): PathNegated;
-  public path(pathType: '^', items: TermIri, i0: r.ITOS): PathNegatedElt;
-  public path(pathType: '?' | '*' | '+' | '^', item: Path, i0: r.ITOS): PathModified;
-  public path(pathType: '|', items: [TermIri | PathNegatedElt, ...(TermIri | PathNegatedElt)[]],
-    ignored: [r.ITOS, ...r.ITOS[]]): PathAlternativeLimited;
-  public path(pathType: '|' | '/', items: [Path, ...Path[]], ignored: [r.ITOS, ...r.ITOS[]]):
+  public path(
+    pathType: '|',
+    items: [TermIri | PathNegatedElt, ...(TermIri | PathNegatedElt)[]],
+    location?: SourceLocation
+  ): PathAlternativeLimited;
+  public path(
+    pathType: '!',
+    items: [TermIri | PathNegatedElt | PathAlternativeLimited],
+    location?: SourceLocation
+  ): PathNegated;
+  public path(pathType: '^', items: [TermIri], location?: SourceLocation): PathNegatedElt;
+  public path(pathType: PathModified['pathType'], item: [Path], location?: SourceLocation): PathModified;
+  public path(pathType: '|' | '/', items: [Path, ...Path[]], location?: SourceLocation):
   PropertyPathChain;
   public path(
-    pathType: '?' | '*' | '+' | '^' | '|' | '/' | '!',
-    items: Path | Path[],
-    ignored: r.ITOS | r.ITOS[],
+    pathType: (PropertyPathChain | PathModified | PathNegated)['pathType'],
+    items: [Path, ...Path[]],
+    location?: SourceLocation,
   ): Path {
-    if (pathType === '!') {
-      if (Array.isArray(ignored[0])) {
-        const [ i0, i1, i2 ] = <[r.ITOS, r.ITOS, r.ITOS]> ignored;
-        const RTT = this.ignores({}, i0, i1, i2);
-        return {
-          type: 'path',
-          pathType,
-          items: <[TermIri | PathNegatedElt | PathAlternativeLimited]> [ items ],
-          RTT,
-        };
-      }
-      const RTT = this.ignores({}, <r.ITOS> ignored);
-      return {
-        type: 'path',
-        pathType,
-        items: <[TermIri | PathNegatedElt]> [ items ],
-        RTT,
-      };
-    }
+    const base = <const> {
+      type: 'path',
+      location,
+      items,
+    };
     if (pathType === '|' || pathType === '/') {
       return {
-        type: 'path',
+        ...base,
         pathType,
-        items: <[Path, ...Path[]]> items,
-        RTT: {
-          preSepIgnores: <[r.ITOS, ...r.ITOS[]]> ignored,
-        },
-      };
+      } satisfies PropertyPathChain;
     }
-    return {
-      type: 'path',
-      pathType,
-      items: <[Path]> items,
-      RTT: {
-        i0: <r.ITOS> ignored,
-      },
-    };
+    if ((pathType === '?' || pathType === '*' || pathType === '+' || pathType === '^') && items.length === 1) {
+      return {
+        ...base,
+        pathType,
+        items: <[Path]> items,
+      } satisfies PathModified;
+    }
+    if (pathType === '^' && items.length === 1 && this.isTerm(items[0])) {
+      return {
+        ...base,
+        pathType,
+        items: <[TermIri]> items,
+      } satisfies PathNegatedElt;
+    }
+    if (pathType === '!' && items.length === 1 && (
+      this.isPathAlternativeLimited(items[0]) || this.isTerm(items[0]) || this.isPathNegatedElt(items[0]))) {
+      return {
+        ...base,
+        pathType,
+        items: <[TermIri | PathNegatedElt | PathAlternativeLimited]> items,
+      } satisfies PathNegated;
+    }
+    throw new Error('Invalid path type');
+  }
+
+  public isPathChain(x: Path): x is PropertyPathChain {
+    return 'pathType' in x && (x.pathType === '|' || x.pathType === '/');
+  }
+
+  public isPathModified(x: Path): x is PathModified {
+    return 'pathType' in x && (x.pathType === '?' || x.pathType === '*' || x.pathType === '+' || x.pathType === '^');
+  }
+
+  public isPathNegatedElt(x: Path): x is PathNegatedElt {
+    return 'pathType' in x && x.pathType === '^' && x.items.every(path => this.isTerm(path));
+  }
+
+  public isPathNegated(x: Path): x is PathNegated {
+    return 'pathType' in x && x.pathType === '!';
+  }
+
+  public isPathAlternativeLimited(x: Path): x is PathAlternativeLimited {
+    return 'pathType' in x && x.pathType === '|' &&
+      x.items.every(path => this.isTerm(path) || this.isPathNegatedElt(path));
   }
 
   /**
    * A namednode with fully defined with a uri.
    */
-  public namedNode(i0: r.ITOS, value: string): TermIriFull;
+  public namedNode(value: string, prefix: undefined, location?: SourceLocation): TermIriFull;
   /**
    * A namednode defined using a prefix
    */
-  public namedNode(i0: r.ITOS, value: string, prefix: string): TermIriPrefixed;
-  public namedNode(i0: r.ITOS, value: string, prefix?: string): TermIriFull | TermIriPrefixed {
-    if (prefix === undefined) {
-      return this.rttIgnore({
-        type: 'term',
-        termType: 'NamedNode',
-        value,
-      }, i0);
-    }
-    return this.rttIgnore({
+  public namedNode(value: string, prefix: string, location?: SourceLocation): TermIriPrefixed;
+  public namedNode(value: string, prefix?: string, location?: SourceLocation): TermIriFull | TermIriPrefixed {
+    const base = <const> {
       type: 'term',
       termType: 'NamedNode',
       value,
-      prefix,
-    }, i0);
-  }
-
-  public namedNodePrimitive(i0: r.ITOS, img1: string, value: string): TermIriPrimitive {
-    return {
-      ...this.namedNode(i0, value),
-      RTT: {
-        i0,
-        img1,
-      },
+      location,
     };
+    if (prefix === undefined) {
+      return base;
+    }
+    return { ...base, prefix };
   }
 
-  public blankNode(i0: r.ITOS, label: string): TermBlankLabeled;
-  public blankNode(i0: r.ITOS, label: undefined, image: string): TermBlankAnon;
-  public blankNode(i0: r.ITOS, label: string | undefined, image?: string): TermBlankAnon | TermBlankLabeled {
-    return label === undefined ?
-      this.rttIgnore(this.rttImage({
-        type: 'term',
-        termType: 'BlankNode',
-        label: undefined,
-      }, image!), i0) :
-      this.rttIgnore({
-        type: 'term',
-        termType: 'BlankNode',
-        label,
-      }, i0);
-  }
-
-  public blankNodeImplicit(count?: number): TermBlankImplicit {
-    return {
+  public blankNode(label: undefined | string, location?: SourceLocation): TermBlank {
+    const base = <const> {
       type: 'term',
       termType: 'BlankNode',
-      count: count ?? this.blankNodeCounter++,
+      location,
     };
+    if (label === undefined) {
+      return { ...base, label: `g_${this.blankNodeCounter++}` };
+    }
+    return { ...base, label: `e_${label}` };
   }
 
-  public updateOperationLoad(arg: { source: TermIri; destination?: GraphRefSpecific } & r.Ignores2 & r.Images3):
-  UpdateOperationLoad {
-    const { source, destination = undefined, ...RTT } = arg;
+  public updateOperationLoad(
+    source: TermIri,
+    silent: boolean,
+    destination?: GraphRefSpecific | undefined,
+    location?: SourceLocation,
+  ): UpdateOperationLoad {
     return {
       type: 'updateOperation',
       operationType: 'load',
-      silent: arg.img2.toLowerCase() === 'silent',
+      silent,
       source,
       ...(destination && { destination }),
-      RTT,
+      location,
     };
   }
 
-  public updateOperationClearDrop(arg: { destination: GraphRef } & r.Ignores1 & r.Images2):
-  UpdateOperationClearDrop {
-    const { destination, ...RTT } = arg;
+  private updateOperationClearDrop<T extends 'clear' | 'drop' | 'create', Dest extends GraphRef>(
+    operationType: T,
+    silent: boolean,
+    destination: Dest,
+    location?: SourceLocation,
+  ): Omit<UpdateOperationDrop, 'destination' | 'operationType'> & { operationType: T; destination: Dest } {
     return {
       type: 'updateOperation',
-      operationType: RTT.img1.toLowerCase() === 'clear' ? 'clear' : 'drop',
-      silent: arg.img2.toLowerCase() === 'silent',
+      operationType,
+      silent,
       destination,
-      RTT,
+      location,
     };
   }
 
-  public updateOperationCreate(arg: { destination: GraphRefSpecific } & r.Ignores1 & r.Images2): UpdateOperationCreate {
-    const { destination, ...RTT } = arg;
-    return {
-      type: 'updateOperation',
-      operationType: 'create',
-      silent: arg.img2.toLowerCase() === 'silent',
-      destination,
-      RTT,
-    };
+  public updateOperationClear(
+    destination: GraphRef,
+    silent: boolean,
+    location?: SourceLocation,
+  ): UpdateOperationClear {
+    return this.updateOperationClearDrop('clear', silent, destination, location);
+  };
+
+  public updateOperationDrop(
+    destination: GraphRef,
+    silent: boolean,
+    location?: SourceLocation,
+  ): UpdateOperationDrop {
+    return this.updateOperationClearDrop('drop', silent, destination, location);
   }
 
-  public updateOperationAddMoveCopy(arg: {
-    source: GraphRefDefault | GraphRefSpecific;
-    destination: GraphRefDefault | GraphRefSpecific;
-  } & r.Ignores2 & r.Images3):
-    UpdateOperationAddMoveCopy {
-    const { source, destination, ...RTT } = arg;
-    const operationType = arg.img1.toLowerCase();
+  public updateOperationCreate(
+    destination: GraphRefSpecific,
+    silent: boolean,
+    location?: SourceLocation,
+  ): UpdateOperationCreate {
+    return this.updateOperationClearDrop('create', silent, destination, location);
+  }
+
+  private updateOperationAddMoveCopy<T extends 'add' | 'move' | 'copy'>(
+    operationType: T,
+    source: GraphRefDefault | GraphRefSpecific,
+    destination: GraphRefDefault | GraphRefSpecific,
+    silent: boolean,
+    location?: SourceLocation,
+  ): Omit<UpdateOperationAdd, 'operationType'> & { operationType: T } {
     return {
       type: 'updateOperation',
-      operationType: operationType === 'add' ? 'add' : (operationType === 'move' ? 'move' : 'copy'),
-      silent: arg.img2.toLowerCase() === 'silent',
+      operationType,
+      silent,
       source,
       destination,
-      RTT,
+      location,
     };
   }
 
-  public updateOperationInsertDeleteDelWhere(arg: {
-    data: Quads[];
-    dataBraces: [r.ITOS, r.ITOS];
-  } & r.Ignores1 & r.Images2):
-    UpdateOperationInsertDeleteDelWhere {
-    const { data, ...RTT } = arg;
-    const op1 = arg.img1.toLowerCase();
-    const op2 = arg.img2.toLowerCase();
-    return {
-      type: 'updateOperation',
-      operationType: op1 === 'insert' ? 'insertdata' : (op2 === 'data' ? 'deletedata' : 'deletewhere'),
-      data,
-      RTT,
-    };
+  public updateOperationAdd(
+    source: GraphRefDefault | GraphRefSpecific,
+    destination: GraphRefDefault | GraphRefSpecific,
+    silent: boolean,
+    location?: SourceLocation,
+  ): UpdateOperationAdd {
+    return this.updateOperationAddMoveCopy('add', source, destination, silent, location);
   }
 
-  public updateOperationModify(arg: Omit<UpdateOperationModify, 'type' | 'operationType' | 'RTT'> &
-    Pick<UpdateOperationModify['RTT'], 'deleteBraces' | 'insertBraces' | 'patternBraces'> & r.Ignores3 & r.Images4):
-    UpdateOperationModify {
-    const { insert, delete: del, graph, where, from, ...RTT } = arg;
+  public updateOperationMove(
+    source: GraphRefDefault | GraphRefSpecific,
+    destination: GraphRefDefault | GraphRefSpecific,
+    silent: boolean,
+    location?: SourceLocation,
+  ): UpdateOperationMove {
+    return this.updateOperationAddMoveCopy('move', source, destination, silent, location);
+  }
+
+  public updateOperationCopy(
+    source: GraphRefDefault | GraphRefSpecific,
+    destination: GraphRefDefault | GraphRefSpecific,
+    silent: boolean,
+    location?: SourceLocation,
+  ): UpdateOperationCopy {
+    return this.updateOperationAddMoveCopy('copy', source, destination, silent, location);
+  }
+
+  private updateOperationInsertDeleteDelWhere<T extends 'insertdata' | 'deletedata' | 'deletewhere'>(
+    operationType: T,
+    data: Quads[],
+    location?: SourceLocation,
+  ): Omit<UpdateOperationInsertData, 'operationType'> & { operationType: T } {
+    return { type: 'updateOperation', operationType, data, location };
+  }
+
+  public updateOperationInsertData(data: Quads[], location?: SourceLocation): UpdateOperationInsertData {
+    return this.updateOperationInsertDeleteDelWhere('insertdata', data, location);
+  }
+
+  public updateOperationDeleteData(data: Quads[], location?: SourceLocation): UpdateOperationDeleteData {
+    return this.updateOperationInsertDeleteDelWhere('deletedata', data, location);
+  }
+
+  public updateOperationDeleteWhere(data: Quads[], location?: SourceLocation): UpdateOperationDeleteWhere {
+    return this.updateOperationInsertDeleteDelWhere('deletewhere', data, location);
+  }
+
+  public updateOperationModify(
+    insert: Quads[],
+    del: Quads[],
+    where: Pattern[],
+    from: DatasetClauses,
+    graph?: TermIri | undefined,
+    location?: SourceLocation,
+  ): UpdateOperationModify {
     return {
       type: 'updateOperation',
       operationType: 'modify',
@@ -647,70 +566,29 @@ export class TraqulaFactory extends BlankSpaceFactory {
       graph,
       where,
       from,
-      RTT,
+      location,
     };
   }
 
   /**
    * String, no lang, no type
    */
-  public literalTerm(i0: r.ITOS, img: string, value: string): TermLiteralStr;
-  /**
-   * Primitive value of some type (programmatically inferred)
-   */
-  public literalTerm(i0: r.ITOS, img: string, value: string, iri: TermIri): TermLiteralPrimitive;
+  public literalTerm(value: string, lang?: undefined, location?: SourceLocation): TermLiteralStr;
   /**
    * String with a language tag
    */
-  public literalTerm(i0: r.ITOS, img: string, i1: r.ITOS, value: string, lang: string): TermLiteralLangStr;
+  public literalTerm(value: string, lang: string, location?: SourceLocation,): TermLiteralLangStr;
   /**
    * Lexical form with a type
    */
-  public literalTerm(i0: r.ITOS, img: string, i1: r.ITOS, value: string, iri: TermIri): TermLiteralTyped;
-  public literalTerm(
-    i0: r.ITOS,
-    img: string,
-    i1OrValue: string | r.ITOS,
-    valueOrIri?: string | TermIri,
-    langOrIri?: string | TermIri,
-  ): TermLiteral {
-    if (typeof i1OrValue === 'string') {
-      // TermLiteralStr or TermLiteralPrimitive
-      if (valueOrIri === undefined) {
-        return this.rttImage(this.rttIgnore({
-          type: 'term',
-          termType: 'Literal',
-          value: i1OrValue,
-          langOrIri: valueOrIri,
-        }, i0), img) satisfies TermLiteralStr;
-      }
-      if (typeof valueOrIri === 'object') {
-        return this.rttImage(this.rttIgnore({
-          type: 'term',
-          termType: 'Literal',
-          value: i1OrValue,
-          langOrIri: valueOrIri,
-        }, i0), img) satisfies TermLiteralPrimitive;
-      }
-    } else if (typeof valueOrIri === 'string' && langOrIri !== undefined) {
-      // Must be this according to function signatures
-      if (typeof langOrIri === 'string') {
-        return this.rttImage(this.rttIgnore({
-          type: 'term',
-          termType: 'Literal',
-          value: valueOrIri,
-          // https://www.w3.org/TR/rdf12-concepts/#changes-12 (point 11)
-          // https://www.w3.org/TR/rdf11-concepts/#h3_section-Graph-Literal
-          langOrIri: langOrIri.toLowerCase(),
-        }, i0, i1OrValue), img) satisfies TermLiteralLangStr;
-      }
-      return this.rttImage(this.rttIgnore({
-        type: 'term',
-        termType: 'Literal',
-        value: valueOrIri,
-        langOrIri,
-      }, i0, i1OrValue), img) satisfies TermLiteralTyped;
-    }
-    throw new Error('Invalid arguments');
+  public literalTerm(value: string, iri: TermIri, location?: SourceLocation,): TermLiteralTyped;
+  public literalTerm(value: string, langOrIri?: string | TermIri, location?: SourceLocation): TermLiteral {
+    return {
+      type: 'term',
+      termType: 'Literal',
+      value,
+      langOrIri,
+      location,
+    };
   }
 }

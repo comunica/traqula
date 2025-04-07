@@ -40,14 +40,7 @@ export const rdfLiteral: SparqlRule<'rdfLiteral', TermLiteral> = <const> {
       } },
     ])) ?? value;
   },
-  gImpl: ({ SUBRULE, PRINT, CATCHUP, PUSH_SOURCE, POP_SOURCE }) => (ast) => {
-    if (ast.loc?.source) {
-      PUSH_SOURCE(ast.loc.source);
-    }
-    if (ast.loc) {
-      CATCHUP(ast.loc.start);
-    }
-
+  gImpl: ({ SUBRULE, PRINT }) => (ast) => {
     if (ast.loc) {
       if (ast.langOrIri && typeof ast.langOrIri !== 'string') {
         SUBRULE(iri, ast.langOrIri, undefined);
@@ -62,13 +55,6 @@ export const rdfLiteral: SparqlRule<'rdfLiteral', TermLiteral> = <const> {
           SUBRULE(iri, ast.langOrIri, undefined);
         }
       }
-    }
-
-    if (ast.loc) {
-      CATCHUP(ast.loc.end);
-    }
-    if (ast.loc?.source) {
-      POP_SOURCE();
     }
   },
 };
@@ -244,23 +230,9 @@ export const iriFull: SparqlRule<'iriFull', TermIriFull> = <const> {
       C.factory.sourceLocation(iriToken),
     ));
   },
-  gImpl: ({ PRINT_WORD, CATCHUP, PUSH_SOURCE, POP_SOURCE }) => (ast) => {
-    if (ast.loc?.source) {
-      PUSH_SOURCE(ast.loc.source);
-    }
-    if (ast.loc) {
-      CATCHUP(ast.loc.start);
-    }
-
+  gImpl: ({ PRINT_WORD }) => (ast) => {
     if (!ast.loc) {
       PRINT_WORD('<', ast.value, '>');
-    }
-
-    if (ast.loc) {
-      CATCHUP(ast.loc.end);
-    }
-    if (ast.loc?.source) {
-      POP_SOURCE();
     }
   },
 };
@@ -288,23 +260,9 @@ export const prefixedName: SparqlRule<'prefixedName', TermIriPrefixed> = <const>
       ));
     } },
   ]),
-  gImpl: ({ PRINT_WORD, CATCHUP, PUSH_SOURCE, POP_SOURCE }) => (ast) => {
-    if (ast.loc?.source) {
-      PUSH_SOURCE(ast.loc.source);
-    }
-    if (ast.loc) {
-      CATCHUP(ast.loc.start);
-    }
-
+  gImpl: ({ PRINT_WORD }) => (ast) => {
     if (!ast.loc) {
       PRINT_WORD(ast.prefix, ':', ast.value);
-    }
-
-    if (ast.loc) {
-      CATCHUP(ast.loc.end);
-    }
-    if (ast.loc?.source) {
-      POP_SOURCE();
     }
   },
 };

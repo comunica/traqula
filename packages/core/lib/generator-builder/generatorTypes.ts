@@ -1,3 +1,5 @@
+import type { Node } from '../utils';
+
 /**
  * Type used to declare generator rules.
  */
@@ -13,6 +15,8 @@ export type GeneratorRule<
   /**
    * Type that will be returned after a correct parse of this rule.
    * This type will be the return type of calling SUBRULE with this grammar rule.
+   * Generation typically happens on a per AST node basis.
+   * The core will implement the generation as such. If this ever changes, we will cross that bridge when we get there.
    */
   ReturnType = any,
   /**
@@ -26,7 +30,7 @@ export type GeneratorRule<
 };
 
 export interface RuleDefArg {
-  SUBRULE: <T, U>(cstDef: GeneratorRule<any, any, T, U>, input: T, arg: U) => void;
+  SUBRULE: <T extends Node, U>(cstDef: GeneratorRule<any, string, T, U>, input: T, arg: U) => void;
   PRINT: (...args: string[]) => void;
   PRINT_WORD: (...args: string[]) => void;
   CATCHUP: (until: number) => void;

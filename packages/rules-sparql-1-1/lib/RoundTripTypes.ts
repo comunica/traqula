@@ -1,19 +1,5 @@
+import type { Node } from '@traqula/core';
 import type { Wildcard } from './Wildcard';
-
-/**
- * A AST node. Nodes are indexable by their types.
- */
-export type Node = {
-  type: string;
-  loc: undefined | SourceLocation;
-};
-
-export type SourceLocation = {
-  // When null, traverse the tree up until you find a non-null source
-  source?: string | undefined;
-  start: number;
-  end: number;
-};
 
 export type GraphRefBase = Node & {
   type: 'graphRef';

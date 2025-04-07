@@ -1,3 +1,4 @@
+import type { SourceLocation } from '@traqula/core';
 import type { IToken } from 'chevrotain';
 import type {
   ContextDefinition,
@@ -30,7 +31,6 @@ import type {
   PropertyPathChain,
   Quads,
   Query,
-  SourceLocation,
   Term,
   TermBlank,
   TermIri,

@@ -1,3 +1,4 @@
+import { RangeArithmetic } from '../RangeArithmetic';
 import type { Node, CheckOverlap } from '../utils';
 import type { GeneratorFromRules, GenRuleMap, GenRulesToObject, GenNamesFromList } from './builderTypes';
 import type { GeneratorRule, RuleDefArg } from './generatorTypes';
@@ -179,23 +180,26 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
 
 export class Generator<Context, Names extends string, RuleDefs extends GenRuleMap<Names>> {
   protected __context: Context | undefined = undefined;
-  protected readonly sourceStack: { source: string; generatedUntil: number }[] = [];
+  protected readonly sourceStack: { source: string; generatedUntil: number; allowedRanges: RangeArithmetic }[] = [];
   protected readonly stringBuilder: string[] = [];
   protected readonly skipRanges: [number, number][] = [];
 
   public constructor(protected rules: RuleDefs) {
     // eslint-disable-next-line ts/no-unnecessary-type-assertion
     for (const rule of <GeneratorRule[]> Object.values(rules)) {
-      this[<keyof (typeof this)> rule.name] = <any> ((input: any, context: Context, args: any) => {
-        this.stringBuilder.length = 0;
-        this.sourceStack.length = 0;
-        this.skipRanges.length = 0;
-        this.setContext(context);
+      // Define function implementation
+      this[<keyof (typeof this)> rule.name] =
+        <any> ((input: any, context: Context & { skipRanges: [number, number][] }, args: any) => {
+          this.stringBuilder.length = 0;
+          this.sourceStack.length = 0;
+          this.skipRanges.length = 0;
+          this.skipRanges.push(...context.skipRanges);
+          this.setContext(context);
 
-        this.subrule(rule, input, args);
+          this.subrule(rule, input, args);
 
-        return this.stringBuilder.join('');
-      });
+          return this.stringBuilder.join('');
+        });
     }
   }
 
@@ -242,15 +246,20 @@ export class Generator<Context, Names extends string, RuleDefs extends GenRuleMa
     if (!currentSource) {
       throw new Error('No source to catchup to');
     }
-    const { source, generatedUntil } = currentSource;
-    const cappedUntil = Math.min(until, source.length);
-    if (until > cappedUntil) {
-      this.stringBuilder.push(source.slice(generatedUntil, cappedUntil));
+    const { source, generatedUntil, allowedRanges } = currentSource;
+    for (const range of allowedRanges.projection(generatedUntil, until)) {
+      this.stringBuilder.push(source.slice(...range));
     }
+    currentSource.generatedUntil = Math.max(generatedUntil, until);
   };
 
-  protected readonly pushSource: RuleDefArg['PUSH_SOURCE'] =
-    source => this.sourceStack.push({ source, generatedUntil: 0 });
+  protected readonly pushSource: RuleDefArg['PUSH_SOURCE'] = (source) => {
+    const allowedRanges = new RangeArithmetic(0, source.length);
+    for (const skip of this.skipRanges) {
+      allowedRanges.subtract(...skip);
+    }
+    this.sourceStack.push({ source, generatedUntil: 0, allowedRanges });
+  };
 
   protected readonly popSource: RuleDefArg['POP_SOURCE'] = () => {
     this.catchup(Number.MAX_VALUE);

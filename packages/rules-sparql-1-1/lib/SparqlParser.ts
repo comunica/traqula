@@ -7,11 +7,14 @@ interface Parser<ParseRet> {
   path: (input: string, context: SparqlContext, arg: undefined) => TermIri | Path;
 }
 
-export function completeParseContext(context: Partial<SparqlContext>): SparqlContext {
+export function completeParseContext(
+  context: Partial<SparqlContext & { skipRanges: [number, number][] }>,
+): SparqlContext & { skipRanges: [number, number][] } {
   return {
     factory: context.factory ?? new TraqulaFactory(),
     baseIRI: context.baseIRI,
     prefixes: { ...context.prefixes },
+    skipRanges: context.skipRanges ?? [],
     parseMode: context.parseMode ? new Set(context.parseMode) : new Set([ 'canParseVars', 'canCreateBlankNodes' ]),
     skipValidation: context.skipValidation ?? false,
   };

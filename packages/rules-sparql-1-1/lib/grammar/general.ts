@@ -53,9 +53,13 @@ export const var_: SparqlRule<'var', TermVariable> = <const> {
       { ALT: () => CONSUME(l.terminals.var1) },
       { ALT: () => CONSUME(l.terminals.var2) },
     ]);
-    return ACTION(() => C.factory.variable(varToken.image, C.factory.sourceLocation(varToken)));
+    return ACTION(() => C.factory.variable(varToken.image.slice(1), C.factory.sourceLocation(varToken)));
   },
-  gImpl: () => ast => `?${ast.value}`,
+  gImpl: ({ PRINT_WORD }) => (ast) => {
+    if (!ast.loc) {
+      PRINT_WORD('?', ast.value);
+    }
+  },
 };
 
 /**

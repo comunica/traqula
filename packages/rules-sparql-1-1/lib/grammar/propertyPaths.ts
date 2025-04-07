@@ -13,7 +13,45 @@ import { iri, verbA } from './literals';
 export const path: SparqlRule<'path', Path> = <const> {
   name: 'path',
   impl: ({ SUBRULE }) => () => SUBRULE(pathAlternative, undefined),
-  gImpl: () => () => {},
+  gImpl: ({ PRINT_WORD, PRINT, SUBRULE }) => (ast, { factory: F }) => {
+    if (F.isTerm(ast) && F.isTermIri(ast)) {
+      SUBRULE(iri, ast, undefined);
+    } else if (ast.loc) {
+      for (const item of ast.items) {
+        SUBRULE(path, item, undefined);
+      }
+    } else {
+      switch (ast.pathType) {
+        case '|':
+        case '/': {
+          const [ head, ...tail ] = ast.items;
+          PRINT('(');
+          SUBRULE(path, head, undefined);
+          PRINT(')');
+          for (const val of tail) {
+            PRINT_WORD(ast.pathType, ' (');
+            SUBRULE(path, val, undefined);
+            PRINT(')');
+          }
+          break;
+        }
+        case '^':
+          PRINT('^');
+          SUBRULE(path, ast.items[0], undefined);
+          break;
+        case '?':
+        case '*':
+        case '+':
+          SUBRULE(path, ast.items[0], undefined);
+          PRINT(ast.pathType);
+          break;
+        case '!':
+          PRINT('!');
+          SUBRULE(path, ast.items[0], undefined);
+          break;
+      }
+    }
+  },
 };
 
 export function pathChainHelper<T extends string>(

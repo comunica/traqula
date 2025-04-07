@@ -294,7 +294,11 @@ export const blankNode: SparqlRule<'blankNode', TermBlank> = <const> {
     });
     return result;
   },
-  gImpl: () => () => '',
+  gImpl: ({ PRINT_WORD }) => (ast) => {
+    if (!ast.loc) {
+      PRINT_WORD('_:', ast.label);
+    }
+  },
 };
 
 export const verbA: SparqlRule<'VerbA', TermIriFull> = <const> {

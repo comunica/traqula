@@ -63,11 +63,16 @@ export class TraqulaFactory {
   private blankNodeCounter = 0;
   public constructor() {}
 
+  public sourceLocation(source: string): SourceLocation;
   public sourceLocation(...tokens: IToken[]): SourceLocation | undefined;
   public sourceLocation(...location: SourceLocation []): SourceLocation | undefined;
-  public sourceLocation(...args: IToken[] | SourceLocation []): SourceLocation | undefined {
+  public sourceLocation(...args: IToken[] | SourceLocation [] | [string]): SourceLocation | undefined {
     if (args.length === 0) {
       return undefined;
+    }
+    if (typeof args[0] === 'string') {
+      const source = args[0];
+      return { source, start: 0, end: source.length };
     }
     if (this.isSourceLocation(args[0])) {
       const cast = <SourceLocation[]> args;
@@ -79,7 +84,7 @@ export class TraqulaFactory {
     return {
       source: undefined,
       start: cast[0].startOffset,
-      end: cast.at(-1)!.endOffset!,
+      end: cast.at(-1)!.endOffset! + 1,
     };
   }
 
@@ -122,11 +127,11 @@ export class TraqulaFactory {
     return x.contextType === 'prefix';
   }
 
-  public variable(image: string, loc?: SourceLocation): TermVariable {
+  public variable(value: string, loc?: SourceLocation): TermVariable {
     return {
       type: 'term',
       termType: 'Variable',
-      value: image,
+      value,
       loc,
     };
   }

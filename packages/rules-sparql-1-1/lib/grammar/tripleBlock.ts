@@ -51,7 +51,21 @@ export const triplesBlock: SparqlRule<'triplesBlock', PatternBgp> = <const>{
     const triples = triplesDotSeperated(triplesSameSubjectPath)(implArgs)(C, undefined);
     return implArgs.ACTION(() => C.factory.patternBgp(triples.val, C.factory.sourceLocation(triples)));
   },
-  gImpl: () => () => {},
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+    for (const triple of ast.triples) {
+      SUBRULE(varOrTerm, triple.subject, undefined);
+      if (F.isTerm(triple.predicate) && F.isTermVariable(triple.predicate)) {
+        SUBRULE(var_, triple.predicate, undefined);
+      } else {
+        SUBRULE(path, triple.predicate, undefined);
+      }
+      SUBRULE(varOrTerm, triple.object, undefined);
+
+      if (!ast.loc) {
+        PRINT_WORD('.');
+      }
+    }
+  },
 };
 
 /**
@@ -263,7 +277,7 @@ function blankNodePropertyListImpl<T extends string>(name: T, allowPaths: boolea
       const endToken = CONSUME(l.symbols.RSquare);
 
       return ACTION(() => {
-        blankNode.loc!.end = endToken.endOffset!;
+        Object.assign(blankNode.loc!, C.factory.sourceLocation(startToken, endToken));
         return {
           node: blankNode,
           triples: propList,

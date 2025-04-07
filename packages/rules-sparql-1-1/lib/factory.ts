@@ -68,6 +68,10 @@ export class TraqulaFactory {
     };
   }
 
+  public noStringMaterialization(): SourceLocation {
+    return { noStringManifestation: true, start: 0, end: 0 };
+  }
+
   public prefixDecl(key: string, value: TermIriFull, loc?: SourceLocation): ContextDefinitionPrefixDecl {
     return {
       type: 'contextDef',

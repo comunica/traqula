@@ -1,4 +1,4 @@
-import type { ParserRule, GeneratorRule } from '@traqula/core';
+import type { GeneratorRule, ParserRule } from '@traqula/core';
 import type { TraqulaFactory } from './factory';
 
 export type SparqlRule<

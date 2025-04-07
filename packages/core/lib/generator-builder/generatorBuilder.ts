@@ -212,6 +212,9 @@ export class Generator<Context, Names extends string, RuleDefs extends GenRuleMa
     if (!def) {
       throw new Error(`Rule ${cstDef.name} not found`);
     }
+    if (ast.loc && ast.loc.noStringManifestation) {
+      return;
+    }
     if (ast.loc?.source) {
       this.pushSource(ast.loc.source);
     }

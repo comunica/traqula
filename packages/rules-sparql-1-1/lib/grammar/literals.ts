@@ -86,7 +86,7 @@ export const numericLiteralUnsigned: SparqlGrammarRule<'numericLiteralUnsigned',
     ]);
     return ACTION(() => C.factory.literalTerm(
       parsed[0].image,
-      C.factory.namedNode(parsed[1]),
+      C.factory.namedNode(parsed[1], undefined, C.factory.noStringMaterialization()),
       C.factory.sourceLocation(parsed[0]),
     ));
   },
@@ -106,7 +106,7 @@ export const numericLiteralPositive: SparqlGrammarRule<'numericLiteralPositive',
     ]);
     return ACTION(() => C.factory.literalTerm(
       parsed[0].image,
-      C.factory.namedNode(parsed[1]),
+      C.factory.namedNode(parsed[1], undefined, C.factory.noStringMaterialization()),
       C.factory.sourceLocation(parsed[0]),
     ));
   },
@@ -126,7 +126,7 @@ export const numericLiteralNegative: SparqlGrammarRule<'numericLiteralNegative',
     ]);
     return ACTION(() => C.factory.literalTerm(
       parsed[0].image,
-      C.factory.namedNode(parsed[1]),
+      C.factory.namedNode(parsed[1], undefined, C.factory.noStringMaterialization()),
       C.factory.sourceLocation(parsed[0]),
     ));
   },
@@ -146,7 +146,7 @@ export const booleanLiteral: SparqlGrammarRule<'booleanLiteral', TermLiteralType
 
     return ACTION(() => C.factory.literalTerm(
       token.image.toLowerCase(),
-      C.factory.namedNode(CommonIRIs.BOOLEAN),
+      C.factory.namedNode(CommonIRIs.BOOLEAN, undefined, C.factory.noStringMaterialization()),
       C.factory.sourceLocation(token),
     ));
   },
@@ -243,7 +243,7 @@ export const iriFull: SparqlRule<'iriFull', TermIriFull> = <const> {
  */
 export const prefixedName: SparqlRule<'prefixedName', TermIriPrefixed> = <const> {
   name: 'prefixedName',
-  impl: ({ ACTION, CONSUME, OR }) => C => OR<TermIriPrefixed>([
+  impl: ({ ACTION, CONSUME, OR }) => C => OR([
     { ALT: () => {
       const longName = CONSUME(l.terminals.pNameLn);
       return ACTION(() => {

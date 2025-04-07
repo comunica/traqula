@@ -1,6 +1,9 @@
-import type { SourceLocation } from '@traqula/core';
+import type { SourceLocation, Node } from '@traqula/core';
 import type { IToken } from 'chevrotain';
+
 import type {
+  Wildcard,
+
   ContextDefinition,
   ContextDefinitionBaseDecl,
   ContextDefinitionPrefixDecl,
@@ -53,19 +56,39 @@ import type {
   UpdateOperationLoad,
   UpdateOperationModify,
   UpdateOperationMove,
+  PatternBgp,
 } from './RoundTripTypes';
-import { Wildcard } from './Wildcard';
 
 export class TraqulaFactory {
   private blankNodeCounter = 0;
   public constructor() {}
 
-  public sourceLocation(...tokens: IToken[]): SourceLocation {
+  public sourceLocation(...tokens: IToken[]): SourceLocation | undefined;
+  public sourceLocation(...location: SourceLocation []): SourceLocation | undefined;
+  public sourceLocation(...args: IToken[] | SourceLocation []): SourceLocation | undefined {
+    if (args.length === 0) {
+      return undefined;
+    }
+    if (this.isSourceLocation(args[0])) {
+      const cast = <SourceLocation[]> args;
+      const start = cast.find(x => x.source === undefined)?.start;
+      const end = cast.reverse().find(x => x.source === undefined)?.end;
+      return start && end ? { start, end } : undefined;
+    }
+    const cast = <IToken[]> args;
     return {
       source: undefined,
-      start: tokens[0].startOffset,
-      end: tokens.at(-1)!.endOffset!,
+      start: cast[0].startOffset,
+      end: cast.at(-1)!.endOffset!,
     };
+  }
+
+  public isSourceLocation(x: object): x is SourceLocation {
+    return 'start' in x && 'end' in x && typeof x.start === 'number' && typeof x.end === 'number';
+  }
+
+  public hasSourceLocation(x: object): x is Pick<Node, 'loc'> {
+    return 'loc' in x && typeof x.loc === 'object' && x.loc !== null && this.isSourceLocation(x.loc);
   }
 
   public noStringMaterialization(): SourceLocation {
@@ -161,7 +184,7 @@ export class TraqulaFactory {
   }
 
   public isExpressionAggregateOnWildcard(x: ExpressionAggregate): x is ExpressionAggregateOnWildcard {
-    return x.expression.length === 1 && this.isTerm(x.expression[0]) && new Wildcard().equals(x.expression[0]);
+    return x.expression.length === 1 && this.isWildcard(x.expression[0]);
   }
 
   public isExpressionAggregateDefault(x: ExpressionAggregate): x is ExpressionAggregateDefault {
@@ -225,6 +248,10 @@ export class TraqulaFactory {
 
   public isQuery(x: any): x is Query {
     return x.type === 'query';
+  }
+
+  public patternBGP(triples: Triple[], loc?: SourceLocation): PatternBgp {
+    return { type: 'pattern', patternType: 'bgp', triples, loc };
   }
 
   public patternFilter(expression: Expression, loc?: SourceLocation): PatternFilter {
@@ -333,6 +360,14 @@ export class TraqulaFactory {
       return { ...base, expression: [ arg ], separator } satisfies ExpressionAggregateSeparator;
     }
     return { ...base, expression: [ arg ]} satisfies ExpressionAggregateOnWildcard;
+  }
+
+  public wildcard(loc?: SourceLocation): Wildcard {
+    return { type: 'wildcard', loc };
+  }
+
+  public isWildcard(x: object): x is Wildcard {
+    return 'type' in x && x.type === 'wildcard';
   }
 
   public path(

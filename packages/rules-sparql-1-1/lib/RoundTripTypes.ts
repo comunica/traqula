@@ -1,5 +1,6 @@
 import type { Node } from '@traqula/core';
-import type { Wildcard } from './Wildcard';
+
+export type Wrap<T> = { val: T } & Node['loc'];
 
 export type GraphRefBase = Node & {
   type: 'graphRef';
@@ -107,6 +108,11 @@ export type QueryBase = Node & {
   datasets?: DatasetClauses;
   where?: Pattern[];
 };
+
+export type Wildcard = Node & {
+  type: 'wildcard';
+};
+
 export type QuerySelect = QueryBase & {
   queryType: 'select';
   variables: (TermVariable | PatternBind)[] | [Wildcard];

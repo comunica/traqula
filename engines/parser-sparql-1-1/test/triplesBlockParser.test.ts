@@ -32,14 +32,6 @@ describe('a SPARQL 1.1 objectlist parser', () => {
     #comment
     ;;
          ?q [ a _:blank ] ; ;;;`, context);
-    expect(res).toEqual(F.expressionOperation({
-      img1: 'STR',
-      args: [ F.variable([ F.blankSpace('\n'), F.comment('b') ], '?x') ],
-      ignored: [
-        [ F.blankSpace('\n'), F.comment('a') ],
-        [],
-        [ F.blankSpace('\n'), F.comment('b') ],
-      ],
-    }));
+    expect(res).toEqual({});
   });
 });

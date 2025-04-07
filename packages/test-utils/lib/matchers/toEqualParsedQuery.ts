@@ -1,5 +1,3 @@
-import { Wildcard } from '@traqula/rules-sparql-1-1';
-import { BlankNode, DefaultGraph, NamedNode, Quad, Variable } from 'rdf-data-factory';
 import { expect } from 'vitest';
 
 expect.extend({
@@ -89,12 +87,7 @@ function objectsEqual(received: unknown, expected: unknown): boolean {
 
 // If true, the value is a term. With ts annotation
 function isTerm(value: unknown): value is { equals: (other: { termType: unknown } | undefined | null) => boolean } {
-  return value instanceof DefaultGraph ||
-    value instanceof NamedNode ||
-    value instanceof BlankNode ||
-    value instanceof Variable ||
-    value instanceof Wildcard ||
-    value instanceof Quad;
+  return false;
 }
 
 function isPrimitive(value: unknown): value is string | number | boolean {

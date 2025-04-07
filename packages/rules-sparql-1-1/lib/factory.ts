@@ -250,7 +250,7 @@ export class TraqulaFactory {
     return x.type === 'query';
   }
 
-  public patternBGP(triples: Triple[], loc?: SourceLocation): PatternBgp {
+  public patternBgp(triples: Triple[], loc?: SourceLocation): PatternBgp {
     return { type: 'pattern', patternType: 'bgp', triples, loc };
   }
 
@@ -477,6 +477,10 @@ export class TraqulaFactory {
       return { ...base, label: `g_${this.blankNodeCounter++}` };
     }
     return { ...base, label: `e_${label}` };
+  }
+
+  public resetBlankNodeCounter(): void {
+    this.blankNodeCounter = 0;
   }
 
   public updateOperationLoad(

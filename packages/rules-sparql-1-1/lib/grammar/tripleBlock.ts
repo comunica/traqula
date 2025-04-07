@@ -49,7 +49,7 @@ export const triplesBlock: SparqlRule<'triplesBlock', PatternBgp> = <const>{
   name: 'triplesBlock',
   impl: implArgs => (C) => {
     const triples = triplesDotSeperated(triplesSameSubjectPath)(implArgs)(C, undefined);
-    return implArgs.ACTION(() => C.factory.patternBGP(triples.val, C.factory.sourceLocation(triples)));
+    return implArgs.ACTION(() => C.factory.patternBgp(triples.val, C.factory.sourceLocation(triples)));
   },
   gImpl: () => () => {},
 };
@@ -138,6 +138,7 @@ function propertyListNotEmptyImplementation<T extends string>(
 
           MANY2(() => {
             CONSUME(l.symbols.semi);
+            parsedSemi = true;
           });
 
           ACTION(() => {
@@ -250,21 +251,24 @@ function blankNodePropertyListImpl<T extends string>(name: T, allowPaths: boolea
   return {
     name,
     impl: ({ ACTION, SUBRULE, CONSUME }) => (C) => {
-      CONSUME(l.symbols.LSquare);
+      const startToken = CONSUME(l.symbols.LSquare);
 
       const blankNode = ACTION(() =>
-        C.factory.blankNode(undefined, C.factory.noStringMaterialization()));
+        C.factory.blankNode(undefined, C.factory.sourceLocation(startToken)));
 
       const propList = SUBRULE(
         allowPaths ? propertyListPathNotEmpty : propertyListNotEmpty,
         { subject: blankNode },
       );
-      CONSUME(l.symbols.RSquare);
+      const endToken = CONSUME(l.symbols.RSquare);
 
-      return ACTION(() => ({
-        node: blankNode,
-        triples: propList,
-      }));
+      return ACTION(() => {
+        blankNode.loc!.end = endToken.endOffset!;
+        return {
+          node: blankNode,
+          triples: propList,
+        };
+      });
     },
   };
 }
@@ -283,41 +287,38 @@ function collectionImpl<T extends string>(name: T, allowPaths: boolean): SparqlG
       // here called a [RDF collection](https://www.w3.org/TR/sparql11-query/#collections).
       const terms: TriplePart[] = [];
 
-      CONSUME(l.symbols.LParen);
+      const startToken = CONSUME(l.symbols.LParen);
+
       AT_LEAST_ONE(() => {
         terms.push(SUBRULE(allowPaths ? graphNodePath : graphNode, undefined));
       });
-      CONSUME(l.symbols.RParen);
+      const endToken = CONSUME(l.symbols.RParen);
 
       return ACTION(() => {
         const F = C.factory;
         const triples: Triple[] = [];
+        // The triples created in your recursion
         const appendTriples: Triple[] = [];
-
-        const listHead = F.blankNode(undefined, F.noStringMaterialization());
-        let iterHead: Triple['object'] = listHead;
         const predFirst = F.namedNode(CommonIRIs.FIRST, undefined, F.noStringMaterialization());
         const predRest = F.namedNode(CommonIRIs.REST, undefined, F.noStringMaterialization());
+        const predNil = F.namedNode(CommonIRIs.NIL, undefined, F.noStringMaterialization());
+
+        const listHead = F.blankNode(undefined, F.sourceLocation(startToken, endToken));
+        let iterHead: Triple['object'] = listHead;
         for (const [ index, term ] of terms.entries()) {
+          const lastInList = index === terms.length - 1;
+
           const headTriple: Triple = F.triple(iterHead, predFirst, term.node);
           triples.push(headTriple);
           appendTriples.push(...term.triples);
 
           // If not the last, create new iterHead, otherwise, close list
-          if (index === terms.length - 1) {
-            const nilTriple: Triple = F.triple(
-              iterHead,
-              predRest,
-              F.namedNode(CommonIRIs.NIL, undefined, F.noStringMaterialization()),
-            );
+          if (lastInList) {
+            const nilTriple: Triple = F.triple(iterHead, predRest, predNil);
             triples.push(nilTriple);
           } else {
             const tail = F.blankNode(undefined, F.noStringMaterialization());
-            const linkTriple: Triple = F.triple(
-              iterHead,
-              predRest,
-              tail,
-            );
+            const linkTriple: Triple = F.triple(iterHead, predRest, tail);
             triples.push(linkTriple);
             iterHead = tail;
           }

@@ -176,6 +176,9 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
 
     class Generator {
       private __context: Context | undefined = undefined;
+      private readonly sourceStack: { source: string; generatedUntil: number }[] = [];
+      private readonly stringBuilder: string[] = [];
+      private readonly skipRanges: [number, number][] = [];
       public setContext(context: Context): void {
         this.__context = context;
       }
@@ -184,8 +187,44 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
         return <Context> this.__context;
       }
 
+      private readonly catchup: RuleDefArg['CATCHUP'] = (until) => {
+        const currentSource = this.sourceStack.at(-1);
+        if (!currentSource) {
+          throw new Error('No source to catchup to');
+        }
+        const { source, generatedUntil } = currentSource;
+        const cappedUntil = Math.min(until, source.length);
+        if (until > cappedUntil) {
+          this.stringBuilder.push(source.slice(generatedUntil, cappedUntil));
+        }
+      };
+
+      private readonly pushSource: RuleDefArg['PUSH_SOURCE'] =
+        source => this.sourceStack.push({ source, generatedUntil: 0 });
+
+      private readonly popSource: RuleDefArg['POP_SOURCE'] = () => {
+        this.catchup(Number.MAX_VALUE);
+        this.sourceStack.pop();
+      };
+
+      private readonly print: RuleDefArg['PRINT'] = (...args) => {
+        this.stringBuilder.push(...args.filter(x => x.length > 0));
+      };
+
+      private readonly printWord: RuleDefArg['PRINT_WORD'] = (...args) => {
+        if (this.stringBuilder.length > 0 && this.stringBuilder.at(-1)!.at(-1) !== ' ') {
+          this.stringBuilder.push(' ');
+        }
+        this.stringBuilder.push(...args, ' ');
+      };
+
       public constructor() {
         const selfRef: RuleDefArg = {
+          PRINT: this.print,
+          PRINT_WORD: this.printWord,
+          CATCHUP: this.catchup,
+          PUSH_SOURCE: this.pushSource,
+          POP_SOURCE: this.popSource,
           SUBRULE: (cstDef, input, arg) => {
             const def = rules[cstDef.name];
             if (!def) {
@@ -197,8 +236,12 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
 
         for (const rule of Object.values(rules)) {
           this[<keyof (typeof this)> rule.name] = <any> ((input: any, context: Context, args: any) => {
+            this.stringBuilder.length = 0;
+            this.sourceStack.length = 0;
+            this.skipRanges.length = 0;
             this.setContext(context);
-            return rule.gImpl(selfRef)(input, this.getSafeContext(), args);
+            rule.gImpl(selfRef)(input, this.getSafeContext(), args);
+            return this.stringBuilder.join('');
           });
         }
       }

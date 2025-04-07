@@ -44,20 +44,19 @@ export const rdfLiteral: SparqlRule<'rdfLiteral', TermLiteral> = <const> {
     if (ast.loc?.source) {
       PUSH_SOURCE(ast.loc.source);
     }
-    CATCHUP(ast.loc?.start);
+    if (ast.loc) {
+      CATCHUP(ast.loc.start);
+    }
 
     if (ast.loc) {
       if (ast.langOrIri && typeof ast.langOrIri !== 'string') {
         SUBRULE(iri, ast.langOrIri, undefined);
       }
     } else {
-      PRINT('"');
-      PRINT(ast.value.replaceAll('"', '\\"'));
-      PRINT('"');
+      PRINT('"', ast.value.replaceAll('"', '\\"'), '"');
       if (ast.langOrIri) {
         if (typeof ast.langOrIri === 'string') {
-          PRINT('@');
-          PRINT(ast.langOrIri);
+          PRINT('@', ast.langOrIri);
         } else {
           PRINT('^^');
           SUBRULE(iri, ast.langOrIri, undefined);
@@ -65,7 +64,9 @@ export const rdfLiteral: SparqlRule<'rdfLiteral', TermLiteral> = <const> {
       }
     }
 
-    CATCHUP(ast.loc?.end);
+    if (ast.loc) {
+      CATCHUP(ast.loc.end);
+    }
     if (ast.loc?.source) {
       POP_SOURCE();
     }
@@ -243,19 +244,21 @@ export const iriFull: SparqlRule<'iriFull', TermIriFull> = <const> {
       C.factory.sourceLocation(iriToken),
     ));
   },
-  gImpl: ({ PRINT, CATCHUP, PUSH_SOURCE, POP_SOURCE }) => (ast) => {
+  gImpl: ({ PRINT_WORD, CATCHUP, PUSH_SOURCE, POP_SOURCE }) => (ast) => {
     if (ast.loc?.source) {
       PUSH_SOURCE(ast.loc.source);
     }
-    CATCHUP(ast.loc?.start);
-
-    if (!ast.loc) {
-      PRINT('<');
-      PRINT(ast.value);
-      PRINT('>');
+    if (ast.loc) {
+      CATCHUP(ast.loc.start);
     }
 
-    CATCHUP(ast.loc?.end);
+    if (!ast.loc) {
+      PRINT_WORD('<', ast.value, '>');
+    }
+
+    if (ast.loc) {
+      CATCHUP(ast.loc.end);
+    }
     if (ast.loc?.source) {
       POP_SOURCE();
     }
@@ -285,21 +288,21 @@ export const prefixedName: SparqlRule<'prefixedName', TermIriPrefixed> = <const>
       ));
     } },
   ]),
-  gImpl: ({ PRINT, CATCHUP, PUSH_SOURCE, POP_SOURCE }) => (ast) => {
+  gImpl: ({ PRINT_WORD, CATCHUP, PUSH_SOURCE, POP_SOURCE }) => (ast) => {
     if (ast.loc?.source) {
       PUSH_SOURCE(ast.loc.source);
     }
-    CATCHUP(ast.loc?.start);
-
-    if (!ast.loc) {
-      PRINT(' ');
-      PRINT(ast.prefix);
-      PRINT(':');
-      PRINT(ast.value);
-      PRINT(' ');
+    if (ast.loc) {
+      CATCHUP(ast.loc.start);
     }
 
-    CATCHUP(ast.loc?.end);
+    if (!ast.loc) {
+      PRINT_WORD(ast.prefix, ':', ast.value);
+    }
+
+    if (ast.loc) {
+      CATCHUP(ast.loc.end);
+    }
     if (ast.loc?.source) {
       POP_SOURCE();
     }

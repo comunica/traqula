@@ -27,8 +27,9 @@ export type GeneratorRule<
 
 export interface RuleDefArg {
   SUBRULE: <T, U>(cstDef: GeneratorRule<any, any, T, U>, input: T, arg: U) => void;
-  PRINT: (arg: string | [number, number]) => void;
-  CATCHUP: (until?: number) => void;
+  PRINT: (...args: string[]) => void;
+  PRINT_WORD: (...args: string[]) => void;
+  CATCHUP: (until: number) => void;
   PUSH_SOURCE: (source: string) => void;
   POP_SOURCE: () => void;
 }

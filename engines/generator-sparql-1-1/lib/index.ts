@@ -80,7 +80,17 @@ const sparql11GeneratorBuilder = GeneratorBuilder.createBuilder(<const> [
 export class Generator {
   private readonly generator = sparql11GeneratorBuilder.build();
 
-  public generate(ast: T11.Query): string {
-    return this.generator.query(ast, undefined, undefined);
+  public generate(ast: T11.Query | T11.Update | Pick<T11.Update, 'base' | 'prefixes'>): string {
+    if ('type' in ast) {
+      if (ast.type === 'update') {
+        return this.generator.update(ast, undefined, undefined);
+      }
+      return this.generator.query(ast, undefined, undefined);
+    }
+    return this.generator.prologue(ast, undefined, undefined);
+  }
+
+  public generatePath(ast: T11.IriTerm | T11.PropertyPath): string {
+    return this.generator.path(ast, undefined, undefined);
   }
 }

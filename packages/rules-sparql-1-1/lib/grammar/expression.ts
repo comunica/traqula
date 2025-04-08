@@ -80,7 +80,8 @@ export const argList: SparqlRule<'argList', IArgList> = <const> {
     if (ast.distinct) {
       builder.push('DISTINCT');
     }
-    builder.push(SUBRULE(expression, ast.args, undefined));
+    // Slice brackets
+    builder.push(SUBRULE(expression, ast.args, undefined).slice(1, -1));
     builder.push(')');
     return builder.join(' ');
   },
@@ -120,7 +121,7 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
   impl: ({ SUBRULE }) => () => SUBRULE(conditionalOrExpression, undefined),
   gImpl: ({ SUBRULE }) => (ast) => {
     if (Array.isArray(ast)) {
-      return ast.map(arg => SUBRULE(expression, arg, undefined)).join(', ');
+      return `( ${ast.map(arg => SUBRULE(expression, arg, undefined)).join(', ')} )`;
     }
     if ('type' in ast) {
       if (ast.type === 'operation') {

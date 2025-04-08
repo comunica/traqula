@@ -21,7 +21,7 @@ export const path: SparqlRule<'path', PropertyPath | IriTerm> = <const> {
     if ('type' in ast) {
       // Infix
       if (ast.pathType === '/' || ast.pathType === '|') {
-        return `( ${ast.items.map(item => SUBRULE(path, item, undefined)).join(ast.pathType)} )`;
+        return ast.items.map(item => SUBRULE(path, item, undefined)).join(ast.pathType);
       }
       // Prefix
       if (ast.pathType === '^' || ast.pathType === '!') {
@@ -29,7 +29,7 @@ export const path: SparqlRule<'path', PropertyPath | IriTerm> = <const> {
       }
       // Postfix
       if (ast.pathType === '*' || ast.pathType === '+' || ast.pathType === '?') {
-        return `${SUBRULE(path, ast.items[0], undefined)}${ast.pathType}`;
+        return `( ${SUBRULE(path, ast.items[0], undefined)} )${ast.pathType}`;
       }
     }
     return SUBRULE(iri, <IriTerm> ast, undefined);

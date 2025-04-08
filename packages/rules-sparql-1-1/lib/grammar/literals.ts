@@ -194,7 +194,7 @@ export const iri: SparqlRule<'iri', IriTerm> = <const> {
     } },
     { ALT: () => SUBRULE(prefixedName, undefined) },
   ]),
-  gImpl: () => ast => ast.value,
+  gImpl: () => ast => `<${ast.value}>`,
 };
 
 /**

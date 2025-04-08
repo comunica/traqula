@@ -305,7 +305,7 @@ export const insertData: SparqlRule<'insertData', InsertOperation> = <const> {
     };
   },
   gImpl: ({ SUBRULE }) => ast =>
-    `INSERT DATA { ${SUBRULE(quadData, ast.insert, undefined)} }`,
+    `INSERT DATA ${SUBRULE(quadData, ast.insert, undefined)}`,
 };
 
 /**
@@ -327,7 +327,7 @@ export const deleteData: SparqlRule<'deleteData', DeleteOperation> = <const> {
     };
   },
   gImpl: ({ SUBRULE }) => ast =>
-    `DELETE DATA { ${SUBRULE(quadData, ast.delete, undefined)} }`,
+    `DELETE DATA ${SUBRULE(quadData, ast.delete, undefined)}`,
 };
 
 /**
@@ -349,7 +349,7 @@ export const deleteWhere: SparqlRule<'deleteWhere', DeleteWhereOperation> = <con
     };
   },
   gImpl: ({ SUBRULE }) => ast =>
-    `DELETE WHERE { ${SUBRULE(quadData, ast.delete, undefined)} }`,
+    `DELETE WHERE ${SUBRULE(quadData, ast.delete, undefined)}`,
 };
 
 /**
@@ -408,10 +408,10 @@ export const modify: SparqlRule<'modify', ModifyOperation> = <const> {
       builder.push(`WITH ${SUBRULE(iri, ast.graph, undefined)}`);
     }
     if (ast.delete.length > 0) {
-      builder.push(`DELETE { ${SUBRULE(quadData, ast.delete, undefined)} }`);
+      builder.push(`DELETE ${SUBRULE(quadData, ast.delete, undefined)}`);
     }
     if (ast.insert.length > 0) {
-      builder.push(`INSERT { ${SUBRULE(quadData, ast.insert, undefined)} }`);
+      builder.push(`INSERT ${SUBRULE(quadData, ast.insert, undefined)}`);
     }
     if (ast.using) {
       builder.push(...ast.using.default.map(val => `USING ${SUBRULE(iri, val, undefined)}`));

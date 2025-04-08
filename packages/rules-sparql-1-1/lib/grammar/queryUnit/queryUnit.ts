@@ -532,7 +532,7 @@ export const valuesClause: SparqlRule<'valuesClause', ValuePatternRow[] | undefi
   }),
   gImpl: ({ SUBRULE }) => (ast) => {
     if (ast) {
-      return `VALUES ${SUBRULE(inlineDataFull, ast, undefined)}`;
+      return `${SUBRULE(inlineDataFull, ast, undefined)}`;
     }
     return '';
   },

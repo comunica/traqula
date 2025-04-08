@@ -1,4 +1,4 @@
-import { Builder } from '@traqula/core';
+import { ParserBuilder } from '@traqula/core';
 import { gram } from '@traqula/rules-sparql-1-1';
 import { expressionParserBuilder } from './expressionParser';
 import { triplesBlockParserBuilder } from './triplesBlockParser';
@@ -11,7 +11,7 @@ const rules = <const> [
   gram.valuesClause,
 ];
 
-export const subSelectParserBuilder = Builder.createBuilder(rules)
+export const subSelectParserBuilder = ParserBuilder.createBuilder(rules)
   .merge(expressionParserBuilder, <const> [])
   .patchRule(gram.builtInCall)
   .addMany(

@@ -1,4 +1,4 @@
-import { Builder } from '@traqula/core';
+import { ParserBuilder } from '@traqula/core';
 import { gram } from '@traqula/rules-sparql-1-1';
 
 const rules = <const> [
@@ -28,4 +28,4 @@ const rules = <const> [
   gram.numericLiteralNegative,
 ];
 
-export const objectListBuilder = Builder.createBuilder(rules);
+export const objectListBuilder = ParserBuilder.createBuilder(rules);

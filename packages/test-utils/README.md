@@ -1,6 +1,6 @@
-# TRAQULA Test utils
+# Traqula Test utils
 
-TRAQULA test utils contains some developer dependencies for testing packages and engines from the TRAQULA project.
+Traqula test utils contains some developer dependencies for testing packages and engines from the Traqula project.
 
 ## Installation
 

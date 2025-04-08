@@ -1,4 +1,4 @@
-import { Builder } from '@traqula/core';
+import { ParserBuilder } from '@traqula/core';
 import { gram } from '@traqula/rules-sparql-1-1';
 
 const rulesNoBuiltIn = <const> [
@@ -48,7 +48,7 @@ const builtInPatch: typeof gram.builtInCall = {
   impl: ({ OR, SUBRULE }) => () => OR(gram.builtInCallList(SUBRULE).slice(0, -2)),
 };
 
-export const expressionParserBuilder = Builder.createBuilder(rulesNoBuiltIn)
+export const expressionParserBuilder = ParserBuilder.createBuilder(rulesNoBuiltIn)
   .addMany(
     gram.builtInContains,
     gram.builtInStrstarts,

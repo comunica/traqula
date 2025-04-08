@@ -1,6 +1,6 @@
-# TRAQULA Rules SPARQL 1.1 + ADJUST package
+# Traqula Rules SPARQL 1.1 + ADJUST package
 
-TRAQULA rules SPARQL 1.1 + ADJUST contains additional rules required for creating a parser for
+Traqula rules SPARQL 1.1 + ADJUST contains additional rules required for creating a parser for
 SPARQL 1.1 + ADJUST function from the SPARQL 1.1 rules.
 
 ## Installation

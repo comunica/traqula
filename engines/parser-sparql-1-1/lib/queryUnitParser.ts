@@ -1,4 +1,4 @@
-import { Builder } from '@traqula/core';
+import { ParserBuilder } from '@traqula/core';
 import { gram } from '@traqula/rules-sparql-1-1';
 import { subSelectParserBuilder } from './subSelectParser';
 import { triplesTemplateParserBuilder } from './triplesTemplateParserBuilder';
@@ -16,7 +16,7 @@ const rules = <const> [
   gram.prefixDecl,
 ];
 
-export const queryUnitParserBuilder = Builder.createBuilder(rules)
+export const queryUnitParserBuilder = ParserBuilder.createBuilder(rules)
   // Select Query
   .merge(subSelectParserBuilder, <const> [])
   .addRule(gram.datasetClause)

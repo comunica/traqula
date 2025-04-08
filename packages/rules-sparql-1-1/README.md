@@ -1,6 +1,6 @@
-# TRAQULA Rules SPARQL 1.1
+# Traqula Rules SPARQL 1.1
 
-TRAQULA rules SPARQL 1.1 contains rules required for creating a parser for SPARQL 1.1.
+Traqula rules SPARQL 1.1 contains rules required for creating a parser for SPARQL 1.1.
 
 ## Installation
 

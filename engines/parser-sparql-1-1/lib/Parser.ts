@@ -1,4 +1,4 @@
-import { Builder } from '@traqula/core';
+import { ParserBuilder } from '@traqula/core';
 import type { Query, SparqlQuery, Update, SparqlGrammarRule } from '@traqula/rules-sparql-1-1';
 import { sparqlCodepointEscape, gram, lex as l, SparqlParser } from '@traqula/rules-sparql-1-1';
 import { queryUnitParserBuilder } from './queryUnitParser';
@@ -99,7 +99,7 @@ const queryOrUpdate: SparqlGrammarRule<'queryOrUpdate', Query | Update | Pick<Up
   },
 };
 
-export const sparql11ParserBuilder = Builder.createBuilder(queryUnitParserBuilder)
+export const sparql11ParserBuilder = ParserBuilder.createBuilder(queryUnitParserBuilder)
   .merge(updateParserBuilder, <const> [])
   .deleteRule('queryUnit')
   .deleteRule('query')

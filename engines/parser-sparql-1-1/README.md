@@ -51,7 +51,7 @@ or to usage as a starting point for your own grammar.
 
 ### Consuming parserBuilder to parser
 
-At the core of TRAQULA, parser are constructed of multiple parser rules that have been consumed by the builder.
+At the core of Traqula, parser are constructed of multiple parser rules that have been consumed by the builder.
 This consumption returns a parser that can parse strings starting from any grammar rule.
 
 The `sparql11ParserBuilder` for example contains both the rules `queryOrUpdate` and `path` (among many others).

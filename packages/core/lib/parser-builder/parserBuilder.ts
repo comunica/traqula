@@ -30,7 +30,7 @@ function listToRuleDefMap<T extends readonly ParserRule[]>(rules: T): ParseRules
  * Constructing a parser will cause a validation which will validate the correctness of the grammar.
  */
 // This code is wild so other code can be simple.
-export class Builder<Context, Names extends string, RuleDefs extends ParseRuleMap<Names>> {
+export class ParserBuilder<Context, Names extends string, RuleDefs extends ParseRuleMap<Names>> {
   /**
    * Create a builder from some initial grammar rules or an existing builder.
    * If a builder is provided, a new copy will be created.
@@ -41,12 +41,12 @@ export class Builder<Context, Names extends string, RuleDefs extends ParseRuleMa
     Names extends string = ParseNamesFromList<Rules>,
     RuleDefs extends ParseRuleMap<Names> = ParseRulesToObject<Rules>,
   >(
-    start: Rules | Builder<Context, Names, RuleDefs>,
-  ): Builder<Context, Names, RuleDefs> {
-    if (start instanceof Builder) {
-      return new Builder({ ...start.rules });
+    start: Rules | ParserBuilder<Context, Names, RuleDefs>,
+  ): ParserBuilder<Context, Names, RuleDefs> {
+    if (start instanceof ParserBuilder) {
+      return new ParserBuilder({ ...start.rules });
     }
-    return <Builder<Context, Names, RuleDefs>> <unknown> new Builder(listToRuleDefMap(start));
+    return <ParserBuilder<Context, Names, RuleDefs>> <unknown> new ParserBuilder(listToRuleDefMap(start));
   }
 
   private rules: RuleDefs;
@@ -59,11 +59,11 @@ export class Builder<Context, Names extends string, RuleDefs extends ParseRuleMa
    * Change the implementation of an existing grammar rule.
    */
   public patchRule<U extends Names, RET, ARGS>(patch: ParserRule<Context, U, RET, ARGS>):
-  Builder<Context, Names, {[Key in Names]: Key extends U ?
+  ParserBuilder<Context, Names, {[Key in Names]: Key extends U ?
     ParserRule<Context, Key, RET, ARGS> :
       (RuleDefs[Key] extends ParserRule<Context, Key> ? RuleDefs[Key] : never)
   } > {
-    const self = <Builder<Context, Names, {[Key in Names]: Key extends U ?
+    const self = <ParserBuilder<Context, Names, {[Key in Names]: Key extends U ?
       ParserRule<Context, Key, RET, ARGS> : (RuleDefs[Key] extends ParserRule<Context, Key> ? RuleDefs[Key] : never) }>>
       <unknown> this;
     self.rules[patch.name] = <any> patch;
@@ -74,11 +74,11 @@ export class Builder<Context, Names extends string, RuleDefs extends ParseRuleMa
    * Add a rule to the grammar. If the rule already exists, but the implementation differs, an error will be thrown.
    */
   public addRuleRedundant<U extends string, RET, ARGS>(rule: ParserRule<Context, U, RET, ARGS>):
-  Builder<Context, Names | U, {[K in Names | U]: K extends U ?
+  ParserBuilder<Context, Names | U, {[K in Names | U]: K extends U ?
     ParserRule<Context, K, RET, ARGS> :
       (K extends Names ? (RuleDefs[K] extends ParserRule<Context, K> ? RuleDefs[K] : never) : never)
   }> {
-    const self = <Builder<Context, Names | U, {[K in Names | U]: K extends U ?
+    const self = <ParserBuilder<Context, Names | U, {[K in Names | U]: K extends U ?
       ParserRule<Context, K, RET, ARGS> :
         (K extends Names ? (RuleDefs[K] extends ParserRule<Context, K> ? RuleDefs[K] : never) : never) }>>
       <unknown> this;
@@ -95,7 +95,7 @@ export class Builder<Context, Names extends string, RuleDefs extends ParseRuleMa
    */
   public addRule<U extends string, RET, ARGS>(
     rule: CheckOverlap<U, Names, ParserRule<Context, U, RET, ARGS>>,
-  ): Builder<Context, Names | U, {[K in Names | U]: K extends U ?
+  ): ParserBuilder<Context, Names | U, {[K in Names | U]: K extends U ?
     ParserRule<Context, K, RET, ARGS> :
       (K extends Names ? (RuleDefs[K] extends ParserRule<Context, K> ? RuleDefs[K] : never) : never) }> {
     return this.addRuleRedundant(rule);
@@ -103,7 +103,7 @@ export class Builder<Context, Names extends string, RuleDefs extends ParseRuleMa
 
   public addMany<U extends readonly ParserRule<Context>[]>(
     ...rules: CheckOverlap<ParseNamesFromList<U>, Names, U>
-  ): Builder<
+  ): ParserBuilder<
       Context,
     Names | ParseNamesFromList<U>,
     {[K in Names | ParseNamesFromList<U>]:
@@ -122,10 +122,10 @@ export class Builder<Context, Names extends string, RuleDefs extends ParseRuleMa
    * Delete a grammar rule by its name.
    */
   public deleteRule<U extends Names>(ruleName: U):
-  Builder<Context, Exclude<Names, U>, {[K in Exclude<Names, U>]:
+  ParserBuilder<Context, Exclude<Names, U>, {[K in Exclude<Names, U>]:
     RuleDefs[K] extends ParserRule<Context, K> ? RuleDefs[K] : never }> {
     delete this.rules[ruleName];
-    return <Builder<Context, Exclude<Names, U>, {[K in Exclude<Names, U>]:
+    return <ParserBuilder<Context, Exclude<Names, U>, {[K in Exclude<Names, U>]:
       RuleDefs[K] extends ParserRule<Context, K> ? RuleDefs[K] : never }>>
       <unknown> this;
   }
@@ -144,10 +144,10 @@ export class Builder<Context, Names extends string, RuleDefs extends ParseRuleMa
     OtherRules extends ParseRuleMap<OtherNames>,
     OW extends readonly ParserRule<Context>[],
   >(
-    builder: Builder<Context, OtherNames, OtherRules>,
+    builder: ParserBuilder<Context, OtherNames, OtherRules>,
     overridingRules: OW,
   ):
-    Builder<
+    ParserBuilder<
       Context,
       Names | OtherNames | ParseNamesFromList<OW>,
       {[K in Names | OtherNames | ParseNamesFromList<OW>]:

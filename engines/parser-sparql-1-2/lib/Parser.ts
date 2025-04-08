@@ -1,10 +1,10 @@
-import { Builder } from '@traqula/core';
+import { ParserBuilder } from '@traqula/core';
 import { sparql11ParserBuilder } from '@traqula/parser-sparql-1-1';
 import type { SparqlQuery } from '@traqula/rules-sparql-1-1';
 import { sparqlCodepointEscape, gram as g11, SparqlParser } from '@traqula/rules-sparql-1-1';
 import { gram as S12, lex as l12 } from '@traqula/rules-sparql-1-2';
 
-export const sparql12ParserBuilder = Builder.createBuilder(sparql11ParserBuilder)
+export const sparql12ParserBuilder = ParserBuilder.createBuilder(sparql11ParserBuilder)
   .addRuleRedundant(g11.object)
   .addMany(
     S12.reifiedTripleBlock,

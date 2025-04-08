@@ -233,9 +233,11 @@ export class Generator<Context, Names extends string, RuleDefs extends GenRuleMa
       PUSH_SOURCE: this.pushSource,
       POP_SOURCE: this.popSource,
     })(ast, this.getSafeContext(), arg);
-    if (ast.loc) {
-      this.catchup(ast.loc.end);
-    }
+    // TODO: You cannot close at end because scopes dont work like that for blankNodes like `[ ... ]`
+    //    That than gives errors since you don't close at the time you will insert something new.
+    // if (ast.loc) {
+    //   this.catchup(ast.loc.end);
+    // }
     if (ast.loc?.source) {
       this.popSource();
     }

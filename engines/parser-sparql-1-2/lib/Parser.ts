@@ -1,7 +1,7 @@
 import { Builder } from '@traqula/core';
 import { sparql11ParserBuilder } from '@traqula/parser-sparql-1-1';
 import type { SparqlQuery } from '@traqula/rules-sparql-1-1';
-import { gram as g11, SparqlParser } from '@traqula/rules-sparql-1-1';
+import { sparqlCodepointEscape, gram as g11, SparqlParser } from '@traqula/rules-sparql-1-1';
 import { gram as S12, lex as l12 } from '@traqula/rules-sparql-1-2';
 
 export const sparql12ParserBuilder = Builder.createBuilder(sparql11ParserBuilder)
@@ -51,8 +51,9 @@ export const sparql12ParserBuilder = Builder.createBuilder(sparql11ParserBuilder
 
 export class Parser extends SparqlParser<SparqlQuery> {
   public constructor() {
-    const parser = sparql12ParserBuilder.consumeToParser({
-      tokenVocabulary: l12.sparql12Tokens.build(),
+    const parser = sparql12ParserBuilder.build({
+      tokenVocabulary: l12.sparql12Tokens.tokenVocabulary,
+      queryPreProcessor: sparqlCodepointEscape,
     });
     super(parser);
   }

@@ -1,3 +1,11 @@
+<p align="center">
+    <img alt="Traqula logo" width="70%" style="border-radius: 20px" src="/assets/white-on-red/logo-white-on-red-lettered-social.png">
+</p>
+
+<p align="center">
+  <strong>A query language transpiler framework for JavaScript</strong>
+</p>
+
 # TRAQULA parser engine for SPARQL 1.2
 
 TRAQULA Sparql 1.2 is a [SPARQL 1.2](https://www.w3.org/TR/sparql12-query/#grammar) query parser for TypeScript.

@@ -1,6 +1,7 @@
 import type { CheckOverlap } from '../utils';
-import type { GeneratorFromRules, GenRuleMap, GenRulesToObject, GenNamesFromList } from './builderTypes';
-import type { GeneratorRule, RuleDefArg } from './generatorTypes';
+import type { GeneratorFromRules, GenNamesFromList, GenRuleMap, GenRulesToObject } from './builderTypes';
+import { DynamicGenerator } from './dynamicGenerator';
+import type { GeneratorRule } from './generatorTypes';
 
 /**
  * Converts a list of ruledefs to a record mapping a name to the corresponding ruledef.
@@ -172,38 +173,6 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
   }
 
   public build(): GeneratorFromRules<Context, Names, RuleDefs> {
-    const rules: Record<string, GeneratorRule<Context>> = this.rules;
-
-    class Generator {
-      private __context: Context | undefined = undefined;
-      public setContext(context: Context): void {
-        this.__context = context;
-      }
-
-      private getSafeContext(): Context {
-        return <Context> this.__context;
-      }
-
-      public constructor() {
-        const selfRef: RuleDefArg = {
-          SUBRULE: (cstDef, input, arg) => {
-            const def = rules[cstDef.name];
-            if (!def) {
-              throw new Error(`Rule ${cstDef.name} not found`);
-            }
-            return def.gImpl(selfRef)(input, this.getSafeContext(), arg);
-          },
-        };
-
-        for (const rule of Object.values(rules)) {
-          this[<keyof (typeof this)> rule.name] = <any> ((input: any, context: Context, args: any) => {
-            this.setContext(context);
-            return rule.gImpl(selfRef)(input, this.getSafeContext(), args);
-          });
-        }
-      }
-    }
-
-    return <GeneratorFromRules<Context, Names, RuleDefs>> new Generator();
+    return <GeneratorFromRules<Context, Names, RuleDefs>> new DynamicGenerator(this.rules);
   }
 }

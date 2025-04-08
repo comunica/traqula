@@ -1,4 +1,6 @@
+import type { ILexerConfig } from '@chevrotain/types';
 import type { TokenType } from 'chevrotain';
+import { Lexer } from 'chevrotain';
 import type { CheckOverlap } from '../utils';
 
 type NamedToken<Name extends string> = TokenType & { name: Name };
@@ -6,16 +8,12 @@ type NamedToken<Name extends string> = TokenType & { name: Name };
 export class LexerBuilder<NAMES extends string = string> {
   private readonly tokens: TokenType[];
 
-  public static create<U extends LexerBuilder<T>, T extends string = ''>(starter?: U): U {
+  public static create<U extends LexerBuilder<T>, T extends string = never>(starter?: U): U {
     return <U> new LexerBuilder(starter);
   }
 
-  public constructor(starter?: LexerBuilder<NAMES>) {
+  private constructor(starter?: LexerBuilder<NAMES>) {
     this.tokens = starter?.tokens ? [ ...starter.tokens ] : [];
-  }
-
-  public get(index: number): TokenType {
-    return this.tokens[index];
   }
 
   public merge<OtherNames extends string, OW extends string>(
@@ -116,7 +114,18 @@ export class LexerBuilder<NAMES extends string = string> {
     return this;
   }
 
-  public build(): TokenType[] {
+  public build(lexerConfig?: ILexerConfig): Lexer {
+    return new Lexer(this.tokens, {
+      positionTracking: 'onlyStart',
+      recoveryEnabled: false,
+      // SafeMode: true,
+      // SkipValidations: true,
+      ensureOptimizations: true,
+      ...lexerConfig,
+    });
+  }
+
+  public get tokenVocabulary(): readonly TokenType[] {
     return this.tokens;
   }
 }

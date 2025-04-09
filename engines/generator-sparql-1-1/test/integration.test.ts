@@ -1,8 +1,7 @@
-import fsp from 'node:fs/promises';
 import * as path from 'node:path';
 import { Parser } from '@traqula/parser-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
-import { positiveTest } from '@traqula/test-utils';
+import { positiveTest, readFile } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
 import { Generator } from '../lib';
 
@@ -25,7 +24,10 @@ describe('a SPARQL 1.1 generator', () => {
   describe('positive paths', () => {
     for (const { name, statics } of positiveTest('paths')) {
       it(`can regenerate ${name}`, async({ expect }) => {
-        const regenMatch = await fsp.readFile(path.join(__dirname, 'statics', 'paths', `${name}.sparql`), 'utf-8');
+        const regenMatch = await readFile(
+          path.join(__dirname, 'statics', 'paths', `${name}.sparql`),
+          'utf-8',
+        );
         const { query } = await statics();
 
         const ast = parser.parsePath(query, context);
@@ -40,7 +42,10 @@ describe('a SPARQL 1.1 generator', () => {
   describe('positive sparql', () => {
     for (const { name, statics } of positiveTest('sparql-1-1')) {
       it(`can regenerate ${name}`, async({ expect, onTestFailed }) => {
-        const regenMatch = await fsp.readFile(path.join(__dirname, 'statics', 'sparql-1-1', `${name}.sparql`), 'utf-8');
+        const regenMatch = await readFile(
+          path.join(__dirname, 'statics', 'sparql-1-1', `${name}.sparql`),
+          'utf-8',
+        );
         const { query } = await statics();
 
         // eslint-disable-next-line no-console

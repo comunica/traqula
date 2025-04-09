@@ -1,0 +1,6 @@
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+PREFIX ns: <http://example.org/ns#> SELECT ?title ( ?p AS ?fullPrice ) ( ( ?fullPrice * ( "1"^^<http://www.w3.org/2001/XMLSchema#integer> - ?discount ) ) AS ?customerPrice ) WHERE {
+ ?x <http://example.org/ns#price> ?p .
+?x <http://purl.org/dc/elements/1.1/title> ?title .
+?x <http://example.org/ns#discount> ?discount 
+}

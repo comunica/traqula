@@ -1,0 +1,8 @@
+PREFIX aGeo: <http://example.org/geo#> SELECT ?neighbor WHERE {
+ ?a <http://example.org/geo#placeName> "Grenoble"^^<http://www.w3.org/2001/XMLSchema#string> .
+?a <http://example.org/geo#locationX> ?axLoc .
+?a <http://example.org/geo#locationY> ?ayLoc .
+?b <http://example.org/geo#placeName> ?neighbor .
+?b <http://example.org/geo#locationX> ?bxLoc .
+?b <http://example.org/geo#locationY> ?byLoc FILTER ( ( <http://example.org/geo#distance>(  ?axLoc, ?ayLoc, ?bxLoc, ?byLoc  ) < "10"^^<http://www.w3.org/2001/XMLSchema#integer> ) ) 
+}

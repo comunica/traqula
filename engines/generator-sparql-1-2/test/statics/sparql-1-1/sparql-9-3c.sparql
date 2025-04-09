@@ -1,0 +1,3 @@
+PREFIX : <http://example/> SELECT ( sum ( ?x ) AS ?total ) WHERE {
+ <http://example/order> ( <http://example/item>/<http://example/price> ) ?x 
+}

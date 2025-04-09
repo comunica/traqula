@@ -1,0 +1,7 @@
+PREFIX : <http://example.com/ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT * WHERE {
+ _:g_0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s <http://example.com/ns#p1> <http://example.com/ns#o1>  )>> .
+_:g_0 ?p ?o .
+_:g_1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( _:g_0 ?p ?o  )>> .
+_:g_1 <http://example.com/ns#r> ?Z 
+}

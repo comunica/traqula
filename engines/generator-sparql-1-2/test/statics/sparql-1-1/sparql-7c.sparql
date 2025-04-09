@@ -1,0 +1,10 @@
+PREFIX dc10: <http://purl.org/dc/elements/1.0/>
+PREFIX dc11: <http://purl.org/dc/elements/1.1/> SELECT ?title ?author WHERE {
+ {
+ ?book <http://purl.org/dc/elements/1.0/title> ?title .
+?book <http://purl.org/dc/elements/1.0/creator> ?author 
+} UNION {
+ ?book <http://purl.org/dc/elements/1.1/title> ?title .
+?book <http://purl.org/dc/elements/1.1/creator> ?author 
+} 
+}

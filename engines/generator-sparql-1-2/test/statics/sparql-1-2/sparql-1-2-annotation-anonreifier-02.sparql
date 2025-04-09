@@ -1,0 +1,11 @@
+PREFIX : <http://example.com/ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT * WHERE {
+ <http://example.com/ns#s> <http://example.com/ns#p> <http://example.com/ns#o> .
+_:g_0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#s> <http://example.com/ns#p> <http://example.com/ns#o>  )>> .
+_:g_0 <http://example.com/ns#source> _:g_1 .
+_:g_1 <http://example.com/ns#graph> <http://host1/> .
+_:g_1 <http://example.com/ns#date> "2020-01-20"^^<http://www.w3.org/2001/XMLSchema#date> .
+_:g_0 ?source _:g_2 .
+_:g_2 <http://example.com/ns#graph> <http://host2/> .
+_:g_2 <http://example.com/ns#date> "2020-12-31"^^<http://www.w3.org/2001/XMLSchema#date> 
+}

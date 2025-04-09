@@ -1,0 +1,5 @@
+PREFIX : <http://example.org/ns#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> SELECT ?name WHERE {
+ ?x <http://xmlns.com/foaf/0.1/name> ?name .
+?x <http://example.org/ns#empId> ?emp 
+} ORDER BY ( ?name ) DESC ( ?emp )

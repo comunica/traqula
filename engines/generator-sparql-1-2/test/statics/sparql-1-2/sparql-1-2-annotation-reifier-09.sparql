@@ -1,0 +1,9 @@
+PREFIX : <http://example.com/ns#> CONSTRUCT {
+?s <http://example.com/ns#p> ?o .
+_:e_bnode <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s <http://example.com/ns#p> ?o  )>> .
+_:e_bnode <http://example.com/ns#q1> ?z
+} WHERE {
+ ?s <http://example.com/ns#p> ?o .
+_:e_bnode <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s <http://example.com/ns#p> ?o  )>> .
+_:e_bnode <http://example.com/ns#q1> ?z 
+}

@@ -1,0 +1,16 @@
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX vcard: <http://www.w3.org/2001/vcard-rdf/3.0#> CONSTRUCT {
+?x <http://www.w3.org/2001/vcard-rdf/3.0#N> _:e_v .
+_:e_v <http://www.w3.org/2001/vcard-rdf/3.0#givenName> ?gname .
+_:e_v <http://www.w3.org/2001/vcard-rdf/3.0#familyName> ?fname
+} WHERE {
+ {
+ ?x <http://xmlns.com/foaf/0.1/firstname> ?gname 
+} UNION {
+ ?x <http://xmlns.com/foaf/0.1/givenname> ?gname 
+} {
+ ?x <http://xmlns.com/foaf/0.1/surname> ?fname 
+} UNION {
+ ?x <http://xmlns.com/foaf/0.1/family_name> ?fname 
+} 
+}

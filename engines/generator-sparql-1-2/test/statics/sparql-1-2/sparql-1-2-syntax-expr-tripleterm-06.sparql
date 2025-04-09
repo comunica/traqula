@@ -1,0 +1,7 @@
+PREFIX : <http://example.com/ns#> CONSTRUCT {
+?t <http://example.com/ns#graph> ?g
+} WHERE {
+ GRAPH ?g {
+ ?s ?p ?o BIND ( <<( ?s ?p ?o  )>> AS ?t ) 
+} 
+}

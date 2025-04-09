@@ -1,0 +1,9 @@
+PREFIX : <http://example.org/WMterms#>
+PREFIX t: <http://example.org/types#> SELECT ?aLabel1 ?bLabel WHERE {
+ ?a <http://example.org/WMterms#label> ?aLabel .
+?a <http://example.org/WMterms#weight> ?aWeight .
+?a <http://example.org/WMterms#displacement> ?aDisp .
+?b <http://example.org/WMterms#label> ?bLabel .
+?b <http://example.org/WMterms#weight> ?bWeight .
+?b <http://example.org/WMterms#displacement> ?bDisp FILTER ( ( sameterm( ?aWeight, ?bWeight ) && !sameterm( ?aDisp, ?bDisp ) ) ) 
+}

@@ -1,0 +1,4 @@
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> SELECT * WHERE {
+ ?x <http://xmlns.com/foaf/0.1/knows> ?gen1 .
+?y <http://xmlns.com/foaf/0.1/knows> ?gen1 FILTER ( ( ?x != ?y ) ) 
+}

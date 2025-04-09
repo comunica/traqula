@@ -1,0 +1,4 @@
+PREFIX : <http://example.com/ns#> SELECT * WHERE {
+ _:e_bnode <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s ?p ?o  )>> .
+_:e_bnode ?Y ?Z 
+}

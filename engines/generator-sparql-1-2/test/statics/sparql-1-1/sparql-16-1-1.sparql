@@ -1,0 +1,7 @@
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> SELECT ?nameX ?nameY ?nickY WHERE {
+ ?x <http://xmlns.com/foaf/0.1/knows> ?y .
+?x <http://xmlns.com/foaf/0.1/name> ?nameX .
+?y <http://xmlns.com/foaf/0.1/name> ?nameY OPTIONAL {
+ ?y <http://xmlns.com/foaf/0.1/nick> ?nickY 
+} 
+}

@@ -1,0 +1,2 @@
+PREFIX : <http://example.com/ns#> INSERT DATA { <http://example.com/ns#iri> <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> <http://example.com/ns#c>  )>> .
+<http://example.com/ns#iri> <http://example.com/ns#p> <http://example.com/ns#o> }

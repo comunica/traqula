@@ -1,3 +1,5 @@
+import fsp from 'node:fs/promises';
+import * as path from 'node:path';
 import { Parser } from '@traqula/parser-sparql-1-2';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import type { types as T12 } from '@traqula/rules-sparql-1-2';
@@ -22,15 +24,16 @@ describe('a SPARQL 1.2 generator', () => {
   });
 
   describe('positive paths', () => {
-    for (const { name, statics } of positiveTest('paths')) {
+    const suite = <const> 'paths';
+    for (const { name, statics } of positiveTest(suite)) {
       it(`can regenerate ${name}`, async({ expect }) => {
-        // Const regenMatch = await fsp.readFile(path.join(__dirname, 'statics', 'paths', `${name}.sparql`), 'utf-8');
+        const regenMatch = await fsp.readFile(path.join(__dirname, 'statics', suite, `${name}.sparql`), 'utf-8');
         const { query } = await statics();
 
         const ast = parser.parsePath(query, context);
         const regenQuery = generator.generatePath(ast);
-        // Await fsp.writeFile(path.join(__dirname, 'statics', 'paths', `${name}.sparql`), regenQuery, 'utf-8');
-        // expect(regenQuery).toEqual(regenMatch);
+        // Await fsp.writeFile(path.join(__dirname, 'statics', suite, `${name}.sparql`), regenQuery, 'utf-8');
+        expect(regenQuery).toEqual(regenMatch);
         expect(() => parser.parsePath(regenQuery, context)).not.toThrow();
       });
     }
@@ -44,8 +47,8 @@ describe('a SPARQL 1.2 generator', () => {
       describe(suite, () => {
         for (const { name, statics } of positiveTest(suite)) {
           it(`can regenerate ${name}`, async({ expect, onTestFailed }) => {
-            // Const regenMatch =
-            // await fsp.readFile(path.join(__dirname, 'statics', suite, `${name}.sparql`), 'utf-8');
+            const regenMatch =
+            await fsp.readFile(path.join(__dirname, 'statics', suite, `${name}.sparql`), 'utf-8');
             const { query } = await statics();
 
             // eslint-disable-next-line no-console
@@ -56,7 +59,7 @@ describe('a SPARQL 1.2 generator', () => {
             onTestFailed(() => console.error('---- GENERATED ----\n', regenQuery.replaceAll(/(^|(\n))/gu, '$1|')));
 
             // Await fsp.writeFile(path.join(__dirname, 'statics', suite, `${name}.sparql`), regenQuery, 'utf-8');
-            // expect(regenQuery).toEqual(regenMatch);
+            expect(regenQuery).toEqual(regenMatch);
             expect(() => parser.parse(regenQuery, context)).not.toThrow();
           });
         }

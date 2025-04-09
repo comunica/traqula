@@ -1,0 +1,6 @@
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX eg: <http://biometrics.example/ns#> SELECT ?name ?shoeSize WHERE {
+ ?x <http://xmlns.com/foaf/0.1/name> ?name .
+?x <http://biometrics.example/ns#shoeSize> ?shoeSize FILTER ( ( datatype( ?shoeSize ) = <http://www.w3.org/2001/XMLSchema#integer> ) ) 
+}

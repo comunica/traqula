@@ -1,0 +1,29 @@
+BASE <ex:> CONSTRUCT {
+?s0 ?p0 _:g_0 .
+_:g_0 <ex:a0> _:g_1 .
+_:g_1 <ex:b0> <ex:c0> .
+_:g_2 ?p0 ?o0 .
+_:g_2 <ex:a0> _:g_3 .
+_:g_3 <ex:b0> <ex:c0>
+} WHERE {
+ ?s1 ?p1 _:g_4 .
+?s1 ?p1 <ex:a1> .
+?s1 ?q1 <ex:b1> .
+?s1 ?q1 <ex:c1> .
+_:g_5 ?p2 ?o2 .
+?s3 ?p3 _:g_6 .
+_:g_6 <ex:a3> <ex:b3> .
+?s4 ?p4 _:g_7 .
+_:g_7 <ex:a4> <ex:b4> .
+_:g_7 <ex:c4> <ex:d4> .
+_:g_7 <ex:c4> <ex:e4> .
+?s5 ?p5 _:g_8 .
+_:g_8 <ex:a5> _:g_9 .
+_:g_9 <ex:b5> <ex:c5> .
+_:g_10 ?p6 ?o6 .
+_:g_10 <ex:a6> _:g_11 .
+_:g_11 <ex:b6> <ex:c6> .
+_:g_12 <ex:a7> <ex:b7> .
+_:g_12 <ex:c7> <ex:d7> .
+_:g_12 <ex:c7> <ex:e7> 
+}

@@ -1,0 +1,3 @@
+PREFIX : <http://data.example/> SELECT ( avg ( ?size ) AS ?asize ) WHERE {
+ ?x <http://data.example/size> ?size 
+} GROUP BY ?x HAVING ( ( avg ( ?size ) > "10"^^<http://www.w3.org/2001/XMLSchema#integer> ) )

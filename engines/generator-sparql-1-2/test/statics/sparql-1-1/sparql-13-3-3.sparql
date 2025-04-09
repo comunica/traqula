@@ -1,0 +1,14 @@
+PREFIX data: <http://example.org/foaf/>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> SELECT ?mbox ?nick ?ppd FROM NAMED <http://example.org/foaf/aliceFoaf> FROM NAMED <http://example.org/foaf/bobFoaf> WHERE {
+ GRAPH <http://example.org/foaf/aliceFoaf> {
+ ?alice <http://xmlns.com/foaf/0.1/mbox> <mailto:alice@work.example> .
+?alice <http://xmlns.com/foaf/0.1/knows> ?whom .
+?whom <http://xmlns.com/foaf/0.1/mbox> ?mbox .
+?whom <http://www.w3.org/2000/01/rdf-schema#seeAlso> ?ppd .
+?ppd <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/PersonalProfileDocument> 
+} GRAPH ?ppd {
+ ?w <http://xmlns.com/foaf/0.1/mbox> ?mbox .
+?w <http://xmlns.com/foaf/0.1/nick> ?nick 
+} 
+}

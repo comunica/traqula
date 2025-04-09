@@ -1,0 +1,3 @@
+PREFIX : <http://www.example.org/> SELECT ( <http://www.example.org/foo> AS ?foo ) ( count ( ?outObject ) AS ?out ) WHERE {
+ ?s <http://www.example.org/predicate> ?outObject 
+} GROUP BY ?s

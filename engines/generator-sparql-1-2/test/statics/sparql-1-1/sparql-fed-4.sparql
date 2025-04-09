@@ -1,0 +1,8 @@
+PREFIX void: <http://rdfs.org/ns/void#>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+PREFIX doap: <http://usefulinc.com/ns/doap#> SELECT ?service ?projectName WHERE {
+ ?p <http://purl.org/dc/elements/1.1/subject> ?projectSubject .
+?p <http://rdfs.org/ns/void#sparqlEndpoint> ?service FILTER ( regex( ?projectSubject, "remote"^^<http://www.w3.org/2001/XMLSchema#string> ) ) SERVICE ?service {
+ ?project <http://usefulinc.com/ns/doap#name> ?projectName 
+} 
+}

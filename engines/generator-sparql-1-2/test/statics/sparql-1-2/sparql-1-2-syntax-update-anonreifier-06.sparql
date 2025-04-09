@@ -1,0 +1,5 @@
+PREFIX : <http://example.com/ns#> INSERT { ?s <http://example.com/ns#r> ?o .
+_:g_0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s <http://example.com/ns#r> ?o  )>> .
+_:g_0 <http://example.com/ns#added> "Property :r"^^<http://www.w3.org/2001/XMLSchema#string> } WHERE {
+ ?s ( <http://example.com/ns#p>/<http://example.com/ns#q> ) ?o 
+}

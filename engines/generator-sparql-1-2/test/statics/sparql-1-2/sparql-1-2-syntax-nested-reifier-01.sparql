@@ -1,0 +1,7 @@
+PREFIX : <http://example.com/ns#> SELECT * WHERE {
+ <http://example.com/ns#iri> <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?S <http://example.com/ns#p> <http://example.com/ns#o>  )>> .
+<http://example.com/ns#iri> <http://example.com/ns#r> <http://example.com/ns#z> .
+<http://example.com/ns#iri> <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?S <http://example.com/ns#p> <http://example.com/ns#o>  )>> .
+_:e_bnode <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#iri> <http://example.com/ns#r> <http://example.com/ns#z>  )>> .
+_:e_bnode <http://example.com/ns#q> "1"^^<http://www.w3.org/2001/XMLSchema#integer> 
+}

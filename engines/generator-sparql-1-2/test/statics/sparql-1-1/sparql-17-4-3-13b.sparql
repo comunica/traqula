@@ -1,0 +1,3 @@
+PREFIX dc: <http://purl.org/dc/elements/1.1/> SELECT ?title WHERE {
+ ?x <http://purl.org/dc/elements/1.1/title> ?title FILTER ( langmatches( lang( ?title ), "*"^^<http://www.w3.org/2001/XMLSchema#string> ) ) 
+}

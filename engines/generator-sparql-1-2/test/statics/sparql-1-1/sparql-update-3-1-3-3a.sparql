@@ -1,0 +1,2 @@
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> DELETE WHERE { ?person <http://xmlns.com/foaf/0.1/givenName> "Fred"^^<http://www.w3.org/2001/XMLSchema#string> .
+?person ?property ?value }

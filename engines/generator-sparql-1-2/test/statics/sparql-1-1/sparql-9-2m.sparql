@@ -1,0 +1,4 @@
+BASE <http://example.org/>
+PREFIX ex: <http://example.org/#> SELECT * WHERE {
+ ?ancestor ( ( <http://example.org/#motherOf>|<http://example.org/#fatherOf> ) )+ <http://example.org/#me> 
+}

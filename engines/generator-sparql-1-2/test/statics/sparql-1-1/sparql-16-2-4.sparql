@@ -1,0 +1,5 @@
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> CONSTRUCT {
+?x <http://xmlns.com/foaf/0.1/name> ?name
+} WHERE {
+ ?x <http://xmlns.com/foaf/0.1/name> ?name 
+}

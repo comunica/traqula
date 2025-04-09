@@ -1,0 +1,13 @@
+PREFIX example: <http://example/id/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> SELECT ?s ?p ?o WHERE {
+ ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> _:g_0 .
+_:g_0 ( <http://example/id/prop> )* ?o .
+?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> _:g_1 .
+_:g_1 ( <http://example/id/prop> )* ?o .
+?s <http://example/id/p2> ?_ .
+?s <http://example/id/p1> ?_ .
+?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> _:g_2 .
+_:g_2 ( <http://example/id/prop> )* ?o .
+?s <http://example/id/p2> ?o 
+}

@@ -1,0 +1,3 @@
+PREFIX : <http://example.com/ns#> SELECT * WHERE {
+ <http://example.com/ns#s> <http://example.com/ns#p> <<( <http://example.com/ns#a> <http://example.com/ns#b> "c"^^<http://www.w3.org/2001/XMLSchema#string>  )>> 
+}

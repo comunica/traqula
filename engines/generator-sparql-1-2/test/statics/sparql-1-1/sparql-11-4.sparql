@@ -1,0 +1,4 @@
+PREFIX : <http://example.com/data/#> SELECT ?x ( ( min ( ?y ) * "2"^^<http://www.w3.org/2001/XMLSchema#integer> ) AS ?min ) WHERE {
+ ?x <http://example.com/data/#p> ?y .
+?x <http://example.com/data/#q> ?z 
+} GROUP BY ?x str( ?z )

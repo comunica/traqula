@@ -1,0 +1,5 @@
+PREFIX : <http://books.example/> SELECT ( sum ( ?lprice ) AS ?totalPrice ) WHERE {
+ ?org <http://books.example/affiliates> ?auth .
+?auth <http://books.example/writesBook> ?book .
+?book <http://books.example/price> ?lprice 
+} GROUP BY ?org HAVING ( ( sum ( ?lprice ) > "10"^^<http://www.w3.org/2001/XMLSchema#integer> ) )

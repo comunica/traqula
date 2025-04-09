@@ -1,0 +1,5 @@
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> SELECT ?name FROM <http://example.org/myfoaf.rdf> WHERE {
+ <http://example.org/myfoaf/I> <http://xmlns.com/foaf/0.1/knows> ?person SERVICE <http://people.example.org/sparql> {
+ ?person <http://xmlns.com/foaf/0.1/name> ?name 
+} 
+}

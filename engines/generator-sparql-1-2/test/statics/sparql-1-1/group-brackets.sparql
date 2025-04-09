@@ -1,0 +1,4 @@
+PREFIX : <http://www.example.org/> SELECT ?company ( count ( DISTINCT ?key ) AS ?keyCount ) WHERE {
+ ?company <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.example.org/Company> .
+?company <http://www.example.org/hasKey> ?key 
+} GROUP BY ?company ORDER BY ( ?company )

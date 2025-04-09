@@ -1,0 +1,4 @@
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> ASK WHERE {
+ ?x <http://xmlns.com/foaf/0.1/name> "Alice"^^<http://www.w3.org/2001/XMLSchema#string> .
+?x <http://xmlns.com/foaf/0.1/mbox> <mailto:alice@work.example> 
+} 

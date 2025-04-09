@@ -1,0 +1,6 @@
+PREFIX : <http://example.com/ns#> CONSTRUCT {
+<http://example.com/ns#iri> <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#s> <http://example.com/ns#p> <http://example.com/ns#o>  )>> .
+<http://example.com/ns#iri> <http://example.com/ns#q> <http://example.com/ns#z>
+} WHERE {
+ 
+}

@@ -1,0 +1,2 @@
+PREFIX dc: <http://purl.org/dc/elements/1.1/> INSERT DATA { <http://example/book1> <http://purl.org/dc/elements/1.1/title> "A new book"^^<http://www.w3.org/2001/XMLSchema#string> .
+<http://example/book1> <http://purl.org/dc/elements/1.1/creator> "A.N.Other"^^<http://www.w3.org/2001/XMLSchema#string> }

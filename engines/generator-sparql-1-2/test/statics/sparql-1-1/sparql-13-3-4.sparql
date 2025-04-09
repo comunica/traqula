@@ -1,0 +1,8 @@
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX dc: <http://purl.org/dc/elements/1.1/> SELECT ?name ?mbox ?date WHERE {
+ ?g <http://purl.org/dc/elements/1.1/publisher> ?name .
+?g <http://purl.org/dc/elements/1.1/date> ?date GRAPH ?g {
+ ?person <http://xmlns.com/foaf/0.1/name> ?name .
+?person <http://xmlns.com/foaf/0.1/mbox> ?mbox 
+} 
+}

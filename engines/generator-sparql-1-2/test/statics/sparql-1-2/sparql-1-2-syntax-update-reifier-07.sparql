@@ -1,0 +1,7 @@
+PREFIX : <http://example.com/ns#> DELETE { ?s <http://example.com/ns#r> ?o .
+<http://example.com/ns#iri> <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s <http://example.com/ns#r> ?o  )>> .
+<http://example.com/ns#iri> <http://example.com/ns#added> "Property :r"^^<http://www.w3.org/2001/XMLSchema#string> } WHERE {
+ ?s <http://example.com/ns#p> ?o .
+<http://example.com/ns#iri> <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s <http://example.com/ns#p> ?o  )>> .
+<http://example.com/ns#iri> ( <http://example.com/ns#q1> )+ "ABC"^^<http://www.w3.org/2001/XMLSchema#string> 
+}

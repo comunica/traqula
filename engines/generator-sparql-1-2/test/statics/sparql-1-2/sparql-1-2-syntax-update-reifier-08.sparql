@@ -1,0 +1,6 @@
+PREFIX : <http://example.com/ns#> DELETE DATA { <http://example.com/ns#s> <http://example.com/ns#p> <http://example.com/ns#o1> .
+<http://example.com/ns#iri> <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#s> <http://example.com/ns#p> <http://example.com/ns#o1>  )>> .
+<http://example.com/ns#iri> <http://example.com/ns#added> "Test"^^<http://www.w3.org/2001/XMLSchema#string> } ;
+INSERT DATA { <http://example.com/ns#s> <http://example.com/ns#p> <http://example.com/ns#o2> .
+<http://example.com/ns#iri> <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#s> <http://example.com/ns#p> <http://example.com/ns#o2>  )>> .
+<http://example.com/ns#iri> <http://example.com/ns#added> "Test"^^<http://www.w3.org/2001/XMLSchema#string> }

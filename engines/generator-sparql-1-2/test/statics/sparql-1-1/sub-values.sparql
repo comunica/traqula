@@ -1,0 +1,7 @@
+PREFIX : <http://example.org/> SELECT ?s ?o WHERE {
+ {
+ SELECT * WHERE {
+ ?s ?p ?o 
+} VALUES ( ?o ) { ( <http://example.org/b> ) } 
+} 
+}

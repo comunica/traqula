@@ -1,0 +1,3 @@
+PREFIX : <http://example.com/ns#> SELECT * WHERE {
+ VALUES ( ?x ) { ( <<( <http://example.com/ns#s> <http://example.com/ns#p> <http://example.com/ns#o>  )>> ) ( <<( <http://example.com/ns#x> <http://example.com/ns#q> <<( <http://example.com/ns#s> <http://example.com/ns#p> <http://example.com/ns#o>  )>>  )>> ) } VALUES ( ?y ?z ) { ( <<( <http://example.com/ns#s> <http://example.com/ns#p> <http://example.com/ns#o>  )>> "123"^^<http://www.w3.org/2001/XMLSchema#integer> ) ( "123"^^<http://www.w3.org/2001/XMLSchema#integer> <<( <http://example.com/ns#s> <http://example.com/ns#p> <http://example.com/ns#o>  )>> ) } 
+}

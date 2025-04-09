@@ -1,0 +1,12 @@
+PREFIX : <http://example.com/ns#> SELECT * WHERE {
+ <http://example.com/ns#iri1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#x> ?R <http://example.com/ns#z>  )>> .
+<http://example.com/ns#iri1> <http://example.com/ns#p> <http://example.com/ns#iri2> .
+<http://example.com/ns#iri2> <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> ?C  )>> .
+_:e_bnode1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#x> ?R <http://example.com/ns#z>  )>> .
+<http://example.com/ns#iri3> <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( _:e_bnode1 <http://example.com/ns#p> _:e_bnode1  )>> .
+_:e_bnode1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> _:g_0  )>> .
+<http://example.com/ns#iri3> <http://example.com/ns#q> <http://example.com/ns#iri3> .
+_:e_bnode2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( _:g_1 ?R <http://example.com/ns#z>  )>> .
+<http://example.com/ns#iri3> <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( _:e_bnode2 <http://example.com/ns#p> _:e_bnode2  )>> .
+_:e_bnode2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> _:g_2  )>> 
+}

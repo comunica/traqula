@@ -1,0 +1,4 @@
+PREFIX : <http://example.com/ns#> SELECT * WHERE {
+ <http://example.com/ns#s> <http://example.com/ns#r> <<( ?S <http://example.com/ns#p> <http://example.com/ns#o>  )>> .
+<http://example.com/ns#s> <http://example.com/ns#q> <<( <http://example.com/ns#s1> <http://example.com/ns#r> <<( ?S <http://example.com/ns#p> <http://example.com/ns#o>  )>>  )>> 
+}

@@ -1,0 +1,4 @@
+PREFIX : <http://www.example.org/> SELECT ?O12 ( count ( ?O1 ) AS ?C ) WHERE {
+ ?S <http://www.example.org/p> ?O1 .
+?S <http://www.example.org/q> ?O2 
+} GROUP BY (( ?O1 + ?O2 ) AS ?O12) ORDER BY ( ?O12 )

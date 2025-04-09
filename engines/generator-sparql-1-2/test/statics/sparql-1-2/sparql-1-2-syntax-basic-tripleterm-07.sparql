@@ -1,0 +1,7 @@
+PREFIX : <http://example.com/ns#> CONSTRUCT {
+<http://example.com/ns#s> ?q <<( ?s ?p <http://example.com/ns#o>  )>> .
+?a ?b <<( ?s ?p ?o  )>>
+} WHERE {
+ <http://example.com/ns#s> ?q <<( ?s ?p <http://example.com/ns#o>  )>> .
+?a ?b <<( ?s ?p ?o  )>> 
+}

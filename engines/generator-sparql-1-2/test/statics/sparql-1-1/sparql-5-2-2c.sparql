@@ -1,0 +1,3 @@
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> SELECT ?name ?mbox WHERE {
+ ?x <http://xmlns.com/foaf/0.1/name> ?name FILTER ( regex( ?name, "Smith"^^<http://www.w3.org/2001/XMLSchema#string> ) ) ?x <http://xmlns.com/foaf/0.1/mbox> ?mbox 
+}

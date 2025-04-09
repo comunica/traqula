@@ -1,0 +1,6 @@
+PREFIX : <http://example/>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> SELECT DISTINCT ?s WHERE {
+ ?s ?p ?o MINUS {
+ ?s <http://xmlns.com/foaf/0.1/givenName> "Bob"^^<http://www.w3.org/2001/XMLSchema#string> 
+} 
+}

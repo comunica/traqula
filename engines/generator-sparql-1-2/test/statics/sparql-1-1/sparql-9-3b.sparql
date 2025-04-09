@@ -1,0 +1,4 @@
+PREFIX : <http://example/> SELECT * WHERE {
+ ?s <http://example/item> ?_a .
+?_a <http://example/price> ?x 
+}

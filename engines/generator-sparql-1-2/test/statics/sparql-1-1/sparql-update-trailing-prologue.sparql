@@ -1,0 +1,1 @@
+PREFIX a: <urn:a> INSERT DATA { <http://example/book1> <urn:label> "A new book"^^<http://www.w3.org/2001/XMLSchema#string> }

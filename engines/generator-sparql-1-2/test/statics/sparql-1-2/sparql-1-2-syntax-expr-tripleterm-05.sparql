@@ -1,0 +1,3 @@
+PREFIX : <http://example.com/ns#> SELECT * WHERE {
+ ?t <http://example.com/ns#source> <http://example.com/ns#g> FILTER ( istriple( ?t ) ) FILTER ( ( subject( ?t ) = <http://example.com/ns#s> ) ) FILTER ( ( predicate( ?t ) = <http://example.com/ns#p> ) ) FILTER ( ( object( ?t ) = <http://example.com/ns#o> ) ) 
+}

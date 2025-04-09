@@ -1,0 +1,15 @@
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX dbpedia: <http://dbpedia.org/resource/>
+PREFIX dbpedia-owl: <http://dbpedia.org/ontology/> CONSTRUCT {
+?person <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Artist> .
+?person <http://www.w3.org/2000/01/rdf-schema#label> ?name .
+?person <http://dbpedia.org/ontology/birthPlace> ?city
+} WHERE {
+ ?person <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Artist> .
+?person <http://www.w3.org/2000/01/rdf-schema#label> ?name .
+?person <http://dbpedia.org/ontology/birthPlace> ?city .
+?city <http://www.w3.org/2000/01/rdf-schema#label> ?cityName .
+?city <http://www.w3.org/2000/01/rdf-schema#label> "Ghent"@en .
+?city <http://dbpedia.org/ontology/country> ?country .
+?country <http://www.w3.org/2000/01/rdf-schema#label> "Belgium"@en 
+}

@@ -1,0 +1,3 @@
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> WITH <http://example/addresses> DELETE { ?person <http://xmlns.com/foaf/0.1/givenName> "Bill"^^<http://www.w3.org/2001/XMLSchema#string> } INSERT { ?person <http://xmlns.com/foaf/0.1/givenName> "William"^^<http://www.w3.org/2001/XMLSchema#string> } WHERE {
+ ?person <http://xmlns.com/foaf/0.1/givenName> "Bill"^^<http://www.w3.org/2001/XMLSchema#string> 
+}

@@ -1,0 +1,3 @@
+PREFIX ent: <http://org.example.com/employees#> DESCRIBE ?x WHERE {
+ ?x <http://org.example.com/employees#employeeId> "1234"^^<http://www.w3.org/2001/XMLSchema#string> 
+} 

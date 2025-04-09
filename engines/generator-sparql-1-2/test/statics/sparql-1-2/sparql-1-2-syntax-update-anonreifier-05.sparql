@@ -1,0 +1,9 @@
+PREFIX : <http://example.com/ns#> INSERT { ?S ?P _:g_0 .
+_:g_0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> ?O  )>> .
+_:g_1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?S ?P _:g_0  )>> .
+_:g_1 ?Y ?Z } WHERE {
+ ?S ?P _:g_2 .
+_:g_2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> ?O  )>> .
+_:g_3 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?S ?P _:g_2  )>> .
+_:g_3 ?Y ?Z 
+}

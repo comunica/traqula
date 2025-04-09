@@ -1,0 +1,7 @@
+PREFIX : <http://people.example/> SELECT ?y ?minName WHERE {
+ <http://people.example/alice> <http://people.example/knows> ?y {
+ SELECT ?y ( min ( ?name ) AS ?minName ) WHERE {
+ ?y <http://people.example/name> ?name 
+} GROUP BY ?y 
+} 
+}

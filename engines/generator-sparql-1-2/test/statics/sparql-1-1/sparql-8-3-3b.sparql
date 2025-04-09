@@ -1,0 +1,5 @@
+PREFIX : <http://example/> SELECT * WHERE {
+ ?x <http://example/p> ?n MINUS {
+ ?x <http://example/q> ?m FILTER ( ( ?n = ?m ) ) 
+} 
+}

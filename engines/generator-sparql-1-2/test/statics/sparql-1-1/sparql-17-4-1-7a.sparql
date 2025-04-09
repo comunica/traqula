@@ -1,0 +1,6 @@
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> SELECT ?name1 ?name2 WHERE {
+ ?x <http://xmlns.com/foaf/0.1/name> ?name1 .
+?x <http://xmlns.com/foaf/0.1/mbox> ?mbox1 .
+?y <http://xmlns.com/foaf/0.1/name> ?name2 .
+?y <http://xmlns.com/foaf/0.1/mbox> ?mbox2 FILTER ( ( ( ?mbox1 = ?mbox2 ) && ( ?name1 != ?name2 ) ) ) 
+}

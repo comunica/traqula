@@ -1,0 +1,5 @@
+PREFIX foaf: <http://xmlns.com/foaf/0.1/> SELECT ?s WHERE {
+ ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> SERVICE <http://example.org/sparql> {
+ ?s <http://xmlns.com/foaf/0.1/knows> ?o 
+} 
+}

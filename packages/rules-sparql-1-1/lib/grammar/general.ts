@@ -54,7 +54,7 @@ export const prologue: SparqlRule<'prologue', Pick<BaseQuery, 'base' | 'prefixes
     for (const [ key, value ] of <[string, string][]> Object.entries(ast.prefixes)) {
       rules.push(`PREFIX ${key}: <${value}>`);
     }
-    return rules.join(' ');
+    return rules.join('\n');
   },
 };
 

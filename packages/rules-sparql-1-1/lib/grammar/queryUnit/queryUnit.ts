@@ -550,7 +550,9 @@ export const constructTemplate: SparqlRule<'constructTemplate', Triple[] | undef
     return triples;
   },
   gImpl: ({ SUBRULE }) => ast =>
-    `{ ${ast ? SUBRULE(triplesBlock, { type: 'bgp', triples: ast }, undefined) : ''} }`,
+    `{
+${ast ? SUBRULE(triplesBlock, { type: 'bgp', triples: ast }, undefined) : ''}
+}`,
 };
 
 /**

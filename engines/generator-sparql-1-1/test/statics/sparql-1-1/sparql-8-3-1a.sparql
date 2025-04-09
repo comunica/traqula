@@ -1,1 +1,5 @@
-SELECT * WHERE { ?s ?p ?o FILTER ( NOT EXISTS { ?x ?y ?z } ) }
+SELECT * WHERE {
+ ?s ?p ?o FILTER ( NOT EXISTS {
+ ?x ?y ?z 
+} ) 
+}

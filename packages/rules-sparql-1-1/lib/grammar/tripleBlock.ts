@@ -55,7 +55,7 @@ export const triplesBlock: SparqlRule<'triplesBlock', BgpPattern> = <const> {
       }
       return SUBRULE(varOrTerm, part, undefined);
     }).join(' ');
-  }).join(' . '),
+  }).join(' .\n'),
 };
 
 /**

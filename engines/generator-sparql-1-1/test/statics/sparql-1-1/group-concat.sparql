@@ -1,1 +1,3 @@
-SELECT ?s ( group_concat ( ?p ) AS ?plist ) ( group_concat ( DISTINCT ?p ; SEPARATOR = ",\"/" ) AS ?plist2 ) ( group_concat ( DISTINCT ?p ) AS ?plist3 ) WHERE { ?s ?p ?c } GROUP BY ?s
+SELECT ?s ( group_concat ( ?p ) AS ?plist ) ( group_concat ( DISTINCT ?p ; SEPARATOR = ",\"/" ) AS ?plist2 ) ( group_concat ( DISTINCT ?p ; SEPARATOR = "" ) AS ?plist3 ) WHERE {
+ ?s ?p ?c 
+} GROUP BY ?s

@@ -1,1 +1,3 @@
-SELECT ?p ( count ( * ) AS ?n ) WHERE { _:g_0 ?p _:g_1 }
+SELECT ?p ( count ( * ) AS ?n ) WHERE {
+ _:g_0 ?p _:g_1 
+}

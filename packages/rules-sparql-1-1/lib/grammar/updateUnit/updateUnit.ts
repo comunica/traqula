@@ -78,7 +78,7 @@ export const update: SparqlRule<'update', Update> = <const> {
   },
   gImpl: ({ SUBRULE }) => (ast) => {
     const prologueString = SUBRULE(prologue, ast, undefined);
-    const updates = ast.updates.map(update => SUBRULE(update1, update, undefined)).join(' ; ');
+    const updates = ast.updates.map(update => SUBRULE(update1, update, undefined)).join(' ;\n');
     return `${prologueString} ${updates}`;
   },
 };
@@ -641,5 +641,7 @@ export const quadsNotTriples: SparqlRule<'quadsNotTriples', GraphQuads> = <const
     };
   },
   gImpl: ({ SUBRULE }) => ast =>
-    `GRAPH ${SUBRULE(varOrTerm, ast.name, undefined)} { ${SUBRULE(triplesBlock, { ...ast, type: 'bgp' }, undefined)} }`,
+    `GRAPH ${SUBRULE(varOrTerm, ast.name, undefined)} {
+${SUBRULE(triplesBlock, { ...ast, type: 'bgp' }, undefined)}
+}`,
 };

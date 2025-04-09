@@ -47,9 +47,10 @@ describe('a SPARQL 1.1 generator', () => {
         onTestFailed(() => console.error('---- INPUT ----\n', query.replaceAll(/(^|(\n))/gu, '$1|')));
         const ast = parser.parse(query, context);
         const regenQuery = generator.generate(ast);
-        // Await fsp.writeFile(path.join(__dirname, 'statics', 'sparql-1-1', `${name}.sparql`), regenQuery, 'utf-8');
         // eslint-disable-next-line no-console
         onTestFailed(() => console.error('---- GENERATED ----\n', regenQuery.replaceAll(/(^|(\n))/gu, '$1|')));
+
+        // Await fsp.writeFile(path.join(__dirname, 'statics', 'sparql-1-1', `${name}.sparql`), regenQuery, 'utf-8');
         expect(regenQuery).toEqual(regenMatch);
         expect(() => parser.parse(regenQuery, context)).not.toThrow();
       });

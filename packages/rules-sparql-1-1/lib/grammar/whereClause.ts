@@ -62,7 +62,7 @@ export const groupGraphPattern: SparqlRule<'groupGraphPattern', GroupPattern> = 
   },
   gImpl: ({ SUBRULE }) => (ast) => {
     const patterns = ast.patterns;
-    const builder = [ '{' ];
+    const builder = [ '{\n' ];
     for (const pattern of patterns) {
       if ('queryType' in pattern) {
         builder.push(SUBRULE(query, { ...pattern, prefixes: {}}, undefined));
@@ -72,7 +72,7 @@ export const groupGraphPattern: SparqlRule<'groupGraphPattern', GroupPattern> = 
         builder.push(SUBRULE(graphPatternNotTriples, pattern, undefined));
       }
     }
-    builder.push('}');
+    builder.push('\n}');
     return builder.join(' ');
   },
 };

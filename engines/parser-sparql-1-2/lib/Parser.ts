@@ -1,7 +1,11 @@
 import type { Patch } from '@traqula/core';
 import { ParserBuilder } from '@traqula/core';
 import { sparql11ParserBuilder } from '@traqula/parser-sparql-1-1';
-import { sparqlCodepointEscape, gram as g11, SparqlParser } from '@traqula/rules-sparql-1-1';
+import {
+  sparqlCodepointEscape,
+  gram as g11,
+  SparqlParser,
+} from '@traqula/rules-sparql-1-1';
 
 import type { types as T12 } from '@traqula/rules-sparql-1-2';
 import { gram as S12, lex as l12 } from '@traqula/rules-sparql-1-2';
@@ -181,6 +185,25 @@ export const sparql12ParserBuilder = ParserBuilder.createBuilder(sparql11ParserB
     [g11.collectionPath.name]: T12.ITriplesNode;
     [g11.graphNode.name]: T12.IGraphNode;
     [g11.graphNodePath.name]: T12.IGraphNode;
+    /// WhereClause
+    [g11.whereClause.name]: T12.Pattern;
+    [g11.groupGraphPattern.name]: T12.GroupPattern;
+    [g11.groupGraphPatternSub.name]: T12.Pattern[];
+    [g11.graphPatternNotTriples.name]: T12.ValuesPattern | T12.BindPattern | T12.FilterPattern | T12.BlockPattern;
+    [g11.optionalGraphPattern.name]: T12.OptionalPattern;
+    [g11.graphGraphPattern.name]: T12.GraphPattern;
+    [g11.serviceGraphPattern.name]: T12.ServicePattern;
+    [g11.bind.name]: T12.BindPattern;
+    [g11.inlineData.name]: T12.ValuesPattern;
+    [g11.dataBlock.name]: T12.ValuePatternRow[];
+    [g11.inlineDataOneVar.name]: T12.ValuePatternRow[];
+    [g11.inlineDataFull.name]: T12.ValuePatternRow[];
+    [g11.dataBlockValue.name]: T12.IriTerm | T12.BlankTerm | T12.LiteralTerm | undefined;
+    [g11.minusGraphPattern.name]: T12.MinusPattern;
+    [g11.groupOrUnionGraphPattern.name]: T12.GroupPattern | T12.UnionPattern;
+    [g11.filter.name]: T12.FilterPattern;
+    [g11.constraint.name]: T12.Expression;
+    [g11.functionCall.name]: T12.FunctionCallExpression;
   }>()
   .addMany(
     S12.reifiedTripleBlock,

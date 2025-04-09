@@ -19,6 +19,15 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
    * Create a GeneratorBuilder from some initial grammar rules or an existing GeneratorBuilder.
    * If a GeneratorBuilder is provided, a new copy will be created.
    */
+  public static createBuilder<Context, Names extends string, RuleDefs extends GenRuleMap<Names>>(
+    args: GeneratorBuilder<Context, Names, RuleDefs>
+  ): GeneratorBuilder<Context, Names, RuleDefs>;
+  public static createBuilder<
+    Rules extends readonly GeneratorRule[] = readonly GeneratorRule[],
+    Context = Rules[0] extends GeneratorRule<infer context> ? context : never,
+    Names extends string = GenNamesFromList<Rules>,
+    RuleDefs extends GenRuleMap<Names> = GenRulesToObject<Rules>,
+  >(rules: Rules): GeneratorBuilder<Context, Names, RuleDefs>;
   public static createBuilder<
     Rules extends readonly GeneratorRule[] = readonly GeneratorRule[],
     Context = Rules[0] extends GeneratorRule<infer context> ? context : never,
@@ -37,6 +46,17 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
 
   private constructor(startRules: RuleDefs) {
     this.rules = startRules;
+  }
+
+  public typePatch<Patch extends {[Key in Names]?: any }>():
+  GeneratorBuilder<Context, Names, {[Key in Names]: Key extends keyof Patch ? (
+    RuleDefs[Key] extends GeneratorRule<Context, Key, any, infer Args> ?
+      GeneratorRule<Context, Key, Patch[Key], Args> : never
+  ) : (RuleDefs[Key] extends GeneratorRule<Context, Key> ? RuleDefs[Key] : never) }> {
+    return <GeneratorBuilder<Context, Names, {[Key in Names]: Key extends keyof Patch ? (
+      RuleDefs[Key] extends GeneratorRule<Context, Key, any, infer Args> ?
+        GeneratorRule<Context, Key, Patch[Key], Args> : never
+    ) : (RuleDefs[Key] extends GeneratorRule<Context, Key> ? RuleDefs[Key] : never) }>> <unknown> this;
   }
 
   /**

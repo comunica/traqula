@@ -2,7 +2,7 @@ import { GeneratorBuilder } from '@traqula/core';
 import { gram } from '@traqula/rules-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 
-const sparql11GeneratorBuilder = GeneratorBuilder.createBuilder(<const> [
+export const sparql11GeneratorBuilder = GeneratorBuilder.createBuilder(<const> [
   gram.query,
   gram.selectQuery,
   gram.constructQuery,

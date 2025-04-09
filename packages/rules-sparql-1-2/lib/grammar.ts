@@ -47,12 +47,18 @@ export const reifiedTripleBlockPath = reifiedTripleBlockImpl('reifiedTripleBlock
  * [[67]](https://www.w3.org/TR/sparql12-query/#rDataBlockValue)
  */
 export const dataBlockValue:
-T11.SparqlGrammarRule<'dataBlockValue', RuleDefReturn<typeof S11.dataBlockValue> | BaseQuadTerm> = <const> {
+T11.SparqlRule<'dataBlockValue', RuleDefReturn<typeof S11.dataBlockValue> | BaseQuadTerm> = <const> {
   name: 'dataBlockValue',
   impl: $ => C => $.OR2<RuleDefReturn<typeof S11.dataBlockValue> | BaseQuadTerm>([
     { ALT: () => S11.dataBlockValue.impl($)(C, undefined) },
     { ALT: () => $.SUBRULE(tripleTermData, undefined) },
   ]),
+  gImpl: ({ SUBRULE }) => (ast) => {
+    if (ast) {
+      return SUBRULE(varOrTerm, ast, undefined);
+    }
+    return 'UNDEF';
+  },
 };
 
 /**
@@ -269,7 +275,7 @@ export const graphNodePath: T11.SparqlGrammarRule<'graphNodePath', IGraphNode> =
  * OVERRIDING RULE: {@link S11.varOrTerm}.
  * [[113]](https://www.w3.org/TR/sparql12-query/#rVarOrTerm)
  */
-export const varOrTerm: T11.SparqlGrammarRule<'varOrTerm', Term> = <const> {
+export const varOrTerm: T11.SparqlRule<'varOrTerm', Term> = <const> {
   name: 'varOrTerm',
   impl: ({ ACTION, SUBRULE, OR, CONSUME }) => C => OR<Term>([
     { ALT: () => SUBRULE(S11.var_, undefined) },
@@ -284,6 +290,21 @@ export const varOrTerm: T11.SparqlGrammarRule<'varOrTerm', Term> = <const> {
     } },
     { ALT: () => SUBRULE(tripleTerm, undefined) },
   ]),
+  gImpl: ({ SUBRULE }) => (ast) => {
+    if (ast.termType === 'Variable') {
+      return SUBRULE(S11.var_, ast, undefined);
+    }
+    if (ast.termType === 'NamedNode') {
+      return SUBRULE(S11.iri, ast, undefined);
+    }
+    if (ast.termType === 'BlankNode') {
+      return SUBRULE(S11.blankNode, ast, undefined);
+    }
+    if (ast.termType === 'Quad') {
+      return SUBRULE(tripleTerm, ast, undefined);
+    }
+    return SUBRULE(S11.rdfLiteral, ast, undefined);
+  },
 };
 
 /**
@@ -354,7 +375,7 @@ T11.SparqlGrammarRule<'reifiedTripleObject', RuleDefReturn<typeof reifiedTripleS
 /**
  * [[117]](https://www.w3.org/TR/sparql12-query/#rTripleTerm)
  */
-export const tripleTerm: T11.SparqlGrammarRule<'tripleTerm', BaseQuadTerm> = <const> {
+export const tripleTerm: T11.SparqlRule<'tripleTerm', BaseQuadTerm> = <const> {
   name: 'tripleTerm',
   impl: ({ ACTION, CONSUME, SUBRULE }) => (C) => {
     CONSUME(l12.tripleTermOpen);
@@ -364,6 +385,8 @@ export const tripleTerm: T11.SparqlGrammarRule<'tripleTerm', BaseQuadTerm> = <co
     CONSUME(l12.tripleTermClose);
     return ACTION(() => C.dataFactory.quad(subject, predicate, object));
   },
+  gImpl: ({ SUBRULE }) => ast =>
+    `<<( ${SUBRULE(varOrTerm, ast.subject, undefined)} ${SUBRULE(varOrTerm, ast.predicate, undefined)} ${SUBRULE(varOrTerm, ast.object, undefined)}  )>>`,
 };
 
 /**

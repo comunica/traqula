@@ -1,11 +1,11 @@
-import type * as RdfJs from '@rdfjs/types';
+import type * as RDF from '@rdfjs/types';
 import type { Patch } from '@traqula/core';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 
-export type BaseQuadTerm = RdfJs.BaseQuad;
+export type BaseQuadTerm = RDF.BaseQuad & { subject: Term; predicate: Term; object: Term };
+export type GraphTerm = IriTerm | BlankTerm | LiteralTerm | BaseQuadTerm;
+export type Term = GraphTerm | VariableTerm;
 
-export type GraphTerm = T11.GraphTerm | BaseQuadTerm;
-export type Term = T11.Term | BaseQuadTerm;
 export type Expression = T11.Expression | BaseQuadTerm;
 
 // Overriding other types

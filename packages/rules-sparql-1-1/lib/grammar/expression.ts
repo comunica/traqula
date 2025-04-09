@@ -148,6 +148,7 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
           const operator = ast.operator === 'exists' ? 'EXISTS' : 'NOT EXISTS';
           return `${operator} ${SUBRULE(groupGraphPattern, { type: 'group', patterns }, undefined)}`;
         }
+        // It's a builtin function
         return `${ast.operator}( ${ast.args.map(arg => SUBRULE(expression, <Expression>arg, undefined)).join(', ')} )`;
       }
       if (ast.type === 'functionCall') {

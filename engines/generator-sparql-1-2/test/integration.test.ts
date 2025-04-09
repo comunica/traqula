@@ -37,22 +37,29 @@ describe('a SPARQL 1.2 generator', () => {
   });
 
   describe('positive sparql', () => {
-    for (const { name, statics } of positiveTest('sparql-1-1')) {
-      it(`can regenerate ${name}`, async({ expect, onTestFailed }) => {
-        // Const regenMatch =
-        // await fsp.readFile(path.join(__dirname, 'statics', 'sparql-1-1', `${name}.sparql`), 'utf-8');
-        const { query } = await statics();
+    for (const suite of <const> [
+      'sparql-1-1',
+      'sparql-1-2',
+    ]) {
+      describe(suite, () => {
+        for (const { name, statics } of positiveTest(suite)) {
+          it(`can regenerate ${name}`, async({ expect, onTestFailed }) => {
+            // Const regenMatch =
+            // await fsp.readFile(path.join(__dirname, 'statics', suite, `${name}.sparql`), 'utf-8');
+            const { query } = await statics();
 
-        // eslint-disable-next-line no-console
-        onTestFailed(() => console.error('---- INPUT ----\n', query.replaceAll(/(^|(\n))/gu, '$1|')));
-        const ast = parser.parse(query, context);
-        const regenQuery = generator.generate(ast);
-        // eslint-disable-next-line no-console
-        onTestFailed(() => console.error('---- GENERATED ----\n', regenQuery.replaceAll(/(^|(\n))/gu, '$1|')));
+            // eslint-disable-next-line no-console
+            onTestFailed(() => console.error('---- INPUT ----\n', query.replaceAll(/(^|(\n))/gu, '$1|')));
+            const ast = parser.parse(query, context);
+            const regenQuery = generator.generate(ast);
+            // eslint-disable-next-line no-console
+            onTestFailed(() => console.error('---- GENERATED ----\n', regenQuery.replaceAll(/(^|(\n))/gu, '$1|')));
 
-        // Await fsp.writeFile(path.join(__dirname, 'statics', 'sparql-1-1', `${name}.sparql`), regenQuery, 'utf-8');
-        // expect(regenQuery).toEqual(regenMatch);
-        expect(() => parser.parse(regenQuery, context)).not.toThrow();
+            // Await fsp.writeFile(path.join(__dirname, 'statics', suite, `${name}.sparql`), regenQuery, 'utf-8');
+            // expect(regenQuery).toEqual(regenMatch);
+            expect(() => parser.parse(regenQuery, context)).not.toThrow();
+          });
+        }
       });
     }
   });

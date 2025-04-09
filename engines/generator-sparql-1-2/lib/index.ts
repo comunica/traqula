@@ -1,6 +1,7 @@
 import { GeneratorBuilder, type Patch } from '@traqula/core';
 import { sparql11GeneratorBuilder } from '@traqula/generator-sparql-1-1';
-import type { gram as g11 } from '@traqula/rules-sparql-1-1';
+import { gram as g11 } from '@traqula/rules-sparql-1-1';
+import { gram as g12 } from '@traqula/rules-sparql-1-2';
 import type { types as T12 } from '@traqula/rules-sparql-1-2';
 
 const sparql12GeneratorBuilder =
@@ -42,7 +43,7 @@ const sparql12GeneratorBuilder =
       T12.IriTerm | (Patch<g11.IArgList, { args: T12.Expression[] }> & { function: T12.IriTerm });
     [g11.prologue.name]: Pick<T12.BaseQuery, 'base' | 'prefixes'>;
 
-    // [g11.varOrTerm.name]: unchanged;
+    [g11.varOrTerm.name]: T12.Term;
     // [g11.var_.name]: unchanged;
     [g11.graphTerm.name]: T12.GraphTerm;
     [g11.rdfLiteral.name]: T12.LiteralTerm;
@@ -69,7 +70,11 @@ const sparql12GeneratorBuilder =
     [g11.minusGraphPattern.name]: T12.MinusPattern;
     [g11.groupOrUnionGraphPattern.name]: T12.GroupPattern | T12.UnionPattern;
     [g11.filter.name]: T12.FilterPattern;
-  }>();
+  }>()
+    .addRule(g12.tripleTerm)
+    .patchRule(g12.varOrTerm)
+    .deleteRule(g11.graphTerm.name)
+    .patchRule(g12.dataBlockValue);
 
 export class Generator {
   private readonly generator = sparql12GeneratorBuilder.build();

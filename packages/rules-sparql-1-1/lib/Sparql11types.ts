@@ -4,6 +4,9 @@ import type { BlankNode, DataFactory } from 'rdf-data-factory';
 import type { CommonIRIs } from './grammar-helpers/utils';
 import type { Wildcard } from './Wildcard';
 
+// Make sure there cannot be a DefaultGraph in subject and object position
+type RdfJsTerm = Term | BaseQuadTerm;
+export type BaseQuadTerm = RDF.BaseQuad & { subject: RdfJsTerm; predicate: RdfJsTerm; object: RdfJsTerm };
 export type GraphTerm = IriTerm | BlankTerm | LiteralTerm;
 export type Term = GraphTerm | VariableTerm;
 export type VerbA = IriTerm<CommonIRIs.TYPE>;
@@ -348,7 +351,7 @@ export interface SparqlContext {
   /**
    * Data-factory to be used when constructing rdf primitives.
    */
-  dataFactory: DataFactory<RDF.BaseQuad>;
+  dataFactory: DataFactory<BaseQuadTerm>;
   /**
    * Current scoped prefixes. Used for resolving prefixed names.
    */

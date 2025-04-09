@@ -1,3 +1,5 @@
+import fsp from 'node:fs/promises';
+import * as path from 'node:path';
 import { Parser } from '@traqula/parser-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import { positiveTest } from '@traqula/test-utils';
@@ -23,11 +25,13 @@ describe('a SPARQL 1.1 generator', () => {
   describe('positive paths', () => {
     for (const { name, statics } of positiveTest('paths')) {
       it(`can regenerate ${name}`, async({ expect }) => {
+        const regenMatch = await fsp.readFile(path.join(__dirname, 'statics', 'paths', `${name}.sparql`), 'utf-8');
         const { query } = await statics();
+
         const ast = parser.parsePath(query, context);
-        // Console.log('parsed once');
         const regenQuery = generator.generatePath(ast);
-        // Console.log('generated once');
+        // Await fsp.writeFile(path.join(__dirname, 'statics', 'paths', `${name}.sparql`), regenQuery, 'utf-8');
+        expect(regenQuery).toEqual(regenMatch);
         expect(() => parser.parsePath(regenQuery, context)).not.toThrow();
       });
     }
@@ -36,16 +40,17 @@ describe('a SPARQL 1.1 generator', () => {
   describe('positive sparql', () => {
     for (const { name, statics } of positiveTest('sparql-1-1')) {
       it(`can regenerate ${name}`, async({ expect, onTestFailed }) => {
+        const regenMatch = await fsp.readFile(path.join(__dirname, 'statics', 'sparql-1-1', `${name}.sparql`), 'utf-8');
         const { query } = await statics();
 
         // eslint-disable-next-line no-console
         onTestFailed(() => console.error('---- INPUT ----\n', query.replaceAll(/(^|(\n))/gu, '$1|')));
         const ast = parser.parse(query, context);
-        // Console.log('parsed once');
         const regenQuery = generator.generate(ast);
+        // Await fsp.writeFile(path.join(__dirname, 'statics', 'sparql-1-1', `${name}.sparql`), regenQuery, 'utf-8');
         // eslint-disable-next-line no-console
         onTestFailed(() => console.error('---- GENERATED ----\n', regenQuery.replaceAll(/(^|(\n))/gu, '$1|')));
-        // Console.log('generated once');
+        expect(regenQuery).toEqual(regenMatch);
         expect(() => parser.parse(regenQuery, context)).not.toThrow();
       });
     }

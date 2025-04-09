@@ -55,6 +55,15 @@ export class ParserBuilder<Context, Names extends string, RuleDefs extends Parse
     this.rules = startRules;
   }
 
+  public typePatch<Patch extends {[Key in Names]?: any }>():
+  ParserBuilder<Context, Names, {[Key in Names]: Key extends keyof Patch ? (
+    RuleDefs[Key] extends ParserRule<Context, Key, any, infer Par> ? ParserRule<Context, Key, Patch[Key], Par> : never
+  ) : (RuleDefs[Key] extends ParserRule<Context, Key> ? RuleDefs[Key] : never) }> {
+    return <ParserBuilder<Context, Names, {[Key in Names]: Key extends keyof Patch ? (
+      RuleDefs[Key] extends ParserRule<Context, Key, any, infer Par> ? ParserRule<Context, Key, Patch[Key], Par> : never
+    ) : (RuleDefs[Key] extends ParserRule<Context, Key> ? RuleDefs[Key] : never) }>> <unknown> this;
+  }
+
   /**
    * Change the implementation of an existing grammar rule.
    */

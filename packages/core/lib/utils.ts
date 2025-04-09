@@ -15,3 +15,6 @@ export type NamedToken<Name extends string> = TokenType & { name: Name };
 export function createToken<Name extends string>(config: ITokenConfig & { name: Name }): NamedToken<Name> {
   return <TokenType & { name: Name }> chevcT(config);
 }
+
+export type Patch<T extends object, Patch extends {[Key in keyof T ]?: any }> =
+  {[Key in keyof T]: Key extends keyof Patch ? Patch[Key] : T[Key] };

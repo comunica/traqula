@@ -104,6 +104,7 @@ export const sparql11ParserBuilder = ParserBuilder.createBuilder(queryUnitParser
   .deleteRule('queryUnit')
   .deleteRule('query')
   .deleteRule('updateUnit')
+  .deleteRule('update')
   .addRule(queryOrUpdate);
 
 export class Parser extends SparqlParser<SparqlQuery> {

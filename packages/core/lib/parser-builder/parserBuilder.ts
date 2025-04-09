@@ -1,4 +1,4 @@
-import type { ILexerConfig, IParserConfig } from '@chevrotain/types';
+import type { ILexerConfig, IParserConfig, IRecognitionException } from '@chevrotain/types';
 import type { Lexer, TokenType, TokenVocabulary, EmbeddedActionsParser } from 'chevrotain';
 import { LexerBuilder } from '../lexer-builder/LexerBuilder';
 import type { CheckOverlap } from '../utils';
@@ -194,11 +194,35 @@ export class ParserBuilder<Context, Names extends string, RuleDefs extends Parse
     return <any> <unknown> this;
   }
 
-  public build({ tokenVocabulary, parserConfig = {}, lexerConfig = {}, queryPreProcessor = s => s }: {
+  private defaultErrorHandler(input: string, errors: IRecognitionException[]): void {
+    const firstError = errors[0];
+    const messageBuilder: string[] = [ 'Parse error' ];
+    const lineIdx = firstError.token.startLine;
+    if (lineIdx !== undefined) {
+      const errorLine = input.split('\n')[lineIdx - 1];
+      messageBuilder.push(` on line ${lineIdx}
+${errorLine}`);
+      const columnIdx = firstError.token.startColumn;
+      if (columnIdx !== undefined) {
+        messageBuilder.push(`\n${'-'.repeat(columnIdx - 1)}^`);
+      }
+    }
+    messageBuilder.push(`\n${firstError.message}`);
+    throw new Error(messageBuilder.join(''));
+  }
+
+  public build({
+    tokenVocabulary,
+    parserConfig = {},
+    lexerConfig = {},
+    queryPreProcessor = s => s,
+    errorHandler,
+  }: {
     tokenVocabulary: readonly TokenType[];
     parserConfig?: IParserConfig;
     lexerConfig?: ILexerConfig;
     queryPreProcessor?: (input: string) => string;
+    errorHandler?: (errors: IRecognitionException[]) => void;
   }): ParserFromRules<Context, Names, RuleDefs> {
     const lexer: Lexer = LexerBuilder.create().add(...tokenVocabulary).build(lexerConfig);
 
@@ -215,16 +239,19 @@ export class ParserBuilder<Context, Names extends string, RuleDefs extends Parse
     // eslint-disable-next-line ts/no-unnecessary-type-assertion
     for (const rule of <ParserRule<Context, Names>[]> Object.values(this.rules)) {
       selfSufficientParser[rule.name] = <any> ((input: string, context: Context, arg: unknown) => {
-        const lexResult = lexer.tokenize(queryPreProcessor(input));
+        const processedInput = queryPreProcessor(input);
+        const lexResult = lexer.tokenize(processedInput);
 
         // This also resets the parser
         parser.input = lexResult.tokens;
         parser.setContext(context);
         const result = parser[rule.name](context, arg);
         if (parser.errors.length > 0) {
-          // Console.log(lexResult.tokens);
-          throw new Error(`Parse error on line ${parser.errors.map(x => x.token.startLine).join(', ')}
-${parser.errors.map(x => `${x.token.startLine}: ${x.message}`).join('\n')}`);
+          if (errorHandler) {
+            errorHandler(parser.errors);
+          } else {
+            this.defaultErrorHandler(processedInput, parser.errors);
+          }
         }
         return result;
       });

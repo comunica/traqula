@@ -254,6 +254,9 @@ export class Parser extends SparqlParser<T12.SparqlQuery> {
     const parser = sparql12ParserBuilder.build({
       tokenVocabulary: l12.sparql12Tokens.tokenVocabulary,
       queryPreProcessor: sparqlCodepointEscape,
+      parserConfig: {
+        skipValidations: true,
+      },
     });
     super(parser);
   }

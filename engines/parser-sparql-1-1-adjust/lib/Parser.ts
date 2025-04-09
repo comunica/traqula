@@ -22,6 +22,9 @@ export class Parser extends SparqlParser<SparqlQuery> {
     const parser = adjustBuilder.build({
       tokenVocabulary: LexerBuilder.create(l11.sparql11Tokens).addBefore(l11.a, lex.BuiltInAdjust).tokenVocabulary,
       queryPreProcessor: sparqlCodepointEscape,
+      parserConfig: {
+        skipValidations: true,
+      },
     });
     super(parser);
   }

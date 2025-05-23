@@ -1,4 +1,5 @@
-import type { CheckOverlap } from '../utils';
+import { RangeArithmetic } from '../RangeArithmetic';
+import type { Node, CheckOverlap } from '../utils';
 import type { GeneratorFromRules, GenRuleMap, GenRulesToObject, GenNamesFromList } from './builderTypes';
 import type { GeneratorRule, RuleDefArg } from './generatorTypes';
 
@@ -19,7 +20,7 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
    * If a GeneratorBuilder is provided, a new copy will be created.
    */
   public static createBuilder<
-    Rules extends readonly GeneratorRule[] = readonly GeneratorRule[],
+    Rules extends readonly GeneratorRule<any, any, any & Node>[] = readonly GeneratorRule<any, any, any & Node>[],
     Context = Rules[0] extends GeneratorRule<infer context> ? context : never,
     Names extends string = GenNamesFromList<Rules>,
     RuleDefs extends GenRuleMap<Names> = GenRulesToObject<Rules>,
@@ -34,14 +35,14 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
 
   private rules: RuleDefs;
 
-  private constructor(startRules: RuleDefs) {
+  protected constructor(startRules: RuleDefs) {
     this.rules = startRules;
   }
 
   /**
    * Change the implementation of an existing generator rule.
    */
-  public patchRule<U extends Names, RET, ARGS>(patch: GeneratorRule<Context, U, RET, ARGS>):
+  public patchRule<U extends Names, RET extends Node, ARGS>(patch: GeneratorRule<Context, U, RET, ARGS>):
   GeneratorBuilder<Context, Names, {[Key in Names]: Key extends U ?
     GeneratorRule<Context, Key, RET, ARGS> :
       (RuleDefs[Key] extends GeneratorRule<Context, Key> ? RuleDefs[Key] : never)
@@ -57,7 +58,7 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
   /**
    * Add a rule to the grammar. If the rule already exists, but the implementation differs, an error will be thrown.
    */
-  public addRuleRedundant<U extends string, RET, ARGS>(rule: GeneratorRule<Context, U, RET, ARGS>):
+  public addRuleRedundant<U extends string, RET extends Node, ARGS>(rule: GeneratorRule<Context, U, RET, ARGS>):
   GeneratorBuilder<Context, Names | U, {[K in Names | U]: K extends Names ?
       (RuleDefs[K] extends GeneratorRule<Context, K> ? RuleDefs[K] : never)
     : (K extends U ? GeneratorRule<Context, K, RET, ARGS> : never)
@@ -77,7 +78,7 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
   /**
    * Add a rule to the grammar. Will raise a typescript error if the rule already exists in the grammar.
    */
-  public addRule<U extends string, RET, ARGS>(
+  public addRule<U extends string, RET extends Node, ARGS>(
     rule: CheckOverlap<U, Names, GeneratorRule<Context, U, RET, ARGS>>,
   ): GeneratorBuilder<Context, Names | U, {[K in Names | U]: K extends Names ?
       (RuleDefs[K] extends GeneratorRule<Context, K> ? RuleDefs[K] : never)
@@ -86,7 +87,7 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
     return this.addRuleRedundant(rule);
   }
 
-  public addMany<U extends readonly GeneratorRule<Context>[]>(
+  public addMany<U extends readonly GeneratorRule<Context, any, Node>[]>(
     ...rules: CheckOverlap<GenNamesFromList<U>, Names, U>
   ): GeneratorBuilder<
     Context,
@@ -173,37 +174,108 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
 
   public build(): GeneratorFromRules<Context, Names, RuleDefs> {
     const rules: Record<string, GeneratorRule<Context>> = this.rules;
-
-    class Generator {
-      private __context: Context | undefined = undefined;
-      public setContext(context: Context): void {
-        this.__context = context;
-      }
-
-      private getSafeContext(): Context {
-        return <Context> this.__context;
-      }
-
-      public constructor() {
-        const selfRef: RuleDefArg = {
-          SUBRULE: (cstDef, input, arg) => {
-            const def = rules[cstDef.name];
-            if (!def) {
-              throw new Error(`Rule ${cstDef.name} not found`);
-            }
-            return def.gImpl(selfRef)(input, this.getSafeContext(), arg);
-          },
-        };
-
-        for (const rule of Object.values(rules)) {
-          this[<keyof (typeof this)> rule.name] = <any> ((input: any, context: Context, args: any) => {
-            this.setContext(context);
-            return rule.gImpl(selfRef)(input, this.getSafeContext(), args);
-          });
-        }
-      }
-    }
-
-    return <GeneratorFromRules<Context, Names, RuleDefs>> new Generator();
+    return <GeneratorFromRules<Context, Names, RuleDefs>> new Generator(rules);
   }
+}
+
+export class Generator<Context, Names extends string, RuleDefs extends GenRuleMap<Names>> {
+  protected __context: Context | undefined = undefined;
+  protected readonly sourceStack: { source: string; generatedUntil: number; allowedRanges: RangeArithmetic }[] = [];
+  protected readonly stringBuilder: string[] = [];
+  protected readonly skipRanges: [number, number][] = [];
+
+  public constructor(protected rules: RuleDefs) {
+    // eslint-disable-next-line ts/no-unnecessary-type-assertion
+    for (const rule of <GeneratorRule[]> Object.values(rules)) {
+      // Define function implementation
+      this[<keyof (typeof this)> rule.name] =
+        <any> ((input: any, context: Context & { skipRanges: [number, number][] }, args: any) => {
+          this.stringBuilder.length = 0;
+          this.sourceStack.length = 0;
+          this.skipRanges.length = 0;
+          this.skipRanges.push(...context.skipRanges);
+          this.setContext(context);
+
+          this.subrule(rule, input, args);
+
+          return this.stringBuilder.join('');
+        });
+    }
+  }
+
+  public setContext(context: Context): void {
+    this.__context = context;
+  }
+
+  protected getSafeContext(): Context {
+    return <Context> this.__context;
+  }
+
+  protected readonly subrule: RuleDefArg['SUBRULE'] = (cstDef, ast, arg) => {
+    const def = this.rules[<Names> cstDef.name];
+    if (!def) {
+      throw new Error(`Rule ${cstDef.name} not found`);
+    }
+    if (ast.loc && ast.loc.noStringManifestation) {
+      return;
+    }
+    if (ast.loc?.source) {
+      this.pushSource(ast.loc.source);
+    }
+    if (ast.loc) {
+      this.catchup(ast.loc.start);
+    }
+    def.gImpl({
+      SUBRULE: this.subrule,
+      PRINT: this.print,
+      PRINT_WORD: this.printWord,
+      CATCHUP: this.catchup,
+      PUSH_SOURCE: this.pushSource,
+      POP_SOURCE: this.popSource,
+    })(ast, this.getSafeContext(), arg);
+    // TODO: You cannot close at end because scopes dont work like that for blankNodes like `[ ... ]`
+    //    That than gives errors since you don't close at the time you will insert something new.
+    // if (ast.loc) {
+    //   this.catchup(ast.loc.end);
+    // }
+    if (ast.loc?.source) {
+      this.popSource();
+    }
+  };
+
+  protected readonly catchup: RuleDefArg['CATCHUP'] = (until) => {
+    const currentSource = this.sourceStack.at(-1);
+    if (!currentSource) {
+      throw new Error('No source to catchup to');
+    }
+    const { source, generatedUntil, allowedRanges } = currentSource;
+    for (const range of allowedRanges.projection(generatedUntil, until)) {
+      this.stringBuilder.push(source.slice(...range));
+    }
+    currentSource.generatedUntil = Math.max(generatedUntil, until);
+  };
+
+  protected readonly pushSource: RuleDefArg['PUSH_SOURCE'] = (source) => {
+    const allowedRanges = new RangeArithmetic(0, source.length);
+    for (const skip of this.skipRanges) {
+      allowedRanges.subtract(...skip);
+    }
+    this.sourceStack.push({ source, generatedUntil: 0, allowedRanges });
+  };
+
+  protected readonly popSource: RuleDefArg['POP_SOURCE'] = () => {
+    this.catchup(Number.MAX_VALUE);
+    this.sourceStack.pop();
+  };
+
+  protected readonly print: RuleDefArg['PRINT'] = (...args) => {
+    this.stringBuilder.push(...args.filter(x => x.length > 0));
+  };
+
+  private readonly printWord: RuleDefArg['PRINT_WORD'] = (...args) => {
+    if (this.stringBuilder.length > 0 && this.stringBuilder.at(-1)!.at(-1) !== ' ') {
+      this.stringBuilder.push(' ');
+    }
+    this.stringBuilder.push(...args, ' ');
+  };
 }

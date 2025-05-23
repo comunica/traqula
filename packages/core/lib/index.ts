@@ -11,3 +11,4 @@ export * from './parser-builder/parserBuilder';
 export * from './parser-builder/ruleDefTypes';
 // Export general types
 export * from './utils';
+export * from './RangeArithmetic';

@@ -1,12 +1,12 @@
+import type { IToken } from 'chevrotain';
 import { CommonIRIs } from '../grammar-helpers/utils';
 import * as l from '../lexer';
-import type { Path, PatternBgp, TermVariable, Triple } from '../RoundTripTypes';
+import type { Path, PatternBgp, TermVariable, Triple, Wrap } from '../RoundTripTypes';
 import type {
   SparqlGrammarRule,
   SparqlRule,
 } from '../Sparql11types';
-import type { ITOS, Wrap } from '../TypeHelpersRTT';
-import { blank, var_, varOrTerm, verb } from './general';
+import { var_, varOrTerm, verb } from './general';
 import { path } from './propertyPaths';
 
 export interface TriplePart {
@@ -15,12 +15,12 @@ export interface TriplePart {
 }
 
 function triplesDotSeperated(triplesSameSubjectSubrule: SparqlGrammarRule<string, Triple[]>):
-SparqlGrammarRule<string, Wrap<Triple[]> & { ignored: ITOS[] }>['impl'] {
+SparqlGrammarRule<string, Wrap<Triple[]>>['impl'] {
   return ({ ACTION, AT_LEAST_ONE, SUBRULE, CONSUME, OPTION }) => () => {
     const triples: Triple[] = [];
-    const ignored: ITOS[] = [];
 
     let parsedDot = true;
+    let dotToken: undefined | IToken;
     AT_LEAST_ONE({
       GATE: () => parsedDot,
       DEF: () => {
@@ -30,14 +30,15 @@ SparqlGrammarRule<string, Wrap<Triple[]> & { ignored: ITOS[] }>['impl'] {
           triples.push(...template);
         });
         OPTION(() => {
-          CONSUME(l.symbols.dot);
-          const i0 = SUBRULE(blank, undefined);
-          ignored.push(i0);
-          parsedDot = true;
+          dotToken = CONSUME(l.symbols.dot);
         });
       },
     });
-    return { val: triples, ignored };
+    return ACTION(() => {
+      const start = triples[0].loc!.start;
+      const end = dotToken === undefined ? triples.at(-1)!.loc!.end : dotToken.endOffset!;
+      return { val: triples, start, end };
+    });
   };
 }
 
@@ -47,27 +48,24 @@ SparqlGrammarRule<string, Wrap<Triple[]> & { ignored: ITOS[] }>['impl'] {
 export const triplesBlock: SparqlRule<'triplesBlock', PatternBgp> = <const>{
   name: 'triplesBlock',
   impl: implArgs => (C) => {
-    const { val, ignored } = triplesDotSeperated(triplesSameSubjectPath)(implArgs)(C, undefined);
-    return {
-      type: 'pattern',
-      patternType: 'bgp',
-      triples: val,
-      RTT: {
-        ignored,
-      },
-    };
+    const triples = triplesDotSeperated(triplesSameSubjectPath)(implArgs)(C, undefined);
+    return implArgs.ACTION(() => C.factory.patternBgp(triples.val, C.factory.sourceLocation(triples)));
   },
-  gImpl: () => ast => ast.triples.map((triple) => {
-    const { RTT } = triple;
-    // Discover kind of triple
-    if (!RTT.shareSubjectDef && !RTT.sharePrefixDef) {
-      return '';
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+    for (const triple of ast.triples) {
+      SUBRULE(varOrTerm, triple.subject, undefined);
+      if (F.isTerm(triple.predicate) && F.isTermVariable(triple.predicate)) {
+        SUBRULE(var_, triple.predicate, undefined);
+      } else {
+        SUBRULE(path, triple.predicate, undefined);
+      }
+      SUBRULE(varOrTerm, triple.object, undefined);
+
+      if (!ast.loc) {
+        PRINT_WORD('.');
+      }
     }
-    if (RTT.shareSubjectDef && !RTT.sharePrefixDef) {
-      return '';
-    }
-    return '';
-  }).join(''),
+  },
 };
 
 /**
@@ -101,7 +99,7 @@ export const triplesSameSubjectPath = triplesSameSubjectImpl('triplesSameSubject
 /**
  * [[52]](https://www.w3.org/TR/sparql11-query/#rTriplesTemplate)
  */
-export const triplesTemplate: SparqlGrammarRule<'triplesTemplate', Wrap<Triple[]> & { ignored: ITOS[] }> = <const> {
+export const triplesTemplate: SparqlGrammarRule<'triplesTemplate', Wrap<Triple[]>> = <const> {
   name: 'triplesTemplate',
   impl: triplesDotSeperated(triplesSameSubject),
 };
@@ -135,7 +133,6 @@ function propertyListNotEmptyImplementation<T extends string>(
     name,
     impl: ({ ACTION, CONSUME, AT_LEAST_ONE, SUBRULE1, MANY2, OR1 }) => (_, arg) => {
       const result: Triple[] = [];
-      let i0: ITOS = [];
       let parsedSemi = true;
 
       AT_LEAST_ONE({
@@ -153,24 +150,13 @@ function propertyListNotEmptyImplementation<T extends string>(
             ACTION(() => ({ subject: arg.subject, predicate })),
           );
 
-          const ignored: ITOS[] = [];
           MANY2(() => {
             CONSUME(l.symbols.semi);
-            const ix = SUBRULE1(blank, undefined);
             parsedSemi = true;
-            ignored.push(ix);
           });
 
           ACTION(() => {
-            const [ head, ...tail ] = triples;
-            Object.assign(head.RTT, {
-              shareSubjectDef: true,
-              sharePrefixDef: false,
-              i0,
-              ignored,
-            });
-            result.push(head, ...tail);
-            i0 = [];
+            result.push(...triples);
           });
         },
       });
@@ -207,30 +193,20 @@ SparqlGrammarRule<T, Triple[], Pick<Triple, 'subject' | 'predicate'>> {
     name,
     impl: ({ ACTION, SUBRULE, AT_LEAST_ONE, OPTION, CONSUME }) => (_, arg) => {
       const objects: Triple[] = [];
-      let parsedComma = false;
-      let first = true;
-      let ix: ITOS = [];
+      let parsedComma = true;
       AT_LEAST_ONE({
-        GATE: () => parsedComma || first,
+        GATE: () => parsedComma,
         DEF: () => {
-          first = false;
           parsedComma = false;
           const objectTriples = SUBRULE(allowPaths ? objectPath : object, arg);
 
           OPTION(() => {
             CONSUME(l.symbols.comma);
-            ix = SUBRULE(blank, undefined);
             parsedComma = true;
           });
 
           ACTION(() => {
-            const [ objectTriple, ...triples ] = objectTriples;
-            Object.assign(objectTriple.RTT, {
-              shareSubjectDef: true,
-              sharePrefixDef: true,
-              i0: ix,
-            });
-            objects.push(objectTriple, ...triples);
+            objects.push(...objectTriples);
           });
         },
       });
@@ -288,29 +264,20 @@ export const triplesNodePath: SparqlGrammarRule<'triplesNodePath', TriplePart> =
 function blankNodePropertyListImpl<T extends string>(name: T, allowPaths: boolean): SparqlGrammarRule<T, TriplePart> {
   return {
     name,
-    impl: ({ ACTION, SUBRULE, CONSUME, SUBRULE1, SUBRULE2 }) => (C) => {
-      CONSUME(l.symbols.LSquare);
-      const i0 = SUBRULE1(blank, undefined);
-      const blankNode = ACTION(() => ({
-        ...C.factory.blankNodeImplicit(),
-        RTT: {
-          triplePart: {
-            i0,
-            i1: C.factory.itos(),
-            blankNodeListSize: 0,
-          },
-        },
-      } satisfies TriplePart['node']));
+    impl: ({ ACTION, SUBRULE, CONSUME }) => (C) => {
+      const startToken = CONSUME(l.symbols.LSquare);
+
+      const blankNode = ACTION(() =>
+        C.factory.blankNode(undefined, C.factory.sourceLocation(startToken)));
+
       const propList = SUBRULE(
         allowPaths ? propertyListPathNotEmpty : propertyListNotEmpty,
         { subject: blankNode },
       );
-      CONSUME(l.symbols.RSquare);
-      const i1 = SUBRULE2(blank, undefined);
+      const endToken = CONSUME(l.symbols.RSquare);
 
       return ACTION(() => {
-        blankNode.RTT.triplePart.blankNodeListSize = propList.length;
-        blankNode.RTT.triplePart.i1 = i1;
+        Object.assign(blankNode.loc!, C.factory.sourceLocation(startToken, endToken));
         return {
           node: blankNode,
           triples: propList,
@@ -329,61 +296,47 @@ export const blankNodePropertyListPath = blankNodePropertyListImpl('blankNodePro
 function collectionImpl<T extends string>(name: T, allowPaths: boolean): SparqlGrammarRule<T, TriplePart> {
   return {
     name,
-    impl: ({ ACTION, AT_LEAST_ONE, SUBRULE, CONSUME, SUBRULE1, SUBRULE2 }) => (C) => {
+    impl: ({ ACTION, AT_LEAST_ONE, SUBRULE, CONSUME }) => (C) => {
       // Construct a [cons list](https://en.wikipedia.org/wiki/Cons#Lists),
       // here called a [RDF collection](https://www.w3.org/TR/sparql11-query/#collections).
       const terms: TriplePart[] = [];
 
-      CONSUME(l.symbols.LParen);
-      const i0 = SUBRULE1(blank, undefined);
+      const startToken = CONSUME(l.symbols.LParen);
+
       AT_LEAST_ONE(() => {
         terms.push(SUBRULE(allowPaths ? graphNodePath : graphNode, undefined));
       });
-      CONSUME(l.symbols.RParen);
-      const i1 = SUBRULE2(blank, undefined);
+      const endToken = CONSUME(l.symbols.RParen);
 
       return ACTION(() => {
+        const F = C.factory;
         const triples: Triple[] = [];
+        // The triples created in your recursion
         const appendTriples: Triple[] = [];
+        const predFirst = F.namedNode(CommonIRIs.FIRST, undefined, F.noStringMaterialization());
+        const predRest = F.namedNode(CommonIRIs.REST, undefined, F.noStringMaterialization());
+        const predNil = F.namedNode(CommonIRIs.NIL, undefined, F.noStringMaterialization());
 
-        const listHead = {
-          ...C.factory.blankNodeImplicit(),
-          RTT: {
-            triplePart: {
-              i0,
-              i1,
-              collectionSize: 0,
-            },
-          },
-        } satisfies TriplePart['node'];
+        const listHead = F.blankNode(undefined, F.sourceLocation(startToken, endToken));
         let iterHead: Triple['object'] = listHead;
-        const predFirst = C.factory.namedNode(C.factory.itos(), CommonIRIs.FIRST);
-        const predRest = C.factory.namedNode(C.factory.itos(), CommonIRIs.REST);
         for (const [ index, term ] of terms.entries()) {
-          const headTriple: Triple = C.factory.triple(iterHead, predFirst, term.node);
+          const lastInList = index === terms.length - 1;
+
+          const headTriple: Triple = F.triple(iterHead, predFirst, term.node);
           triples.push(headTriple);
           appendTriples.push(...term.triples);
 
           // If not the last, create new iterHead, otherwise, close list
-          if (index === terms.length - 1) {
-            const nilTriple: Triple = C.factory.triple(
-              iterHead,
-              predRest,
-              C.factory.namedNode(C.factory.itos(), CommonIRIs.NIL),
-            );
+          if (lastInList) {
+            const nilTriple: Triple = F.triple(iterHead, predRest, predNil);
             triples.push(nilTriple);
           } else {
-            const tail = C.factory.blankNodeImplicit();
-            const linkTriple: Triple = C.factory.triple(
-              iterHead,
-              predRest,
-              tail,
-            );
+            const tail = F.blankNode(undefined, F.noStringMaterialization());
+            const linkTriple: Triple = F.triple(iterHead, predRest, tail);
             triples.push(linkTriple);
             iterHead = tail;
           }
         }
-        listHead.RTT.triplePart.collectionSize = terms.length;
         return {
           node: listHead,
           triples: [ ...triples, ...appendTriples ],

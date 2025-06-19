@@ -5,8 +5,10 @@ export type Range<A extends number = number, B extends number = number> = [A, B]
 
 export class RangeArithmetic {
   public ranges: Range[] = [];
+  private readonly initRange: Range;
   public constructor(start: number, end: number) {
-    this.ranges.push([ start, end ]);
+    this.initRange = RangeArithmetic.validate(start, end);
+    this.ranges.push(this.initRange);
   }
 
   private static validate(...range: Range): Range {
@@ -21,7 +23,7 @@ export class RangeArithmetic {
     const [ sMinus, eMinus ] = RangeArithmetic.validate(...range);
 
     return included.flatMap(([ sCur, eCur ]) => {
-    // Split in half
+      // Split in half
       if (sCur < sMinus && eMinus < eCur) {
         return [[ sCur, sMinus ], [ eMinus, eCur ]];
       }
@@ -40,6 +42,16 @@ export class RangeArithmetic {
 
   public subtract(...range: Range): this {
     this.ranges = RangeArithmetic.substractRange(this.ranges, ...range);
+    return this;
+  }
+
+  public negate(): this {
+    // Can be optimized
+    let iter = [ this.initRange ];
+    for (const range of this.ranges) {
+      iter = RangeArithmetic.substractRange(iter, ...range);
+    }
+    this.ranges = iter;
     return this;
   }
 

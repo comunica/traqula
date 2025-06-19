@@ -8,13 +8,14 @@ interface Parser<ParseRet> {
 }
 
 export function completeParseContext(
-  context: Partial<SparqlContext & { skipRanges: [number, number][] }>,
-): SparqlContext & { skipRanges: [number, number][] } {
+  context: Partial<SparqlContext & { origSource: string; offset?: number }>,
+): SparqlContext & { origSource: string; offset?: number } {
   return {
     factory: context.factory ?? new TraqulaFactory(),
     baseIRI: context.baseIRI,
     prefixes: { ...context.prefixes },
-    skipRanges: context.skipRanges ?? [],
+    origSource: context.origSource ?? '',
+    offset: context.offset,
     parseMode: context.parseMode ? new Set(context.parseMode) : new Set([ 'canParseVars', 'canCreateBlankNodes' ]),
     skipValidation: context.skipValidation ?? false,
   };

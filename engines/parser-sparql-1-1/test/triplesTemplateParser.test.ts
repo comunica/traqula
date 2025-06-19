@@ -1,11 +1,11 @@
-import type { SparqlContext, Triple, Wrap } from '@traqula/rules-sparql-1-1';
+import type { SparqlContext, TripleNesting, Wrap } from '@traqula/rules-sparql-1-1';
 import { TraqulaFactory, completeParseContext, lex as l } from '@traqula/rules-sparql-1-1';
 import { describe, it } from 'vitest';
 import { triplesTemplateParserBuilder } from '../lib';
 
 describe('a SPARQL 1.1 objectlist parser', () => {
   const F = new TraqulaFactory();
-  function parse(query: string, context: Partial<SparqlContext>): Wrap<Triple[]> {
+  function parse(query: string, context: Partial<SparqlContext>): Wrap<TripleNesting[]> {
     const parser = triplesTemplateParserBuilder.consumeToParser({
       tokenVocabulary: l.sparql11Tokens.build(),
     });

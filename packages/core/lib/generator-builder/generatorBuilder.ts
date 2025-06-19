@@ -1,5 +1,6 @@
-import { RangeArithmetic } from '../RangeArithmetic';
-import type { Node, CheckOverlap } from '../utils';
+import { CoreFactory } from '../CoreFactory';
+import type { Node } from '../nodeTypings';
+import type { CheckOverlap } from '../utils';
 import type { GeneratorFromRules, GenRuleMap, GenRulesToObject, GenNamesFromList } from './builderTypes';
 import type { GeneratorRule, RuleDefArg } from './generatorTypes';
 
@@ -179,21 +180,21 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
 }
 
 export class Generator<Context, Names extends string, RuleDefs extends GenRuleMap<Names>> {
+  protected readonly factory = new CoreFactory();
   protected __context: Context | undefined = undefined;
-  protected readonly sourceStack: { source: string; generatedUntil: number; allowedRanges: RangeArithmetic }[] = [];
+  protected origSource = '';
+  protected generatedUntil = 0;
   protected readonly stringBuilder: string[] = [];
-  protected readonly skipRanges: [number, number][] = [];
 
   public constructor(protected rules: RuleDefs) {
     // eslint-disable-next-line ts/no-unnecessary-type-assertion
     for (const rule of <GeneratorRule[]> Object.values(rules)) {
       // Define function implementation
       this[<keyof (typeof this)> rule.name] =
-        <any> ((input: any, context: Context & { skipRanges: [number, number][] }, args: any) => {
+        <any> ((input: any, context: Context & { origSource: string; offset?: number }, args: any) => {
           this.stringBuilder.length = 0;
-          this.sourceStack.length = 0;
-          this.skipRanges.length = 0;
-          this.skipRanges.push(...context.skipRanges);
+          this.origSource = context.origSource;
+          this.generatedUntil = context?.offset ?? 0;
           this.setContext(context);
 
           this.subrule(rule, input, args);
@@ -216,56 +217,41 @@ export class Generator<Context, Names extends string, RuleDefs extends GenRuleMa
     if (!def) {
       throw new Error(`Rule ${cstDef.name} not found`);
     }
-    if (ast.loc && ast.loc.noStringManifestation) {
+    if (this.factory.isSourceLocationNoMaterialize(ast.loc)) {
       return;
     }
-    if (ast.loc?.source) {
-      this.pushSource(ast.loc.source);
+    if (this.factory.isSourceLocationStringReplace(ast.loc)) {
+      this.catchup(ast.loc.start);
+      this.print(ast.loc.newSource);
+      this.generatedUntil = ast.loc.end;
+      return;
     }
-    if (ast.loc) {
+    if (this.factory.isSourceLocationNodeReplace(ast.loc) || this.factory.isSourceLocationSource(ast.loc)) {
       this.catchup(ast.loc.start);
     }
+    // If autoGenerate - do nothing
+
+    // Do call generation
     def.gImpl({
       SUBRULE: this.subrule,
       PRINT: this.print,
       PRINT_WORD: this.printWord,
       CATCHUP: this.catchup,
-      PUSH_SOURCE: this.pushSource,
-      POP_SOURCE: this.popSource,
     })(ast, this.getSafeContext(), arg);
-    // TODO: You cannot close at end because scopes dont work like that for blankNodes like `[ ... ]`
-    //    That than gives errors since you don't close at the time you will insert something new.
-    // if (ast.loc) {
-    //   this.catchup(ast.loc.end);
-    // }
-    if (ast.loc?.source) {
-      this.popSource();
+
+    if (this.factory.isSourceLocationNodeReplace(ast.loc)) {
+      this.generatedUntil = ast.loc.end;
+    } else if (this.factory.isSourceLocationSource(ast.loc)) {
+      this.catchup(ast.loc.end);
     }
   };
 
   protected readonly catchup: RuleDefArg['CATCHUP'] = (until) => {
-    const currentSource = this.sourceStack.at(-1);
-    if (!currentSource) {
-      throw new Error('No source to catchup to');
+    const start = this.generatedUntil;
+    if (start < until) {
+      this.stringBuilder.push(this.origSource.slice(start, until));
     }
-    const { source, generatedUntil, allowedRanges } = currentSource;
-    for (const range of allowedRanges.projection(generatedUntil, until)) {
-      this.stringBuilder.push(source.slice(...range));
-    }
-    currentSource.generatedUntil = Math.max(generatedUntil, until);
-  };
-
-  protected readonly pushSource: RuleDefArg['PUSH_SOURCE'] = (source) => {
-    const allowedRanges = new RangeArithmetic(0, source.length);
-    for (const skip of this.skipRanges) {
-      allowedRanges.subtract(...skip);
-    }
-    this.sourceStack.push({ source, generatedUntil: 0, allowedRanges });
-  };
-
-  protected readonly popSource: RuleDefArg['POP_SOURCE'] = () => {
-    this.catchup(Number.MAX_VALUE);
-    this.sourceStack.pop();
+    this.generatedUntil = Math.max(this.generatedUntil, until);
   };
 
   protected readonly print: RuleDefArg['PRINT'] = (...args) => {

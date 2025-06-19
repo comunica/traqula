@@ -30,9 +30,10 @@ export type Quads = PatternBgp | GraphQuads;
 export type GraphQuads = Node & {
   type: 'graph';
   graph: TermIri | TermVariable;
-  triples: Triple[];
+  triples: TripleNesting[];
 };
 
+// https://www.w3.org/TR/sparql11-query/#rUpdate1
 export type UpdateOperationBase = Node & { type: 'updateOperation'; operationType: string };
 export type UpdateOperationLoad = UpdateOperationBase & {
   operationType: 'load';
@@ -60,7 +61,6 @@ type UpdateOperationAddMoveCopy = UpdateOperationBase & {
 export type UpdateOperationAdd = UpdateOperationAddMoveCopy & { operationType: 'add' };
 export type UpdateOperationMove = UpdateOperationAddMoveCopy & { operationType: 'move' };
 export type UpdateOperationCopy = UpdateOperationAddMoveCopy & { operationType: 'copy' };
-
 type UpdateOperationInsertDeleteDelWhere = UpdateOperationBase & {
   operationType: 'insertdata' | 'deletedata' | 'deletewhere';
   data: Quads[];
@@ -68,7 +68,6 @@ type UpdateOperationInsertDeleteDelWhere = UpdateOperationBase & {
 export type UpdateOperationInsertData = UpdateOperationInsertDeleteDelWhere & { operationType: 'insertdata' };
 export type UpdateOperationDeleteData = UpdateOperationInsertDeleteDelWhere & { operationType: 'deletedata' };
 export type UpdateOperationDeleteWhere = UpdateOperationInsertDeleteDelWhere & { operationType: 'deletewhere' };
-
 export type UpdateOperationModify = UpdateOperationBase & {
   operationType: 'modify';
   graph: TermIri | undefined;
@@ -90,6 +89,7 @@ export type UpdateOperation =
   | UpdateOperationDeleteWhere
   | UpdateOperationModify;
 
+// https://www.w3.org/TR/sparql11-query/#rUpdate
 export type Update = Node & {
   type: 'update';
   updates: {
@@ -98,21 +98,17 @@ export type Update = Node & {
   }[];
 };
 
+// https://www.w3.org/TR/sparql11-query/#rQueryUnit
 export type QueryBase = Node & {
   type: 'query';
+  queryType: string;
+
   context?: ContextDefinition[];
   values?: PatternValues;
-
-  queryType: string;
   solutionModifiers?: SolutionModifiers;
   datasets?: DatasetClauses;
   where?: Pattern[];
 };
-
-export type Wildcard = Node & {
-  type: 'wildcard';
-};
-
 export type QuerySelect = QueryBase & {
   queryType: 'select';
   variables: (TermVariable | PatternBind)[] | [Wildcard];
@@ -121,7 +117,7 @@ export type QuerySelect = QueryBase & {
 };
 export type QueryConstruct = QueryBase & {
   queryType: 'construct';
-  template: Triple[];
+  template: TripleNesting[];
 };
 export type QueryDescribe = QueryBase & {
   queryType: 'describe';
@@ -130,24 +126,53 @@ export type QueryDescribe = QueryBase & {
 export type QueryAsk = QueryBase & {
   queryType: 'ask';
 };
-
 export type Query =
   | QuerySelect
   | QueryConstruct
   | QueryDescribe
   | QueryAsk;
 
+// https://www.w3.org/TR/sparql11-query/#rDatasetClause
 export type DatasetClauses = Node & {
   type: 'datasetClauses';
   default: TermIri[];
   named: TermIri[];
 };
 
-export type Triple = Node & {
+// https://www.w3.org/TR/sparql11-query/#rGraphNode
+export type TripleCollectionBase = Node & {
+  type: 'tripleCollection';
+  triples: TripleNesting[];
+  tripleCollectionType: string;
+  identifier: Term;
+};
+/**
+ * The subject of the triples does not have a string manifestation.
+ */
+export type TripleCollectionList = TripleCollectionBase & {
+  tripleCollectionType: 'list';
+  identifier: TermBlank;
+};
+/**
+ * Bot subject and predicate of the triples do not have a string manifestation.
+ */
+export type TripleCollectionBlankNodeProperties = TripleCollectionBase & {
+  tripleCollectionType: 'blankNodeProperties';
+  identifier: TermBlank;
+};
+export type TripleCollection =
+  | TripleCollectionList
+  | TripleCollectionBlankNodeProperties;
+
+// https://www.w3.org/TR/sparql11-query/#rGraphNode
+export type GraphNode = Term | TripleCollection;
+
+// https://www.w3.org/TR/sparql11-query/#rTriplesBlock
+export type TripleNesting = Node & {
   type: 'triple';
-  subject: Term;
+  subject: GraphNode;
   predicate: TermIri | TermVariable | Path;
-  object: Term;
+  object: GraphNode;
 };
 
 export type PatternBase = Node & { type: 'pattern'; patternType: string };
@@ -179,7 +204,10 @@ export type PatternUnion = PatternBase & {
 };
 export type PatternBgp = PatternBase & {
   patternType: 'bgp';
-  triples: Triple[];
+  /**
+   * Only the first appearance of a subject and predicate should have a string manifestation
+   */
+  triples: TripleNesting[];
 };
 export type PatternBind = PatternBase & {
   patternType: 'bind';
@@ -339,6 +367,10 @@ export type ContextDefinitionBaseDecl = ContextDefinitionBase & {
   value: TermIriFull;
 };
 export type ContextDefinition = ContextDefinitionPrefixDecl | ContextDefinitionBaseDecl;
+
+export type Wildcard = Node & {
+  type: 'wildcard';
+};
 
 type TermBase = Node & { type: 'term' };
 type TermLiteralBase = TermBase & {

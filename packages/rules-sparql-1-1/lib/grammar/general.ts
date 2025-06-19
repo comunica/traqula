@@ -76,7 +76,7 @@ export const graphTerm: SparqlRule<'graphTerm', GraphTerm> = <const> {
     { ALT: () => {
       const tokenNil = CONSUME(l.terminals.nil);
       return ACTION(() =>
-        C.factory.namedNode(CommonIRIs.NIL, undefined, C.factory.sourceLocation(tokenNil)));
+        C.factory.namedNode(C.factory.sourceLocation(tokenNil), CommonIRIs.NIL));
     } },
   ]),
   gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {

@@ -1,9 +1,7 @@
-import type { SourceLocation, Node } from '@traqula/core';
-import type { IToken } from 'chevrotain';
+import type { SourceLocation } from '@traqula/core';
+import { CoreFactory } from '@traqula/core';
 
 import type {
-  Wildcard,
-
   ContextDefinition,
   ContextDefinitionBaseDecl,
   ContextDefinitionPrefixDecl,
@@ -16,6 +14,7 @@ import type {
   ExpressionFunctionCall,
   ExpressionOperation,
   ExpressionPatternOperation,
+  GraphNode,
   GraphRef,
   GraphRefDefault,
   GraphRefSpecific,
@@ -25,6 +24,7 @@ import type {
   PathNegated,
   PathNegatedElt,
   Pattern,
+  PatternBgp,
   PatternBind,
   PatternFilter,
   PatternGroup,
@@ -44,7 +44,9 @@ import type {
   TermLiteralStr,
   TermLiteralTyped,
   TermVariable,
-  Triple,
+  TripleCollectionBlankNodeProperties,
+  TripleCollectionList,
+  TripleNesting,
   UpdateOperationAdd,
   UpdateOperationClear,
   UpdateOperationCopy,
@@ -56,51 +58,13 @@ import type {
   UpdateOperationLoad,
   UpdateOperationModify,
   UpdateOperationMove,
-  PatternBgp,
+  Wildcard,
 } from './RoundTripTypes';
 
-export class TraqulaFactory {
+export class TraqulaFactory extends CoreFactory {
   private blankNodeCounter = 0;
-  public constructor() {}
 
-  public sourceLocation(source: string): SourceLocation;
-  public sourceLocation(...tokens: IToken[]): SourceLocation | undefined;
-  public sourceLocation(...location: SourceLocation []): SourceLocation | undefined;
-  public sourceLocation(...args: IToken[] | SourceLocation [] | [string]): SourceLocation | undefined {
-    if (args.length === 0) {
-      return undefined;
-    }
-    if (typeof args[0] === 'string') {
-      const source = args[0];
-      return { source, start: 0, end: source.length };
-    }
-    if (this.isSourceLocation(args[0])) {
-      const cast = <SourceLocation[]> args;
-      const start = cast.find(x => x.source === undefined)?.start;
-      const end = cast.reverse().find(x => x.source === undefined)?.end;
-      return start && end ? { start, end } : undefined;
-    }
-    const cast = <IToken[]> args;
-    return {
-      source: undefined,
-      start: cast[0].startOffset,
-      end: cast.at(-1)!.endOffset! + 1,
-    };
-  }
-
-  public isSourceLocation(x: object): x is SourceLocation {
-    return 'start' in x && 'end' in x && typeof x.start === 'number' && typeof x.end === 'number';
-  }
-
-  public hasSourceLocation(x: object): x is Pick<Node, 'loc'> {
-    return 'loc' in x && typeof x.loc === 'object' && x.loc !== null && this.isSourceLocation(x.loc);
-  }
-
-  public noStringMaterialization(): SourceLocation {
-    return { noStringManifestation: true, start: 0, end: 0 };
-  }
-
-  public prefixDecl(key: string, value: TermIriFull, loc?: SourceLocation): ContextDefinitionPrefixDecl {
+  public prefixDecl(loc: SourceLocation, key: string, value: TermIriFull): ContextDefinitionPrefixDecl {
     return {
       type: 'contextDef',
       contextType: 'prefix',
@@ -110,13 +74,17 @@ export class TraqulaFactory {
     };
   }
 
-  public baseDecl(img1: string, value: TermIriFull, loc?: SourceLocation): ContextDefinitionBaseDecl {
+  public baseDecl(loc: SourceLocation, img1: string, value: TermIriFull): ContextDefinitionBaseDecl {
     return {
       type: 'contextDef',
       contextType: 'base',
       value,
       loc,
     };
+  }
+
+  public graphNodeIdentifier(graphNode: GraphNode): Term {
+    return graphNode.type === 'tripleCollection' ? graphNode.identifier : graphNode;
   }
 
   public isBaseDecl(x: ContextDefinition): x is ContextDefinitionBaseDecl {
@@ -127,7 +95,7 @@ export class TraqulaFactory {
     return x.contextType === 'prefix';
   }
 
-  public variable(value: string, loc?: SourceLocation): TermVariable {
+  public variable(value: string, loc: SourceLocation): TermVariable {
     return {
       type: 'term',
       termType: 'Variable',
@@ -203,7 +171,7 @@ export class TraqulaFactory {
   public expressionOperation<Args extends Expression[]>(
     operator: string,
     args: Args,
-    loc?: SourceLocation,
+    loc: SourceLocation,
   ): ExpressionOperation & { args: Args } {
     return {
       type: 'expression',
@@ -217,7 +185,7 @@ export class TraqulaFactory {
   public expressionPatternOperation<Args extends Pattern[]>(
     operator: string,
     args: Args,
-    loc?: SourceLocation,
+    loc: SourceLocation,
   ): ExpressionPatternOperation & { args: Args } {
     return {
       type: 'expression',
@@ -229,17 +197,17 @@ export class TraqulaFactory {
   }
 
   public triple(
-    subject: Triple['subject'],
-    predicate: Triple['predicate'],
-    object: Triple['object'],
+    subject: TripleNesting['subject'],
+    predicate: TripleNesting['predicate'],
+    object: TripleNesting['object'],
     loc?: SourceLocation,
-  ): Triple {
+  ): TripleNesting {
     return {
       type: 'triple',
       subject,
       predicate,
       object,
-      loc,
+      loc: loc ?? this.sourceLocation(subject.loc, predicate.loc, object.loc),
     };
   }
 
@@ -255,11 +223,11 @@ export class TraqulaFactory {
     return x.type === 'query';
   }
 
-  public patternBgp(triples: Triple[], loc?: SourceLocation): PatternBgp {
+  public patternBgp(triples: TripleNesting[], loc: SourceLocation): PatternBgp {
     return { type: 'pattern', patternType: 'bgp', triples, loc };
   }
 
-  public patternFilter(expression: Expression, loc?: SourceLocation): PatternFilter {
+  public patternFilter(expression: Expression, loc: SourceLocation): PatternFilter {
     return {
       type: 'pattern',
       patternType: 'filter',
@@ -271,7 +239,7 @@ export class TraqulaFactory {
   public patternBind(
     expression: Expression,
     variable: TermVariable,
-    loc?: SourceLocation,
+    loc: SourceLocation,
   ): PatternBind {
     return {
       type: 'pattern',
@@ -282,7 +250,7 @@ export class TraqulaFactory {
     };
   }
 
-  public patternUnion(patterns: Pattern[], loc?: SourceLocation): PatternUnion {
+  public patternUnion(patterns: Pattern[], loc: SourceLocation): PatternUnion {
     return {
       type: 'pattern',
       patternType: 'union',
@@ -291,7 +259,7 @@ export class TraqulaFactory {
     };
   }
 
-  public patternMinus(patterns: Pattern[], loc?: SourceLocation): PatternMinus {
+  public patternMinus(patterns: Pattern[], loc: SourceLocation): PatternMinus {
     return {
       type: 'pattern',
       patternType: 'minus',
@@ -304,7 +272,7 @@ export class TraqulaFactory {
     name: TermIri | TermVariable,
     patterns: Pattern[],
     silent: boolean,
-    loc?: SourceLocation,
+    loc: SourceLocation,
   ): PatternService {
     return {
       type: 'pattern',
@@ -328,28 +296,28 @@ export class TraqulaFactory {
     distinct: boolean,
     arg: Expression,
     separator: undefined,
-    loc?: SourceLocation
+    loc: SourceLocation
   ): ExpressionAggregateDefault;
   public aggregate(
     aggregation: string,
     distinct: boolean,
     arg: Wildcard,
     separator: undefined,
-    loc?: SourceLocation
+    loc: SourceLocation
   ): ExpressionAggregateOnWildcard;
   public aggregate(
     aggregation: string,
     distinct: boolean,
     arg: Expression,
     separator: string,
-    loc?: SourceLocation
+    loc: SourceLocation
   ): ExpressionAggregateSeparator;
   public aggregate(
     aggregation: string,
     distinct: boolean,
     arg: Expression | Wildcard,
     separator: string | undefined,
-    loc?: SourceLocation,
+    loc: SourceLocation,
   ): ExpressionAggregate {
     const base = <const> {
       type: 'expression',
@@ -367,7 +335,7 @@ export class TraqulaFactory {
     return { ...base, expression: [ arg ]} satisfies ExpressionAggregateOnWildcard;
   }
 
-  public wildcard(loc?: SourceLocation): Wildcard {
+  public wildcard(loc: SourceLocation): Wildcard {
     return { type: 'wildcard', loc };
   }
 
@@ -378,21 +346,21 @@ export class TraqulaFactory {
   public path(
     pathType: '|',
     items: [TermIri | PathNegatedElt, ...(TermIri | PathNegatedElt)[]],
-    loc?: SourceLocation
+    loc: SourceLocation
   ): PathAlternativeLimited;
   public path(
     pathType: '!',
     items: [TermIri | PathNegatedElt | PathAlternativeLimited],
-    loc?: SourceLocation
+    loc: SourceLocation
   ): PathNegated;
-  public path(pathType: '^', items: [TermIri], loc?: SourceLocation): PathNegatedElt;
-  public path(pathType: PathModified['pathType'], item: [Path], loc?: SourceLocation): PathModified;
-  public path(pathType: '|' | '/', items: [Path, ...Path[]], loc?: SourceLocation):
+  public path(pathType: '^', items: [TermIri], loc: SourceLocation): PathNegatedElt;
+  public path(pathType: PathModified['pathType'], item: [Path], loc: SourceLocation): PathModified;
+  public path(pathType: '|' | '/', items: [Path, ...Path[]], loc: SourceLocation):
   PropertyPathChain;
   public path(
     pathType: (PropertyPathChain | PathModified | PathNegated)['pathType'],
     items: [Path, ...Path[]],
-    loc?: SourceLocation,
+    loc: SourceLocation,
   ): Path {
     const base = <const> {
       type: 'path',
@@ -454,12 +422,12 @@ export class TraqulaFactory {
   /**
    * A namednode with fully defined with a uri.
    */
-  public namedNode(value: string, prefix?: undefined, loc?: SourceLocation): TermIriFull;
+  public namedNode(loc: SourceLocation, value: string, prefix?: undefined): TermIriFull;
   /**
    * A namednode defined using a prefix
    */
-  public namedNode(value: string, prefix: string, loc?: SourceLocation): TermIriPrefixed;
-  public namedNode(value: string, prefix?: string, loc?: SourceLocation): TermIriFull | TermIriPrefixed {
+  public namedNode(loc: SourceLocation, value: string, prefix: string): TermIriPrefixed;
+  public namedNode(loc: SourceLocation, value: string, prefix?: string): TermIriFull | TermIriPrefixed {
     const base = <const> {
       type: 'term',
       termType: 'NamedNode',
@@ -472,7 +440,7 @@ export class TraqulaFactory {
     return { ...base, prefix };
   }
 
-  public blankNode(label: undefined | string, loc?: SourceLocation): TermBlank {
+  public blankNode(label: undefined | string, loc: SourceLocation): TermBlank {
     const base = <const> {
       type: 'term',
       termType: 'BlankNode',
@@ -484,15 +452,43 @@ export class TraqulaFactory {
     return { ...base, label: `e_${label}` };
   }
 
+  public tripleCollectionBlankNodeProperties(
+    identifier: TermBlank,
+    triples: TripleNesting[],
+    loc: SourceLocation,
+  ): TripleCollectionBlankNodeProperties {
+    return {
+      type: 'tripleCollection',
+      tripleCollectionType: 'blankNodeProperties',
+      identifier,
+      triples,
+      loc,
+    };
+  }
+
+  public tripleCollectionList(
+    identifier: TermBlank,
+    triples: TripleNesting[],
+    loc: SourceLocation,
+  ): TripleCollectionList {
+    return {
+      type: 'tripleCollection',
+      tripleCollectionType: 'list',
+      identifier,
+      triples,
+      loc,
+    };
+  }
+
   public resetBlankNodeCounter(): void {
     this.blankNodeCounter = 0;
   }
 
   public updateOperationLoad(
+    loc: SourceLocation,
     source: TermIri,
     silent: boolean,
     destination?: GraphRefSpecific | undefined,
-    loc?: SourceLocation,
   ): UpdateOperationLoad {
     return {
       type: 'updateOperation',
@@ -508,7 +504,7 @@ export class TraqulaFactory {
     operationType: T,
     silent: boolean,
     destination: Dest,
-    loc?: SourceLocation,
+    loc: SourceLocation,
   ): Omit<UpdateOperationDrop, 'destination' | 'operationType'> & { operationType: T; destination: Dest } {
     return {
       type: 'updateOperation',
@@ -522,7 +518,7 @@ export class TraqulaFactory {
   public updateOperationClear(
     destination: GraphRef,
     silent: boolean,
-    loc?: SourceLocation,
+    loc: SourceLocation,
   ): UpdateOperationClear {
     return this.updateOperationClearDrop('clear', silent, destination, loc);
   };
@@ -530,7 +526,7 @@ export class TraqulaFactory {
   public updateOperationDrop(
     destination: GraphRef,
     silent: boolean,
-    loc?: SourceLocation,
+    loc: SourceLocation,
   ): UpdateOperationDrop {
     return this.updateOperationClearDrop('drop', silent, destination, loc);
   }
@@ -538,7 +534,7 @@ export class TraqulaFactory {
   public updateOperationCreate(
     destination: GraphRefSpecific,
     silent: boolean,
-    loc?: SourceLocation,
+    loc: SourceLocation,
   ): UpdateOperationCreate {
     return this.updateOperationClearDrop('create', silent, destination, loc);
   }
@@ -548,7 +544,7 @@ export class TraqulaFactory {
     source: GraphRefDefault | GraphRefSpecific,
     destination: GraphRefDefault | GraphRefSpecific,
     silent: boolean,
-    loc?: SourceLocation,
+    loc: SourceLocation,
   ): Omit<UpdateOperationAdd, 'operationType'> & { operationType: T } {
     return {
       type: 'updateOperation',
@@ -564,7 +560,7 @@ export class TraqulaFactory {
     source: GraphRefDefault | GraphRefSpecific,
     destination: GraphRefDefault | GraphRefSpecific,
     silent: boolean,
-    loc?: SourceLocation,
+    loc: SourceLocation,
   ): UpdateOperationAdd {
     return this.updateOperationAddMoveCopy('add', source, destination, silent, loc);
   }
@@ -573,7 +569,7 @@ export class TraqulaFactory {
     source: GraphRefDefault | GraphRefSpecific,
     destination: GraphRefDefault | GraphRefSpecific,
     silent: boolean,
-    loc?: SourceLocation,
+    loc: SourceLocation,
   ): UpdateOperationMove {
     return this.updateOperationAddMoveCopy('move', source, destination, silent, loc);
   }
@@ -582,7 +578,7 @@ export class TraqulaFactory {
     source: GraphRefDefault | GraphRefSpecific,
     destination: GraphRefDefault | GraphRefSpecific,
     silent: boolean,
-    loc?: SourceLocation,
+    loc: SourceLocation,
   ): UpdateOperationCopy {
     return this.updateOperationAddMoveCopy('copy', source, destination, silent, loc);
   }
@@ -590,30 +586,30 @@ export class TraqulaFactory {
   private updateOperationInsertDeleteDelWhere<T extends 'insertdata' | 'deletedata' | 'deletewhere'>(
     operationType: T,
     data: Quads[],
-    loc?: SourceLocation,
+    loc: SourceLocation,
   ): Omit<UpdateOperationInsertData, 'operationType'> & { operationType: T } {
     return { type: 'updateOperation', operationType, data, loc };
   }
 
-  public updateOperationInsertData(data: Quads[], loc?: SourceLocation): UpdateOperationInsertData {
+  public updateOperationInsertData(data: Quads[], loc: SourceLocation): UpdateOperationInsertData {
     return this.updateOperationInsertDeleteDelWhere('insertdata', data, loc);
   }
 
-  public updateOperationDeleteData(data: Quads[], loc?: SourceLocation): UpdateOperationDeleteData {
+  public updateOperationDeleteData(data: Quads[], loc: SourceLocation): UpdateOperationDeleteData {
     return this.updateOperationInsertDeleteDelWhere('deletedata', data, loc);
   }
 
-  public updateOperationDeleteWhere(data: Quads[], loc?: SourceLocation): UpdateOperationDeleteWhere {
+  public updateOperationDeleteWhere(data: Quads[], loc: SourceLocation): UpdateOperationDeleteWhere {
     return this.updateOperationInsertDeleteDelWhere('deletewhere', data, loc);
   }
 
   public updateOperationModify(
+    loc: SourceLocation,
     insert: Quads[],
     del: Quads[],
     where: Pattern[],
     from: DatasetClauses,
     graph?: TermIri | undefined,
-    loc?: SourceLocation,
   ): UpdateOperationModify {
     return {
       type: 'updateOperation',
@@ -630,16 +626,16 @@ export class TraqulaFactory {
   /**
    * String, no lang, no type
    */
-  public literalTerm(value: string, lang?: undefined, loc?: SourceLocation): TermLiteralStr;
+  public literalTerm(loc: SourceLocation, value: string, lang?: undefined): TermLiteralStr;
   /**
    * String with a language tag
    */
-  public literalTerm(value: string, lang: string, loc?: SourceLocation): TermLiteralLangStr;
+  public literalTerm(loc: SourceLocation, value: string, lang: string): TermLiteralLangStr;
   /**
    * Lexical form with a type
    */
-  public literalTerm(value: string, iri: TermIri, loc?: SourceLocation,): TermLiteralTyped;
-  public literalTerm(value: string, langOrIri?: string | TermIri, loc?: SourceLocation): TermLiteral {
+  public literalTerm(loc: SourceLocation, value: string, iri: TermIri,): TermLiteralTyped;
+  public literalTerm(loc: SourceLocation, value: string, langOrIri?: string | TermIri): TermLiteral {
     return {
       type: 'term',
       termType: 'Literal',

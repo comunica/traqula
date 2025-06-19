@@ -1,4 +1,4 @@
-import type { Node } from '../utils';
+import type { Node } from '../nodeTypings';
 
 /**
  * Type used to declare generator rules.
@@ -13,9 +13,9 @@ export type GeneratorRule<
    */
   NameType extends string = string,
   /**
-   * Type that will be returned after a correct parse of this rule.
-   * This type will be the return type of calling SUBRULE with this grammar rule.
-   * Generation typically happens on a per AST node basis.
+   * Type that of the AST that we will generate the string for.
+   * This type will be the provided when calling SUBRULE with this generator rule.
+   * Generation happens on a per AST node basis.
    * The core will implement the generation as such. If this ever changes, we will cross that bridge when we get there.
    */
   ReturnType = any,
@@ -34,6 +34,4 @@ export interface RuleDefArg {
   PRINT: (...args: string[]) => void;
   PRINT_WORD: (...args: string[]) => void;
   CATCHUP: (until: number) => void;
-  PUSH_SOURCE: (source: string) => void;
-  POP_SOURCE: () => void;
 }

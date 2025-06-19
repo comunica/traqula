@@ -13,6 +13,33 @@ import type {
 
 import type { SparqlGrammarRule, SparqlRule } from '../Sparql11types';
 
+export function stringEscapedLexical(str: string): string {
+  const lexical = str.replaceAll(/["\\\t\n\r\b\f]/gu, (char) => {
+    switch (char) {
+      case '\t':
+        return '\\t';
+      case '\n':
+        return '\\n';
+      case '\r':
+        return '\\r';
+      case '\b':
+        return '\\b';
+      case '\f':
+        return '\\f';
+      case '"':
+        return '\\"';
+      case '\\':
+        return '\\\\';
+      default:
+        return char;
+    }
+  });
+  return `"${lexical}"`;
+}
+
+/**
+ * [[120]](https://www.w3.org/TR/sparql11-query/#rRDFLiteral)
+ */
 export const rdfLiteral: SparqlRule<'rdfLiteral', TermLiteral> = <const> {
   name: 'rdfLiteral',
   impl: ({ ACTION, SUBRULE1, CONSUME, OPTION, OR }) => (C) => {
@@ -21,32 +48,30 @@ export const rdfLiteral: SparqlRule<'rdfLiteral', TermLiteral> = <const> {
       { ALT: () => {
         const lang = CONSUME(l.terminals.langTag);
         return ACTION(() => C.factory.literalTerm(
+          C.factory.sourceLocation(value.loc, lang),
           value.value,
-          // Normalized to lowercase as per:
-          // 1. https://www.w3.org/TR/rdf11-concepts/#h3_section-Graph-Literal
-          // 2. https://www.w3.org/TR/rdf12-concepts/#changes-12
           lang.image.slice(1).toLowerCase(),
-          value.loc ? { start: value.loc.start, end: lang.endOffset! } : undefined,
         ));
       } },
       { ALT: () => {
         CONSUME(l.symbols.hathat);
         const iriVal = SUBRULE1(iri, undefined);
         return ACTION(() => C.factory.literalTerm(
+          C.factory.sourceLocation(value.loc, iriVal.loc),
           value.value,
           iriVal,
-          value.loc && iriVal.loc ? { start: value.loc.start, end: iriVal.loc.end } : undefined,
         ));
       } },
     ])) ?? value;
   },
-  gImpl: ({ SUBRULE, PRINT }) => (ast) => {
-    if (ast.loc) {
-      if (ast.langOrIri && typeof ast.langOrIri !== 'string') {
-        SUBRULE(iri, ast.langOrIri, undefined);
-      }
-    } else {
-      PRINT('"', ast.value.replaceAll('"', '\\"'), '"');
+  gImpl: ({ SUBRULE, PRINT }) => (ast, { factory }) => {
+    factory.printFilter(ast, () => PRINT(stringEscapedLexical(ast.value)));
+
+    if (ast.langOrIri && typeof ast.langOrIri !== 'string') {
+      SUBRULE(iri, ast.langOrIri, undefined);
+    }
+
+    factory.printFilter(ast, () => {
       if (ast.langOrIri) {
         if (typeof ast.langOrIri === 'string') {
           PRINT('@', ast.langOrIri);
@@ -55,7 +80,7 @@ export const rdfLiteral: SparqlRule<'rdfLiteral', TermLiteral> = <const> {
           SUBRULE(iri, ast.langOrIri, undefined);
         }
       }
-    }
+    });
   },
 };
 
@@ -85,9 +110,9 @@ export const numericLiteralUnsigned: SparqlGrammarRule<'numericLiteralUnsigned',
       { ALT: () => <const> [ CONSUME(l.terminals.double), CommonIRIs.DOUBLE ]},
     ]);
     return ACTION(() => C.factory.literalTerm(
-      parsed[0].image,
-      C.factory.namedNode(parsed[1], undefined, C.factory.noStringMaterialization()),
       C.factory.sourceLocation(parsed[0]),
+      parsed[0].image,
+      C.factory.namedNode(C.factory.sourceLocationNoMaterialize(), parsed[1]),
     ));
   },
 };
@@ -105,9 +130,9 @@ export const numericLiteralPositive: SparqlGrammarRule<'numericLiteralPositive',
       { ALT: () => <const> [ CONSUME(l.terminals.doublePositive), CommonIRIs.DOUBLE ]},
     ]);
     return ACTION(() => C.factory.literalTerm(
-      parsed[0].image,
-      C.factory.namedNode(parsed[1], undefined, C.factory.noStringMaterialization()),
       C.factory.sourceLocation(parsed[0]),
+      parsed[0].image,
+      C.factory.namedNode(C.factory.sourceLocationNoMaterialize(), parsed[1]),
     ));
   },
 };
@@ -125,9 +150,9 @@ export const numericLiteralNegative: SparqlGrammarRule<'numericLiteralNegative',
       { ALT: () => <const> [ CONSUME(l.terminals.doubleNegative), CommonIRIs.DOUBLE ]},
     ]);
     return ACTION(() => C.factory.literalTerm(
-      parsed[0].image,
-      C.factory.namedNode(parsed[1], undefined, C.factory.noStringMaterialization()),
       C.factory.sourceLocation(parsed[0]),
+      parsed[0].image,
+      C.factory.namedNode(C.factory.sourceLocationNoMaterialize(), parsed[1]),
     ));
   },
 };
@@ -145,9 +170,9 @@ export const booleanLiteral: SparqlGrammarRule<'booleanLiteral', TermLiteralType
     ]);
 
     return ACTION(() => C.factory.literalTerm(
-      token.image.toLowerCase(),
-      C.factory.namedNode(CommonIRIs.BOOLEAN, undefined, C.factory.noStringMaterialization()),
       C.factory.sourceLocation(token),
+      token.image.toLowerCase(),
+      C.factory.namedNode(C.factory.sourceLocationNoMaterialize(), CommonIRIs.BOOLEAN),
     ));
   },
 };
@@ -156,7 +181,7 @@ export const booleanLiteral: SparqlGrammarRule<'booleanLiteral', TermLiteralType
  * Parses a string literal.
  * [[135]](https://www.w3.org/TR/sparql11-query/#rString)
  */
-export const string: SparqlRule<'string', TermLiteralStr> = <const> {
+export const string: SparqlGrammarRule<'string', TermLiteralStr> = <const> {
   name: 'string',
   impl: ({ ACTION, CONSUME, OR }) => (C) => {
     const x = OR([
@@ -196,14 +221,9 @@ export const string: SparqlRule<'string', TermLiteralStr> = <const> {
             return char;
         }
       });
-      return F.literalTerm(
-        value,
-        undefined,
-        F.sourceLocation(x[0]),
-      );
+      return F.literalTerm(F.sourceLocation(x[0]), value);
     });
   },
-  gImpl: () => () => '',
 };
 
 /**
@@ -224,16 +244,10 @@ export const iriFull: SparqlRule<'iriFull', TermIriFull> = <const> {
   name: 'iriFull',
   impl: ({ ACTION, CONSUME }) => (C) => {
     const iriToken = CONSUME(l.terminals.iriRef);
-    return ACTION(() => C.factory.namedNode(
-      iriToken.image.slice(1, -1),
-      undefined,
-      C.factory.sourceLocation(iriToken),
-    ));
+    return ACTION(() => C.factory.namedNode(C.factory.sourceLocation(iriToken), iriToken.image.slice(1, -1)));
   },
-  gImpl: ({ PRINT_WORD }) => (ast) => {
-    if (!ast.loc) {
-      PRINT_WORD('<', ast.value, '>');
-    }
+  gImpl: ({ PRINT_WORD }) => (ast, { factory }) => {
+    factory.printFilter(ast, () => PRINT_WORD('<', ast.value, '>'));
   },
 };
 
@@ -248,22 +262,16 @@ export const prefixedName: SparqlRule<'prefixedName', TermIriPrefixed> = <const>
       const longName = CONSUME(l.terminals.pNameLn);
       return ACTION(() => {
         const [ prefix, localName ] = longName.image.split(':');
-        return C.factory.namedNode(localName, prefix, C.factory.sourceLocation(longName));
+        return C.factory.namedNode(C.factory.sourceLocation(longName), localName, prefix);
       });
     } },
     { ALT: () => {
       const shortName = CONSUME(l.terminals.pNameNs);
-      return ACTION(() => C.factory.namedNode(
-        '',
-        shortName.image.slice(0, -1),
-        C.factory.sourceLocation(shortName),
-      ));
+      return ACTION(() => C.factory.namedNode(C.factory.sourceLocation(shortName), '', shortName.image.slice(0, -1)));
     } },
   ]),
-  gImpl: ({ PRINT_WORD }) => (ast) => {
-    if (!ast.loc) {
-      PRINT_WORD(ast.prefix, ':', ast.value);
-    }
+  gImpl: ({ PRINT_WORD }) => (ast, { factory }) => {
+    factory.printFilter(ast, () => PRINT_WORD(ast.prefix, ':', ast.value));
   },
 };
 
@@ -294,18 +302,15 @@ export const blankNode: SparqlRule<'blankNode', TermBlank> = <const> {
     });
     return result;
   },
-  gImpl: ({ PRINT_WORD }) => (ast) => {
-    if (!ast.loc) {
-      PRINT_WORD('_:', ast.label);
-    }
+  gImpl: ({ PRINT_WORD }) => (ast, { factory }) => {
+    factory.printFilter(ast, () => PRINT_WORD('_:', ast.label));
   },
 };
 
-export const verbA: SparqlRule<'VerbA', TermIriFull> = <const> {
+export const verbA: SparqlGrammarRule<'VerbA', TermIriFull> = <const> {
   name: 'VerbA',
   impl: ({ ACTION, CONSUME }) => (C) => {
     const token = CONSUME(l.a);
-    return ACTION(() => C.factory.namedNode(CommonIRIs.TYPE, undefined, C.factory.sourceLocation(token)));
+    return ACTION(() => C.factory.namedNode(C.factory.sourceLocation(token), CommonIRIs.TYPE, undefined));
   },
-  gImpl: () => () => '',
 };

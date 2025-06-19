@@ -1,8 +1,7 @@
-import type { SourceLocation } from '@traqula/core';
 import { Builder, GeneratorBuilder } from '@traqula/core';
 import { describe, it } from 'vitest';
 import type { SparqlContext, TermIri, TermLiteral } from '../lib';
-import { TraqulaFactory, completeParseContext } from '../lib';
+import { completeParseContext, TraqulaFactory } from '../lib';
 import {
   iri,
   iriFull,
@@ -32,9 +31,7 @@ describe('a SPARQL 1.1 expression parser', () => {
     ]).consumeToParser({
       tokenVocabulary: sparql11Tokens.build(),
     });
-    const literal = parser.numericLiteral(query, completeParseContext(context), undefined);
-    (<SourceLocation> literal.loc).source = query;
-    return literal;
+    return parser.numericLiteral(query, completeParseContext(context), undefined);
   }
   function generate(ast: TermLiteral, context: Partial<SparqlContext>): string {
     const generator = GeneratorBuilder.createBuilder(<const> [
@@ -57,8 +54,8 @@ describe('a SPARQL 1.1 expression parser', () => {
     expect(generate(res, context)).toEqual(query);
 
     // Delete loc keys
-    const namedNode2 = { ...(<TermIri> res.langOrIri), loc: undefined };
-    const literal2 = { ...res, langOrIri: namedNode2, loc: undefined };
+    const namedNode2 = { ...(<TermIri> res.langOrIri), loc: F.sourceLocationNoMaterialize() };
+    const literal2 = { ...res, langOrIri: namedNode2, loc: F.sourceLocationNoMaterialize() };
     expect(generate(literal2, context)).toEqual(query);
   });
 });

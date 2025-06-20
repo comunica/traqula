@@ -1,3 +1,5 @@
+import { CoreFactory } from '../CoreFactory';
+import type { Node } from '../nodeTypings';
 import type { CheckOverlap } from '../utils';
 import type { GeneratorFromRules, GenRuleMap, GenRulesToObject, GenNamesFromList } from './builderTypes';
 import type { GeneratorRule, RuleDefArg } from './generatorTypes';
@@ -19,7 +21,7 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
    * If a GeneratorBuilder is provided, a new copy will be created.
    */
   public static createBuilder<
-    Rules extends readonly GeneratorRule[] = readonly GeneratorRule[],
+    Rules extends readonly GeneratorRule<any, any, any & Node>[] = readonly GeneratorRule<any, any, any & Node>[],
     Context = Rules[0] extends GeneratorRule<infer context> ? context : never,
     Names extends string = GenNamesFromList<Rules>,
     RuleDefs extends GenRuleMap<Names> = GenRulesToObject<Rules>,
@@ -34,14 +36,14 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
 
   private rules: RuleDefs;
 
-  private constructor(startRules: RuleDefs) {
+  protected constructor(startRules: RuleDefs) {
     this.rules = startRules;
   }
 
   /**
    * Change the implementation of an existing generator rule.
    */
-  public patchRule<U extends Names, RET, ARGS>(patch: GeneratorRule<Context, U, RET, ARGS>):
+  public patchRule<U extends Names, RET extends Node, ARGS>(patch: GeneratorRule<Context, U, RET, ARGS>):
   GeneratorBuilder<Context, Names, {[Key in Names]: Key extends U ?
     GeneratorRule<Context, Key, RET, ARGS> :
       (RuleDefs[Key] extends GeneratorRule<Context, Key> ? RuleDefs[Key] : never)
@@ -57,7 +59,7 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
   /**
    * Add a rule to the grammar. If the rule already exists, but the implementation differs, an error will be thrown.
    */
-  public addRuleRedundant<U extends string, RET, ARGS>(rule: GeneratorRule<Context, U, RET, ARGS>):
+  public addRuleRedundant<U extends string, RET extends Node, ARGS>(rule: GeneratorRule<Context, U, RET, ARGS>):
   GeneratorBuilder<Context, Names | U, {[K in Names | U]: K extends Names ?
       (RuleDefs[K] extends GeneratorRule<Context, K> ? RuleDefs[K] : never)
     : (K extends U ? GeneratorRule<Context, K, RET, ARGS> : never)
@@ -77,7 +79,7 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
   /**
    * Add a rule to the grammar. Will raise a typescript error if the rule already exists in the grammar.
    */
-  public addRule<U extends string, RET, ARGS>(
+  public addRule<U extends string, RET extends Node, ARGS>(
     rule: CheckOverlap<U, Names, GeneratorRule<Context, U, RET, ARGS>>,
   ): GeneratorBuilder<Context, Names | U, {[K in Names | U]: K extends Names ?
       (RuleDefs[K] extends GeneratorRule<Context, K> ? RuleDefs[K] : never)
@@ -86,7 +88,7 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
     return this.addRuleRedundant(rule);
   }
 
-  public addMany<U extends readonly GeneratorRule<Context>[]>(
+  public addMany<U extends readonly GeneratorRule<Context, any, Node>[]>(
     ...rules: CheckOverlap<GenNamesFromList<U>, Names, U>
   ): GeneratorBuilder<
     Context,
@@ -173,37 +175,93 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
 
   public build(): GeneratorFromRules<Context, Names, RuleDefs> {
     const rules: Record<string, GeneratorRule<Context>> = this.rules;
-
-    class Generator {
-      private __context: Context | undefined = undefined;
-      public setContext(context: Context): void {
-        this.__context = context;
-      }
-
-      private getSafeContext(): Context {
-        return <Context> this.__context;
-      }
-
-      public constructor() {
-        const selfRef: RuleDefArg = {
-          SUBRULE: (cstDef, input, arg) => {
-            const def = rules[cstDef.name];
-            if (!def) {
-              throw new Error(`Rule ${cstDef.name} not found`);
-            }
-            return def.gImpl(selfRef)(input, this.getSafeContext(), arg);
-          },
-        };
-
-        for (const rule of Object.values(rules)) {
-          this[<keyof (typeof this)> rule.name] = <any> ((input: any, context: Context, args: any) => {
-            this.setContext(context);
-            return rule.gImpl(selfRef)(input, this.getSafeContext(), args);
-          });
-        }
-      }
-    }
-
-    return <GeneratorFromRules<Context, Names, RuleDefs>> new Generator();
+    return <GeneratorFromRules<Context, Names, RuleDefs>> new Generator(rules);
   }
+}
+
+export class Generator<Context, Names extends string, RuleDefs extends GenRuleMap<Names>> {
+  protected readonly factory = new CoreFactory();
+  protected __context: Context | undefined = undefined;
+  protected origSource = '';
+  protected generatedUntil = 0;
+  protected readonly stringBuilder: string[] = [];
+
+  public constructor(protected rules: RuleDefs) {
+    // eslint-disable-next-line ts/no-unnecessary-type-assertion
+    for (const rule of <GeneratorRule[]> Object.values(rules)) {
+      // Define function implementation
+      this[<keyof (typeof this)> rule.name] =
+        <any> ((input: any, context: Context & { origSource: string; offset?: number }, args: any) => {
+          this.stringBuilder.length = 0;
+          this.origSource = context.origSource;
+          this.generatedUntil = context?.offset ?? 0;
+          this.setContext(context);
+
+          this.subrule(rule, input, args);
+
+          return this.stringBuilder.join('');
+        });
+    }
+  }
+
+  public setContext(context: Context): void {
+    this.__context = context;
+  }
+
+  protected getSafeContext(): Context {
+    return <Context> this.__context;
+  }
+
+  protected readonly subrule: RuleDefArg['SUBRULE'] = (cstDef, ast, arg) => {
+    const def = this.rules[<Names> cstDef.name];
+    if (!def) {
+      throw new Error(`Rule ${cstDef.name} not found`);
+    }
+    if (this.factory.isSourceLocationNoMaterialize(ast.loc)) {
+      return;
+    }
+    if (this.factory.isSourceLocationStringReplace(ast.loc)) {
+      this.catchup(ast.loc.start);
+      this.print(ast.loc.newSource);
+      this.generatedUntil = ast.loc.end;
+      return;
+    }
+    if (this.factory.isSourceLocationNodeReplace(ast.loc) || this.factory.isSourceLocationSource(ast.loc)) {
+      this.catchup(ast.loc.start);
+    }
+    // If autoGenerate - do nothing
+
+    // Do call generation
+    def.gImpl({
+      SUBRULE: this.subrule,
+      PRINT: this.print,
+      PRINT_WORD: this.printWord,
+      CATCHUP: this.catchup,
+    })(ast, this.getSafeContext(), arg);
+
+    if (this.factory.isSourceLocationNodeReplace(ast.loc)) {
+      this.generatedUntil = ast.loc.end;
+    } else if (this.factory.isSourceLocationSource(ast.loc)) {
+      this.catchup(ast.loc.end);
+    }
+  };
+
+  protected readonly catchup: RuleDefArg['CATCHUP'] = (until) => {
+    const start = this.generatedUntil;
+    if (start < until) {
+      this.stringBuilder.push(this.origSource.slice(start, until));
+    }
+    this.generatedUntil = Math.max(this.generatedUntil, until);
+  };
+
+  protected readonly print: RuleDefArg['PRINT'] = (...args) => {
+    this.stringBuilder.push(...args.filter(x => x.length > 0));
+  };
+
+  private readonly printWord: RuleDefArg['PRINT_WORD'] = (...args) => {
+    if (this.stringBuilder.length > 0 && this.stringBuilder.at(-1)!.at(-1) !== ' ') {
+      this.stringBuilder.push(' ');
+    }
+    this.stringBuilder.push(...args, ' ');
+  };
 }

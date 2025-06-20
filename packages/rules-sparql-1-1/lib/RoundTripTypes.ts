@@ -267,8 +267,7 @@ export type SolutionModifierOrder = SolutionModifierBase & {
   orderDefs: Ordering[];
 };
 export type SolutionModifierLimitOffset = SolutionModifierBase
-  & { modifierType: 'limitOffset' }
-  & ({ limit: number; offset: number | undefined } | { limit: number | undefined; offset: number });
+  & { modifierType: 'limitOffset'; limit: number | undefined; offset: number | undefined };
 
 export type ExpressionBase = Node & { type: 'expression' };
 

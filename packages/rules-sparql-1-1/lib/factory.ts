@@ -18,6 +18,7 @@ import type {
   GraphRef,
   GraphRefDefault,
   GraphRefSpecific,
+  Ordering,
   Path,
   PathAlternativeLimited,
   PathModified,
@@ -34,6 +35,9 @@ import type {
   PropertyPathChain,
   Quads,
   Query,
+  SolutionModifierHaving,
+  SolutionModifierLimitOffset,
+  SolutionModifierOrder,
   Term,
   TermBlank,
   TermIri,
@@ -641,6 +645,38 @@ export class TraqulaFactory extends CoreFactory {
       termType: 'Literal',
       value,
       langOrIri,
+      loc,
+    };
+  }
+
+  public solutionModifierHaving(having: Expression[], loc: SourceLocation): SolutionModifierHaving {
+    return {
+      type: 'solutionModifier',
+      modifierType: 'having',
+      having,
+      loc,
+    };
+  }
+
+  public solutionModifierOrder(orderDefs: Ordering[], loc: SourceLocation): SolutionModifierOrder {
+    return {
+      type: 'solutionModifier',
+      modifierType: 'order',
+      orderDefs,
+      loc,
+    };
+  }
+
+  public solutionModifierLimitOffset(
+    limit: number | undefined,
+    offset: number | undefined,
+    loc: SourceLocation,
+  ): SolutionModifierLimitOffset {
+    return {
+      type: 'solutionModifier',
+      modifierType: 'limitOffset',
+      limit,
+      offset,
       loc,
     };
   }

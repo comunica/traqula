@@ -93,7 +93,7 @@ export type UpdateOperation =
 export type Update = Node & {
   type: 'update';
   updates: {
-    operation: UpdateOperation;
+    operation?: UpdateOperation;
     context: ContextDefinition[];
   }[];
 };
@@ -220,6 +220,9 @@ export type PatternService = PatternBase & {
   silent: boolean;
   patterns: Pattern[];
 };
+/**
+ * A single list of assignments maps the variable identifier to the value
+ */
 export type ValuePatternRow = Record<string, TermIri | TermBlank | TermLiteral | undefined>;
 export type PatternValues = PatternBase & {
   patternType: 'values';
@@ -247,7 +250,7 @@ export type SolutionModifiers = {
   limitOffset?: SolutionModifierLimitOffset;
 };
 export type SolutionModifierBase = Node & { type: 'solutionModifier'; modifierType: string };
-export type SolutionModifierGroupBind = {
+export type SolutionModifierGroupBind = Pick<Node, 'loc'> & {
   variable: TermVariable;
   value: Expression;
 };
@@ -261,7 +264,7 @@ export type SolutionModifierHaving = SolutionModifierBase & {
 };
 export type Ordering =
   | Expression
-  | ({ descending: boolean; expression: Expression });
+  | ({ descending: boolean; expression: Expression } & Pick<Node, 'loc'>);
 export type SolutionModifierOrder = SolutionModifierBase & {
   modifierType: 'order';
   orderDefs: Ordering[];
@@ -299,6 +302,11 @@ export type ExpressionOperation = ExpressionBase & {
   args: Expression[];
 };
 
+export type ExpressionBracketted = ExpressionBase & {
+  expressionType: 'bracketted';
+  expression: Expression;
+};
+
 export type ExpressionPatternOperation = ExpressionBase & {
   expressionType: 'patternOperation';
   operator: string;
@@ -315,6 +323,7 @@ export type ExpressionFunctionCall = ExpressionBase & {
 
 export type Expression =
   | ExpressionOperation
+  | ExpressionBracketted
   | ExpressionPatternOperation
   | ExpressionFunctionCall
   | ExpressionAggregate

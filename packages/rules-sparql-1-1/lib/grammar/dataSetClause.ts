@@ -1,40 +1,32 @@
 import type { RuleDefReturn } from '@traqula/core';
 import type { TokenType } from 'chevrotain';
 import * as l from '../lexer';
-import type { DatasetClauses, TermIri } from '../RoundTripTypes';
+import type { DatasetClauses, TermIri, Wrap } from '../RoundTripTypes';
 import type { SparqlGrammarRule, SparqlRule } from '../Sparql11types';
-import type { CTOS, Ignores, Images, Wrap } from '../TypeHelpersRTT';
-import { blank } from './general';
 import { iri } from './literals';
 
 export function datasetClauseUsing<RuleName extends 'usingClause' | 'datasetClause'>(
   name: RuleName,
   token: TokenType,
-): SparqlGrammarRule<RuleName, { named: boolean; completion: CTOS; value: TermIri }> {
+): SparqlGrammarRule<RuleName, Wrap<{ named: boolean; value: TermIri }>> {
   return {
     name,
     impl: ({ ACTION, SUBRULE, CONSUME, OR }) => (C) => {
-      const img1 = CONSUME(token).image;
-      const i0 = SUBRULE(blank, undefined);
+      const start = CONSUME(token);
       return OR<RuleDefReturn<typeof datasetClause>>([
         { ALT: () => {
           const iri = SUBRULE(defaultGraphClause, undefined);
           return ACTION(() => ({
-            named: false,
-            completion: [ ...i0, C.factory.image(img1) ],
-            value: iri,
+            val: { named: false, value: iri },
+            ...C.factory.sourceLocation(start, iri.loc),
           }));
         } },
         { ALT: () => {
           const namedClause = SUBRULE(namedGraphClause, undefined);
-          return ACTION(() => {
-            const { val, img1: img2, i0: i1 } = namedClause;
-            return ACTION(() => ({
-              named: true,
-              completion: [ ...i0, C.factory.image(img1), ...i1, C.factory.image(img2) ],
-              value: val,
-            }));
-          });
+          return ACTION(() => ({
+            val: { named: true, value: namedClause.val },
+            ...C.factory.sourceLocation(start, namedClause),
+          }));
         } },
       ]);
     },
@@ -58,29 +50,29 @@ export const defaultGraphClause: SparqlGrammarRule<'defaultGraphClause', TermIri
  */
 export const usingClause = datasetClauseUsing('usingClause', l.usingClause);
 
-export function datasetClausesUsings<RuleName extends string>(
+export function datasetClauseUsingStar<RuleName extends string>(
   name: RuleName,
   subRule: ReturnType<typeof datasetClauseUsing<any>>,
 ): SparqlRule<RuleName, DatasetClauses> {
   return {
     name,
-    impl: ({ ACTION, MANY, SUBRULE }) => () => {
-      const iter = 0;
-      const completion: CTOS[] = [];
-      const namedIndexes: number[] = [];
+    impl: ({ ACTION, MANY, SUBRULE }) => (C) => {
       const _default: TermIri[] = [];
       const named: TermIri[] = [];
+      let first: RuleDefReturn<typeof datasetClause> | undefined;
+      let last: RuleDefReturn<typeof datasetClause> | undefined;
 
       MANY(() => {
         const clause = SUBRULE(subRule, undefined);
+        if (!first) {
+          first = clause;
+        }
+        last = clause;
         ACTION(() => {
-          const { completion: partial, value, named: isNamed } = clause;
-          completion.push(partial);
-          if (isNamed) {
-            namedIndexes.push(iter);
-            named.push(value);
+          if (clause.val.named) {
+            named.push(clause.val.value);
           } else {
-            _default.push(value);
+            _default.push(clause.val.value);
           }
         });
       });
@@ -88,26 +80,25 @@ export function datasetClausesUsings<RuleName extends string>(
         type: 'datasetClauses',
         default: _default,
         named,
-        RTT: { namedIndexes, completion },
+        loc: C.factory.sourceLocation(...[ first, last ].filter(x => x !== undefined)),
       } satisfies DatasetClauses;
     },
     gImpl: () => () => '',
   };
 }
 
-export const datasetClauses = datasetClausesUsings(<const> 'datasetClauses', datasetClause);
-export const usingClauses = datasetClausesUsings(<const> 'usingClauses', usingClause);
+export const datasetClauseStar = datasetClauseUsingStar(<const> 'datasetClauses', datasetClause);
+export const usingClauseStar = datasetClauseUsingStar(<const> 'usingClauses', usingClause);
 
 /**
  * [[15]](https://www.w3.org/TR/sparql11-query/#rNamedGraphClause)
  */
-export const namedGraphClause: SparqlGrammarRule<'namedGraphClause', Wrap<TermIri> & Ignores & Images> = <const> {
+export const namedGraphClause: SparqlGrammarRule<'namedGraphClause', Wrap<TermIri>> = <const> {
   name: 'namedGraphClause',
-  impl: ({ SUBRULE, CONSUME }) => () => {
-    const img1 = CONSUME(l.graph.named).image;
-    const i0 = SUBRULE(blank, undefined);
+  impl: ({ ACTION, SUBRULE, CONSUME }) => (C) => {
+    const named = CONSUME(l.graph.named);
     const iri = SUBRULE(sourceSelector, undefined);
-    return { val: iri, img1, i0 };
+    return ACTION(() => ({ val: iri, ...C.factory.sourceLocation(named, iri.loc) }));
   },
 };
 

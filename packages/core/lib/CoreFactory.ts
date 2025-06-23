@@ -11,7 +11,7 @@ import type {
 } from './nodeTypings';
 
 export class CoreFactory {
-  public sourceLocation(...elements: (IToken | SourceLocation)[]): SourceLocation {
+  public sourceLocation(...elements: (Pick<IToken, 'startOffset' | 'endOffset'> | SourceLocation)[]): SourceLocation {
     const filtered =
       elements.filter(element => !this.isSourceLocation(element) || this.isSourceLocationSource(element));
     if (filtered.length === 0) {

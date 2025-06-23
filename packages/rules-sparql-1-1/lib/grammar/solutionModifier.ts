@@ -90,6 +90,7 @@ export const groupCondition: SparqlRule<'groupCondition', Expression | SolutionM
               return {
                 variable,
                 value: expressionValue,
+                loc: C.factory.sourceLocation(open, close),
               } satisfies SolutionModifierGroupBind;
             }
             return expressionValue;
@@ -158,7 +159,7 @@ export const orderClause: SparqlRule<'orderClause', SolutionModifierOrder> = <co
  */
 export const orderCondition: SparqlRule<'orderCondition', Ordering> = <const> {
   name: 'orderCondition',
-  impl: ({ ACTION, SUBRULE, CONSUME, OR1, OR2 }) => () => OR1<Ordering>([
+  impl: ({ ACTION, SUBRULE, CONSUME, OR1, OR2 }) => C => OR1<Ordering>([
     { ALT: () => {
       const descending = OR2<[boolean, IToken]>([
         { ALT: () => {
@@ -176,6 +177,7 @@ export const orderCondition: SparqlRule<'orderCondition', Ordering> = <const> {
       return ACTION(() => ({
         expression: expr,
         descending: descending[0],
+        loc: C.factory.sourceLocation(descending[1], expr.loc),
       }));
     } },
     { ALT: () => SUBRULE(constraint, undefined) },

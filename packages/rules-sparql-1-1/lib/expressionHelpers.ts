@@ -155,7 +155,7 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, [Expression, Expression] | [Expressi
         const close = CONSUME(l.symbols.RParen);
         return ACTION(() => C.factory.expressionOperation(
           operator.image,
-          [ arg1, arg2, ...(arg3 ? [ arg3 ] : []) ],
+          arg3 ? <const> [ arg1, arg2, arg3 ] : <const> [ arg1, arg2 ],
           C.factory.sourceLocation(operator, close),
         ));
       },
@@ -196,7 +196,7 @@ RuleDefExpressionFunctionX<
         const close = CONSUME(l.symbols.RParen);
         return ACTION(() => C.factory.expressionOperation(
           operator.image,
-          [ arg1, arg2, arg3, ...(arg4 ? [ arg4 ] : []) ],
+          arg4 ? <const> [ arg1, arg2, arg3, arg4 ] : <const> [ arg1, arg2, arg3 ],
           C.factory.sourceLocation(operator, close),
         ));
       },
@@ -212,7 +212,7 @@ SparqlGrammarRule<Uncapitalize<T>, ExpressionPatternOperation> {
       const group = SUBRULE(groupGraphPattern, undefined);
       return ACTION(() => C.factory.expressionPatternOperation(
         operator.image,
-        [ C.factory.deGroupSingle(group)(undefined) ],
+        [ C.factory.deGroupSingle(group) ],
         C.factory.sourceLocation(operator, group.loc),
       ));
     },

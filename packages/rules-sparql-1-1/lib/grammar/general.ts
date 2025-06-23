@@ -1,8 +1,64 @@
 import { CommonIRIs } from '../grammar-helpers/utils';
 import * as l from '../lexer';
-import type { GraphTerm, Term, TermIri, TermVariable } from '../RoundTripTypes';
+import type {
+  ContextDefinition,
+  ContextDefinitionBaseDecl,
+  ContextDefinitionPrefixDecl,
+  GraphTerm,
+  Term,
+  TermIri,
+  TermVariable,
+} from '../RoundTripTypes';
 import type { SparqlGrammarRule, SparqlRule } from '../Sparql11types';
-import { blankNode, booleanLiteral, iri, numericLiteral, rdfLiteral, verbA } from './literals';
+import { blankNode, booleanLiteral, iri, iriFull, numericLiteral, rdfLiteral, verbA } from './literals';
+
+/**
+ * [[4]](https://www.w3.org/TR/sparql11-query/#rPrologue)
+ */
+export const prologue: SparqlRule<'prologue', ContextDefinition[]> = <const> {
+  name: 'prologue',
+  impl: ({ SUBRULE, MANY, OR }) => () => {
+    const result: ContextDefinition[] = [];
+    MANY(() => OR([
+      { ALT: () => result.push(SUBRULE(baseDecl, undefined)) },
+      // TODO: the [spec](https://www.w3.org/TR/sparql11-query/#iriRefs) says you cannot redefine prefixes.
+      //  We might need to check this.
+      { ALT: () => result.push(SUBRULE(prefixDecl, undefined)) },
+    ]));
+    return result;
+  },
+  gImpl: () => () => {},
+};
+
+/**
+ * Registers base IRI in the context and returns it.
+ * [[5]](https://www.w3.org/TR/sparql11-query/#rBaseDecl)
+ */
+export const baseDecl: SparqlRule<'baseDecl', ContextDefinitionBaseDecl> = <const> {
+  name: 'baseDecl',
+  impl: ({ ACTION, CONSUME, SUBRULE }) => (C) => {
+    const base = CONSUME(l.baseDecl);
+    const val = SUBRULE(iriFull, undefined);
+    return ACTION(() => C.factory.baseDecl(C.factory.sourceLocation(base, val.loc), val));
+  },
+  gImpl: () => () => {},
+};
+
+/**
+ * Registers prefix in the context and returns registered key-value-pair.
+ * [[6]](https://www.w3.org/TR/sparql11-query/#rPrefixDecl)
+ */
+export const prefixDecl: SparqlRule<'prefixDecl', ContextDefinitionPrefixDecl> = <const> {
+  name: 'prefixDecl',
+  impl: ({ ACTION, CONSUME, SUBRULE }) => (C) => {
+    const prefix = CONSUME(l.prefixDecl);
+    const name = CONSUME(l.terminals.pNameNs).image.slice(0, -1);
+    const value = SUBRULE(iriFull, undefined);
+
+    return ACTION(() => C.factory.prefixDecl(C.factory.sourceLocation(prefix, value.loc), name, value));
+  },
+  gImpl: () => () => {},
+};
 
 /**
  * [[78]](https://www.w3.org/TR/sparql11-query/#rVerb)

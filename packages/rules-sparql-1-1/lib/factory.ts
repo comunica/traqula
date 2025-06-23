@@ -16,7 +16,9 @@ import type {
   ExpressionPatternOperation,
   GraphNode,
   GraphRef,
+  GraphRefAll,
   GraphRefDefault,
+  GraphRefNamed,
   GraphRefSpecific,
   Ordering,
   Path,
@@ -28,10 +30,13 @@ import type {
   PatternBgp,
   PatternBind,
   PatternFilter,
+  PatternGraph,
   PatternGroup,
   PatternMinus,
+  PatternOptional,
   PatternService,
   PatternUnion,
+  PatternValues,
   PropertyPathChain,
   Quads,
   Query,
@@ -62,6 +67,7 @@ import type {
   UpdateOperationLoad,
   UpdateOperationModify,
   UpdateOperationMove,
+  ValuePatternRow,
   Wildcard,
 } from './RoundTripTypes';
 
@@ -78,7 +84,7 @@ export class TraqulaFactory extends CoreFactory {
     };
   }
 
-  public baseDecl(loc: SourceLocation, img1: string, value: TermIriFull): ContextDefinitionBaseDecl {
+  public baseDecl(loc: SourceLocation, value: TermIriFull): ContextDefinitionBaseDecl {
     return {
       type: 'contextDef',
       contextType: 'base',
@@ -186,6 +192,22 @@ export class TraqulaFactory extends CoreFactory {
     };
   }
 
+  public expressionFunctionCall<Args extends Expression[]>(
+    functionOp: TermIri,
+    args: Args,
+    distinct: boolean,
+    loc: SourceLocation,
+  ): ExpressionFunctionCall & { args: Args } {
+    return {
+      type: 'expression',
+      expressionType: 'functionCall',
+      function: functionOp,
+      args,
+      distinct,
+      loc,
+    };
+  }
+
   public expressionPatternOperation<Args extends Pattern[]>(
     operator: string,
     args: Args,
@@ -229,6 +251,22 @@ export class TraqulaFactory extends CoreFactory {
 
   public patternBgp(triples: TripleNesting[], loc: SourceLocation): PatternBgp {
     return { type: 'pattern', patternType: 'bgp', triples, loc };
+  }
+
+  public patternGroup(patterns: Pattern[], loc: SourceLocation): PatternGroup {
+    return { type: 'pattern', patternType: 'group', patterns, loc };
+  }
+
+  public patternGraph(name: TermIri | TermVariable, patterns: Pattern[], loc: SourceLocation): PatternGraph {
+    return { type: 'pattern', patternType: 'graph', name, patterns, loc };
+  }
+
+  public patternOptional(patterns: Pattern[], loc: SourceLocation): PatternOptional {
+    return { type: 'pattern', patternType: 'optional', patterns, loc };
+  }
+
+  public patternValues(values: ValuePatternRow[], loc: SourceLocation): PatternValues {
+    return { type: 'pattern', patternType: 'values', values, loc };
   }
 
   public patternFilter(expression: Expression, loc: SourceLocation): PatternFilter {
@@ -284,6 +322,39 @@ export class TraqulaFactory extends CoreFactory {
       silent,
       name,
       patterns,
+      loc,
+    };
+  }
+
+  public graphRefSpecific(graph: TermIri, loc: SourceLocation): GraphRefSpecific {
+    return {
+      type: 'graphRef',
+      graphRefType: 'specific',
+      graph,
+      loc,
+    };
+  }
+
+  public graphRefDefault(loc: SourceLocation): GraphRefDefault {
+    return {
+      type: 'graphRef',
+      graphRefType: 'default',
+      loc,
+    };
+  }
+
+  public graphRefNamed(loc: SourceLocation): GraphRefNamed {
+    return {
+      type: 'graphRef',
+      graphRefType: 'named',
+      loc,
+    };
+  }
+
+  public graphRefAll(loc: SourceLocation): GraphRefAll {
+    return {
+      type: 'graphRef',
+      graphRefType: 'all',
       loc,
     };
   }
@@ -504,12 +575,22 @@ export class TraqulaFactory extends CoreFactory {
     };
   }
 
-  private updateOperationClearDrop<T extends 'clear' | 'drop' | 'create', Dest extends GraphRef>(
-    operationType: T,
+  public updateOperationClearDrop(operationType: 'clear', silent: boolean, destination: GraphRef, loc: SourceLocation):
+  UpdateOperationClear;
+  public updateOperationClearDrop(operationType: 'drop', silent: boolean, destination: GraphRef, loc: SourceLocation):
+  UpdateOperationDrop;
+  public updateOperationClearDrop(
+    operationType: 'clear' | 'drop',
     silent: boolean,
-    destination: Dest,
+    destination: GraphRef,
+    loc: SourceLocation
+  ): UpdateOperationClear | UpdateOperationDrop;
+  public updateOperationClearDrop(
+    operationType: 'clear' | 'drop',
+    silent: boolean,
+    destination: GraphRef,
     loc: SourceLocation,
-  ): Omit<UpdateOperationDrop, 'destination' | 'operationType'> & { operationType: T; destination: Dest } {
+  ): UpdateOperationClear | UpdateOperationDrop {
     return {
       type: 'updateOperation',
       operationType,
@@ -540,16 +621,50 @@ export class TraqulaFactory extends CoreFactory {
     silent: boolean,
     loc: SourceLocation,
   ): UpdateOperationCreate {
-    return this.updateOperationClearDrop('create', silent, destination, loc);
+    return {
+      type: 'updateOperation',
+      operationType: 'create',
+      silent,
+      destination,
+      loc,
+    };
   }
 
-  private updateOperationAddMoveCopy<T extends 'add' | 'move' | 'copy'>(
-    operationType: T,
+  public updateOperationAddMoveCopy(
+    operationType: 'add',
     source: GraphRefDefault | GraphRefSpecific,
     destination: GraphRefDefault | GraphRefSpecific,
     silent: boolean,
     loc: SourceLocation,
-  ): Omit<UpdateOperationAdd, 'operationType'> & { operationType: T } {
+  ): UpdateOperationAdd;
+  public updateOperationAddMoveCopy(
+    operationType: 'move',
+    source: GraphRefDefault | GraphRefSpecific,
+    destination: GraphRefDefault | GraphRefSpecific,
+    silent: boolean,
+    loc: SourceLocation,
+  ): UpdateOperationMove ;
+  public updateOperationAddMoveCopy(
+    operationType: 'copy',
+    source: GraphRefDefault | GraphRefSpecific,
+    destination: GraphRefDefault | GraphRefSpecific,
+    silent: boolean,
+    loc: SourceLocation,
+  ): UpdateOperationCopy;
+  public updateOperationAddMoveCopy(
+    operationType: 'add' | 'move' | 'copy',
+    source: GraphRefDefault | GraphRefSpecific,
+    destination: GraphRefDefault | GraphRefSpecific,
+    silent: boolean,
+    loc: SourceLocation,
+  ): UpdateOperationAdd | UpdateOperationMove | UpdateOperationCopy;
+  public updateOperationAddMoveCopy(
+    operationType: 'add' | 'move' | 'copy',
+    source: GraphRefDefault | GraphRefSpecific,
+    destination: GraphRefDefault | GraphRefSpecific,
+    silent: boolean,
+    loc: SourceLocation,
+  ): UpdateOperationAdd | UpdateOperationMove | UpdateOperationCopy {
     return {
       type: 'updateOperation',
       operationType,
@@ -587,30 +702,46 @@ export class TraqulaFactory extends CoreFactory {
     return this.updateOperationAddMoveCopy('copy', source, destination, silent, loc);
   }
 
-  private updateOperationInsertDeleteDelWhere<T extends 'insertdata' | 'deletedata' | 'deletewhere'>(
-    operationType: T,
+  public updateOperationInsDelDataWhere(operationType: 'insertdata', data: Quads[], loc: SourceLocation):
+  UpdateOperationInsertData;
+  public updateOperationInsDelDataWhere(operationType: 'deletedata', data: Quads[], loc: SourceLocation):
+  UpdateOperationDeleteData;
+  public updateOperationInsDelDataWhere(operationType: 'deletewhere', data: Quads[], loc: SourceLocation):
+  UpdateOperationDeleteWhere;
+  public updateOperationInsDelDataWhere(
+    operationType: 'insertdata' | 'deletedata' | 'deletewhere',
     data: Quads[],
     loc: SourceLocation,
-  ): Omit<UpdateOperationInsertData, 'operationType'> & { operationType: T } {
-    return { type: 'updateOperation', operationType, data, loc };
+  ): UpdateOperationInsertData | UpdateOperationDeleteData | UpdateOperationDeleteWhere;
+  public updateOperationInsDelDataWhere(
+    operationType: 'insertdata' | 'deletedata' | 'deletewhere',
+    data: Quads[],
+    loc: SourceLocation,
+  ): UpdateOperationInsertData | UpdateOperationDeleteData | UpdateOperationDeleteWhere {
+    return {
+      type: 'updateOperation',
+      operationType,
+      data,
+      loc,
+    };
   }
 
   public updateOperationInsertData(data: Quads[], loc: SourceLocation): UpdateOperationInsertData {
-    return this.updateOperationInsertDeleteDelWhere('insertdata', data, loc);
+    return this.updateOperationInsDelDataWhere('insertdata', data, loc);
   }
 
   public updateOperationDeleteData(data: Quads[], loc: SourceLocation): UpdateOperationDeleteData {
-    return this.updateOperationInsertDeleteDelWhere('deletedata', data, loc);
+    return this.updateOperationInsDelDataWhere('deletedata', data, loc);
   }
 
   public updateOperationDeleteWhere(data: Quads[], loc: SourceLocation): UpdateOperationDeleteWhere {
-    return this.updateOperationInsertDeleteDelWhere('deletewhere', data, loc);
+    return this.updateOperationInsDelDataWhere('deletewhere', data, loc);
   }
 
   public updateOperationModify(
     loc: SourceLocation,
-    insert: Quads[],
-    del: Quads[],
+    insert: Quads[] | undefined,
+    del: Quads[] | undefined,
     where: Pattern[],
     from: DatasetClauses,
     graph?: TermIri | undefined,
@@ -618,8 +749,8 @@ export class TraqulaFactory extends CoreFactory {
     return {
       type: 'updateOperation',
       operationType: 'modify',
-      insert,
-      delete: del,
+      insert: insert ?? [],
+      delete: del ?? [],
       graph,
       where,
       from,

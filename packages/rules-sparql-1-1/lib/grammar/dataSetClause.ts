@@ -76,12 +76,12 @@ export function datasetClauseUsingStar<RuleName extends string>(
           }
         });
       });
-      return {
+      return ACTION(() => ({
         type: 'datasetClauses',
         default: _default,
         named,
         loc: C.factory.sourceLocation(...[ first, last ].filter(x => x !== undefined)),
-      } satisfies DatasetClauses;
+      }));
     },
     gImpl: () => () => '',
   };

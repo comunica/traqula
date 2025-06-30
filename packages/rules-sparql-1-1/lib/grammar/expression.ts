@@ -391,8 +391,8 @@ export const iriOrFunction: SparqlRule<'iriOrFunction', TermIri | ExpressionFunc
     const iriVal = SUBRULE(iri, undefined);
     const functionCall = OPTION<ExpressionFunctionCall>(() => {
       const args = SUBRULE(argList, undefined);
-      const distinct = args.val.distinct;
       return ACTION(() => {
+        const distinct = args.val.distinct;
         if (!C.parseMode.has('canParseAggregate') && distinct) {
           throw new Error(`DISTINCT implies that this function is an aggregated function, which is not allowed in this context.`);
         }

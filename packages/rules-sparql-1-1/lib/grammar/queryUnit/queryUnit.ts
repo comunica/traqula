@@ -136,7 +136,7 @@ export const selectClause: SparqlRule<'selectClause', Wrap<Pick<QuerySelect, 'va
     const select = CONSUME(l.select);
     const couldParseAgg = ACTION(() => C.parseMode.has('canParseAggregate') || !C.parseMode.add('canParseAggregate'));
 
-    const [ distinct, reduced ] = OPTION(() => OR1<[boolean, boolean]>([
+    const distinctAndReduced = OPTION(() => OR1<[boolean, boolean]>([
       { ALT: () => {
         CONSUME(l.distinct);
         return <const> [ true, false ];
@@ -146,10 +146,13 @@ export const selectClause: SparqlRule<'selectClause', Wrap<Pick<QuerySelect, 'va
         return <const> [ false, true ];
       } },
     ])) ?? [ false, false ];
-    const distRed = {
-      ...(distinct && { distinct }),
-      ...(reduced && { reduced }),
-    };
+    const distRed = ACTION(() => {
+      const [ distinct, reduced ] = distinctAndReduced;
+      return {
+        ...(distinct && { distinct }),
+        ...(reduced && { reduced }),
+      };
+    });
 
     let last: SourceLocation;
     const val = OR2<RuleDefReturn<typeof selectClause>['val']>([

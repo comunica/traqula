@@ -132,6 +132,8 @@ export type Query =
   | QueryDescribe
   | QueryAsk;
 
+export type SparqlQuery = Query | Update;
+
 // https://www.w3.org/TR/sparql11-query/#rDatasetClause
 export type DatasetClauses = Node & {
   type: 'datasetClauses';

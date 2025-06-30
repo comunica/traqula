@@ -443,19 +443,19 @@ export const quads: SparqlRule<'quads', Quads[]> = <const> {
  */
 export const quadsNotTriples: SparqlRule<'quadsNotTriples', GraphQuads> = <const> {
   name: 'quadsNotTriples',
-  impl: ({ SUBRULE1, CONSUME, OPTION }) => (C) => {
+  impl: ({ ACTION, SUBRULE1, CONSUME, OPTION }) => (C) => {
     const graph = CONSUME(l.graph.graph);
     const name = SUBRULE1(varOrIri, undefined);
     CONSUME(l.symbols.LCurly);
     const triples = OPTION(() => SUBRULE1(triplesTemplate, undefined));
     const close = CONSUME(l.symbols.RCurly);
 
-    return {
+    return ACTION(() => ({
       type: 'graph',
       graph: name,
       triples: triples?.val ?? [],
       loc: C.factory.sourceLocation(graph, close),
-    };
+    }));
   },
   gImpl: () => () => '',
 };

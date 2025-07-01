@@ -30,6 +30,13 @@ export class CoreFactory {
     return { sourceLocationType: 'noMaterialize' };
   }
 
+  /**
+   * Returns a copy of the argument that is not materialized
+   */
+  public dematerialized<T extends Node>(arg: T): T & { loc: SourceLocationNoMaterialize } {
+    return { ...arg, loc: this.sourceLocationNoMaterialize() };
+  }
+
   public isSourceLocation(loc: object): loc is SourceLocation {
     return 'sourceLocationType' in loc;
   }

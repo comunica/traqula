@@ -1,6 +1,7 @@
 import type { RuleDefReturn, SourceLocation } from '@traqula/core';
 import * as l from '../../lexer';
 import type {
+  BasicGraphPattern,
   PatternBind,
   PatternValues,
   Query,
@@ -11,7 +12,6 @@ import type {
   SubSelect,
   TermIri,
   TermVariable,
-  TripleNesting,
   Wrap,
 } from '../../RoundTripTypes';
 import type {
@@ -51,11 +51,15 @@ export const query: SparqlRule<'query', Query> = <const> {
     const values = SUBRULE(valuesClause, undefined);
 
     return ACTION(() => (<Query>{
-      ...prologueValues,
+      context: prologueValues,
       ...queryType,
       type: 'query',
       ...(values && { values }),
-      loc: C.factory.sourceLocation(prologueValues[0].loc, queryType.loc, ...(values ? [ values.loc ] : [])),
+      loc: C.factory.sourceLocation(
+        ...(prologueValues.at(0) ? [ prologueValues.at(0)!.loc ] : []),
+        queryType.loc,
+        ...(values ? [ values.loc ] : []),
+      ),
     }));
   },
   gImpl: () => () => '',
@@ -343,7 +347,7 @@ export const valuesClause: SparqlRule<'valuesClause', PatternValues | undefined>
 /**
  * [[73]](https://www.w3.org/TR/sparql11-query/#ConstructTemplate)
  */
-export const constructTemplate: SparqlRule<'constructTemplate', Wrap<TripleNesting[]>> = <const> {
+export const constructTemplate: SparqlRule<'constructTemplate', Wrap<BasicGraphPattern>> = <const> {
   name: 'constructTemplate',
   impl: ({ ACTION, SUBRULE1, CONSUME, OPTION }) => (C) => {
     const open = CONSUME(l.symbols.LCurly);

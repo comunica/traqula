@@ -30,7 +30,7 @@ export type Quads = PatternBgp | GraphQuads;
 export type GraphQuads = Node & {
   type: 'graph';
   graph: TermIri | TermVariable;
-  triples: TripleNesting[];
+  triples: BasicGraphPattern;
 };
 
 // https://www.w3.org/TR/sparql11-query/#rUpdate1
@@ -117,7 +117,7 @@ export type QuerySelect = QueryBase & {
 };
 export type QueryConstruct = QueryBase & {
   queryType: 'construct';
-  template: TripleNesting[];
+  template: BasicGraphPattern;
 };
 export type QueryDescribe = QueryBase & {
   queryType: 'describe';
@@ -204,12 +204,13 @@ export type PatternUnion = PatternBase & {
   patternType: 'union';
   patterns: Pattern[];
 };
+export type BasicGraphPattern = (TripleNesting | TripleCollection)[];
 export type PatternBgp = PatternBase & {
   patternType: 'bgp';
   /**
-   * Only the first appearance of a subject and predicate should have a string manifestation
+   * Only the first appearance of a subject and predicate have a string manifestation
    */
-  triples: TripleNesting[];
+  triples: BasicGraphPattern;
 };
 export type PatternBind = PatternBase & {
   patternType: 'bind';

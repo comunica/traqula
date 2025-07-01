@@ -2,6 +2,7 @@ import type { IToken } from 'chevrotain';
 import { CommonIRIs } from '../grammar-helpers/utils';
 import * as l from '../lexer';
 import type {
+  BasicGraphPattern,
   GraphNode,
   Path,
   PatternBgp,
@@ -20,10 +21,10 @@ import type {
 import { var_, varOrTerm, verb } from './general';
 import { path } from './propertyPaths';
 
-function triplesDotSeperated(triplesSameSubjectSubrule: SparqlGrammarRule<string, TripleNesting[]>):
-SparqlGrammarRule<string, Wrap<TripleNesting[]>>['impl'] {
+function triplesDotSeperated(triplesSameSubjectSubrule: SparqlGrammarRule<string, BasicGraphPattern>):
+SparqlGrammarRule<string, Wrap<BasicGraphPattern>>['impl'] {
   return ({ ACTION, AT_LEAST_ONE, SUBRULE, CONSUME, OPTION }) => (C) => {
-    const triples: TripleNesting[] = [];
+    const triples: BasicGraphPattern = [];
 
     let parsedDot = true;
     let dotToken: undefined | IToken;
@@ -57,36 +58,32 @@ export const triplesBlock: SparqlRule<'triplesBlock', PatternBgp> = <const>{
     const triples = triplesDotSeperated(triplesSameSubjectPath)(implArgs)(C, undefined);
     return implArgs.ACTION(() => C.factory.patternBgp(triples.val, C.factory.sourceLocation(triples)));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
-    for (const triple of ast.triples) {
-      SUBRULE(graphNode, triple.subject, undefined);
-      if (F.isTerm(triple.predicate) && F.isTermVariable(triple.predicate)) {
-        SUBRULE(var_, triple.predicate, undefined);
-      } else {
-        SUBRULE(path, triple.predicate, undefined);
-      }
-      SUBRULE(graphNode, triple.object, undefined);
-
-      if (!ast.loc) {
-        PRINT_WORD('.');
-      }
-    }
-  },
+  gImpl: () => () => {},
 };
 
 /**
  * [[75]](https://www.w3.org/TR/sparql11-query/#rTriplesSameSubject)
  * [[81]](https://www.w3.org/TR/sparql11-query/#rTriplesSameSubjectPath)
  * CONTRACT: triples generated from the subject come first, then comes the main triple,
- *  and then come the triples from the object
+ *  and then come the triples from the object. Only the first occurrence of a term has `SourceLocationType = source`
  */
-function triplesSameSubjectImpl<T extends string>(name: T, allowPaths: boolean): SparqlGrammarRule<T, TripleNesting[]> {
+function triplesSameSubjectImpl<T extends string>(name: T, allowPaths: boolean):
+SparqlGrammarRule<T, BasicGraphPattern> {
   return <const> {
     name,
-    impl: ({ ACTION, SUBRULE, OR }) => C => OR<TripleNesting[]>([
+    impl: ({ ACTION, SUBRULE, OR }) => C => OR<BasicGraphPattern>([
       { ALT: () => {
         const subject = SUBRULE(varOrTerm, undefined);
-        return SUBRULE(allowPaths ? propertyListPathNotEmpty : propertyListNotEmpty, { subject });
+        const res = SUBRULE(
+          allowPaths ? propertyListPathNotEmpty : propertyListNotEmpty,
+          { subject: ACTION(() => C.factory.dematerialized(subject)) },
+        );
+        return ACTION(() => {
+          if (res.length > 0) {
+            res[0].subject = subject;
+          }
+          return res;
+        });
       } },
       { ALT: () => {
         const subjectNode = SUBRULE(allowPaths ? triplesNodePath : triplesNode, undefined);
@@ -95,7 +92,7 @@ function triplesSameSubjectImpl<T extends string>(name: T, allowPaths: boolean):
           { subject: ACTION(() => C.factory.graphNodeIdentifier(subjectNode)) },
         );
         return ACTION(() => [
-          ...subjectNode.triples,
+          subjectNode,
           ...restNode,
         ]);
       } },
@@ -108,7 +105,7 @@ export const triplesSameSubjectPath = triplesSameSubjectImpl('triplesSameSubject
 /**
  * [[52]](https://www.w3.org/TR/sparql11-query/#rTriplesTemplate)
  */
-export const triplesTemplate: SparqlGrammarRule<'triplesTemplate', Wrap<TripleNesting[]>> = <const> {
+export const triplesTemplate: SparqlGrammarRule<'triplesTemplate', Wrap<BasicGraphPattern>> = <const> {
   name: 'triplesTemplate',
   impl: triplesDotSeperated(triplesSameSubject),
 };

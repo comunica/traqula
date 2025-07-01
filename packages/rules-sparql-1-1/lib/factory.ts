@@ -2,6 +2,7 @@ import type { SourceLocation } from '@traqula/core';
 import { CoreFactory } from '@traqula/core';
 
 import type {
+  BasicGraphPattern,
   ContextDefinition,
   ContextDefinitionBaseDecl,
   ContextDefinitionPrefixDecl,
@@ -249,7 +250,7 @@ export class TraqulaFactory extends CoreFactory {
     return x.type === 'query';
   }
 
-  public patternBgp(triples: TripleNesting[], loc: SourceLocation): PatternBgp {
+  public patternBgp(triples: BasicGraphPattern, loc: SourceLocation): PatternBgp {
     return { type: 'pattern', patternType: 'bgp', triples, loc };
   }
 

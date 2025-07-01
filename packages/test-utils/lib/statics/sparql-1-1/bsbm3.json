@@ -1,107 +1,358 @@
 {
-  "queryType": "SELECT",
-  "variables": [
+  "context": [
     {
-      "termType": "Variable",
-      "value": "product"
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "bsbm-inst",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 18,
+          "end": 77
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 77
+      }
     },
     {
-      "termType": "Variable",
-      "value": "label"
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "bsbm",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 91,
+          "end": 151
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 78,
+        "end": 151
+      }
+    },
+    {
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "rdfs",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://www.w3.org/2000/01/rdf-schema#",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 165,
+          "end": 204
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 152,
+        "end": 204
+      }
+    },
+    {
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "rdf",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 217,
+          "end": 262
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 205,
+        "end": 262
+      }
     }
   ],
+  "queryType": "select",
   "where": [
     {
-      "type": "bgp",
+      "type": "pattern",
+      "patternType": "bgp",
       "triples": [
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "product"
+            "value": "product",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 299,
+              "end": 307
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://www.w3.org/2000/01/rdf-schema#label"
+            "value": "label",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 308,
+              "end": 318
+            },
+            "prefix": "rdfs"
           },
           "object": {
+            "type": "term",
             "termType": "Variable",
-            "value": "label"
+            "value": "label",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 319,
+              "end": 325
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 308,
+            "end": 325
           }
         }
-      ]
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 308,
+        "end": 327
+      }
     },
     {
-      "type": "optional",
+      "type": "pattern",
+      "patternType": "optional",
       "patterns": [
         {
-          "type": "bgp",
+          "type": "pattern",
+          "patternType": "bgp",
           "triples": [
             {
+              "type": "triple",
               "subject": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "product"
+                "value": "product",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 351,
+                  "end": 359
+                }
               },
               "predicate": {
+                "type": "term",
                 "termType": "NamedNode",
-                "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/productFeature"
+                "value": "productFeature",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 360,
+                  "end": 379
+                },
+                "prefix": "bsbm"
               },
               "object": {
+                "type": "term",
                 "termType": "NamedNode",
-                "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature1043"
+                "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature1043",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 380,
+                  "end": 457
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 360,
+                "end": 457
               }
             },
             {
+              "type": "triple",
               "subject": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "product"
+                "value": "product",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 468,
+                  "end": 476
+                }
               },
               "predicate": {
+                "type": "term",
                 "termType": "NamedNode",
-                "value": "http://www.w3.org/2000/01/rdf-schema#label"
+                "value": "label",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 477,
+                  "end": 487
+                },
+                "prefix": "rdfs"
               },
               "object": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "testVar"
+                "value": "testVar",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 488,
+                  "end": 496
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 477,
+                "end": 496
               }
             }
-          ]
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 360,
+            "end": 459
+          }
         }
-      ]
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 332,
+        "end": 498
+      }
     },
     {
-      "type": "filter",
+      "type": "pattern",
+      "patternType": "filter",
       "expression": {
-        "type": "operation",
-        "operator": "!",
-        "args": [
-          {
-            "type": "operation",
-            "operator": "bound",
-            "args": [
-              {
-                "termType": "Variable",
-                "value": "testVar"
+        "type": "expression",
+        "expressionType": "bracketted",
+        "expression": {
+          "type": "expression",
+          "expressionType": "operation",
+          "operator": "!",
+          "args": [
+            {
+              "type": "expression",
+              "expressionType": "operation",
+              "operator": "bound",
+              "args": [
+                {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "testVar",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 518,
+                    "end": 526
+                  }
+                }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 512,
+                "end": 527
               }
-            ]
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 511,
+            "end": 527
           }
-        ]
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 510,
+          "end": 528
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 503,
+        "end": 528
       }
     }
   ],
-  "order": [
+  "solutionModifiers": {
+    "limitOffset": {
+      "type": "solutionModifier",
+      "modifierType": "limitOffset",
+      "limit": 10,
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 548,
+        "end": 556
+      }
+    },
+    "order": {
+      "type": "solutionModifier",
+      "modifierType": "order",
+      "orderDefs": [
+        {
+          "type": "term",
+          "termType": "Variable",
+          "value": "label",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 541,
+            "end": 547
+          }
+        }
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 532,
+        "end": 547
+      }
+    }
+  },
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
     {
-      "expression": {
-        "termType": "Variable",
-        "value": "label"
+      "type": "term",
+      "termType": "Variable",
+      "value": "product",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 271,
+        "end": 279
+      }
+    },
+    {
+      "type": "term",
+      "termType": "Variable",
+      "value": "label",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 280,
+        "end": 286
       }
     }
   ],
-  "limit": 10,
-  "type": "query",
-  "prefixes": {
-    "bsbm-inst": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/",
-    "bsbm": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/",
-    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-  }
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 556
+  },
+  "type": "query"
 }

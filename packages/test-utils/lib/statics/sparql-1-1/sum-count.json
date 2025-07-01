@@ -1,82 +1,240 @@
 {
-  "queryType": "SELECT",
-  "variables": [
+  "context": [
     {
-      "expression": {
-        "expression": {
-          "termType": "Variable",
-          "value": "val"
-        },
-        "type": "aggregate",
-        "aggregation": "sum",
-        "distinct": false
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "rdf",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 12,
+          "end": 57
+        }
       },
-      "variable": {
-        "termType": "Variable",
-        "value": "sum"
-      }
-    },
-    {
-      "expression": {
-        "expression": {
-          "termType": "Variable",
-          "value": "a"
-        },
-        "type": "aggregate",
-        "aggregation": "count",
-        "distinct": false
-      },
-      "variable": {
-        "termType": "Variable",
-        "value": "count"
-      }
-    },
-    {
-      "expression": {
-        "expression": {
-          "termType": "Wildcard"
-        },
-        "type": "aggregate",
-        "aggregation": "count",
-        "distinct": false
-      },
-      "variable": {
-        "termType": "Variable",
-        "value": "countAll"
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 57
       }
     }
   ],
+  "queryType": "select",
   "where": [
     {
-      "type": "bgp",
+      "type": "pattern",
+      "patternType": "bgp",
       "triples": [
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "a"
+            "value": "a",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 141,
+              "end": 143
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#value"
+            "value": "value",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 144,
+              "end": 153
+            },
+            "prefix": "rdf"
           },
           "object": {
+            "type": "term",
             "termType": "Variable",
-            "value": "val"
+            "value": "val",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 154,
+              "end": 158
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 144,
+            "end": 158
           }
         }
-      ]
-    }
-  ],
-  "group": [
-    {
-      "expression": {
-        "termType": "Variable",
-        "value": "a"
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 144,
+        "end": 160
       }
     }
   ],
-  "type": "query",
-  "prefixes": {
-    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-  }
+  "solutionModifiers": {
+    "group": {
+      "type": "solutionModifier",
+      "modifierType": "group",
+      "groupings": [
+        {
+          "type": "term",
+          "termType": "Variable",
+          "value": "a",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 172,
+            "end": 174
+          }
+        }
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 163,
+        "end": 174
+      }
+    }
+  },
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "pattern",
+      "patternType": "bind",
+      "expression": {
+        "type": "expression",
+        "expressionType": "aggregate",
+        "aggregation": "sum",
+        "distinct": false,
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 66,
+          "end": 75
+        },
+        "expression": [
+          {
+            "type": "term",
+            "termType": "Variable",
+            "value": "val",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 70,
+              "end": 74
+            }
+          }
+        ]
+      },
+      "variable": {
+        "type": "term",
+        "termType": "Variable",
+        "value": "sum",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 79,
+          "end": 83
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 65,
+        "end": 84
+      }
+    },
+    {
+      "type": "pattern",
+      "patternType": "bind",
+      "expression": {
+        "type": "expression",
+        "expressionType": "aggregate",
+        "aggregation": "count",
+        "distinct": false,
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 86,
+          "end": 95
+        },
+        "expression": [
+          {
+            "type": "term",
+            "termType": "Variable",
+            "value": "a",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 92,
+              "end": 94
+            }
+          }
+        ]
+      },
+      "variable": {
+        "type": "term",
+        "termType": "Variable",
+        "value": "count",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 99,
+          "end": 105
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 85,
+        "end": 106
+      }
+    },
+    {
+      "type": "pattern",
+      "patternType": "bind",
+      "expression": {
+        "type": "expression",
+        "expressionType": "aggregate",
+        "aggregation": "count",
+        "distinct": false,
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 108,
+          "end": 116
+        },
+        "expression": [
+          {
+            "type": "wildcard",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 114,
+              "end": 115
+            }
+          }
+        ]
+      },
+      "variable": {
+        "type": "term",
+        "termType": "Variable",
+        "value": "countAll",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 120,
+          "end": 129
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 107,
+        "end": 130
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 174
+  },
+  "type": "query"
 }

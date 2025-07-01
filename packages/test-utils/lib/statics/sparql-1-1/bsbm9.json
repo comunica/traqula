@@ -1,34 +1,104 @@
 {
-  "queryType": "DESCRIBE",
+  "context": [
+    {
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "rev",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://purl.org/stuff/rev#",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 12,
+          "end": 40
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 40
+      }
+    }
+  ],
+  "queryType": "describe",
   "variables": [
     {
+      "type": "term",
       "termType": "Variable",
-      "value": "x"
+      "value": "x",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 51,
+        "end": 53
+      }
     }
   ],
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
   "where": [
     {
-      "type": "bgp",
+      "type": "pattern",
+      "patternType": "bgp",
       "triples": [
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromRatingSite1/Review7958"
+            "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromRatingSite1/Review7958",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 62,
+              "end": 151
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://purl.org/stuff/rev#reviewer"
+            "value": "reviewer",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 152,
+              "end": 164
+            },
+            "prefix": "rev"
           },
           "object": {
+            "type": "term",
             "termType": "Variable",
-            "value": "x"
+            "value": "x",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 165,
+              "end": 167
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 152,
+            "end": 167
           }
         }
-      ]
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 152,
+        "end": 167
+      }
     }
   ],
-  "type": "query",
-  "prefixes": {
-    "rev": "http://purl.org/stuff/rev#"
-  }
+  "solutionModifiers": {},
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 169
+  },
+  "type": "query"
 }

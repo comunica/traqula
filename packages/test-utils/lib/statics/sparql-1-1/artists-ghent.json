@@ -1,170 +1,475 @@
 {
-  "queryType": "CONSTRUCT",
+  "context": [
+    {
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "rdfs",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://www.w3.org/2000/01/rdf-schema#",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 13,
+          "end": 52
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 52
+      }
+    },
+    {
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "dbpedia",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://dbpedia.org/resource/",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 69,
+          "end": 99
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 53,
+        "end": 99
+      }
+    },
+    {
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "dbpedia-owl",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://dbpedia.org/ontology/",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 120,
+          "end": 150
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 100,
+        "end": 150
+      }
+    }
+  ],
+  "queryType": "construct",
   "template": [
     {
+      "type": "triple",
       "subject": {
+        "type": "term",
         "termType": "Variable",
-        "value": "person"
+        "value": "person",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 166,
+          "end": 173
+        }
       },
       "predicate": {
+        "type": "term",
         "termType": "NamedNode",
-        "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+        "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 174,
+          "end": 175
+        }
       },
       "object": {
+        "type": "term",
         "termType": "NamedNode",
-        "value": "http://dbpedia.org/ontology/Artist"
+        "value": "Artist",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 176,
+          "end": 194
+        },
+        "prefix": "dbpedia-owl"
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 174,
+        "end": 194
       }
     },
     {
+      "type": "triple",
       "subject": {
+        "type": "term",
         "termType": "Variable",
-        "value": "person"
+        "value": "person",
+        "loc": {
+          "sourceLocationType": "noMaterialize"
+        }
       },
       "predicate": {
+        "type": "term",
         "termType": "NamedNode",
-        "value": "http://www.w3.org/2000/01/rdf-schema#label"
+        "value": "label",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 206,
+          "end": 216
+        },
+        "prefix": "rdfs"
       },
       "object": {
+        "type": "term",
         "termType": "Variable",
-        "value": "name"
+        "value": "name",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 217,
+          "end": 222
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 206,
+        "end": 222
       }
     },
     {
+      "type": "triple",
       "subject": {
+        "type": "term",
         "termType": "Variable",
-        "value": "person"
+        "value": "person",
+        "loc": {
+          "sourceLocationType": "noMaterialize"
+        }
       },
       "predicate": {
+        "type": "term",
         "termType": "NamedNode",
-        "value": "http://dbpedia.org/ontology/birthPlace"
+        "value": "birthPlace",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 234,
+          "end": 256
+        },
+        "prefix": "dbpedia-owl"
       },
       "object": {
+        "type": "term",
         "termType": "Variable",
-        "value": "city"
+        "value": "city",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 257,
+          "end": 262
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 234,
+        "end": 262
       }
     }
   ],
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
   "where": [
     {
-      "type": "bgp",
+      "type": "pattern",
+      "patternType": "bgp",
       "triples": [
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "person"
+            "value": "person",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 276,
+              "end": 283
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+            "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 284,
+              "end": 285
+            }
           },
           "object": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://dbpedia.org/ontology/Artist"
+            "value": "Artist",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 286,
+              "end": 304
+            },
+            "prefix": "dbpedia-owl"
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 284,
+            "end": 304
           }
         },
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "person"
+            "value": "person",
+            "loc": {
+              "sourceLocationType": "noMaterialize"
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://www.w3.org/2000/01/rdf-schema#label"
+            "value": "label",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 316,
+              "end": 326
+            },
+            "prefix": "rdfs"
           },
           "object": {
+            "type": "term",
             "termType": "Variable",
-            "value": "name"
+            "value": "name",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 327,
+              "end": 332
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 316,
+            "end": 332
           }
         },
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "person"
+            "value": "person",
+            "loc": {
+              "sourceLocationType": "noMaterialize"
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://dbpedia.org/ontology/birthPlace"
+            "value": "birthPlace",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 344,
+              "end": 366
+            },
+            "prefix": "dbpedia-owl"
           },
           "object": {
+            "type": "term",
             "termType": "Variable",
-            "value": "city"
+            "value": "city",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 367,
+              "end": 372
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 344,
+            "end": 372
           }
         },
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "city"
+            "value": "city",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 376,
+              "end": 381
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://www.w3.org/2000/01/rdf-schema#label"
+            "value": "label",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 382,
+              "end": 392
+            },
+            "prefix": "rdfs"
           },
           "object": {
+            "type": "term",
             "termType": "Variable",
-            "value": "cityName"
+            "value": "cityName",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 393,
+              "end": 402
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 382,
+            "end": 402
           }
         },
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "city"
+            "value": "city",
+            "loc": {
+              "sourceLocationType": "noMaterialize"
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://www.w3.org/2000/01/rdf-schema#label"
+            "value": "label",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 412,
+              "end": 422
+            },
+            "prefix": "rdfs"
           },
           "object": {
+            "type": "term",
             "termType": "Literal",
             "value": "Ghent",
-            "language": "en",
-            "datatype": {
-              "termType": "NamedNode",
-              "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
+            "langOrIri": "en",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 423,
+              "end": 433
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 412,
+            "end": 433
+          }
+        },
+        {
+          "type": "triple",
+          "subject": {
+            "type": "term",
+            "termType": "Variable",
+            "value": "city",
+            "loc": {
+              "sourceLocationType": "noMaterialize"
+            }
+          },
+          "predicate": {
+            "type": "term",
+            "termType": "NamedNode",
+            "value": "country",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 443,
+              "end": 462
             },
-            "direction": ""
+            "prefix": "dbpedia-owl"
+          },
+          "object": {
+            "type": "term",
+            "termType": "Variable",
+            "value": "country",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 463,
+              "end": 471
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 443,
+            "end": 471
           }
         },
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "city"
+            "value": "country",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 475,
+              "end": 483
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://dbpedia.org/ontology/country"
+            "value": "label",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 484,
+              "end": 494
+            },
+            "prefix": "rdfs"
           },
           "object": {
-            "termType": "Variable",
-            "value": "country"
-          }
-        },
-        {
-          "subject": {
-            "termType": "Variable",
-            "value": "country"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://www.w3.org/2000/01/rdf-schema#label"
-          },
-          "object": {
+            "type": "term",
             "termType": "Literal",
             "value": "Belgium",
-            "language": "en",
-            "datatype": {
-              "termType": "NamedNode",
-              "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
-            },
-            "direction": ""
+            "langOrIri": "en",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 495,
+              "end": 507
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 484,
+            "end": 507
           }
         }
-      ]
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 284,
+        "end": 508
+      }
     }
   ],
-  "type": "query",
-  "prefixes": {
-    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-    "dbpedia": "http://dbpedia.org/resource/",
-    "dbpedia-owl": "http://dbpedia.org/ontology/"
-  }
+  "solutionModifiers": {},
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 510
+  },
+  "type": "query"
 }

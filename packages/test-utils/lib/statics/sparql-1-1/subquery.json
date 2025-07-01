@@ -1,52 +1,126 @@
 {
-  "queryType": "SELECT",
-  "variables": [
-    {
-      "termType": "Variable",
-      "value": "x"
-    }
-  ],
+  "context": [],
+  "queryType": "select",
   "where": [
     {
-      "queryType": "SELECT",
-      "variables": [
-        {
-          "termType": "Variable",
-          "value": "x"
-        },
-        {
-          "termType": "Variable",
-          "value": "p"
-        },
-        {
-          "termType": "Variable",
-          "value": "y"
-        }
-      ],
+      "type": "query",
+      "queryType": "select",
       "where": [
         {
-          "type": "bgp",
+          "type": "pattern",
+          "patternType": "bgp",
           "triples": [
             {
+              "type": "triple",
               "subject": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "x"
+                "value": "x",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 42,
+                  "end": 44
+                }
               },
               "predicate": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "p"
+                "value": "p",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 45,
+                  "end": 47
+                }
               },
               "object": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "y"
+                "value": "y",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 48,
+                  "end": 50
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 45,
+                "end": 50
               }
             }
-          ]
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 45,
+            "end": 51
+          }
         }
       ],
-      "type": "query"
+      "solutionModifiers": {},
+      "variables": [
+        {
+          "type": "term",
+          "termType": "Variable",
+          "value": "x",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 25,
+            "end": 27
+          }
+        },
+        {
+          "type": "term",
+          "termType": "Variable",
+          "value": "p",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 28,
+            "end": 30
+          }
+        },
+        {
+          "type": "term",
+          "termType": "Variable",
+          "value": "y",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 31,
+            "end": 33
+          }
+        }
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 18,
+        "end": 53
+      }
     }
   ],
-  "type": "query",
-  "prefixes": {}
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "term",
+      "termType": "Variable",
+      "value": "x",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 7,
+        "end": 9
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 55
+  },
+  "type": "query"
 }

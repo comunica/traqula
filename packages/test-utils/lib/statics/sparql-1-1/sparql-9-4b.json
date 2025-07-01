@@ -1,41 +1,136 @@
 {
-  "queryType": "SELECT",
-  "variables": [
+  "context": [
     {
-      "termType": "Variable",
-      "value": "person"
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "foaf",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://xmlns.com/foaf/0.1/",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 15,
+          "end": 43
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 2,
+        "end": 43
+      }
+    },
+    {
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://example/",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 59,
+          "end": 76
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 46,
+        "end": 76
+      }
     }
   ],
+  "queryType": "select",
   "where": [
     {
-      "type": "bgp",
+      "type": "pattern",
+      "patternType": "bgp",
       "triples": [
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://example/x"
+            "value": "x",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 103,
+              "end": 105
+            },
+            "prefix": ""
           },
           "predicate": {
             "type": "path",
-            "pathType": "+",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 106,
+              "end": 117
+            },
             "items": [
               {
+                "type": "term",
                 "termType": "NamedNode",
-                "value": "http://xmlns.com/foaf/0.1/knows"
+                "value": "knows",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 106,
+                  "end": 116
+                },
+                "prefix": "foaf"
               }
-            ]
+            ],
+            "pathType": "+"
           },
           "object": {
+            "type": "term",
             "termType": "Variable",
-            "value": "person"
+            "value": "person",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 118,
+              "end": 125
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 106,
+            "end": 125
           }
         }
-      ]
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 106,
+        "end": 125
+      }
     }
   ],
-  "type": "query",
-  "prefixes": {
-    "foaf": "http://xmlns.com/foaf/0.1/",
-    "": "http://example/"
-  }
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "term",
+      "termType": "Variable",
+      "value": "person",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 86,
+        "end": 93
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 2,
+    "end": 129
+  },
+  "type": "query"
 }

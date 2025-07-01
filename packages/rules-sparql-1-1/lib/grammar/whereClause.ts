@@ -55,7 +55,7 @@ export const groupGraphPattern: SparqlRule<'groupGraphPattern', PatternGroup> = 
     const open = CONSUME(l.symbols.LCurly);
     const patterns = OR<Pattern[]>([
       { ALT: () => [ SUBRULE(subSelect, undefined) ]},
-      { ALT: () => SUBRULE(groupGraphPatternSub, undefined)?.val },
+      { ALT: () => SUBRULE(groupGraphPatternSub, undefined) },
     ]);
     const close = CONSUME(l.symbols.RCurly);
 
@@ -68,9 +68,9 @@ export const groupGraphPattern: SparqlRule<'groupGraphPattern', PatternGroup> = 
  * [[54]](https://www.w3.org/TR/sparql11-query/#rGroupGraphPatternSub)
  */
 export const groupGraphPatternSub:
-SparqlGrammarRule<'groupGraphPatternSub', Wrap<Pattern[]>> = <const> {
+SparqlGrammarRule<'groupGraphPatternSub', Pattern[]> = <const> {
   name: 'groupGraphPatternSub',
-  impl: ({ ACTION, SUBRULE, CONSUME, MANY, SUBRULE1, SUBRULE2, OPTION1, OPTION2, OPTION3 }) => (C) => {
+  impl: ({ SUBRULE, CONSUME, MANY, SUBRULE1, SUBRULE2, OPTION1, OPTION2, OPTION3 }) => () => {
     const patterns: Pattern[] = [];
 
     const bgpPattern = OPTION1(() => SUBRULE1(triplesBlock, undefined));
@@ -107,10 +107,7 @@ SparqlGrammarRule<'groupGraphPatternSub', Wrap<Pattern[]>> = <const> {
     //   }
     // });
 
-    return ACTION(() => ({
-      val: patterns,
-      ...C.factory.sourceLocation(patterns[0].loc, patterns.at(-1)!.loc),
-    }));
+    return patterns;
   },
 };
 

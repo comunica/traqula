@@ -7,12 +7,15 @@ import { updateParserBuilder } from './updateUnitParser';
 /**
  * Query or update, optimized for the Query case.
  * One could implement a new rule that does not use BACKTRACK.
+ * TODO: implement without backtracking - the error messages it produces are bad
  */
 const queryOrUpdate: SparqlGrammarRule<'queryOrUpdate', SparqlQuery> = {
   name: 'queryOrUpdate',
   impl: ({ SUBRULE, OR, BACKTRACK }) => () => OR<SparqlQuery>([
+    // { GATE: BACKTRACK(gram.updateUnit, undefined), ALT: () => SUBRULE(gram.updateUnit, undefined) },
+    // { GATE: BACKTRACK(gram.queryUnit, undefined), ALT: () => SUBRULE(gram.queryUnit, undefined) },
     { GATE: BACKTRACK(gram.queryUnit, undefined), ALT: () => SUBRULE(gram.queryUnit, undefined) },
-    { ALT: () => SUBRULE(gram.updateUnit, undefined) },
+    { GATE: BACKTRACK(gram.updateUnit, undefined), ALT: () => SUBRULE(gram.updateUnit, undefined) },
   ]),
 };
 

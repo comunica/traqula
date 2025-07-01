@@ -1,100 +1,260 @@
 {
-  "queryType": "SELECT",
-  "variables": [
+  "context": [
     {
-      "termType": "Wildcard"
-    }
-  ],
-  "where": [
-    {
-      "type": "group",
-      "patterns": [
-        {
-          "type": "bgp",
-          "triples": [
-            {
-              "subject": {
-                "termType": "Variable",
-                "value": "c"
-              },
-              "predicate": {
-                "termType": "NamedNode",
-                "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-              },
-              "object": {
-                "termType": "NamedNode",
-                "value": "http://www.w3.org/2002/07/owl#Class"
-              }
-            }
-          ]
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "owl",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://www.w3.org/2002/07/owl#",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 12,
+          "end": 44
         }
-      ]
-    },
-    {
-      "type": "filter",
-      "expression": {
-        "type": "operation",
-        "operator": "!",
-        "args": [
-          {
-            "type": "operation",
-            "operator": "&&",
-            "args": [
-              {
-                "type": "operation",
-                "operator": "bound",
-                "args": [
-                  {
-                    "termType": "Variable",
-                    "value": "c"
-                  }
-                ]
-              },
-              {
-                "type": "operation",
-                "operator": "regex",
-                "args": [
-                  {
-                    "type": "operation",
-                    "operator": "str",
-                    "args": [
-                      {
-                        "termType": "Variable",
-                        "value": "c"
-                      }
-                    ]
-                  },
-                  {
-                    "termType": "Literal",
-                    "value": "^toto",
-                    "language": "",
-                    "datatype": {
-                      "termType": "NamedNode",
-                      "value": "http://www.w3.org/2001/XMLSchema#string"
-                    },
-                    "direction": ""
-                  },
-                  {
-                    "termType": "Literal",
-                    "value": "i",
-                    "language": "",
-                    "datatype": {
-                      "termType": "NamedNode",
-                      "value": "http://www.w3.org/2001/XMLSchema#string"
-                    },
-                    "direction": ""
-                  }
-                ]
-              }
-            ]
-          }
-        ]
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 44
       }
     }
   ],
-  "limit": 10,
-  "type": "query",
-  "prefixes": {
-    "owl": "http://www.w3.org/2002/07/owl#"
-  }
+  "queryType": "select",
+  "where": [
+    {
+      "type": "pattern",
+      "patternType": "group",
+      "patterns": [
+        {
+          "type": "pattern",
+          "patternType": "bgp",
+          "triples": [
+            {
+              "type": "triple",
+              "subject": {
+                "type": "term",
+                "termType": "Variable",
+                "value": "c",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 69,
+                  "end": 71
+                }
+              },
+              "predicate": {
+                "type": "term",
+                "termType": "NamedNode",
+                "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 72,
+                  "end": 73
+                }
+              },
+              "object": {
+                "type": "term",
+                "termType": "NamedNode",
+                "value": "Class",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 74,
+                  "end": 83
+                },
+                "prefix": "owl"
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 72,
+                "end": 83
+              }
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 72,
+            "end": 85
+          }
+        }
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 67,
+        "end": 87
+      }
+    },
+    {
+      "type": "pattern",
+      "patternType": "filter",
+      "expression": {
+        "type": "expression",
+        "expressionType": "bracketted",
+        "expression": {
+          "type": "expression",
+          "expressionType": "operation",
+          "operator": "!",
+          "args": [
+            {
+              "type": "expression",
+              "expressionType": "bracketted",
+              "expression": {
+                "type": "expression",
+                "expressionType": "operation",
+                "operator": "&&",
+                "args": [
+                  {
+                    "type": "expression",
+                    "expressionType": "operation",
+                    "operator": "bound",
+                    "args": [
+                      {
+                        "type": "term",
+                        "termType": "Variable",
+                        "value": "c",
+                        "loc": {
+                          "sourceLocationType": "source",
+                          "start": 110,
+                          "end": 112
+                        }
+                      }
+                    ],
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 104,
+                      "end": 113
+                    }
+                  },
+                  {
+                    "type": "expression",
+                    "expressionType": "bracketted",
+                    "expression": {
+                      "type": "expression",
+                      "expressionType": "operation",
+                      "operator": "regex",
+                      "args": [
+                        {
+                          "type": "expression",
+                          "expressionType": "operation",
+                          "operator": "str",
+                          "args": [
+                            {
+                              "type": "term",
+                              "termType": "Variable",
+                              "value": "c",
+                              "loc": {
+                                "sourceLocationType": "source",
+                                "start": 129,
+                                "end": 131
+                              }
+                            }
+                          ],
+                          "loc": {
+                            "sourceLocationType": "source",
+                            "start": 125,
+                            "end": 132
+                          }
+                        },
+                        {
+                          "type": "term",
+                          "termType": "Literal",
+                          "value": "^toto",
+                          "loc": {
+                            "sourceLocationType": "source",
+                            "start": 134,
+                            "end": 141
+                          }
+                        },
+                        {
+                          "type": "term",
+                          "termType": "Literal",
+                          "value": "i",
+                          "loc": {
+                            "sourceLocationType": "source",
+                            "start": 142,
+                            "end": 145
+                          }
+                        }
+                      ],
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 119,
+                        "end": 146
+                      }
+                    },
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 117,
+                      "end": 147
+                    }
+                  }
+                ],
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 104,
+                  "end": 147
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 103,
+                "end": 148
+              }
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 101,
+            "end": 148
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 99,
+          "end": 150
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 92,
+        "end": 150
+      }
+    }
+  ],
+  "solutionModifiers": {
+    "limitOffset": {
+      "type": "solutionModifier",
+      "modifierType": "limitOffset",
+      "limit": 10,
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 153,
+        "end": 161
+      }
+    }
+  },
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "wildcard",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 53,
+        "end": 54
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 161
+  },
+  "type": "query"
 }

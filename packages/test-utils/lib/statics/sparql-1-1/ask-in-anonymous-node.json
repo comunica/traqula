@@ -1,27 +1,107 @@
 {
-  "queryType": "ASK",
-  "where": [
+  "context": [
     {
-      "type": "bgp",
-      "triples": [
-        {
-          "subject": {
-            "termType": "BlankNode",
-            "value": "g_0"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "ex:"
-          },
-          "object": {
-            "termType": "Variable",
-            "value": "o"
-          }
+      "type": "contextDef",
+      "contextType": "base",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "ex:",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 5,
+          "end": 10
         }
-      ]
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 10
+      }
     }
   ],
-  "type": "query",
-  "base": "ex:",
-  "prefixes": {}
+  "queryType": "ask",
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "where": [
+    {
+      "type": "pattern",
+      "patternType": "bgp",
+      "triples": [
+        {
+          "type": "tripleCollection",
+          "tripleCollectionType": "blankNodeProperties",
+          "identifier": {
+            "type": "term",
+            "termType": "BlankNode",
+            "loc": {
+              "sourceLocationType": "noMaterialize"
+            },
+            "label": "g_1"
+          },
+          "triples": [
+            {
+              "type": "triple",
+              "subject": {
+                "type": "term",
+                "termType": "BlankNode",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                },
+                "label": "g_1"
+              },
+              "predicate": {
+                "type": "term",
+                "termType": "NamedNode",
+                "value": "",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 18,
+                  "end": 20
+                }
+              },
+              "object": {
+                "type": "term",
+                "termType": "Variable",
+                "value": "o",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 20,
+                  "end": 22
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 18,
+                "end": 22
+              }
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 17,
+            "end": 23
+          }
+        }
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 17,
+        "end": 24
+      }
+    }
+  ],
+  "solutionModifiers": {},
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 26
+  },
+  "type": "query"
 }

@@ -1,63 +1,188 @@
 {
-  "queryType": "SELECT",
+  "context": [
+    {
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://www.example.org/",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 9,
+          "end": 34
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 34
+      }
+    }
+  ],
+  "queryType": "select",
+  "where": [
+    {
+      "type": "pattern",
+      "patternType": "bgp",
+      "triples": [
+        {
+          "type": "triple",
+          "subject": {
+            "type": "term",
+            "termType": "Variable",
+            "value": "s",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 97,
+              "end": 99
+            }
+          },
+          "predicate": {
+            "type": "term",
+            "termType": "NamedNode",
+            "value": "predicate",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 100,
+              "end": 110
+            },
+            "prefix": ""
+          },
+          "object": {
+            "type": "term",
+            "termType": "Variable",
+            "value": "outObject",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 111,
+              "end": 121
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 100,
+            "end": 121
+          }
+        }
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 100,
+        "end": 121
+      }
+    }
+  ],
+  "solutionModifiers": {
+    "group": {
+      "type": "solutionModifier",
+      "modifierType": "group",
+      "groupings": [
+        {
+          "type": "term",
+          "termType": "Variable",
+          "value": "s",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 133,
+            "end": 135
+          }
+        }
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 124,
+        "end": 135
+      }
+    }
+  },
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
   "variables": [
     {
+      "type": "pattern",
+      "patternType": "bind",
       "expression": {
+        "type": "term",
         "termType": "NamedNode",
-        "value": "http://www.example.org/foo"
+        "value": "foo",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 43,
+          "end": 47
+        },
+        "prefix": ""
       },
       "variable": {
+        "type": "term",
         "termType": "Variable",
-        "value": "foo"
+        "value": "foo",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 51,
+          "end": 55
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 42,
+        "end": 56
       }
     },
     {
+      "type": "pattern",
+      "patternType": "bind",
       "expression": {
-        "expression": {
-          "termType": "Variable",
-          "value": "outObject"
-        },
-        "type": "aggregate",
+        "type": "expression",
+        "expressionType": "aggregate",
         "aggregation": "count",
-        "distinct": false
+        "distinct": false,
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 58,
+          "end": 75
+        },
+        "expression": [
+          {
+            "type": "term",
+            "termType": "Variable",
+            "value": "outObject",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 64,
+              "end": 74
+            }
+          }
+        ]
       },
       "variable": {
+        "type": "term",
         "termType": "Variable",
-        "value": "out"
-      }
-    }
-  ],
-  "where": [
-    {
-      "type": "bgp",
-      "triples": [
-        {
-          "subject": {
-            "termType": "Variable",
-            "value": "s"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://www.example.org/predicate"
-          },
-          "object": {
-            "termType": "Variable",
-            "value": "outObject"
-          }
+        "value": "out",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 79,
+          "end": 83
         }
-      ]
-    }
-  ],
-  "group": [
-    {
-      "expression": {
-        "termType": "Variable",
-        "value": "s"
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 57,
+        "end": 84
       }
     }
   ],
-  "type": "query",
-  "prefixes": {
-    "": "http://www.example.org/"
-  }
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 135
+  },
+  "type": "query"
 }

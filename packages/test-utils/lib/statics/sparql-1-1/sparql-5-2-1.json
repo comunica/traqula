@@ -1,12 +1,32 @@
 {
-  "queryType": "SELECT",
+  "context": [],
+  "queryType": "select",
+  "where": [],
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
   "variables": [
     {
+      "type": "term",
       "termType": "Variable",
-      "value": "x"
+      "value": "x",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 7,
+        "end": 9
+      }
     }
   ],
-  "where": [],
-  "type": "query",
-  "prefixes": {}
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 18
+  },
+  "type": "query"
 }

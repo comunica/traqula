@@ -2,57 +2,131 @@
   "type": "update",
   "updates": [
     {
-      "updateType": "delete",
-      "delete": [
+      "context": [
         {
-          "type": "bgp",
-          "triples": [
-            {
-              "subject": {
-                "termType": "NamedNode",
-                "value": "http://example/book2"
-              },
-              "predicate": {
-                "termType": "NamedNode",
-                "value": "http://purl.org/dc/elements/1.1/title"
-              },
-              "object": {
-                "termType": "Literal",
-                "value": "David Copperfield",
-                "language": "",
-                "datatype": {
-                  "termType": "NamedNode",
-                  "value": "http://www.w3.org/2001/XMLSchema#string"
-                },
-                "direction": ""
-              }
-            },
-            {
-              "subject": {
-                "termType": "NamedNode",
-                "value": "http://example/book2"
-              },
-              "predicate": {
-                "termType": "NamedNode",
-                "value": "http://purl.org/dc/elements/1.1/creator"
-              },
-              "object": {
-                "termType": "Literal",
-                "value": "Edmund Wells",
-                "language": "",
-                "datatype": {
-                  "termType": "NamedNode",
-                  "value": "http://www.w3.org/2001/XMLSchema#string"
-                },
-                "direction": ""
-              }
+          "type": "contextDef",
+          "contextType": "prefix",
+          "key": "dc",
+          "value": {
+            "type": "term",
+            "termType": "NamedNode",
+            "value": "http://purl.org/dc/elements/1.1/",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 11,
+              "end": 45
             }
-          ]
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 0,
+            "end": 45
+          }
         }
-      ]
+      ],
+      "operation": {
+        "type": "updateOperation",
+        "operationType": "deletedata",
+        "data": [
+          {
+            "type": "pattern",
+            "patternType": "bgp",
+            "triples": [
+              {
+                "type": "triple",
+                "subject": {
+                  "type": "term",
+                  "termType": "NamedNode",
+                  "value": "http://example/book2",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 63,
+                    "end": 85
+                  }
+                },
+                "predicate": {
+                  "type": "term",
+                  "termType": "NamedNode",
+                  "value": "title",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 86,
+                    "end": 94
+                  },
+                  "prefix": "dc"
+                },
+                "object": {
+                  "type": "term",
+                  "termType": "Literal",
+                  "value": "David Copperfield",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 95,
+                    "end": 114
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 86,
+                  "end": 114
+                }
+              },
+              {
+                "type": "triple",
+                "subject": {
+                  "type": "term",
+                  "termType": "NamedNode",
+                  "value": "http://example/book2",
+                  "loc": {
+                    "sourceLocationType": "noMaterialize"
+                  }
+                },
+                "predicate": {
+                  "type": "term",
+                  "termType": "NamedNode",
+                  "value": "creator",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 142,
+                    "end": 152
+                  },
+                  "prefix": "dc"
+                },
+                "object": {
+                  "type": "term",
+                  "termType": "Literal",
+                  "value": "Edmund Wells",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 153,
+                    "end": 167
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 142,
+                  "end": 167
+                }
+              }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 86,
+              "end": 169
+            }
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 47,
+          "end": 171
+        }
+      }
     }
   ],
-  "prefixes": {
-    "dc": "http://purl.org/dc/elements/1.1/"
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 171
   }
 }

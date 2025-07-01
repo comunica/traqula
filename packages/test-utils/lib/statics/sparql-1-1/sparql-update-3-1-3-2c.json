@@ -2,216 +2,616 @@
   "type": "update",
   "updates": [
     {
-      "updateType": "insertdelete",
-      "insert": [
+      "context": [
         {
-          "type": "graph",
-          "triples": [
-            {
-              "subject": {
-                "termType": "Variable",
-                "value": "book"
-              },
-              "predicate": {
-                "termType": "Variable",
-                "value": "p"
-              },
-              "object": {
-                "termType": "Variable",
-                "value": "v"
-              }
-            }
-          ],
-          "name": {
+          "type": "contextDef",
+          "contextType": "prefix",
+          "key": "dc",
+          "value": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://example/bookStore2"
+            "value": "http://purl.org/dc/elements/1.1/",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 12,
+              "end": 46
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 0,
+            "end": 46
+          }
+        },
+        {
+          "type": "contextDef",
+          "contextType": "prefix",
+          "key": "dcmitype",
+          "value": {
+            "type": "term",
+            "termType": "NamedNode",
+            "value": "http://purl.org/dc/dcmitype/",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 64,
+              "end": 94
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 47,
+            "end": 94
+          }
+        },
+        {
+          "type": "contextDef",
+          "contextType": "prefix",
+          "key": "xsd",
+          "value": {
+            "type": "term",
+            "termType": "NamedNode",
+            "value": "http://www.w3.org/2001/XMLSchema#",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 107,
+              "end": 142
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 95,
+            "end": 142
           }
         }
       ],
-      "delete": [],
-      "where": [
-        {
-          "type": "graph",
-          "patterns": [
-            {
-              "type": "bgp",
-              "triples": [
-                {
-                  "subject": {
-                    "termType": "Variable",
-                    "value": "book"
-                  },
-                  "predicate": {
-                    "termType": "NamedNode",
-                    "value": "http://purl.org/dc/elements/1.1/date"
-                  },
-                  "object": {
-                    "termType": "Variable",
-                    "value": "date"
-                  }
-                }
-              ]
+      "operation": {
+        "type": "updateOperation",
+        "operationType": "modify",
+        "insert": [
+          {
+            "type": "graph",
+            "graph": {
+              "type": "term",
+              "termType": "NamedNode",
+              "value": "http://example/bookStore2",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 161,
+                "end": 188
+              }
             },
-            {
-              "type": "filter",
+            "triples": [
+              {
+                "type": "triple",
+                "subject": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "book",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 191,
+                    "end": 196
+                  }
+                },
+                "predicate": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "p",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 197,
+                    "end": 199
+                  }
+                },
+                "object": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "v",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 200,
+                    "end": 202
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 197,
+                  "end": 202
+                }
+              }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 155,
+              "end": 204
+            }
+          }
+        ],
+        "delete": [],
+        "where": [
+          {
+            "type": "pattern",
+            "patternType": "graph",
+            "name": {
+              "type": "term",
+              "termType": "NamedNode",
+              "value": "http://example/bookStore",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 224,
+                "end": 250
+              }
+            },
+            "patterns": [
+              {
+                "type": "pattern",
+                "patternType": "bgp",
+                "triples": [
+                  {
+                    "type": "triple",
+                    "subject": {
+                      "type": "term",
+                      "termType": "Variable",
+                      "value": "book",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 258,
+                        "end": 263
+                      }
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "termType": "NamedNode",
+                      "value": "date",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 264,
+                        "end": 271
+                      },
+                      "prefix": "dc"
+                    },
+                    "object": {
+                      "type": "term",
+                      "termType": "Variable",
+                      "value": "date",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 272,
+                        "end": 277
+                      }
+                    },
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 264,
+                      "end": 277
+                    }
+                  }
+                ],
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 264,
+                  "end": 279
+                }
+              },
+              {
+                "type": "pattern",
+                "patternType": "filter",
+                "expression": {
+                  "type": "expression",
+                  "expressionType": "bracketted",
+                  "expression": {
+                    "type": "expression",
+                    "expressionType": "operation",
+                    "operator": "<",
+                    "args": [
+                      {
+                        "type": "term",
+                        "termType": "Variable",
+                        "value": "date",
+                        "loc": {
+                          "sourceLocationType": "source",
+                          "start": 297,
+                          "end": 302
+                        }
+                      },
+                      {
+                        "type": "term",
+                        "termType": "Literal",
+                        "value": "2000-01-01T00:00:00-02:00",
+                        "langOrIri": {
+                          "type": "term",
+                          "termType": "NamedNode",
+                          "value": "dateTime",
+                          "loc": {
+                            "sourceLocationType": "source",
+                            "start": 334,
+                            "end": 346
+                          },
+                          "prefix": "xsd"
+                        },
+                        "loc": {
+                          "sourceLocationType": "source",
+                          "start": 305,
+                          "end": 346
+                        }
+                      }
+                    ],
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 297,
+                      "end": 346
+                    }
+                  },
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 295,
+                    "end": 348
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 288,
+                  "end": 348
+                }
+              },
+              {
+                "type": "pattern",
+                "patternType": "bgp",
+                "triples": [
+                  {
+                    "type": "triple",
+                    "subject": {
+                      "type": "term",
+                      "termType": "Variable",
+                      "value": "book",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 356,
+                        "end": 361
+                      }
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "termType": "Variable",
+                      "value": "p",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 362,
+                        "end": 364
+                      }
+                    },
+                    "object": {
+                      "type": "term",
+                      "termType": "Variable",
+                      "value": "v",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 365,
+                        "end": 367
+                      }
+                    },
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 362,
+                      "end": 367
+                    }
+                  }
+                ],
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 362,
+                  "end": 367
+                }
+              }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 217,
+              "end": 374
+            }
+          }
+        ],
+        "from": {
+          "type": "datasetClauses",
+          "default": [],
+          "named": [],
+          "loc": {
+            "sourceLocationType": "noMaterialize"
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 144,
+          "end": 378
+        }
+      }
+    },
+    {
+      "context": [],
+      "operation": {
+        "type": "updateOperation",
+        "operationType": "modify",
+        "insert": [],
+        "delete": [
+          {
+            "type": "pattern",
+            "patternType": "bgp",
+            "triples": [
+              {
+                "type": "triple",
+                "subject": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "book",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 424,
+                    "end": 429
+                  }
+                },
+                "predicate": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "p",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 430,
+                    "end": 432
+                  }
+                },
+                "object": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "v",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 433,
+                    "end": 435
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 430,
+                  "end": 435
+                }
+              }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 430,
+              "end": 435
+            }
+          }
+        ],
+        "graph": {
+          "type": "term",
+          "termType": "NamedNode",
+          "value": "http://example/bookStore",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 387,
+            "end": 413
+          }
+        },
+        "where": [
+          {
+            "type": "pattern",
+            "patternType": "bgp",
+            "triples": [
+              {
+                "type": "triple",
+                "subject": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "book",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 447,
+                    "end": 452
+                  }
+                },
+                "predicate": {
+                  "type": "term",
+                  "termType": "NamedNode",
+                  "value": "date",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 453,
+                    "end": 460
+                  },
+                  "prefix": "dc"
+                },
+                "object": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "date",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 461,
+                    "end": 466
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 453,
+                  "end": 466
+                }
+              },
+              {
+                "type": "triple",
+                "subject": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "book",
+                  "loc": {
+                    "sourceLocationType": "noMaterialize"
+                  }
+                },
+                "predicate": {
+                  "type": "term",
+                  "termType": "NamedNode",
+                  "value": "type",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 478,
+                    "end": 485
+                  },
+                  "prefix": "dc"
+                },
+                "object": {
+                  "type": "term",
+                  "termType": "NamedNode",
+                  "value": "PhysicalObject",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 486,
+                    "end": 509
+                  },
+                  "prefix": "dcmitype"
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 478,
+                  "end": 509
+                }
+              }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 453,
+              "end": 511
+            }
+          },
+          {
+            "type": "pattern",
+            "patternType": "filter",
+            "expression": {
+              "type": "expression",
+              "expressionType": "bracketted",
               "expression": {
-                "type": "operation",
+                "type": "expression",
+                "expressionType": "operation",
                 "operator": "<",
                 "args": [
                   {
+                    "type": "term",
                     "termType": "Variable",
-                    "value": "date"
+                    "value": "date",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 524,
+                      "end": 529
+                    }
                   },
                   {
+                    "type": "term",
                     "termType": "Literal",
                     "value": "2000-01-01T00:00:00-02:00",
-                    "language": "",
-                    "datatype": {
+                    "langOrIri": {
+                      "type": "term",
                       "termType": "NamedNode",
-                      "value": "http://www.w3.org/2001/XMLSchema#dateTime"
+                      "value": "dateTime",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 561,
+                        "end": 573
+                      },
+                      "prefix": "xsd"
                     },
-                    "direction": ""
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 532,
+                      "end": 573
+                    }
                   }
-                ]
-              }
-            },
-            {
-              "type": "bgp",
-              "triples": [
-                {
-                  "subject": {
-                    "termType": "Variable",
-                    "value": "book"
-                  },
-                  "predicate": {
-                    "termType": "Variable",
-                    "value": "p"
-                  },
-                  "object": {
-                    "termType": "Variable",
-                    "value": "v"
-                  }
+                ],
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 524,
+                  "end": 573
                 }
-              ]
-            }
-          ],
-          "name": {
-            "termType": "NamedNode",
-            "value": "http://example/bookStore"
-          }
-        }
-      ]
-    },
-    {
-      "updateType": "insertdelete",
-      "graph": {
-        "termType": "NamedNode",
-        "value": "http://example/bookStore"
-      },
-      "delete": [
-        {
-          "type": "bgp",
-          "triples": [
-            {
-              "subject": {
-                "termType": "Variable",
-                "value": "book"
               },
-              "predicate": {
-                "termType": "Variable",
-                "value": "p"
-              },
-              "object": {
-                "termType": "Variable",
-                "value": "v"
-              }
-            }
-          ]
-        }
-      ],
-      "insert": [],
-      "where": [
-        {
-          "type": "bgp",
-          "triples": [
-            {
-              "subject": {
-                "termType": "Variable",
-                "value": "book"
-              },
-              "predicate": {
-                "termType": "NamedNode",
-                "value": "http://purl.org/dc/elements/1.1/date"
-              },
-              "object": {
-                "termType": "Variable",
-                "value": "date"
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 522,
+                "end": 575
               }
             },
-            {
-              "subject": {
-                "termType": "Variable",
-                "value": "book"
-              },
-              "predicate": {
-                "termType": "NamedNode",
-                "value": "http://purl.org/dc/elements/1.1/type"
-              },
-              "object": {
-                "termType": "NamedNode",
-                "value": "http://purl.org/dc/dcmitype/PhysicalObject"
-              }
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 515,
+              "end": 575
             }
-          ]
-        },
-        {
-          "type": "filter",
-          "expression": {
-            "type": "operation",
-            "operator": "<",
-            "args": [
+          },
+          {
+            "type": "pattern",
+            "patternType": "bgp",
+            "triples": [
               {
-                "termType": "Variable",
-                "value": "date"
-              },
-              {
-                "termType": "Literal",
-                "value": "2000-01-01T00:00:00-02:00",
-                "language": "",
-                "datatype": {
-                  "termType": "NamedNode",
-                  "value": "http://www.w3.org/2001/XMLSchema#dateTime"
+                "type": "triple",
+                "subject": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "book",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 580,
+                    "end": 585
+                  }
                 },
-                "direction": ""
+                "predicate": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "p",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 586,
+                    "end": 588
+                  }
+                },
+                "object": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "v",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 589,
+                    "end": 591
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 586,
+                  "end": 591
+                }
               }
-            ]
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 586,
+              "end": 591
+            }
+          }
+        ],
+        "from": {
+          "type": "datasetClauses",
+          "default": [],
+          "named": [],
+          "loc": {
+            "sourceLocationType": "noMaterialize"
           }
         },
-        {
-          "type": "bgp",
-          "triples": [
-            {
-              "subject": {
-                "termType": "Variable",
-                "value": "book"
-              },
-              "predicate": {
-                "termType": "Variable",
-                "value": "p"
-              },
-              "object": {
-                "termType": "Variable",
-                "value": "v"
-              }
-            }
-          ]
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 382,
+          "end": 594
         }
-      ]
+      }
     }
   ],
-  "prefixes": {
-    "dc": "http://purl.org/dc/elements/1.1/",
-    "dcmitype": "http://purl.org/dc/dcmitype/",
-    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 594
   }
 }

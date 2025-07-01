@@ -1,89 +1,256 @@
 {
-  "queryType": "SELECT",
-  "variables": [
+  "context": [
     {
-      "termType": "Variable",
-      "value": "movie"
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "dbpedia-owl",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://dbpedia.org/owl/#",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 19,
+          "end": 45
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 45
+      }
+    },
+    {
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "rdfs",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://www.w3.org/2000/01/rdf-schema#",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 58,
+          "end": 97
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 46,
+        "end": 97
+      }
     }
   ],
+  "queryType": "select",
   "where": [
     {
-      "type": "bgp",
+      "type": "pattern",
+      "patternType": "bgp",
       "triples": [
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "movie"
+            "value": "movie",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 122,
+              "end": 128
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+            "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 129,
+              "end": 130
+            }
           },
           "object": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://dbpedia.org/owl/#Film"
-          }
-        },
-        {
-          "subject": {
-            "termType": "Variable",
-            "value": "movie"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://dbpedia.org/owl/#starring"
-          },
-          "object": {
-            "termType": "BlankNode",
-            "value": "g_0"
-          }
-        },
-        {
-          "subject": {
-            "termType": "BlankNode",
-            "value": "g_0"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://www.w3.org/2000/01/rdf-schema#label"
-          },
-          "object": {
-            "termType": "Literal",
-            "value": "Brad Pitt",
-            "language": "en",
-            "datatype": {
-              "termType": "NamedNode",
-              "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
+            "value": "Film",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 131,
+              "end": 147
             },
-            "direction": ""
+            "prefix": "dbpedia-owl"
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 129,
+            "end": 147
           }
         },
         {
+          "type": "triple",
           "subject": {
-            "termType": "BlankNode",
-            "value": "g_0"
+            "type": "term",
+            "termType": "Variable",
+            "value": "movie",
+            "loc": {
+              "sourceLocationType": "noMaterialize"
+            }
           },
           "predicate": {
-            "type": "path",
-            "pathType": "^",
-            "items": [
-              {
-                "termType": "NamedNode",
-                "value": "http://dbpedia.org/owl/#starring"
-              }
-            ]
+            "type": "term",
+            "termType": "NamedNode",
+            "value": "starring",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 154,
+              "end": 174
+            },
+            "prefix": "dbpedia-owl"
           },
           "object": {
-            "termType": "Variable",
-            "value": "otherMovie"
+            "type": "tripleCollection",
+            "tripleCollectionType": "blankNodeProperties",
+            "identifier": {
+              "type": "term",
+              "termType": "BlankNode",
+              "loc": {
+                "sourceLocationType": "noMaterialize"
+              },
+              "label": "g_1"
+            },
+            "triples": [
+              {
+                "type": "triple",
+                "subject": {
+                  "type": "term",
+                  "termType": "BlankNode",
+                  "loc": {
+                    "sourceLocationType": "noMaterialize"
+                  },
+                  "label": "g_1"
+                },
+                "predicate": {
+                  "type": "term",
+                  "termType": "NamedNode",
+                  "value": "label",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 183,
+                    "end": 193
+                  },
+                  "prefix": "rdfs"
+                },
+                "object": {
+                  "type": "term",
+                  "termType": "Literal",
+                  "value": "Brad Pitt",
+                  "langOrIri": "en",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 194,
+                    "end": 208
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 183,
+                  "end": 208
+                }
+              },
+              {
+                "type": "triple",
+                "subject": {
+                  "type": "term",
+                  "termType": "BlankNode",
+                  "loc": {
+                    "sourceLocationType": "noMaterialize"
+                  },
+                  "label": "g_1"
+                },
+                "predicate": {
+                  "type": "path",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 217,
+                    "end": 238
+                  },
+                  "items": [
+                    {
+                      "type": "term",
+                      "termType": "NamedNode",
+                      "value": "starring",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 218,
+                        "end": 238
+                      },
+                      "prefix": "dbpedia-owl"
+                    }
+                  ],
+                  "pathType": "^"
+                },
+                "object": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "otherMovie",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 239,
+                    "end": 250
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 217,
+                  "end": 250
+                }
+              }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 175,
+              "end": 256
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 154,
+            "end": 256
           }
         }
-      ]
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 129,
+        "end": 258
+      }
     }
   ],
-  "type": "query",
-  "prefixes": {
-    "dbpedia-owl": "http://dbpedia.org/owl/#",
-    "rdfs": "http://www.w3.org/2000/01/rdf-schema#"
-  }
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "term",
+      "termType": "Variable",
+      "value": "movie",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 105,
+        "end": 111
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 260
+  },
+  "type": "query"
 }

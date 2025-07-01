@@ -1,50 +1,156 @@
 {
-  "queryType": "SELECT",
-  "variables": [
+  "context": [
     {
-      "termType": "Wildcard"
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://example/",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 12,
+          "end": 29
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 29
+      }
+    },
+    {
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "rdf",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 42,
+          "end": 87
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 30,
+        "end": 87
+      }
     }
   ],
+  "queryType": "select",
   "where": [
     {
-      "type": "bgp",
+      "type": "pattern",
+      "patternType": "bgp",
       "triples": [
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://example/list"
+            "value": "list",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 103,
+              "end": 108
+            },
+            "prefix": ""
           },
           "predicate": {
             "type": "path",
-            "pathType": "/",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 109,
+              "end": 128
+            },
             "items": [
               {
                 "type": "path",
-                "pathType": "*",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 109,
+                  "end": 118
+                },
                 "items": [
                   {
+                    "type": "term",
                     "termType": "NamedNode",
-                    "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest"
+                    "value": "rest",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 109,
+                      "end": 117
+                    },
+                    "prefix": "rdf"
                   }
-                ]
+                ],
+                "pathType": "*"
               },
               {
+                "type": "term",
                 "termType": "NamedNode",
-                "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first"
+                "value": "first",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 119,
+                  "end": 128
+                },
+                "prefix": "rdf"
               }
-            ]
+            ],
+            "pathType": "/"
           },
           "object": {
+            "type": "term",
             "termType": "Variable",
-            "value": "element"
+            "value": "element",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 129,
+              "end": 137
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 109,
+            "end": 137
           }
         }
-      ]
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 109,
+        "end": 137
+      }
     }
   ],
-  "type": "query",
-  "prefixes": {
-    "": "http://example/",
-    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-  }
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "wildcard",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 97,
+        "end": 98
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 139
+  },
+  "type": "query"
 }

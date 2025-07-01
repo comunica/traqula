@@ -1,6 +1,6 @@
 /* eslint-disable require-unicode-regexp */
 import { LexerBuilder, createToken } from '@traqula/core';
-import { allBuiltInCalls, avg, datatype } from './BuildinCalls';
+import { allBuiltInCalls, avg, datatype, groupConcat } from './BuildinCalls';
 import { allGraphTokens, graphAll } from './graph';
 import { allSymbols } from './symbols';
 import { allTerminals } from './terminals';
@@ -67,6 +67,8 @@ export const allBaseTokens = LexerBuilder.create().add(
   from,
   where,
   having,
+  groupByGroup,
+  by,
   order,
   orderAsc,
   orderDesc,
@@ -115,4 +117,5 @@ export const sparql11Tokens = LexerBuilder
   .merge(allSymbols)
   .moveBefore(datatype, dataClause)
   .moveAfter(avg, a)
-  .moveBefore(a, graphAll);
+  .moveBefore(a, graphAll)
+  .moveAfter(groupConcat, groupByGroup);

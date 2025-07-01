@@ -1,51 +1,123 @@
 {
-  "queryType": "SELECT",
-  "variables": [
-    {
-      "termType": "Wildcard"
-    }
-  ],
+  "context": [],
+  "queryType": "select",
   "where": [
     {
-      "type": "group",
-      "patterns": []
+      "type": "pattern",
+      "patternType": "group",
+      "patterns": [],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 11,
+        "end": 13
+      }
     },
     {
-      "type": "optional",
+      "type": "pattern",
+      "patternType": "optional",
       "patterns": [
         {
-          "queryType": "SELECT",
-          "variables": [
-            {
-              "termType": "Wildcard"
-            }
-          ],
+          "type": "query",
+          "queryType": "select",
           "where": [
             {
-              "type": "bgp",
+              "type": "pattern",
+              "patternType": "bgp",
               "triples": [
                 {
+                  "type": "triple",
                   "subject": {
+                    "type": "term",
                     "termType": "Variable",
-                    "value": "s"
+                    "value": "s",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 35,
+                      "end": 37
+                    }
                   },
                   "predicate": {
+                    "type": "term",
                     "termType": "Variable",
-                    "value": "p"
+                    "value": "p",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 38,
+                      "end": 40
+                    }
                   },
                   "object": {
+                    "type": "term",
                     "termType": "Variable",
-                    "value": "o"
+                    "value": "o",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 41,
+                      "end": 43
+                    }
+                  },
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 38,
+                    "end": 43
                   }
                 }
-              ]
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 38,
+                "end": 43
+              }
             }
           ],
-          "type": "query"
+          "solutionModifiers": {},
+          "variables": [
+            {
+              "type": "wildcard",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 31,
+                "end": 32
+              }
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 24,
+            "end": 45
+          }
         }
-      ]
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 14,
+        "end": 46
+      }
     }
   ],
-  "type": "query",
-  "prefixes": {}
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "wildcard",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 7,
+        "end": 8
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 48
+  },
+  "type": "query"
 }

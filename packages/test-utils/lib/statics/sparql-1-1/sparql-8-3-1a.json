@@ -1,59 +1,150 @@
 {
-  "queryType": "SELECT",
-  "variables": [
-    {
-      "termType": "Wildcard"
-    }
-  ],
+  "context": [],
+  "queryType": "select",
   "where": [
     {
-      "type": "bgp",
+      "type": "pattern",
+      "patternType": "bgp",
       "triples": [
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "s"
+            "value": "s",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 14,
+              "end": 16
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "Variable",
-            "value": "p"
+            "value": "p",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 17,
+              "end": 19
+            }
           },
           "object": {
+            "type": "term",
             "termType": "Variable",
-            "value": "o"
+            "value": "o",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 20,
+              "end": 22
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 17,
+            "end": 22
           }
         }
-      ]
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 17,
+        "end": 22
+      }
     },
     {
-      "type": "filter",
+      "type": "pattern",
+      "patternType": "filter",
       "expression": {
-        "type": "operation",
+        "type": "expression",
+        "expressionType": "patternOperation",
         "operator": "notexists",
         "args": [
           {
-            "type": "bgp",
+            "type": "pattern",
+            "patternType": "bgp",
             "triples": [
               {
+                "type": "triple",
                 "subject": {
+                  "type": "term",
                   "termType": "Variable",
-                  "value": "x"
+                  "value": "x",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 45,
+                    "end": 47
+                  }
                 },
                 "predicate": {
+                  "type": "term",
                   "termType": "Variable",
-                  "value": "y"
+                  "value": "y",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 48,
+                    "end": 50
+                  }
                 },
                 "object": {
+                  "type": "term",
                   "termType": "Variable",
-                  "value": "z"
+                  "value": "z",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 51,
+                    "end": 53
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 48,
+                  "end": 53
                 }
               }
-            ]
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 48,
+              "end": 53
+            }
           }
-        ]
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 32,
+          "end": 55
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 25,
+        "end": 55
       }
     }
   ],
-  "type": "query",
-  "prefixes": {}
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "wildcard",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 7,
+        "end": 8
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 57
+  },
+  "type": "query"
 }

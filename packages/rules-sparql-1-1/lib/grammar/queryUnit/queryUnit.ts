@@ -1,4 +1,5 @@
-import type { RuleDefReturn, SourceLocation } from '@traqula/core';
+import type { Localized, RuleDefReturn, Wrap } from '@traqula/core';
+import type { IToken } from 'chevrotain';
 import * as l from '../../lexer';
 import type {
   BasicGraphPattern,
@@ -12,7 +13,6 @@ import type {
   SubSelect,
   TermIri,
   TermVariable,
-  Wrap,
 } from '../../RoundTripTypes';
 import type {
   SparqlGrammarRule,
@@ -56,9 +56,9 @@ export const query: SparqlRule<'query', Query> = <const> {
       type: 'query',
       ...(values && { values }),
       loc: C.factory.sourceLocation(
-        ...(prologueValues.at(0) ? [ prologueValues.at(0)!.loc ] : []),
-        queryType.loc,
-        ...(values ? [ values.loc ] : []),
+        prologueValues.at(0),
+        queryType,
+        values,
       ),
     }));
   },
@@ -85,8 +85,10 @@ export const selectQuery: SparqlRule<'selectQuery', Omit<QuerySelect, HandledByB
       loc: C.factory.sourceLocation(
         selectVal,
         where,
-        ...[ modifiers.group, modifiers.having, modifiers.order, modifiers.limitOffset ]
-          .filter(x => x !== undefined).map(x => x.loc),
+        modifiers.group,
+        modifiers.having,
+        modifiers.order,
+        modifiers.limitOffset,
       ),
     }));
   },
@@ -96,7 +98,7 @@ export const selectQuery: SparqlRule<'selectQuery', Omit<QuerySelect, HandledByB
 /**
  * [[8]](https://www.w3.org/TR/sparql11-query/#rSubSelect)
  */
-export const subSelect: SparqlGrammarRule<'subSelect', SubSelect> = <const> {
+export const subSelect: SparqlRule<'subSelect', SubSelect> = <const> {
   name: 'subSelect',
   impl: ({ ACTION, SUBRULE }) => (C) => {
     const selectVal = SUBRULE(selectClause, undefined);
@@ -114,11 +116,15 @@ export const subSelect: SparqlGrammarRule<'subSelect', SubSelect> = <const> {
       loc: C.factory.sourceLocation(
         selectVal,
         where,
-        ...[ modifiers.group, modifiers.having, modifiers.order, modifiers.limitOffset, values ]
-          .filter(x => x !== undefined).map(x => x.loc),
+        modifiers.group,
+        modifiers.having,
+        modifiers.order,
+        modifiers.limitOffset,
+        values,
       ),
     }));
   },
+  gImpl: () => () => {},
 };
 
 /**
@@ -158,13 +164,13 @@ export const selectClause: SparqlRule<'selectClause', Wrap<Pick<QuerySelect, 'va
       };
     });
 
-    let last: SourceLocation;
+    let last: Localized | IToken;
     const val = OR2<RuleDefReturn<typeof selectClause>['val']>([
       { ALT: () => {
         const star = CONSUME(l.symbols.star);
         return ACTION(() => {
-          last = C.factory.sourceLocation(star);
-          return { variables: [ C.factory.wildcard(last) ], ...distRed };
+          last = star;
+          return { variables: [ C.factory.wildcard(C.factory.sourceLocation(star)) ], ...distRed };
         });
       } },
       { ALT: () => {
@@ -179,7 +185,7 @@ export const selectClause: SparqlRule<'selectClause', Wrap<Pick<QuerySelect, 'va
               }
               usedVars.push(raw);
               variables.push(raw);
-              last = raw.loc;
+              last = raw;
             });
           } },
           { ALT: () => {
@@ -189,7 +195,7 @@ export const selectClause: SparqlRule<'selectClause', Wrap<Pick<QuerySelect, 'va
             const variable = SUBRULE2(var_, undefined);
             const close = CONSUME(l.symbols.RParen);
             ACTION(() => {
-              last = C.factory.sourceLocation(close);
+              last = close;
               if (usedVars.some(v => v.value === variable.value)) {
                 throw new Error(`Variable ${variable.value} used more than once in SELECT clause`);
               }
@@ -202,10 +208,7 @@ export const selectClause: SparqlRule<'selectClause', Wrap<Pick<QuerySelect, 'va
       } },
     ]);
     ACTION(() => !couldParseAgg && C.parseMode.delete('canParseAggregate'));
-    return ACTION(() => ({
-      val,
-      ...C.factory.sourceLocation(select, last),
-    }));
+    return ACTION(() => C.factory.wrap(val, C.factory.sourceLocation(select, last)));
   },
   gImpl: () => () => {},
 };
@@ -229,12 +232,14 @@ export const constructQuery: SparqlRule<'constructQuery', Omit<QueryConstruct, H
           datasets: from,
           where: where.val.patterns,
           solutionModifiers: modifiers,
-          loc: C.factory.sourceLocation(construct, where, ...[
+          loc: C.factory.sourceLocation(
+            construct,
+            where,
             modifiers.group,
             modifiers.having,
             modifiers.order,
             modifiers.limitOffset,
-          ].filter(x => x !== undefined).map(x => x.loc)),
+          ),
         } satisfies Omit<QueryConstruct, HandledByBase>));
       } },
       { ALT: () => {
@@ -253,8 +258,10 @@ export const constructQuery: SparqlRule<'constructQuery', Omit<QueryConstruct, H
           loc: C.factory.sourceLocation(
             construct,
             template,
-            ...[ modifiers.group, modifiers.having, modifiers.order, modifiers.limitOffset ]
-              .filter(x => x !== undefined).map(x => x.loc),
+            modifiers.group,
+            modifiers.having,
+            modifiers.order,
+            modifiers.limitOffset,
           ),
         }));
       } },
@@ -292,15 +299,16 @@ export const describeQuery: SparqlRule<'describeQuery', Omit<QueryDescribe, Hand
       datasets: from,
       ...(where && { where: where.val.patterns }),
       solutionModifiers: modifiers,
-      loc: C.factory.sourceLocation(describe, ...[
+      loc: C.factory.sourceLocation(
+        describe,
         ...variables,
         from,
-        ...(where ? [{ loc: where }] : []),
+        where,
         modifiers.group,
         modifiers.having,
         modifiers.order,
         modifiers.limitOffset,
-      ].filter(x => x !== undefined).map(x => x.loc)),
+      ),
     }));
   },
   gImpl: () => () => '',
@@ -324,11 +332,12 @@ export const askQuery: SparqlRule<'askQuery', Omit<QueryAsk, HandledByBase>> = <
       solutionModifiers: modifiers,
       loc: C.factory.sourceLocation(
         ask,
-        from.loc,
+        from,
         where,
-        ...[ modifiers.group, modifiers.having, modifiers.order, modifiers.limitOffset ]
-          .filter(x => x !== undefined)
-          .map(x => x.loc),
+        modifiers.group,
+        modifiers.having,
+        modifiers.order,
+        modifiers.limitOffset,
       ),
     }));
   },
@@ -338,10 +347,9 @@ export const askQuery: SparqlRule<'askQuery', Omit<QueryAsk, HandledByBase>> = <
 /**
  * [[28]](https://www.w3.org/TR/sparql11-query/#rValuesClause)
  */
-export const valuesClause: SparqlRule<'valuesClause', PatternValues | undefined> = <const> {
+export const valuesClause: SparqlGrammarRule<'valuesClause', PatternValues | undefined> = <const> {
   name: 'valuesClause',
   impl: ({ OPTION, SUBRULE }) => () => OPTION(() => SUBRULE(inlineData, undefined)),
-  gImpl: ({ SUBRULE }) => ast => ast ? SUBRULE(inlineData, ast, undefined) : '',
 };
 
 /**
@@ -354,7 +362,7 @@ export const constructTemplate: SparqlRule<'constructTemplate', Wrap<BasicGraphP
     const triples = OPTION(() => SUBRULE1(constructTriples, undefined));
     const close = CONSUME(l.symbols.RCurly);
 
-    return ACTION(() => ({ val: triples?.val ?? [], ...C.factory.sourceLocation(open, close) }));
+    return ACTION(() => C.factory.wrap(triples?.val ?? [], C.factory.sourceLocation(open, close)));
   },
   gImpl: () => () => '',
 };

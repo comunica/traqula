@@ -1,7 +1,7 @@
-import type { RuleDefReturn } from '@traqula/core';
+import type { RuleDefReturn, Wrap } from '@traqula/core';
 import type { TokenType } from 'chevrotain';
 import * as l from '../lexer';
-import type { DatasetClauses, TermIri, Wrap } from '../RoundTripTypes';
+import type { DatasetClauses, TermIri } from '../RoundTripTypes';
 import type { SparqlGrammarRule, SparqlRule } from '../Sparql11types';
 import { iri } from './literals';
 
@@ -16,17 +16,12 @@ export function datasetClauseUsing<RuleName extends 'usingClause' | 'datasetClau
       return OR<RuleDefReturn<typeof datasetClause>>([
         { ALT: () => {
           const iri = SUBRULE(defaultGraphClause, undefined);
-          return ACTION(() => ({
-            val: { named: false, value: iri },
-            ...C.factory.sourceLocation(start, iri.loc),
-          }));
+          return ACTION(() => C.factory.wrap({ named: false, value: iri }, C.factory.sourceLocation(start, iri)));
         } },
         { ALT: () => {
           const namedClause = SUBRULE(namedGraphClause, undefined);
-          return ACTION(() => ({
-            val: { named: true, value: namedClause.val },
-            ...C.factory.sourceLocation(start, namedClause),
-          }));
+          return ACTION(() =>
+            C.factory.wrap({ named: true, value: namedClause.val }, C.factory.sourceLocation(start, namedClause)));
         } },
       ]);
     },
@@ -98,7 +93,7 @@ export const namedGraphClause: SparqlGrammarRule<'namedGraphClause', Wrap<TermIr
   impl: ({ ACTION, SUBRULE, CONSUME }) => (C) => {
     const named = CONSUME(l.graph.named);
     const iri = SUBRULE(sourceSelector, undefined);
-    return ACTION(() => ({ val: iri, ...C.factory.sourceLocation(named, iri.loc) }));
+    return ACTION(() => C.factory.wrap(iri, C.factory.sourceLocation(named, iri)));
   },
 };
 

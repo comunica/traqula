@@ -1,4 +1,4 @@
-import type { Node } from '../nodeTypings';
+import type { Localized } from '../nodeTypings';
 
 /**
  * Type used to declare generator rules.
@@ -18,7 +18,7 @@ export type GeneratorRule<
    * Generation happens on a per AST node basis.
    * The core will implement the generation as such. If this ever changes, we will cross that bridge when we get there.
    */
-  ReturnType = any,
+  ReturnType extends Localized = Localized,
   /**
    * Function arguments that can be given to convey the state of the current parse operation.
    */
@@ -30,7 +30,7 @@ export type GeneratorRule<
 };
 
 export interface RuleDefArg {
-  SUBRULE: <T extends Node, U>(cstDef: GeneratorRule<any, string, T, U>, input: T, arg: U) => void;
+  SUBRULE: <T extends Localized, U>(cstDef: GeneratorRule<any, string, T, U>, input: T, arg: U) => void;
   PRINT: (...args: string[]) => void;
   PRINT_WORD: (...args: string[]) => void;
   CATCHUP: (until: number) => void;

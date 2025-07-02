@@ -1,4 +1,4 @@
-import type { RuleDefReturn } from '@traqula/core';
+import type { RuleDefReturn, Wrap } from '@traqula/core';
 import { unCapitalize } from '@traqula/core';
 import type { TokenType } from 'chevrotain';
 import * as l from '../../lexer';
@@ -21,7 +21,6 @@ import type {
   UpdateOperationLoad,
   UpdateOperationModify,
   UpdateOperationMove,
-  Wrap,
 } from '../../RoundTripTypes';
 import type {
   SparqlGrammarRule,
@@ -72,10 +71,10 @@ export const update: SparqlRule<'update', Update> = <const> {
       type: 'update',
       updates,
       loc: C.factory.sourceLocation(
-        ...updates[0].context.map(x => x.loc),
-        ...(updates[0].operation ? [ updates[0].operation.loc ] : []),
-        ...updates.at(-1)!.context.map(x => x.loc),
-        ...(updates.at(-1)?.operation ? [ updates.at(-1)!.operation!.loc ] : []),
+        ...updates[0].context,
+        updates[0].operation,
+        ...updates.at(-1)!.context,
+        updates.at(-1)?.operation,
       ),
     }));
   },
@@ -117,7 +116,7 @@ export const load: SparqlRule<'load', UpdateOperationLoad> = <const> {
       return SUBRULE1(graphRef, undefined);
     });
     return ACTION(() => C.factory.updateOperationLoad(
-      C.factory.sourceLocation(loadToken, source.loc, ...(destination ? [ destination.loc ] : [])),
+      C.factory.sourceLocation(loadToken, source, destination),
       source,
       Boolean(silent),
       destination,
@@ -138,7 +137,7 @@ SparqlGrammarRule<Uncapitalize<T>, UpdateOperationClear | UpdateOperationDrop> {
         unCapitalize(operation.name),
         Boolean(silent),
         destination,
-        C.factory.sourceLocation(opToken, destination.loc),
+        C.factory.sourceLocation(opToken, destination),
       ));
     },
   };
@@ -167,7 +166,7 @@ export const create: SparqlRule<'create', UpdateOperationCreate> = <const> {
     return ACTION(() => C.factory.updateOperationCreate(
       destination,
       Boolean(silent),
-      C.factory.sourceLocation(createToken, destination.loc),
+      C.factory.sourceLocation(createToken, destination),
     ));
   },
   gImpl: () => () => '',
@@ -189,7 +188,7 @@ SparqlRule<Uncapitalize<T>, UpdateOperationAdd | UpdateOperationMove | UpdateOpe
         source,
         destination,
         Boolean(silent),
-        C.factory.sourceLocation(op, destination.loc),
+        C.factory.sourceLocation(op, destination),
       ));
     },
     gImpl: () => () => {},
@@ -220,7 +219,7 @@ export const quadPattern: SparqlGrammarRule<'quadPattern', Wrap<Quads[]>> = <con
     const open = CONSUME(l.symbols.LCurly);
     const val = SUBRULE1(quads, undefined);
     const close = CONSUME(l.symbols.RCurly);
-    return ACTION(() => ({ val, ...C.factory.sourceLocation(open, close) }));
+    return ACTION(() => C.factory.wrap(val, C.factory.sourceLocation(open, close)));
   },
 };
 
@@ -237,7 +236,7 @@ export const quadData: SparqlRule<'quadData', Wrap<Quads[]>> = <const> {
     ACTION(() => couldParseVars && C.parseMode.add('canParseVars'));
 
     const close = CONSUME(l.symbols.RCurly);
-    return ACTION(() => ({ val, ...C.factory.sourceLocation(open, close) }));
+    return ACTION(() => C.factory.wrap(val, C.factory.sourceLocation(open, close)));
   },
   gImpl: () => () => '',
 };
@@ -315,7 +314,7 @@ export const modify: SparqlRule<'modify', UpdateOperationModify> = <const> {
     const where = SUBRULE1(groupGraphPattern, undefined);
 
     return ACTION(() => C.factory.updateOperationModify(
-      C.factory.sourceLocation(...[ graph?.withToken, del, insert ].filter(x => x !== undefined), where.loc),
+      C.factory.sourceLocation(...[ graph?.withToken, del, insert ].filter(x => x !== undefined), where),
       insert?.val ?? [],
       del?.val ?? [],
       where.patterns,
@@ -337,7 +336,7 @@ export const deleteClause: SparqlGrammarRule<'deleteClause', Wrap<Quads[]>> = <c
     const del = SUBRULE(quadPattern, undefined);
     ACTION(() => couldCreateBlankNodes && C.parseMode.add('canCreateBlankNodes'));
 
-    return ACTION(() => ({ val: del.val, ...C.factory.sourceLocation(delToken, del) }));
+    return ACTION(() => C.factory.wrap(del.val, C.factory.sourceLocation(delToken, del)));
   },
 };
 
@@ -350,7 +349,7 @@ export const insertClause: SparqlGrammarRule<'insertClause', Wrap<Quads[]>> = <c
     const insertToken = CONSUME(l.insertClause);
     const insert = SUBRULE(quadPattern, undefined);
 
-    return ACTION(() => ({ val: insert.val, ...C.factory.sourceLocation(insertToken, insert) }));
+    return ACTION(() => C.factory.wrap(insert.val, C.factory.sourceLocation(insertToken, insert)));
   },
 };
 
@@ -368,7 +367,7 @@ export const graphOrDefault: SparqlRule<'graphOrDefault', GraphRefDefault | Grap
       const graph = OPTION(() => CONSUME(l.graph.graph));
       const name = SUBRULE1(iri, undefined);
       return ACTION(() =>
-        C.factory.graphRefSpecific(name, C.factory.sourceLocation(...(graph ? [ graph ] : []), name.loc)));
+        C.factory.graphRefSpecific(name, C.factory.sourceLocation(...(graph ? [ graph ] : []), name)));
     } },
   ]),
   gImpl: () => () => '',
@@ -382,7 +381,7 @@ export const graphRef: SparqlRule<'graphRef', GraphRefSpecific> = <const> {
   impl: ({ ACTION, SUBRULE, CONSUME }) => (C) => {
     const graph = CONSUME(l.graph.graph);
     const val = SUBRULE(iri, undefined);
-    return ACTION(() => C.factory.graphRefSpecific(val, C.factory.sourceLocation(graph, val.loc)));
+    return ACTION(() => C.factory.graphRefSpecific(val, C.factory.sourceLocation(graph, val)));
   },
   gImpl: () => () => '',
 };
@@ -413,7 +412,7 @@ export const graphRefAll: SparqlRule<'graphRefAll', GraphRef> = <const> {
 /**
  * [[50]](https://www.w3.org/TR/sparql11-query/#rQuads)
  */
-export const quads: SparqlRule<'quads', Quads[]> = <const> {
+export const quads: SparqlGrammarRule<'quads', Quads[]> = <const> {
   name: 'quads',
   impl: ({ ACTION, SUBRULE, CONSUME, MANY, SUBRULE1, SUBRULE2, OPTION1, OPTION2, OPTION3 }) => (C) => {
     const quads: Quads[] = [];
@@ -435,7 +434,6 @@ export const quads: SparqlRule<'quads', Quads[]> = <const> {
 
     return quads;
   },
-  gImpl: () => () => '',
 };
 
 /**

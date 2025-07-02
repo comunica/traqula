@@ -1,4 +1,4 @@
-import type { GeneratorRule, ParserRule } from '@traqula/core';
+import type { GeneratorRule, ParserRule, Localized } from '@traqula/core';
 import type { TraqulaFactory } from './factory';
 
 export type SparqlRule<
@@ -10,8 +10,8 @@ export type SparqlRule<
    * Type that will be returned after a correct parse of this rule.
    * This type will be the return type of calling SUBRULE with this grammar rule.
    */
-  ReturnType = unknown,
-  GenInputType = ReturnType,
+  ReturnType extends Localized = Localized,
+  GenInputType extends Localized = ReturnType,
   /**
    * Function arguments that can be given to convey the state of the current parse operation.
    */
@@ -28,7 +28,7 @@ export type SparqlGeneratorRule<
    * Type that will be returned after a correct parse of this rule.
    * This type will be the return type of calling SUBRULE with this grammar rule.
    */
-  ReturnType = unknown,
+  ReturnType extends Localized = Localized,
   /**
    * Function arguments that can be given to convey the state of the current parse operation.
    */

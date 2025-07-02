@@ -1,15 +1,22 @@
-/**
- * A AST node. Nodes are indexable by their types.
- * When generating, the SUBRULES called should be located within the current location range.
- */
-export type Node = {
-  type: string;
+export interface Localized {
   /**
    * Location undefined means the node does have a string representation, but it was not clarified.
    * This happens when an AST node is patched by a client of the lib.
    */
   loc: SourceLocation;
-};
+}
+
+export interface Wrap<T> extends Localized {
+  val: T;
+}
+
+/**
+ * A AST node. Nodes are indexable by their types.
+ * When generating, the SUBRULES called should be located within the current location range.
+ */
+export interface Node extends Localized {
+  type: string;
+}
 
 export interface SourceLocationBase {
   sourceLocationType: string;

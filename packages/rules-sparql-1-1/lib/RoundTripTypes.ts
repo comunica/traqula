@@ -1,6 +1,4 @@
-import type { Node } from '@traqula/core';
-
-export type Wrap<T> = { val: T } & Node['loc'];
+import type { Localized, Node } from '@traqula/core';
 
 export type GraphRefBase = Node & {
   type: 'graphRef';
@@ -202,7 +200,7 @@ export type PatternGraph = PatternBase & {
 };
 export type PatternUnion = PatternBase & {
   patternType: 'union';
-  patterns: Pattern[];
+  patterns: PatternGroup[];
 };
 export type BasicGraphPattern = (TripleNesting | TripleCollection)[];
 export type PatternBgp = PatternBase & {
@@ -267,7 +265,7 @@ export type SolutionModifierHaving = SolutionModifierBase & {
 };
 export type Ordering =
   | Expression
-  | ({ descending: boolean; expression: Expression } & Pick<Node, 'loc'>);
+  | (Localized & { descending: boolean; expression: Expression });
 export type SolutionModifierOrder = SolutionModifierBase & {
   modifierType: 'order';
   orderDefs: Ordering[];

@@ -1,4 +1,4 @@
-import type { ImplArgs, RuleDefReturn } from '@traqula/core';
+import type { ImplArgs, RuleDefReturn, Wrap } from '@traqula/core';
 import * as l from '../lexer';
 import type {
   Expression,
@@ -7,7 +7,6 @@ import type {
   ExpressionOperation,
   TermIri,
   TermLiteral,
-  Wrap,
 } from '../RoundTripTypes';
 import type {
   SparqlGrammarRule,
@@ -42,10 +41,8 @@ export const argList: SparqlRule<'argList', Wrap<IArgList>> = <const> {
     OR<RuleDefReturn<typeof argList>>([
       { ALT: () => {
         const nil = CONSUME(l.terminals.nil);
-        return ACTION(() => ({
-          val: { args: [], distinct: false },
-          ...C.factory.sourceLocation(nil),
-        }));
+        return ACTION(() =>
+          C.factory.wrap({ args: [], distinct: false }, C.factory.sourceLocation(nil)));
       } },
       { ALT: () => {
         const args: Expression[] = [];
@@ -63,10 +60,8 @@ export const argList: SparqlRule<'argList', Wrap<IArgList>> = <const> {
           },
         });
         const close = CONSUME(l.symbols.RParen);
-        return ACTION(() => ({
-          val: { args, distinct },
-          ...C.factory.sourceLocation(open, close),
-        }));
+        return ACTION(() =>
+          C.factory.wrap({ args, distinct }, C.factory.sourceLocation(open, close)));
       } },
     ]),
   gImpl: () => () => {},
@@ -80,7 +75,7 @@ export const expressionList: SparqlRule<'expressionList', Wrap<Expression[]>> = 
   impl: ({ ACTION, CONSUME, MANY, OR, SUBRULE1, SUBRULE2 }) => C => OR([
     { ALT: () => {
       const nil = CONSUME(l.terminals.nil);
-      return ACTION(() => ({ val: [], ...C.factory.sourceLocation(nil) }));
+      return ACTION(() => C.factory.wrap([], C.factory.sourceLocation(nil)));
     } },
     { ALT: () => {
       const open = CONSUME(l.symbols.LParen);
@@ -92,7 +87,7 @@ export const expressionList: SparqlRule<'expressionList', Wrap<Expression[]>> = 
         args.push(expr);
       });
       const close = CONSUME(l.symbols.RParen);
-      return ACTION(() => ({ val: args, ...C.factory.sourceLocation(open, close) }));
+      return ACTION(() => C.factory.wrap(args, C.factory.sourceLocation(open, close)));
     } },
   ]),
   gImpl: () => () => '',
@@ -138,7 +133,7 @@ export const conditionalOrExpression: SparqlGrammarRule<'conditionalOrExpression
         CONSUME(l.symbols.logicOr);
         const args = SUBRULE2(conditionalAndExpression, undefined);
         return left => ACTION(() =>
-          C.factory.expressionOperation('||', [ left, args ], C.factory.sourceLocation(left.loc, args.loc)));
+          C.factory.expressionOperation('||', [ left, args ], C.factory.sourceLocation(left, args)));
       },
       ACTION,
       MANY,
@@ -156,7 +151,7 @@ export const conditionalAndExpression: SparqlGrammarRule<'conditionalAndExpressi
       CONSUME(l.symbols.logicAnd);
       const arg = SUBRULE2(valueLogical, undefined);
       return left => ACTION(() =>
-        C.factory.expressionOperation('&&', [ left, arg ], C.factory.sourceLocation(left.loc, arg.loc)));
+        C.factory.expressionOperation('&&', [ left, arg ], C.factory.sourceLocation(left, arg)));
     },
     ACTION,
     MANY,
@@ -195,7 +190,7 @@ SparqlGrammarRule<'relationalExpression', ExpressionOperation | Expression> = <c
           return ACTION(() => C.factory.expressionOperation(
             operator.image,
             [ args1, expr ],
-            C.factory.sourceLocation(args1.loc, expr.loc),
+            C.factory.sourceLocation(args1, expr),
           ));
         } },
         { ALT: () => {
@@ -207,7 +202,7 @@ SparqlGrammarRule<'relationalExpression', ExpressionOperation | Expression> = <c
           return ACTION(() => C.factory.expressionOperation(
             operator.image,
             [ args1, ...args.val ],
-            C.factory.sourceLocation(args1.loc, args),
+            C.factory.sourceLocation(args1, args),
           ));
         } },
       ]));
@@ -240,7 +235,7 @@ export const additiveExpression: SparqlGrammarRule<'additiveExpression', Express
           ]);
           const arg = SUBRULE2(multiplicativeExpression, undefined);
           return ACTION(() => left =>
-            C.factory.expressionOperation(operator.image, [ left, arg ], C.factory.sourceLocation(left.loc, arg.loc)));
+            C.factory.expressionOperation(operator.image, [ left, arg ], C.factory.sourceLocation(left, arg)));
         } },
         { ALT: () => {
           // The operator of this alternative is actually parsed as part of the signed numeric literal. (note #6)
@@ -279,7 +274,7 @@ export const additiveExpression: SparqlGrammarRule<'additiveExpression', Express
               return ACTION(() => leftInner => C.factory.expressionOperation(
                 innerOperator.image,
                 [ leftInner, innerExpr ],
-                C.factory.sourceLocation(leftInner.loc, innerExpr.loc),
+                C.factory.sourceLocation(leftInner, innerExpr),
               ));
             },
             ACTION,
@@ -288,7 +283,7 @@ export const additiveExpression: SparqlGrammarRule<'additiveExpression', Express
           return left => C.factory.expressionOperation(
             operator,
             [ left, multiplicativeExpr ],
-            C.factory.sourceLocation(left.loc, multiplicativeExpr.loc),
+            C.factory.sourceLocation(left, multiplicativeExpr),
           );
         } },
       ]),
@@ -315,7 +310,7 @@ export const multiplicativeExpression: SparqlGrammarRule<'multiplicativeExpressi
         expressionType: 'operation',
         operator: operator.image,
         args: [ left, expr ],
-        loc: C.factory.sourceLocation(left.loc, expr.loc),
+        loc: C.factory.sourceLocation(left, expr),
       });
     },
     ACTION,
@@ -342,7 +337,7 @@ export const unaryExpression: SparqlGrammarRule<'unaryExpression', Expression> =
         expressionType: 'operation',
         operator: operator.image === '!' ? '!' : (operator.image === '+' ? 'UPLUS' : 'UMINUS'),
         args: [ expr ],
-        loc: C.factory.sourceLocation(operator, expr.loc),
+        loc: C.factory.sourceLocation(operator, expr),
       }));
     } },
   ]),
@@ -402,7 +397,7 @@ export const iriOrFunction: SparqlRule<'iriOrFunction', TermIri | ExpressionFunc
           function: iriVal,
           args: args.val.args,
           distinct,
-          loc: C.factory.sourceLocation(iriVal.loc, args),
+          loc: C.factory.sourceLocation(iriVal, args),
         };
       });
     });

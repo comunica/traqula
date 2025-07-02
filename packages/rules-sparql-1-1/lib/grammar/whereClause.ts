@@ -1,4 +1,4 @@
-import type { RuleDefReturn } from '@traqula/core';
+import type { RuleDefReturn, Wrap } from '@traqula/core';
 import * as l from '../lexer';
 import type {
   Expression,
@@ -18,31 +18,34 @@ import type {
   PatternValues,
   ValuePatternRow,
   TermVariable,
-  Wrap,
+  SubSelect,
+  PatternBgp,
 } from '../RoundTripTypes';
 import type {
+  SparqlGeneratorRule,
   SparqlGrammarRule,
   SparqlRule,
 } from '../Sparql11types';
 import { builtInCall } from './builtIn';
 import { argList, brackettedExpression, expression } from './expression';
-import { var_, varOrIri } from './general';
+import { var_, varOrIri, varOrTerm } from './general';
 import { booleanLiteral, iri, numericLiteral, rdfLiteral } from './literals';
 import { subSelect } from './queryUnit/queryUnit';
-import { triplesBlock } from './tripleBlock';
+import { graphNode, triplesBlock } from './tripleBlock';
 
 /**
  * [[17]](https://www.w3.org/TR/sparql11-query/#rWhereClause)
  */
-export const whereClause: SparqlGrammarRule<'whereClause', Wrap<PatternGroup>> = <const> {
+export const whereClause: SparqlRule<'whereClause', Wrap<PatternGroup>> = <const> {
   name: 'whereClause',
   impl: ({ ACTION, SUBRULE, CONSUME, OPTION }) => (C) => {
     const where = OPTION(() => CONSUME(l.where));
     const group = SUBRULE(groupGraphPattern, undefined);
-    return ACTION(() => ({
-      val: group,
-      ...C.factory.sourceLocation(...(where ? [ where ] : []), group.loc),
-    }));
+    return ACTION(() => C.factory.wrap(group, C.factory.sourceLocation(where, group)));
+  },
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+    F.printFilter(ast, () => PRINT_WORD('WHERE'));
+    SUBRULE(groupGraphPattern, ast.val, undefined);
   },
 };
 
@@ -61,7 +64,30 @@ export const groupGraphPattern: SparqlRule<'groupGraphPattern', PatternGroup> = 
 
     return ACTION(() => C.factory.patternGroup(patterns, C.factory.sourceLocation(open, close)));
   },
-  gImpl: () => () => {},
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+    F.printFilter(ast, () => PRINT_WORD('{'));
+
+    for (const pattern of ast.patterns) {
+      SUBRULE(generatePattern, pattern, undefined);
+    }
+
+    F.printFilter(ast, () => PRINT_WORD('}'));
+  },
+};
+
+export const generatePattern: SparqlGeneratorRule<'generatePattern', Pattern> = {
+  name: 'generatePattern',
+  gImpl: ({ SUBRULE }) => (ast) => {
+    if (ast.type === 'query') {
+      SUBRULE(subSelect, ast, undefined);
+    } else if (ast.patternType === 'group') {
+      SUBRULE(groupGraphPattern, ast, undefined);
+    } else if (ast.patternType === 'bgp') {
+      SUBRULE(triplesBlock, ast, undefined);
+    } else {
+      SUBRULE(graphPatternNotTriples, ast, undefined);
+    }
+  },
 };
 
 /**
@@ -114,9 +140,9 @@ SparqlGrammarRule<'groupGraphPatternSub', Pattern[]> = <const> {
 /**
  * [[56]](https://www.w3.org/TR/sparql11-query/#rGraphPatternNotTriples)
  */
-export const graphPatternNotTriples: SparqlRule<'graphPatternNotTriples', Pattern> = {
+export const graphPatternNotTriples: SparqlRule<'graphPatternNotTriples', Exclude<Pattern, SubSelect | PatternBgp>> = {
   name: 'graphPatternNotTriples',
-  impl: ({ SUBRULE, OR }) => () => OR<Pattern>([
+  impl: ({ SUBRULE, OR }) => () => OR<RuleDefReturn<typeof graphPatternNotTriples>>([
     { ALT: () => SUBRULE(groupOrUnionGraphPattern, undefined) },
     { ALT: () => SUBRULE(optionalGraphPattern, undefined) },
     { ALT: () => SUBRULE(minusGraphPattern, undefined) },
@@ -126,7 +152,35 @@ export const graphPatternNotTriples: SparqlRule<'graphPatternNotTriples', Patter
     { ALT: () => SUBRULE(bind, undefined) },
     { ALT: () => SUBRULE(inlineData, undefined) },
   ]),
-  gImpl: () => () => {},
+  gImpl: ({ SUBRULE }) => (ast) => {
+    switch (ast.patternType) {
+      case 'group':
+      case 'union':
+        SUBRULE(groupOrUnionGraphPattern, ast, undefined);
+        break;
+      case 'optional':
+        SUBRULE(optionalGraphPattern, ast, undefined);
+        break;
+      case 'minus':
+        SUBRULE(minusGraphPattern, ast, undefined);
+        break;
+      case 'graph':
+        SUBRULE(graphGraphPattern, ast, undefined);
+        break;
+      case 'service':
+        SUBRULE(serviceGraphPattern, ast, undefined);
+        break;
+      case 'filter':
+        SUBRULE(filter, ast, undefined);
+        break;
+      case 'bind':
+        SUBRULE(bind, ast, undefined);
+        break;
+      case 'values':
+        SUBRULE(inlineData, ast, undefined);
+        break;
+    }
+  },
 };
 
 /**
@@ -138,9 +192,12 @@ export const optionalGraphPattern: SparqlRule<'optionalGraphPattern', PatternOpt
     const optional = CONSUME(l.optional);
     const group = SUBRULE(groupGraphPattern, undefined);
 
-    return ACTION(() => C.factory.patternOptional(group.patterns, C.factory.sourceLocation(optional, group.loc)));
+    return ACTION(() => C.factory.patternOptional(group.patterns, C.factory.sourceLocation(optional, group)));
   },
-  gImpl: () => () => {},
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+    F.printFilter(ast, () => PRINT_WORD('OPTIONAL'));
+    SUBRULE(groupGraphPattern, F.patternGroup(ast.patterns, ast.loc), undefined);
+  },
 };
 
 /**
@@ -153,9 +210,13 @@ export const graphGraphPattern: SparqlRule<'graphGraphPattern', PatternGraph> = 
     const name = SUBRULE(varOrIri, undefined);
     const group = SUBRULE(groupGraphPattern, undefined);
 
-    return ACTION(() => C.factory.patternGraph(name, group.patterns, C.factory.sourceLocation(graph, group.loc)));
+    return ACTION(() => C.factory.patternGraph(name, group.patterns, C.factory.sourceLocation(graph, group)));
   },
-  gImpl: () => () => {},
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+    F.printFilter(ast, () => PRINT_WORD('GRAPH'));
+    SUBRULE(varOrTerm, ast.name, undefined);
+    SUBRULE(groupGraphPattern, F.patternGroup(ast.patterns, ast.loc), undefined);
+  },
 };
 
 /**
@@ -173,9 +234,18 @@ export const serviceGraphPattern: SparqlRule<'serviceGraphPattern', PatternServi
     const group = SUBRULE1(groupGraphPattern, undefined);
 
     return ACTION(() =>
-      C.factory.patternService(name, group.patterns, silent, C.factory.sourceLocation(service, group.loc)));
+      C.factory.patternService(name, group.patterns, silent, C.factory.sourceLocation(service, group)));
   },
-  gImpl: () => () => {},
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+    F.printFilter(ast, () => {
+      PRINT_WORD('SERVICE');
+      if (ast.silent) {
+        PRINT_WORD('SILENT');
+      }
+    });
+    SUBRULE(varOrTerm, ast.name, undefined);
+    SUBRULE(groupGraphPattern, F.patternGroup(ast.patterns, ast.loc), undefined);
+  },
 };
 
 /**
@@ -193,7 +263,13 @@ export const bind: SparqlRule<'bind', PatternBind> = <const> {
 
     return ACTION(() => C.factory.patternBind(expressionVal, variable, C.factory.sourceLocation(bind, close)));
   },
-  gImpl: () => () => {},
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+    F.printFilter(ast, () => PRINT_WORD('BIND', '('));
+    SUBRULE(expression, ast.expression, undefined);
+    F.printFilter(ast, () => PRINT_WORD('AS'));
+    SUBRULE(var_, ast.variable, undefined);
+    F.printFilter(ast, () => PRINT_WORD(')'));
+  },
 };
 
 /**
@@ -207,7 +283,32 @@ export const inlineData: SparqlRule<'inlineData', PatternValues> = <const> {
 
     return ACTION(() => C.factory.patternValues(datablock.val, C.factory.sourceLocation(values, datablock)));
   },
-  gImpl: () => () => {},
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+    const variables = Object.keys(ast.values[0]);
+    F.printFilter(ast, () => {
+      PRINT_WORD('VALUES', '(');
+      for (const variable of variables) {
+        PRINT_WORD(`?${variable}`);
+      }
+      PRINT_WORD(')', '{');
+    });
+
+    for (const mapping of ast.values) {
+      F.printFilter(ast, () => PRINT_WORD('('));
+
+      for (const variable of variables) {
+        if (mapping[variable] === undefined) {
+          F.printFilter(ast, () => PRINT_WORD('UNDEF'));
+        } else {
+          SUBRULE(graphNode, mapping[variable], undefined);
+        }
+      }
+
+      F.printFilter(ast, () => PRINT_WORD(')'));
+    }
+
+    F.printFilter(ast, () => PRINT_WORD('}'));
+  },
 };
 
 /**
@@ -233,19 +334,19 @@ export const inlineDataOneVar: SparqlGrammarRule<'inlineDataOneVar', Wrap<ValueP
     MANY(() => {
       const value = SUBRULE(dataBlockValue, undefined);
       ACTION(() => {
-        res.push({ [`?${varVal.value}`]: value });
+        res.push({ [varVal.value]: value });
       });
     });
     const close = CONSUME(l.symbols.RCurly);
 
-    return ACTION(() => ({ val: res, ...C.factory.sourceLocation(varVal.loc, close) }));
+    return ACTION(() => C.factory.wrap(res, C.factory.sourceLocation(varVal, close)));
   },
 };
 
 /**
  * [[64]](https://www.w3.org/TR/sparql11-query/#rInlineDataFull)
  */
-export const inlineDataFull: SparqlRule<'inlineDataFull', Wrap<ValuePatternRow[]>> = <const> {
+export const inlineDataFull: SparqlGrammarRule<'inlineDataFull', Wrap<ValuePatternRow[]>> = <const> {
   name: 'inlineDataFull',
   impl: ({
     ACTION,
@@ -271,7 +372,7 @@ export const inlineDataFull: SparqlRule<'inlineDataFull', Wrap<ValuePatternRow[]
         });
         const close = CONSUME1(l.symbols.RCurly);
 
-        return ACTION(() => ({ val: res, ...C.factory.sourceLocation(nil, close) }));
+        return ACTION(() => C.factory.wrap(res, C.factory.sourceLocation(nil, close)));
       } },
       { ALT: () => {
         const open = CONSUME1(l.symbols.LParen);
@@ -290,7 +391,7 @@ export const inlineDataFull: SparqlRule<'inlineDataFull', Wrap<ValuePatternRow[]
             }
             const value = SUBRULE(dataBlockValue, undefined);
             ACTION(() => {
-              currentRow[`?${vars[parsedValues].value}`] = value;
+              currentRow[vars[parsedValues].value] = value;
               parsedValues++;
             });
           });
@@ -303,17 +404,16 @@ export const inlineDataFull: SparqlRule<'inlineDataFull', Wrap<ValuePatternRow[]
           });
         });
         const close = CONSUME2(l.symbols.RCurly);
-        return ACTION(() => ({ val: res, ...C.factory.sourceLocation(open, close) }));
+        return ACTION(() => C.factory.wrap(res, C.factory.sourceLocation(open, close)));
       } },
     ]);
   },
-  gImpl: () => () => {},
 };
 
 /**
  * [[65]](https://www.w3.org/TR/sparql11-query/#rDataBlockValue)
  */
-export const dataBlockValue: SparqlRule<'dataBlockValue', TermIri | TermBlank | TermLiteral | undefined> = {
+export const dataBlockValue: SparqlGrammarRule<'dataBlockValue', TermIri | TermBlank | TermLiteral | undefined> = {
   name: 'dataBlockValue',
   impl: ({ SUBRULE, CONSUME, OR }) => () => OR<RuleDefReturn<typeof dataBlockValue>>([
     { ALT: () => SUBRULE(iri, undefined) },
@@ -326,7 +426,6 @@ export const dataBlockValue: SparqlRule<'dataBlockValue', TermIri | TermBlank | 
       return undefined;
     } },
   ]),
-  gImpl: () => () => {},
 };
 
 /**
@@ -338,9 +437,12 @@ export const minusGraphPattern: SparqlRule<'minusGraphPattern', PatternMinus> = 
     const minus = CONSUME(l.minus);
     const group = SUBRULE(groupGraphPattern, undefined);
 
-    return ACTION(() => C.factory.patternMinus(group.patterns, C.factory.sourceLocation(minus, group.loc)));
+    return ACTION(() => C.factory.patternMinus(group.patterns, C.factory.sourceLocation(minus, group)));
   },
-  gImpl: () => () => {},
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+    F.printFilter(ast, () => PRINT_WORD('MINUS'));
+    SUBRULE(groupGraphPattern, F.patternGroup(ast.patterns, ast.loc), undefined);
+  },
 };
 
 /**
@@ -363,11 +465,22 @@ export const groupOrUnionGraphPattern: SparqlRule<'groupOrUnionGraphPattern', Pa
       return ACTION(() => groups.length === 1 ?
         groups[0] :
         C.factory.patternUnion(
-          groups.map(group => C.factory.deGroupSingle(group)),
-          C.factory.sourceLocation(group.loc, groups.at(-1)!.loc),
+          groups,
+          C.factory.sourceLocation(group, groups.at(-1)),
         ));
     },
-    gImpl: () => () => {},
+    gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+      if (F.isPatternUnion(ast)) {
+        const [ head, ...tail ] = ast.patterns;
+        SUBRULE(groupGraphPattern, head, undefined);
+        for (const pattern of tail) {
+          F.printFilter(ast, () => PRINT_WORD('UNION'));
+          SUBRULE(groupGraphPattern, pattern, undefined);
+        }
+      } else {
+        SUBRULE(groupGraphPattern, ast, undefined);
+      }
+    },
   };
 
 /**
@@ -379,9 +492,12 @@ export const filter: SparqlRule<'filter', PatternFilter> = <const> {
     const filterToken = CONSUME(l.filter);
     const expression = SUBRULE(constraint, undefined);
 
-    return ACTION(() => C.factory.patternFilter(expression, C.factory.sourceLocation(filterToken, expression.loc)));
+    return ACTION(() => C.factory.patternFilter(expression, C.factory.sourceLocation(filterToken, expression)));
   },
-  gImpl: () => () => {},
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+    F.printFilter(ast, () => PRINT_WORD('FILTER'));
+    SUBRULE(expression, ast.expression, undefined);
+  },
 };
 
 /**
@@ -408,7 +524,7 @@ export const functionCall: SparqlGrammarRule<'functionCall', ExpressionFunctionC
       func,
       args.val.args,
       args.val.distinct,
-      C.factory.sourceLocation(func.loc, args),
+      C.factory.sourceLocation(func, args),
     ));
   },
 };

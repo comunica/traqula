@@ -15,7 +15,7 @@ import { blankNode, booleanLiteral, iri, iriFull, numericLiteral, rdfLiteral, ve
 /**
  * [[4]](https://www.w3.org/TR/sparql11-query/#rPrologue)
  */
-export const prologue: SparqlRule<'prologue', ContextDefinition[]> = <const> {
+export const prologue: SparqlGrammarRule<'prologue', ContextDefinition[]> = <const> {
   name: 'prologue',
   impl: ({ SUBRULE, MANY, OR }) => () => {
     const result: ContextDefinition[] = [];
@@ -27,7 +27,6 @@ export const prologue: SparqlRule<'prologue', ContextDefinition[]> = <const> {
     ]));
     return result;
   },
-  gImpl: () => () => {},
 };
 
 /**
@@ -39,7 +38,7 @@ export const baseDecl: SparqlRule<'baseDecl', ContextDefinitionBaseDecl> = <cons
   impl: ({ ACTION, CONSUME, SUBRULE }) => (C) => {
     const base = CONSUME(l.baseDecl);
     const val = SUBRULE(iriFull, undefined);
-    return ACTION(() => C.factory.baseDecl(C.factory.sourceLocation(base, val.loc), val));
+    return ACTION(() => C.factory.baseDecl(C.factory.sourceLocation(base, val), val));
   },
   gImpl: () => () => {},
 };
@@ -55,7 +54,7 @@ export const prefixDecl: SparqlRule<'prefixDecl', ContextDefinitionPrefixDecl> =
     const name = CONSUME(l.terminals.pNameNs).image.slice(0, -1);
     const value = SUBRULE(iriFull, undefined);
 
-    return ACTION(() => C.factory.prefixDecl(C.factory.sourceLocation(prefix, value.loc), name, value));
+    return ACTION(() => C.factory.prefixDecl(C.factory.sourceLocation(prefix, value), name, value));
   },
   gImpl: () => () => {},
 };

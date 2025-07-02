@@ -1,3 +1,4 @@
+import type { Wrap } from '@traqula/core';
 import type { IToken } from 'chevrotain';
 import { CommonIRIs } from '../grammar-helpers/utils';
 import * as l from '../lexer';
@@ -12,7 +13,6 @@ import type {
   TripleCollectionBlankNodeProperties,
   TripleCollectionList,
   TripleNesting,
-  Wrap,
 } from '../RoundTripTypes';
 import type {
   SparqlGrammarRule,
@@ -42,10 +42,7 @@ SparqlGrammarRule<string, Wrap<BasicGraphPattern>>['impl'] {
         });
       },
     });
-    return ACTION(() => ({
-      val: triples,
-      ...C.factory.sourceLocation(...triples.map(x => x.loc), ...(dotToken ? [ dotToken ] : [])),
-    }));
+    return ACTION(() => C.factory.wrap(triples, C.factory.sourceLocation(...triples, dotToken)));
   };
 }
 
@@ -58,7 +55,37 @@ export const triplesBlock: SparqlRule<'triplesBlock', PatternBgp> = <const>{
     const triples = triplesDotSeperated(triplesSameSubjectPath)(implArgs)(C, undefined);
     return implArgs.ACTION(() => C.factory.patternBgp(triples.val, C.factory.sourceLocation(triples)));
   },
-  gImpl: () => () => {},
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+    for (const [ index, triple ] of ast.triples.entries()) {
+      const nextTriple = ast.triples.at(index);
+      if (F.isTripleCollection(triple)) {
+        SUBRULE(graphNode, triple, undefined);
+        // A top level tripleCollection block means that it is not used in a triple. So you end with DOT.
+        F.printFilter(ast, () => PRINT_WORD('.'));
+      } else {
+        // Subject
+        SUBRULE(graphNode, triple.subject, undefined);
+        // Predicate
+        if (F.isTerm(triple.predicate) && F.isTermVariable(triple.predicate)) {
+          SUBRULE(varOrTerm, triple.predicate, undefined);
+        } else {
+          SUBRULE(path, triple.predicate, undefined);
+        }
+        // Object
+        SUBRULE(graphNode, triple.object, undefined);
+
+        // If no more things, or a top level collection (only possible if new block was part), or new subject: add DOT
+        if (nextTriple === undefined || F.isTripleCollection(nextTriple) ||
+          !F.isSourceLocationNoMaterialize(nextTriple.subject.loc)) {
+          F.printFilter(ast, () => PRINT_WORD('.'));
+        } else if (F.isSourceLocationNoMaterialize(nextTriple.predicate.loc)) {
+          F.printFilter(ast, () => PRINT_WORD(','));
+        } else {
+          F.printFilter(ast, () => PRINT_WORD(';'));
+        }
+      }
+    }
+  },
 };
 
 /**
@@ -78,6 +105,7 @@ SparqlGrammarRule<T, BasicGraphPattern> {
           allowPaths ? propertyListPathNotEmpty : propertyListNotEmpty,
           { subject: ACTION(() => C.factory.dematerialized(subject)) },
         );
+        // Only the first occurrence of a subject is actually materialized.
         return ACTION(() => {
           if (res.length > 0) {
             res[0].subject = subject;
@@ -286,10 +314,12 @@ function collectionImpl<T extends string>(name: T, allowPaths: boolean): SparqlR
         return F.tripleCollectionList(listHead, triples, F.sourceLocation(startToken, endToken));
       });
     },
-    gImpl: ({ SUBRULE }) => (ast) => {
+    gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+      F.printFilter(ast, () => PRINT_WORD('('));
       for (const triple of ast.triples) {
         SUBRULE(allowPaths ? graphNodePath : graphNode, triple.object, undefined);
       }
+      F.printFilter(ast, () => PRINT_WORD(')'));
     },
   };
 }

@@ -1,4 +1,5 @@
 import type { IToken } from '@chevrotain/types';
+import type { Wrap } from '@traqula/core';
 import * as l from '../lexer';
 import type {
   Expression,
@@ -9,7 +10,6 @@ import type {
   Ordering,
   SolutionModifierLimitOffset,
   SolutionModifiers,
-  Wrap,
 } from '../RoundTripTypes';
 import type { SparqlGrammarRule, SparqlRule } from '../Sparql11types';
 import { builtInCall } from './builtIn';
@@ -20,7 +20,7 @@ import { constraint, functionCall } from './whereClause';
 /**
  * [[18]](https://www.w3.org/TR/sparql11-query/#rSolutionModifier)
  */
-export const solutionModifier: SparqlRule<'solutionModifier', SolutionModifiers> = <const> {
+export const solutionModifier: SparqlGrammarRule<'solutionModifier', SolutionModifiers> = <const> {
   name: 'solutionModifier',
   impl: ({ ACTION, SUBRULE, OPTION1, OPTION2, OPTION3, OPTION4 }) => () => {
     const group = OPTION1(() => SUBRULE(groupClause, undefined));
@@ -34,12 +34,6 @@ export const solutionModifier: SparqlRule<'solutionModifier', SolutionModifiers>
       ...(order && { order }),
     }));
   },
-  gImpl: ({ SUBRULE }) => ast => [
-    ast.group ? SUBRULE(groupClause, ast.group, undefined) : '',
-    ast.having ? SUBRULE(havingClause, ast.having, undefined) : '',
-    ast.order ? SUBRULE(orderClause, ast.order, undefined) : '',
-    ast.limitOffset ? SUBRULE(limitOffsetClauses, ast.limitOffset, undefined) : '',
-  ].join(''),
 };
 
 /**
@@ -59,10 +53,23 @@ export const groupClause: SparqlRule<'groupClause', SolutionModifierGroup> = <co
       type: 'solutionModifier',
       modifierType: 'group',
       groupings,
-      loc: C.factory.sourceLocation(start, groupings.at(-1)!.loc),
+      loc: C.factory.sourceLocation(start, groupings.at(-1)),
     }));
   },
-  gImpl: () => () => {},
+  gImpl: ({ PRINT_WORD, SUBRULE }) => (ast, { factory: F }) => {
+    F.printFilter(ast, () => PRINT_WORD('GROUP', 'BY'));
+    for (const grouping of ast.groupings) {
+      if (F.isExpression(grouping)) {
+        SUBRULE(expression, grouping, undefined);
+      } else {
+        F.printFilter(ast, () => PRINT_WORD('('));
+        SUBRULE(expression, grouping.value, undefined);
+        F.printFilter(ast, () => PRINT_WORD('AS'));
+        SUBRULE(var_, grouping.variable, undefined);
+        F.printFilter(ast, () => PRINT_WORD(')'));
+      }
+    }
+  },
 };
 
 /**
@@ -118,9 +125,14 @@ export const havingClause: SparqlRule<'havingClause', SolutionModifierHaving> = 
     ACTION(() => !couldParseAgg && C.parseMode.delete('canParseAggregate'));
 
     return ACTION(() =>
-      C.factory.solutionModifierHaving(expressions, C.factory.sourceLocation(having, expressions.at(-1)!.loc)));
+      C.factory.solutionModifierHaving(expressions, C.factory.sourceLocation(having, expressions.at(-1))));
   },
-  gImpl: () => () => {},
+  gImpl: ({ PRINT_WORD, SUBRULE }) => (ast, { factory: F }) => {
+    F.printFilter(ast, () => PRINT_WORD('HAVING'));
+    for (const having of ast.having) {
+      SUBRULE(expression, having, undefined);
+    }
+  },
 };
 
 /**
@@ -149,15 +161,31 @@ export const orderClause: SparqlRule<'orderClause', SolutionModifierOrder> = <co
     ACTION(() => !couldParseAgg && C.parseMode.delete('canParseAggregate'));
 
     return ACTION(() =>
-      C.factory.solutionModifierOrder(orderings, C.factory.sourceLocation(order, orderings.at(-1)!.loc)));
+      C.factory.solutionModifierOrder(orderings, C.factory.sourceLocation(order, orderings.at(-1))));
   },
-  gImpl: () => () => {},
+  gImpl: ({ PRINT_WORD, SUBRULE }) => (ast, { factory: F }) => {
+    F.printFilter(ast, () => PRINT_WORD('ORDER', 'BY'));
+    for (const ordering of ast.orderDefs) {
+      if (F.isExpression(ordering)) {
+        SUBRULE(expression, ordering, undefined);
+      } else {
+        if (ordering.descending) {
+          F.printFilter(ast, () => PRINT_WORD('DESC'));
+        } else {
+          F.printFilter(ast, () => PRINT_WORD('ASC'));
+        }
+        F.printFilter(ast, () => PRINT_WORD('('));
+        SUBRULE(expression, ordering.expression, undefined);
+        F.printFilter(ast, () => PRINT_WORD(')'));
+      }
+    }
+  },
 };
 
 /**
  * [[24]](https://www.w3.org/TR/sparql11-query/#rOrderCondition)
  */
-export const orderCondition: SparqlRule<'orderCondition', Ordering> = <const> {
+export const orderCondition: SparqlGrammarRule<'orderCondition', Ordering> = <const> {
   name: 'orderCondition',
   impl: ({ ACTION, SUBRULE, CONSUME, OR1, OR2 }) => C => OR1<Ordering>([
     { ALT: () => {
@@ -177,13 +205,12 @@ export const orderCondition: SparqlRule<'orderCondition', Ordering> = <const> {
       return ACTION(() => ({
         expression: expr,
         descending: descending[0],
-        loc: C.factory.sourceLocation(descending[1], expr.loc),
+        loc: C.factory.sourceLocation(descending[1], expr),
       }));
     } },
     { ALT: () => SUBRULE(constraint, undefined) },
     { ALT: () => SUBRULE(var_, undefined) },
   ]),
-  gImpl: () => () => {},
 };
 
 /**
@@ -208,11 +235,20 @@ export const limitOffsetClauses: SparqlRule<'limitOffsetClauses', SolutionModifi
       return ACTION(() => C.factory.solutionModifierLimitOffset(
         limit?.val,
         offset.val,
-        C.factory.sourceLocation(offset, ...(limit ? [ limit ] : [])),
+        C.factory.sourceLocation(offset, limit),
       ));
     } },
   ]),
-  gImpl: () => () => {},
+  gImpl: ({ PRINT_WORD }) => (ast, { factory: F }) => {
+    F.printFilter(ast, () => {
+      if (ast.limit) {
+        PRINT_WORD('LIMIT', String(ast.limit));
+      }
+      if (ast.offset) {
+        PRINT_WORD('OFFSET', String(ast.limit));
+      }
+    });
+  },
 };
 
 /**
@@ -224,7 +260,7 @@ export const limitClause: SparqlGrammarRule<'limitClause', Wrap<number>> = <cons
     const offset = CONSUME(l.limit);
     const value = CONSUME(l.terminals.integer);
     const val = Number.parseInt(value.image, 10);
-    return ACTION(() => ({ val, ...C.factory.sourceLocation(offset, value) }));
+    return ACTION(() => C.factory.wrap(val, C.factory.sourceLocation(offset, value)));
   },
 };
 
@@ -237,6 +273,6 @@ export const offsetClause: SparqlGrammarRule<'offsetClause', Wrap<number>> = <co
     const offset = CONSUME(l.offset);
     const value = CONSUME(l.terminals.integer);
     const val = Number.parseInt(value.image, 10);
-    return ACTION(() => ({ val, ...C.factory.sourceLocation(offset, value) }));
+    return ACTION(() => C.factory.wrap(val, C.factory.sourceLocation(offset, value)));
   },
 };

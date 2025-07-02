@@ -14,40 +14,36 @@ import { iri, verbA } from './literals';
 export const path: SparqlRule<'path', Path> = <const> {
   name: 'path',
   impl: ({ SUBRULE }) => () => SUBRULE(pathAlternative, undefined),
-  gImpl: ({ PRINT_WORD, PRINT, SUBRULE }) => (ast, { factory: F }) => {
+  gImpl: ({ PRINT, SUBRULE }) => (ast, { factory: F }) => {
     if (F.isTerm(ast) && F.isTermIri(ast)) {
       SUBRULE(iri, ast, undefined);
-    } else if (ast.loc) {
-      for (const item of ast.items) {
-        SUBRULE(path, item, undefined);
-      }
     } else {
       switch (ast.pathType) {
         case '|':
         case '/': {
           const [ head, ...tail ] = ast.items;
-          PRINT('(');
+          F.printFilter(ast, () => PRINT('('));
           SUBRULE(path, head, undefined);
-          PRINT(')');
+          F.printFilter(ast, () => PRINT(')'));
           for (const val of tail) {
-            PRINT_WORD(ast.pathType, ' (');
+            F.printFilter(ast, () => PRINT('('));
             SUBRULE(path, val, undefined);
-            PRINT(')');
+            F.printFilter(ast, () => PRINT(')'));
           }
           break;
         }
         case '^':
-          PRINT('^');
+          F.printFilter(ast, () => PRINT('^'));
           SUBRULE(path, ast.items[0], undefined);
           break;
         case '?':
         case '*':
         case '+':
           SUBRULE(path, ast.items[0], undefined);
-          PRINT(ast.pathType);
+          F.printFilter(ast, () => PRINT(ast.pathType));
           break;
         case '!':
-          PRINT('!');
+          F.printFilter(ast, () => PRINT('!'));
           SUBRULE(path, ast.items[0], undefined);
           break;
       }
@@ -76,7 +72,7 @@ export function pathChainHelper<T extends string>(
 
       return ACTION(() => tail.length === 0 ?
         head :
-        C.factory.path(pathType, [ head, ...tail ], C.factory.sourceLocation(head.loc, tailEnd.loc)));
+        C.factory.path(pathType, [ head, ...tail ], C.factory.sourceLocation(head, tailEnd)));
     },
   };
 }
@@ -91,7 +87,7 @@ export const pathEltOrInverse: SparqlGrammarRule<'pathEltOrInverse', PathModifie
     { ALT: () => {
       const hat = CONSUME(l.symbols.hat);
       const item = SUBRULE2(pathElt, undefined);
-      return ACTION(() => C.factory.path('^', [ item ], C.factory.sourceLocation(hat, item.loc)));
+      return ACTION(() => C.factory.path('^', [ item ], C.factory.sourceLocation(hat, item)));
     } },
   ]),
 };
@@ -116,7 +112,7 @@ export const pathElt: SparqlGrammarRule<'pathElt', PathModified | Path> = <const
     const modification = OPTION(() => SUBRULE(pathMod, undefined));
     return ACTION(() => modification === undefined ?
       item :
-      C.factory.path(modification.image, [ item ], C.factory.sourceLocation(item.loc, modification)));
+      C.factory.path(modification.image, [ item ], C.factory.sourceLocation(item, modification)));
   },
 };
 
@@ -153,8 +149,7 @@ export const pathPrimary: SparqlGrammarRule<'pathPrimary', Path> = <const> {
 /**
  * [[95]](https://www.w3.org/TR/sparql11-query/#rPathNegatedPropertySet)
  */
-export const pathNegatedPropertySet:
-SparqlRule<'pathNegatedPropertySet', PathNegated> = <const> {
+export const pathNegatedPropertySet: SparqlGrammarRule<'pathNegatedPropertySet', PathNegated> = <const> {
   name: 'pathNegatedPropertySet',
   impl: ({ ACTION, CONSUME, SUBRULE1, SUBRULE2, SUBRULE3, OR, MANY }) => (C) => {
     const exclamation = CONSUME(l.symbols.exclamation);
@@ -162,7 +157,7 @@ SparqlRule<'pathNegatedPropertySet', PathNegated> = <const> {
       { ALT: () => {
         const noAlternative = SUBRULE1(pathOneInPropertySet, undefined);
         return ACTION(() =>
-          C.factory.path('!', [ noAlternative ], C.factory.sourceLocation(exclamation, noAlternative.loc)));
+          C.factory.path('!', [ noAlternative ], C.factory.sourceLocation(exclamation, noAlternative)));
       } },
       { ALT: () => {
         const open = CONSUME(l.symbols.LParen);
@@ -191,13 +186,12 @@ SparqlRule<'pathNegatedPropertySet', PathNegated> = <const> {
       } },
     ]);
   },
-  gImpl: () => () => {},
 };
 
 /**
  * [[96]](https://www.w3.org/TR/sparql11-query/#rPathOneInPropertySet)
  */
-export const pathOneInPropertySet: SparqlRule<'pathOneInPropertySet', TermIri | PathNegatedElt> = <const> {
+export const pathOneInPropertySet: SparqlGrammarRule<'pathOneInPropertySet', TermIri | PathNegatedElt> = <const> {
   name: 'pathOneInPropertySet',
   impl: ({ ACTION, CONSUME, SUBRULE1, SUBRULE2, OR1, OR2 }) => C =>
     OR1<TermIri | PathNegatedElt>([
@@ -210,8 +204,7 @@ export const pathOneInPropertySet: SparqlRule<'pathOneInPropertySet', TermIri | 
           { ALT: () => SUBRULE2(verbA, undefined) },
         ]);
         return ACTION(() =>
-          C.factory.path('^', [ item ], C.factory.sourceLocation(hat, item.loc)));
+          C.factory.path('^', [ item ], C.factory.sourceLocation(hat, item)));
       } },
     ]),
-  gImpl: () => () => {},
 };

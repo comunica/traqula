@@ -48,7 +48,7 @@ export const rdfLiteral: SparqlRule<'rdfLiteral', TermLiteral> = <const> {
       { ALT: () => {
         const lang = CONSUME(l.terminals.langTag);
         return ACTION(() => C.factory.literalTerm(
-          C.factory.sourceLocation(value.loc, lang),
+          C.factory.sourceLocation(value, lang),
           value.value,
           lang.image.slice(1).toLowerCase(),
         ));
@@ -57,7 +57,7 @@ export const rdfLiteral: SparqlRule<'rdfLiteral', TermLiteral> = <const> {
         CONSUME(l.symbols.hathat);
         const iriVal = SUBRULE1(iri, undefined);
         return ACTION(() => C.factory.literalTerm(
-          C.factory.sourceLocation(value.loc, iriVal.loc),
+          C.factory.sourceLocation(value, iriVal),
           value.value,
           iriVal,
         ));
@@ -67,20 +67,14 @@ export const rdfLiteral: SparqlRule<'rdfLiteral', TermLiteral> = <const> {
   gImpl: ({ SUBRULE, PRINT }) => (ast, { factory }) => {
     factory.printFilter(ast, () => PRINT(stringEscapedLexical(ast.value)));
 
-    if (ast.langOrIri && typeof ast.langOrIri !== 'string') {
-      SUBRULE(iri, ast.langOrIri, undefined);
-    }
-
-    factory.printFilter(ast, () => {
-      if (ast.langOrIri) {
-        if (typeof ast.langOrIri === 'string') {
-          PRINT('@', ast.langOrIri);
-        } else {
-          PRINT('^^');
-          SUBRULE(iri, ast.langOrIri, undefined);
-        }
+    if (ast.langOrIri) {
+      if (typeof ast.langOrIri === 'string') {
+        factory.printFilter(ast, () => PRINT('@', ast.langOrIri));
+      } else {
+        factory.printFilter(ast, () => PRINT('^^'));
+        SUBRULE(iri, ast.langOrIri, undefined);
       }
-    });
+    }
   },
 };
 

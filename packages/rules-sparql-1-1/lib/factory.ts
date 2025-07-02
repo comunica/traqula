@@ -54,6 +54,7 @@ import type {
   TermLiteralStr,
   TermLiteralTyped,
   TermVariable,
+  TripleCollection,
   TripleCollectionBlankNodeProperties,
   TripleCollectionList,
   TripleNesting,
@@ -234,12 +235,16 @@ export class TraqulaFactory extends CoreFactory {
       subject,
       predicate,
       object,
-      loc: loc ?? this.sourceLocation(subject.loc, predicate.loc, object.loc),
+      loc: loc ?? this.sourceLocation(subject, predicate, object),
     };
   }
 
   public isPatternGroup(x: Pattern): x is PatternGroup {
     return x.type === 'pattern' && x.patternType === 'group';
+  }
+
+  public isPatternUnion(x: Pattern): x is PatternUnion {
+    return x.type === 'pattern' && x.patternType === 'union';
   }
 
   public isPattern(x: any): x is Pattern {
@@ -293,7 +298,7 @@ export class TraqulaFactory extends CoreFactory {
     };
   }
 
-  public patternUnion(patterns: Pattern[], loc: SourceLocation): PatternUnion {
+  public patternUnion(patterns: PatternGroup[], loc: SourceLocation): PatternUnion {
     return {
       type: 'pattern',
       patternType: 'union',
@@ -358,13 +363,6 @@ export class TraqulaFactory extends CoreFactory {
       graphRefType: 'all',
       loc,
     };
-  }
-
-  public deGroupSingle(group: PatternGroup & Pattern): Pattern {
-    if (group.patterns.length === 1) {
-      return group.patterns[0];
-    }
-    return group;
   }
 
   public aggregate(
@@ -554,6 +552,10 @@ export class TraqulaFactory extends CoreFactory {
       triples,
       loc,
     };
+  }
+
+  public isTripleCollection(collection: object): collection is TripleCollection {
+    return 'type' in collection && collection.type === 'tripleCollection';
   }
 
   public resetBlankNodeCounter(): void {

@@ -8,12 +8,23 @@ import type {
   SourceLocationSource,
   SourceLocationStringReplace,
   Node,
+  Localized,
+  Wrap,
 } from './nodeTypings';
 
 export class CoreFactory {
-  public sourceLocation(...elements: (Pick<IToken, 'startOffset' | 'endOffset'> | SourceLocation)[]): SourceLocation {
-    const filtered =
-      elements.filter(element => !this.isSourceLocation(element) || this.isSourceLocationSource(element));
+  public wrap<T>(val: T, loc: SourceLocation): Wrap<T> {
+    return { val, loc };
+  }
+
+  public isLocalized(obj: unknown): obj is Localized {
+    return typeof obj === 'object' && obj !== null && 'loc' in obj &&
+      typeof obj.loc === 'object' && obj.loc !== null && 'sourceLocationType' in obj;
+  }
+
+  public sourceLocation(...elements: (undefined | IToken | Localized)[]): SourceLocation {
+    const filtered = <(Localized | IToken)[]> elements.filter(element =>
+      element && (!this.isLocalized(element) || this.isSourceLocationSource(element.loc)));
     if (filtered.length === 0) {
       return this.sourceLocationNoMaterialize();
     }
@@ -21,8 +32,8 @@ export class CoreFactory {
     const last = filtered.at(-1)!;
     return {
       sourceLocationType: 'source',
-      start: this.isSourceLocationSource(first) ? first.start : first.startOffset,
-      end: this.isSourceLocationSource(last) ? last.end : (last.endOffset! + 1),
+      start: this.isLocalized(first) ? (<SourceLocationSource> first.loc).start : first.startOffset,
+      end: this.isLocalized(last) ? (<SourceLocationSource> last.loc).end : (last.endOffset! + 1),
     };
   }
 
@@ -73,12 +84,12 @@ export class CoreFactory {
     return this.isSourceLocation(loc) && loc.sourceLocationType === 'autoGenerate';
   }
 
-  public nodeShouldPrint(node: Node): boolean {
+  public nodeShouldPrint(node: Localized): boolean {
     return this.isSourceLocationNodeReplace(node.loc) ||
       this.isSourceLocationNodeAutoGenerate(node.loc);
   }
 
-  public printFilter(node: Node, callback: () => void): void {
+  public printFilter(node: Localized, callback: () => void): void {
     if (this.nodeShouldPrint(node)) {
       callback();
     }

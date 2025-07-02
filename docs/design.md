@@ -30,3 +30,4 @@ The generator is initialized with sources and skip-ranges.
 A rule sharing source with parent will start with a catchup, only afterward will it start generating underlying rules.
 The catchup function of the generator knows when a rule is replaced since it will be registered as a skip-range, and skip-ranges are not generated using catchup's.
 
+Generation rules that have an ast that is not Localized SHOULD NOT print since they do noy auto catchup.

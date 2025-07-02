@@ -27,7 +27,7 @@ import type {
 } from '../RoundTripTypes';
 import type { SparqlGrammarRule, SparqlRule } from '../Sparql11types';
 import { expression } from './expression';
-import { string } from './literals';
+import { string, stringEscapedLexical } from './literals';
 
 export const builtInStr = funcExpr1(l.builtIn.str);
 export const builtInLang = funcExpr1(l.builtIn.lang);
@@ -294,5 +294,22 @@ export const aggregate: SparqlRule<'aggregate', ExpressionAggregate> = <const>{
 
     return result;
   },
-  gImpl: () => () => {},
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+    F.printFilter(ast, () => {
+      PRINT_WORD(ast.aggregation, '(');
+      if (ast.distinct) {
+        PRINT_WORD('DISTINCT');
+      }
+    });
+    const arg = ast.expression[0];
+    if (F.isWildcard(arg)) {
+      F.printFilter(ast, () => PRINT_WORD('*'));
+    } else {
+      SUBRULE(expression, arg, undefined);
+    }
+    if (F.isExpressionAggregateSeparator(ast)) {
+      F.printFilter(ast, () => PRINT_WORD(';', 'SEPARATOR', '=', stringEscapedLexical(ast.separator)));
+    }
+    F.printFilter(ast, () => PRINT_WORD(')'));
+  },
 };

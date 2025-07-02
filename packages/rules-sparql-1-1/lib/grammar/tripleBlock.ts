@@ -1,4 +1,3 @@
-import type { Wrap } from '@traqula/core';
 import type { IToken } from 'chevrotain';
 import { CommonIRIs } from '../grammar-helpers/utils';
 import * as l from '../lexer';
@@ -22,7 +21,7 @@ import { var_, varOrTerm, verb } from './general';
 import { path } from './propertyPaths';
 
 function triplesDotSeperated(triplesSameSubjectSubrule: SparqlGrammarRule<string, BasicGraphPattern>):
-SparqlGrammarRule<string, Wrap<BasicGraphPattern>>['impl'] {
+SparqlGrammarRule<string, PatternBgp>['impl'] {
   return ({ ACTION, AT_LEAST_ONE, SUBRULE, CONSUME, OPTION }) => (C) => {
     const triples: BasicGraphPattern = [];
 
@@ -42,7 +41,7 @@ SparqlGrammarRule<string, Wrap<BasicGraphPattern>>['impl'] {
         });
       },
     });
-    return ACTION(() => C.factory.wrap(triples, C.factory.sourceLocation(...triples, dotToken)));
+    return ACTION(() => C.factory.patternBgp(triples, C.factory.sourceLocation(...triples, dotToken)));
   };
 }
 
@@ -51,10 +50,7 @@ SparqlGrammarRule<string, Wrap<BasicGraphPattern>>['impl'] {
  */
 export const triplesBlock: SparqlRule<'triplesBlock', PatternBgp> = <const>{
   name: 'triplesBlock',
-  impl: implArgs => (C) => {
-    const triples = triplesDotSeperated(triplesSameSubjectPath)(implArgs)(C, undefined);
-    return implArgs.ACTION(() => C.factory.patternBgp(triples.val, C.factory.sourceLocation(triples)));
-  },
+  impl: implArgs => C => triplesDotSeperated(triplesSameSubjectPath)(implArgs)(C, undefined),
   gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
     for (const [ index, triple ] of ast.triples.entries()) {
       const nextTriple = ast.triples.at(index);
@@ -133,7 +129,7 @@ export const triplesSameSubjectPath = triplesSameSubjectImpl('triplesSameSubject
 /**
  * [[52]](https://www.w3.org/TR/sparql11-query/#rTriplesTemplate)
  */
-export const triplesTemplate: SparqlGrammarRule<'triplesTemplate', Wrap<BasicGraphPattern>> = <const> {
+export const triplesTemplate: SparqlGrammarRule<'triplesTemplate', PatternBgp> = <const> {
   name: 'triplesTemplate',
   impl: triplesDotSeperated(triplesSameSubject),
 };

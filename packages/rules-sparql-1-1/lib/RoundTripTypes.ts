@@ -101,21 +101,23 @@ export type QueryBase = Node & {
   type: 'query';
   queryType: string;
 
-  context?: ContextDefinition[];
+  context: ContextDefinition[];
   values?: PatternValues;
-  solutionModifiers?: SolutionModifiers;
-  datasets?: DatasetClauses;
-  where?: Pattern[];
+  solutionModifiers: SolutionModifiers;
+  datasets: DatasetClauses;
+  where?: PatternGroup;
 };
 export type QuerySelect = QueryBase & {
   queryType: 'select';
   variables: (TermVariable | PatternBind)[] | [Wildcard];
   distinct?: true;
   reduced?: true;
+  where: PatternGroup;
 };
 export type QueryConstruct = QueryBase & {
   queryType: 'construct';
-  template: BasicGraphPattern;
+  template: PatternBgp;
+  where: PatternGroup;
 };
 export type QueryDescribe = QueryBase & {
   queryType: 'describe';
@@ -123,6 +125,7 @@ export type QueryDescribe = QueryBase & {
 };
 export type QueryAsk = QueryBase & {
   queryType: 'ask';
+  where: PatternGroup;
 };
 export type Query =
   | QuerySelect
@@ -365,17 +368,17 @@ export type Path =
   | PathModified
   | PathNegated;
 
-type ContextDefinitionBase = Node & { type: 'contextDef' };
-export type ContextDefinitionPrefixDecl = ContextDefinitionBase & {
+type ContextDefinitionBase_ = Node & { type: 'contextDef' };
+export type ContextDefinitionPrefix = ContextDefinitionBase_ & {
   contextType: 'prefix';
   key: string;
   value: TermIriFull;
 };
-export type ContextDefinitionBaseDecl = ContextDefinitionBase & {
+export type ContextDefinitionBase = ContextDefinitionBase_ & {
   contextType: 'base';
   value: TermIriFull;
 };
-export type ContextDefinition = ContextDefinitionPrefixDecl | ContextDefinitionBaseDecl;
+export type ContextDefinition = ContextDefinitionPrefix | ContextDefinitionBase;
 
 export type Wildcard = Node & {
   type: 'wildcard';

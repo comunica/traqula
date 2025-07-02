@@ -12,9 +12,10 @@ import type {
   SparqlGrammarRule,
   SparqlRule,
 } from '../Sparql11types';
-import { builtInCall } from './builtIn';
+import { aggregate, builtInCall } from './builtIn';
 import {
   var_,
+  varOrTerm,
 } from './general';
 import {
   booleanLiteral,
@@ -24,9 +25,7 @@ import {
   numericLiteralPositive,
   rdfLiteral,
 } from './literals';
-
-const infixOperators = new Set([ '||', '&&', '=', '!=', '<', '>', '<=', '>=', 'in', 'notin', '+', '-', '*', '/' ]);
-const prefixOperator = new Set([ '!', 'UPLUS', 'UMINUS' ]);
+import { groupGraphPattern } from './whereClause';
 
 /**
  * [[71]](https://www.w3.org/TR/sparql11-query/#rArgList)
@@ -64,13 +63,27 @@ export const argList: SparqlRule<'argList', Wrap<IArgList>> = <const> {
           C.factory.wrap({ args, distinct }, C.factory.sourceLocation(open, close)));
       } },
     ]),
-  gImpl: () => () => {},
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+    F.printFilter(ast, () => {
+      PRINT_WORD('(');
+      if (ast.val.distinct) {
+        PRINT_WORD('distinct');
+      }
+    });
+    const [ head, ...tail ] = ast.val.args;
+    SUBRULE(expression, head, undefined);
+    for (const expr of tail) {
+      F.printFilter(ast, () => PRINT_WORD(','));
+      SUBRULE(expression, expr, undefined);
+    }
+    F.printFilter(ast, () => PRINT_WORD(')'));
+  },
 };
 
 /**
  * [[72]](https://www.w3.org/TR/sparql11-query/#rConstructTemplate)
  */
-export const expressionList: SparqlRule<'expressionList', Wrap<Expression[]>> = <const> {
+export const expressionList: SparqlGrammarRule<'expressionList', Wrap<Expression[]>> = <const> {
   name: 'expressionList',
   impl: ({ ACTION, CONSUME, MANY, OR, SUBRULE1, SUBRULE2 }) => C => OR([
     { ALT: () => {
@@ -90,8 +103,10 @@ export const expressionList: SparqlRule<'expressionList', Wrap<Expression[]>> = 
       return ACTION(() => C.factory.wrap(args, C.factory.sourceLocation(open, close)));
     } },
   ]),
-  gImpl: () => () => '',
 };
+
+const infixOperators = new Set([ '||', '&&', '=', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/' ]);
+const prefixOperator = new Set([ '!', 'UPLUS', 'UMINUS' ]);
 
 /**
  * [[110]](https://www.w3.org/TR/sparql11-query/#rExpression)
@@ -99,7 +114,55 @@ export const expressionList: SparqlRule<'expressionList', Wrap<Expression[]>> = 
 export const expression: SparqlRule<'expression', Expression> = <const> {
   name: 'expression',
   impl: ({ SUBRULE }) => () => SUBRULE(conditionalOrExpression, undefined),
-  gImpl: () => () => {},
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+    if (F.isTerm(ast)) {
+      SUBRULE(varOrTerm, ast, undefined);
+    } else {
+      if (ast.expressionType === 'operation') {
+        if (infixOperators.has(ast.operator)) {
+          const [ left, right ] = <[Expression, Expression]>ast.args;
+          F.printFilter(ast, () => PRINT_WORD('('));
+          SUBRULE(expression, left, undefined);
+          F.printFilter(ast, () => {
+            if (ast.operator === 'notin') {
+              PRINT_WORD('NOT IN');
+            } else if (ast.operator === 'in') {
+              PRINT_WORD('IN');
+            } else {
+              PRINT_WORD(ast.operator);
+            }
+          });
+          SUBRULE(expression, right, undefined);
+          F.printFilter(ast, () => PRINT_WORD(')'));
+        } else if (prefixOperator.has(ast.operator)) {
+          const [ expr ] = <[Expression]>ast.args;
+          F.printFilter(ast, () => PRINT_WORD(ast.operator));
+          SUBRULE(expression, expr, undefined);
+        } else {
+          F.printFilter(ast, () => PRINT_WORD(ast.operator, '('));
+          const [ head, ...tail ] = ast.args;
+          if (head) {
+            SUBRULE(expression, head, undefined);
+          }
+          for (const arg of tail) {
+            F.printFilter(ast, () => PRINT_WORD(ast.operator, ','));
+            SUBRULE(expression, arg, undefined);
+          }
+        }
+      }
+      if (ast.expressionType === 'patternOperation') {
+        const patterns = ast.args;
+        F.printFilter(ast, () => PRINT_WORD(ast.operator === 'exists' ? 'EXISTS' : 'NOT EXISTS'));
+        SUBRULE(groupGraphPattern, F.patternGroup(patterns, ast.loc), undefined);
+      }
+      if (ast.expressionType === 'functionCall') {
+        return SUBRULE(iriOrFunction, ast, undefined);
+      }
+      if (ast.expressionType === 'aggregate') {
+        return SUBRULE(aggregate, ast, undefined);
+      }
+    }
+  },
 };
 
 type LeftDeepBuildArgs = (left: Expression) => ExpressionOperation;
@@ -403,5 +466,12 @@ export const iriOrFunction: SparqlRule<'iriOrFunction', TermIri | ExpressionFunc
     });
     return functionCall ?? iriVal;
   },
-  gImpl: () => () => {},
+  gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
+    if (F.isTermIri(ast)) {
+      SUBRULE(iri, ast, undefined);
+    } else {
+      SUBRULE(iri, ast.function, undefined);
+      SUBRULE(argList, F.wrap({ args: ast.args, distinct: ast.distinct }, ast.loc), undefined);
+    }
+  },
 };

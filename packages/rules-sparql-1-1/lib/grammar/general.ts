@@ -2,8 +2,8 @@ import { CommonIRIs } from '../grammar-helpers/utils';
 import * as l from '../lexer';
 import type {
   ContextDefinition,
-  ContextDefinitionBaseDecl,
-  ContextDefinitionPrefixDecl,
+  ContextDefinitionBase,
+  ContextDefinitionPrefix,
   GraphTerm,
   Term,
   TermIri,
@@ -15,7 +15,7 @@ import { blankNode, booleanLiteral, iri, iriFull, numericLiteral, rdfLiteral, ve
 /**
  * [[4]](https://www.w3.org/TR/sparql11-query/#rPrologue)
  */
-export const prologue: SparqlGrammarRule<'prologue', ContextDefinition[]> = <const> {
+export const prologue: SparqlRule<'prologue', ContextDefinition[]> = <const> {
   name: 'prologue',
   impl: ({ SUBRULE, MANY, OR }) => () => {
     const result: ContextDefinition[] = [];
@@ -27,36 +27,55 @@ export const prologue: SparqlGrammarRule<'prologue', ContextDefinition[]> = <con
     ]));
     return result;
   },
+  gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
+    for (const context of ast) {
+      if (F.isContextDefinitionBase(context)) {
+        SUBRULE(baseDecl, context, undefined);
+      } else if (F.isContextDefinitionPrefix(context)) {
+        SUBRULE(prefixDecl, context, undefined);
+      }
+    }
+  },
 };
 
 /**
  * Registers base IRI in the context and returns it.
  * [[5]](https://www.w3.org/TR/sparql11-query/#rBaseDecl)
  */
-export const baseDecl: SparqlRule<'baseDecl', ContextDefinitionBaseDecl> = <const> {
+export const baseDecl: SparqlRule<'baseDecl', ContextDefinitionBase> = <const> {
   name: 'baseDecl',
   impl: ({ ACTION, CONSUME, SUBRULE }) => (C) => {
     const base = CONSUME(l.baseDecl);
     const val = SUBRULE(iriFull, undefined);
-    return ACTION(() => C.factory.baseDecl(C.factory.sourceLocation(base, val), val));
+    return ACTION(() => C.factory.contextDefinitionBase(C.factory.sourceLocation(base, val), val));
   },
-  gImpl: () => () => {},
+  gImpl: ({ SUBRULE, PRINT_WORD, PRINT }) => (ast, { factory: F }) => {
+    F.printFilter(ast, () => PRINT_WORD('BASE'));
+    SUBRULE(iri, ast.value, undefined);
+    F.printFilter(ast, () => PRINT('\n'));
+  },
 };
 
 /**
  * Registers prefix in the context and returns registered key-value-pair.
  * [[6]](https://www.w3.org/TR/sparql11-query/#rPrefixDecl)
  */
-export const prefixDecl: SparqlRule<'prefixDecl', ContextDefinitionPrefixDecl> = <const> {
+export const prefixDecl: SparqlRule<'prefixDecl', ContextDefinitionPrefix> = <const> {
   name: 'prefixDecl',
   impl: ({ ACTION, CONSUME, SUBRULE }) => (C) => {
     const prefix = CONSUME(l.prefixDecl);
     const name = CONSUME(l.terminals.pNameNs).image.slice(0, -1);
     const value = SUBRULE(iriFull, undefined);
 
-    return ACTION(() => C.factory.prefixDecl(C.factory.sourceLocation(prefix, value), name, value));
+    return ACTION(() => C.factory.contextDefinitionPrefix(C.factory.sourceLocation(prefix, value), name, value));
   },
-  gImpl: () => () => {},
+  gImpl: ({ SUBRULE, PRINT_WORD, PRINT }) => (ast, { factory: F }) => {
+    F.printFilter(ast, () => {
+      PRINT_WORD('PREFIX', `${ast.key}:`);
+    });
+    SUBRULE(iri, ast.value, undefined);
+    F.printFilter(ast, () => PRINT('\n'));
+  },
 };
 
 /**
@@ -110,10 +129,8 @@ export const var_: SparqlRule<'var', TermVariable> = <const> {
     ]);
     return ACTION(() => C.factory.variable(varToken.image.slice(1), C.factory.sourceLocation(varToken)));
   },
-  gImpl: ({ PRINT_WORD }) => (ast) => {
-    if (!ast.loc) {
-      PRINT_WORD('?', ast.value);
-    }
+  gImpl: ({ PRINT_WORD }) => (ast, { factory: F }) => {
+    F.printFilter(ast, () => PRINT_WORD(`?${ast.value}`));
   },
 };
 

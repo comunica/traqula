@@ -20,7 +20,7 @@ import { constraint, functionCall } from './whereClause';
 /**
  * [[18]](https://www.w3.org/TR/sparql11-query/#rSolutionModifier)
  */
-export const solutionModifier: SparqlGrammarRule<'solutionModifier', SolutionModifiers> = <const> {
+export const solutionModifier: SparqlRule<'solutionModifier', SolutionModifiers> = <const> {
   name: 'solutionModifier',
   impl: ({ ACTION, SUBRULE, OPTION1, OPTION2, OPTION3, OPTION4 }) => () => {
     const group = OPTION1(() => SUBRULE(groupClause, undefined));
@@ -33,6 +33,20 @@ export const solutionModifier: SparqlGrammarRule<'solutionModifier', SolutionMod
       ...(having && { having }),
       ...(order && { order }),
     }));
+  },
+  gImpl: ({ SUBRULE }) => (ast) => {
+    if (ast.group) {
+      SUBRULE(groupClause, ast.group, undefined);
+    }
+    if (ast.having) {
+      SUBRULE(havingClause, ast.having, undefined);
+    }
+    if (ast.order) {
+      SUBRULE(orderClause, ast.order, undefined);
+    }
+    if (ast.limitOffset) {
+      SUBRULE(limitOffsetClauses, ast.limitOffset, undefined);
+    }
   },
 };
 

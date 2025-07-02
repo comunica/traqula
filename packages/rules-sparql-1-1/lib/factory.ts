@@ -4,8 +4,8 @@ import { CoreFactory } from '@traqula/core';
 import type {
   BasicGraphPattern,
   ContextDefinition,
-  ContextDefinitionBaseDecl,
-  ContextDefinitionPrefixDecl,
+  ContextDefinitionBase,
+  ContextDefinitionPrefix,
   DatasetClauses,
   Expression,
   ExpressionAggregate,
@@ -76,7 +76,15 @@ import type {
 export class TraqulaFactory extends CoreFactory {
   private blankNodeCounter = 0;
 
-  public prefixDecl(loc: SourceLocation, key: string, value: TermIriFull): ContextDefinitionPrefixDecl {
+  public isContextDefinitionPrefix(contextDef: ContextDefinition): contextDef is ContextDefinitionPrefix {
+    return contextDef.contextType === 'prefix';
+  }
+
+  public isContextDefinitionBase(contextDef: ContextDefinition): contextDef is ContextDefinitionBase {
+    return contextDef.contextType === 'base';
+  }
+
+  public contextDefinitionPrefix(loc: SourceLocation, key: string, value: TermIriFull): ContextDefinitionPrefix {
     return {
       type: 'contextDef',
       contextType: 'prefix',
@@ -86,7 +94,7 @@ export class TraqulaFactory extends CoreFactory {
     };
   }
 
-  public baseDecl(loc: SourceLocation, value: TermIriFull): ContextDefinitionBaseDecl {
+  public contextDefinitionBase(loc: SourceLocation, value: TermIriFull): ContextDefinitionBase {
     return {
       type: 'contextDef',
       contextType: 'base',
@@ -99,11 +107,11 @@ export class TraqulaFactory extends CoreFactory {
     return graphNode.type === 'tripleCollection' ? graphNode.identifier : graphNode;
   }
 
-  public isBaseDecl(x: ContextDefinition): x is ContextDefinitionBaseDecl {
+  public isBaseDecl(x: ContextDefinition): x is ContextDefinitionBase {
     return x.contextType === 'base';
   }
 
-  public isPrefixDecl(x: ContextDefinition): x is ContextDefinitionBaseDecl {
+  public isPrefixDecl(x: ContextDefinition): x is ContextDefinitionBase {
     return x.contextType === 'prefix';
   }
 
@@ -330,6 +338,22 @@ export class TraqulaFactory extends CoreFactory {
       patterns,
       loc,
     };
+  }
+
+  public isGraphRefSpecific(graphRef: GraphRef): graphRef is GraphRefSpecific {
+    return graphRef.graphRefType === 'specific';
+  }
+
+  public isGraphRefDefault(graphRef: GraphRef): graphRef is GraphRefDefault {
+    return graphRef.graphRefType === 'default';
+  }
+
+  public isGraphRefNamed(graphRef: GraphRef): graphRef is GraphRefNamed {
+    return graphRef.graphRefType === 'named';
+  }
+
+  public isGraphRefAll(graphRef: GraphRef): graphRef is GraphRefAll {
+    return graphRef.graphRefType === 'all';
   }
 
   public graphRefSpecific(graph: TermIri, loc: SourceLocation): GraphRefSpecific {

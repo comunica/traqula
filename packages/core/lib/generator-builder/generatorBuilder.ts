@@ -1,5 +1,4 @@
 import { CoreFactory } from '../CoreFactory';
-import type { Node } from '../nodeTypings';
 import type { CheckOverlap } from '../utils';
 import type { GeneratorFromRules, GenRuleMap, GenRulesToObject, GenNamesFromList } from './builderTypes';
 import type { GeneratorRule, RuleDefArg } from './generatorTypes';
@@ -21,7 +20,7 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
    * If a GeneratorBuilder is provided, a new copy will be created.
    */
   public static createBuilder<
-    Rules extends readonly GeneratorRule<any, any, any & Node>[] = readonly GeneratorRule<any, any, any & Node>[],
+    Rules extends readonly GeneratorRule[] = readonly GeneratorRule[],
     Context = Rules[0] extends GeneratorRule<infer context> ? context : never,
     Names extends string = GenNamesFromList<Rules>,
     RuleDefs extends GenRuleMap<Names> = GenRulesToObject<Rules>,
@@ -36,14 +35,14 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
 
   private rules: RuleDefs;
 
-  protected constructor(startRules: RuleDefs) {
+  private constructor(startRules: RuleDefs) {
     this.rules = startRules;
   }
 
   /**
    * Change the implementation of an existing generator rule.
    */
-  public patchRule<U extends Names, RET extends Node, ARGS>(patch: GeneratorRule<Context, U, RET, ARGS>):
+  public patchRule<U extends Names, RET, ARGS>(patch: GeneratorRule<Context, U, RET, ARGS>):
   GeneratorBuilder<Context, Names, {[Key in Names]: Key extends U ?
     GeneratorRule<Context, Key, RET, ARGS> :
       (RuleDefs[Key] extends GeneratorRule<Context, Key> ? RuleDefs[Key] : never)
@@ -59,7 +58,7 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
   /**
    * Add a rule to the grammar. If the rule already exists, but the implementation differs, an error will be thrown.
    */
-  public addRuleRedundant<U extends string, RET extends Node, ARGS>(rule: GeneratorRule<Context, U, RET, ARGS>):
+  public addRuleRedundant<U extends string, RET, ARGS>(rule: GeneratorRule<Context, U, RET, ARGS>):
   GeneratorBuilder<Context, Names | U, {[K in Names | U]: K extends Names ?
       (RuleDefs[K] extends GeneratorRule<Context, K> ? RuleDefs[K] : never)
     : (K extends U ? GeneratorRule<Context, K, RET, ARGS> : never)
@@ -79,7 +78,7 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
   /**
    * Add a rule to the grammar. Will raise a typescript error if the rule already exists in the grammar.
    */
-  public addRule<U extends string, RET extends Node, ARGS>(
+  public addRule<U extends string, RET, ARGS>(
     rule: CheckOverlap<U, Names, GeneratorRule<Context, U, RET, ARGS>>,
   ): GeneratorBuilder<Context, Names | U, {[K in Names | U]: K extends Names ?
       (RuleDefs[K] extends GeneratorRule<Context, K> ? RuleDefs[K] : never)
@@ -88,7 +87,7 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
     return this.addRuleRedundant(rule);
   }
 
-  public addMany<U extends readonly GeneratorRule<Context, any, Node>[]>(
+  public addMany<U extends readonly GeneratorRule<Context>[]>(
     ...rules: CheckOverlap<GenNamesFromList<U>, Names, U>
   ): GeneratorBuilder<
     Context,

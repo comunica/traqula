@@ -63,7 +63,21 @@ export const query: SparqlRule<'query', Query> = <const> {
       ),
     }));
   },
-  gImpl: () => () => '',
+  gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
+    SUBRULE(prologue, ast.context, undefined);
+    if (F.isQuerySelect(ast)) {
+      SUBRULE(selectQuery, ast, undefined);
+    } else if (F.isQueryConstruc(ast)) {
+      SUBRULE(constructQuery, ast, undefined);
+    } else if (F.isQueryDescribe(ast)) {
+      SUBRULE(describeQuery, ast, undefined);
+    } else if (F.isQueryAsk(ast)) {
+      SUBRULE(askQuery, ast, undefined);
+    }
+    if (ast.values) {
+      SUBRULE(inlineData, ast.values, undefined);
+    }
+  },
 };
 
 /**

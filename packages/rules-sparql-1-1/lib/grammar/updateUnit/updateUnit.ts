@@ -590,7 +590,7 @@ export const quadsNotTriples: SparqlRule<'quadsNotTriples', GraphQuads> = <const
     return ACTION(() => ({
       type: 'graph',
       graph: name,
-      triples: triples?.val ?? [],
+      triples: triples ?? C.factory.patternBgp([], C.factory.sourceLocationNoMaterialize()),
       loc: C.factory.sourceLocation(graph, close),
     }));
   },
@@ -598,7 +598,7 @@ export const quadsNotTriples: SparqlRule<'quadsNotTriples', GraphQuads> = <const
     F.printFilter(ast, () => PRINT_WORD('GRAPH'));
     SUBRULE(varOrTerm, ast.graph, undefined);
     F.printFilter(ast, () => PRINT_WORD('{'));
-    SUBRULE(triplesBlock, F.patternBgp(ast.triples, ast.loc), undefined);
+    SUBRULE(triplesBlock, ast.triples, undefined);
     F.printFilter(ast, () => PRINT_WORD('}'));
   },
 };

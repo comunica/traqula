@@ -28,7 +28,7 @@ export type Quads = PatternBgp | GraphQuads;
 export type GraphQuads = Node & {
   type: 'graph';
   graph: TermIri | TermVariable;
-  triples: BasicGraphPattern;
+  triples: PatternBgp;
 };
 
 // https://www.w3.org/TR/sparql11-query/#rUpdate1
@@ -138,8 +138,7 @@ export type SparqlQuery = Query | Update;
 // https://www.w3.org/TR/sparql11-query/#rDatasetClause
 export type DatasetClauses = Node & {
   type: 'datasetClauses';
-  default: TermIri[];
-  named: TermIri[];
+  clauses: { clauseType: 'default' | 'named'; value: TermIri }[];
 };
 
 // https://www.w3.org/TR/sparql11-query/#rGraphNode

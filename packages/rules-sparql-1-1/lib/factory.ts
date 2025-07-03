@@ -41,6 +41,10 @@ import type {
   PropertyPathChain,
   Quads,
   Query,
+  QueryAsk,
+  QueryConstruct,
+  QueryDescribe,
+  QuerySelect,
   SolutionModifierHaving,
   SolutionModifierLimitOffset,
   SolutionModifierOrder,
@@ -261,6 +265,22 @@ export class TraqulaFactory extends CoreFactory {
 
   public isQuery(x: any): x is Query {
     return x.type === 'query';
+  }
+
+  public isQuerySelect(query: Query): query is QuerySelect {
+    return query.queryType === 'select';
+  }
+
+  public isQueryConstruc(query: Query): query is QueryConstruct {
+    return query.queryType === 'construct';
+  }
+
+  public isQueryDescribe(query: Query): query is QueryDescribe {
+    return query.queryType === 'describe';
+  }
+
+  public isQueryAsk(query: Query): query is QueryAsk {
+    return query.queryType === 'ask';
   }
 
   public patternBgp(triples: BasicGraphPattern, loc: SourceLocation): PatternBgp {

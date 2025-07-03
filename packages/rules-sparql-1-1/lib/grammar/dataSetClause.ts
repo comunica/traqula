@@ -8,7 +8,7 @@ import { iri } from './literals';
 export function datasetClauseUsing<RuleName extends 'usingClause' | 'datasetClause'>(
   name: RuleName,
   token: TokenType,
-): SparqlGrammarRule<RuleName, Wrap<{ named: boolean; value: TermIri }>> {
+): SparqlGrammarRule<RuleName, Wrap<DatasetClauses['clauses'][0]>> {
   return {
     name,
     impl: ({ ACTION, SUBRULE, CONSUME, OR }) => (C) => {
@@ -16,12 +16,15 @@ export function datasetClauseUsing<RuleName extends 'usingClause' | 'datasetClau
       return OR<RuleDefReturn<typeof datasetClause>>([
         { ALT: () => {
           const iri = SUBRULE(defaultGraphClause, undefined);
-          return ACTION(() => C.factory.wrap({ named: false, value: iri }, C.factory.sourceLocation(start, iri)));
+          return ACTION(() =>
+            C.factory.wrap({ clauseType: 'default', value: iri }, C.factory.sourceLocation(start, iri)));
         } },
         { ALT: () => {
           const namedClause = SUBRULE(namedGraphClause, undefined);
-          return ACTION(() =>
-            C.factory.wrap({ named: true, value: namedClause.val }, C.factory.sourceLocation(start, namedClause)));
+          return ACTION(() => C.factory.wrap({
+            clauseType: 'named',
+            value: namedClause.val,
+          }, C.factory.sourceLocation(start, namedClause)));
         } },
       ]);
     },
@@ -52,33 +55,27 @@ export function datasetClauseUsingStar<RuleName extends string>(
   return {
     name,
     impl: ({ ACTION, MANY, SUBRULE }) => (C) => {
-      const _default: TermIri[] = [];
-      const named: TermIri[] = [];
-      let first: RuleDefReturn<typeof datasetClause> | undefined;
-      let last: RuleDefReturn<typeof datasetClause> | undefined;
+      const clauses: RuleDefReturn<typeof datasetClause>[] = [];
 
       MANY(() => {
         const clause = SUBRULE(subRule, undefined);
-        if (!first) {
-          first = clause;
-        }
-        last = clause;
-        ACTION(() => {
-          if (clause.val.named) {
-            named.push(clause.val.value);
-          } else {
-            _default.push(clause.val.value);
-          }
-        });
+        clauses.push(clause);
       });
+
       return ACTION(() => ({
         type: 'datasetClauses',
-        default: _default,
-        named,
-        loc: C.factory.sourceLocation(...[ first, last ].filter(x => x !== undefined)),
+        clauses: clauses.map(clause => clause.val),
+        loc: C.factory.sourceLocation(...clauses),
       }));
     },
-    gImpl: () => () => '',
+    gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+      for (const clause of ast.clauses) {
+        if (clause.clauseType === 'named') {
+          F.printFilter(ast, () => PRINT_WORD('NAMED'));
+        }
+        SUBRULE(iri, clause.value, undefined);
+      }
+    },
   };
 }
 

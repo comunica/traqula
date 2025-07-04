@@ -1,40 +1,104 @@
 {
-  "queryType": "DESCRIBE",
+  "context": [
+    {
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "ent",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://org.example.com/employees#",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 13,
+          "end": 48
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 48
+      }
+    }
+  ],
+  "queryType": "describe",
   "variables": [
     {
+      "type": "term",
       "termType": "Variable",
-      "value": "x"
+      "value": "x",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 58,
+        "end": 60
+      }
     }
   ],
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
   "where": [
     {
-      "type": "bgp",
+      "type": "pattern",
+      "patternType": "bgp",
       "triples": [
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "x"
+            "value": "x",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 69,
+              "end": 71
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://org.example.com/employees#employeeId"
+            "value": "employeeId",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 72,
+              "end": 86
+            },
+            "prefix": "ent"
           },
           "object": {
+            "type": "term",
             "termType": "Literal",
             "value": "1234",
-            "language": "",
-            "datatype": {
-              "termType": "NamedNode",
-              "value": "http://www.w3.org/2001/XMLSchema#string"
-            },
-            "direction": ""
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 87,
+              "end": 93
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 72,
+            "end": 93
           }
         }
-      ]
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 72,
+        "end": 93
+      }
     }
   ],
-  "type": "query",
-  "prefixes": {
-    "ent": "http://org.example.com/employees#"
-  }
+  "solutionModifiers": {},
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 95
+  },
+  "type": "query"
 }

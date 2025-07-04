@@ -1,38 +1,83 @@
 {
-  "queryType": "SELECT",
-  "variables": [
-    {
-      "termType": "Variable",
-      "value": "p"
-    }
-  ],
+  "context": [],
+  "queryType": "select",
   "where": [
     {
-      "type": "bgp",
+      "type": "pattern",
+      "patternType": "bgp",
       "triples": [
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "p"
+            "value": "p",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 22,
+              "end": 24
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://xmlns.com/foaf/0.1/name"
+            "value": "http://xmlns.com/foaf/0.1/name",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 25,
+              "end": 57
+            }
           },
           "object": {
+            "type": "term",
             "termType": "Literal",
             "value": "York\ntest",
-            "language": "en",
-            "datatype": {
-              "termType": "NamedNode",
-              "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
-            },
-            "direction": ""
+            "langOrIri": "en",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 58,
+              "end": 73
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 25,
+            "end": 73
           }
         }
-      ]
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 25,
+        "end": 74
+      }
     }
   ],
-  "type": "query",
-  "prefixes": {}
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "term",
+      "termType": "Variable",
+      "value": "p",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 7,
+        "end": 9
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 76
+  },
+  "type": "query"
 }

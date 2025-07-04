@@ -1,79 +1,228 @@
 {
-  "queryType": "SELECT",
-  "variables": [
+  "context": [
     {
-      "termType": "Variable",
-      "value": "company"
-    },
-    {
-      "expression": {
-        "expression": {
-          "termType": "Variable",
-          "value": "key"
-        },
-        "type": "aggregate",
-        "aggregation": "count",
-        "distinct": true
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://www.example.org/",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 9,
+          "end": 34
+        }
       },
-      "variable": {
-        "termType": "Variable",
-        "value": "keyCount"
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 34
       }
     }
   ],
+  "queryType": "select",
   "where": [
     {
-      "type": "bgp",
+      "type": "pattern",
+      "patternType": "bgp",
       "triples": [
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "company"
+            "value": "company",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 99,
+              "end": 107
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+            "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 108,
+              "end": 109
+            }
           },
           "object": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://www.example.org/Company"
+            "value": "Company",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 110,
+              "end": 118
+            },
+            "prefix": ""
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 108,
+            "end": 118
           }
         },
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "company"
+            "value": "company",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 125,
+              "end": 133
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://www.example.org/hasKey"
+            "value": "hasKey",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 134,
+              "end": 141
+            },
+            "prefix": ""
           },
           "object": {
+            "type": "term",
             "termType": "Variable",
-            "value": "key"
+            "value": "key",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 142,
+              "end": 146
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 134,
+            "end": 146
           }
         }
-      ]
-    }
-  ],
-  "group": [
-    {
-      "expression": {
-        "termType": "Variable",
-        "value": "company"
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 108,
+        "end": 147
       }
     }
   ],
-  "order": [
+  "solutionModifiers": {
+    "group": {
+      "type": "solutionModifier",
+      "modifierType": "group",
+      "groupings": [
+        {
+          "type": "term",
+          "termType": "Variable",
+          "value": "company",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 159,
+            "end": 167
+          }
+        }
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 150,
+        "end": 167
+      }
+    },
+    "order": {
+      "type": "solutionModifier",
+      "modifierType": "order",
+      "orderDefs": [
+        {
+          "type": "term",
+          "termType": "Variable",
+          "value": "company",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 177,
+            "end": 185
+          }
+        }
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 168,
+        "end": 185
+      }
+    }
+  },
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
     {
+      "type": "term",
+      "termType": "Variable",
+      "value": "company",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 42,
+        "end": 50
+      }
+    },
+    {
+      "type": "pattern",
+      "patternType": "bind",
       "expression": {
+        "type": "expression",
+        "expressionType": "aggregate",
+        "aggregation": "count",
+        "distinct": true,
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 52,
+          "end": 72
+        },
+        "expression": [
+          {
+            "type": "term",
+            "termType": "Variable",
+            "value": "key",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 67,
+              "end": 71
+            }
+          }
+        ]
+      },
+      "variable": {
+        "type": "term",
         "termType": "Variable",
-        "value": "company"
+        "value": "keyCount",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 76,
+          "end": 85
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 51,
+        "end": 86
       }
     }
   ],
-  "type": "query",
-  "prefixes": {
-    "": "http://www.example.org/"
-  }
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 185
+  },
+  "type": "query"
 }

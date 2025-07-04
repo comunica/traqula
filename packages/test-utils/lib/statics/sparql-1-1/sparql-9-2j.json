@@ -1,66 +1,185 @@
 {
-  "queryType": "SELECT",
-  "variables": [
+  "context": [
     {
-      "termType": "Wildcard"
-    }
-  ],
-  "where": [
-    {
-      "type": "bgp",
-      "triples": [
-        {
-          "subject": {
-            "termType": "Variable",
-            "value": "x"
-          },
-          "predicate": {
-            "type": "path",
-            "pathType": "/",
-            "items": [
-              {
-                "termType": "NamedNode",
-                "value": "http://xmlns.com/foaf/0.1/knows"
-              },
-              {
-                "type": "path",
-                "pathType": "^",
-                "items": [
-                  {
-                    "termType": "NamedNode",
-                    "value": "http://xmlns.com/foaf/0.1/knows"
-                  }
-                ]
-              }
-            ]
-          },
-          "object": {
-            "termType": "Variable",
-            "value": "y"
-          }
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "foaf",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://xmlns.com/foaf/0.1/",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 13,
+          "end": 41
         }
-      ]
-    },
-    {
-      "type": "filter",
-      "expression": {
-        "type": "operation",
-        "operator": "!=",
-        "args": [
-          {
-            "termType": "Variable",
-            "value": "x"
-          },
-          {
-            "termType": "Variable",
-            "value": "y"
-          }
-        ]
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 41
       }
     }
   ],
-  "type": "query",
-  "prefixes": {
-    "foaf": "http://xmlns.com/foaf/0.1/"
-  }
+  "queryType": "select",
+  "where": [
+    {
+      "type": "pattern",
+      "patternType": "bgp",
+      "triples": [
+        {
+          "type": "triple",
+          "subject": {
+            "type": "term",
+            "termType": "Variable",
+            "value": "x",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 61,
+              "end": 63
+            }
+          },
+          "predicate": {
+            "type": "path",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 64,
+              "end": 86
+            },
+            "items": [
+              {
+                "type": "term",
+                "termType": "NamedNode",
+                "value": "knows",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 64,
+                  "end": 74
+                },
+                "prefix": "foaf"
+              },
+              {
+                "type": "path",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 75,
+                  "end": 86
+                },
+                "items": [
+                  {
+                    "type": "term",
+                    "termType": "NamedNode",
+                    "value": "knows",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 76,
+                      "end": 86
+                    },
+                    "prefix": "foaf"
+                  }
+                ],
+                "pathType": "^"
+              }
+            ],
+            "pathType": "/"
+          },
+          "object": {
+            "type": "term",
+            "termType": "Variable",
+            "value": "y",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 87,
+              "end": 89
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 64,
+            "end": 89
+          }
+        }
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 64,
+        "end": 91
+      }
+    },
+    {
+      "type": "pattern",
+      "patternType": "filter",
+      "expression": {
+        "type": "expression",
+        "expressionType": "bracketted",
+        "expression": {
+          "type": "expression",
+          "expressionType": "operation",
+          "operator": "!=",
+          "args": [
+            {
+              "type": "term",
+              "termType": "Variable",
+              "value": "x",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 105,
+                "end": 107
+              }
+            },
+            {
+              "type": "term",
+              "termType": "Variable",
+              "value": "y",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 111,
+                "end": 113
+              }
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 105,
+            "end": 113
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 104,
+          "end": 114
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 98,
+        "end": 114
+      }
+    }
+  ],
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "wildcard",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 51,
+        "end": 52
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 118
+  },
+  "type": "query"
 }

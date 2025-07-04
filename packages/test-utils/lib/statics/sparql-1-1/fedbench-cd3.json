@@ -1,96 +1,254 @@
 {
-  "queryType": "SELECT",
-  "variables": [
-    {
-      "termType": "Variable",
-      "value": "president"
-    },
-    {
-      "termType": "Variable",
-      "value": "party"
-    },
-    {
-      "termType": "Variable",
-      "value": "page"
-    }
-  ],
+  "context": [],
+  "queryType": "select",
   "where": [
     {
-      "type": "bgp",
+      "type": "pattern",
+      "patternType": "bgp",
       "triples": [
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "president"
+            "value": "president",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 42,
+              "end": 52
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+            "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 53,
+              "end": 102
+            }
           },
           "object": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://dbpedia.org/ontology/President"
+            "value": "http://dbpedia.org/ontology/President",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 103,
+              "end": 142
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 53,
+            "end": 142
           }
         },
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "president"
+            "value": "president",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 148,
+              "end": 158
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://dbpedia.org/ontology/nationality"
+            "value": "http://dbpedia.org/ontology/nationality",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 159,
+              "end": 200
+            }
           },
           "object": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://dbpedia.org/resource/United_States"
+            "value": "http://dbpedia.org/resource/United_States",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 201,
+              "end": 244
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 159,
+            "end": 244
           }
         },
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "president"
+            "value": "president",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 250,
+              "end": 260
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://dbpedia.org/ontology/party"
+            "value": "http://dbpedia.org/ontology/party",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 261,
+              "end": 296
+            }
           },
           "object": {
+            "type": "term",
             "termType": "Variable",
-            "value": "party"
+            "value": "party",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 297,
+              "end": 303
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 261,
+            "end": 303
           }
         },
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "x"
+            "value": "x",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 309,
+              "end": 311
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://data.nytimes.com/elements/topicPage"
+            "value": "http://data.nytimes.com/elements/topicPage",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 312,
+              "end": 356
+            }
           },
           "object": {
+            "type": "term",
             "termType": "Variable",
-            "value": "page"
+            "value": "page",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 357,
+              "end": 362
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 312,
+            "end": 362
           }
         },
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "x"
+            "value": "x",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 368,
+              "end": 370
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://www.w3.org/2002/07/owl#sameAs"
+            "value": "http://www.w3.org/2002/07/owl#sameAs",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 371,
+              "end": 409
+            }
           },
           "object": {
+            "type": "term",
             "termType": "Variable",
-            "value": "president"
+            "value": "president",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 410,
+              "end": 420
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 371,
+            "end": 420
           }
         }
-      ]
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 53,
+        "end": 422
+      }
     }
   ],
-  "type": "query",
-  "prefixes": {}
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "term",
+      "termType": "Variable",
+      "value": "president",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 7,
+        "end": 17
+      }
+    },
+    {
+      "type": "term",
+      "termType": "Variable",
+      "value": "party",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 18,
+        "end": 24
+      }
+    },
+    {
+      "type": "term",
+      "termType": "Variable",
+      "value": "page",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 25,
+        "end": 30
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 424
+  },
+  "type": "query"
 }

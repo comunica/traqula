@@ -1,57 +1,164 @@
 {
-  "queryType": "SELECT",
-  "variables": [
+  "context": [
     {
-      "termType": "Wildcard"
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://example/",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 9,
+          "end": 26
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 26
+      }
     }
   ],
+  "queryType": "select",
   "where": [
     {
-      "type": "bgp",
+      "type": "pattern",
+      "patternType": "bgp",
       "triples": [
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "s"
+            "value": "s",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 42,
+              "end": 44
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "Variable",
-            "value": "p"
+            "value": "p",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 45,
+              "end": 47
+            }
           },
           "object": {
+            "type": "term",
             "termType": "Variable",
-            "value": "o"
+            "value": "o",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 48,
+              "end": 50
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 45,
+            "end": 50
           }
         }
-      ]
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 45,
+        "end": 50
+      }
     },
     {
-      "type": "minus",
+      "type": "pattern",
+      "patternType": "minus",
       "patterns": [
         {
-          "type": "bgp",
+          "type": "pattern",
+          "patternType": "bgp",
           "triples": [
             {
+              "type": "triple",
               "subject": {
+                "type": "term",
                 "termType": "NamedNode",
-                "value": "http://example/a"
+                "value": "a",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 62,
+                  "end": 64
+                },
+                "prefix": ""
               },
               "predicate": {
+                "type": "term",
                 "termType": "NamedNode",
-                "value": "http://example/b"
+                "value": "b",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 65,
+                  "end": 67
+                },
+                "prefix": ""
               },
               "object": {
+                "type": "term",
                 "termType": "NamedNode",
-                "value": "http://example/c"
+                "value": "c",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 68,
+                  "end": 70
+                },
+                "prefix": ""
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 65,
+                "end": 70
               }
             }
-          ]
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 65,
+            "end": 70
+          }
         }
-      ]
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 54,
+        "end": 72
+      }
     }
   ],
-  "type": "query",
-  "prefixes": {
-    "": "http://example/"
-  }
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "wildcard",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 34,
+        "end": 35
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 74
+  },
+  "type": "query"
 }

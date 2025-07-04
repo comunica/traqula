@@ -2,64 +2,172 @@
   "type": "update",
   "updates": [
     {
-      "updateType": "insertdelete",
-      "delete": [
-        {
-          "type": "bgp",
-          "triples": [
-            {
-              "subject": {
-                "termType": "Variable",
-                "value": "S"
-              },
-              "predicate": {
-                "termType": "Variable",
-                "value": "P"
-              },
-              "object": {
-                "termType": "Variable",
-                "value": "O"
-              }
-            }
-          ]
-        }
-      ],
-      "insert": [],
-      "where": [
-        {
-          "type": "bgp",
-          "triples": [
-            {
-              "subject": {
-                "termType": "Variable",
-                "value": "S"
-              },
-              "predicate": {
-                "termType": "Variable",
-                "value": "P"
-              },
-              "object": {
-                "termType": "Variable",
-                "value": "O"
-              }
-            }
-          ]
-        },
-        {
-          "type": "filter",
-          "expression": {
-            "type": "operation",
-            "operator": "isblank",
-            "args": [
+      "context": [],
+      "operation": {
+        "type": "updateOperation",
+        "operationType": "modify",
+        "insert": [],
+        "delete": [
+          {
+            "type": "pattern",
+            "patternType": "bgp",
+            "triples": [
               {
-                "termType": "Variable",
-                "value": "S"
+                "type": "triple",
+                "subject": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "S",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 9,
+                    "end": 11
+                  }
+                },
+                "predicate": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "P",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 12,
+                    "end": 14
+                  }
+                },
+                "object": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "O",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 15,
+                    "end": 17
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 12,
+                  "end": 17
+                }
               }
-            ]
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 12,
+              "end": 19
+            }
           }
+        ],
+        "where": [
+          {
+            "type": "pattern",
+            "patternType": "bgp",
+            "triples": [
+              {
+                "type": "triple",
+                "subject": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "S",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 30,
+                    "end": 32
+                  }
+                },
+                "predicate": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "P",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 33,
+                    "end": 35
+                  }
+                },
+                "object": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "O",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 36,
+                    "end": 38
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 33,
+                  "end": 38
+                }
+              }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 33,
+              "end": 40
+            }
+          },
+          {
+            "type": "pattern",
+            "patternType": "filter",
+            "expression": {
+              "type": "expression",
+              "expressionType": "bracketted",
+              "expression": {
+                "type": "expression",
+                "expressionType": "operation",
+                "operator": "isblank",
+                "args": [
+                  {
+                    "type": "term",
+                    "termType": "Variable",
+                    "value": "S",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 58,
+                      "end": 60
+                    }
+                  }
+                ],
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 50,
+                  "end": 61
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 48,
+                "end": 62
+              }
+            },
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 41,
+              "end": 62
+            }
+          }
+        ],
+        "from": {
+          "type": "datasetClauses",
+          "default": [],
+          "named": [],
+          "loc": {
+            "sourceLocationType": "noMaterialize"
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 0,
+          "end": 64
         }
-      ]
+      }
     }
   ],
-  "prefixes": {}
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 64
+  }
 }

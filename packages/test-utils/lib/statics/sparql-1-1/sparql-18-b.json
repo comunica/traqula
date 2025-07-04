@@ -1,174 +1,524 @@
 {
-  "queryType": "SELECT",
-  "variables": [
+  "context": [
     {
-      "termType": "Variable",
-      "value": "s"
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "example",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://example/id/",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 16,
+          "end": 36
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 36
+      }
     },
     {
-      "termType": "Variable",
-      "value": "p"
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "rdfs",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://www.w3.org/2000/01/rdf-schema#",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 49,
+          "end": 88
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 37,
+        "end": 88
+      }
     },
     {
-      "termType": "Variable",
-      "value": "o"
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "rdf",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 100,
+          "end": 145
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 89,
+        "end": 145
+      }
     }
   ],
+  "queryType": "select",
   "where": [
     {
-      "type": "bgp",
+      "type": "pattern",
+      "patternType": "bgp",
       "triples": [
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "s"
+            "value": "s",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 168,
+              "end": 170
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+            "value": "type",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 172,
+              "end": 180
+            },
+            "prefix": "rdf"
           },
           "object": {
-            "termType": "BlankNode",
-            "value": "g_0"
-          }
-        },
-        {
-          "subject": {
-            "termType": "BlankNode",
-            "value": "g_0"
-          },
-          "predicate": {
-            "type": "path",
-            "pathType": "*",
-            "items": [
+            "type": "tripleCollection",
+            "tripleCollectionType": "blankNodeProperties",
+            "identifier": {
+              "type": "term",
+              "termType": "BlankNode",
+              "loc": {
+                "sourceLocationType": "noMaterialize"
+              },
+              "label": "g_3"
+            },
+            "triples": [
               {
-                "termType": "NamedNode",
-                "value": "http://example/id/prop"
+                "type": "triple",
+                "subject": {
+                  "type": "term",
+                  "termType": "BlankNode",
+                  "loc": {
+                    "sourceLocationType": "noMaterialize"
+                  },
+                  "label": "g_3"
+                },
+                "predicate": {
+                  "type": "path",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 183,
+                    "end": 196
+                  },
+                  "items": [
+                    {
+                      "type": "term",
+                      "termType": "NamedNode",
+                      "value": "prop",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 183,
+                        "end": 195
+                      },
+                      "prefix": "example"
+                    }
+                  ],
+                  "pathType": "*"
+                },
+                "object": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "o",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 197,
+                    "end": 199
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 183,
+                  "end": 199
+                }
               }
-            ]
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 181,
+              "end": 201
+            }
           },
-          "object": {
-            "termType": "Variable",
-            "value": "o"
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 172,
+            "end": 201
           }
         },
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "s"
+            "value": "s",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 208,
+              "end": 210
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+            "value": "type",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 212,
+              "end": 220
+            },
+            "prefix": "rdf"
           },
           "object": {
-            "termType": "BlankNode",
-            "value": "g_1"
-          }
-        },
-        {
-          "subject": {
-            "termType": "BlankNode",
-            "value": "g_1"
-          },
-          "predicate": {
-            "type": "path",
-            "pathType": "*",
-            "items": [
+            "type": "tripleCollection",
+            "tripleCollectionType": "blankNodeProperties",
+            "identifier": {
+              "type": "term",
+              "termType": "BlankNode",
+              "loc": {
+                "sourceLocationType": "noMaterialize"
+              },
+              "label": "g_4"
+            },
+            "triples": [
               {
-                "termType": "NamedNode",
-                "value": "http://example/id/prop"
+                "type": "triple",
+                "subject": {
+                  "type": "term",
+                  "termType": "BlankNode",
+                  "loc": {
+                    "sourceLocationType": "noMaterialize"
+                  },
+                  "label": "g_4"
+                },
+                "predicate": {
+                  "type": "path",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 223,
+                    "end": 236
+                  },
+                  "items": [
+                    {
+                      "type": "term",
+                      "termType": "NamedNode",
+                      "value": "prop",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 223,
+                        "end": 235
+                      },
+                      "prefix": "example"
+                    }
+                  ],
+                  "pathType": "*"
+                },
+                "object": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "o",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 237,
+                    "end": 239
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 223,
+                  "end": 239
+                }
               }
-            ]
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 221,
+              "end": 241
+            }
           },
-          "object": {
-            "termType": "Variable",
-            "value": "o"
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 212,
+            "end": 241
           }
         },
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "s"
+            "value": "s",
+            "loc": {
+              "sourceLocationType": "noMaterialize"
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://example/id/p2"
+            "value": "p2",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 252,
+              "end": 262
+            },
+            "prefix": "example"
           },
           "object": {
+            "type": "term",
             "termType": "Variable",
-            "value": "_"
+            "value": "_",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 263,
+              "end": 265
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 252,
+            "end": 265
           }
         },
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "s"
+            "value": "s",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 272,
+              "end": 274
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://example/id/p1"
+            "value": "p1",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 276,
+              "end": 286
+            },
+            "prefix": "example"
           },
           "object": {
+            "type": "term",
             "termType": "Variable",
-            "value": "_"
+            "value": "_",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 287,
+              "end": 289
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 276,
+            "end": 289
           }
         },
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "s"
+            "value": "s",
+            "loc": {
+              "sourceLocationType": "noMaterialize"
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+            "value": "type",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 301,
+              "end": 309
+            },
+            "prefix": "rdf"
           },
           "object": {
-            "termType": "BlankNode",
-            "value": "g_2"
-          }
-        },
-        {
-          "subject": {
-            "termType": "BlankNode",
-            "value": "g_2"
-          },
-          "predicate": {
-            "type": "path",
-            "pathType": "*",
-            "items": [
+            "type": "tripleCollection",
+            "tripleCollectionType": "blankNodeProperties",
+            "identifier": {
+              "type": "term",
+              "termType": "BlankNode",
+              "loc": {
+                "sourceLocationType": "noMaterialize"
+              },
+              "label": "g_5"
+            },
+            "triples": [
               {
-                "termType": "NamedNode",
-                "value": "http://example/id/prop"
+                "type": "triple",
+                "subject": {
+                  "type": "term",
+                  "termType": "BlankNode",
+                  "loc": {
+                    "sourceLocationType": "noMaterialize"
+                  },
+                  "label": "g_5"
+                },
+                "predicate": {
+                  "type": "path",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 312,
+                    "end": 325
+                  },
+                  "items": [
+                    {
+                      "type": "term",
+                      "termType": "NamedNode",
+                      "value": "prop",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 312,
+                        "end": 324
+                      },
+                      "prefix": "example"
+                    }
+                  ],
+                  "pathType": "*"
+                },
+                "object": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "o",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 326,
+                    "end": 328
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 312,
+                  "end": 328
+                }
               }
-            ]
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 310,
+              "end": 330
+            }
           },
-          "object": {
-            "termType": "Variable",
-            "value": "o"
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 301,
+            "end": 330
           }
         },
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "s"
+            "value": "s",
+            "loc": {
+              "sourceLocationType": "noMaterialize"
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://example/id/p2"
+            "value": "p2",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 341,
+              "end": 351
+            },
+            "prefix": "example"
           },
           "object": {
+            "type": "term",
             "termType": "Variable",
-            "value": "o"
+            "value": "o",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 352,
+              "end": 354
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 341,
+            "end": 354
           }
         }
-      ]
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 172,
+        "end": 356
+      }
     }
   ],
-  "type": "query",
-  "prefixes": {
-    "example": "http://example/id/",
-    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
-    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-  }
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "term",
+      "termType": "Variable",
+      "value": "s",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 153,
+        "end": 155
+      }
+    },
+    {
+      "type": "term",
+      "termType": "Variable",
+      "value": "p",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 156,
+        "end": 158
+      }
+    },
+    {
+      "type": "term",
+      "termType": "Variable",
+      "value": "o",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 159,
+        "end": 161
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 358
+  },
+  "type": "query"
 }

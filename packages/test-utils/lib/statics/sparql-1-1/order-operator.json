@@ -1,57 +1,162 @@
 {
-  "queryType": "SELECT",
-  "variables": [
+  "context": [
     {
-      "termType": "Wildcard"
-    }
-  ],
-  "where": [
-    {
-      "type": "bgp",
-      "triples": [
-        {
-          "subject": {
-            "termType": "Variable",
-            "value": "s"
-          },
-          "predicate": {
-            "termType": "Variable",
-            "value": "p"
-          },
-          "object": {
-            "termType": "Variable",
-            "value": "o"
-          }
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://example.org/ns#",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 9,
+          "end": 33
         }
-      ]
-    }
-  ],
-  "order": [
-    {
-      "expression": {
-        "type": "operation",
-        "operator": "+",
-        "args": [
-          {
-            "termType": "Variable",
-            "value": "o"
-          },
-          {
-            "termType": "Literal",
-            "value": "5",
-            "language": "",
-            "datatype": {
-              "termType": "NamedNode",
-              "value": "http://www.w3.org/2001/XMLSchema#integer"
-            },
-            "direction": ""
-          }
-        ]
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 33
       }
     }
   ],
-  "type": "query",
-  "prefixes": {
-    "": "http://example.org/ns#"
-  }
+  "queryType": "select",
+  "where": [
+    {
+      "type": "pattern",
+      "patternType": "bgp",
+      "triples": [
+        {
+          "type": "triple",
+          "subject": {
+            "type": "term",
+            "termType": "Variable",
+            "value": "s",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 45,
+              "end": 47
+            }
+          },
+          "predicate": {
+            "type": "term",
+            "termType": "Variable",
+            "value": "p",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 48,
+              "end": 50
+            }
+          },
+          "object": {
+            "type": "term",
+            "termType": "Variable",
+            "value": "o",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 51,
+              "end": 53
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 48,
+            "end": 53
+          }
+        }
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 48,
+        "end": 53
+      }
+    }
+  ],
+  "solutionModifiers": {
+    "order": {
+      "type": "solutionModifier",
+      "modifierType": "order",
+      "orderDefs": [
+        {
+          "type": "expression",
+          "expressionType": "bracketted",
+          "expression": {
+            "type": "expression",
+            "expressionType": "operation",
+            "operator": "+",
+            "args": [
+              {
+                "type": "term",
+                "termType": "Variable",
+                "value": "o",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 66,
+                  "end": 68
+                }
+              },
+              {
+                "type": "term",
+                "termType": "Literal",
+                "value": "5",
+                "langOrIri": {
+                  "type": "term",
+                  "termType": "NamedNode",
+                  "value": "http://www.w3.org/2001/XMLSchema#integer",
+                  "loc": {
+                    "sourceLocationType": "noMaterialize"
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 68,
+                  "end": 70
+                }
+              }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 66,
+              "end": 70
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 65,
+            "end": 71
+          }
+        }
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 56,
+        "end": 71
+      }
+    }
+  },
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "wildcard",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 41,
+        "end": 42
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 71
+  },
+  "type": "query"
 }

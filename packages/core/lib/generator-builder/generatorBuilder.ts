@@ -1,3 +1,4 @@
+import { CoreFactory } from '../CoreFactory';
 import type { CheckOverlap } from '../utils';
 import type { GeneratorFromRules, GenRuleMap, GenRulesToObject, GenNamesFromList } from './builderTypes';
 import type { GeneratorRule, RuleDefArg } from './generatorTypes';
@@ -173,37 +174,98 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
 
   public build(): GeneratorFromRules<Context, Names, RuleDefs> {
     const rules: Record<string, GeneratorRule<Context>> = this.rules;
+    return <GeneratorFromRules<Context, Names, RuleDefs>> new Generator(rules);
+  }
+}
 
-    class Generator {
-      private __context: Context | undefined = undefined;
-      public setContext(context: Context): void {
-        this.__context = context;
+export class Generator<Context, Names extends string, RuleDefs extends GenRuleMap<Names>> {
+  protected readonly factory = new CoreFactory();
+  protected __context: Context | undefined = undefined;
+  protected origSource = '';
+  protected generatedUntil = 0;
+  protected readonly stringBuilder: string[] = [];
+
+  public constructor(protected rules: RuleDefs) {
+    // eslint-disable-next-line ts/no-unnecessary-type-assertion
+    for (const rule of <GeneratorRule[]> Object.values(rules)) {
+      // Define function implementation
+      this[<keyof (typeof this)> rule.name] =
+        <any> ((input: any, context: Context & { origSource: string; offset?: number }, args: any) => {
+          this.stringBuilder.length = 0;
+          this.origSource = context.origSource;
+          this.generatedUntil = context?.offset ?? 0;
+          this.setContext(context);
+
+          this.subrule(rule, input, args);
+
+          return this.stringBuilder.join('');
+        });
+    }
+  }
+
+  public setContext(context: Context): void {
+    this.__context = context;
+  }
+
+  protected getSafeContext(): Context {
+    return <Context> this.__context;
+  }
+
+  protected readonly subrule: RuleDefArg['SUBRULE'] = (cstDef, ast, arg) => {
+    const def = this.rules[<Names> cstDef.name];
+    if (!def) {
+      throw new Error(`Rule ${cstDef.name} not found`);
+    }
+    if (this.factory.isLocalized(ast)) {
+      if (this.factory.isSourceLocationNoMaterialize(ast.loc)) {
+        return;
       }
-
-      private getSafeContext(): Context {
-        return <Context> this.__context;
+      if (this.factory.isSourceLocationStringReplace(ast.loc)) {
+        this.catchup(ast.loc.start);
+        this.print(ast.loc.newSource);
+        this.generatedUntil = ast.loc.end;
+        return;
       }
-
-      public constructor() {
-        const selfRef: RuleDefArg = {
-          SUBRULE: (cstDef, input, arg) => {
-            const def = rules[cstDef.name];
-            if (!def) {
-              throw new Error(`Rule ${cstDef.name} not found`);
-            }
-            return def.gImpl(selfRef)(input, this.getSafeContext(), arg);
-          },
-        };
-
-        for (const rule of Object.values(rules)) {
-          this[<keyof (typeof this)> rule.name] = <any> ((input: any, context: Context, args: any) => {
-            this.setContext(context);
-            return rule.gImpl(selfRef)(input, this.getSafeContext(), args);
-          });
-        }
+      if (this.factory.isSourceLocationNodeReplace(ast.loc)) {
+        this.catchup(ast.loc.start);
+        this.generatedUntil = ast.loc.end;
+      }
+      if (this.factory.isSourceLocationSource(ast.loc)) {
+        this.catchup(ast.loc.start);
       }
     }
 
-    return <GeneratorFromRules<Context, Names, RuleDefs>> new Generator();
-  }
+    // If autoGenerate - do nothing
+
+    // Do call generation
+    def.gImpl({
+      SUBRULE: this.subrule,
+      PRINT: this.print,
+      PRINT_WORD: this.printWord,
+      CATCHUP: this.catchup,
+    })(ast, this.getSafeContext(), arg);
+
+    if (this.factory.isLocalized(ast) && this.factory.isSourceLocationSource(ast.loc)) {
+      this.catchup(ast.loc.end);
+    }
+  };
+
+  protected readonly catchup: RuleDefArg['CATCHUP'] = (until) => {
+    const start = this.generatedUntil;
+    if (start < until) {
+      this.stringBuilder.push(this.origSource.slice(start, until));
+    }
+    this.generatedUntil = Math.max(this.generatedUntil, until);
+  };
+
+  protected readonly print: RuleDefArg['PRINT'] = (...args) => {
+    this.stringBuilder.push(...args.filter(x => x.length > 0));
+  };
+
+  private readonly printWord: RuleDefArg['PRINT_WORD'] = (...args) => {
+    if (this.stringBuilder.length > 0 && this.stringBuilder.at(-1)!.at(-1) !== ' ') {
+      this.stringBuilder.push(' ');
+    }
+    this.stringBuilder.push(...args, ' ');
+  };
 }

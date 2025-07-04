@@ -1,63 +1,196 @@
 {
-  "queryType": "SELECT",
-  "variables": [
+  "context": [
     {
-      "termType": "Variable",
-      "value": "person"
-    }
-  ],
-  "where": [
-    {
-      "type": "bgp",
-      "triples": [
-        {
-          "subject": {
-            "termType": "Variable",
-            "value": "person"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
-          },
-          "object": {
-            "termType": "NamedNode",
-            "value": "http://xmlns.com/foaf/0.1/Person"
-          }
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "rdf",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 16,
+          "end": 61
         }
-      ]
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 61
+      }
     },
     {
-      "type": "filter",
-      "expression": {
-        "type": "operation",
-        "operator": "exists",
-        "args": [
-          {
-            "type": "bgp",
-            "triples": [
-              {
-                "subject": {
-                  "termType": "Variable",
-                  "value": "person"
-                },
-                "predicate": {
-                  "termType": "NamedNode",
-                  "value": "http://xmlns.com/foaf/0.1/name"
-                },
-                "object": {
-                  "termType": "Variable",
-                  "value": "name"
-                }
-              }
-            ]
-          }
-        ]
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "foaf",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://xmlns.com/foaf/0.1/",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 79,
+          "end": 107
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 63,
+        "end": 107
       }
     }
   ],
-  "type": "query",
-  "prefixes": {
-    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-    "foaf": "http://xmlns.com/foaf/0.1/"
-  }
+  "queryType": "select",
+  "where": [
+    {
+      "type": "pattern",
+      "patternType": "bgp",
+      "triples": [
+        {
+          "type": "triple",
+          "subject": {
+            "type": "term",
+            "termType": "Variable",
+            "value": "person",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 138,
+              "end": 145
+            }
+          },
+          "predicate": {
+            "type": "term",
+            "termType": "NamedNode",
+            "value": "type",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 146,
+              "end": 154
+            },
+            "prefix": "rdf"
+          },
+          "object": {
+            "type": "term",
+            "termType": "NamedNode",
+            "value": "Person",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 156,
+              "end": 167
+            },
+            "prefix": "foaf"
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 146,
+            "end": 167
+          }
+        }
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 146,
+        "end": 169
+      }
+    },
+    {
+      "type": "pattern",
+      "patternType": "filter",
+      "expression": {
+        "type": "expression",
+        "expressionType": "patternOperation",
+        "operator": "exists",
+        "args": [
+          {
+            "type": "pattern",
+            "patternType": "bgp",
+            "triples": [
+              {
+                "type": "triple",
+                "subject": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "person",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 190,
+                    "end": 197
+                  }
+                },
+                "predicate": {
+                  "type": "term",
+                  "termType": "NamedNode",
+                  "value": "name",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 198,
+                    "end": 207
+                  },
+                  "prefix": "foaf"
+                },
+                "object": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "name",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 208,
+                    "end": 213
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 198,
+                  "end": 213
+                }
+              }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 198,
+              "end": 213
+            }
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 181,
+          "end": 215
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 174,
+        "end": 215
+      }
+    }
+  ],
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "term",
+      "termType": "Variable",
+      "value": "person",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 117,
+        "end": 124
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 217
+  },
+  "type": "query"
 }

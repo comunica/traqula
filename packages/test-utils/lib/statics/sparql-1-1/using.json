@@ -1,70 +1,167 @@
 {
-  "prefixes": {},
   "type": "update",
   "updates": [
     {
-      "updateType": "insertdelete",
-      "graph": {
-        "termType": "NamedNode",
-        "value": "urn:one:graph"
-      },
-      "delete": [
-        {
-          "type": "bgp",
-          "triples": [
-            {
-              "subject": {
-                "termType": "Variable",
-                "value": "s"
-              },
-              "predicate": {
-                "termType": "NamedNode",
-                "value": "foo:bar"
-              },
-              "object": {
-                "termType": "Variable",
-                "value": "o"
-              }
-            }
-          ]
-        }
-      ],
-      "insert": [],
-      "using": {
-        "default": [
+      "context": [],
+      "operation": {
+        "type": "updateOperation",
+        "operationType": "modify",
+        "insert": [],
+        "delete": [
           {
-            "termType": "NamedNode",
-            "value": "urn:another:graph"
+            "type": "pattern",
+            "patternType": "bgp",
+            "triples": [
+              {
+                "type": "triple",
+                "subject": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "s",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 30,
+                    "end": 32
+                  }
+                },
+                "predicate": {
+                  "type": "term",
+                  "termType": "NamedNode",
+                  "value": "foo:bar",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 33,
+                    "end": 42
+                  }
+                },
+                "object": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "o",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 43,
+                    "end": 45
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 33,
+                  "end": 45
+                }
+              }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 33,
+              "end": 45
+            }
           }
         ],
-        "named": [
-          {
-            "termType": "NamedNode",
-            "value": "urn:anamed:graph"
+        "graph": {
+          "type": "term",
+          "termType": "NamedNode",
+          "value": "urn:one:graph",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 5,
+            "end": 20
           }
-        ]
-      },
-      "where": [
-        {
-          "type": "bgp",
-          "triples": [
+        },
+        "where": [
+          {
+            "type": "pattern",
+            "patternType": "bgp",
+            "triples": [
+              {
+                "type": "triple",
+                "subject": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "s",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 113,
+                    "end": 115
+                  }
+                },
+                "predicate": {
+                  "type": "term",
+                  "termType": "NamedNode",
+                  "value": "foo:bar",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 116,
+                    "end": 125
+                  }
+                },
+                "object": {
+                  "type": "term",
+                  "termType": "Variable",
+                  "value": "o",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 126,
+                    "end": 128
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 116,
+                  "end": 128
+                }
+              }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 116,
+              "end": 128
+            }
+          }
+        ],
+        "from": {
+          "type": "datasetClauses",
+          "default": [
             {
-              "subject": {
-                "termType": "Variable",
-                "value": "s"
-              },
-              "predicate": {
-                "termType": "NamedNode",
-                "value": "foo:bar"
-              },
-              "object": {
-                "termType": "Variable",
-                "value": "o"
+              "type": "term",
+              "termType": "NamedNode",
+              "value": "urn:another:graph",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 54,
+                "end": 73
               }
             }
-          ]
+          ],
+          "named": [
+            {
+              "type": "term",
+              "termType": "NamedNode",
+              "value": "urn:anamed:graph",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 86,
+                "end": 104
+              }
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 48,
+            "end": 104
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 0,
+          "end": 130
         }
-      ]
+      }
     }
-  ]
+  ],
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 130
+  }
 }

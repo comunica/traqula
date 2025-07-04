@@ -1,11 +1,31 @@
 {
-  "queryType": "DESCRIBE",
+  "context": [],
+  "queryType": "describe",
   "variables": [
     {
+      "type": "term",
       "termType": "NamedNode",
-      "value": "http://example.org/"
+      "value": "http://example.org/",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 9,
+        "end": 30
+      }
     }
   ],
-  "type": "query",
-  "prefixes": {}
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "solutionModifiers": {},
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 30
+  },
+  "type": "query"
 }

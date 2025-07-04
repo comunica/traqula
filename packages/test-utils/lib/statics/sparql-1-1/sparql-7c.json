@@ -1,91 +1,273 @@
 {
-  "queryType": "SELECT",
-  "variables": [
+  "context": [
     {
-      "termType": "Variable",
-      "value": "title"
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "dc10",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://purl.org/dc/elements/1.0/",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 14,
+          "end": 48
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 48
+      }
     },
     {
-      "termType": "Variable",
-      "value": "author"
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "dc11",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://purl.org/dc/elements/1.1/",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 63,
+          "end": 97
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 49,
+        "end": 97
+      }
     }
   ],
+  "queryType": "select",
   "where": [
     {
-      "type": "union",
+      "type": "pattern",
+      "patternType": "union",
       "patterns": [
         {
-          "type": "bgp",
+          "type": "pattern",
+          "patternType": "bgp",
           "triples": [
             {
+              "type": "triple",
               "subject": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "book"
+                "value": "book",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 132,
+                  "end": 137
+                }
               },
               "predicate": {
+                "type": "term",
                 "termType": "NamedNode",
-                "value": "http://purl.org/dc/elements/1.0/title"
+                "value": "title",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 138,
+                  "end": 148
+                },
+                "prefix": "dc10"
               },
               "object": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "title"
+                "value": "title",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 149,
+                  "end": 155
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 138,
+                "end": 155
               }
             },
             {
+              "type": "triple",
               "subject": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "book"
+                "value": "book",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 159,
+                  "end": 164
+                }
               },
               "predicate": {
+                "type": "term",
                 "termType": "NamedNode",
-                "value": "http://purl.org/dc/elements/1.0/creator"
+                "value": "creator",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 165,
+                  "end": 177
+                },
+                "prefix": "dc10"
               },
               "object": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "author"
+                "value": "author",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 178,
+                  "end": 185
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 165,
+                "end": 185
               }
             }
-          ]
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 138,
+            "end": 157
+          }
         },
         {
-          "type": "bgp",
+          "type": "pattern",
+          "patternType": "bgp",
           "triples": [
             {
+              "type": "triple",
               "subject": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "book"
+                "value": "book",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 214,
+                  "end": 219
+                }
               },
               "predicate": {
+                "type": "term",
                 "termType": "NamedNode",
-                "value": "http://purl.org/dc/elements/1.1/title"
+                "value": "title",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 220,
+                  "end": 230
+                },
+                "prefix": "dc11"
               },
               "object": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "title"
+                "value": "title",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 231,
+                  "end": 237
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 220,
+                "end": 237
               }
             },
             {
+              "type": "triple",
               "subject": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "book"
+                "value": "book",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 241,
+                  "end": 246
+                }
               },
               "predicate": {
+                "type": "term",
                 "termType": "NamedNode",
-                "value": "http://purl.org/dc/elements/1.1/creator"
+                "value": "creator",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 247,
+                  "end": 259
+                },
+                "prefix": "dc11"
               },
               "object": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "author"
+                "value": "author",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 260,
+                  "end": 267
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 247,
+                "end": 267
               }
             }
-          ]
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 220,
+            "end": 239
+          }
         }
-      ]
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 130,
+        "end": 269
+      }
     }
   ],
-  "type": "query",
-  "prefixes": {
-    "dc10": "http://purl.org/dc/elements/1.0/",
-    "dc11": "http://purl.org/dc/elements/1.1/"
-  }
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "term",
+      "termType": "Variable",
+      "value": "title",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 106,
+        "end": 112
+      }
+    },
+    {
+      "type": "term",
+      "termType": "Variable",
+      "value": "author",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 113,
+        "end": 120
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 278
+  },
+  "type": "query"
 }

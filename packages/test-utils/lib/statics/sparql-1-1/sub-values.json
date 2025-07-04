@@ -1,62 +1,170 @@
 {
-  "queryType": "SELECT",
-  "variables": [
+  "context": [
     {
-      "termType": "Variable",
-      "value": "s"
-    },
-    {
-      "termType": "Variable",
-      "value": "o"
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://example.org/",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 9,
+          "end": 30
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 30
+      }
     }
   ],
+  "queryType": "select",
   "where": [
     {
-      "type": "group",
+      "type": "pattern",
+      "patternType": "group",
       "patterns": [
         {
-          "queryType": "SELECT",
-          "variables": [
-            {
-              "termType": "Wildcard"
-            }
-          ],
+          "type": "query",
+          "queryType": "select",
           "where": [
             {
-              "type": "bgp",
+              "type": "pattern",
+              "patternType": "bgp",
               "triples": [
                 {
+                  "type": "triple",
                   "subject": {
+                    "type": "term",
                     "termType": "Variable",
-                    "value": "s"
+                    "value": "s",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 77,
+                      "end": 79
+                    }
                   },
                   "predicate": {
+                    "type": "term",
                     "termType": "Variable",
-                    "value": "p"
+                    "value": "p",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 80,
+                      "end": 82
+                    }
                   },
                   "object": {
+                    "type": "term",
                     "termType": "Variable",
-                    "value": "o"
+                    "value": "o",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 83,
+                      "end": 85
+                    }
+                  },
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 80,
+                    "end": 85
                   }
                 }
-              ]
-            }
-          ],
-          "type": "query",
-          "values": [
-            {
-              "?o": {
-                "termType": "NamedNode",
-                "value": "http://example.org/b"
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 80,
+                "end": 87
               }
             }
-          ]
+          ],
+          "solutionModifiers": {},
+          "variables": [
+            {
+              "type": "wildcard",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 59,
+                "end": 60
+              }
+            }
+          ],
+          "values": {
+            "type": "pattern",
+            "patternType": "values",
+            "values": [
+              {
+                "?o": {
+                  "type": "term",
+                  "termType": "NamedNode",
+                  "value": "b",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 113,
+                    "end": 115
+                  },
+                  "prefix": ""
+                }
+              }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 98,
+              "end": 118
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 52,
+            "end": 118
+          }
         }
-      ]
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 46,
+        "end": 120
+      }
     }
   ],
-  "type": "query",
-  "prefixes": {
-    "": "http://example.org/"
-  }
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "term",
+      "termType": "Variable",
+      "value": "s",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 38,
+        "end": 40
+      }
+    },
+    {
+      "type": "term",
+      "termType": "Variable",
+      "value": "o",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 41,
+        "end": 43
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 122
+  },
+  "type": "query"
 }

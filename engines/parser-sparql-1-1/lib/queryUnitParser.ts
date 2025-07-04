@@ -1,5 +1,5 @@
 import { Builder } from '@traqula/core';
-import { gram } from '@traqula/rules-sparql-1-1';
+import { gram, lex } from '@traqula/rules-sparql-1-1';
 import { subSelectParserBuilder } from './subSelectParser';
 import { triplesTemplateParserBuilder } from './triplesTemplateParserBuilder';
 
@@ -14,13 +14,13 @@ const rules = <const> [
   gram.valuesClause,
   gram.baseDecl,
   gram.prefixDecl,
-  gram.datasetClauses,
 ];
 
 export const queryUnitParserBuilder = Builder.createBuilder(rules)
   // Select Query
   .merge(subSelectParserBuilder, <const> [])
   .addRule(gram.datasetClause)
+  .addRule(gram.datasetClauseStar)
   .addRule(gram.defaultGraphClause)
   .addRule(gram.namedGraphClause)
   .addRule(gram.sourceSelector)

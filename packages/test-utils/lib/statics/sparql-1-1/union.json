@@ -1,77 +1,215 @@
 {
-  "queryType": "SELECT",
-  "variables": [
+  "context": [
     {
-      "termType": "Variable",
-      "value": "label"
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "dbpedia",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://dbpedia.org/resource/",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 16,
+          "end": 46
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 46
+      }
     }
   ],
+  "queryType": "select",
   "where": [
     {
-      "type": "union",
+      "type": "pattern",
+      "patternType": "union",
       "patterns": [
         {
-          "type": "bgp",
+          "type": "pattern",
+          "patternType": "bgp",
           "triples": [
             {
+              "type": "triple",
               "subject": {
+                "type": "term",
                 "termType": "NamedNode",
-                "value": "http://dbpedia.org/resource/Belgium"
+                "value": "Belgium",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 73,
+                  "end": 88
+                },
+                "prefix": "dbpedia"
               },
               "predicate": {
+                "type": "term",
                 "termType": "NamedNode",
-                "value": "http://www.w3.org/2000/01/rdf-schema#label"
+                "value": "http://www.w3.org/2000/01/rdf-schema#label",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 89,
+                  "end": 133
+                }
               },
               "object": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "label"
+                "value": "label",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 134,
+                  "end": 140
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 89,
+                "end": 140
               }
             }
-          ]
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 89,
+            "end": 141
+          }
         },
         {
-          "type": "bgp",
+          "type": "pattern",
+          "patternType": "bgp",
           "triples": [
             {
+              "type": "triple",
               "subject": {
+                "type": "term",
                 "termType": "NamedNode",
-                "value": "http://dbpedia.org/resource/Belgium"
+                "value": "Belgium",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 156,
+                  "end": 171
+                },
+                "prefix": "dbpedia"
               },
               "predicate": {
+                "type": "term",
                 "termType": "NamedNode",
-                "value": "http://dbpedia.org/property/commonName"
+                "value": "http://dbpedia.org/property/commonName",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 172,
+                  "end": 212
+                }
               },
               "object": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "label"
+                "value": "label",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 217,
+                  "end": 223
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 172,
+                "end": 223
               }
             }
-          ]
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 172,
+            "end": 224
+          }
         },
         {
-          "type": "bgp",
+          "type": "pattern",
+          "patternType": "bgp",
           "triples": [
             {
+              "type": "triple",
               "subject": {
+                "type": "term",
                 "termType": "NamedNode",
-                "value": "http://dbpedia.org/resource/Belgium"
+                "value": "Belgium",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 239,
+                  "end": 254
+                },
+                "prefix": "dbpedia"
               },
               "predicate": {
+                "type": "term",
                 "termType": "NamedNode",
-                "value": "http://xmlns.com/foaf/0.1/name"
+                "value": "http://xmlns.com/foaf/0.1/name",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 255,
+                  "end": 287
+                }
               },
               "object": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "label"
+                "value": "label",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 300,
+                  "end": 306
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 255,
+                "end": 306
               }
             }
-          ]
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 255,
+            "end": 307
+          }
         }
-      ]
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 71,
+        "end": 309
+      }
     }
   ],
-  "type": "query",
-  "prefixes": {
-    "dbpedia": "http://dbpedia.org/resource/"
-  }
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "term",
+      "termType": "Variable",
+      "value": "label",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 54,
+        "end": 60
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 311
+  },
+  "type": "query"
 }

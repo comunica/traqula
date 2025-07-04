@@ -1,5 +1,11 @@
 {
-  "prefixes": {},
+  "type": "term",
   "termType": "NamedNode",
-  "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type"
+  "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 1
+  },
+  "prefixes": {}
 }

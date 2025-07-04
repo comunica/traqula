@@ -1,43 +1,124 @@
 {
-  "queryType": "SELECT",
-  "variables": [
+  "context": [
     {
-      "termType": "Wildcard"
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://example/",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 11,
+          "end": 28
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 28
+      }
     }
   ],
+  "queryType": "select",
   "where": [
     {
-      "type": "bgp",
+      "type": "pattern",
+      "patternType": "bgp",
       "triples": [
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "s"
+            "value": "s",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 42,
+              "end": 44
+            }
           },
           "predicate": {
             "type": "path",
-            "pathType": "/",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 45,
+              "end": 57
+            },
             "items": [
               {
+                "type": "term",
                 "termType": "NamedNode",
-                "value": "http://example/item"
+                "value": "item",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 45,
+                  "end": 50
+                },
+                "prefix": ""
               },
               {
+                "type": "term",
                 "termType": "NamedNode",
-                "value": "http://example/price"
+                "value": "price",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 51,
+                  "end": 57
+                },
+                "prefix": ""
               }
-            ]
+            ],
+            "pathType": "/"
           },
           "object": {
+            "type": "term",
             "termType": "Variable",
-            "value": "x"
+            "value": "x",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 58,
+              "end": 60
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 45,
+            "end": 60
           }
         }
-      ]
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 45,
+        "end": 62
+      }
     }
   ],
-  "type": "query",
-  "prefixes": {
-    "": "http://example/"
-  }
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "wildcard",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 36,
+        "end": 37
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 64
+  },
+  "type": "query"
 }

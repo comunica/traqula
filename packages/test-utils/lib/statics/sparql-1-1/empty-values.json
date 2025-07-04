@@ -1,34 +1,92 @@
 {
-  "queryType": "SELECT",
-  "variables": [
-    {
-      "termType": "Wildcard"
-    }
-  ],
+  "context": [],
+  "queryType": "select",
   "where": [
     {
-      "type": "bgp",
+      "type": "pattern",
+      "patternType": "bgp",
       "triples": [
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "s"
+            "value": "s",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 19,
+              "end": 21
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "Variable",
-            "value": "p"
+            "value": "p",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 22,
+              "end": 24
+            }
           },
           "object": {
+            "type": "term",
             "termType": "Variable",
-            "value": "o"
+            "value": "o",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 25,
+              "end": 27
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 22,
+            "end": 27
           }
         }
-      ]
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 22,
+        "end": 28
+      }
     }
   ],
-  "type": "query",
-  "values": [
-    {}
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "wildcard",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 7,
+        "end": 8
+      }
+    }
   ],
-  "prefixes": {}
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 47
+  },
+  "type": "query",
+  "values": {
+    "type": "pattern",
+    "patternType": "values",
+    "values": [
+      {}
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 31,
+      "end": 47
+    }
+  }
 }

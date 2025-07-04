@@ -1,42 +1,110 @@
 {
-  "queryType": "CONSTRUCT",
+  "context": [],
+  "queryType": "construct",
   "template": [
     {
+      "type": "triple",
       "subject": {
+        "type": "term",
         "termType": "Variable",
-        "value": "s"
+        "value": "s",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 12,
+          "end": 14
+        }
       },
       "predicate": {
+        "type": "term",
         "termType": "Variable",
-        "value": "p"
+        "value": "p",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 15,
+          "end": 17
+        }
       },
       "object": {
+        "type": "term",
         "termType": "Variable",
-        "value": "o"
+        "value": "o",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 18,
+          "end": 20
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 15,
+        "end": 20
       }
     }
   ],
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
   "where": [
     {
-      "type": "bgp",
+      "type": "pattern",
+      "patternType": "bgp",
       "triples": [
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "s"
+            "value": "s",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 31,
+              "end": 33
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "Variable",
-            "value": "p"
+            "value": "p",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 34,
+              "end": 36
+            }
           },
           "object": {
+            "type": "term",
             "termType": "Variable",
-            "value": "o"
+            "value": "o",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 37,
+              "end": 39
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 34,
+            "end": 39
           }
         }
-      ]
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 34,
+        "end": 39
+      }
     }
   ],
-  "type": "query",
-  "prefixes": {}
+  "solutionModifiers": {},
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 41
+  },
+  "type": "query"
 }

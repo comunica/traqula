@@ -1,140 +1,403 @@
 {
-  "queryType": "CONSTRUCT",
+  "context": [
+    {
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "foaf",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://xmlns.com/foaf/0.1/",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 16,
+          "end": 44
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 44
+      }
+    },
+    {
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "vcard",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://www.w3.org/2001/vcard-rdf/3.0#",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 61,
+          "end": 100
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 45,
+        "end": 100
+      }
+    }
+  ],
+  "queryType": "construct",
   "template": [
     {
+      "type": "triple",
       "subject": {
+        "type": "term",
         "termType": "Variable",
-        "value": "x"
+        "value": "x",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 114,
+          "end": 116
+        }
       },
       "predicate": {
+        "type": "term",
         "termType": "NamedNode",
-        "value": "http://www.w3.org/2001/vcard-rdf/3.0#N"
+        "value": "N",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 118,
+          "end": 125
+        },
+        "prefix": "vcard"
       },
       "object": {
+        "type": "term",
         "termType": "BlankNode",
-        "value": "e_v"
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 126,
+          "end": 129
+        },
+        "label": "e_v"
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 118,
+        "end": 129
       }
     },
     {
+      "type": "triple",
       "subject": {
+        "type": "term",
         "termType": "BlankNode",
-        "value": "e_v"
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 144,
+          "end": 147
+        },
+        "label": "e_v"
       },
       "predicate": {
+        "type": "term",
         "termType": "NamedNode",
-        "value": "http://www.w3.org/2001/vcard-rdf/3.0#givenName"
+        "value": "givenName",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 148,
+          "end": 163
+        },
+        "prefix": "vcard"
       },
       "object": {
+        "type": "term",
         "termType": "Variable",
-        "value": "gname"
+        "value": "gname",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 164,
+          "end": 170
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 148,
+        "end": 170
       }
     },
     {
+      "type": "triple",
       "subject": {
+        "type": "term",
         "termType": "BlankNode",
-        "value": "e_v"
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 185,
+          "end": 188
+        },
+        "label": "e_v"
       },
       "predicate": {
+        "type": "term",
         "termType": "NamedNode",
-        "value": "http://www.w3.org/2001/vcard-rdf/3.0#familyName"
+        "value": "familyName",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 189,
+          "end": 205
+        },
+        "prefix": "vcard"
       },
       "object": {
+        "type": "term",
         "termType": "Variable",
-        "value": "fname"
+        "value": "fname",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 206,
+          "end": 212
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 189,
+        "end": 212
       }
     }
   ],
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
   "where": [
     {
-      "type": "union",
+      "type": "pattern",
+      "patternType": "union",
       "patterns": [
         {
-          "type": "bgp",
+          "type": "pattern",
+          "patternType": "bgp",
           "triples": [
             {
+              "type": "triple",
               "subject": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "x"
+                "value": "x",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 230,
+                  "end": 232
+                }
               },
               "predicate": {
+                "type": "term",
                 "termType": "NamedNode",
-                "value": "http://xmlns.com/foaf/0.1/firstname"
+                "value": "firstname",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 233,
+                  "end": 247
+                },
+                "prefix": "foaf"
               },
               "object": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "gname"
+                "value": "gname",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 248,
+                  "end": 254
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 233,
+                "end": 254
               }
             }
-          ]
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 233,
+            "end": 254
+          }
         },
         {
-          "type": "bgp",
+          "type": "pattern",
+          "patternType": "bgp",
           "triples": [
             {
+              "type": "triple",
               "subject": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "x"
+                "value": "x",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 266,
+                  "end": 268
+                }
               },
               "predicate": {
+                "type": "term",
                 "termType": "NamedNode",
-                "value": "http://xmlns.com/foaf/0.1/givenname"
+                "value": "givenname",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 269,
+                  "end": 283
+                },
+                "prefix": "foaf"
               },
               "object": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "gname"
+                "value": "gname",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 286,
+                  "end": 292
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 269,
+                "end": 292
               }
             }
-          ]
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 269,
+            "end": 292
+          }
         }
-      ]
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 228,
+        "end": 294
+      }
     },
     {
-      "type": "union",
+      "type": "pattern",
+      "patternType": "union",
       "patterns": [
         {
-          "type": "bgp",
+          "type": "pattern",
+          "patternType": "bgp",
           "triples": [
             {
+              "type": "triple",
               "subject": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "x"
+                "value": "x",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 303,
+                  "end": 305
+                }
               },
               "predicate": {
+                "type": "term",
                 "termType": "NamedNode",
-                "value": "http://xmlns.com/foaf/0.1/surname"
+                "value": "surname",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 306,
+                  "end": 318
+                },
+                "prefix": "foaf"
               },
               "object": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "fname"
+                "value": "fname",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 321,
+                  "end": 327
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 306,
+                "end": 327
               }
             }
-          ]
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 306,
+            "end": 327
+          }
         },
         {
-          "type": "bgp",
+          "type": "pattern",
+          "patternType": "bgp",
           "triples": [
             {
+              "type": "triple",
               "subject": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "x"
+                "value": "x",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 339,
+                  "end": 341
+                }
               },
               "predicate": {
+                "type": "term",
                 "termType": "NamedNode",
-                "value": "http://xmlns.com/foaf/0.1/family_name"
+                "value": "family_name",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 342,
+                  "end": 358
+                },
+                "prefix": "foaf"
               },
               "object": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "fname"
+                "value": "fname",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 359,
+                  "end": 365
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 342,
+                "end": 365
               }
             }
-          ]
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 342,
+            "end": 365
+          }
         }
-      ]
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 301,
+        "end": 367
+      }
     }
   ],
-  "type": "query",
-  "prefixes": {
-    "foaf": "http://xmlns.com/foaf/0.1/",
-    "vcard": "http://www.w3.org/2001/vcard-rdf/3.0#"
-  }
+  "solutionModifiers": {},
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 372
+  },
+  "type": "query"
 }

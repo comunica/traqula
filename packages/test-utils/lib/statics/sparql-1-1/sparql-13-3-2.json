@@ -1,71 +1,208 @@
 {
-  "queryType": "SELECT",
-  "variables": [
+  "context": [
     {
-      "termType": "Variable",
-      "value": "nick"
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "foaf",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://xmlns.com/foaf/0.1/",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 13,
+          "end": 41
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 41
+      }
+    },
+    {
+      "type": "contextDef",
+      "contextType": "prefix",
+      "key": "data",
+      "value": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://example.org/foaf/",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 55,
+          "end": 81
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 42,
+        "end": 81
+      }
     }
   ],
-  "from": {
-    "default": [],
-    "named": [
-      {
-        "termType": "NamedNode",
-        "value": "http://example.org/foaf/aliceFoaf"
-      },
-      {
-        "termType": "NamedNode",
-        "value": "http://example.org/foaf/bobFoaf"
-      }
-    ]
-  },
+  "queryType": "select",
   "where": [
     {
-      "type": "graph",
+      "type": "pattern",
+      "patternType": "graph",
+      "name": {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "bobFoaf",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 209,
+          "end": 221
+        },
+        "prefix": "data"
+      },
       "patterns": [
         {
-          "type": "bgp",
+          "type": "pattern",
+          "patternType": "bgp",
           "triples": [
             {
+              "type": "triple",
               "subject": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "x"
+                "value": "x",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 233,
+                  "end": 235
+                }
               },
               "predicate": {
+                "type": "term",
                 "termType": "NamedNode",
-                "value": "http://xmlns.com/foaf/0.1/mbox"
+                "value": "mbox",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 236,
+                  "end": 245
+                },
+                "prefix": "foaf"
               },
               "object": {
+                "type": "term",
                 "termType": "NamedNode",
-                "value": "mailto:bob@work.example"
+                "value": "mailto:bob@work.example",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 246,
+                  "end": 271
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 236,
+                "end": 271
               }
             },
             {
+              "type": "triple",
               "subject": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "x"
+                "value": "x",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 283,
+                  "end": 285
+                }
               },
               "predicate": {
+                "type": "term",
                 "termType": "NamedNode",
-                "value": "http://xmlns.com/foaf/0.1/nick"
+                "value": "nick",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 286,
+                  "end": 295
+                },
+                "prefix": "foaf"
               },
               "object": {
+                "type": "term",
                 "termType": "Variable",
-                "value": "nick"
+                "value": "nick",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 296,
+                  "end": 301
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 286,
+                "end": 301
               }
             }
-          ]
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 236,
+            "end": 273
+          }
         }
       ],
-      "name": {
-        "termType": "NamedNode",
-        "value": "http://example.org/foaf/bobFoaf"
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 203,
+        "end": 303
       }
     }
   ],
-  "type": "query",
-  "prefixes": {
-    "foaf": "http://xmlns.com/foaf/0.1/",
-    "data": "http://example.org/foaf/"
-  }
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [
+      {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://example.org/foaf/aliceFoaf",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 107,
+          "end": 142
+        }
+      },
+      {
+        "type": "term",
+        "termType": "NamedNode",
+        "value": "http://example.org/foaf/bobFoaf",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 154,
+          "end": 187
+        }
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 96,
+      "end": 187
+    }
+  },
+  "variables": [
+    {
+      "type": "term",
+      "termType": "Variable",
+      "value": "nick",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 90,
+        "end": 95
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 307
+  },
+  "type": "query"
 }

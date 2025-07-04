@@ -1,64 +1,168 @@
 {
-  "queryType": "SELECT",
-  "variables": [
-    {
-      "termType": "Variable",
-      "value": "party"
-    },
-    {
-      "termType": "Variable",
-      "value": "page"
-    }
-  ],
+  "context": [],
+  "queryType": "select",
   "where": [
     {
-      "type": "bgp",
+      "type": "pattern",
+      "patternType": "bgp",
       "triples": [
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://dbpedia.org/resource/Barack_Obama"
+            "value": "http://dbpedia.org/resource/Barack_Obama",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 32,
+              "end": 74
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://dbpedia.org/ontology/party"
+            "value": "http://dbpedia.org/ontology/party",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 75,
+              "end": 110
+            }
           },
           "object": {
+            "type": "term",
             "termType": "Variable",
-            "value": "party"
+            "value": "party",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 111,
+              "end": 117
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 75,
+            "end": 117
           }
         },
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "x"
+            "value": "x",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 123,
+              "end": 125
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://data.nytimes.com/elements/topicPage"
+            "value": "http://data.nytimes.com/elements/topicPage",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 126,
+              "end": 170
+            }
           },
           "object": {
+            "type": "term",
             "termType": "Variable",
-            "value": "page"
+            "value": "page",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 171,
+              "end": 176
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 126,
+            "end": 176
           }
         },
         {
+          "type": "triple",
           "subject": {
+            "type": "term",
             "termType": "Variable",
-            "value": "x"
+            "value": "x",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 182,
+              "end": 184
+            }
           },
           "predicate": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://www.w3.org/2002/07/owl#sameAs"
+            "value": "http://www.w3.org/2002/07/owl#sameAs",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 185,
+              "end": 223
+            }
           },
           "object": {
+            "type": "term",
             "termType": "NamedNode",
-            "value": "http://dbpedia.org/resource/Barack_Obama"
+            "value": "http://dbpedia.org/resource/Barack_Obama",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 224,
+              "end": 266
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 185,
+            "end": 266
           }
         }
-      ]
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 75,
+        "end": 268
+      }
     }
   ],
-  "type": "query",
-  "prefixes": {}
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "default": [],
+    "named": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "term",
+      "termType": "Variable",
+      "value": "party",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 7,
+        "end": 13
+      }
+    },
+    {
+      "type": "term",
+      "termType": "Variable",
+      "value": "page",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 14,
+        "end": 19
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 270
+  },
+  "type": "query"
 }

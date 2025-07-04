@@ -62,11 +62,10 @@ export function datasetClauseUsingStar<RuleName extends string>(
         clauses.push(clause);
       });
 
-      return ACTION(() => ({
-        type: 'datasetClauses',
-        clauses: clauses.map(clause => clause.val),
-        loc: C.factory.sourceLocation(...clauses),
-      }));
+      return ACTION(() => C.factory.datasetClauses(
+        clauses.map(clause => clause.val),
+        C.factory.sourceLocation(...clauses),
+      ));
     },
     gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
       for (const clause of ast.clauses) {

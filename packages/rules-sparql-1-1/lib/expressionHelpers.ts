@@ -212,8 +212,8 @@ SparqlGrammarRule<Uncapitalize<T>, ExpressionPatternOperation> {
       const group = SUBRULE(groupGraphPattern, undefined);
       return ACTION(() => C.factory.expressionPatternOperation(
         operator.image,
-        [ C.factory.deGroupSingle(group) ],
-        C.factory.sourceLocation(operator, group.loc),
+        group,
+        C.factory.sourceLocation(operator, group),
       ));
     },
   };

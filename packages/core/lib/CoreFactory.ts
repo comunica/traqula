@@ -19,21 +19,30 @@ export class CoreFactory {
 
   public isLocalized(obj: unknown): obj is Localized {
     return typeof obj === 'object' && obj !== null && 'loc' in obj &&
-      typeof obj.loc === 'object' && obj.loc !== null && 'sourceLocationType' in obj;
+      typeof obj.loc === 'object' && obj.loc !== null && 'sourceLocationType' in obj.loc;
   }
 
   public sourceLocation(...elements: (undefined | IToken | Localized)[]): SourceLocation {
-    const filtered = <(Localized | IToken)[]> elements.filter(element =>
-      element && (!this.isLocalized(element) || this.isSourceLocationSource(element.loc)));
-    if (filtered.length === 0) {
+    const pureElements = elements.filter(x => x !== undefined);
+    if (pureElements.length === 0) {
       return this.sourceLocationNoMaterialize();
+    }
+    const filtered = pureElements.filter(element =>
+      !this.isLocalized(element) || this.isSourceLocationSource(element.loc) ||
+      this.isSourceLocationStringReplace(element.loc) || this.isSourceLocationNodeReplace(element.loc));
+    if (filtered.length === 0) {
+      return this.gen();
     }
     const first = filtered[0];
     const last = filtered.at(-1)!;
     return {
       sourceLocationType: 'source',
-      start: this.isLocalized(first) ? (<SourceLocationSource> first.loc).start : first.startOffset,
-      end: this.isLocalized(last) ? (<SourceLocationSource> last.loc).end : (last.endOffset! + 1),
+      start: this.isLocalized(first) ?
+          (<SourceLocationSource | SourceLocationStringReplace> first.loc).start :
+        first.startOffset,
+      end: this.isLocalized(last) ?
+          (<SourceLocationSource | SourceLocationStringReplace> last.loc).end :
+          (last.endOffset! + 1),
     };
   }
 
@@ -60,6 +69,10 @@ export class CoreFactory {
     };
   }
 
+  public gen(): SourceLocationNodeAutoGenerate {
+    return { sourceLocationType: 'autoGenerate' };
+  }
+
   public isSourceLocationSource(loc: object): loc is SourceLocationSource {
     return this.isSourceLocation(loc) && loc.sourceLocationType === 'source';
   }
@@ -68,11 +81,22 @@ export class CoreFactory {
     return this.isSourceLocation(loc) && loc.sourceLocationType === 'stringReplace';
   }
 
-  public sourceLocationNodeReplace(start: number, end: number): SourceLocationNodeReplace {
+  public sourceLocationNodeReplace(location: SourceLocationSource): SourceLocationNodeReplace;
+  public sourceLocationNodeReplace(start: number, end: number): SourceLocationNodeReplace;
+  public sourceLocationNodeReplace(startOrLoc: number | SourceLocationSource, end?: number): SourceLocationNodeReplace {
+    let starting;
+    let ending;
+    if (typeof startOrLoc === 'number') {
+      starting = startOrLoc;
+      ending = end!;
+    } else {
+      starting = startOrLoc.start;
+      ending = startOrLoc.end;
+    }
     return {
       sourceLocationType: 'nodeReplace',
-      start,
-      end,
+      start: starting,
+      end: ending,
     };
   }
 

@@ -130,23 +130,22 @@ export const subSelect: SparqlGrammarRule<'subSelect', SubSelect> = <const> {
     const modifiers = SUBRULE(solutionModifier, undefined);
     const values = SUBRULE(valuesClause, undefined);
 
-    return ACTION(() => ({
-      type: 'query',
-      queryType: 'select',
+    return ACTION(() => C.factory.querySelect({
       where: where.val,
+      datasets: C.factory.datasetClauses([], C.factory.sourceLocation()),
+      context: [],
       solutionModifiers: modifiers,
       ...selectVal.val,
       ...(values && { values }),
-      loc: C.factory.sourceLocation(
-        selectVal,
-        where,
-        modifiers.group,
-        modifiers.having,
-        modifiers.order,
-        modifiers.limitOffset,
-        values,
-      ),
-    } satisfies RuleDefReturn<typeof subSelect>));
+    }, C.factory.sourceLocation(
+      selectVal,
+      where,
+      modifiers.group,
+      modifiers.having,
+      modifiers.order,
+      modifiers.limitOffset,
+      values,
+    )));
   },
 };
 

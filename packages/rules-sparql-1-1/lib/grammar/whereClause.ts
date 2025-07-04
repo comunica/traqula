@@ -30,7 +30,7 @@ import { builtInCall } from './builtIn';
 import { argList, brackettedExpression, expression } from './expression';
 import { var_, varOrIri, varOrTerm } from './general';
 import { booleanLiteral, iri, numericLiteral, rdfLiteral } from './literals';
-import { subSelect } from './queryUnit/queryUnit';
+import { query, subSelect } from './queryUnit/queryUnit';
 import { graphNode, triplesBlock } from './tripleBlock';
 
 /**
@@ -77,9 +77,16 @@ export const groupGraphPattern: SparqlRule<'groupGraphPattern', PatternGroup> = 
 
 export const generatePattern: SparqlGeneratorRule<'generatePattern', Pattern> = {
   name: 'generatePattern',
-  gImpl: ({ SUBRULE }) => (ast) => {
+  gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
     if (ast.type === 'query') {
-      SUBRULE(subSelect, ast, undefined);
+      SUBRULE(query, F.querySelect({
+        context: [],
+        datasets: F.datasetClauses([], F.sourceLocation()),
+        where: ast.where,
+        variables: ast.variables,
+        solutionModifiers: ast.solutionModifiers,
+        values: ast.values,
+      }, ast.loc), undefined);
     } else if (ast.patternType === 'group') {
       SUBRULE(groupGraphPattern, ast, undefined);
     } else if (ast.patternType === 'bgp') {
@@ -295,7 +302,6 @@ export const inlineData: SparqlRule<'inlineData', PatternValues> = <const> {
 
     for (const mapping of ast.values) {
       F.printFilter(ast, () => PRINT_WORD('('));
-
       for (const variable of variables) {
         if (mapping[variable] === undefined) {
           F.printFilter(ast, () => PRINT_WORD('UNDEF'));
@@ -303,10 +309,8 @@ export const inlineData: SparqlRule<'inlineData', PatternValues> = <const> {
           SUBRULE(graphNode, mapping[variable], undefined);
         }
       }
-
       F.printFilter(ast, () => PRINT_WORD(')'));
     }
-
     F.printFilter(ast, () => PRINT_WORD('}'));
   },
 };

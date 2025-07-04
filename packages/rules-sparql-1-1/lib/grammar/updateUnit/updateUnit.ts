@@ -543,7 +543,7 @@ export const quads: SparqlRule<'quads', Wrap<Quads[]>> = <const> {
     OPTION1(() => {
       const triples = SUBRULE1(triplesTemplate, undefined);
       last = triples;
-      ACTION(() => quads.push(C.factory.patternBgp(triples.val, C.factory.sourceLocation(triples))));
+      ACTION(() => quads.push(triples));
     });
 
     MANY(() => {
@@ -558,7 +558,7 @@ export const quads: SparqlRule<'quads', Wrap<Quads[]>> = <const> {
       OPTION3(() => {
         const triples = SUBRULE2(triplesTemplate, undefined);
         last = triples;
-        ACTION(() => quads.push(C.factory.patternBgp(triples.val, C.factory.sourceLocation(triples))));
+        ACTION(() => quads.push(triples));
       });
     });
 

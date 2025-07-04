@@ -60,7 +60,7 @@ export const triplesBlock: SparqlRule<'triplesBlock', PatternBgp> = <const>{
         F.printFilter(ast, () => PRINT_WORD('.'));
       } else {
         // Subject
-        SUBRULE(graphNode, triple.subject, undefined);
+        SUBRULE(graphNodePath, triple.subject, undefined);
         // Predicate
         if (F.isTerm(triple.predicate) && F.isTermVariable(triple.predicate)) {
           SUBRULE(varOrTerm, triple.predicate, undefined);
@@ -68,7 +68,7 @@ export const triplesBlock: SparqlRule<'triplesBlock', PatternBgp> = <const>{
           SUBRULE(path, triple.predicate, undefined);
         }
         // Object
-        SUBRULE(graphNode, triple.object, undefined);
+        SUBRULE(graphNodePath, triple.object, undefined);
 
         // If no more things, or a top level collection (only possible if new block was part), or new subject: add DOT
         if (nextTriple === undefined || F.isTripleCollection(nextTriple) ||
@@ -104,7 +104,8 @@ SparqlGrammarRule<T, BasicGraphPattern> {
         // Only the first occurrence of a subject is actually materialized.
         return ACTION(() => {
           if (res.length > 0) {
-            res[0].subject = subject;
+            const { predicate, object } = res[0];
+            res[0] = C.factory.triple(subject, predicate, object, C.factory.sourceLocation(subject, object));
           }
           return res;
         });
@@ -367,7 +368,6 @@ SparqlRule<T, TripleCollectionBlankNodeProperties> {
     },
     gImpl: ({ SUBRULE, PRINT, PRINT_WORD }) => (ast, { factory: F }) => {
       F.printFilter(ast, () => PRINT('['));
-
       for (const triple of ast.triples) {
         if (F.isTerm(triple.predicate) && F.isTermVariable(triple.predicate)) {
           SUBRULE(varOrTerm, triple.predicate, undefined);
@@ -378,7 +378,6 @@ SparqlRule<T, TripleCollectionBlankNodeProperties> {
 
         F.printFilter(ast, () => PRINT_WORD(';'));
       }
-
       F.printFilter(ast, () => PRINT(']'));
     },
   };

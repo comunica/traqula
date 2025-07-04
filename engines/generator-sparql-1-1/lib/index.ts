@@ -1,5 +1,5 @@
 import { GeneratorBuilder } from '@traqula/core';
-import { gram } from '@traqula/rules-sparql-1-1';
+import { gram, TraqulaFactory } from '@traqula/rules-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 
 const sparql11GeneratorBuilder = GeneratorBuilder.createBuilder(<const> [
@@ -55,7 +55,6 @@ const sparql11GeneratorBuilder = GeneratorBuilder.createBuilder(<const> [
   .addMany(
     gram.solutionModifier,
     gram.groupClause,
-    gram.groupCondition,
     gram.havingClause,
     gram.orderClause,
     gram.limitOffsetClauses,
@@ -63,12 +62,13 @@ const sparql11GeneratorBuilder = GeneratorBuilder.createBuilder(<const> [
   .addMany(
     gram.triplesBlock,
     gram.collectionPath,
-    gram.propertyListPath,
+    gram.blankNodePropertyListPath,
     gram.triplesNodePath,
     gram.graphNodePath,
   )
   .addMany(
     gram.whereClause,
+    gram.generatePattern,
     gram.groupGraphPattern,
     gram.graphPatternNotTriples,
     gram.optionalGraphPattern,
@@ -83,8 +83,9 @@ const sparql11GeneratorBuilder = GeneratorBuilder.createBuilder(<const> [
 
 export class Generator {
   private readonly generator = sparql11GeneratorBuilder.build();
+  private readonly factory = new TraqulaFactory();
 
-  public generate(ast: T11.Query): string {
-    return this.generator.query(ast, undefined, undefined);
+  public generate(ast: T11.Query, origSource?: string): string {
+    return this.generator.query(ast, { factory: this.factory, offset: 0, origSource: origSource ?? '' }, undefined);
   }
 }

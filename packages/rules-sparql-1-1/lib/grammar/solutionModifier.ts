@@ -89,7 +89,7 @@ export const groupClause: SparqlRule<'groupClause', SolutionModifierGroup> = <co
 /**
  * [[20]](https://www.w3.org/TR/sparql11-query/#rGroupCondition)
  */
-export const groupCondition: SparqlRule<'groupCondition', Expression | SolutionModifierGroupBind> = <const>{
+export const groupCondition: SparqlGrammarRule<'groupCondition', Expression | SolutionModifierGroupBind> = <const>{
   name: 'groupCondition',
   impl: ({ ACTION, SUBRULE, CONSUME, SUBRULE1, SUBRULE2, OPTION, OR }) => C =>
     OR<Expression | SolutionModifierGroupBind>([
@@ -119,7 +119,6 @@ export const groupCondition: SparqlRule<'groupCondition', Expression | SolutionM
         },
       },
     ]),
-  gImpl: () => () => {},
 };
 
 /**

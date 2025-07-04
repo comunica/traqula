@@ -153,7 +153,7 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
       if (ast.expressionType === 'patternOperation') {
         const patterns = ast.args;
         F.printFilter(ast, () => PRINT_WORD(ast.operator === 'exists' ? 'EXISTS' : 'NOT EXISTS'));
-        SUBRULE(groupGraphPattern, F.patternGroup(patterns, ast.loc), undefined);
+        SUBRULE(groupGraphPattern, patterns, undefined);
       }
       if (ast.expressionType === 'functionCall') {
         return SUBRULE(iriOrFunction, ast, undefined);

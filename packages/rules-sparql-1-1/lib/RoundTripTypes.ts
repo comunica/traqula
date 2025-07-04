@@ -231,7 +231,7 @@ export type PatternValues = PatternBase & {
   patternType: 'values';
   values: ValuePatternRow[];
 };
-export type SubSelect = Omit<QuerySelect, 'context' | 'datasets'>;
+export type SubSelect = QuerySelect;
 
 export type Pattern =
   | PatternBgp
@@ -314,7 +314,7 @@ export type ExpressionPatternOperation = ExpressionBase & {
   expressionType: 'patternOperation';
   operator: string;
   // Can be a pattern in case of exists and not exists
-  args: Pattern[];
+  args: PatternGroup;
 };
 
 export type ExpressionFunctionCall = ExpressionBase & {

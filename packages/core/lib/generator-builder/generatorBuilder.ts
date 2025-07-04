@@ -216,18 +216,25 @@ export class Generator<Context, Names extends string, RuleDefs extends GenRuleMa
     if (!def) {
       throw new Error(`Rule ${cstDef.name} not found`);
     }
-    if (this.factory.isSourceLocationNoMaterialize(ast.loc)) {
-      return;
+    if (this.factory.isLocalized(ast)) {
+      if (this.factory.isSourceLocationNoMaterialize(ast.loc)) {
+        return;
+      }
+      if (this.factory.isSourceLocationStringReplace(ast.loc)) {
+        this.catchup(ast.loc.start);
+        this.print(ast.loc.newSource);
+        this.generatedUntil = ast.loc.end;
+        return;
+      }
+      if (this.factory.isSourceLocationNodeReplace(ast.loc)) {
+        this.catchup(ast.loc.start);
+        this.generatedUntil = ast.loc.end;
+      }
+      if (this.factory.isSourceLocationSource(ast.loc)) {
+        this.catchup(ast.loc.start);
+      }
     }
-    if (this.factory.isSourceLocationStringReplace(ast.loc)) {
-      this.catchup(ast.loc.start);
-      this.print(ast.loc.newSource);
-      this.generatedUntil = ast.loc.end;
-      return;
-    }
-    if (this.factory.isSourceLocationNodeReplace(ast.loc) || this.factory.isSourceLocationSource(ast.loc)) {
-      this.catchup(ast.loc.start);
-    }
+
     // If autoGenerate - do nothing
 
     // Do call generation
@@ -238,9 +245,7 @@ export class Generator<Context, Names extends string, RuleDefs extends GenRuleMa
       CATCHUP: this.catchup,
     })(ast, this.getSafeContext(), arg);
 
-    if (this.factory.isSourceLocationNodeReplace(ast.loc)) {
-      this.generatedUntil = ast.loc.end;
-    } else if (this.factory.isSourceLocationSource(ast.loc)) {
+    if (this.factory.isLocalized(ast) && this.factory.isSourceLocationSource(ast.loc)) {
       this.catchup(ast.loc.end);
     }
   };

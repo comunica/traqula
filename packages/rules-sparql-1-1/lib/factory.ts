@@ -222,11 +222,11 @@ export class TraqulaFactory extends CoreFactory {
     };
   }
 
-  public expressionPatternOperation<Args extends Pattern[]>(
+  public expressionPatternOperation(
     operator: string,
-    args: Args,
+    args: PatternGroup,
     loc: SourceLocation,
-  ): ExpressionPatternOperation & { args: Args } {
+  ): ExpressionPatternOperation {
     return {
       type: 'expression',
       expressionType: 'patternOperation',
@@ -281,6 +281,23 @@ export class TraqulaFactory extends CoreFactory {
 
   public isQueryAsk(query: Query): query is QueryAsk {
     return query.queryType === 'ask';
+  }
+
+  public querySelect(arg: Omit<QuerySelect, 'type' | 'queryType' | 'loc'>, loc: SourceLocation): QuerySelect {
+    return {
+      type: 'query',
+      queryType: 'select',
+      ...arg,
+      loc,
+    };
+  }
+
+  public datasetClauses(clauses: DatasetClauses['clauses'], loc: SourceLocation): DatasetClauses {
+    return {
+      type: 'datasetClauses',
+      clauses,
+      loc,
+    };
   }
 
   public patternBgp(triples: BasicGraphPattern, loc: SourceLocation): PatternBgp {

@@ -81,6 +81,13 @@ export class CoreFactory {
     return this.isSourceLocation(loc) && loc.sourceLocationType === 'stringReplace';
   }
 
+  public sourceLocationNodeReplaceUnsafe(loc: SourceLocation): SourceLocationNodeReplace {
+    if (this.isSourceLocationSource(loc)) {
+      return this.sourceLocationNodeReplace(loc);
+    }
+    throw new Error('not possible');
+  }
+
   public sourceLocationNodeReplace(location: SourceLocationSource): SourceLocationNodeReplace;
   public sourceLocationNodeReplace(start: number, end: number): SourceLocationNodeReplace;
   public sourceLocationNodeReplace(startOrLoc: number | SourceLocationSource, end?: number): SourceLocationNodeReplace {

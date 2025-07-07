@@ -1,5 +1,21 @@
 import type { Localized, Node } from '@traqula/core';
 
+export type Sparql11Nodes =
+  | GraphRef
+  | UpdateOperation
+  | Update
+  | Query
+  | DatasetClauses
+  | TripleCollection
+  | TripleNesting
+  | Pattern
+  | SolutionModifier
+  | Expression
+  | Path
+  | ContextDefinition
+  | Wildcard
+  | Term;
+
 export type GraphRefBase = Node & {
   type: 'graphRef';
   graphRefType: string;
@@ -274,6 +290,12 @@ export type SolutionModifierOrder = SolutionModifierBase & {
 };
 export type SolutionModifierLimitOffset = SolutionModifierBase
   & { modifierType: 'limitOffset'; limit: number | undefined; offset: number | undefined };
+
+export type SolutionModifier =
+  | SolutionModifierGroup
+  | SolutionModifierHaving
+  | SolutionModifierOrder
+  | SolutionModifierLimitOffset;
 
 export type ExpressionBase = Node & { type: 'expression' };
 

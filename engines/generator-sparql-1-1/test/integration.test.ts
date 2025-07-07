@@ -1,7 +1,7 @@
 import { Parser } from '@traqula/parser-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
-import type { Query } from '@traqula/rules-sparql-1-1';
-import { TraqulaFactory } from '@traqula/rules-sparql-1-1';
+import type { Query, Sparql11Nodes } from '@traqula/rules-sparql-1-1';
+import { Transformer, TraqulaFactory } from '@traqula/rules-sparql-1-1';
 import { describe, it } from 'vitest';
 import { Generator } from '../lib';
 
@@ -19,30 +19,17 @@ describe('a SPARQL 1.1 generator', () => {
   });
 
   it ('should generate a simple query 5', ({ expect }) => {
-    /* eslint-disable ts/ban-ts-comment */
-    function alterType(curObject: object, searchType: string, patch: (current: object) => object): object {
-      for (const [ key, value ] of Object.entries(curObject)) {
-        if (value && typeof value === 'object') {
-          (<Record<string, unknown>> curObject)[key] = alterType(value, searchType, patch);
-        }
-      }
-      if ((<{ type?: unknown }> curObject).type === searchType) {
-        return patch(curObject);
-      }
-      return curObject;
-    }
+    const tester = new Transformer<Sparql11Nodes>();
+
     const query = 'SELECT * WHERE { ?s ?p ?o }';
     const ast = <T11.Query> parser.parse(query);
 
-    const altered = alterType(ast, 'term', (current) => {
-      // @ts-expect-error
-      if (current.termType === 'Variable' && current.value === 's') {
-        // @ts-expect-error
-        return F.variable('subject', F.sourceLocationNodeReplace(current.loc));
+    const altered = tester.alterNode(ast, 'term', (current) => {
+      if (F.isTermVariable(current) && current.value === 's') {
+        return F.variable('subject', F.sourceLocationNodeReplaceUnsafe(current.loc));
       }
       return current;
     });
-    /* eslint-enable ts/ban-ts-comment */
 
     console.error(JSON.stringify(altered, null, 2));
     const result = generator.generate(<Query>altered, query);

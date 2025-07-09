@@ -2,11 +2,11 @@
   "context": [
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://example/",
         "loc": {
           "sourceLocationType": "source",
@@ -22,11 +22,11 @@
     },
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "rdfs",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://www.w3.org/2000/01/rdf-schema#",
         "loc": {
           "sourceLocationType": "source",
@@ -41,114 +41,122 @@
       }
     }
   ],
-  "queryType": "select",
-  "where": [
-    {
-      "type": "pattern",
-      "patternType": "bgp",
-      "triples": [
-        {
-          "type": "triple",
-          "subject": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "x",
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "x",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 99,
+                "end": 101
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "variable",
+              "value": "p",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 102,
+                "end": 104
+              }
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "v",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 105,
+                "end": 107
+              }
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 99,
-              "end": 101
-            }
-          },
-          "predicate": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "p",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 102,
-              "end": 104
-            }
-          },
-          "object": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "v",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 105,
               "end": 107
             }
           },
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 102,
-            "end": 107
-          }
-        },
-        {
-          "type": "triple",
-          "subject": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "p",
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "p",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 110,
+                "end": 112
+              }
+            },
+            "predicate": {
+              "type": "path",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 113,
+                "end": 132
+              },
+              "items": [
+                {
+                  "type": "term",
+                  "subType": "namedNode",
+                  "value": "subPropertyOf",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 113,
+                    "end": 131
+                  },
+                  "prefix": "rdfs"
+                }
+              ],
+              "subType": "*"
+            },
+            "object": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "property",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 133,
+                "end": 142
+              },
+              "prefix": ""
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 110,
-              "end": 112
-            }
-          },
-          "predicate": {
-            "type": "path",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 113,
-              "end": 132
-            },
-            "items": [
-              {
-                "type": "term",
-                "termType": "NamedNode",
-                "value": "subPropertyOf",
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 113,
-                  "end": 131
-                },
-                "prefix": "rdfs"
-              }
-            ],
-            "pathType": "*"
-          },
-          "object": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "property",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 133,
               "end": 142
-            },
-            "prefix": ""
-          },
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 113,
-            "end": 142
+            }
           }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 99,
+          "end": 109
         }
-      ],
-      "loc": {
-        "sourceLocationType": "source",
-        "start": 102,
-        "end": 109
       }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 97,
+      "end": 144
     }
-  ],
+  },
   "solutionModifiers": {},
   "datasets": {
     "type": "datasetClauses",
-    "default": [],
-    "named": [],
+    "clauses": [],
     "loc": {
       "sourceLocationType": "noMaterialize"
     }

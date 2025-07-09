@@ -2,11 +2,11 @@
   "context": [
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "foaf",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://xmlns.com/foaf/0.1/",
         "loc": {
           "sourceLocationType": "source",
@@ -21,125 +21,133 @@
       }
     }
   ],
-  "queryType": "select",
-  "where": [
-    {
-      "type": "pattern",
-      "patternType": "bgp",
-      "triples": [
-        {
-          "type": "triple",
-          "subject": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "x",
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "x",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 59,
+                "end": 61
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "mbox",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 62,
+                "end": 71
+              },
+              "prefix": "foaf"
+            },
+            "object": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "mailto:alice@example",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 72,
+                "end": 94
+              }
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 59,
-              "end": 61
-            }
-          },
-          "predicate": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "mbox",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 62,
-              "end": 71
-            },
-            "prefix": "foaf"
-          },
-          "object": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "mailto:alice@example",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 72,
               "end": 94
             }
           },
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 62,
-            "end": 94
-          }
-        },
-        {
-          "type": "triple",
-          "subject": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "x",
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "x",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 101,
+                "end": 103
+              }
+            },
+            "predicate": {
+              "type": "path",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 104,
+                "end": 124
+              },
+              "items": [
+                {
+                  "type": "term",
+                  "subType": "namedNode",
+                  "value": "knows",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 104,
+                    "end": 114
+                  },
+                  "prefix": "foaf"
+                },
+                {
+                  "type": "term",
+                  "subType": "namedNode",
+                  "value": "name",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 115,
+                    "end": 124
+                  },
+                  "prefix": "foaf"
+                }
+              ],
+              "subType": "/"
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "name",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 125,
+                "end": 130
+              }
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 101,
-              "end": 103
-            }
-          },
-          "predicate": {
-            "type": "path",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 104,
-              "end": 124
-            },
-            "items": [
-              {
-                "type": "term",
-                "termType": "NamedNode",
-                "value": "knows",
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 104,
-                  "end": 114
-                },
-                "prefix": "foaf"
-              },
-              {
-                "type": "term",
-                "termType": "NamedNode",
-                "value": "name",
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 115,
-                  "end": 124
-                },
-                "prefix": "foaf"
-              }
-            ],
-            "pathType": "/"
-          },
-          "object": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "name",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 125,
               "end": 130
             }
-          },
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 104,
-            "end": 130
           }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 59,
+          "end": 132
         }
-      ],
-      "loc": {
-        "sourceLocationType": "source",
-        "start": 62,
-        "end": 132
       }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 53,
+      "end": 136
     }
-  ],
+  },
   "solutionModifiers": {},
   "datasets": {
     "type": "datasetClauses",
-    "default": [],
-    "named": [],
+    "clauses": [],
     "loc": {
       "sourceLocationType": "noMaterialize"
     }

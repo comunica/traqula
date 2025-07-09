@@ -5,18 +5,18 @@
       "context": [],
       "operation": {
         "type": "updateOperation",
-        "operationType": "modify",
+        "subType": "modify",
         "insert": [],
         "delete": [
           {
             "type": "pattern",
-            "patternType": "bgp",
+            "subType": "bgp",
             "triples": [
               {
                 "type": "triple",
                 "subject": {
                   "type": "term",
-                  "termType": "Variable",
+                  "subType": "variable",
                   "value": "S",
                   "loc": {
                     "sourceLocationType": "source",
@@ -26,7 +26,7 @@
                 },
                 "predicate": {
                   "type": "term",
-                  "termType": "Variable",
+                  "subType": "variable",
                   "value": "P",
                   "loc": {
                     "sourceLocationType": "source",
@@ -36,7 +36,7 @@
                 },
                 "object": {
                   "type": "term",
-                  "termType": "Variable",
+                  "subType": "variable",
                   "value": "O",
                   "loc": {
                     "sourceLocationType": "source",
@@ -46,14 +46,14 @@
                 },
                 "loc": {
                   "sourceLocationType": "source",
-                  "start": 12,
+                  "start": 9,
                   "end": 17
                 }
               }
             ],
             "loc": {
               "sourceLocationType": "source",
-              "start": 12,
+              "start": 9,
               "end": 19
             }
           }
@@ -61,13 +61,13 @@
         "where": [
           {
             "type": "pattern",
-            "patternType": "bgp",
+            "subType": "bgp",
             "triples": [
               {
                 "type": "triple",
                 "subject": {
                   "type": "term",
-                  "termType": "Variable",
+                  "subType": "variable",
                   "value": "S",
                   "loc": {
                     "sourceLocationType": "source",
@@ -77,7 +77,7 @@
                 },
                 "predicate": {
                   "type": "term",
-                  "termType": "Variable",
+                  "subType": "variable",
                   "value": "P",
                   "loc": {
                     "sourceLocationType": "source",
@@ -87,7 +87,7 @@
                 },
                 "object": {
                   "type": "term",
-                  "termType": "Variable",
+                  "subType": "variable",
                   "value": "O",
                   "loc": {
                     "sourceLocationType": "source",
@@ -97,31 +97,31 @@
                 },
                 "loc": {
                   "sourceLocationType": "source",
-                  "start": 33,
+                  "start": 30,
                   "end": 38
                 }
               }
             ],
             "loc": {
               "sourceLocationType": "source",
-              "start": 33,
+              "start": 30,
               "end": 40
             }
           },
           {
             "type": "pattern",
-            "patternType": "filter",
+            "subType": "filter",
             "expression": {
               "type": "expression",
-              "expressionType": "bracketted",
+              "subType": "bracketted",
               "expression": {
                 "type": "expression",
-                "expressionType": "operation",
+                "subType": "operation",
                 "operator": "isblank",
                 "args": [
                   {
                     "type": "term",
-                    "termType": "Variable",
+                    "subType": "variable",
                     "value": "S",
                     "loc": {
                       "sourceLocationType": "source",
@@ -151,8 +151,7 @@
         ],
         "from": {
           "type": "datasetClauses",
-          "default": [],
-          "named": [],
+          "clauses": [],
           "loc": {
             "sourceLocationType": "noMaterialize"
           }

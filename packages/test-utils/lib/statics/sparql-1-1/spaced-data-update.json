@@ -5,17 +5,17 @@
       "context": [],
       "operation": {
         "type": "updateOperation",
-        "operationType": "insertdata",
+        "subType": "insertdata",
         "data": [
           {
             "type": "pattern",
-            "patternType": "bgp",
+            "subType": "bgp",
             "triples": [
               {
                 "type": "triple",
                 "subject": {
                   "type": "term",
-                  "termType": "NamedNode",
+                  "subType": "namedNode",
                   "value": "http://example.org/subject",
                   "loc": {
                     "sourceLocationType": "source",
@@ -25,7 +25,7 @@
                 },
                 "predicate": {
                   "type": "term",
-                  "termType": "NamedNode",
+                  "subType": "namedNode",
                   "value": "http://example.org/predicate",
                   "loc": {
                     "sourceLocationType": "source",
@@ -35,7 +35,7 @@
                 },
                 "object": {
                   "type": "term",
-                  "termType": "Literal",
+                  "subType": "literal",
                   "value": "object",
                   "loc": {
                     "sourceLocationType": "source",
@@ -45,14 +45,14 @@
                 },
                 "loc": {
                   "sourceLocationType": "source",
-                  "start": 97,
+                  "start": 68,
                   "end": 136
                 }
               }
             ],
             "loc": {
               "sourceLocationType": "source",
-              "start": 97,
+              "start": 68,
               "end": 138
             }
           }
@@ -68,17 +68,17 @@
       "context": [],
       "operation": {
         "type": "updateOperation",
-        "operationType": "deletedata",
+        "subType": "deletedata",
         "data": [
           {
             "type": "pattern",
-            "patternType": "bgp",
+            "subType": "bgp",
             "triples": [
               {
                 "type": "triple",
                 "subject": {
                   "type": "term",
-                  "termType": "NamedNode",
+                  "subType": "namedNode",
                   "value": "http://example.org/subject",
                   "loc": {
                     "sourceLocationType": "source",
@@ -88,7 +88,7 @@
                 },
                 "predicate": {
                   "type": "term",
-                  "termType": "NamedNode",
+                  "subType": "namedNode",
                   "value": "http://example.org/predicate",
                   "loc": {
                     "sourceLocationType": "source",
@@ -98,7 +98,7 @@
                 },
                 "object": {
                   "type": "term",
-                  "termType": "Literal",
+                  "subType": "literal",
                   "value": "object",
                   "loc": {
                     "sourceLocationType": "source",
@@ -108,14 +108,14 @@
                 },
                 "loc": {
                   "sourceLocationType": "source",
-                  "start": 187,
+                  "start": 158,
                   "end": 226
                 }
               }
             ],
             "loc": {
               "sourceLocationType": "source",
-              "start": 187,
+              "start": 158,
               "end": 228
             }
           }
@@ -131,17 +131,17 @@
       "context": [],
       "operation": {
         "type": "updateOperation",
-        "operationType": "deletewhere",
+        "subType": "deletewhere",
         "data": [
           {
             "type": "pattern",
-            "patternType": "bgp",
+            "subType": "bgp",
             "triples": [
               {
                 "type": "triple",
                 "subject": {
                   "type": "term",
-                  "termType": "NamedNode",
+                  "subType": "namedNode",
                   "value": "http://example.org/subject",
                   "loc": {
                     "sourceLocationType": "source",
@@ -151,7 +151,7 @@
                 },
                 "predicate": {
                   "type": "term",
-                  "termType": "NamedNode",
+                  "subType": "namedNode",
                   "value": "http://example.org/predicate",
                   "loc": {
                     "sourceLocationType": "source",
@@ -161,7 +161,7 @@
                 },
                 "object": {
                   "type": "term",
-                  "termType": "Variable",
+                  "subType": "variable",
                   "value": "o",
                   "loc": {
                     "sourceLocationType": "source",
@@ -171,14 +171,14 @@
                 },
                 "loc": {
                   "sourceLocationType": "source",
-                  "start": 278,
+                  "start": 249,
                   "end": 311
                 }
               }
             ],
             "loc": {
               "sourceLocationType": "source",
-              "start": 278,
+              "start": 249,
               "end": 313
             }
           }

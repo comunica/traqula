@@ -5,11 +5,11 @@
       "context": [],
       "operation": {
         "type": "updateOperation",
-        "operationType": "move",
+        "subType": "move",
         "silent": false,
         "source": {
           "type": "graphRef",
-          "graphRefType": "default",
+          "subType": "default",
           "loc": {
             "sourceLocationType": "source",
             "start": 5,
@@ -18,10 +18,10 @@
         },
         "destination": {
           "type": "graphRef",
-          "graphRefType": "specific",
+          "subType": "specific",
           "graph": {
             "type": "term",
-            "termType": "NamedNode",
+            "subType": "namedNode",
             "value": "http://example.org/named",
             "loc": {
               "sourceLocationType": "source",

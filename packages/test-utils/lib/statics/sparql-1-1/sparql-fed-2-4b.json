@@ -2,11 +2,11 @@
   "context": [
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://example.org/",
         "loc": {
           "sourceLocationType": "source",
@@ -22,11 +22,11 @@
     },
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "foaf",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://xmlns.com/foaf/0.1/",
         "loc": {
           "sourceLocationType": "source",
@@ -41,64 +41,72 @@
       }
     }
   ],
-  "queryType": "select",
-  "where": [
-    {
-      "type": "pattern",
-      "patternType": "bgp",
-      "triples": [
-        {
-          "type": "triple",
-          "subject": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "s",
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "s",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 89,
+                "end": 91
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 92,
+                "end": 93
+              }
+            },
+            "object": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "Person",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 94,
+                "end": 105
+              },
+              "prefix": "foaf"
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 89,
-              "end": 91
-            }
-          },
-          "predicate": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 92,
-              "end": 93
-            }
-          },
-          "object": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "Person",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 94,
               "end": 105
-            },
-            "prefix": "foaf"
-          },
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 92,
-            "end": 105
+            }
           }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 89,
+          "end": 105
         }
-      ],
-      "loc": {
-        "sourceLocationType": "source",
-        "start": 92,
-        "end": 105
       }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 85,
+      "end": 107
     }
-  ],
+  },
   "solutionModifiers": {},
   "datasets": {
     "type": "datasetClauses",
-    "default": [],
-    "named": [],
+    "clauses": [],
     "loc": {
       "sourceLocationType": "noMaterialize"
     }
@@ -106,7 +114,7 @@
   "variables": [
     {
       "type": "term",
-      "termType": "Variable",
+      "subType": "variable",
       "value": "s",
       "loc": {
         "sourceLocationType": "source",

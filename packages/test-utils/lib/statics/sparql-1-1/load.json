@@ -5,11 +5,11 @@
       "context": [],
       "operation": {
         "type": "updateOperation",
-        "operationType": "load",
+        "subType": "load",
         "silent": false,
         "source": {
           "type": "term",
-          "termType": "NamedNode",
+          "subType": "namedNode",
           "value": "http://www.w3.org/TR/skos-reference/skos.rdf",
           "loc": {
             "sourceLocationType": "source",

@@ -2,11 +2,11 @@
   "context": [
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "aGeo",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://example.org/geo#",
         "loc": {
           "sourceLocationType": "source",
@@ -21,370 +21,378 @@
       }
     }
   ],
-  "queryType": "select",
-  "where": [
-    {
-      "type": "pattern",
-      "patternType": "bgp",
-      "triples": [
-        {
-          "type": "triple",
-          "subject": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "a",
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "a",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 65,
+                "end": 67
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "placeName",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 68,
+                "end": 82
+              },
+              "prefix": "aGeo"
+            },
+            "object": {
+              "type": "term",
+              "subType": "literal",
+              "value": "Grenoble",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 83,
+                "end": 93
+              }
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 65,
-              "end": 67
-            }
-          },
-          "predicate": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "placeName",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 68,
-              "end": 82
-            },
-            "prefix": "aGeo"
-          },
-          "object": {
-            "type": "term",
-            "termType": "Literal",
-            "value": "Grenoble",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 83,
               "end": 93
             }
           },
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 68,
-            "end": 93
-          }
-        },
-        {
-          "type": "triple",
-          "subject": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "a",
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "a",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 104,
+                "end": 106
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "locationX",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 107,
+                "end": 121
+              },
+              "prefix": "aGeo"
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "axLoc",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 122,
+                "end": 128
+              }
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 104,
-              "end": 106
-            }
-          },
-          "predicate": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "locationX",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 107,
-              "end": 121
-            },
-            "prefix": "aGeo"
-          },
-          "object": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "axLoc",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 122,
               "end": 128
             }
           },
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 107,
-            "end": 128
-          }
-        },
-        {
-          "type": "triple",
-          "subject": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "a",
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "a",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 139,
+                "end": 141
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "locationY",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 142,
+                "end": 156
+              },
+              "prefix": "aGeo"
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "ayLoc",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 157,
+                "end": 163
+              }
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 139,
-              "end": 141
-            }
-          },
-          "predicate": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "locationY",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 142,
-              "end": 156
-            },
-            "prefix": "aGeo"
-          },
-          "object": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "ayLoc",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 157,
               "end": 163
             }
           },
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 142,
-            "end": 163
-          }
-        },
-        {
-          "type": "triple",
-          "subject": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "b",
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "b",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 175,
+                "end": 177
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "placeName",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 178,
+                "end": 192
+              },
+              "prefix": "aGeo"
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "neighbor",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 193,
+                "end": 202
+              }
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 175,
-              "end": 177
-            }
-          },
-          "predicate": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "placeName",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 178,
-              "end": 192
-            },
-            "prefix": "aGeo"
-          },
-          "object": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "neighbor",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 193,
               "end": 202
             }
           },
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 178,
-            "end": 202
-          }
-        },
-        {
-          "type": "triple",
-          "subject": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "b",
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "b",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 213,
+                "end": 215
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "locationX",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 216,
+                "end": 230
+              },
+              "prefix": "aGeo"
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "bxLoc",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 231,
+                "end": 237
+              }
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 213,
-              "end": 215
-            }
-          },
-          "predicate": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "locationX",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 216,
-              "end": 230
-            },
-            "prefix": "aGeo"
-          },
-          "object": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "bxLoc",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 231,
               "end": 237
             }
           },
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 216,
-            "end": 237
-          }
-        },
-        {
-          "type": "triple",
-          "subject": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "b",
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "b",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 248,
+                "end": 250
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "locationY",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 251,
+                "end": 265
+              },
+              "prefix": "aGeo"
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "byLoc",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 266,
+                "end": 272
+              }
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 248,
-              "end": 250
-            }
-          },
-          "predicate": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "locationY",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 251,
-              "end": 265
-            },
-            "prefix": "aGeo"
-          },
-          "object": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "byLoc",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 266,
               "end": 272
             }
-          },
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 251,
-            "end": 272
           }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 65,
+          "end": 274
         }
-      ],
-      "loc": {
-        "sourceLocationType": "source",
-        "start": 68,
-        "end": 274
-      }
-    },
-    {
-      "type": "pattern",
-      "patternType": "filter",
-      "expression": {
-        "type": "expression",
-        "expressionType": "bracketted",
+      },
+      {
+        "type": "pattern",
+        "subType": "filter",
         "expression": {
           "type": "expression",
-          "expressionType": "operation",
-          "operator": "<",
-          "args": [
-            {
-              "type": "expression",
-              "expressionType": "functionCall",
-              "function": {
-                "type": "term",
-                "termType": "NamedNode",
-                "value": "distance",
+          "subType": "bracketted",
+          "expression": {
+            "type": "expression",
+            "subType": "operation",
+            "operator": "<",
+            "args": [
+              {
+                "type": "expression",
+                "subType": "functionCall",
+                "function": {
+                  "type": "term",
+                  "subType": "namedNode",
+                  "value": "distance",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 293,
+                    "end": 306
+                  },
+                  "prefix": "aGeo"
+                },
+                "args": [
+                  {
+                    "type": "term",
+                    "subType": "variable",
+                    "value": "axLoc",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 307,
+                      "end": 313
+                    }
+                  },
+                  {
+                    "type": "term",
+                    "subType": "variable",
+                    "value": "ayLoc",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 315,
+                      "end": 321
+                    }
+                  },
+                  {
+                    "type": "term",
+                    "subType": "variable",
+                    "value": "bxLoc",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 323,
+                      "end": 329
+                    }
+                  },
+                  {
+                    "type": "term",
+                    "subType": "variable",
+                    "value": "byLoc",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 331,
+                      "end": 337
+                    }
+                  }
+                ],
+                "distinct": false,
                 "loc": {
                   "sourceLocationType": "source",
                   "start": 293,
-                  "end": 306
-                },
-                "prefix": "aGeo"
-              },
-              "args": [
-                {
-                  "type": "term",
-                  "termType": "Variable",
-                  "value": "axLoc",
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 307,
-                    "end": 313
-                  }
-                },
-                {
-                  "type": "term",
-                  "termType": "Variable",
-                  "value": "ayLoc",
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 315,
-                    "end": 321
-                  }
-                },
-                {
-                  "type": "term",
-                  "termType": "Variable",
-                  "value": "bxLoc",
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 323,
-                    "end": 329
-                  }
-                },
-                {
-                  "type": "term",
-                  "termType": "Variable",
-                  "value": "byLoc",
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 331,
-                    "end": 337
-                  }
+                  "end": 338
                 }
-              ],
-              "distinct": false,
-              "loc": {
-                "sourceLocationType": "source",
-                "start": 293,
-                "end": 338
-              }
-            },
-            {
-              "type": "term",
-              "termType": "Literal",
-              "value": "10",
-              "langOrIri": {
+              },
+              {
                 "type": "term",
-                "termType": "NamedNode",
-                "value": "http://www.w3.org/2001/XMLSchema#integer",
+                "subType": "literal",
+                "value": "10",
+                "langOrIri": {
+                  "type": "term",
+                  "subType": "namedNode",
+                  "value": "http://www.w3.org/2001/XMLSchema#integer",
+                  "loc": {
+                    "sourceLocationType": "noMaterialize"
+                  }
+                },
                 "loc": {
-                  "sourceLocationType": "noMaterialize"
+                  "sourceLocationType": "source",
+                  "start": 341,
+                  "end": 343
                 }
-              },
-              "loc": {
-                "sourceLocationType": "source",
-                "start": 341,
-                "end": 343
               }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 293,
+              "end": 343
             }
-          ],
+          },
           "loc": {
             "sourceLocationType": "source",
-            "start": 293,
-            "end": 343
+            "start": 291,
+            "end": 345
           }
         },
         "loc": {
           "sourceLocationType": "source",
-          "start": 291,
+          "start": 284,
           "end": 345
         }
-      },
-      "loc": {
-        "sourceLocationType": "source",
-        "start": 284,
-        "end": 345
       }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 63,
+      "end": 355
     }
-  ],
+  },
   "solutionModifiers": {},
   "datasets": {
     "type": "datasetClauses",
-    "default": [],
-    "named": [],
+    "clauses": [],
     "loc": {
       "sourceLocationType": "noMaterialize"
     }
@@ -392,7 +400,7 @@
   "variables": [
     {
       "type": "term",
-      "termType": "Variable",
+      "subType": "variable",
       "value": "neighbor",
       "loc": {
         "sourceLocationType": "source",

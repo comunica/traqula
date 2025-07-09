@@ -200,6 +200,8 @@ export class Generator<Context, Names extends string, RuleDefs extends GenRuleMa
 
           this.subrule(rule, input, args);
 
+          this.catchup(this.origSource.length);
+
           return this.stringBuilder.join('');
         });
     }
@@ -223,6 +225,7 @@ export class Generator<Context, Names extends string, RuleDefs extends GenRuleMa
       SUBRULE: this.subrule,
       PRINT: this.print,
       PRINT_WORD: this.printWord,
+      PRINT_WORDS: this.printWords,
       CATCHUP: this.catchup,
       HANDLE_LOC: this.handleLoc,
     })(ast, this.getSafeContext(), arg);
@@ -275,7 +278,9 @@ export class Generator<Context, Names extends string, RuleDefs extends GenRuleMa
       const [ head, ...tail ] = pureArgs;
       if (this.expectsSpace) {
         this.expectsSpace = false;
-        if (![ '\n', ' ', '\t' ].includes(head[0])) {
+        const blanks = new Set([ '\n', ' ', '\t' ]);
+        if (this.stringBuilder.length > 0 &&
+          !(blanks.has(head[0]) || blanks.has(this.stringBuilder.at(-1)!.at(-1)!))) {
           this.stringBuilder.push(' ');
         }
       }
@@ -285,11 +290,14 @@ export class Generator<Context, Names extends string, RuleDefs extends GenRuleMa
   };
 
   private readonly printWord: RuleDefArg['PRINT_WORD'] = (...args) => {
-    if (this.stringBuilder.length > 0 &&
-      ![ '\n', ' ', '\t' ].includes(this.stringBuilder.at(-1)!.at(-1) ?? '')) {
-      this.print(' ');
-    }
+    this.expectsSpace = true;
     this.print(...args);
     this.expectsSpace = true;
+  };
+
+  private readonly printWords: RuleDefArg['PRINT_WORD'] = (...args) => {
+    for (const arg of args) {
+      this.printWord(arg);
+    }
   };
 }

@@ -5,11 +5,11 @@
       "context": [
         {
           "type": "contextDef",
-          "contextType": "prefix",
+          "subType": "prefix",
           "key": "foaf",
           "value": {
             "type": "term",
-            "termType": "NamedNode",
+            "subType": "namedNode",
             "value": "http://xmlns.com/foaf/0.1/",
             "loc": {
               "sourceLocationType": "source",
@@ -26,18 +26,18 @@
       ],
       "operation": {
         "type": "updateOperation",
-        "operationType": "modify",
+        "subType": "modify",
         "insert": [],
         "delete": [
           {
             "type": "pattern",
-            "patternType": "bgp",
+            "subType": "bgp",
             "triples": [
               {
                 "type": "triple",
                 "subject": {
                   "type": "term",
-                  "termType": "Variable",
+                  "subType": "variable",
                   "value": "person",
                   "loc": {
                     "sourceLocationType": "source",
@@ -47,7 +47,7 @@
                 },
                 "predicate": {
                   "type": "term",
-                  "termType": "Variable",
+                  "subType": "variable",
                   "value": "property",
                   "loc": {
                     "sourceLocationType": "source",
@@ -57,7 +57,7 @@
                 },
                 "object": {
                   "type": "term",
-                  "termType": "Variable",
+                  "subType": "variable",
                   "value": "value",
                   "loc": {
                     "sourceLocationType": "source",
@@ -67,21 +67,21 @@
                 },
                 "loc": {
                   "sourceLocationType": "source",
-                  "start": 93,
+                  "start": 85,
                   "end": 109
                 }
               }
             ],
             "loc": {
               "sourceLocationType": "source",
-              "start": 93,
+              "start": 85,
               "end": 109
             }
           }
         ],
         "graph": {
           "type": "term",
-          "termType": "NamedNode",
+          "subType": "namedNode",
           "value": "http://example/addresses",
           "loc": {
             "sourceLocationType": "source",
@@ -92,13 +92,13 @@
         "where": [
           {
             "type": "pattern",
-            "patternType": "bgp",
+            "subType": "bgp",
             "triples": [
               {
                 "type": "triple",
                 "subject": {
                   "type": "term",
-                  "termType": "Variable",
+                  "subType": "variable",
                   "value": "person",
                   "loc": {
                     "sourceLocationType": "source",
@@ -108,7 +108,7 @@
                 },
                 "predicate": {
                   "type": "term",
-                  "termType": "Variable",
+                  "subType": "variable",
                   "value": "property",
                   "loc": {
                     "sourceLocationType": "source",
@@ -118,7 +118,7 @@
                 },
                 "object": {
                   "type": "term",
-                  "termType": "Variable",
+                  "subType": "variable",
                   "value": "value",
                   "loc": {
                     "sourceLocationType": "source",
@@ -128,7 +128,7 @@
                 },
                 "loc": {
                   "sourceLocationType": "source",
-                  "start": 129,
+                  "start": 121,
                   "end": 145
                 }
               },
@@ -136,7 +136,7 @@
                 "type": "triple",
                 "subject": {
                   "type": "term",
-                  "termType": "Variable",
+                  "subType": "variable",
                   "value": "person",
                   "loc": {
                     "sourceLocationType": "noMaterialize"
@@ -144,7 +144,7 @@
                 },
                 "predicate": {
                   "type": "term",
-                  "termType": "NamedNode",
+                  "subType": "namedNode",
                   "value": "givenName",
                   "loc": {
                     "sourceLocationType": "source",
@@ -155,7 +155,7 @@
                 },
                 "object": {
                   "type": "term",
-                  "termType": "Literal",
+                  "subType": "literal",
                   "value": "Fred",
                   "loc": {
                     "sourceLocationType": "source",
@@ -172,15 +172,14 @@
             ],
             "loc": {
               "sourceLocationType": "source",
-              "start": 129,
+              "start": 121,
               "end": 169
             }
           }
         ],
         "from": {
           "type": "datasetClauses",
-          "default": [],
-          "named": [],
+          "clauses": [],
           "loc": {
             "sourceLocationType": "noMaterialize"
           }

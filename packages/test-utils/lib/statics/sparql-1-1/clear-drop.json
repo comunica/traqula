@@ -5,14 +5,14 @@
       "context": [],
       "operation": {
         "type": "updateOperation",
-        "operationType": "create",
+        "subType": "create",
         "silent": true,
         "destination": {
           "type": "graphRef",
-          "graphRefType": "specific",
+          "subType": "specific",
           "graph": {
             "type": "term",
-            "termType": "NamedNode",
+            "subType": "namedNode",
             "value": "ex:graph",
             "loc": {
               "sourceLocationType": "source",
@@ -37,14 +37,14 @@
       "context": [],
       "operation": {
         "type": "updateOperation",
-        "operationType": "create",
+        "subType": "create",
         "silent": false,
         "destination": {
           "type": "graphRef",
-          "graphRefType": "specific",
+          "subType": "specific",
           "graph": {
             "type": "term",
-            "termType": "NamedNode",
+            "subType": "namedNode",
             "value": "ex:graph",
             "loc": {
               "sourceLocationType": "source",
@@ -69,14 +69,14 @@
       "context": [],
       "operation": {
         "type": "updateOperation",
-        "operationType": "clear",
+        "subType": "clear",
         "silent": true,
         "destination": {
           "type": "graphRef",
-          "graphRefType": "specific",
+          "subType": "specific",
           "graph": {
             "type": "term",
-            "termType": "NamedNode",
+            "subType": "namedNode",
             "value": "ex:graph",
             "loc": {
               "sourceLocationType": "source",
@@ -101,14 +101,14 @@
       "context": [],
       "operation": {
         "type": "updateOperation",
-        "operationType": "clear",
+        "subType": "clear",
         "silent": false,
         "destination": {
           "type": "graphRef",
-          "graphRefType": "specific",
+          "subType": "specific",
           "graph": {
             "type": "term",
-            "termType": "NamedNode",
+            "subType": "namedNode",
             "value": "ex:graph",
             "loc": {
               "sourceLocationType": "source",
@@ -133,11 +133,11 @@
       "context": [],
       "operation": {
         "type": "updateOperation",
-        "operationType": "clear",
+        "subType": "clear",
         "silent": false,
         "destination": {
           "type": "graphRef",
-          "graphRefType": "default",
+          "subType": "default",
           "loc": {
             "sourceLocationType": "source",
             "start": 118,
@@ -155,11 +155,11 @@
       "context": [],
       "operation": {
         "type": "updateOperation",
-        "operationType": "clear",
+        "subType": "clear",
         "silent": false,
         "destination": {
           "type": "graphRef",
-          "graphRefType": "named",
+          "subType": "named",
           "loc": {
             "sourceLocationType": "source",
             "start": 133,
@@ -177,11 +177,11 @@
       "context": [],
       "operation": {
         "type": "updateOperation",
-        "operationType": "clear",
+        "subType": "clear",
         "silent": false,
         "destination": {
           "type": "graphRef",
-          "graphRefType": "all",
+          "subType": "all",
           "loc": {
             "sourceLocationType": "source",
             "start": 146,
@@ -199,14 +199,14 @@
       "context": [],
       "operation": {
         "type": "updateOperation",
-        "operationType": "drop",
+        "subType": "drop",
         "silent": true,
         "destination": {
           "type": "graphRef",
-          "graphRefType": "specific",
+          "subType": "specific",
           "graph": {
             "type": "term",
-            "termType": "NamedNode",
+            "subType": "namedNode",
             "value": "ex:graph",
             "loc": {
               "sourceLocationType": "source",
@@ -231,14 +231,14 @@
       "context": [],
       "operation": {
         "type": "updateOperation",
-        "operationType": "drop",
+        "subType": "drop",
         "silent": false,
         "destination": {
           "type": "graphRef",
-          "graphRefType": "specific",
+          "subType": "specific",
           "graph": {
             "type": "term",
-            "termType": "NamedNode",
+            "subType": "namedNode",
             "value": "ex:graph",
             "loc": {
               "sourceLocationType": "source",
@@ -263,11 +263,11 @@
       "context": [],
       "operation": {
         "type": "updateOperation",
-        "operationType": "drop",
+        "subType": "drop",
         "silent": false,
         "destination": {
           "type": "graphRef",
-          "graphRefType": "default",
+          "subType": "default",
           "loc": {
             "sourceLocationType": "source",
             "start": 209,
@@ -285,11 +285,11 @@
       "context": [],
       "operation": {
         "type": "updateOperation",
-        "operationType": "drop",
+        "subType": "drop",
         "silent": false,
         "destination": {
           "type": "graphRef",
-          "graphRefType": "named",
+          "subType": "named",
           "loc": {
             "sourceLocationType": "source",
             "start": 223,
@@ -307,11 +307,11 @@
       "context": [],
       "operation": {
         "type": "updateOperation",
-        "operationType": "drop",
+        "subType": "drop",
         "silent": false,
         "destination": {
           "type": "graphRef",
-          "graphRefType": "all",
+          "subType": "all",
           "loc": {
             "sourceLocationType": "source",
             "start": 235,

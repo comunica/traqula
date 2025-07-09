@@ -2,11 +2,11 @@
   "context": [
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "foaf",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://xmlns.com/foaf/0.1/",
         "loc": {
           "sourceLocationType": "source",
@@ -22,11 +22,11 @@
     },
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "dc",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://purl.org/dc/elements/1.1/",
         "loc": {
           "sourceLocationType": "source",
@@ -41,164 +41,180 @@
       }
     }
   ],
-  "queryType": "select",
-  "where": [
-    {
-      "type": "pattern",
-      "patternType": "bgp",
-      "triples": [
-        {
-          "type": "triple",
-          "subject": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "g",
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "g",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 229,
+                "end": 231
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "publisher",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 232,
+                "end": 244
+              },
+              "prefix": "dc"
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "who",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 245,
+                "end": 249
+              }
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 229,
-              "end": 231
-            }
-          },
-          "predicate": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "publisher",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 232,
-              "end": 244
-            },
-            "prefix": "dc"
-          },
-          "object": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "who",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 245,
               "end": 249
             }
-          },
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 232,
-            "end": 249
           }
-        }
-      ],
-      "loc": {
-        "sourceLocationType": "source",
-        "start": 232,
-        "end": 251
-      }
-    },
-    {
-      "type": "pattern",
-      "patternType": "graph",
-      "name": {
-        "type": "term",
-        "termType": "Variable",
-        "value": "g",
+        ],
         "loc": {
           "sourceLocationType": "source",
-          "start": 261,
-          "end": 263
+          "start": 229,
+          "end": 251
         }
       },
-      "patterns": [
-        {
-          "type": "pattern",
-          "patternType": "bgp",
-          "triples": [
-            {
-              "type": "triple",
-              "subject": {
-                "type": "term",
-                "termType": "Variable",
-                "value": "x",
+      {
+        "type": "pattern",
+        "subType": "graph",
+        "name": {
+          "type": "term",
+          "subType": "variable",
+          "value": "g",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 261,
+            "end": 263
+          }
+        },
+        "patterns": [
+          {
+            "type": "pattern",
+            "subType": "bgp",
+            "triples": [
+              {
+                "type": "triple",
+                "subject": {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "x",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 266,
+                    "end": 268
+                  }
+                },
+                "predicate": {
+                  "type": "term",
+                  "subType": "namedNode",
+                  "value": "mbox",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 269,
+                    "end": 278
+                  },
+                  "prefix": "foaf"
+                },
+                "object": {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "mbox",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 279,
+                    "end": 284
+                  }
+                },
                 "loc": {
                   "sourceLocationType": "source",
                   "start": 266,
-                  "end": 268
-                }
-              },
-              "predicate": {
-                "type": "term",
-                "termType": "NamedNode",
-                "value": "mbox",
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 269,
-                  "end": 278
-                },
-                "prefix": "foaf"
-              },
-              "object": {
-                "type": "term",
-                "termType": "Variable",
-                "value": "mbox",
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 279,
                   "end": 284
                 }
-              },
-              "loc": {
-                "sourceLocationType": "source",
-                "start": 269,
-                "end": 284
               }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 266,
+              "end": 284
             }
-          ],
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 269,
-            "end": 284
           }
-        }
-      ],
-      "loc": {
-        "sourceLocationType": "source",
-        "start": 255,
-        "end": 286
-      }
-    }
-  ],
-  "solutionModifiers": {},
-  "datasets": {
-    "type": "datasetClauses",
-    "default": [
-      {
-        "type": "term",
-        "termType": "NamedNode",
-        "value": "http://example.org/dft.ttl",
+        ],
         "loc": {
           "sourceLocationType": "source",
-          "start": 115,
-          "end": 143
+          "start": 255,
+          "end": 286
         }
       }
     ],
-    "named": [
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 224,
+      "end": 288
+    }
+  },
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [
       {
-        "type": "term",
-        "termType": "NamedNode",
-        "value": "http://example.org/alice",
-        "loc": {
-          "sourceLocationType": "source",
-          "start": 155,
-          "end": 181
+        "clauseType": "default",
+        "value": {
+          "type": "term",
+          "subType": "namedNode",
+          "value": "http://example.org/dft.ttl",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 115,
+            "end": 143
+          }
         }
       },
       {
-        "type": "term",
-        "termType": "NamedNode",
-        "value": "http://example.org/bob",
-        "loc": {
-          "sourceLocationType": "source",
-          "start": 193,
-          "end": 217
+        "clauseType": "named",
+        "value": {
+          "type": "term",
+          "subType": "namedNode",
+          "value": "http://example.org/alice",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 155,
+            "end": 181
+          }
+        }
+      },
+      {
+        "clauseType": "named",
+        "value": {
+          "type": "term",
+          "subType": "namedNode",
+          "value": "http://example.org/bob",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 193,
+            "end": 217
+          }
         }
       }
     ],
@@ -211,7 +227,7 @@
   "variables": [
     {
       "type": "term",
-      "termType": "Variable",
+      "subType": "variable",
       "value": "who",
       "loc": {
         "sourceLocationType": "source",
@@ -221,7 +237,7 @@
     },
     {
       "type": "term",
-      "termType": "Variable",
+      "subType": "variable",
       "value": "g",
       "loc": {
         "sourceLocationType": "source",
@@ -231,7 +247,7 @@
     },
     {
       "type": "term",
-      "termType": "Variable",
+      "subType": "variable",
       "value": "mbox",
       "loc": {
         "sourceLocationType": "source",

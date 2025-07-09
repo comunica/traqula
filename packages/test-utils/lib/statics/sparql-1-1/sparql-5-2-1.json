@@ -1,12 +1,20 @@
 {
   "context": [],
-  "queryType": "select",
-  "where": [],
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 16,
+      "end": 18
+    }
+  },
   "solutionModifiers": {},
   "datasets": {
     "type": "datasetClauses",
-    "default": [],
-    "named": [],
+    "clauses": [],
     "loc": {
       "sourceLocationType": "noMaterialize"
     }
@@ -14,7 +22,7 @@
   "variables": [
     {
       "type": "term",
-      "termType": "Variable",
+      "subType": "variable",
       "value": "x",
       "loc": {
         "sourceLocationType": "source",

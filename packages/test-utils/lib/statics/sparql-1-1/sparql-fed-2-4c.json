@@ -2,11 +2,11 @@
   "context": [
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "foaf",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://xmlns.com/foaf/0.1/",
         "loc": {
           "sourceLocationType": "source",
@@ -22,11 +22,11 @@
     },
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://example.org/",
         "loc": {
           "sourceLocationType": "source",
@@ -41,64 +41,72 @@
       }
     }
   ],
-  "queryType": "select",
-  "where": [
-    {
-      "type": "pattern",
-      "patternType": "bgp",
-      "triples": [
-        {
-          "type": "triple",
-          "subject": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "s",
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "s",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 85,
+                "end": 87
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "knows",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 88,
+                "end": 98
+              },
+              "prefix": "foaf"
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "o",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 99,
+                "end": 101
+              }
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 85,
-              "end": 87
-            }
-          },
-          "predicate": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "knows",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 88,
-              "end": 98
-            },
-            "prefix": "foaf"
-          },
-          "object": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "o",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 99,
               "end": 101
             }
-          },
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 88,
-            "end": 101
           }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 85,
+          "end": 101
         }
-      ],
-      "loc": {
-        "sourceLocationType": "source",
-        "start": 88,
-        "end": 101
       }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 84,
+      "end": 103
     }
-  ],
+  },
   "solutionModifiers": {},
   "datasets": {
     "type": "datasetClauses",
-    "default": [],
-    "named": [],
+    "clauses": [],
     "loc": {
       "sourceLocationType": "noMaterialize"
     }
@@ -121,12 +129,12 @@
   "type": "query",
   "values": {
     "type": "pattern",
-    "patternType": "values",
+    "subType": "values",
     "values": [
       {
-        "?s": {
+        "s": {
           "type": "term",
-          "termType": "NamedNode",
+          "subType": "namedNode",
           "value": "a",
           "loc": {
             "sourceLocationType": "source",
@@ -137,9 +145,9 @@
         }
       },
       {
-        "?s": {
+        "s": {
           "type": "term",
-          "termType": "NamedNode",
+          "subType": "namedNode",
           "value": "b",
           "loc": {
             "sourceLocationType": "source",

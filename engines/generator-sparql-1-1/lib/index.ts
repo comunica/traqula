@@ -2,6 +2,17 @@ import { GeneratorBuilder } from '@traqula/core';
 import { gram, TraqulaFactory } from '@traqula/rules-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 
+const queryOrUpdate: T11.SparqlGeneratorRule<'queryOrUpdate', T11.Query | T11.Update> = {
+  name: 'queryOrUpdate',
+  gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
+    if (F.isQuery(ast)) {
+      SUBRULE(gram.query, ast, undefined);
+    } else {
+      SUBRULE(gram.update, ast, undefined);
+    }
+  },
+};
+
 const sparql11GeneratorBuilder = GeneratorBuilder.createBuilder(<const> [
   gram.query,
   gram.selectQuery,
@@ -79,13 +90,18 @@ const sparql11GeneratorBuilder = GeneratorBuilder.createBuilder(<const> [
     gram.minusGraphPattern,
     gram.groupOrUnionGraphPattern,
     gram.filter,
-  );
+  )
+  .addRule(queryOrUpdate);
 
 export class Generator {
   private readonly generator = sparql11GeneratorBuilder.build();
   private readonly factory = new TraqulaFactory();
 
-  public generate(ast: T11.Query, origSource?: string): string {
-    return this.generator.query(ast, { factory: this.factory, offset: 0, origSource: origSource ?? '' }, undefined);
+  public generate(ast: T11.Query | T11.Update, origSource?: string): string {
+    return this.generator.queryOrUpdate(ast, {
+      factory: this.factory,
+      offset: 0,
+      origSource: origSource ?? '',
+    }, undefined);
   }
 }

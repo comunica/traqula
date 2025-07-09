@@ -33,6 +33,7 @@ export interface RuleDefArg {
   SUBRULE: <T, U>(cstDef: GeneratorRule<any, any, T, U>, input: T, arg: U) => void;
   PRINT: (...args: string[]) => void;
   PRINT_WORD: (...args: string[]) => void;
+  PRINT_WORDS: (...args: string[]) => void;
   HANDLE_LOC: <T>(loc: Localized, nodeHandle: () => T) => T | undefined;
   CATCHUP: (until: number) => void;
 }

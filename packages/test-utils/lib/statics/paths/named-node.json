@@ -1,6 +1,6 @@
 {
   "type": "term",
-  "termType": "NamedNode",
+  "subType": "namedNode",
   "value": "http://example.org/a",
   "loc": {
     "sourceLocationType": "source",

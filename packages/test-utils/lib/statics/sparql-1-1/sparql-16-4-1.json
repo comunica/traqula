@@ -1,10 +1,10 @@
 {
   "context": [],
-  "queryType": "describe",
+  "subType": "describe",
   "variables": [
     {
       "type": "term",
-      "termType": "NamedNode",
+      "subType": "namedNode",
       "value": "http://example.org/",
       "loc": {
         "sourceLocationType": "source",
@@ -15,8 +15,7 @@
   ],
   "datasets": {
     "type": "datasetClauses",
-    "default": [],
-    "named": [],
+    "clauses": [],
     "loc": {
       "sourceLocationType": "noMaterialize"
     }

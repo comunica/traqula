@@ -2,11 +2,11 @@
   "context": [
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "foaf",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://xmlns.com/foaf/0.1/",
         "loc": {
           "sourceLocationType": "source",
@@ -21,63 +21,72 @@
       }
     }
   ],
-  "queryType": "select",
-  "where": [
-    {
-      "type": "pattern",
-      "patternType": "bgp",
-      "triples": [
-        {
-          "type": "triple",
-          "subject": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "x",
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "x",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 67,
+                "end": 69
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "name",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 70,
+                "end": 79
+              },
+              "prefix": "foaf"
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "name",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 80,
+                "end": 85
+              }
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 67,
-              "end": 69
-            }
-          },
-          "predicate": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "name",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 70,
-              "end": 79
-            },
-            "prefix": "foaf"
-          },
-          "object": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "name",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 80,
               "end": 85
             }
-          },
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 70,
-            "end": 85
           }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 67,
+          "end": 85
         }
-      ],
-      "loc": {
-        "sourceLocationType": "source",
-        "start": 70,
-        "end": 85
       }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 65,
+      "end": 87
     }
-  ],
+  },
   "solutionModifiers": {
     "limitOffset": {
       "type": "solutionModifier",
-      "modifierType": "limitOffset",
+      "subType": "limitOffset",
       "limit": 20,
       "loc": {
         "sourceLocationType": "source",
@@ -88,8 +97,7 @@
   },
   "datasets": {
     "type": "datasetClauses",
-    "default": [],
-    "named": [],
+    "clauses": [],
     "loc": {
       "sourceLocationType": "noMaterialize"
     }
@@ -97,7 +105,7 @@
   "variables": [
     {
       "type": "term",
-      "termType": "Variable",
+      "subType": "variable",
       "value": "name",
       "loc": {
         "sourceLocationType": "source",

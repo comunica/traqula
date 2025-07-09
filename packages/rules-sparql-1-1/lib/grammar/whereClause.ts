@@ -31,7 +31,7 @@ import { argList, brackettedExpression, expression } from './expression';
 import { var_, varOrIri, varOrTerm } from './general';
 import { booleanLiteral, iri, numericLiteral, rdfLiteral } from './literals';
 import { query, subSelect } from './queryUnit/queryUnit';
-import { graphNode, triplesBlock } from './tripleBlock';
+import { graphNodePath, triplesBlock } from './tripleBlock';
 
 /**
  * [[17]](https://www.w3.org/TR/sparql11-query/#rWhereClause)
@@ -306,7 +306,7 @@ export const inlineData: SparqlRule<'inlineData', PatternValues> = <const> {
         if (mapping[variable] === undefined) {
           F.printFilter(ast, () => PRINT_WORD('UNDEF'));
         } else {
-          SUBRULE(graphNode, mapping[variable], undefined);
+          SUBRULE(graphNodePath, mapping[variable], undefined);
         }
       }
       F.printFilter(ast, () => PRINT_WORD(')'));

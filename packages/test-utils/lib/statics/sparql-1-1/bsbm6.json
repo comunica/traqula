@@ -2,11 +2,11 @@
   "context": [
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "rdfs",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://www.w3.org/2000/01/rdf-schema#",
         "loc": {
           "sourceLocationType": "source",
@@ -22,11 +22,11 @@
     },
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "rdf",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
         "loc": {
           "sourceLocationType": "source",
@@ -42,11 +42,11 @@
     },
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "bsbm",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/",
         "loc": {
           "sourceLocationType": "source",
@@ -61,145 +61,153 @@
       }
     }
   ],
-  "queryType": "select",
-  "where": [
-    {
-      "type": "pattern",
-      "patternType": "bgp",
-      "triples": [
-        {
-          "type": "triple",
-          "subject": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "product",
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "product",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 218,
+                "end": 226
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "label",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 227,
+                "end": 237
+              },
+              "prefix": "rdfs"
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "label",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 238,
+                "end": 244
+              }
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 218,
-              "end": 226
-            }
-          },
-          "predicate": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "label",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 227,
-              "end": 237
-            },
-            "prefix": "rdfs"
-          },
-          "object": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "label",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 238,
               "end": 244
             }
           },
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 227,
-            "end": 244
-          }
-        },
-        {
-          "type": "triple",
-          "subject": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "product",
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "product",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 251,
+                "end": 259
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "type",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 260,
+                "end": 268
+              },
+              "prefix": "rdf"
+            },
+            "object": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "Product",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 269,
+                "end": 281
+              },
+              "prefix": "bsbm"
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 251,
-              "end": 259
-            }
-          },
-          "predicate": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "type",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 260,
-              "end": 268
-            },
-            "prefix": "rdf"
-          },
-          "object": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "Product",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 269,
               "end": 281
-            },
-            "prefix": "bsbm"
-          },
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 260,
-            "end": 281
-          }
-        }
-      ],
-      "loc": {
-        "sourceLocationType": "source",
-        "start": 227,
-        "end": 283
-      }
-    },
-    {
-      "type": "pattern",
-      "patternType": "filter",
-      "expression": {
-        "type": "expression",
-        "expressionType": "operation",
-        "operator": "regex",
-        "args": [
-          {
-            "type": "term",
-            "termType": "Variable",
-            "value": "label",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 298,
-              "end": 304
-            }
-          },
-          {
-            "type": "term",
-            "termType": "Literal",
-            "value": "word",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 306,
-              "end": 312
             }
           }
         ],
         "loc": {
           "sourceLocationType": "source",
-          "start": 292,
-          "end": 313
+          "start": 218,
+          "end": 283
         }
       },
-      "loc": {
-        "sourceLocationType": "source",
-        "start": 285,
-        "end": 313
+      {
+        "type": "pattern",
+        "subType": "filter",
+        "expression": {
+          "type": "expression",
+          "subType": "operation",
+          "operator": "regex",
+          "args": [
+            {
+              "type": "term",
+              "subType": "variable",
+              "value": "label",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 298,
+                "end": 304
+              }
+            },
+            {
+              "type": "term",
+              "subType": "literal",
+              "value": "word",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 306,
+                "end": 312
+              }
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 292,
+            "end": 313
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 285,
+          "end": 313
+        }
       }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 215,
+      "end": 315
     }
-  ],
+  },
   "solutionModifiers": {},
   "datasets": {
     "type": "datasetClauses",
-    "default": [],
-    "named": [],
+    "clauses": [],
     "loc": {
       "sourceLocationType": "noMaterialize"
     }
@@ -207,7 +215,7 @@
   "variables": [
     {
       "type": "term",
-      "termType": "Variable",
+      "subType": "variable",
       "value": "product",
       "loc": {
         "sourceLocationType": "source",
@@ -217,7 +225,7 @@
     },
     {
       "type": "term",
-      "termType": "Variable",
+      "subType": "variable",
       "value": "label",
       "loc": {
         "sourceLocationType": "source",

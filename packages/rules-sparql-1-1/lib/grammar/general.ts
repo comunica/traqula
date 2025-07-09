@@ -49,10 +49,9 @@ export const baseDecl: SparqlRule<'baseDecl', ContextDefinitionBase> = <const> {
     const val = SUBRULE(iriFull, undefined);
     return ACTION(() => C.factory.contextDefinitionBase(C.factory.sourceLocation(base, val), val));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD, PRINT }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
     F.printFilter(ast, () => PRINT_WORD('BASE'));
     SUBRULE(iri, ast.value, undefined);
-    F.printFilter(ast, () => PRINT('\n'));
   },
 };
 
@@ -69,12 +68,11 @@ export const prefixDecl: SparqlRule<'prefixDecl', ContextDefinitionPrefix> = <co
 
     return ACTION(() => C.factory.contextDefinitionPrefix(C.factory.sourceLocation(prefix, value), name, value));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD, PRINT }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORDS }) => (ast, { factory: F }) => {
     F.printFilter(ast, () => {
-      PRINT_WORD('PREFIX', `${ast.key}:`);
+      PRINT_WORDS('PREFIX', `${ast.key}:`);
     });
     SUBRULE(iri, ast.value, undefined);
-    F.printFilter(ast, () => PRINT('\n'));
   },
 };
 

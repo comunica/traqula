@@ -2,11 +2,11 @@
   "context": [
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "rdf",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
         "loc": {
           "sourceLocationType": "source",
@@ -21,67 +21,76 @@
       }
     }
   ],
-  "queryType": "select",
-  "where": [
-    {
-      "type": "pattern",
-      "patternType": "bgp",
-      "triples": [
-        {
-          "type": "triple",
-          "subject": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "a",
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "a",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 141,
+                "end": 143
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "value",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 144,
+                "end": 153
+              },
+              "prefix": "rdf"
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "val",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 154,
+                "end": 158
+              }
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 141,
-              "end": 143
-            }
-          },
-          "predicate": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "value",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 144,
-              "end": 153
-            },
-            "prefix": "rdf"
-          },
-          "object": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "val",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 154,
               "end": 158
             }
-          },
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 144,
-            "end": 158
           }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 141,
+          "end": 160
         }
-      ],
-      "loc": {
-        "sourceLocationType": "source",
-        "start": 144,
-        "end": 160
       }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 137,
+      "end": 162
     }
-  ],
+  },
   "solutionModifiers": {
     "group": {
       "type": "solutionModifier",
-      "modifierType": "group",
+      "subType": "group",
       "groupings": [
         {
           "type": "term",
-          "termType": "Variable",
+          "subType": "variable",
           "value": "a",
           "loc": {
             "sourceLocationType": "source",
@@ -99,8 +108,7 @@
   },
   "datasets": {
     "type": "datasetClauses",
-    "default": [],
-    "named": [],
+    "clauses": [],
     "loc": {
       "sourceLocationType": "noMaterialize"
     }
@@ -108,10 +116,10 @@
   "variables": [
     {
       "type": "pattern",
-      "patternType": "bind",
+      "subType": "bind",
       "expression": {
         "type": "expression",
-        "expressionType": "aggregate",
+        "subType": "aggregate",
         "aggregation": "sum",
         "distinct": false,
         "loc": {
@@ -122,7 +130,7 @@
         "expression": [
           {
             "type": "term",
-            "termType": "Variable",
+            "subType": "variable",
             "value": "val",
             "loc": {
               "sourceLocationType": "source",
@@ -134,7 +142,7 @@
       },
       "variable": {
         "type": "term",
-        "termType": "Variable",
+        "subType": "variable",
         "value": "sum",
         "loc": {
           "sourceLocationType": "source",
@@ -150,10 +158,10 @@
     },
     {
       "type": "pattern",
-      "patternType": "bind",
+      "subType": "bind",
       "expression": {
         "type": "expression",
-        "expressionType": "aggregate",
+        "subType": "aggregate",
         "aggregation": "count",
         "distinct": false,
         "loc": {
@@ -164,7 +172,7 @@
         "expression": [
           {
             "type": "term",
-            "termType": "Variable",
+            "subType": "variable",
             "value": "a",
             "loc": {
               "sourceLocationType": "source",
@@ -176,7 +184,7 @@
       },
       "variable": {
         "type": "term",
-        "termType": "Variable",
+        "subType": "variable",
         "value": "count",
         "loc": {
           "sourceLocationType": "source",
@@ -192,10 +200,10 @@
     },
     {
       "type": "pattern",
-      "patternType": "bind",
+      "subType": "bind",
       "expression": {
         "type": "expression",
-        "expressionType": "aggregate",
+        "subType": "aggregate",
         "aggregation": "count",
         "distinct": false,
         "loc": {
@@ -216,7 +224,7 @@
       },
       "variable": {
         "type": "term",
-        "termType": "Variable",
+        "subType": "variable",
         "value": "countAll",
         "loc": {
           "sourceLocationType": "source",

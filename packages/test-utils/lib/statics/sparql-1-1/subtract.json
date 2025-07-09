@@ -1,72 +1,80 @@
 {
   "context": [],
-  "queryType": "select",
-  "where": [
-    {
-      "type": "pattern",
-      "patternType": "bind",
-      "expression": {
-        "type": "expression",
-        "expressionType": "operation",
-        "operator": "-",
-        "args": [
-          {
-            "type": "term",
-            "termType": "Variable",
-            "value": "a",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 25,
-              "end": 27
-            }
-          },
-          {
-            "type": "term",
-            "termType": "Literal",
-            "value": "1",
-            "langOrIri": {
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bind",
+        "expression": {
+          "type": "expression",
+          "subType": "operation",
+          "operator": "-",
+          "args": [
+            {
               "type": "term",
-              "termType": "NamedNode",
-              "value": "http://www.w3.org/2001/XMLSchema#integer",
+              "subType": "variable",
+              "value": "a",
               "loc": {
-                "sourceLocationType": "noMaterialize"
+                "sourceLocationType": "source",
+                "start": 25,
+                "end": 27
               }
             },
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 27,
-              "end": 29
+            {
+              "type": "term",
+              "subType": "literal",
+              "value": "1",
+              "langOrIri": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "http://www.w3.org/2001/XMLSchema#integer",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 27,
+                "end": 29
+              }
             }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 25,
+            "end": 29
           }
-        ],
+        },
+        "variable": {
+          "type": "term",
+          "subType": "variable",
+          "value": "b",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 33,
+            "end": 35
+          }
+        },
         "loc": {
           "sourceLocationType": "source",
-          "start": 25,
-          "end": 29
+          "start": 19,
+          "end": 36
         }
-      },
-      "variable": {
-        "type": "term",
-        "termType": "Variable",
-        "value": "b",
-        "loc": {
-          "sourceLocationType": "source",
-          "start": 33,
-          "end": 35
-        }
-      },
-      "loc": {
-        "sourceLocationType": "source",
-        "start": 19,
-        "end": 36
       }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 15,
+      "end": 38
     }
-  ],
+  },
   "solutionModifiers": {},
   "datasets": {
     "type": "datasetClauses",
-    "default": [],
-    "named": [],
+    "clauses": [],
     "loc": {
       "sourceLocationType": "noMaterialize"
     }

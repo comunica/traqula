@@ -2,11 +2,11 @@
   "context": [
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "bsbm-inst",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/",
         "loc": {
           "sourceLocationType": "source",
@@ -22,11 +22,11 @@
     },
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "bsbm",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/",
         "loc": {
           "sourceLocationType": "source",
@@ -42,11 +42,11 @@
     },
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "rdfs",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://www.w3.org/2000/01/rdf-schema#",
         "loc": {
           "sourceLocationType": "source",
@@ -62,11 +62,11 @@
     },
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "rdf",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
         "loc": {
           "sourceLocationType": "source",
@@ -81,652 +81,661 @@
       }
     }
   ],
-  "queryType": "select",
-  "where": [
-    {
-      "type": "pattern",
-      "patternType": "union",
-      "patterns": [
-        {
-          "type": "pattern",
-          "patternType": "group",
-          "patterns": [
-            {
-              "type": "pattern",
-              "patternType": "bgp",
-              "triples": [
-                {
-                  "type": "triple",
-                  "subject": {
-                    "type": "term",
-                    "termType": "Variable",
-                    "value": "product",
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "union",
+        "patterns": [
+          {
+            "type": "pattern",
+            "subType": "group",
+            "patterns": [
+              {
+                "type": "pattern",
+                "subType": "bgp",
+                "triples": [
+                  {
+                    "type": "triple",
+                    "subject": {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "product",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 335,
+                        "end": 343
+                      }
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "label",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 344,
+                        "end": 354
+                      },
+                      "prefix": "rdfs"
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "label",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 355,
+                        "end": 361
+                      }
+                    },
                     "loc": {
                       "sourceLocationType": "source",
                       "start": 335,
-                      "end": 343
-                    }
-                  },
-                  "predicate": {
-                    "type": "term",
-                    "termType": "NamedNode",
-                    "value": "label",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 344,
-                      "end": 354
-                    },
-                    "prefix": "rdfs"
-                  },
-                  "object": {
-                    "type": "term",
-                    "termType": "Variable",
-                    "value": "label",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 355,
                       "end": 361
                     }
                   },
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 344,
-                    "end": 361
-                  }
-                },
-                {
-                  "type": "triple",
-                  "subject": {
-                    "type": "term",
-                    "termType": "Variable",
-                    "value": "product",
+                  {
+                    "type": "triple",
+                    "subject": {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "product",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 371,
+                        "end": 379
+                      }
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "type",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 380,
+                        "end": 388
+                      },
+                      "prefix": "rdf"
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType140",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 389,
+                        "end": 462
+                      }
+                    },
                     "loc": {
                       "sourceLocationType": "source",
                       "start": 371,
-                      "end": 379
-                    }
-                  },
-                  "predicate": {
-                    "type": "term",
-                    "termType": "NamedNode",
-                    "value": "type",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 380,
-                      "end": 388
-                    },
-                    "prefix": "rdf"
-                  },
-                  "object": {
-                    "type": "term",
-                    "termType": "NamedNode",
-                    "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType140",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 389,
                       "end": 462
                     }
                   },
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 380,
-                    "end": 462
-                  }
-                },
-                {
-                  "type": "triple",
-                  "subject": {
-                    "type": "term",
-                    "termType": "Variable",
-                    "value": "product",
+                  {
+                    "type": "triple",
+                    "subject": {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "product",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 472,
+                        "end": 480
+                      }
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "productFeature",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 481,
+                        "end": 500
+                      },
+                      "prefix": "bsbm"
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature4373",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 501,
+                        "end": 578
+                      }
+                    },
                     "loc": {
                       "sourceLocationType": "source",
                       "start": 472,
-                      "end": 480
-                    }
-                  },
-                  "predicate": {
-                    "type": "term",
-                    "termType": "NamedNode",
-                    "value": "productFeature",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 481,
-                      "end": 500
-                    },
-                    "prefix": "bsbm"
-                  },
-                  "object": {
-                    "type": "term",
-                    "termType": "NamedNode",
-                    "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature4373",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 501,
                       "end": 578
                     }
                   },
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 481,
-                    "end": 578
-                  }
-                },
-                {
-                  "type": "triple",
-                  "subject": {
-                    "type": "term",
-                    "termType": "Variable",
-                    "value": "product",
+                  {
+                    "type": "triple",
+                    "subject": {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "product",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 585,
+                        "end": 593
+                      }
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "productFeature",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 594,
+                        "end": 613
+                      },
+                      "prefix": "bsbm"
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature1475",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 614,
+                        "end": 691
+                      }
+                    },
                     "loc": {
                       "sourceLocationType": "source",
                       "start": 585,
-                      "end": 593
-                    }
-                  },
-                  "predicate": {
-                    "type": "term",
-                    "termType": "NamedNode",
-                    "value": "productFeature",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 594,
-                      "end": 613
-                    },
-                    "prefix": "bsbm"
-                  },
-                  "object": {
-                    "type": "term",
-                    "termType": "NamedNode",
-                    "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature1475",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 614,
                       "end": 691
                     }
                   },
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 594,
-                    "end": 691
-                  }
-                },
-                {
-                  "type": "triple",
-                  "subject": {
-                    "type": "term",
-                    "termType": "Variable",
-                    "value": "product",
+                  {
+                    "type": "triple",
+                    "subject": {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "product",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 701,
+                        "end": 709
+                      }
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "productPropertyTextual1",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 710,
+                        "end": 738
+                      },
+                      "prefix": "bsbm"
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "propertyTextual",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 739,
+                        "end": 755
+                      }
+                    },
                     "loc": {
                       "sourceLocationType": "source",
                       "start": 701,
-                      "end": 709
-                    }
-                  },
-                  "predicate": {
-                    "type": "term",
-                    "termType": "NamedNode",
-                    "value": "productPropertyTextual1",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 710,
-                      "end": 738
-                    },
-                    "prefix": "bsbm"
-                  },
-                  "object": {
-                    "type": "term",
-                    "termType": "Variable",
-                    "value": "propertyTextual",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 739,
                       "end": 755
                     }
                   },
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 710,
-                    "end": 755
-                  }
-                },
-                {
-                  "type": "triple",
-                  "subject": {
-                    "type": "term",
-                    "termType": "Variable",
-                    "value": "product",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 762,
-                      "end": 770
-                    }
-                  },
-                  "predicate": {
-                    "type": "term",
-                    "termType": "NamedNode",
-                    "value": "productPropertyNumeric1",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 771,
-                      "end": 799
-                    },
-                    "prefix": "bsbm"
-                  },
-                  "object": {
-                    "type": "term",
-                    "termType": "Variable",
-                    "value": "p1",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 800,
-                      "end": 803
-                    }
-                  },
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 771,
-                    "end": 803
-                  }
-                }
-              ],
-              "loc": {
-                "sourceLocationType": "source",
-                "start": 344,
-                "end": 805
-              }
-            },
-            {
-              "type": "pattern",
-              "patternType": "filter",
-              "expression": {
-                "type": "expression",
-                "expressionType": "bracketted",
-                "expression": {
-                  "type": "expression",
-                  "expressionType": "operation",
-                  "operator": ">",
-                  "args": [
-                    {
+                  {
+                    "type": "triple",
+                    "subject": {
                       "type": "term",
-                      "termType": "Variable",
+                      "subType": "variable",
+                      "value": "product",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 762,
+                        "end": 770
+                      }
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "productPropertyNumeric1",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 771,
+                        "end": 799
+                      },
+                      "prefix": "bsbm"
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "variable",
                       "value": "p1",
                       "loc": {
                         "sourceLocationType": "source",
-                        "start": 819,
-                        "end": 822
+                        "start": 800,
+                        "end": 803
                       }
                     },
-                    {
-                      "type": "term",
-                      "termType": "Literal",
-                      "value": "160",
-                      "langOrIri": {
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 762,
+                      "end": 803
+                    }
+                  }
+                ],
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 335,
+                  "end": 805
+                }
+              },
+              {
+                "type": "pattern",
+                "subType": "filter",
+                "expression": {
+                  "type": "expression",
+                  "subType": "bracketted",
+                  "expression": {
+                    "type": "expression",
+                    "subType": "operation",
+                    "operator": ">",
+                    "args": [
+                      {
                         "type": "term",
-                        "termType": "NamedNode",
-                        "value": "http://www.w3.org/2001/XMLSchema#integer",
+                        "subType": "variable",
+                        "value": "p1",
                         "loc": {
-                          "sourceLocationType": "noMaterialize"
+                          "sourceLocationType": "source",
+                          "start": 819,
+                          "end": 822
                         }
                       },
-                      "loc": {
-                        "sourceLocationType": "source",
-                        "start": 825,
-                        "end": 828
+                      {
+                        "type": "term",
+                        "subType": "literal",
+                        "value": "160",
+                        "langOrIri": {
+                          "type": "term",
+                          "subType": "namedNode",
+                          "value": "http://www.w3.org/2001/XMLSchema#integer",
+                          "loc": {
+                            "sourceLocationType": "noMaterialize"
+                          }
+                        },
+                        "loc": {
+                          "sourceLocationType": "source",
+                          "start": 825,
+                          "end": 828
+                        }
                       }
+                    ],
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 819,
+                      "end": 828
                     }
-                  ],
+                  },
                   "loc": {
                     "sourceLocationType": "source",
-                    "start": 819,
-                    "end": 828
+                    "start": 817,
+                    "end": 830
                   }
                 },
                 "loc": {
                   "sourceLocationType": "source",
-                  "start": 817,
+                  "start": 810,
                   "end": 830
                 }
-              },
-              "loc": {
-                "sourceLocationType": "source",
-                "start": 810,
-                "end": 830
               }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 325,
+              "end": 836
             }
-          ],
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 325,
-            "end": 836
-          }
-        },
-        {
-          "type": "pattern",
-          "patternType": "group",
-          "patterns": [
-            {
-              "type": "pattern",
-              "patternType": "bgp",
-              "triples": [
-                {
-                  "type": "triple",
-                  "subject": {
-                    "type": "term",
-                    "termType": "Variable",
-                    "value": "product",
+          },
+          {
+            "type": "pattern",
+            "subType": "group",
+            "patterns": [
+              {
+                "type": "pattern",
+                "subType": "bgp",
+                "triples": [
+                  {
+                    "type": "triple",
+                    "subject": {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "product",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 852,
+                        "end": 860
+                      }
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "label",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 861,
+                        "end": 871
+                      },
+                      "prefix": "rdfs"
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "label",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 872,
+                        "end": 878
+                      }
+                    },
                     "loc": {
                       "sourceLocationType": "source",
                       "start": 852,
-                      "end": 860
-                    }
-                  },
-                  "predicate": {
-                    "type": "term",
-                    "termType": "NamedNode",
-                    "value": "label",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 861,
-                      "end": 871
-                    },
-                    "prefix": "rdfs"
-                  },
-                  "object": {
-                    "type": "term",
-                    "termType": "Variable",
-                    "value": "label",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 872,
                       "end": 878
                     }
                   },
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 861,
-                    "end": 878
-                  }
-                },
-                {
-                  "type": "triple",
-                  "subject": {
-                    "type": "term",
-                    "termType": "Variable",
-                    "value": "product",
+                  {
+                    "type": "triple",
+                    "subject": {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "product",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 888,
+                        "end": 896
+                      }
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "type",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 897,
+                        "end": 905
+                      },
+                      "prefix": "rdf"
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType140",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 906,
+                        "end": 979
+                      }
+                    },
                     "loc": {
                       "sourceLocationType": "source",
                       "start": 888,
-                      "end": 896
-                    }
-                  },
-                  "predicate": {
-                    "type": "term",
-                    "termType": "NamedNode",
-                    "value": "type",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 897,
-                      "end": 905
-                    },
-                    "prefix": "rdf"
-                  },
-                  "object": {
-                    "type": "term",
-                    "termType": "NamedNode",
-                    "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductType140",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 906,
                       "end": 979
                     }
                   },
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 897,
-                    "end": 979
-                  }
-                },
-                {
-                  "type": "triple",
-                  "subject": {
-                    "type": "term",
-                    "termType": "Variable",
-                    "value": "product",
+                  {
+                    "type": "triple",
+                    "subject": {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "product",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 989,
+                        "end": 997
+                      }
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "productFeature",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 998,
+                        "end": 1017
+                      },
+                      "prefix": "bsbm"
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature4373",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 1018,
+                        "end": 1095
+                      }
+                    },
                     "loc": {
                       "sourceLocationType": "source",
                       "start": 989,
-                      "end": 997
-                    }
-                  },
-                  "predicate": {
-                    "type": "term",
-                    "termType": "NamedNode",
-                    "value": "productFeature",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 998,
-                      "end": 1017
-                    },
-                    "prefix": "bsbm"
-                  },
-                  "object": {
-                    "type": "term",
-                    "termType": "NamedNode",
-                    "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature4373",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 1018,
                       "end": 1095
                     }
                   },
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 998,
-                    "end": 1095
-                  }
-                },
-                {
-                  "type": "triple",
-                  "subject": {
-                    "type": "term",
-                    "termType": "Variable",
-                    "value": "product",
+                  {
+                    "type": "triple",
+                    "subject": {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "product",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 1102,
+                        "end": 1110
+                      }
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "productFeature",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 1111,
+                        "end": 1130
+                      },
+                      "prefix": "bsbm"
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature4372",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 1131,
+                        "end": 1208
+                      }
+                    },
                     "loc": {
                       "sourceLocationType": "source",
                       "start": 1102,
-                      "end": 1110
-                    }
-                  },
-                  "predicate": {
-                    "type": "term",
-                    "termType": "NamedNode",
-                    "value": "productFeature",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 1111,
-                      "end": 1130
-                    },
-                    "prefix": "bsbm"
-                  },
-                  "object": {
-                    "type": "term",
-                    "termType": "NamedNode",
-                    "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature4372",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 1131,
                       "end": 1208
                     }
                   },
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 1111,
-                    "end": 1208
-                  }
-                },
-                {
-                  "type": "triple",
-                  "subject": {
-                    "type": "term",
-                    "termType": "Variable",
-                    "value": "product",
+                  {
+                    "type": "triple",
+                    "subject": {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "product",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 1218,
+                        "end": 1226
+                      }
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "productPropertyTextual1",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 1227,
+                        "end": 1255
+                      },
+                      "prefix": "bsbm"
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "propertyTextual",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 1256,
+                        "end": 1272
+                      }
+                    },
                     "loc": {
                       "sourceLocationType": "source",
                       "start": 1218,
-                      "end": 1226
-                    }
-                  },
-                  "predicate": {
-                    "type": "term",
-                    "termType": "NamedNode",
-                    "value": "productPropertyTextual1",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 1227,
-                      "end": 1255
-                    },
-                    "prefix": "bsbm"
-                  },
-                  "object": {
-                    "type": "term",
-                    "termType": "Variable",
-                    "value": "propertyTextual",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 1256,
                       "end": 1272
                     }
                   },
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 1227,
-                    "end": 1272
-                  }
-                },
-                {
-                  "type": "triple",
-                  "subject": {
-                    "type": "term",
-                    "termType": "Variable",
-                    "value": "product",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 1279,
-                      "end": 1287
-                    }
-                  },
-                  "predicate": {
-                    "type": "term",
-                    "termType": "NamedNode",
-                    "value": "productPropertyNumeric2",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 1288,
-                      "end": 1316
-                    },
-                    "prefix": "bsbm"
-                  },
-                  "object": {
-                    "type": "term",
-                    "termType": "Variable",
-                    "value": "p2",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 1317,
-                      "end": 1320
-                    }
-                  },
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 1288,
-                    "end": 1320
-                  }
-                }
-              ],
-              "loc": {
-                "sourceLocationType": "source",
-                "start": 861,
-                "end": 1322
-              }
-            },
-            {
-              "type": "pattern",
-              "patternType": "filter",
-              "expression": {
-                "type": "expression",
-                "expressionType": "bracketted",
-                "expression": {
-                  "type": "expression",
-                  "expressionType": "operation",
-                  "operator": ">",
-                  "args": [
-                    {
+                  {
+                    "type": "triple",
+                    "subject": {
                       "type": "term",
-                      "termType": "Variable",
+                      "subType": "variable",
+                      "value": "product",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 1279,
+                        "end": 1287
+                      }
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "productPropertyNumeric2",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 1288,
+                        "end": 1316
+                      },
+                      "prefix": "bsbm"
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "variable",
                       "value": "p2",
                       "loc": {
                         "sourceLocationType": "source",
-                        "start": 1336,
-                        "end": 1339
+                        "start": 1317,
+                        "end": 1320
                       }
                     },
-                    {
-                      "type": "term",
-                      "termType": "Literal",
-                      "value": "77",
-                      "langOrIri": {
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 1279,
+                      "end": 1320
+                    }
+                  }
+                ],
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 852,
+                  "end": 1322
+                }
+              },
+              {
+                "type": "pattern",
+                "subType": "filter",
+                "expression": {
+                  "type": "expression",
+                  "subType": "bracketted",
+                  "expression": {
+                    "type": "expression",
+                    "subType": "operation",
+                    "operator": ">",
+                    "args": [
+                      {
                         "type": "term",
-                        "termType": "NamedNode",
-                        "value": "http://www.w3.org/2001/XMLSchema#integer",
+                        "subType": "variable",
+                        "value": "p2",
                         "loc": {
-                          "sourceLocationType": "noMaterialize"
+                          "sourceLocationType": "source",
+                          "start": 1336,
+                          "end": 1339
                         }
                       },
-                      "loc": {
-                        "sourceLocationType": "source",
-                        "start": 1341,
-                        "end": 1343
+                      {
+                        "type": "term",
+                        "subType": "literal",
+                        "value": "77",
+                        "langOrIri": {
+                          "type": "term",
+                          "subType": "namedNode",
+                          "value": "http://www.w3.org/2001/XMLSchema#integer",
+                          "loc": {
+                            "sourceLocationType": "noMaterialize"
+                          }
+                        },
+                        "loc": {
+                          "sourceLocationType": "source",
+                          "start": 1341,
+                          "end": 1343
+                        }
                       }
+                    ],
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 1336,
+                      "end": 1343
                     }
-                  ],
+                  },
                   "loc": {
                     "sourceLocationType": "source",
-                    "start": 1336,
-                    "end": 1343
+                    "start": 1334,
+                    "end": 1345
                   }
                 },
                 "loc": {
                   "sourceLocationType": "source",
-                  "start": 1334,
+                  "start": 1327,
                   "end": 1345
                 }
-              },
-              "loc": {
-                "sourceLocationType": "source",
-                "start": 1327,
-                "end": 1345
               }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 843,
+              "end": 1352
             }
-          ],
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 843,
-            "end": 1352
           }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 325,
+          "end": 1352
         }
-      ],
-      "loc": {
-        "sourceLocationType": "source",
-        "start": 325,
-        "end": 1352
       }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 319,
+      "end": 1355
     }
-  ],
+  },
   "solutionModifiers": {
     "limitOffset": {
       "type": "solutionModifier",
-      "modifierType": "limitOffset",
+      "subType": "limitOffset",
       "limit": 10,
       "offset": 5,
       "loc": {
@@ -737,11 +746,11 @@
     },
     "order": {
       "type": "solutionModifier",
-      "modifierType": "order",
+      "subType": "order",
       "orderDefs": [
         {
           "type": "term",
-          "termType": "Variable",
+          "subType": "variable",
           "value": "label",
           "loc": {
             "sourceLocationType": "source",
@@ -759,8 +768,7 @@
   },
   "datasets": {
     "type": "datasetClauses",
-    "default": [],
-    "named": [],
+    "clauses": [],
     "loc": {
       "sourceLocationType": "noMaterialize"
     }
@@ -768,7 +776,7 @@
   "variables": [
     {
       "type": "term",
-      "termType": "Variable",
+      "subType": "variable",
       "value": "product",
       "loc": {
         "sourceLocationType": "source",
@@ -778,7 +786,7 @@
     },
     {
       "type": "term",
-      "termType": "Variable",
+      "subType": "variable",
       "value": "label",
       "loc": {
         "sourceLocationType": "source",
@@ -788,7 +796,7 @@
     },
     {
       "type": "term",
-      "termType": "Variable",
+      "subType": "variable",
       "value": "propertyTextual",
       "loc": {
         "sourceLocationType": "source",

@@ -8,7 +8,7 @@
   "items": [
     {
       "type": "term",
-      "termType": "NamedNode",
+      "subType": "namedNode",
       "value": "http://example.org/a",
       "loc": {
         "sourceLocationType": "source",
@@ -18,7 +18,7 @@
     },
     {
       "type": "term",
-      "termType": "NamedNode",
+      "subType": "namedNode",
       "value": "http://example.org/b",
       "loc": {
         "sourceLocationType": "source",
@@ -27,6 +27,6 @@
       }
     }
   ],
-  "pathType": "/",
+  "subType": "/",
   "prefixes": {}
 }

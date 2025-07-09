@@ -1,62 +1,70 @@
 {
   "context": [],
-  "queryType": "select",
-  "where": [
-    {
-      "type": "pattern",
-      "patternType": "bgp",
-      "triples": [
-        {
-          "type": "triple",
-          "subject": {
-            "type": "term",
-            "termType": "BlankNode",
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "blankNode",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 40,
+                "end": 42
+              },
+              "label": "g_1"
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "variable",
+              "value": "p",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 43,
+                "end": 45
+              }
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "str",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 46,
+                "end": 50
+              }
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 40,
-              "end": 42
-            },
-            "label": "g_1"
-          },
-          "predicate": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "p",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 43,
-              "end": 45
-            }
-          },
-          "object": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "str",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 46,
               "end": 50
             }
-          },
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 43,
-            "end": 50
           }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 40,
+          "end": 50
         }
-      ],
-      "loc": {
-        "sourceLocationType": "source",
-        "start": 43,
-        "end": 50
       }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 38,
+      "end": 52
     }
-  ],
+  },
   "solutionModifiers": {},
   "datasets": {
     "type": "datasetClauses",
-    "default": [],
-    "named": [],
+    "clauses": [],
     "loc": {
       "sourceLocationType": "noMaterialize"
     }
@@ -64,7 +72,7 @@
   "variables": [
     {
       "type": "term",
-      "termType": "Variable",
+      "subType": "variable",
       "value": "str",
       "loc": {
         "sourceLocationType": "source",
@@ -74,15 +82,15 @@
     },
     {
       "type": "pattern",
-      "patternType": "bind",
+      "subType": "bind",
       "expression": {
         "type": "expression",
-        "expressionType": "operation",
+        "subType": "operation",
         "operator": "strlen",
         "args": [
           {
             "type": "term",
-            "termType": "Variable",
+            "subType": "variable",
             "value": "str",
             "loc": {
               "sourceLocationType": "source",
@@ -99,7 +107,7 @@
       },
       "variable": {
         "type": "term",
-        "termType": "Variable",
+        "subType": "variable",
         "value": "strlen",
         "loc": {
           "sourceLocationType": "source",

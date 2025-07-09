@@ -8,7 +8,7 @@
   "items": [
     {
       "type": "term",
-      "termType": "NamedNode",
+      "subType": "namedNode",
       "value": "a",
       "loc": {
         "sourceLocationType": "source",
@@ -19,7 +19,7 @@
     },
     {
       "type": "term",
-      "termType": "NamedNode",
+      "subType": "namedNode",
       "value": "b",
       "loc": {
         "sourceLocationType": "source",
@@ -29,6 +29,6 @@
       "prefix": "ex"
     }
   ],
-  "pathType": "|",
+  "subType": "|",
   "prefixes": {}
 }

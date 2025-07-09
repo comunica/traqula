@@ -2,11 +2,11 @@
   "context": [
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "dbpedia",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://dbpedia.org/resource/",
         "loc": {
           "sourceLocationType": "source",
@@ -22,11 +22,11 @@
     },
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "dbpedia-owl",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://dbpedia.org/ontology/",
         "loc": {
           "sourceLocationType": "source",
@@ -41,223 +41,264 @@
       }
     }
   ],
-  "queryType": "select",
-  "where": [
-    {
-      "type": "pattern",
-      "patternType": "bgp",
-      "triples": [
-        {
-          "type": "triple",
-          "subject": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "city",
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "city",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 117,
+                "end": 122
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "country",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 123,
+                "end": 142
+              },
+              "prefix": "dbpedia-owl"
+            },
+            "object": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "Belgium",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 143,
+                "end": 158
+              },
+              "prefix": "dbpedia"
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 117,
-              "end": 122
-            }
-          },
-          "predicate": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "country",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 123,
-              "end": 142
-            },
-            "prefix": "dbpedia-owl"
-          },
-          "object": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "Belgium",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 143,
               "end": 158
-            },
-            "prefix": "dbpedia"
-          },
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 123,
-            "end": 158
+            }
           }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 117,
+          "end": 159
         }
-      ],
-      "loc": {
-        "sourceLocationType": "source",
-        "start": 123,
-        "end": 159
-      }
-    },
-    {
-      "type": "pattern",
-      "patternType": "union",
-      "patterns": [
-        {
-          "type": "pattern",
-          "patternType": "bgp",
-          "triples": [
-            {
-              "type": "triple",
-              "subject": {
-                "type": "term",
-                "termType": "Variable",
-                "value": "city",
+      },
+      {
+        "type": "pattern",
+        "subType": "union",
+        "patterns": [
+          {
+            "type": "pattern",
+            "subType": "group",
+            "patterns": [
+              {
+                "type": "pattern",
+                "subType": "bgp",
+                "triples": [
+                  {
+                    "type": "triple",
+                    "subject": {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "city",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 165,
+                        "end": 170
+                      }
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "http://www.w3.org/2000/01/rdf-schema#label",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 171,
+                        "end": 215
+                      }
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "label",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 216,
+                        "end": 222
+                      }
+                    },
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 165,
+                      "end": 222
+                    }
+                  }
+                ],
                 "loc": {
                   "sourceLocationType": "source",
                   "start": 165,
-                  "end": 170
+                  "end": 223
                 }
-              },
-              "predicate": {
-                "type": "term",
-                "termType": "NamedNode",
-                "value": "http://www.w3.org/2000/01/rdf-schema#label",
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 171,
-                  "end": 215
-                }
-              },
-              "object": {
-                "type": "term",
-                "termType": "Variable",
-                "value": "label",
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 216,
-                  "end": 222
-                }
-              },
-              "loc": {
-                "sourceLocationType": "source",
-                "start": 171,
-                "end": 222
               }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 163,
+              "end": 225
             }
-          ],
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 171,
-            "end": 223
-          }
-        },
-        {
-          "type": "pattern",
-          "patternType": "bgp",
-          "triples": [
-            {
-              "type": "triple",
-              "subject": {
-                "type": "term",
-                "termType": "Variable",
-                "value": "city",
+          },
+          {
+            "type": "pattern",
+            "subType": "group",
+            "patterns": [
+              {
+                "type": "pattern",
+                "subType": "bgp",
+                "triples": [
+                  {
+                    "type": "triple",
+                    "subject": {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "city",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 238,
+                        "end": 243
+                      }
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "http://dbpedia.org/property/commonName",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 244,
+                        "end": 284
+                      }
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "label",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 289,
+                        "end": 295
+                      }
+                    },
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 238,
+                      "end": 295
+                    }
+                  }
+                ],
                 "loc": {
                   "sourceLocationType": "source",
                   "start": 238,
-                  "end": 243
+                  "end": 296
                 }
-              },
-              "predicate": {
-                "type": "term",
-                "termType": "NamedNode",
-                "value": "http://dbpedia.org/property/commonName",
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 244,
-                  "end": 284
-                }
-              },
-              "object": {
-                "type": "term",
-                "termType": "Variable",
-                "value": "label",
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 289,
-                  "end": 295
-                }
-              },
-              "loc": {
-                "sourceLocationType": "source",
-                "start": 244,
-                "end": 295
               }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 236,
+              "end": 298
             }
-          ],
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 244,
-            "end": 296
-          }
-        },
-        {
-          "type": "pattern",
-          "patternType": "bgp",
-          "triples": [
-            {
-              "type": "triple",
-              "subject": {
-                "type": "term",
-                "termType": "Variable",
-                "value": "city",
+          },
+          {
+            "type": "pattern",
+            "subType": "group",
+            "patterns": [
+              {
+                "type": "pattern",
+                "subType": "bgp",
+                "triples": [
+                  {
+                    "type": "triple",
+                    "subject": {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "city",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 311,
+                        "end": 316
+                      }
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "http://xmlns.com/foaf/0.1/name",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 317,
+                        "end": 349
+                      }
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "label",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 362,
+                        "end": 368
+                      }
+                    },
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 311,
+                      "end": 368
+                    }
+                  }
+                ],
                 "loc": {
                   "sourceLocationType": "source",
                   "start": 311,
-                  "end": 316
+                  "end": 369
                 }
-              },
-              "predicate": {
-                "type": "term",
-                "termType": "NamedNode",
-                "value": "http://xmlns.com/foaf/0.1/name",
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 317,
-                  "end": 349
-                }
-              },
-              "object": {
-                "type": "term",
-                "termType": "Variable",
-                "value": "label",
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 362,
-                  "end": 368
-                }
-              },
-              "loc": {
-                "sourceLocationType": "source",
-                "start": 317,
-                "end": 368
               }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 309,
+              "end": 371
             }
-          ],
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 317,
-            "end": 369
           }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 163,
+          "end": 371
         }
-      ],
-      "loc": {
-        "sourceLocationType": "source",
-        "start": 163,
-        "end": 371
       }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 113,
+      "end": 373
     }
-  ],
+  },
   "solutionModifiers": {},
   "datasets": {
     "type": "datasetClauses",
-    "default": [],
-    "named": [],
+    "clauses": [],
     "loc": {
       "sourceLocationType": "noMaterialize"
     }

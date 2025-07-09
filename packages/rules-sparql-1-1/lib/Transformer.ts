@@ -55,6 +55,40 @@ SpecificNodes = NodeMapping[TypeFilter] extends Node & { subType: string } ?
     return <any> copy;
   }
 
+  public visitNode<Input extends object, TypeFilter extends keyof NodeMapping>(
+    curObject: Input,
+    searchType: TypeFilter,
+    visitor: (current: Readonly<NodeMapping[TypeFilter]>) => void,
+  ): void {
+    for (const value of Object.values(curObject)) {
+      this.safeObjectTransform(value, obj => this.visitNode(obj, searchType, visitor));
+    }
+    if ((<{ type?: unknown }>curObject).type === searchType) {
+      visitor(<NodeMapping[TypeFilter]> curObject);
+    }
+  }
+
+  public visitNodeSpecific<
+    Input extends object,
+TypeFilter extends keyof NodeMapping,
+SpecificType extends keyof SpecificNodes,
+SpecificNodes = NodeMapping[TypeFilter] extends Node & { subType: string } ?
+  MapNodeSubTypeToImpls<NodeMapping[TypeFilter]> : never,
+ >(
+    curObject: Input,
+    searchType: TypeFilter,
+    searchSubType: SpecificType,
+    visitor: (current: Readonly<SpecificNodes[SpecificType]>) => void,
+  ): void {
+    for (const value of Object.values(curObject)) {
+      this.safeObjectTransform(value, obj => this.visitNodeSpecific(obj, searchType, searchSubType, visitor));
+    }
+    const cast = <{ type?: unknown; subType?: unknown }>curObject;
+    if (cast.type === searchType && cast.subType === searchSubType) {
+      visitor(<SpecificNodes[SpecificType]> curObject);
+    }
+  }
+
   private safeObjectTransform(value: unknown, mapper: (some: object) => any): any {
     if (value && typeof value === 'object') {
       // If you wonder why this is all so hard, this is the reason. We cannot lose the methods of our Array objects

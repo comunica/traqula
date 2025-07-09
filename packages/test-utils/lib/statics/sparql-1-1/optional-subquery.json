@@ -1,105 +1,130 @@
 {
   "context": [],
-  "queryType": "select",
-  "where": [
-    {
-      "type": "pattern",
-      "patternType": "group",
-      "patterns": [],
-      "loc": {
-        "sourceLocationType": "source",
-        "start": 11,
-        "end": 13
-      }
-    },
-    {
-      "type": "pattern",
-      "patternType": "optional",
-      "patterns": [
-        {
-          "type": "query",
-          "queryType": "select",
-          "where": [
-            {
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "group",
+        "patterns": [],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 11,
+          "end": 13
+        }
+      },
+      {
+        "type": "pattern",
+        "subType": "optional",
+        "patterns": [
+          {
+            "type": "query",
+            "subType": "select",
+            "where": {
               "type": "pattern",
-              "patternType": "bgp",
-              "triples": [
+              "subType": "group",
+              "patterns": [
                 {
-                  "type": "triple",
-                  "subject": {
-                    "type": "term",
-                    "termType": "Variable",
-                    "value": "s",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 35,
-                      "end": 37
+                  "type": "pattern",
+                  "subType": "bgp",
+                  "triples": [
+                    {
+                      "type": "triple",
+                      "subject": {
+                        "type": "term",
+                        "subType": "variable",
+                        "value": "s",
+                        "loc": {
+                          "sourceLocationType": "source",
+                          "start": 35,
+                          "end": 37
+                        }
+                      },
+                      "predicate": {
+                        "type": "term",
+                        "subType": "variable",
+                        "value": "p",
+                        "loc": {
+                          "sourceLocationType": "source",
+                          "start": 38,
+                          "end": 40
+                        }
+                      },
+                      "object": {
+                        "type": "term",
+                        "subType": "variable",
+                        "value": "o",
+                        "loc": {
+                          "sourceLocationType": "source",
+                          "start": 41,
+                          "end": 43
+                        }
+                      },
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 35,
+                        "end": 43
+                      }
                     }
-                  },
-                  "predicate": {
-                    "type": "term",
-                    "termType": "Variable",
-                    "value": "p",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 38,
-                      "end": 40
-                    }
-                  },
-                  "object": {
-                    "type": "term",
-                    "termType": "Variable",
-                    "value": "o",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 41,
-                      "end": 43
-                    }
-                  },
+                  ],
                   "loc": {
                     "sourceLocationType": "source",
-                    "start": 38,
+                    "start": 35,
                     "end": 43
                   }
                 }
               ],
               "loc": {
                 "sourceLocationType": "source",
-                "start": 38,
-                "end": 43
+                "start": 33,
+                "end": 45
               }
-            }
-          ],
-          "solutionModifiers": {},
-          "variables": [
-            {
-              "type": "wildcard",
+            },
+            "datasets": {
+              "type": "datasetClauses",
+              "clauses": [],
               "loc": {
-                "sourceLocationType": "source",
-                "start": 31,
-                "end": 32
+                "sourceLocationType": "noMaterialize"
               }
+            },
+            "context": [],
+            "solutionModifiers": {},
+            "variables": [
+              {
+                "type": "wildcard",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 31,
+                  "end": 32
+                }
+              }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 24,
+              "end": 45
             }
-          ],
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 24,
-            "end": 45
           }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 14,
+          "end": 46
         }
-      ],
-      "loc": {
-        "sourceLocationType": "source",
-        "start": 14,
-        "end": 46
       }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 9,
+      "end": 48
     }
-  ],
+  },
   "solutionModifiers": {},
   "datasets": {
     "type": "datasetClauses",
-    "default": [],
-    "named": [],
+    "clauses": [],
     "loc": {
       "sourceLocationType": "noMaterialize"
     }

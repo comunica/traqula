@@ -2,11 +2,11 @@
   "context": [
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://books.example/",
         "loc": {
           "sourceLocationType": "source",
@@ -21,145 +21,154 @@
       }
     }
   ],
-  "queryType": "select",
-  "where": [
-    {
-      "type": "pattern",
-      "patternType": "bgp",
-      "triples": [
-        {
-          "type": "triple",
-          "subject": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "org",
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "org",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 80,
+                "end": 84
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "affiliates",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 85,
+                "end": 96
+              },
+              "prefix": ""
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "auth",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 97,
+                "end": 102
+              }
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 80,
-              "end": 84
-            }
-          },
-          "predicate": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "affiliates",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 85,
-              "end": 96
-            },
-            "prefix": ""
-          },
-          "object": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "auth",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 97,
               "end": 102
             }
           },
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 85,
-            "end": 102
-          }
-        },
-        {
-          "type": "triple",
-          "subject": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "auth",
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "auth",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 107,
+                "end": 112
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "writesBook",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 113,
+                "end": 124
+              },
+              "prefix": ""
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "book",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 125,
+                "end": 130
+              }
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 107,
-              "end": 112
-            }
-          },
-          "predicate": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "writesBook",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 113,
-              "end": 124
-            },
-            "prefix": ""
-          },
-          "object": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "book",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 125,
               "end": 130
             }
           },
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 113,
-            "end": 130
-          }
-        },
-        {
-          "type": "triple",
-          "subject": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "book",
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "book",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 135,
+                "end": 140
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "price",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 141,
+                "end": 147
+              },
+              "prefix": ""
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "lprice",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 148,
+                "end": 155
+              }
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 135,
-              "end": 140
-            }
-          },
-          "predicate": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "price",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 141,
-              "end": 147
-            },
-            "prefix": ""
-          },
-          "object": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "lprice",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 148,
               "end": 155
             }
-          },
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 141,
-            "end": 155
           }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 80,
+          "end": 157
         }
-      ],
-      "loc": {
-        "sourceLocationType": "source",
-        "start": 85,
-        "end": 157
       }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 76,
+      "end": 159
     }
-  ],
+  },
   "solutionModifiers": {
     "group": {
       "type": "solutionModifier",
-      "modifierType": "group",
+      "subType": "group",
       "groupings": [
         {
           "type": "term",
-          "termType": "Variable",
+          "subType": "variable",
           "value": "org",
           "loc": {
             "sourceLocationType": "source",
@@ -176,19 +185,19 @@
     },
     "having": {
       "type": "solutionModifier",
-      "modifierType": "having",
+      "subType": "having",
       "having": [
         {
           "type": "expression",
-          "expressionType": "bracketted",
+          "subType": "bracketted",
           "expression": {
             "type": "expression",
-            "expressionType": "operation",
+            "subType": "operation",
             "operator": ">",
             "args": [
               {
                 "type": "expression",
-                "expressionType": "aggregate",
+                "subType": "aggregate",
                 "aggregation": "sum",
                 "distinct": false,
                 "loc": {
@@ -199,7 +208,7 @@
                 "expression": [
                   {
                     "type": "term",
-                    "termType": "Variable",
+                    "subType": "variable",
                     "value": "lprice",
                     "loc": {
                       "sourceLocationType": "source",
@@ -211,11 +220,11 @@
               },
               {
                 "type": "term",
-                "termType": "Literal",
+                "subType": "literal",
                 "value": "10",
                 "langOrIri": {
                   "type": "term",
-                  "termType": "NamedNode",
+                  "subType": "namedNode",
                   "value": "http://www.w3.org/2001/XMLSchema#integer",
                   "loc": {
                     "sourceLocationType": "noMaterialize"
@@ -249,11 +258,11 @@
     },
     "order": {
       "type": "solutionModifier",
-      "modifierType": "order",
+      "subType": "order",
       "orderDefs": [
         {
           "type": "term",
-          "termType": "Variable",
+          "subType": "variable",
           "value": "totalPrice",
           "loc": {
             "sourceLocationType": "source",
@@ -271,8 +280,7 @@
   },
   "datasets": {
     "type": "datasetClauses",
-    "default": [],
-    "named": [],
+    "clauses": [],
     "loc": {
       "sourceLocationType": "noMaterialize"
     }
@@ -280,10 +288,10 @@
   "variables": [
     {
       "type": "pattern",
-      "patternType": "bind",
+      "subType": "bind",
       "expression": {
         "type": "expression",
-        "expressionType": "aggregate",
+        "subType": "aggregate",
         "aggregation": "sum",
         "distinct": false,
         "loc": {
@@ -294,7 +302,7 @@
         "expression": [
           {
             "type": "term",
-            "termType": "Variable",
+            "subType": "variable",
             "value": "lprice",
             "loc": {
               "sourceLocationType": "source",
@@ -306,7 +314,7 @@
       },
       "variable": {
         "type": "term",
-        "termType": "Variable",
+        "subType": "variable",
         "value": "totalPrice",
         "loc": {
           "sourceLocationType": "source",
@@ -329,12 +337,12 @@
   "type": "query",
   "values": {
     "type": "pattern",
-    "patternType": "values",
+    "subType": "values",
     "values": [
       {
-        "?book": {
+        "book": {
           "type": "term",
-          "termType": "NamedNode",
+          "subType": "namedNode",
           "value": "book2",
           "loc": {
             "sourceLocationType": "source",

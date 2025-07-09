@@ -2,11 +2,11 @@
   "context": [
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "dc",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://purl.org/dc/elements/1.1/",
         "loc": {
           "sourceLocationType": "source",
@@ -22,11 +22,11 @@
     },
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://example.org/book/",
         "loc": {
           "sourceLocationType": "source",
@@ -42,11 +42,11 @@
     },
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "ns",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://example.org/ns#",
         "loc": {
           "sourceLocationType": "source",
@@ -61,138 +61,146 @@
       }
     }
   ],
-  "queryType": "select",
-  "where": [
-    {
-      "type": "pattern",
-      "patternType": "values",
-      "values": [
-        {
-          "?book": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "book1",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 177,
-              "end": 183
-            },
-            "prefix": ""
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "values",
+        "values": [
+          {
+            "book": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "book1",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 177,
+                "end": 183
+              },
+              "prefix": ""
+            }
+          },
+          {
+            "book": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "book3",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 184,
+                "end": 190
+              },
+              "prefix": ""
+            }
           }
-        },
-        {
-          "?book": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "book3",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 184,
-              "end": 190
-            },
-            "prefix": ""
-          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 162,
+          "end": 192
         }
-      ],
-      "loc": {
-        "sourceLocationType": "source",
-        "start": 162,
-        "end": 192
-      }
-    },
-    {
-      "type": "pattern",
-      "patternType": "bgp",
-      "triples": [
-        {
-          "type": "triple",
-          "subject": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "book",
+      },
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "book",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 196,
+                "end": 201
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "title",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 202,
+                "end": 210
+              },
+              "prefix": "dc"
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "title",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 211,
+                "end": 217
+              }
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 196,
-              "end": 201
-            }
-          },
-          "predicate": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "title",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 202,
-              "end": 210
-            },
-            "prefix": "dc"
-          },
-          "object": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "title",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 211,
               "end": 217
             }
           },
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 202,
-            "end": 217
-          }
-        },
-        {
-          "type": "triple",
-          "subject": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "book",
-            "loc": {
-              "sourceLocationType": "noMaterialize"
-            }
-          },
-          "predicate": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "price",
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "book",
+              "loc": {
+                "sourceLocationType": "noMaterialize"
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "price",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 229,
+                "end": 237
+              },
+              "prefix": "ns"
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "price",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 238,
+                "end": 244
+              }
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 229,
-              "end": 237
-            },
-            "prefix": "ns"
-          },
-          "object": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "price",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 238,
               "end": 244
             }
-          },
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 229,
-            "end": 244
           }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 196,
+          "end": 246
         }
-      ],
-      "loc": {
-        "sourceLocationType": "source",
-        "start": 202,
-        "end": 246
       }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 157,
+      "end": 248
     }
-  ],
+  },
   "solutionModifiers": {},
   "datasets": {
     "type": "datasetClauses",
-    "default": [],
-    "named": [],
+    "clauses": [],
     "loc": {
       "sourceLocationType": "noMaterialize"
     }
@@ -200,7 +208,7 @@
   "variables": [
     {
       "type": "term",
-      "termType": "Variable",
+      "subType": "variable",
       "value": "book",
       "loc": {
         "sourceLocationType": "source",
@@ -210,7 +218,7 @@
     },
     {
       "type": "term",
-      "termType": "Variable",
+      "subType": "variable",
       "value": "title",
       "loc": {
         "sourceLocationType": "source",
@@ -220,7 +228,7 @@
     },
     {
       "type": "term",
-      "termType": "Variable",
+      "subType": "variable",
       "value": "price",
       "loc": {
         "sourceLocationType": "source",

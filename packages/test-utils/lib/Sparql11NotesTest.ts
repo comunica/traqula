@@ -57,11 +57,13 @@ export function importSparql11NoteTests(parser: Parser, dataFactory: DataFactory
   it('should preserve BGP and filter pattern order', ({ expect }) => {
     const query = 'SELECT * { ?s ?p "1" . FILTER(true) . ?s ?p "2"  }';
     expect(parser.parse(query)).toMatchObject({
-      where: [
-        { patternType: 'bgp' },
-        { patternType: 'filter' },
-        { patternType: 'bgp' },
-      ],
+      where: {
+        patterns: [
+          { subType: 'bgp' },
+          { subType: 'filter' },
+          { subType: 'bgp' },
+        ],
+      },
     });
   });
 

@@ -5,11 +5,11 @@
       "context": [
         {
           "type": "contextDef",
-          "contextType": "prefix",
+          "subType": "prefix",
           "key": "dc",
           "value": {
             "type": "term",
-            "termType": "NamedNode",
+            "subType": "namedNode",
             "value": "http://purl.org/dc/elements/1.1/",
             "loc": {
               "sourceLocationType": "source",
@@ -26,13 +26,13 @@
       ],
       "operation": {
         "type": "updateOperation",
-        "operationType": "deletedata",
+        "subType": "deletedata",
         "data": [
           {
             "type": "graph",
             "graph": {
               "type": "term",
-              "termType": "NamedNode",
+              "subType": "namedNode",
               "value": "http://example/bookStore",
               "loc": {
                 "sourceLocationType": "source",
@@ -40,47 +40,56 @@
                 "end": 92
               }
             },
-            "triples": [
-              {
-                "type": "triple",
-                "subject": {
-                  "type": "term",
-                  "termType": "NamedNode",
-                  "value": "http://example/book1",
+            "triples": {
+              "type": "pattern",
+              "subType": "bgp",
+              "triples": [
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "http://example/book1",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 95,
+                      "end": 117
+                    }
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "title",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 119,
+                      "end": 127
+                    },
+                    "prefix": "dc"
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "literal",
+                    "value": "Fundamentals of Compiler Desing",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 129,
+                      "end": 162
+                    }
+                  },
                   "loc": {
                     "sourceLocationType": "source",
                     "start": 95,
-                    "end": 117
-                  }
-                },
-                "predicate": {
-                  "type": "term",
-                  "termType": "NamedNode",
-                  "value": "title",
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 119,
-                    "end": 127
-                  },
-                  "prefix": "dc"
-                },
-                "object": {
-                  "type": "term",
-                  "termType": "Literal",
-                  "value": "Fundamentals of Compiler Desing",
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 129,
                     "end": 162
                   }
-                },
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 119,
-                  "end": 162
                 }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 95,
+                "end": 162
               }
-            ],
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 60,
@@ -99,13 +108,13 @@
       "context": [],
       "operation": {
         "type": "updateOperation",
-        "operationType": "insertdata",
+        "subType": "insertdata",
         "data": [
           {
             "type": "graph",
             "graph": {
               "type": "term",
-              "termType": "NamedNode",
+              "subType": "namedNode",
               "value": "http://example/bookStore",
               "loc": {
                 "sourceLocationType": "source",
@@ -113,47 +122,56 @@
                 "end": 216
               }
             },
-            "triples": [
-              {
-                "type": "triple",
-                "subject": {
-                  "type": "term",
-                  "termType": "NamedNode",
-                  "value": "http://example/book1",
+            "triples": {
+              "type": "pattern",
+              "subType": "bgp",
+              "triples": [
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "http://example/book1",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 219,
+                      "end": 241
+                    }
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "title",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 243,
+                      "end": 251
+                    },
+                    "prefix": "dc"
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "literal",
+                    "value": "Fundamentals of Compiler Design",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 253,
+                      "end": 286
+                    }
+                  },
                   "loc": {
                     "sourceLocationType": "source",
                     "start": 219,
-                    "end": 241
-                  }
-                },
-                "predicate": {
-                  "type": "term",
-                  "termType": "NamedNode",
-                  "value": "title",
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 243,
-                    "end": 251
-                  },
-                  "prefix": "dc"
-                },
-                "object": {
-                  "type": "term",
-                  "termType": "Literal",
-                  "value": "Fundamentals of Compiler Design",
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 253,
                     "end": 286
                   }
-                },
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 243,
-                  "end": 286
                 }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 219,
+                "end": 286
               }
-            ],
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 184,

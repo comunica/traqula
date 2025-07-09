@@ -2,11 +2,11 @@
   "context": [
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "rdfs",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://www.w3.org/2000/01/rdf-schema#",
         "loc": {
           "sourceLocationType": "source",
@@ -22,11 +22,11 @@
     },
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "rdf",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
         "loc": {
           "sourceLocationType": "source",
@@ -41,97 +41,105 @@
       }
     }
   ],
-  "queryType": "select",
-  "where": [
-    {
-      "type": "pattern",
-      "patternType": "bgp",
-      "triples": [
-        {
-          "type": "triple",
-          "subject": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "x",
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "x",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 150,
+                "end": 152
+              }
+            },
+            "predicate": {
+              "type": "path",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 153,
+                "end": 178
+              },
+              "items": [
+                {
+                  "type": "term",
+                  "subType": "namedNode",
+                  "value": "type",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 153,
+                    "end": 161
+                  },
+                  "prefix": "rdf"
+                },
+                {
+                  "type": "path",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 162,
+                    "end": 178
+                  },
+                  "items": [
+                    {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "subClassOf",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 162,
+                        "end": 177
+                      },
+                      "prefix": "rdfs"
+                    }
+                  ],
+                  "subType": "*"
+                }
+              ],
+              "subType": "/"
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "type",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 179,
+                "end": 184
+              }
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 150,
-              "end": 152
-            }
-          },
-          "predicate": {
-            "type": "path",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 153,
-              "end": 178
-            },
-            "items": [
-              {
-                "type": "term",
-                "termType": "NamedNode",
-                "value": "type",
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 153,
-                  "end": 161
-                },
-                "prefix": "rdf"
-              },
-              {
-                "type": "path",
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 162,
-                  "end": 178
-                },
-                "items": [
-                  {
-                    "type": "term",
-                    "termType": "NamedNode",
-                    "value": "subClassOf",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 162,
-                      "end": 177
-                    },
-                    "prefix": "rdfs"
-                  }
-                ],
-                "pathType": "*"
-              }
-            ],
-            "pathType": "/"
-          },
-          "object": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "type",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 179,
               "end": 184
             }
-          },
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 153,
-            "end": 184
           }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 150,
+          "end": 184
         }
-      ],
-      "loc": {
-        "sourceLocationType": "source",
-        "start": 153,
-        "end": 184
       }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 143,
+      "end": 188
     }
-  ],
+  },
   "solutionModifiers": {},
   "datasets": {
     "type": "datasetClauses",
-    "default": [],
-    "named": [],
+    "clauses": [],
     "loc": {
       "sourceLocationType": "noMaterialize"
     }
@@ -139,7 +147,7 @@
   "variables": [
     {
       "type": "term",
-      "termType": "Variable",
+      "subType": "variable",
       "value": "x",
       "loc": {
         "sourceLocationType": "source",
@@ -149,7 +157,7 @@
     },
     {
       "type": "term",
-      "termType": "Variable",
+      "subType": "variable",
       "value": "type",
       "loc": {
         "sourceLocationType": "source",

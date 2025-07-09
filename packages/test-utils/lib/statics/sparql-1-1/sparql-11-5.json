@@ -2,11 +2,11 @@
   "context": [
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://example.com/data/#",
         "loc": {
           "sourceLocationType": "source",
@@ -21,67 +21,76 @@
       }
     }
   ],
-  "queryType": "select",
-  "where": [
-    {
-      "type": "pattern",
-      "patternType": "bgp",
-      "triples": [
-        {
-          "type": "triple",
-          "subject": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "g",
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "g",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 107,
+                "end": 109
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "p",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 110,
+                "end": 112
+              },
+              "prefix": ""
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "p",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 113,
+                "end": 115
+              }
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 107,
-              "end": 109
-            }
-          },
-          "predicate": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "p",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 110,
-              "end": 112
-            },
-            "prefix": ""
-          },
-          "object": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "p",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 113,
               "end": 115
             }
-          },
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 110,
-            "end": 115
           }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 107,
+          "end": 117
         }
-      ],
-      "loc": {
-        "sourceLocationType": "source",
-        "start": 110,
-        "end": 117
       }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 103,
+      "end": 119
     }
-  ],
+  },
   "solutionModifiers": {
     "group": {
       "type": "solutionModifier",
-      "modifierType": "group",
+      "subType": "group",
       "groupings": [
         {
           "type": "term",
-          "termType": "Variable",
+          "subType": "variable",
           "value": "g",
           "loc": {
             "sourceLocationType": "source",
@@ -99,8 +108,7 @@
   },
   "datasets": {
     "type": "datasetClauses",
-    "default": [],
-    "named": [],
+    "clauses": [],
     "loc": {
       "sourceLocationType": "noMaterialize"
     }
@@ -108,7 +116,7 @@
   "variables": [
     {
       "type": "term",
-      "termType": "Variable",
+      "subType": "variable",
       "value": "g",
       "loc": {
         "sourceLocationType": "source",
@@ -118,10 +126,10 @@
     },
     {
       "type": "pattern",
-      "patternType": "bind",
+      "subType": "bind",
       "expression": {
         "type": "expression",
-        "expressionType": "aggregate",
+        "subType": "aggregate",
         "aggregation": "avg",
         "distinct": false,
         "loc": {
@@ -132,7 +140,7 @@
         "expression": [
           {
             "type": "term",
-            "termType": "Variable",
+            "subType": "variable",
             "value": "p",
             "loc": {
               "sourceLocationType": "source",
@@ -144,7 +152,7 @@
       },
       "variable": {
         "type": "term",
-        "termType": "Variable",
+        "subType": "variable",
         "value": "avg",
         "loc": {
           "sourceLocationType": "source",
@@ -160,23 +168,23 @@
     },
     {
       "type": "pattern",
-      "patternType": "bind",
+      "subType": "bind",
       "expression": {
         "type": "expression",
-        "expressionType": "operation",
+        "subType": "operation",
         "operator": "/",
         "args": [
           {
             "type": "expression",
-            "expressionType": "bracketted",
+            "subType": "bracketted",
             "expression": {
               "type": "expression",
-              "expressionType": "operation",
+              "subType": "operation",
               "operator": "+",
               "args": [
                 {
                   "type": "expression",
-                  "expressionType": "aggregate",
+                  "subType": "aggregate",
                   "aggregation": "min",
                   "distinct": false,
                   "loc": {
@@ -187,7 +195,7 @@
                   "expression": [
                     {
                       "type": "term",
-                      "termType": "Variable",
+                      "subType": "variable",
                       "value": "p",
                       "loc": {
                         "sourceLocationType": "source",
@@ -199,7 +207,7 @@
                 },
                 {
                   "type": "expression",
-                  "expressionType": "aggregate",
+                  "subType": "aggregate",
                   "aggregation": "max",
                   "distinct": false,
                   "loc": {
@@ -210,7 +218,7 @@
                   "expression": [
                     {
                       "type": "term",
-                      "termType": "Variable",
+                      "subType": "variable",
                       "value": "p",
                       "loc": {
                         "sourceLocationType": "source",
@@ -235,11 +243,11 @@
           },
           {
             "type": "term",
-            "termType": "Literal",
+            "subType": "literal",
             "value": "2",
             "langOrIri": {
               "type": "term",
-              "termType": "NamedNode",
+              "subType": "namedNode",
               "value": "http://www.w3.org/2001/XMLSchema#integer",
               "loc": {
                 "sourceLocationType": "noMaterialize"
@@ -260,7 +268,7 @@
       },
       "variable": {
         "type": "term",
-        "termType": "Variable",
+        "subType": "variable",
         "value": "c",
         "loc": {
           "sourceLocationType": "source",

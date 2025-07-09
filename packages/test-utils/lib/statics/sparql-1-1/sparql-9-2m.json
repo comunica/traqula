@@ -2,10 +2,10 @@
   "context": [
     {
       "type": "contextDef",
-      "contextType": "base",
+      "subType": "base",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://example.org/",
         "loc": {
           "sourceLocationType": "source",
@@ -21,11 +21,11 @@
     },
     {
       "type": "contextDef",
-      "contextType": "prefix",
+      "subType": "prefix",
       "key": "ex",
       "value": {
         "type": "term",
-        "termType": "NamedNode",
+        "subType": "namedNode",
         "value": "http://example.org/#",
         "loc": {
           "sourceLocationType": "source",
@@ -40,97 +40,105 @@
       }
     }
   ],
-  "queryType": "select",
-  "where": [
-    {
-      "type": "pattern",
-      "patternType": "bgp",
-      "triples": [
-        {
-          "type": "triple",
-          "subject": {
-            "type": "term",
-            "termType": "Variable",
-            "value": "ancestor",
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "ancestor",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 76,
+                "end": 85
+              }
+            },
+            "predicate": {
+              "type": "path",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 87,
+                "end": 112
+              },
+              "items": [
+                {
+                  "type": "path",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 87,
+                    "end": 110
+                  },
+                  "items": [
+                    {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "motherOf",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 87,
+                        "end": 98
+                      },
+                      "prefix": "ex"
+                    },
+                    {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "fatherOf",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 99,
+                        "end": 110
+                      },
+                      "prefix": "ex"
+                    }
+                  ],
+                  "subType": "|"
+                }
+              ],
+              "subType": "+"
+            },
+            "object": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "#me",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 113,
+                "end": 118
+              }
+            },
             "loc": {
               "sourceLocationType": "source",
               "start": 76,
-              "end": 85
-            }
-          },
-          "predicate": {
-            "type": "path",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 87,
-              "end": 112
-            },
-            "items": [
-              {
-                "type": "path",
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 87,
-                  "end": 110
-                },
-                "items": [
-                  {
-                    "type": "term",
-                    "termType": "NamedNode",
-                    "value": "motherOf",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 87,
-                      "end": 98
-                    },
-                    "prefix": "ex"
-                  },
-                  {
-                    "type": "term",
-                    "termType": "NamedNode",
-                    "value": "fatherOf",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 99,
-                      "end": 110
-                    },
-                    "prefix": "ex"
-                  }
-                ],
-                "pathType": "|"
-              }
-            ],
-            "pathType": "+"
-          },
-          "object": {
-            "type": "term",
-            "termType": "NamedNode",
-            "value": "#me",
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 113,
               "end": 118
             }
-          },
-          "loc": {
-            "sourceLocationType": "source",
-            "start": 87,
-            "end": 118
           }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 76,
+          "end": 118
         }
-      ],
-      "loc": {
-        "sourceLocationType": "source",
-        "start": 87,
-        "end": 118
       }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 74,
+      "end": 120
     }
-  ],
+  },
   "solutionModifiers": {},
   "datasets": {
     "type": "datasetClauses",
-    "default": [],
-    "named": [],
+    "clauses": [],
     "loc": {
       "sourceLocationType": "noMaterialize"
     }

@@ -113,16 +113,15 @@ WHERE {
         },
       );
 
-      console.log(JSON.stringify(flattenCollections, null, 2));
-
-      // Const altered = transformer.transformObject(
-      //   ast,
-      //   obj => F.isTerm(obj) && F.isTermBlankNode(obj) && F.isSourceLocationSource(obj.loc) ? obj : undefined,
-      //   current => F.variable(current.label, F.sourceLocationNodeReplaceUnsafe(current.loc)),
-      // );
-
       const result = generator.generate(flattenCollections, query);
-      expect(result).toBe(query);
+      expect(result).toBe(`
+BASE <ex:>
+CONSTRUCT { 
+  ?s0 ?p0 _:g_13 . _:g_13 <a0> _:g_14 . _:g_14 <b0> <c0> . _:g_15 <a0> _:g_16 . _:g_16 <b0> <c0> . _:g_15 ?p0 ?o0 .
+}
+WHERE {
+  ?s1 ?p1 _:g_17 . ?s1 ?p1 <a1> . ?s1 ?q1 <b1> . ?s1 ?q1 <c1> . _:g_18 ?p2 ?o2 . ?s3 ?p3 _:g_19 . _:g_19 <a3> <b3> . ?s4 ?p4 _:g_20 . _:g_20 <a4> <b4> . _:g_20 <c4> <d4> . _:g_20 <c4> <e4> . ?s5 ?p5 _:g_21 . _:g_21 <a5> _:g_22 . _:g_22 <b5> <c5> . _:g_23 <a6> _:g_24 . _:g_24 <b6> <c6> . _:g_23 ?p6 ?o6 . _:g_25 <a7> <b7> . _:g_25 <c7> <d7> . _:g_25 <c7> <e7> .
+}`);
     });
   });
 

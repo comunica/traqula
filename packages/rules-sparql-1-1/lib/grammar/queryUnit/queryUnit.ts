@@ -43,7 +43,7 @@ export const query: SparqlRule<'query', Query> = <const> {
   name: 'query',
   impl: ({ ACTION, SUBRULE, OR }) => (C) => {
     const prologueValues = SUBRULE(prologue, undefined);
-    const queryType = OR<Omit<Query, HandledByBase>>([
+    const subType = OR<Omit<Query, HandledByBase>>([
       { ALT: () => SUBRULE(selectQuery, undefined) },
       { ALT: () => SUBRULE(constructQuery, undefined) },
       { ALT: () => SUBRULE(describeQuery, undefined) },
@@ -53,12 +53,12 @@ export const query: SparqlRule<'query', Query> = <const> {
 
     return ACTION(() => (<Query>{
       context: prologueValues,
-      ...queryType,
+      ...subType,
       type: 'query',
       ...(values && { values }),
       loc: C.factory.sourceLocation(
         prologueValues.at(0),
-        queryType,
+        subType,
         values,
       ),
     }));
@@ -92,7 +92,7 @@ export const selectQuery: SparqlRule<'selectQuery', Omit<QuerySelect, HandledByB
     const modifiers = SUBRULE(solutionModifier, undefined);
 
     return ACTION(() => ({
-      queryType: 'select',
+      subType: 'select',
       where: where.val,
       solutionModifiers: modifiers,
       datasets: from,
@@ -271,7 +271,7 @@ export const constructQuery: SparqlRule<'constructQuery', Omit<QueryConstruct, H
         const where = SUBRULE1(whereClause, undefined);
         const modifiers = SUBRULE1(solutionModifier, undefined);
         return ACTION(() => ({
-          queryType: 'construct',
+          subType: 'construct',
           template: template.val,
           datasets: from,
           where: where.val,
@@ -294,7 +294,7 @@ export const constructQuery: SparqlRule<'constructQuery', Omit<QueryConstruct, H
         const modifiers = SUBRULE2(solutionModifier, undefined);
 
         return ACTION(() => ({
-          queryType: 'construct',
+          subType: 'construct',
           template: template.val,
           datasets: from,
           where: C.factory.patternGroup([ template.val ], C.factory.sourceLocation()),
@@ -353,7 +353,7 @@ export const describeQuery: SparqlRule<'describeQuery', Omit<QueryDescribe, Hand
     const where = OPTION(() => SUBRULE1(whereClause, undefined));
     const modifiers = SUBRULE1(solutionModifier, undefined);
     return ACTION(() => ({
-      queryType: 'describe',
+      subType: 'describe',
       variables,
       datasets: from,
       ...(where && { where: where.val }),
@@ -399,7 +399,7 @@ export const askQuery: SparqlRule<'askQuery', Omit<QueryAsk, HandledByBase>> = <
     const modifiers = SUBRULE(solutionModifier, undefined);
 
     return ACTION(() => ({
-      queryType: 'ask',
+      subType: 'ask',
       datasets: from,
       where: where.val,
       solutionModifiers: modifiers,

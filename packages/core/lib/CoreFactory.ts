@@ -57,6 +57,35 @@ export class CoreFactory {
     return { ...arg, loc: this.sourceLocationNoMaterialize() };
   }
 
+  private safeObjectTransform(value: unknown, mapper: (some: object) => any): any {
+    if (value && typeof value === 'object') {
+      // If you wonder why this is all so hard, this is the reason. We cannot lose the methods of our Array objects
+      if (Array.isArray(value)) {
+        return value.map(x => this.safeObjectTransform(x, mapper));
+      }
+      return mapper(value);
+    }
+    return value;
+  }
+
+  public forcedAutoGenTree<T extends object>(obj: T): T {
+    const copy = { ...obj };
+    for (const [ key, value ] of Object.entries(copy)) {
+      (<Record<string, object>> copy)[key] = this.safeObjectTransform(value, obj => this.forcedAutoGenTree(obj));
+    }
+    if (this.isLocalized(copy)) {
+      copy.loc = this.gen();
+    }
+    return copy;
+  }
+
+  public forceMaterialized<T extends Node>(arg: T): T {
+    if (this.isSourceLocationNoMaterialize(arg.loc)) {
+      return this.forcedAutoGenTree(arg);
+    }
+    return { ...arg };
+  }
+
   public isSourceLocation(loc: object): loc is SourceLocation {
     return 'sourceLocationType' in loc;
   }

@@ -108,7 +108,7 @@ export const update1: SparqlRule<'update1', UpdateOperation> = <const> {
     { ALT: () => SUBRULE(modify, undefined) },
   ]),
   gImpl: ({ SUBRULE }) => (ast) => {
-    switch (ast.operationType) {
+    switch (ast.subType) {
       case ('load'):
         SUBRULE(load, ast, undefined);
         break;
@@ -325,7 +325,7 @@ export const quadData: SparqlGrammarRule<'quadData', Wrap<Quads[]>> = <const> {
 
 function insertDeleteDelWhere<T extends string>(
   name: T,
-  operationType: 'insertdata' | 'deletedata' | 'deletewhere',
+  subType: 'insertdata' | 'deletedata' | 'deletewhere',
   cons1: TokenType,
   cons2: TokenType,
   dataRule: SparqlGrammarRule<any, Wrap<Quads[]>>,
@@ -346,13 +346,13 @@ function insertDeleteDelWhere<T extends string>(
       }
 
       return ACTION(() =>
-        C.factory.updateOperationInsDelDataWhere(operationType, data.val, C.factory.sourceLocation(insDelToken, data)));
+        C.factory.updateOperationInsDelDataWhere(subType, data.val, C.factory.sourceLocation(insDelToken, data)));
     },
     gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
       F.printFilter(ast, () => PRINT_WORD(
-        operationType === 'insertdata' ?
+        subType === 'insertdata' ?
           'INSERT DATA' :
-            (operationType === 'deletedata' ? 'DELETE DATA' : 'DELETE WHERE'),
+            (subType === 'deletedata' ? 'DELETE DATA' : 'DELETE WHERE'),
         '{',
       ));
       SUBRULE(quads, F.wrap(ast.data, ast.loc), undefined);

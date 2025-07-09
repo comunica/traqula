@@ -18,19 +18,19 @@ export type Sparql11Nodes =
 
 export type GraphRefBase = Node & {
   type: 'graphRef';
-  graphRefType: string;
+  subType: string;
 };
 export type GraphRefDefault = GraphRefBase & {
-  graphRefType: 'default';
+  subType: 'default';
 };
 export type GraphRefNamed = GraphRefBase & {
-  graphRefType: 'named';
+  subType: 'named';
 };
 export type GraphRefAll = GraphRefBase & {
-  graphRefType: 'all';
+  subType: 'all';
 };
 export type GraphRefSpecific = GraphRefBase & {
-  graphRefType: 'specific';
+  subType: 'specific';
   graph: TermIri;
 };
 export type GraphRef =
@@ -48,42 +48,42 @@ export type GraphQuads = Node & {
 };
 
 // https://www.w3.org/TR/sparql11-query/#rUpdate1
-export type UpdateOperationBase = Node & { type: 'updateOperation'; operationType: string };
+export type UpdateOperationBase = Node & { type: 'updateOperation'; subType: string };
 export type UpdateOperationLoad = UpdateOperationBase & {
-  operationType: 'load';
+  subType: 'load';
   silent: boolean;
   source: TermIri;
   destination?: GraphRefSpecific;
 };
 type UpdateOperationClearDropCreateBase = UpdateOperationBase & {
-  operationType: 'clear' | 'drop' | 'create';
+  subType: 'clear' | 'drop' | 'create';
   silent: boolean;
   destination: GraphRef;
 };
-export type UpdateOperationClear = UpdateOperationClearDropCreateBase & { operationType: 'clear' };
-export type UpdateOperationDrop = UpdateOperationClearDropCreateBase & { operationType: 'drop' };
+export type UpdateOperationClear = UpdateOperationClearDropCreateBase & { subType: 'clear' };
+export type UpdateOperationDrop = UpdateOperationClearDropCreateBase & { subType: 'drop' };
 export type UpdateOperationCreate = UpdateOperationClearDropCreateBase & {
-  operationType: 'create';
+  subType: 'create';
   destination: GraphRefSpecific;
 };
 type UpdateOperationAddMoveCopy = UpdateOperationBase & {
-  operationType: 'add' | 'move' | 'copy';
+  subType: 'add' | 'move' | 'copy';
   silent: boolean;
   source: GraphRefDefault | GraphRefSpecific;
   destination: GraphRefDefault | GraphRefSpecific;
 };
-export type UpdateOperationAdd = UpdateOperationAddMoveCopy & { operationType: 'add' };
-export type UpdateOperationMove = UpdateOperationAddMoveCopy & { operationType: 'move' };
-export type UpdateOperationCopy = UpdateOperationAddMoveCopy & { operationType: 'copy' };
+export type UpdateOperationAdd = UpdateOperationAddMoveCopy & { subType: 'add' };
+export type UpdateOperationMove = UpdateOperationAddMoveCopy & { subType: 'move' };
+export type UpdateOperationCopy = UpdateOperationAddMoveCopy & { subType: 'copy' };
 type UpdateOperationInsertDeleteDelWhere = UpdateOperationBase & {
-  operationType: 'insertdata' | 'deletedata' | 'deletewhere';
+  subType: 'insertdata' | 'deletedata' | 'deletewhere';
   data: Quads[];
 };
-export type UpdateOperationInsertData = UpdateOperationInsertDeleteDelWhere & { operationType: 'insertdata' };
-export type UpdateOperationDeleteData = UpdateOperationInsertDeleteDelWhere & { operationType: 'deletedata' };
-export type UpdateOperationDeleteWhere = UpdateOperationInsertDeleteDelWhere & { operationType: 'deletewhere' };
+export type UpdateOperationInsertData = UpdateOperationInsertDeleteDelWhere & { subType: 'insertdata' };
+export type UpdateOperationDeleteData = UpdateOperationInsertDeleteDelWhere & { subType: 'deletedata' };
+export type UpdateOperationDeleteWhere = UpdateOperationInsertDeleteDelWhere & { subType: 'deletewhere' };
 export type UpdateOperationModify = UpdateOperationBase & {
-  operationType: 'modify';
+  subType: 'modify';
   graph: TermIri | undefined;
   insert: Quads[];
   delete: Quads[];
@@ -115,7 +115,7 @@ export type Update = Node & {
 // https://www.w3.org/TR/sparql11-query/#rQueryUnit
 export type QueryBase = Node & {
   type: 'query';
-  queryType: string;
+  subType: string;
 
   context: ContextDefinition[];
   values?: PatternValues;
@@ -124,23 +124,23 @@ export type QueryBase = Node & {
   where?: PatternGroup;
 };
 export type QuerySelect = QueryBase & {
-  queryType: 'select';
+  subType: 'select';
   variables: (TermVariable | PatternBind)[] | [Wildcard];
   distinct?: true;
   reduced?: true;
   where: PatternGroup;
 };
 export type QueryConstruct = QueryBase & {
-  queryType: 'construct';
+  subType: 'construct';
   template: PatternBgp;
   where: PatternGroup;
 };
 export type QueryDescribe = QueryBase & {
-  queryType: 'describe';
+  subType: 'describe';
   variables: (TermVariable | TermIri)[] | [Wildcard];
 };
 export type QueryAsk = QueryBase & {
-  queryType: 'ask';
+  subType: 'ask';
   where: PatternGroup;
 };
 export type Query =
@@ -160,22 +160,22 @@ export type DatasetClauses = Node & {
 // https://www.w3.org/TR/sparql11-query/#rGraphNode
 export type TripleCollectionBase = Node & {
   type: 'tripleCollection';
+  subType: string;
   triples: TripleNesting[];
-  tripleCollectionType: string;
   identifier: Term;
 };
 /**
  * The subject of the triples does not have a string manifestation.
  */
 export type TripleCollectionList = TripleCollectionBase & {
-  tripleCollectionType: 'list';
+  subType: 'list';
   identifier: TermBlank;
 };
 /**
  * Bot subject and predicate of the triples do not have a string manifestation.
  */
 export type TripleCollectionBlankNodeProperties = TripleCollectionBase & {
-  tripleCollectionType: 'blankNodeProperties';
+  subType: 'blankNodeProperties';
   identifier: TermBlank;
 };
 export type TripleCollection =
@@ -188,53 +188,53 @@ export type GraphNode = Term | TripleCollection;
 // https://www.w3.org/TR/sparql11-query/#rTriplesBlock
 export type TripleNesting = Node & {
   type: 'triple';
-  subject: GraphNode;
+  subject: Term;
   predicate: TermIri | TermVariable | Path;
   object: GraphNode;
 };
 
-export type PatternBase = Node & { type: 'pattern'; patternType: string };
+export type PatternBase = Node & { type: 'pattern'; subType: string };
 export type PatternFilter = PatternBase & {
-  patternType: 'filter';
+  subType: 'filter';
   expression: Expression;
 };
 export type PatternMinus = PatternBase & {
-  patternType: 'minus';
+  subType: 'minus';
   patterns: Pattern[];
 };
 
 export type PatternGroup = PatternBase & {
-  patternType: 'group';
+  subType: 'group';
   patterns: Pattern[];
 };
 export type PatternOptional = PatternBase & {
-  patternType: 'optional';
+  subType: 'optional';
   patterns: Pattern[];
 };
 export type PatternGraph = PatternBase & {
-  patternType: 'graph';
+  subType: 'graph';
   name: TermIri | TermVariable;
   patterns: Pattern[];
 };
 export type PatternUnion = PatternBase & {
-  patternType: 'union';
+  subType: 'union';
   patterns: PatternGroup[];
 };
 export type BasicGraphPattern = (TripleNesting | TripleCollection)[];
 export type PatternBgp = PatternBase & {
-  patternType: 'bgp';
+  subType: 'bgp';
   /**
    * Only the first appearance of a subject and predicate have a string manifestation
    */
   triples: BasicGraphPattern;
 };
 export type PatternBind = PatternBase & {
-  patternType: 'bind';
+  subType: 'bind';
   expression: Expression;
   variable: TermVariable;
 };
 export type PatternService = PatternBase & {
-  patternType: 'service';
+  subType: 'service';
   name: TermIri | TermVariable;
   silent: boolean;
   patterns: Pattern[];
@@ -244,7 +244,7 @@ export type PatternService = PatternBase & {
  */
 export type ValuePatternRow = Record<string, TermIri | TermBlank | TermLiteral | undefined>;
 export type PatternValues = PatternBase & {
-  patternType: 'values';
+  subType: 'values';
   values: ValuePatternRow[];
 };
 export type SubSelect = QuerySelect;
@@ -268,28 +268,28 @@ export type SolutionModifiers = {
   order?: SolutionModifierOrder;
   limitOffset?: SolutionModifierLimitOffset;
 };
-export type SolutionModifierBase = Node & { type: 'solutionModifier'; modifierType: string };
+export type SolutionModifierBase = Node & { type: 'solutionModifier'; subType: string };
 export type SolutionModifierGroupBind = Pick<Node, 'loc'> & {
   variable: TermVariable;
   value: Expression;
 };
 export type SolutionModifierGroup = SolutionModifierBase & {
-  modifierType: 'group';
+  subType: 'group';
   groupings: (Expression | SolutionModifierGroupBind)[];
 };
 export type SolutionModifierHaving = SolutionModifierBase & {
-  modifierType: 'having';
+  subType: 'having';
   having: Expression[];
 };
 export type Ordering =
   | Expression
   | (Localized & { descending: boolean; expression: Expression });
 export type SolutionModifierOrder = SolutionModifierBase & {
-  modifierType: 'order';
+  subType: 'order';
   orderDefs: Ordering[];
 };
 export type SolutionModifierLimitOffset = SolutionModifierBase
-  & { modifierType: 'limitOffset'; limit: number | undefined; offset: number | undefined };
+  & { subType: 'limitOffset'; limit: number | undefined; offset: number | undefined };
 
 export type SolutionModifier =
   | SolutionModifierGroup
@@ -297,10 +297,10 @@ export type SolutionModifier =
   | SolutionModifierOrder
   | SolutionModifierLimitOffset;
 
-export type ExpressionBase = Node & { type: 'expression' };
+export type ExpressionBase = Node & { type: 'expression'; subType: string };
 
 type ExpressionAggregateBase = ExpressionBase & {
-  expressionType: 'aggregate';
+  subType: 'aggregate';
   distinct: boolean;
 };
 export type ExpressionAggregateDefault = ExpressionAggregateBase & {
@@ -322,25 +322,25 @@ export type ExpressionAggregate =
   | ExpressionAggregateSeparator;
 
 export type ExpressionOperation = ExpressionBase & {
-  expressionType: 'operation';
+  subType: 'operation';
   operator: string;
   args: Expression[];
 };
 
 export type ExpressionBracketted = ExpressionBase & {
-  expressionType: 'bracketted';
+  subType: 'bracketted';
   expression: Expression;
 };
 
 export type ExpressionPatternOperation = ExpressionBase & {
-  expressionType: 'patternOperation';
+  subType: 'patternOperation';
   operator: string;
   // Can be a pattern in case of exists and not exists
   args: PatternGroup;
 };
 
 export type ExpressionFunctionCall = ExpressionBase & {
-  expressionType: 'functionCall';
+  subType: 'functionCall';
   function: TermIri;
   distinct: boolean;
   args: Expression[];
@@ -356,29 +356,29 @@ export type Expression =
   | TermVariable
   | TermLiteral;
 
-type PropertyPathBase = Node & { type: 'path' };
+type PropertyPathBase = Node & { type: 'path'; subType: string };
 export type PropertyPathChain = PropertyPathBase & {
-  pathType: '|' | '/';
+  subType: '|' | '/';
   items: [Path, ...Path[]];
 };
 
 export type PathModified = PropertyPathBase & {
-  pathType: '?' | '*' | '+' | '^';
+  subType: '?' | '*' | '+' | '^';
   items: [Path];
 };
 
 export type PathNegatedElt = PropertyPathBase & {
-  pathType: '^';
+  subType: '^';
   items: [TermIri];
 };
 
 export type PathAlternativeLimited = PropertyPathBase & {
-  pathType: '|';
+  subType: '|';
   items: [TermIri | PathNegatedElt, ...(TermIri | PathNegatedElt)[]];
 };
 
 export type PathNegated = PropertyPathBase & {
-  pathType: '!';
+  subType: '!';
   items: [TermIri | PathNegatedElt | PathAlternativeLimited];
 };
 
@@ -389,14 +389,14 @@ export type Path =
   | PathModified
   | PathNegated;
 
-type ContextDefinitionBase_ = Node & { type: 'contextDef' };
+type ContextDefinitionBase_ = Node & { type: 'contextDef'; subType: string };
 export type ContextDefinitionPrefix = ContextDefinitionBase_ & {
-  contextType: 'prefix';
+  subType: 'prefix';
   key: string;
   value: TermIriFull;
 };
 export type ContextDefinitionBase = ContextDefinitionBase_ & {
-  contextType: 'base';
+  subType: 'base';
   value: TermIriFull;
 };
 export type ContextDefinition = ContextDefinitionPrefix | ContextDefinitionBase;
@@ -405,9 +405,9 @@ export type Wildcard = Node & {
   type: 'wildcard';
 };
 
-type TermBase = Node & { type: 'term' };
+type TermBase = Node & { type: 'term'; subType: string };
 type TermLiteralBase = TermBase & {
-  termType: 'Literal';
+  subType: 'literal';
   value: string;
 };
 export type TermLiteralStr = TermLiteralBase & { langOrIri: undefined };
@@ -416,11 +416,11 @@ export type TermLiteralTyped = TermLiteralBase & { langOrIri: TermIri };
 export type TermLiteral = TermLiteralStr | TermLiteralLangStr | TermLiteralTyped;
 
 export type TermVariable = TermBase & {
-  termType: 'Variable';
+  subType: 'variable';
   value: string;
 };
 
-type TermIriBase = TermBase & { termType: 'NamedNode' };
+type TermIriBase = TermBase & { subType: 'namedNode' };
 export type TermIriFull = TermIriBase & { value: string };
 export type TermIriPrefixed = TermIriBase & {
   value: string;
@@ -428,7 +428,7 @@ export type TermIriPrefixed = TermIriBase & {
 };
 export type TermIri = TermIriFull | TermIriPrefixed;
 
-export type TermBlank = TermBase & { termType: 'BlankNode' } & { label: string };
+export type TermBlank = TermBase & { subType: 'blankNode' } & { label: string };
 
 export type GraphTerm = TermIri | TermBlank | TermLiteral;
 export type Term = GraphTerm | TermVariable;

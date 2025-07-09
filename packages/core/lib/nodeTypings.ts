@@ -16,6 +16,7 @@ export interface Wrap<T> extends Localized {
  */
 export interface Node extends Localized {
   type: string;
+  subType?: string;
 }
 
 export interface SourceLocationBase {

@@ -65,7 +65,7 @@ export const groupClause: SparqlRule<'groupClause', SolutionModifierGroup> = <co
 
     return ACTION(() => ({
       type: 'solutionModifier',
-      modifierType: 'group',
+      subType: 'group',
       groupings,
       loc: C.factory.sourceLocation(start, groupings.at(-1)),
     }));

@@ -87,9 +87,9 @@ export const generatePattern: SparqlGeneratorRule<'generatePattern', Pattern> = 
         solutionModifiers: ast.solutionModifiers,
         values: ast.values,
       }, ast.loc), undefined);
-    } else if (ast.patternType === 'group') {
+    } else if (ast.subType === 'group') {
       SUBRULE(groupGraphPattern, ast, undefined);
-    } else if (ast.patternType === 'bgp') {
+    } else if (ast.subType === 'bgp') {
       SUBRULE(triplesBlock, ast, undefined);
     } else {
       SUBRULE(graphPatternNotTriples, ast, undefined);
@@ -160,7 +160,7 @@ export const graphPatternNotTriples: SparqlRule<'graphPatternNotTriples', Exclud
     { ALT: () => SUBRULE(inlineData, undefined) },
   ]),
   gImpl: ({ SUBRULE }) => (ast) => {
-    switch (ast.patternType) {
+    switch (ast.subType) {
       case 'group':
       case 'union':
         SUBRULE(groupOrUnionGraphPattern, ast, undefined);

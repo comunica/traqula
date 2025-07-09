@@ -18,7 +18,7 @@ export const path: SparqlRule<'path', Path> = <const> {
     if (F.isTerm(ast) && F.isTermIri(ast)) {
       SUBRULE(iri, ast, undefined);
     } else {
-      switch (ast.pathType) {
+      switch (ast.subType) {
         case '|':
         case '/': {
           const [ head, ...tail ] = ast.items;
@@ -40,7 +40,7 @@ export const path: SparqlRule<'path', Path> = <const> {
         case '*':
         case '+':
           SUBRULE(path, ast.items[0], undefined);
-          F.printFilter(ast, () => PRINT(ast.pathType));
+          F.printFilter(ast, () => PRINT(ast.subType));
           break;
         case '!':
           F.printFilter(ast, () => PRINT('!'));
@@ -54,7 +54,7 @@ export const path: SparqlRule<'path', Path> = <const> {
 export function pathChainHelper<T extends string>(
   name: T,
   SEP: TokenType,
-  pathType: '|' | '/',
+  subType: '|' | '/',
   subRule: SparqlGrammarRule<string, Path>,
 ): SparqlGrammarRule<T, Path | TermIri> {
   return {
@@ -72,7 +72,7 @@ export function pathChainHelper<T extends string>(
 
       return ACTION(() => tail.length === 0 ?
         head :
-        C.factory.path(pathType, [ head, ...tail ], C.factory.sourceLocation(head, tailEnd)));
+        C.factory.path(subType, [ head, ...tail ], C.factory.sourceLocation(head, tailEnd)));
     },
   };
 }

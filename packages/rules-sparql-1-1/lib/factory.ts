@@ -81,17 +81,17 @@ export class TraqulaFactory extends CoreFactory {
   private blankNodeCounter = 0;
 
   public isContextDefinitionPrefix(contextDef: ContextDefinition): contextDef is ContextDefinitionPrefix {
-    return contextDef.contextType === 'prefix';
+    return contextDef.subType === 'prefix';
   }
 
   public isContextDefinitionBase(contextDef: ContextDefinition): contextDef is ContextDefinitionBase {
-    return contextDef.contextType === 'base';
+    return contextDef.subType === 'base';
   }
 
   public contextDefinitionPrefix(loc: SourceLocation, key: string, value: TermIriFull): ContextDefinitionPrefix {
     return {
       type: 'contextDef',
-      contextType: 'prefix',
+      subType: 'prefix',
       key,
       value,
       loc,
@@ -101,7 +101,7 @@ export class TraqulaFactory extends CoreFactory {
   public contextDefinitionBase(loc: SourceLocation, value: TermIriFull): ContextDefinitionBase {
     return {
       type: 'contextDef',
-      contextType: 'base',
+      subType: 'base',
       value,
       loc,
     };
@@ -112,17 +112,17 @@ export class TraqulaFactory extends CoreFactory {
   }
 
   public isBaseDecl(x: ContextDefinition): x is ContextDefinitionBase {
-    return x.contextType === 'base';
+    return x.subType === 'base';
   }
 
   public isPrefixDecl(x: ContextDefinition): x is ContextDefinitionBase {
-    return x.contextType === 'prefix';
+    return x.subType === 'prefix';
   }
 
   public variable(value: string, loc: SourceLocation): TermVariable {
     return {
       type: 'term',
-      termType: 'Variable',
+      subType: 'variable',
       value,
       loc,
     };
@@ -149,31 +149,35 @@ export class TraqulaFactory extends CoreFactory {
   }
 
   public isExpressionOperator(x: Expression): x is ExpressionOperation {
-    return x.type === 'expression' && x.expressionType === 'operation';
+    return x.type === 'expression' && x.subType === 'operation';
   }
 
   public isExpressionPatternOperator(x: Expression): x is ExpressionPatternOperation {
-    return x.type === 'expression' && x.expressionType === 'patternOperation';
+    return x.type === 'expression' && x.subType === 'patternOperation';
   }
 
   public isExpressionAggregate(x: Expression): x is ExpressionAggregate {
-    return x.type === 'expression' && x.expressionType === 'aggregate';
+    return x.type === 'expression' && x.subType === 'aggregate';
   }
 
   public isTermIri(x: Expression | Term): x is TermIri {
-    return this.isTerm(x) && x.termType === 'NamedNode';
+    return this.isTerm(x) && x.subType === 'namedNode';
   }
 
   public isTermVariable(x: Expression | Term): x is TermVariable {
-    return this.isTerm(x) && x.termType === 'Variable';
+    return this.isTerm(x) && x.subType === 'variable';
   }
 
   public isTermLiteral(x: Expression | Term): x is TermLiteral {
-    return this.isTerm(x) && x.termType === 'Literal';
+    return this.isTerm(x) && x.subType === 'literal';
+  }
+
+  public isTermBlankNode(x: Expression | Term): x is TermBlank {
+    return this.isTerm(x) && x.subType === 'blankNode';
   }
 
   public isExpressionFunctionCall(x: Expression): x is ExpressionFunctionCall {
-    return x.type === 'expression' && x.expressionType === 'functionCall';
+    return x.type === 'expression' && x.subType === 'functionCall';
   }
 
   public isExpressionAggregateSeparator(x: ExpressionAggregate): x is ExpressionAggregateSeparator {
@@ -199,7 +203,7 @@ export class TraqulaFactory extends CoreFactory {
   ): ExpressionOperation & { args: Args } {
     return {
       type: 'expression',
-      expressionType: 'operation',
+      subType: 'operation',
       operator: this.formatOperator(operator),
       args,
       loc,
@@ -214,7 +218,7 @@ export class TraqulaFactory extends CoreFactory {
   ): ExpressionFunctionCall & { args: Args } {
     return {
       type: 'expression',
-      expressionType: 'functionCall',
+      subType: 'functionCall',
       function: functionOp,
       args,
       distinct,
@@ -229,7 +233,7 @@ export class TraqulaFactory extends CoreFactory {
   ): ExpressionPatternOperation {
     return {
       type: 'expression',
-      expressionType: 'patternOperation',
+      subType: 'patternOperation',
       operator: this.formatOperator(operator),
       args,
       loc,
@@ -251,12 +255,20 @@ export class TraqulaFactory extends CoreFactory {
     };
   }
 
+  public isTriple(x: object): x is TripleNesting {
+    return 'type' in x && x.type === 'triple';
+  }
+
   public isPatternGroup(x: Pattern): x is PatternGroup {
-    return x.type === 'pattern' && x.patternType === 'group';
+    return x.type === 'pattern' && x.subType === 'group';
   }
 
   public isPatternUnion(x: Pattern): x is PatternUnion {
-    return x.type === 'pattern' && x.patternType === 'union';
+    return x.type === 'pattern' && x.subType === 'union';
+  }
+
+  public isPatternBgp(x: Pattern): x is PatternBgp {
+    return x.type === 'pattern' && x.subType === 'bgp';
   }
 
   public isPattern(x: any): x is Pattern {
@@ -268,25 +280,25 @@ export class TraqulaFactory extends CoreFactory {
   }
 
   public isQuerySelect(query: Query): query is QuerySelect {
-    return query.queryType === 'select';
+    return query.subType === 'select';
   }
 
   public isQueryConstruc(query: Query): query is QueryConstruct {
-    return query.queryType === 'construct';
+    return query.subType === 'construct';
   }
 
   public isQueryDescribe(query: Query): query is QueryDescribe {
-    return query.queryType === 'describe';
+    return query.subType === 'describe';
   }
 
   public isQueryAsk(query: Query): query is QueryAsk {
-    return query.queryType === 'ask';
+    return query.subType === 'ask';
   }
 
-  public querySelect(arg: Omit<QuerySelect, 'type' | 'queryType' | 'loc'>, loc: SourceLocation): QuerySelect {
+  public querySelect(arg: Omit<QuerySelect, 'type' | 'subType' | 'loc'>, loc: SourceLocation): QuerySelect {
     return {
       type: 'query',
-      queryType: 'select',
+      subType: 'select',
       ...arg,
       loc,
     };
@@ -301,29 +313,29 @@ export class TraqulaFactory extends CoreFactory {
   }
 
   public patternBgp(triples: BasicGraphPattern, loc: SourceLocation): PatternBgp {
-    return { type: 'pattern', patternType: 'bgp', triples, loc };
+    return { type: 'pattern', subType: 'bgp', triples, loc };
   }
 
   public patternGroup(patterns: Pattern[], loc: SourceLocation): PatternGroup {
-    return { type: 'pattern', patternType: 'group', patterns, loc };
+    return { type: 'pattern', subType: 'group', patterns, loc };
   }
 
   public patternGraph(name: TermIri | TermVariable, patterns: Pattern[], loc: SourceLocation): PatternGraph {
-    return { type: 'pattern', patternType: 'graph', name, patterns, loc };
+    return { type: 'pattern', subType: 'graph', name, patterns, loc };
   }
 
   public patternOptional(patterns: Pattern[], loc: SourceLocation): PatternOptional {
-    return { type: 'pattern', patternType: 'optional', patterns, loc };
+    return { type: 'pattern', subType: 'optional', patterns, loc };
   }
 
   public patternValues(values: ValuePatternRow[], loc: SourceLocation): PatternValues {
-    return { type: 'pattern', patternType: 'values', values, loc };
+    return { type: 'pattern', subType: 'values', values, loc };
   }
 
   public patternFilter(expression: Expression, loc: SourceLocation): PatternFilter {
     return {
       type: 'pattern',
-      patternType: 'filter',
+      subType: 'filter',
       expression,
       loc,
     };
@@ -336,7 +348,7 @@ export class TraqulaFactory extends CoreFactory {
   ): PatternBind {
     return {
       type: 'pattern',
-      patternType: 'bind',
+      subType: 'bind',
       expression,
       variable,
       loc,
@@ -346,7 +358,7 @@ export class TraqulaFactory extends CoreFactory {
   public patternUnion(patterns: PatternGroup[], loc: SourceLocation): PatternUnion {
     return {
       type: 'pattern',
-      patternType: 'union',
+      subType: 'union',
       patterns,
       loc,
     };
@@ -355,7 +367,7 @@ export class TraqulaFactory extends CoreFactory {
   public patternMinus(patterns: Pattern[], loc: SourceLocation): PatternMinus {
     return {
       type: 'pattern',
-      patternType: 'minus',
+      subType: 'minus',
       patterns,
       loc,
     };
@@ -369,7 +381,7 @@ export class TraqulaFactory extends CoreFactory {
   ): PatternService {
     return {
       type: 'pattern',
-      patternType: 'service',
+      subType: 'service',
       silent,
       name,
       patterns,
@@ -378,25 +390,25 @@ export class TraqulaFactory extends CoreFactory {
   }
 
   public isGraphRefSpecific(graphRef: GraphRef): graphRef is GraphRefSpecific {
-    return graphRef.graphRefType === 'specific';
+    return graphRef.subType === 'specific';
   }
 
   public isGraphRefDefault(graphRef: GraphRef): graphRef is GraphRefDefault {
-    return graphRef.graphRefType === 'default';
+    return graphRef.subType === 'default';
   }
 
   public isGraphRefNamed(graphRef: GraphRef): graphRef is GraphRefNamed {
-    return graphRef.graphRefType === 'named';
+    return graphRef.subType === 'named';
   }
 
   public isGraphRefAll(graphRef: GraphRef): graphRef is GraphRefAll {
-    return graphRef.graphRefType === 'all';
+    return graphRef.subType === 'all';
   }
 
   public graphRefSpecific(graph: TermIri, loc: SourceLocation): GraphRefSpecific {
     return {
       type: 'graphRef',
-      graphRefType: 'specific',
+      subType: 'specific',
       graph,
       loc,
     };
@@ -405,7 +417,7 @@ export class TraqulaFactory extends CoreFactory {
   public graphRefDefault(loc: SourceLocation): GraphRefDefault {
     return {
       type: 'graphRef',
-      graphRefType: 'default',
+      subType: 'default',
       loc,
     };
   }
@@ -413,7 +425,7 @@ export class TraqulaFactory extends CoreFactory {
   public graphRefNamed(loc: SourceLocation): GraphRefNamed {
     return {
       type: 'graphRef',
-      graphRefType: 'named',
+      subType: 'named',
       loc,
     };
   }
@@ -421,7 +433,7 @@ export class TraqulaFactory extends CoreFactory {
   public graphRefAll(loc: SourceLocation): GraphRefAll {
     return {
       type: 'graphRef',
-      graphRefType: 'all',
+      subType: 'all',
       loc,
     };
   }
@@ -456,7 +468,7 @@ export class TraqulaFactory extends CoreFactory {
   ): ExpressionAggregate {
     const base = <const> {
       type: 'expression',
-      expressionType: 'aggregate',
+      subType: 'aggregate',
       aggregation: this.formatOperator(aggregation),
       distinct,
       loc,
@@ -479,21 +491,21 @@ export class TraqulaFactory extends CoreFactory {
   }
 
   public path(
-    pathType: '|',
+    subType: '|',
     items: [TermIri | PathNegatedElt, ...(TermIri | PathNegatedElt)[]],
     loc: SourceLocation
   ): PathAlternativeLimited;
   public path(
-    pathType: '!',
+    subType: '!',
     items: [TermIri | PathNegatedElt | PathAlternativeLimited],
     loc: SourceLocation
   ): PathNegated;
-  public path(pathType: '^', items: [TermIri], loc: SourceLocation): PathNegatedElt;
-  public path(pathType: PathModified['pathType'], item: [Path], loc: SourceLocation): PathModified;
-  public path(pathType: '|' | '/', items: [Path, ...Path[]], loc: SourceLocation):
+  public path(subType: '^', items: [TermIri], loc: SourceLocation): PathNegatedElt;
+  public path(subType: PathModified['subType'], item: [Path], loc: SourceLocation): PathModified;
+  public path(subType: '|' | '/', items: [Path, ...Path[]], loc: SourceLocation):
   PropertyPathChain;
   public path(
-    pathType: (PropertyPathChain | PathModified | PathNegated)['pathType'],
+    subType: (PropertyPathChain | PathModified | PathNegated)['subType'],
     items: [Path, ...Path[]],
     loc: SourceLocation,
   ): Path {
@@ -502,31 +514,31 @@ export class TraqulaFactory extends CoreFactory {
       loc,
       items,
     };
-    if (pathType === '|' || pathType === '/') {
+    if (subType === '|' || subType === '/') {
       return {
         ...base,
-        pathType,
+        subType,
       } satisfies PropertyPathChain;
     }
-    if ((pathType === '?' || pathType === '*' || pathType === '+' || pathType === '^') && items.length === 1) {
+    if ((subType === '?' || subType === '*' || subType === '+' || subType === '^') && items.length === 1) {
       return {
         ...base,
-        pathType,
+        subType,
         items: <[Path]> items,
       } satisfies PathModified;
     }
-    if (pathType === '^' && items.length === 1 && this.isTerm(items[0])) {
+    if (subType === '^' && items.length === 1 && this.isTerm(items[0])) {
       return {
         ...base,
-        pathType,
+        subType,
         items: <[TermIri]> items,
       } satisfies PathNegatedElt;
     }
-    if (pathType === '!' && items.length === 1 && (
+    if (subType === '!' && items.length === 1 && (
       this.isPathAlternativeLimited(items[0]) || this.isTerm(items[0]) || this.isPathNegatedElt(items[0]))) {
       return {
         ...base,
-        pathType,
+        subType,
         items: <[TermIri | PathNegatedElt | PathAlternativeLimited]> items,
       } satisfies PathNegated;
     }
@@ -534,23 +546,23 @@ export class TraqulaFactory extends CoreFactory {
   }
 
   public isPathChain(x: Path): x is PropertyPathChain {
-    return 'pathType' in x && (x.pathType === '|' || x.pathType === '/');
+    return 'subType' in x && (x.subType === '|' || x.subType === '/');
   }
 
   public isPathModified(x: Path): x is PathModified {
-    return 'pathType' in x && (x.pathType === '?' || x.pathType === '*' || x.pathType === '+' || x.pathType === '^');
+    return 'subType' in x && (x.subType === '?' || x.subType === '*' || x.subType === '+' || x.subType === '^');
   }
 
   public isPathNegatedElt(x: Path): x is PathNegatedElt {
-    return 'pathType' in x && x.pathType === '^' && x.items.every(path => this.isTerm(path));
+    return 'subType' in x && x.subType === '^' && x.items.every(path => this.isTerm(path));
   }
 
   public isPathNegated(x: Path): x is PathNegated {
-    return 'pathType' in x && x.pathType === '!';
+    return 'subType' in x && x.subType === '!';
   }
 
   public isPathAlternativeLimited(x: Path): x is PathAlternativeLimited {
-    return 'pathType' in x && x.pathType === '|' &&
+    return 'subType' in x && x.subType === '|' &&
       x.items.every(path => this.isTerm(path) || this.isPathNegatedElt(path));
   }
 
@@ -565,7 +577,7 @@ export class TraqulaFactory extends CoreFactory {
   public namedNode(loc: SourceLocation, value: string, prefix?: string): TermIriFull | TermIriPrefixed {
     const base = <const> {
       type: 'term',
-      termType: 'NamedNode',
+      subType: 'namedNode',
       value,
       loc,
     };
@@ -578,7 +590,7 @@ export class TraqulaFactory extends CoreFactory {
   public blankNode(label: undefined | string, loc: SourceLocation): TermBlank {
     const base = <const> {
       type: 'term',
-      termType: 'BlankNode',
+      subType: 'blankNode',
       loc,
     };
     if (label === undefined) {
@@ -594,7 +606,7 @@ export class TraqulaFactory extends CoreFactory {
   ): TripleCollectionBlankNodeProperties {
     return {
       type: 'tripleCollection',
-      tripleCollectionType: 'blankNodeProperties',
+      subType: 'blankNodeProperties',
       identifier,
       triples,
       loc,
@@ -608,7 +620,7 @@ export class TraqulaFactory extends CoreFactory {
   ): TripleCollectionList {
     return {
       type: 'tripleCollection',
-      tripleCollectionType: 'list',
+      subType: 'list',
       identifier,
       triples,
       loc,
@@ -617,6 +629,15 @@ export class TraqulaFactory extends CoreFactory {
 
   public isTripleCollection(collection: object): collection is TripleCollection {
     return 'type' in collection && collection.type === 'tripleCollection';
+  }
+
+  public isTripleCollectionList(collection: TripleCollection): collection is TripleCollectionList {
+    return collection.subType === 'list';
+  }
+
+  public isTripleCollectionBlankNodeProperties(collection: TripleCollection):
+    collection is TripleCollectionBlankNodeProperties {
+    return collection.subType === 'blankNodeProperties';
   }
 
   public resetBlankNodeCounter(): void {
@@ -631,7 +652,7 @@ export class TraqulaFactory extends CoreFactory {
   ): UpdateOperationLoad {
     return {
       type: 'updateOperation',
-      operationType: 'load',
+      subType: 'load',
       silent,
       source,
       ...(destination && { destination }),
@@ -639,25 +660,25 @@ export class TraqulaFactory extends CoreFactory {
     };
   }
 
-  public updateOperationClearDrop(operationType: 'clear', silent: boolean, destination: GraphRef, loc: SourceLocation):
+  public updateOperationClearDrop(subType: 'clear', silent: boolean, destination: GraphRef, loc: SourceLocation):
   UpdateOperationClear;
-  public updateOperationClearDrop(operationType: 'drop', silent: boolean, destination: GraphRef, loc: SourceLocation):
+  public updateOperationClearDrop(subType: 'drop', silent: boolean, destination: GraphRef, loc: SourceLocation):
   UpdateOperationDrop;
   public updateOperationClearDrop(
-    operationType: 'clear' | 'drop',
+    subType: 'clear' | 'drop',
     silent: boolean,
     destination: GraphRef,
     loc: SourceLocation
   ): UpdateOperationClear | UpdateOperationDrop;
   public updateOperationClearDrop(
-    operationType: 'clear' | 'drop',
+    subType: 'clear' | 'drop',
     silent: boolean,
     destination: GraphRef,
     loc: SourceLocation,
   ): UpdateOperationClear | UpdateOperationDrop {
     return {
       type: 'updateOperation',
-      operationType,
+      subType,
       silent,
       destination,
       loc,
@@ -687,7 +708,7 @@ export class TraqulaFactory extends CoreFactory {
   ): UpdateOperationCreate {
     return {
       type: 'updateOperation',
-      operationType: 'create',
+      subType: 'create',
       silent,
       destination,
       loc,
@@ -695,35 +716,35 @@ export class TraqulaFactory extends CoreFactory {
   }
 
   public updateOperationAddMoveCopy(
-    operationType: 'add',
+    subType: 'add',
     source: GraphRefDefault | GraphRefSpecific,
     destination: GraphRefDefault | GraphRefSpecific,
     silent: boolean,
     loc: SourceLocation,
   ): UpdateOperationAdd;
   public updateOperationAddMoveCopy(
-    operationType: 'move',
+    subType: 'move',
     source: GraphRefDefault | GraphRefSpecific,
     destination: GraphRefDefault | GraphRefSpecific,
     silent: boolean,
     loc: SourceLocation,
   ): UpdateOperationMove ;
   public updateOperationAddMoveCopy(
-    operationType: 'copy',
+    subType: 'copy',
     source: GraphRefDefault | GraphRefSpecific,
     destination: GraphRefDefault | GraphRefSpecific,
     silent: boolean,
     loc: SourceLocation,
   ): UpdateOperationCopy;
   public updateOperationAddMoveCopy(
-    operationType: 'add' | 'move' | 'copy',
+    subType: 'add' | 'move' | 'copy',
     source: GraphRefDefault | GraphRefSpecific,
     destination: GraphRefDefault | GraphRefSpecific,
     silent: boolean,
     loc: SourceLocation,
   ): UpdateOperationAdd | UpdateOperationMove | UpdateOperationCopy;
   public updateOperationAddMoveCopy(
-    operationType: 'add' | 'move' | 'copy',
+    subType: 'add' | 'move' | 'copy',
     source: GraphRefDefault | GraphRefSpecific,
     destination: GraphRefDefault | GraphRefSpecific,
     silent: boolean,
@@ -731,7 +752,7 @@ export class TraqulaFactory extends CoreFactory {
   ): UpdateOperationAdd | UpdateOperationMove | UpdateOperationCopy {
     return {
       type: 'updateOperation',
-      operationType,
+      subType,
       silent,
       source,
       destination,
@@ -766,25 +787,25 @@ export class TraqulaFactory extends CoreFactory {
     return this.updateOperationAddMoveCopy('copy', source, destination, silent, loc);
   }
 
-  public updateOperationInsDelDataWhere(operationType: 'insertdata', data: Quads[], loc: SourceLocation):
+  public updateOperationInsDelDataWhere(subType: 'insertdata', data: Quads[], loc: SourceLocation):
   UpdateOperationInsertData;
-  public updateOperationInsDelDataWhere(operationType: 'deletedata', data: Quads[], loc: SourceLocation):
+  public updateOperationInsDelDataWhere(subType: 'deletedata', data: Quads[], loc: SourceLocation):
   UpdateOperationDeleteData;
-  public updateOperationInsDelDataWhere(operationType: 'deletewhere', data: Quads[], loc: SourceLocation):
+  public updateOperationInsDelDataWhere(subType: 'deletewhere', data: Quads[], loc: SourceLocation):
   UpdateOperationDeleteWhere;
   public updateOperationInsDelDataWhere(
-    operationType: 'insertdata' | 'deletedata' | 'deletewhere',
+    subType: 'insertdata' | 'deletedata' | 'deletewhere',
     data: Quads[],
     loc: SourceLocation,
   ): UpdateOperationInsertData | UpdateOperationDeleteData | UpdateOperationDeleteWhere;
   public updateOperationInsDelDataWhere(
-    operationType: 'insertdata' | 'deletedata' | 'deletewhere',
+    subType: 'insertdata' | 'deletedata' | 'deletewhere',
     data: Quads[],
     loc: SourceLocation,
   ): UpdateOperationInsertData | UpdateOperationDeleteData | UpdateOperationDeleteWhere {
     return {
       type: 'updateOperation',
-      operationType,
+      subType,
       data,
       loc,
     };
@@ -812,7 +833,7 @@ export class TraqulaFactory extends CoreFactory {
   ): UpdateOperationModify {
     return {
       type: 'updateOperation',
-      operationType: 'modify',
+      subType: 'modify',
       insert: insert ?? [],
       delete: del ?? [],
       graph,
@@ -837,7 +858,7 @@ export class TraqulaFactory extends CoreFactory {
   public literalTerm(loc: SourceLocation, value: string, langOrIri?: string | TermIri): TermLiteral {
     return {
       type: 'term',
-      termType: 'Literal',
+      subType: 'literal',
       value,
       langOrIri,
       loc,
@@ -847,7 +868,7 @@ export class TraqulaFactory extends CoreFactory {
   public solutionModifierHaving(having: Expression[], loc: SourceLocation): SolutionModifierHaving {
     return {
       type: 'solutionModifier',
-      modifierType: 'having',
+      subType: 'having',
       having,
       loc,
     };
@@ -856,7 +877,7 @@ export class TraqulaFactory extends CoreFactory {
   public solutionModifierOrder(orderDefs: Ordering[], loc: SourceLocation): SolutionModifierOrder {
     return {
       type: 'solutionModifier',
-      modifierType: 'order',
+      subType: 'order',
       orderDefs,
       loc,
     };
@@ -869,7 +890,7 @@ export class TraqulaFactory extends CoreFactory {
   ): SolutionModifierLimitOffset {
     return {
       type: 'solutionModifier',
-      modifierType: 'limitOffset',
+      subType: 'limitOffset',
       limit,
       offset,
       loc,

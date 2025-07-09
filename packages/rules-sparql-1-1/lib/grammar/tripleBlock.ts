@@ -51,35 +51,37 @@ SparqlGrammarRule<string, PatternBgp>['impl'] {
 export const triplesBlock: SparqlRule<'triplesBlock', PatternBgp> = <const>{
   name: 'triplesBlock',
   impl: implArgs => C => triplesDotSeperated(triplesSameSubjectPath)(implArgs)(C, undefined),
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD, HANDLE_LOC }) => (ast, { factory: F }) => {
     for (const [ index, triple ] of ast.triples.entries()) {
-      const nextTriple = ast.triples.at(index);
-      if (F.isTripleCollection(triple)) {
-        SUBRULE(graphNode, triple, undefined);
-        // A top level tripleCollection block means that it is not used in a triple. So you end with DOT.
-        F.printFilter(ast, () => PRINT_WORD('.'));
-      } else {
-        // Subject
-        SUBRULE(graphNodePath, triple.subject, undefined);
-        // Predicate
-        if (F.isTerm(triple.predicate) && F.isTermVariable(triple.predicate)) {
-          SUBRULE(varOrTerm, triple.predicate, undefined);
+      HANDLE_LOC(triple, () => {
+        const nextTriple = ast.triples.at(index);
+        if (F.isTripleCollection(triple)) {
+          SUBRULE(graphNodePath, triple, undefined);
+          // A top level tripleCollection block means that it is not used in a triple. So you end with DOT.
+          F.printFilter(triple, () => PRINT_WORD('.'));
         } else {
-          SUBRULE(path, triple.predicate, undefined);
-        }
-        // Object
-        SUBRULE(graphNodePath, triple.object, undefined);
+          // Subject
+          SUBRULE(graphNodePath, triple.subject, undefined);
+          // Predicate
+          if (F.isTerm(triple.predicate) && F.isTermVariable(triple.predicate)) {
+            SUBRULE(varOrTerm, triple.predicate, undefined);
+          } else {
+            SUBRULE(path, triple.predicate, undefined);
+          }
+          // Object
+          SUBRULE(graphNodePath, triple.object, undefined);
 
-        // If no more things, or a top level collection (only possible if new block was part), or new subject: add DOT
-        if (nextTriple === undefined || F.isTripleCollection(nextTriple) ||
-          !F.isSourceLocationNoMaterialize(nextTriple.subject.loc)) {
-          F.printFilter(ast, () => PRINT_WORD('.'));
-        } else if (F.isSourceLocationNoMaterialize(nextTriple.predicate.loc)) {
-          F.printFilter(ast, () => PRINT_WORD(','));
-        } else {
-          F.printFilter(ast, () => PRINT_WORD(';'));
+          // If no more things, or a top level collection (only possible if new block was part), or new subject: add DOT
+          if (nextTriple === undefined || F.isTripleCollection(nextTriple) ||
+            !F.isSourceLocationNoMaterialize(nextTriple.subject.loc)) {
+            F.printFilter(ast, () => PRINT_WORD('.'));
+          } else if (F.isSourceLocationNoMaterialize(nextTriple.predicate.loc)) {
+            F.printFilter(ast, () => PRINT_WORD(','));
+          } else {
+            F.printFilter(ast, () => PRINT_WORD(';'));
+          }
         }
-      }
+      });
     }
   },
 };
@@ -334,7 +336,7 @@ function triplesNodeImpl<T extends string>(name: T, allowPaths: boolean): Sparql
       { ALT: () => SUBRULE(allowPaths ? collectionPath : collection, undefined) },
       { ALT: () => SUBRULE(allowPaths ? blankNodePropertyListPath : blankNodePropertyList, undefined) },
     ]),
-    gImpl: ({ SUBRULE }) => ast => ast.tripleCollectionType === 'list' ?
+    gImpl: ({ SUBRULE }) => ast => ast.subType === 'list' ?
       SUBRULE(allowPaths ? collectionPath : collection, ast, undefined) :
       SUBRULE(allowPaths ? blankNodePropertyListPath : blankNodePropertyList, ast, undefined),
   };
@@ -374,7 +376,7 @@ SparqlRule<T, TripleCollectionBlankNodeProperties> {
         } else {
           SUBRULE(path, triple.predicate, undefined);
         }
-        SUBRULE(graphNode, triple.object, undefined);
+        SUBRULE(graphNodePath, triple.object, undefined);
 
         F.printFilter(ast, () => PRINT_WORD(';'));
       }

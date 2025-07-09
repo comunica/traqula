@@ -118,7 +118,7 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
     if (F.isTerm(ast)) {
       SUBRULE(varOrTerm, ast, undefined);
     } else {
-      if (ast.expressionType === 'operation') {
+      if (ast.subType === 'operation') {
         if (infixOperators.has(ast.operator)) {
           const [ left, right ] = <[Expression, Expression]>ast.args;
           F.printFilter(ast, () => PRINT_WORD('('));
@@ -150,15 +150,15 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
           }
         }
       }
-      if (ast.expressionType === 'patternOperation') {
+      if (ast.subType === 'patternOperation') {
         const patterns = ast.args;
         F.printFilter(ast, () => PRINT_WORD(ast.operator === 'exists' ? 'EXISTS' : 'NOT EXISTS'));
         SUBRULE(groupGraphPattern, patterns, undefined);
       }
-      if (ast.expressionType === 'functionCall') {
+      if (ast.subType === 'functionCall') {
         return SUBRULE(iriOrFunction, ast, undefined);
       }
-      if (ast.expressionType === 'aggregate') {
+      if (ast.subType === 'aggregate') {
         return SUBRULE(aggregate, ast, undefined);
       }
     }
@@ -370,7 +370,7 @@ export const multiplicativeExpression: SparqlGrammarRule<'multiplicativeExpressi
       const expr = SUBRULE2(unaryExpression, undefined);
       return (left: Expression) => ({
         type: 'expression',
-        expressionType: 'operation',
+        subType: 'operation',
         operator: operator.image,
         args: [ left, expr ],
         loc: C.factory.sourceLocation(left, expr),
@@ -397,7 +397,7 @@ export const unaryExpression: SparqlGrammarRule<'unaryExpression', Expression> =
       const expr = SUBRULE2(primaryExpression, undefined);
       return ACTION(() => ({
         type: 'expression',
-        expressionType: 'operation',
+        subType: 'operation',
         operator: operator.image === '!' ? '!' : (operator.image === '+' ? 'UPLUS' : 'UMINUS'),
         args: [ expr ],
         loc: C.factory.sourceLocation(operator, expr),
@@ -433,7 +433,7 @@ export const brackettedExpression: SparqlGrammarRule<'brackettedExpression', Exp
     const close = CONSUME(l.symbols.RParen);
     return ACTION(() => ({
       type: 'expression',
-      expressionType: 'bracketted',
+      subType: 'bracketted',
       expression: expr,
       loc: C.factory.sourceLocation(open, close),
     }));
@@ -456,7 +456,7 @@ export const iriOrFunction: SparqlRule<'iriOrFunction', TermIri | ExpressionFunc
         }
         return {
           type: 'expression',
-          expressionType: 'functionCall',
+          subType: 'functionCall',
           function: iriVal,
           args: args.val.args,
           distinct,

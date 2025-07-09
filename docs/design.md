@@ -31,3 +31,8 @@ A rule sharing source with parent will start with a catchup, only afterward will
 The catchup function of the generator knows when a rule is replaced since it will be registered as a skip-range, and skip-ranges are not generated using catchup's.
 
 Generation rules that have an ast that is not Localized SHOULD NOT print since they do noy auto catchup.
+
+Currently, the constructed generator does not support that you have a source tracked node within something that is generated.
+That means that you need to use `F.forcedAutoGenTree()` to force the whole subtree on some node to be auto generated too.
+In the future we could change this implementation in such a way that we would detect when source bound nodes are present and use range arithmetics.
+We do not do that yet to keep things simple.

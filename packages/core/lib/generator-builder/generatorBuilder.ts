@@ -183,6 +183,7 @@ export class Generator<Context, Names extends string, RuleDefs extends GenRuleMa
   protected __context: Context | undefined = undefined;
   protected origSource = '';
   protected generatedUntil = 0;
+  protected expectsSpace: boolean;
   protected readonly stringBuilder: string[] = [];
 
   public constructor(protected rules: RuleDefs) {
@@ -191,6 +192,7 @@ export class Generator<Context, Names extends string, RuleDefs extends GenRuleMa
       // Define function implementation
       this[<keyof (typeof this)> rule.name] =
         <any> ((input: any, context: Context & { origSource: string; offset?: number }, args: any) => {
+          this.expectsSpace = false;
           this.stringBuilder.length = 0;
           this.origSource = context.origSource;
           this.generatedUntil = context?.offset ?? 0;
@@ -216,56 +218,78 @@ export class Generator<Context, Names extends string, RuleDefs extends GenRuleMa
     if (!def) {
       throw new Error(`Rule ${cstDef.name} not found`);
     }
-    if (this.factory.isLocalized(ast)) {
-      if (this.factory.isSourceLocationNoMaterialize(ast.loc)) {
-        return;
-      }
-      if (this.factory.isSourceLocationStringReplace(ast.loc)) {
-        this.catchup(ast.loc.start);
-        this.print(ast.loc.newSource);
-        this.generatedUntil = ast.loc.end;
-        return;
-      }
-      if (this.factory.isSourceLocationNodeReplace(ast.loc)) {
-        this.catchup(ast.loc.start);
-        this.generatedUntil = ast.loc.end;
-      }
-      if (this.factory.isSourceLocationSource(ast.loc)) {
-        this.catchup(ast.loc.start);
-      }
-    }
 
-    // If autoGenerate - do nothing
-
-    // Do call generation
-    def.gImpl({
+    const generate = (): void => def.gImpl({
       SUBRULE: this.subrule,
       PRINT: this.print,
       PRINT_WORD: this.printWord,
       CATCHUP: this.catchup,
+      HANDLE_LOC: this.handleLoc,
     })(ast, this.getSafeContext(), arg);
 
-    if (this.factory.isLocalized(ast) && this.factory.isSourceLocationSource(ast.loc)) {
-      this.catchup(ast.loc.end);
+    if (this.factory.isLocalized(ast)) {
+      this.handleLoc(ast, generate);
+    } else {
+      generate();
     }
+  };
+
+  protected readonly handleLoc: RuleDefArg['HANDLE_LOC'] = (localized, handle) => {
+    if (this.factory.isSourceLocationNoMaterialize(localized.loc)) {
+      return;
+    }
+    if (this.factory.isSourceLocationStringReplace(localized.loc)) {
+      this.catchup(localized.loc.start);
+      this.print(localized.loc.newSource);
+      this.generatedUntil = localized.loc.end;
+      return;
+    }
+    if (this.factory.isSourceLocationNodeReplace(localized.loc)) {
+      this.catchup(localized.loc.start);
+      this.generatedUntil = localized.loc.end;
+    }
+    if (this.factory.isSourceLocationSource(localized.loc)) {
+      this.catchup(localized.loc.start);
+    }
+    // If autoGenerate - do nothing
+
+    const ret = handle();
+
+    if (this.factory.isSourceLocationSource(localized.loc)) {
+      this.catchup(localized.loc.end);
+    }
+    return ret;
   };
 
   protected readonly catchup: RuleDefArg['CATCHUP'] = (until) => {
     const start = this.generatedUntil;
     if (start < until) {
-      this.stringBuilder.push(this.origSource.slice(start, until));
+      this.print(this.origSource.slice(start, until));
     }
     this.generatedUntil = Math.max(this.generatedUntil, until);
   };
 
   protected readonly print: RuleDefArg['PRINT'] = (...args) => {
-    this.stringBuilder.push(...args.filter(x => x.length > 0));
+    const pureArgs = args.filter(x => x.length > 0);
+    if (pureArgs.length > 0) {
+      const [ head, ...tail ] = pureArgs;
+      if (this.expectsSpace) {
+        this.expectsSpace = false;
+        if (![ '\n', ' ', '\t' ].includes(head[0])) {
+          this.stringBuilder.push(' ');
+        }
+      }
+      this.stringBuilder.push(head);
+      this.stringBuilder.push(...tail);
+    }
   };
 
   private readonly printWord: RuleDefArg['PRINT_WORD'] = (...args) => {
-    if (this.stringBuilder.length > 0 && this.stringBuilder.at(-1)!.at(-1) !== ' ') {
-      this.stringBuilder.push(' ');
+    if (this.stringBuilder.length > 0 &&
+      ![ '\n', ' ', '\t' ].includes(this.stringBuilder.at(-1)!.at(-1) ?? '')) {
+      this.print(' ');
     }
-    this.stringBuilder.push(...args, ' ');
+    this.print(...args);
+    this.expectsSpace = true;
   };
 }

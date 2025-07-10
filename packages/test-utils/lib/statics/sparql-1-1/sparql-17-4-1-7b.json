@@ -160,62 +160,53 @@
         "subType": "filter",
         "expression": {
           "type": "expression",
-          "subType": "bracketted",
-          "expression": {
-            "type": "expression",
-            "subType": "operation",
-            "operator": "=",
-            "args": [
-              {
+          "subType": "operation",
+          "operator": "=",
+          "args": [
+            {
+              "type": "term",
+              "subType": "variable",
+              "value": "date",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 274,
+                "end": 279
+              }
+            },
+            {
+              "type": "expression",
+              "subType": "functionCall",
+              "function": {
                 "type": "term",
-                "subType": "variable",
-                "value": "date",
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 274,
-                  "end": 279
-                }
-              },
-              {
-                "type": "expression",
-                "subType": "functionCall",
-                "function": {
-                  "type": "term",
-                  "subType": "namedNode",
-                  "value": "dateTime",
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 282,
-                    "end": 294
-                  },
-                  "prefix": "xsd"
-                },
-                "args": [
-                  {
-                    "type": "term",
-                    "subType": "literal",
-                    "value": "2005-01-01T00:00:00Z",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 295,
-                      "end": 317
-                    }
-                  }
-                ],
-                "distinct": false,
+                "subType": "namedNode",
+                "value": "dateTime",
                 "loc": {
                   "sourceLocationType": "source",
                   "start": 282,
-                  "end": 318
+                  "end": 294
+                },
+                "prefix": "xsd"
+              },
+              "args": [
+                {
+                  "type": "term",
+                  "subType": "literal",
+                  "value": "2005-01-01T00:00:00Z",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 295,
+                    "end": 317
+                  }
                 }
+              ],
+              "distinct": false,
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 282,
+                "end": 318
               }
-            ],
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 274,
-              "end": 318
             }
-          },
+          ],
           "loc": {
             "sourceLocationType": "source",
             "start": 272,

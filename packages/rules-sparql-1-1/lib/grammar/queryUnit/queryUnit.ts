@@ -19,6 +19,7 @@ import type {
   SparqlGrammarRule,
   SparqlRule,
 } from '../../Sparql11types';
+import { queryIsGood } from '../../validation/validators';
 import { datasetClauseStar } from '../dataSetClause';
 import { expression } from '../expression';
 import { prologue, var_, varOrIri, varOrTerm } from '../general';
@@ -91,21 +92,25 @@ export const selectQuery: SparqlRule<'selectQuery', Omit<QuerySelect, HandledByB
     const where = SUBRULE(whereClause, undefined);
     const modifiers = SUBRULE(solutionModifier, undefined);
 
-    return ACTION(() => ({
-      subType: 'select',
-      where: where.val,
-      solutionModifiers: modifiers,
-      datasets: from,
-      ...selectVal.val,
-      loc: C.factory.sourceLocation(
-        selectVal,
-        where,
-        modifiers.group,
-        modifiers.having,
-        modifiers.order,
-        modifiers.limitOffset,
-      ),
-    } satisfies RuleDefReturn<typeof selectQuery>));
+    return ACTION(() => {
+      const ret = {
+        subType: 'select',
+        where: where.val,
+        solutionModifiers: modifiers,
+        datasets: from,
+        ...selectVal.val,
+        loc: C.factory.sourceLocation(
+          selectVal,
+          where,
+          modifiers.group,
+          modifiers.having,
+          modifiers.order,
+          modifiers.limitOffset,
+        ),
+      } satisfies RuleDefReturn<typeof selectQuery>;
+      queryIsGood(ret);
+      return ret;
+    });
   },
   gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
     SUBRULE(selectClause, F.wrap({

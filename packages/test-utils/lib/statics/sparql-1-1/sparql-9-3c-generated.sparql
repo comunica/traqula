@@ -1,0 +1,1 @@
+PREFIX : <http://example/> SELECT ( sum( ?x ) AS ?total ) WHERE { :order ( :item )/( :price ) ?x . }

@@ -13,4 +13,5 @@ export * from './parser-builder/ruleDefTypes';
 export * from './utils';
 export * from './RangeArithmetic';
 export * from './CoreFactory';
-export * from "./nodeTypings";
+export * from './nodeTypings';
+export * from './Transformer';

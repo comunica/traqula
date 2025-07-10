@@ -663,18 +663,9 @@
       "orderDefs": [
         {
           "expression": {
-            "type": "expression",
-            "subType": "bracketted",
-            "expression": {
-              "type": "term",
-              "subType": "variable",
-              "value": "reviewDate",
-              "loc": {
-                "sourceLocationType": "source",
-                "start": 826,
-                "end": 837
-              }
-            },
+            "type": "term",
+            "subType": "variable",
+            "value": "reviewDate",
             "loc": {
               "sourceLocationType": "source",
               "start": 825,

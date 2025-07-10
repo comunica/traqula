@@ -2,7 +2,6 @@ import type { ImplArgs, RuleDefReturn, Wrap } from '@traqula/core';
 import * as l from '../lexer';
 import type {
   Expression,
-  ExpressionBracketted,
   ExpressionFunctionCall,
   ExpressionOperation,
   TermIri,
@@ -117,50 +116,46 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
   gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
     if (F.isTerm(ast)) {
       SUBRULE(varOrTerm, ast, undefined);
-    } else {
-      if (ast.subType === 'operation') {
-        if (infixOperators.has(ast.operator)) {
-          const [ left, right ] = <[Expression, Expression]>ast.args;
-          F.printFilter(ast, () => PRINT_WORD('('));
-          SUBRULE(expression, left, undefined);
-          F.printFilter(ast, () => {
-            if (ast.operator === 'notin') {
-              PRINT_WORD('NOT IN');
-            } else if (ast.operator === 'in') {
-              PRINT_WORD('IN');
-            } else {
-              PRINT_WORD(ast.operator);
-            }
-          });
-          SUBRULE(expression, right, undefined);
-          F.printFilter(ast, () => PRINT_WORD(')'));
-        } else if (prefixOperator.has(ast.operator)) {
-          const [ expr ] = <[Expression]>ast.args;
-          F.printFilter(ast, () => PRINT_WORD(ast.operator));
-          SUBRULE(expression, expr, undefined);
-        } else {
-          F.printFilter(ast, () => PRINT_WORD(ast.operator, '('));
-          const [ head, ...tail ] = ast.args;
-          if (head) {
-            SUBRULE(expression, head, undefined);
+    } else if (F.isExpressionOperator(ast)) {
+      if (infixOperators.has(ast.operator)) {
+        const [ left, right ] = <[Expression, Expression]>ast.args;
+        F.printFilter(ast, () => PRINT_WORD('('));
+        SUBRULE(expression, left, undefined);
+        F.printFilter(ast, () => {
+          if (ast.operator === 'notin') {
+            PRINT_WORD('NOT IN');
+          } else if (ast.operator === 'in') {
+            PRINT_WORD('IN');
+          } else {
+            PRINT_WORD(ast.operator);
           }
-          for (const arg of tail) {
-            F.printFilter(ast, () => PRINT_WORD(ast.operator, ','));
-            SUBRULE(expression, arg, undefined);
-          }
+        });
+        SUBRULE(expression, right, undefined);
+        F.printFilter(ast, () => PRINT_WORD(')'));
+      } else if (prefixOperator.has(ast.operator)) {
+        const [ expr ] = <[Expression]>ast.args;
+        F.printFilter(ast, () => PRINT_WORD(ast.operator));
+        SUBRULE(expression, expr, undefined);
+      } else {
+        F.printFilter(ast, () => PRINT_WORD(ast.operator, '('));
+        const [ head, ...tail ] = ast.args;
+        if (head) {
+          SUBRULE(expression, head, undefined);
         }
+        for (const arg of tail) {
+          F.printFilter(ast, () => PRINT_WORD(ast.operator, ','));
+          SUBRULE(expression, arg, undefined);
+        }
+        F.printFilter(ast, () => PRINT_WORD(')'));
       }
-      if (ast.subType === 'patternOperation') {
-        const patterns = ast.args;
-        F.printFilter(ast, () => PRINT_WORD(ast.operator === 'exists' ? 'EXISTS' : 'NOT EXISTS'));
-        SUBRULE(groupGraphPattern, patterns, undefined);
-      }
-      if (ast.subType === 'functionCall') {
-        return SUBRULE(iriOrFunction, ast, undefined);
-      }
-      if (ast.subType === 'aggregate') {
-        return SUBRULE(aggregate, ast, undefined);
-      }
+    } else if (F.isExpressionPatternOperator(ast)) {
+      const patterns = ast.args;
+      F.printFilter(ast, () => PRINT_WORD(ast.operator === 'exists' ? 'EXISTS' : 'NOT EXISTS'));
+      SUBRULE(groupGraphPattern, patterns, undefined);
+    } else if (F.isExpressionFunctionCall(ast)) {
+      SUBRULE(iriOrFunction, ast, undefined);
+    } else if (F.isExpressionAggregate(ast)) {
+      SUBRULE(aggregate, ast, undefined);
     }
   },
 };
@@ -425,18 +420,16 @@ export const primaryExpression: SparqlGrammarRule<'primaryExpression', Expressio
 /**
  * [[120]](https://www.w3.org/TR/sparql11-query/#rBrackettedExpression)
  */
-export const brackettedExpression: SparqlGrammarRule<'brackettedExpression', ExpressionBracketted> = <const> {
+export const brackettedExpression: SparqlGrammarRule<'brackettedExpression', Expression> = <const> {
   name: 'brackettedExpression',
   impl: ({ ACTION, SUBRULE, CONSUME }) => (C) => {
     const open = CONSUME(l.symbols.LParen);
     const expr = SUBRULE(expression, undefined);
     const close = CONSUME(l.symbols.RParen);
-    return ACTION(() => ({
-      type: 'expression',
-      subType: 'bracketted',
-      expression: expr,
-      loc: C.factory.sourceLocation(open, close),
-    }));
+    return ACTION(() => {
+      expr.loc = C.factory.sourceLocation(open, close);
+      return expr;
+    });
   },
 };
 

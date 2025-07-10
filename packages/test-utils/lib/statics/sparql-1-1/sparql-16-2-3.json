@@ -214,18 +214,9 @@
       "orderDefs": [
         {
           "expression": {
-            "type": "expression",
-            "subType": "bracketted",
-            "expression": {
-              "type": "term",
-              "subType": "variable",
-              "value": "hits",
-              "loc": {
-                "sourceLocationType": "source",
-                "start": 185,
-                "end": 190
-              }
-            },
+            "type": "term",
+            "subType": "variable",
+            "value": "hits",
             "loc": {
               "sourceLocationType": "source",
               "start": 184,

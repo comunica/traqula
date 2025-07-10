@@ -194,83 +194,74 @@
         "subType": "filter",
         "expression": {
           "type": "expression",
-          "subType": "bracketted",
-          "expression": {
-            "type": "expression",
-            "subType": "operation",
-            "operator": "&&",
-            "args": [
-              {
-                "type": "expression",
-                "subType": "operation",
-                "operator": "=",
-                "args": [
-                  {
-                    "type": "term",
-                    "subType": "variable",
-                    "value": "mbox1",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 197,
-                      "end": 203
-                    }
-                  },
-                  {
-                    "type": "term",
-                    "subType": "variable",
-                    "value": "mbox2",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 206,
-                      "end": 212
-                    }
+          "subType": "operation",
+          "operator": "&&",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "operation",
+              "operator": "=",
+              "args": [
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "mbox1",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 197,
+                    "end": 203
                   }
-                ],
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 197,
-                  "end": 212
-                }
-              },
-              {
-                "type": "expression",
-                "subType": "operation",
-                "operator": "!=",
-                "args": [
-                  {
-                    "type": "term",
-                    "subType": "variable",
-                    "value": "name1",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 216,
-                      "end": 222
-                    }
-                  },
-                  {
-                    "type": "term",
-                    "subType": "variable",
-                    "value": "name2",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 226,
-                      "end": 232
-                    }
+                },
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "mbox2",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 206,
+                    "end": 212
                   }
-                ],
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 216,
-                  "end": 232
                 }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 197,
+                "end": 212
               }
-            ],
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 197,
-              "end": 232
+            },
+            {
+              "type": "expression",
+              "subType": "operation",
+              "operator": "!=",
+              "args": [
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "name1",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 216,
+                    "end": 222
+                  }
+                },
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "name2",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 226,
+                    "end": 232
+                  }
+                }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 216,
+                "end": 232
+              }
             }
-          },
+          ],
           "loc": {
             "sourceLocationType": "source",
             "start": 196,

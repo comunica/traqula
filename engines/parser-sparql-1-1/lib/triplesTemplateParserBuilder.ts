@@ -1,5 +1,5 @@
 import { Builder } from '@traqula/core';
-import { gram, lex } from '@traqula/rules-sparql-1-1';
+import { gram } from '@traqula/rules-sparql-1-1';
 
 const rules = <const> [
   gram.triplesTemplate,

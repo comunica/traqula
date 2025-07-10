@@ -138,40 +138,31 @@
         "subType": "filter",
         "expression": {
           "type": "expression",
-          "subType": "bracketted",
-          "expression": {
-            "type": "expression",
-            "subType": "functionCall",
-            "function": {
-              "type": "term",
-              "subType": "namedNode",
-              "value": "even",
-              "loc": {
-                "sourceLocationType": "source",
-                "start": 180,
-                "end": 189
-              },
-              "prefix": "func"
-            },
-            "args": [
-              {
-                "type": "term",
-                "subType": "variable",
-                "value": "id",
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 190,
-                  "end": 193
-                }
-              }
-            ],
-            "distinct": false,
+          "subType": "functionCall",
+          "function": {
+            "type": "term",
+            "subType": "namedNode",
+            "value": "even",
             "loc": {
               "sourceLocationType": "source",
               "start": 180,
-              "end": 194
-            }
+              "end": 189
+            },
+            "prefix": "func"
           },
+          "args": [
+            {
+              "type": "term",
+              "subType": "variable",
+              "value": "id",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 190,
+                "end": 193
+              }
+            }
+          ],
+          "distinct": false,
           "loc": {
             "sourceLocationType": "source",
             "start": 179,

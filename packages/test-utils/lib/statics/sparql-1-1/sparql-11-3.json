@@ -111,60 +111,51 @@
       "having": [
         {
           "type": "expression",
-          "subType": "bracketted",
-          "expression": {
-            "type": "expression",
-            "subType": "operation",
-            "operator": ">",
-            "args": [
-              {
-                "type": "expression",
-                "subType": "aggregate",
-                "aggregation": "avg",
-                "distinct": false,
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 108,
-                  "end": 118
-                },
-                "expression": [
-                  {
-                    "type": "term",
-                    "subType": "variable",
-                    "value": "size",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 112,
-                      "end": 117
-                    }
-                  }
-                ]
+          "subType": "operation",
+          "operator": ">",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "aggregate",
+              "aggregation": "avg",
+              "distinct": false,
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 108,
+                "end": 118
               },
-              {
-                "type": "term",
-                "subType": "literal",
-                "value": "10",
-                "langOrIri": {
+              "expression": [
+                {
                   "type": "term",
-                  "subType": "namedNode",
-                  "value": "http://www.w3.org/2001/XMLSchema#integer",
+                  "subType": "variable",
+                  "value": "size",
                   "loc": {
-                    "sourceLocationType": "noMaterialize"
+                    "sourceLocationType": "source",
+                    "start": 112,
+                    "end": 117
                   }
-                },
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 121,
-                  "end": 123
                 }
+              ]
+            },
+            {
+              "type": "term",
+              "subType": "literal",
+              "value": "10",
+              "langOrIri": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "http://www.w3.org/2001/XMLSchema#integer",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 121,
+                "end": 123
               }
-            ],
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 108,
-              "end": 123
             }
-          },
+          ],
           "loc": {
             "sourceLocationType": "source",
             "start": 107,

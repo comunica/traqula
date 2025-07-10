@@ -194,95 +194,86 @@
         "subType": "filter",
         "expression": {
           "type": "expression",
-          "subType": "bracketted",
-          "expression": {
-            "type": "expression",
-            "subType": "operation",
-            "operator": "&&",
-            "args": [
-              {
-                "type": "expression",
-                "subType": "operation",
-                "operator": "sameterm",
-                "args": [
-                  {
-                    "type": "term",
-                    "subType": "variable",
-                    "value": "mbox1",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 209,
-                      "end": 215
-                    }
-                  },
-                  {
-                    "type": "term",
-                    "subType": "variable",
-                    "value": "mbox2",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 217,
-                      "end": 223
-                    }
+          "subType": "operation",
+          "operator": "&&",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "operation",
+              "operator": "sameterm",
+              "args": [
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "mbox1",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 209,
+                    "end": 215
                   }
-                ],
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 200,
-                  "end": 224
-                }
-              },
-              {
-                "type": "expression",
-                "subType": "operation",
-                "operator": "!",
-                "args": [
-                  {
-                    "type": "expression",
-                    "subType": "operation",
-                    "operator": "sameterm",
-                    "args": [
-                      {
-                        "type": "term",
-                        "subType": "variable",
-                        "value": "name1",
-                        "loc": {
-                          "sourceLocationType": "source",
-                          "start": 238,
-                          "end": 244
-                        }
-                      },
-                      {
-                        "type": "term",
-                        "subType": "variable",
-                        "value": "name2",
-                        "loc": {
-                          "sourceLocationType": "source",
-                          "start": 246,
-                          "end": 252
-                        }
-                      }
-                    ],
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 229,
-                      "end": 253
-                    }
+                },
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "mbox2",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 217,
+                    "end": 223
                   }
-                ],
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 228,
-                  "end": 253
                 }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 200,
+                "end": 224
               }
-            ],
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 200,
-              "end": 253
+            },
+            {
+              "type": "expression",
+              "subType": "operation",
+              "operator": "!",
+              "args": [
+                {
+                  "type": "expression",
+                  "subType": "operation",
+                  "operator": "sameterm",
+                  "args": [
+                    {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "name1",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 238,
+                        "end": 244
+                      }
+                    },
+                    {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "name2",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 246,
+                        "end": 252
+                      }
+                    }
+                  ],
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 229,
+                    "end": 253
+                  }
+                }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 228,
+                "end": 253
+              }
             }
-          },
+          ],
           "loc": {
             "sourceLocationType": "source",
             "start": 199,

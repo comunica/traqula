@@ -158,52 +158,43 @@
         "subType": "filter",
         "expression": {
           "type": "expression",
-          "subType": "bracketted",
-          "expression": {
-            "type": "expression",
-            "subType": "operation",
-            "operator": "=",
-            "args": [
-              {
-                "type": "expression",
-                "subType": "operation",
-                "operator": "datatype",
-                "args": [
-                  {
-                    "type": "term",
-                    "subType": "variable",
-                    "value": "shoeSize",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 242,
-                      "end": 251
-                    }
+          "subType": "operation",
+          "operator": "=",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "operation",
+              "operator": "datatype",
+              "args": [
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "shoeSize",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 242,
+                    "end": 251
                   }
-                ],
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 233,
-                  "end": 252
                 }
-              },
-              {
-                "type": "term",
-                "subType": "namedNode",
-                "value": "integer",
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 255,
-                  "end": 266
-                },
-                "prefix": "xsd"
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 233,
+                "end": 252
               }
-            ],
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 233,
-              "end": 266
+            },
+            {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "integer",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 255,
+                "end": 266
+              },
+              "prefix": "xsd"
             }
-          },
+          ],
           "loc": {
             "sourceLocationType": "source",
             "start": 231,

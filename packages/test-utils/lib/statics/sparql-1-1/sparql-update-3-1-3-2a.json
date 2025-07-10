@@ -187,50 +187,41 @@
                 "subType": "filter",
                 "expression": {
                   "type": "expression",
-                  "subType": "bracketted",
-                  "expression": {
-                    "type": "expression",
-                    "subType": "operation",
-                    "operator": ">",
-                    "args": [
-                      {
-                        "type": "term",
-                        "subType": "variable",
-                        "value": "date",
-                        "loc": {
-                          "sourceLocationType": "source",
-                          "start": 253,
-                          "end": 258
-                        }
-                      },
-                      {
-                        "type": "term",
-                        "subType": "literal",
-                        "value": "1970-01-01T00:00:00-02:00",
-                        "langOrIri": {
-                          "type": "term",
-                          "subType": "namedNode",
-                          "value": "dateTime",
-                          "loc": {
-                            "sourceLocationType": "source",
-                            "start": 290,
-                            "end": 302
-                          },
-                          "prefix": "xsd"
-                        },
-                        "loc": {
-                          "sourceLocationType": "source",
-                          "start": 261,
-                          "end": 302
-                        }
+                  "subType": "operation",
+                  "operator": ">",
+                  "args": [
+                    {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "date",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 253,
+                        "end": 258
                       }
-                    ],
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 253,
-                      "end": 302
+                    },
+                    {
+                      "type": "term",
+                      "subType": "literal",
+                      "value": "1970-01-01T00:00:00-02:00",
+                      "langOrIri": {
+                        "type": "term",
+                        "subType": "namedNode",
+                        "value": "dateTime",
+                        "loc": {
+                          "sourceLocationType": "source",
+                          "start": 290,
+                          "end": 302
+                        },
+                        "prefix": "xsd"
+                      },
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 261,
+                        "end": 302
+                      }
                     }
-                  },
+                  ],
                   "loc": {
                     "sourceLocationType": "source",
                     "start": 251,

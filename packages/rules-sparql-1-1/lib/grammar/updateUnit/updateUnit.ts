@@ -26,6 +26,7 @@ import type {
   SparqlGrammarRule,
   SparqlRule,
 } from '../../Sparql11types';
+import { updateNoReuseBlankNodeLabels } from '../../validation/validators';
 import { usingClauseStar } from '../dataSetClause';
 import { prologue, varOrIri, varOrTerm } from '../general';
 import { iri } from '../literals';
@@ -67,16 +68,20 @@ export const update: SparqlRule<'update', Update> = <const> {
         });
       },
     });
-    return ACTION(() => ({
-      type: 'update',
-      updates,
-      loc: C.factory.sourceLocation(
-        ...updates[0].context,
-        updates[0].operation,
-        ...updates.at(-1)!.context,
-        updates.at(-1)?.operation,
-      ),
-    }));
+    return ACTION(() => {
+      const update = {
+        type: 'update',
+        updates,
+        loc: C.factory.sourceLocation(
+          ...updates[0].context,
+          updates[0].operation,
+          ...updates.at(-1)!.context,
+          updates.at(-1)?.operation,
+        ),
+      } satisfies Update;
+      updateNoReuseBlankNodeLabels(update);
+      return update;
+    });
   },
   gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
     for (const update of ast.updates) {

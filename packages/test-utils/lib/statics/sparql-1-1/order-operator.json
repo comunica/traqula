@@ -89,47 +89,38 @@
       "orderDefs": [
         {
           "type": "expression",
-          "subType": "bracketted",
-          "expression": {
-            "type": "expression",
-            "subType": "operation",
-            "operator": "+",
-            "args": [
-              {
+          "subType": "operation",
+          "operator": "+",
+          "args": [
+            {
+              "type": "term",
+              "subType": "variable",
+              "value": "o",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 66,
+                "end": 68
+              }
+            },
+            {
+              "type": "term",
+              "subType": "literal",
+              "value": "5",
+              "langOrIri": {
                 "type": "term",
-                "subType": "variable",
-                "value": "o",
+                "subType": "namedNode",
+                "value": "http://www.w3.org/2001/XMLSchema#integer",
                 "loc": {
-                  "sourceLocationType": "source",
-                  "start": 66,
-                  "end": 68
+                  "sourceLocationType": "noMaterialize"
                 }
               },
-              {
-                "type": "term",
-                "subType": "literal",
-                "value": "5",
-                "langOrIri": {
-                  "type": "term",
-                  "subType": "namedNode",
-                  "value": "http://www.w3.org/2001/XMLSchema#integer",
-                  "loc": {
-                    "sourceLocationType": "noMaterialize"
-                  }
-                },
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 68,
-                  "end": 70
-                }
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 68,
+                "end": 70
               }
-            ],
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 66,
-              "end": 70
             }
-          },
+          ],
           "loc": {
             "sourceLocationType": "source",
             "start": 65,

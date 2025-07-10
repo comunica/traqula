@@ -267,8 +267,28 @@ export class TraqulaFactory extends CoreFactory {
     return x.type === 'pattern' && x.subType === 'union';
   }
 
+  public isPatternOptional(x: Pattern): x is PatternOptional {
+    return x.type === 'pattern' && x.subType === 'optional';
+  }
+
+  public isPatternGraph(x: Pattern): x is PatternGraph {
+    return x.type === 'pattern' && x.subType === 'graph';
+  }
+
   public isPatternBgp(x: Pattern): x is PatternBgp {
     return x.type === 'pattern' && x.subType === 'bgp';
+  }
+
+  public isPatternBind(x: Pattern): x is PatternBind {
+    return x.type === 'pattern' && x.subType === 'bind';
+  }
+
+  public isPatternService(x: Pattern): x is PatternService {
+    return x.type === 'pattern' && x.subType === 'service';
+  }
+
+  public isPatternValues(x: Pattern): x is PatternValues {
+    return x.type === 'pattern' && x.subType === 'values';
   }
 
   public isPattern(x: any): x is Pattern {
@@ -543,6 +563,10 @@ export class TraqulaFactory extends CoreFactory {
       } satisfies PathNegated;
     }
     throw new Error('Invalid path type');
+  }
+
+  public isPath(x: object): x is Path {
+    return ('type' in x && x.type === 'path') || (this.isTerm(x) && this.isTermIri(x));
   }
 
   public isPathChain(x: Path): x is PropertyPathChain {

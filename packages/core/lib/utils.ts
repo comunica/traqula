@@ -6,4 +6,3 @@ export type CheckOverlap<T, U, V, W = never> = T & U extends never ? V : W;
 export function unCapitalize<T extends string>(str: T): Uncapitalize<T> {
   return <Uncapitalize<T>> (str.charAt(0).toLowerCase() + str.slice(1));
 }
-

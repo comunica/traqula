@@ -1,7 +1,7 @@
+import { Transformer } from '@traqula/core';
 import { Parser } from '@traqula/parser-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
-import type { TripleCollection, TripleNesting } from '@traqula/rules-sparql-1-1';
-import { Transformer, TraqulaFactory } from '@traqula/rules-sparql-1-1';
+import { TraqulaFactory } from '@traqula/rules-sparql-1-1';
 import { describe, it } from 'vitest';
 import { Generator } from '../lib';
 
@@ -14,7 +14,6 @@ describe('a SPARQL 1.1 generator', () => {
   it ('generates simple round tripped', ({ expect }) => {
     const query = 'SELECT * WHERE { ?s ?p ?o }';
     const ast = <T11.Query> parser.parse(query);
-    console.log(JSON.stringify(ast, null, 2));
     const result = generator.generate(ast, query);
     expect(result.replaceAll(/\s+/gu, ' ')).toBe(query);
   });
@@ -36,7 +35,6 @@ describe('a SPARQL 1.1 generator', () => {
         },
       );
 
-      console.error(JSON.stringify(altered, null, 2));
       const result = generator.generate(altered, query);
       expect(result).toBe(`SELECT * WHERE { ?subject ?p ?o }`);
     });
@@ -58,10 +56,9 @@ WHERE {
   [ <a7> <b7>; <c7> <d7>, <e7> ].
 }`;
       const ast = <T11.Query> parser.parse(query);
-      // Console.log(JSON.stringify(ast, null, 2));
 
-      function extractCollection(collection: TripleCollection): TripleNesting[] {
-        const result: TripleNesting[] = [];
+      function extractCollection(collection: T11.TripleCollection): T11.TripleNesting[] {
+        const result: T11.TripleNesting[] = [];
         for (const entry of collection.triples) {
           const subject = entry.subject;
           const pred = entry.predicate;
@@ -86,7 +83,7 @@ WHERE {
         'bgp',
         (current) => {
           const bgpCopy = F.forcedAutoGenTree(current);
-          const newTriples: TripleNesting[] = [];
+          const newTriples: T11.TripleNesting[] = [];
           for (const entry of bgpCopy.triples) {
             if (F.isTriple(entry)) {
               const subject = entry.subject;
@@ -138,7 +135,6 @@ WHERE {
       ], F.gen()),
       solutionModifiers: {},
     }, F.gen());
-    console.log(JSON.stringify(ast, null, 2));
     const result = generator.generate(ast);
     expect(result).toBe(query);
   });

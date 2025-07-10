@@ -269,7 +269,7 @@ export type SolutionModifiers = {
   limitOffset?: SolutionModifierLimitOffset;
 };
 export type SolutionModifierBase = Node & { type: 'solutionModifier'; subType: string };
-export type SolutionModifierGroupBind = Pick<Node, 'loc'> & {
+export type SolutionModifierGroupBind = Localized & {
   variable: TermVariable;
   value: Expression;
 };
@@ -327,11 +327,6 @@ export type ExpressionOperation = ExpressionBase & {
   args: Expression[];
 };
 
-export type ExpressionBracketted = ExpressionBase & {
-  subType: 'bracketted';
-  expression: Expression;
-};
-
 export type ExpressionPatternOperation = ExpressionBase & {
   subType: 'patternOperation';
   operator: string;
@@ -348,7 +343,6 @@ export type ExpressionFunctionCall = ExpressionBase & {
 
 export type Expression =
   | ExpressionOperation
-  | ExpressionBracketted
   | ExpressionPatternOperation
   | ExpressionFunctionCall
   | ExpressionAggregate

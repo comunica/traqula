@@ -138,39 +138,30 @@
           },
           "value": {
             "type": "expression",
-            "subType": "bracketted",
-            "expression": {
-              "type": "expression",
-              "subType": "operation",
-              "operator": "+",
-              "args": [
-                {
-                  "type": "term",
-                  "subType": "variable",
-                  "value": "O1",
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 105,
-                    "end": 108
-                  }
-                },
-                {
-                  "type": "term",
-                  "subType": "variable",
-                  "value": "O2",
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 111,
-                    "end": 114
-                  }
+            "subType": "operation",
+            "operator": "+",
+            "args": [
+              {
+                "type": "term",
+                "subType": "variable",
+                "value": "O1",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 105,
+                  "end": 108
                 }
-              ],
-              "loc": {
-                "sourceLocationType": "source",
-                "start": 105,
-                "end": 114
+              },
+              {
+                "type": "term",
+                "subType": "variable",
+                "value": "O2",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 111,
+                  "end": 114
+                }
               }
-            },
+            ],
             "loc": {
               "sourceLocationType": "source",
               "start": 104,

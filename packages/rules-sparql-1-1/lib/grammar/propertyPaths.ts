@@ -26,7 +26,7 @@ export const path: SparqlRule<'path', Path> = <const> {
           SUBRULE(path, head, undefined);
           F.printFilter(ast, () => PRINT(')'));
           for (const val of tail) {
-            F.printFilter(ast, () => PRINT('('));
+            F.printFilter(ast, () => PRINT(ast.subType, '('));
             SUBRULE(path, val, undefined);
             F.printFilter(ast, () => PRINT(')'));
           }

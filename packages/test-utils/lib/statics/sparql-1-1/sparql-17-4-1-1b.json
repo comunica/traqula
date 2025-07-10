@@ -162,41 +162,32 @@
         "subType": "filter",
         "expression": {
           "type": "expression",
-          "subType": "bracketted",
-          "expression": {
-            "type": "expression",
-            "subType": "operation",
-            "operator": "!",
-            "args": [
-              {
-                "type": "expression",
-                "subType": "operation",
-                "operator": "bound",
-                "args": [
-                  {
-                    "type": "term",
-                    "subType": "variable",
-                    "value": "date",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 204,
-                      "end": 209
-                    }
+          "subType": "operation",
+          "operator": "!",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "operation",
+              "operator": "bound",
+              "args": [
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "date",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 204,
+                    "end": 209
                   }
-                ],
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 198,
-                  "end": 210
                 }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 198,
+                "end": 210
               }
-            ],
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 197,
-              "end": 210
             }
-          },
+          ],
           "loc": {
             "sourceLocationType": "source",
             "start": 196,

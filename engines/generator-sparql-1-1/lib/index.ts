@@ -41,7 +41,10 @@ const sparql11GeneratorBuilder = GeneratorBuilder.createBuilder(<const> [
     gram.quadsNotTriples,
   )
   .addRule(gram.aggregate)
-  .addRule(gram.datasetClauseStar)
+  .addMany(
+    gram.datasetClauseStar,
+    gram.usingClauseStar,
+  )
   .addMany(
     gram.argList,
     gram.expression,
@@ -97,11 +100,19 @@ export class Generator {
   private readonly generator = sparql11GeneratorBuilder.build();
   private readonly factory = new TraqulaFactory();
 
-  public generate(ast: T11.Query | T11.Update, origSource?: string): string {
+  public generate(ast: T11.Query | T11.Update, origSource = ''): string {
     return this.generator.queryOrUpdate(ast, {
       factory: this.factory,
       offset: 0,
-      origSource: origSource ?? '',
+      origSource,
+    }, undefined);
+  }
+
+  public generatePath(ast: T11.Path, origSource = ''): string {
+    return this.generator.path(ast, {
+      factory: this.factory,
+      offset: 0,
+      origSource,
     }, undefined);
   }
 }

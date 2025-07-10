@@ -276,100 +276,91 @@
         "subType": "filter",
         "expression": {
           "type": "expression",
-          "subType": "bracketted",
-          "expression": {
-            "type": "expression",
-            "subType": "operation",
-            "operator": "<",
-            "args": [
-              {
-                "type": "expression",
-                "subType": "functionCall",
-                "function": {
-                  "type": "term",
-                  "subType": "namedNode",
-                  "value": "distance",
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 293,
-                    "end": 306
-                  },
-                  "prefix": "aGeo"
-                },
-                "args": [
-                  {
-                    "type": "term",
-                    "subType": "variable",
-                    "value": "axLoc",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 307,
-                      "end": 313
-                    }
-                  },
-                  {
-                    "type": "term",
-                    "subType": "variable",
-                    "value": "ayLoc",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 315,
-                      "end": 321
-                    }
-                  },
-                  {
-                    "type": "term",
-                    "subType": "variable",
-                    "value": "bxLoc",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 323,
-                      "end": 329
-                    }
-                  },
-                  {
-                    "type": "term",
-                    "subType": "variable",
-                    "value": "byLoc",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 331,
-                      "end": 337
-                    }
-                  }
-                ],
-                "distinct": false,
+          "subType": "operation",
+          "operator": "<",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "functionCall",
+              "function": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "distance",
                 "loc": {
                   "sourceLocationType": "source",
                   "start": 293,
-                  "end": 338
-                }
+                  "end": 306
+                },
+                "prefix": "aGeo"
               },
-              {
-                "type": "term",
-                "subType": "literal",
-                "value": "10",
-                "langOrIri": {
+              "args": [
+                {
                   "type": "term",
-                  "subType": "namedNode",
-                  "value": "http://www.w3.org/2001/XMLSchema#integer",
+                  "subType": "variable",
+                  "value": "axLoc",
                   "loc": {
-                    "sourceLocationType": "noMaterialize"
+                    "sourceLocationType": "source",
+                    "start": 307,
+                    "end": 313
                   }
                 },
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 341,
-                  "end": 343
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "ayLoc",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 315,
+                    "end": 321
+                  }
+                },
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "bxLoc",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 323,
+                    "end": 329
+                  }
+                },
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "byLoc",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 331,
+                    "end": 337
+                  }
                 }
+              ],
+              "distinct": false,
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 293,
+                "end": 338
               }
-            ],
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 293,
-              "end": 343
+            },
+            {
+              "type": "term",
+              "subType": "literal",
+              "value": "10",
+              "langOrIri": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "http://www.w3.org/2001/XMLSchema#integer",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 341,
+                "end": 343
+              }
             }
-          },
+          ],
           "loc": {
             "sourceLocationType": "source",
             "start": 291,

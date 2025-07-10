@@ -249,47 +249,38 @@
           },
           {
             "type": "expression",
-            "subType": "bracketted",
-            "expression": {
-              "type": "expression",
-              "subType": "operation",
-              "operator": "-",
-              "args": [
-                {
+            "subType": "operation",
+            "operator": "-",
+            "args": [
+              {
+                "type": "term",
+                "subType": "literal",
+                "value": "1",
+                "langOrIri": {
                   "type": "term",
-                  "subType": "literal",
-                  "value": "1",
-                  "langOrIri": {
-                    "type": "term",
-                    "subType": "namedNode",
-                    "value": "http://www.w3.org/2001/XMLSchema#integer",
-                    "loc": {
-                      "sourceLocationType": "noMaterialize"
-                    }
-                  },
+                  "subType": "namedNode",
+                  "value": "http://www.w3.org/2001/XMLSchema#integer",
                   "loc": {
-                    "sourceLocationType": "source",
-                    "start": 133,
-                    "end": 134
+                    "sourceLocationType": "noMaterialize"
                   }
                 },
-                {
-                  "type": "term",
-                  "subType": "variable",
-                  "value": "discount",
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 135,
-                    "end": 144
-                  }
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 133,
+                  "end": 134
                 }
-              ],
-              "loc": {
-                "sourceLocationType": "source",
-                "start": 133,
-                "end": 144
+              },
+              {
+                "type": "term",
+                "subType": "variable",
+                "value": "discount",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 135,
+                  "end": 144
+                }
               }
-            },
+            ],
             "loc": {
               "sourceLocationType": "source",
               "start": 132,

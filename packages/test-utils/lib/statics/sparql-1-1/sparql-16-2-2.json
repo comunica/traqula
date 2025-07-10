@@ -286,73 +286,64 @@
         "subType": "filter",
         "expression": {
           "type": "expression",
-          "subType": "bracketted",
-          "expression": {
-            "type": "expression",
-            "subType": "operation",
-            "operator": ">",
-            "args": [
-              {
-                "type": "expression",
-                "subType": "functionCall",
-                "function": {
-                  "type": "term",
-                  "subType": "namedNode",
-                  "value": "customDate",
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 268,
-                    "end": 282
-                  },
-                  "prefix": "app"
-                },
-                "args": [
-                  {
-                    "type": "term",
-                    "subType": "variable",
-                    "value": "date",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 283,
-                      "end": 288
-                    }
-                  }
-                ],
-                "distinct": false,
+          "subType": "operation",
+          "operator": ">",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "functionCall",
+              "function": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "customDate",
                 "loc": {
                   "sourceLocationType": "source",
                   "start": 268,
-                  "end": 289
-                }
+                  "end": 282
+                },
+                "prefix": "app"
               },
-              {
-                "type": "term",
-                "subType": "literal",
-                "value": "2005-02-28T00:00:00Z",
-                "langOrIri": {
+              "args": [
+                {
                   "type": "term",
-                  "subType": "namedNode",
-                  "value": "dateTime",
+                  "subType": "variable",
+                  "value": "date",
                   "loc": {
                     "sourceLocationType": "source",
-                    "start": 316,
-                    "end": 328
-                  },
-                  "prefix": "xsd"
-                },
+                    "start": 283,
+                    "end": 288
+                  }
+                }
+              ],
+              "distinct": false,
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 268,
+                "end": 289
+              }
+            },
+            {
+              "type": "term",
+              "subType": "literal",
+              "value": "2005-02-28T00:00:00Z",
+              "langOrIri": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "dateTime",
                 "loc": {
                   "sourceLocationType": "source",
-                  "start": 292,
+                  "start": 316,
                   "end": 328
-                }
+                },
+                "prefix": "xsd"
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 292,
+                "end": 328
               }
-            ],
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 268,
-              "end": 328
             }
-          },
+          ],
           "loc": {
             "sourceLocationType": "source",
             "start": 266,

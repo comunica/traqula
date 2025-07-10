@@ -26,6 +26,7 @@ import type {
   SparqlGrammarRule,
   SparqlRule,
 } from '../Sparql11types';
+import { checkNote13 } from '../validation/validators';
 import { builtInCall } from './builtIn';
 import { argList, brackettedExpression, expression } from './expression';
 import { var_, varOrIri, varOrTerm } from './general';
@@ -103,7 +104,7 @@ export const generatePattern: SparqlGeneratorRule<'generatePattern', Pattern> = 
 export const groupGraphPatternSub:
 SparqlGrammarRule<'groupGraphPatternSub', Pattern[]> = <const> {
   name: 'groupGraphPatternSub',
-  impl: ({ SUBRULE, CONSUME, MANY, SUBRULE1, SUBRULE2, OPTION1, OPTION2, OPTION3 }) => () => {
+  impl: ({ ACTION, SUBRULE, CONSUME, MANY, SUBRULE1, SUBRULE2, OPTION1, OPTION2, OPTION3 }) => () => {
     const patterns: Pattern[] = [];
 
     const bgpPattern = OPTION1(() => SUBRULE1(triplesBlock, undefined));
@@ -122,23 +123,7 @@ SparqlGrammarRule<'groupGraphPatternSub', Pattern[]> = <const> {
       }
     });
 
-    // TODO: Check note 13 of the spec.
-    // TODO: currently optimized for case bind is present.
-    //  Since every iteration, even when no bind is present, we walk the tree collecting variables.
-    //  optimize either by: checking whether bind is present, or by keeping track of variables and passing them through
-    // ACTION(() => {
-    //   const boundedVars = new Set<string>();
-    //   for (const pattern of patterns) {
-    //     // Element can be bind, in that case, check note 13. If it is not, buildup set of bounded variables.
-    //     if (pattern.type === 'bind') {
-    //       if (boundedVars.has(pattern.variable.value)) {
-    //         throw new Error(`Variable used to bind is already bound (?${pattern.variable.value})`);
-    //       }
-    //     } else if (pattern.type === 'group' || pattern.type === 'bgp') {
-    //       findBoundVarsFromGroupGraphPattern(pattern, boundedVars);
-    //     }
-    //   }
-    // });
+    ACTION(() => checkNote13(patterns));
 
     return patterns;
   },
@@ -499,8 +484,9 @@ export const filter: SparqlRule<'filter', PatternFilter> = <const> {
     return ACTION(() => C.factory.patternFilter(expression, C.factory.sourceLocation(filterToken, expression)));
   },
   gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
-    F.printFilter(ast, () => PRINT_WORD('FILTER'));
+    F.printFilter(ast, () => PRINT_WORD('FILTER ('));
     SUBRULE(expression, ast.expression, undefined);
+    F.printFilter(ast, () => PRINT_WORD(')'));
   },
 };
 

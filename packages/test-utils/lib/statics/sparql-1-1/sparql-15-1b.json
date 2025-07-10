@@ -147,18 +147,9 @@
       "orderDefs": [
         {
           "expression": {
-            "type": "expression",
-            "subType": "bracketted",
-            "expression": {
-              "type": "term",
-              "subType": "variable",
-              "value": "emp",
-              "loc": {
-                "sourceLocationType": "source",
-                "start": 157,
-                "end": 161
-              }
-            },
+            "type": "term",
+            "subType": "variable",
+            "value": "emp",
             "loc": {
               "sourceLocationType": "source",
               "start": 156,

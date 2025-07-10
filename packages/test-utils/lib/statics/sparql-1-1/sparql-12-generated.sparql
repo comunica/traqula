@@ -1,0 +1,1 @@
+PREFIX : <http://people.example/> PREFIX : <http://people.example/> SELECT ?y ?minName WHERE { :alice :knows ?y . { SELECT ?y ( min( ?name ) AS ?minName ) WHERE { ?y :name ?name . } GROUPBY ?y } }

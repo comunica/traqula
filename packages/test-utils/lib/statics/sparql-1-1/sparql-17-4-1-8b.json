@@ -296,95 +296,86 @@
         "subType": "filter",
         "expression": {
           "type": "expression",
-          "subType": "bracketted",
-          "expression": {
-            "type": "expression",
-            "subType": "operation",
-            "operator": "&&",
-            "args": [
-              {
-                "type": "expression",
-                "subType": "operation",
-                "operator": "sameterm",
-                "args": [
-                  {
-                    "type": "term",
-                    "subType": "variable",
-                    "value": "aWeight",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 357,
-                      "end": 365
-                    }
-                  },
-                  {
-                    "type": "term",
-                    "subType": "variable",
-                    "value": "bWeight",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 367,
-                      "end": 375
-                    }
+          "subType": "operation",
+          "operator": "&&",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "operation",
+              "operator": "sameterm",
+              "args": [
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "aWeight",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 357,
+                    "end": 365
                   }
-                ],
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 348,
-                  "end": 376
-                }
-              },
-              {
-                "type": "expression",
-                "subType": "operation",
-                "operator": "!",
-                "args": [
-                  {
-                    "type": "expression",
-                    "subType": "operation",
-                    "operator": "sameterm",
-                    "args": [
-                      {
-                        "type": "term",
-                        "subType": "variable",
-                        "value": "aDisp",
-                        "loc": {
-                          "sourceLocationType": "source",
-                          "start": 390,
-                          "end": 396
-                        }
-                      },
-                      {
-                        "type": "term",
-                        "subType": "variable",
-                        "value": "bDisp",
-                        "loc": {
-                          "sourceLocationType": "source",
-                          "start": 398,
-                          "end": 404
-                        }
-                      }
-                    ],
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 381,
-                      "end": 405
-                    }
+                },
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "bWeight",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 367,
+                    "end": 375
                   }
-                ],
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 380,
-                  "end": 405
                 }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 348,
+                "end": 376
               }
-            ],
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 348,
-              "end": 405
+            },
+            {
+              "type": "expression",
+              "subType": "operation",
+              "operator": "!",
+              "args": [
+                {
+                  "type": "expression",
+                  "subType": "operation",
+                  "operator": "sameterm",
+                  "args": [
+                    {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "aDisp",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 390,
+                        "end": 396
+                      }
+                    },
+                    {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "bDisp",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 398,
+                        "end": 404
+                      }
+                    }
+                  ],
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 381,
+                    "end": 405
+                  }
+                }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 380,
+                "end": 405
+              }
             }
-          },
+          ],
           "loc": {
             "sourceLocationType": "source",
             "start": 346,

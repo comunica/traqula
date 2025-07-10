@@ -121,39 +121,30 @@
         "subType": "filter",
         "expression": {
           "type": "expression",
-          "subType": "bracketted",
-          "expression": {
-            "type": "expression",
-            "subType": "operation",
-            "operator": "!=",
-            "args": [
-              {
-                "type": "term",
-                "subType": "namedNode",
-                "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer1/Product28",
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 283,
-                  "end": 369
-                }
-              },
-              {
-                "type": "term",
-                "subType": "variable",
-                "value": "product",
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 373,
-                  "end": 381
-                }
+          "subType": "operation",
+          "operator": "!=",
+          "args": [
+            {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer1/Product28",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 283,
+                "end": 369
               }
-            ],
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 283,
-              "end": 381
+            },
+            {
+              "type": "term",
+              "subType": "variable",
+              "value": "product",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 373,
+                "end": 381
+              }
             }
-          },
+          ],
           "loc": {
             "sourceLocationType": "source",
             "start": 282,
@@ -338,161 +329,134 @@
         "subType": "filter",
         "expression": {
           "type": "expression",
-          "subType": "bracketted",
-          "expression": {
-            "type": "expression",
-            "subType": "operation",
-            "operator": "&&",
-            "args": [
-              {
-                "type": "expression",
-                "subType": "operation",
-                "operator": "<",
-                "args": [
-                  {
-                    "type": "term",
-                    "subType": "variable",
-                    "value": "simProperty1",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 749,
-                      "end": 762
-                    }
-                  },
-                  {
-                    "type": "expression",
-                    "subType": "bracketted",
-                    "expression": {
-                      "type": "expression",
-                      "subType": "operation",
-                      "operator": "+",
-                      "args": [
-                        {
-                          "type": "term",
-                          "subType": "variable",
-                          "value": "origProperty1",
-                          "loc": {
-                            "sourceLocationType": "source",
-                            "start": 766,
-                            "end": 780
-                          }
-                        },
-                        {
-                          "type": "term",
-                          "subType": "literal",
-                          "value": "120",
-                          "langOrIri": {
-                            "type": "term",
-                            "subType": "namedNode",
-                            "value": "http://www.w3.org/2001/XMLSchema#integer",
-                            "loc": {
-                              "sourceLocationType": "noMaterialize"
-                            }
-                          },
-                          "loc": {
-                            "sourceLocationType": "source",
-                            "start": 783,
-                            "end": 786
-                          }
-                        }
-                      ],
+          "subType": "operation",
+          "operator": "&&",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "operation",
+              "operator": "<",
+              "args": [
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "simProperty1",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 749,
+                    "end": 762
+                  }
+                },
+                {
+                  "type": "expression",
+                  "subType": "operation",
+                  "operator": "+",
+                  "args": [
+                    {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "origProperty1",
                       "loc": {
                         "sourceLocationType": "source",
                         "start": 766,
-                        "end": 786
+                        "end": 780
                       }
                     },
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 765,
-                      "end": 787
-                    }
-                  }
-                ],
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 749,
-                  "end": 787
-                }
-              },
-              {
-                "type": "expression",
-                "subType": "operation",
-                "operator": ">",
-                "args": [
-                  {
-                    "type": "term",
-                    "subType": "variable",
-                    "value": "simProperty1",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 791,
-                      "end": 804
-                    }
-                  },
-                  {
-                    "type": "expression",
-                    "subType": "bracketted",
-                    "expression": {
-                      "type": "expression",
-                      "subType": "operation",
-                      "operator": "-",
-                      "args": [
-                        {
-                          "type": "term",
-                          "subType": "variable",
-                          "value": "origProperty1",
-                          "loc": {
-                            "sourceLocationType": "source",
-                            "start": 808,
-                            "end": 822
-                          }
-                        },
-                        {
-                          "type": "term",
-                          "subType": "literal",
-                          "value": "120",
-                          "langOrIri": {
-                            "type": "term",
-                            "subType": "namedNode",
-                            "value": "http://www.w3.org/2001/XMLSchema#integer",
-                            "loc": {
-                              "sourceLocationType": "noMaterialize"
-                            }
-                          },
-                          "loc": {
-                            "sourceLocationType": "source",
-                            "start": 825,
-                            "end": 828
-                          }
+                    {
+                      "type": "term",
+                      "subType": "literal",
+                      "value": "120",
+                      "langOrIri": {
+                        "type": "term",
+                        "subType": "namedNode",
+                        "value": "http://www.w3.org/2001/XMLSchema#integer",
+                        "loc": {
+                          "sourceLocationType": "noMaterialize"
                         }
-                      ],
+                      },
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 783,
+                        "end": 786
+                      }
+                    }
+                  ],
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 765,
+                    "end": 787
+                  }
+                }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 749,
+                "end": 787
+              }
+            },
+            {
+              "type": "expression",
+              "subType": "operation",
+              "operator": ">",
+              "args": [
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "simProperty1",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 791,
+                    "end": 804
+                  }
+                },
+                {
+                  "type": "expression",
+                  "subType": "operation",
+                  "operator": "-",
+                  "args": [
+                    {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "origProperty1",
                       "loc": {
                         "sourceLocationType": "source",
                         "start": 808,
-                        "end": 828
+                        "end": 822
                       }
                     },
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 807,
-                      "end": 829
+                    {
+                      "type": "term",
+                      "subType": "literal",
+                      "value": "120",
+                      "langOrIri": {
+                        "type": "term",
+                        "subType": "namedNode",
+                        "value": "http://www.w3.org/2001/XMLSchema#integer",
+                        "loc": {
+                          "sourceLocationType": "noMaterialize"
+                        }
+                      },
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 825,
+                        "end": 828
+                      }
                     }
+                  ],
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 807,
+                    "end": 829
                   }
-                ],
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 791,
-                  "end": 829
                 }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 791,
+                "end": 829
               }
-            ],
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 749,
-              "end": 829
             }
-          },
+          ],
           "loc": {
             "sourceLocationType": "source",
             "start": 748,
@@ -599,161 +563,134 @@
         "subType": "filter",
         "expression": {
           "type": "expression",
-          "subType": "bracketted",
-          "expression": {
-            "type": "expression",
-            "subType": "operation",
-            "operator": "&&",
-            "args": [
-              {
-                "type": "expression",
-                "subType": "operation",
-                "operator": "<",
-                "args": [
-                  {
-                    "type": "term",
-                    "subType": "variable",
-                    "value": "simProperty2",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 1029,
-                      "end": 1042
-                    }
-                  },
-                  {
-                    "type": "expression",
-                    "subType": "bracketted",
-                    "expression": {
-                      "type": "expression",
-                      "subType": "operation",
-                      "operator": "+",
-                      "args": [
-                        {
-                          "type": "term",
-                          "subType": "variable",
-                          "value": "origProperty2",
-                          "loc": {
-                            "sourceLocationType": "source",
-                            "start": 1046,
-                            "end": 1060
-                          }
-                        },
-                        {
-                          "type": "term",
-                          "subType": "literal",
-                          "value": "170",
-                          "langOrIri": {
-                            "type": "term",
-                            "subType": "namedNode",
-                            "value": "http://www.w3.org/2001/XMLSchema#integer",
-                            "loc": {
-                              "sourceLocationType": "noMaterialize"
-                            }
-                          },
-                          "loc": {
-                            "sourceLocationType": "source",
-                            "start": 1063,
-                            "end": 1066
-                          }
-                        }
-                      ],
+          "subType": "operation",
+          "operator": "&&",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "operation",
+              "operator": "<",
+              "args": [
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "simProperty2",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 1029,
+                    "end": 1042
+                  }
+                },
+                {
+                  "type": "expression",
+                  "subType": "operation",
+                  "operator": "+",
+                  "args": [
+                    {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "origProperty2",
                       "loc": {
                         "sourceLocationType": "source",
                         "start": 1046,
-                        "end": 1066
+                        "end": 1060
                       }
                     },
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 1045,
-                      "end": 1067
-                    }
-                  }
-                ],
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 1029,
-                  "end": 1067
-                }
-              },
-              {
-                "type": "expression",
-                "subType": "operation",
-                "operator": ">",
-                "args": [
-                  {
-                    "type": "term",
-                    "subType": "variable",
-                    "value": "simProperty2",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 1071,
-                      "end": 1084
-                    }
-                  },
-                  {
-                    "type": "expression",
-                    "subType": "bracketted",
-                    "expression": {
-                      "type": "expression",
-                      "subType": "operation",
-                      "operator": "-",
-                      "args": [
-                        {
-                          "type": "term",
-                          "subType": "variable",
-                          "value": "origProperty2",
-                          "loc": {
-                            "sourceLocationType": "source",
-                            "start": 1088,
-                            "end": 1102
-                          }
-                        },
-                        {
-                          "type": "term",
-                          "subType": "literal",
-                          "value": "170",
-                          "langOrIri": {
-                            "type": "term",
-                            "subType": "namedNode",
-                            "value": "http://www.w3.org/2001/XMLSchema#integer",
-                            "loc": {
-                              "sourceLocationType": "noMaterialize"
-                            }
-                          },
-                          "loc": {
-                            "sourceLocationType": "source",
-                            "start": 1105,
-                            "end": 1108
-                          }
+                    {
+                      "type": "term",
+                      "subType": "literal",
+                      "value": "170",
+                      "langOrIri": {
+                        "type": "term",
+                        "subType": "namedNode",
+                        "value": "http://www.w3.org/2001/XMLSchema#integer",
+                        "loc": {
+                          "sourceLocationType": "noMaterialize"
                         }
-                      ],
+                      },
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 1063,
+                        "end": 1066
+                      }
+                    }
+                  ],
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 1045,
+                    "end": 1067
+                  }
+                }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 1029,
+                "end": 1067
+              }
+            },
+            {
+              "type": "expression",
+              "subType": "operation",
+              "operator": ">",
+              "args": [
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "simProperty2",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 1071,
+                    "end": 1084
+                  }
+                },
+                {
+                  "type": "expression",
+                  "subType": "operation",
+                  "operator": "-",
+                  "args": [
+                    {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "origProperty2",
                       "loc": {
                         "sourceLocationType": "source",
                         "start": 1088,
-                        "end": 1108
+                        "end": 1102
                       }
                     },
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 1087,
-                      "end": 1109
+                    {
+                      "type": "term",
+                      "subType": "literal",
+                      "value": "170",
+                      "langOrIri": {
+                        "type": "term",
+                        "subType": "namedNode",
+                        "value": "http://www.w3.org/2001/XMLSchema#integer",
+                        "loc": {
+                          "sourceLocationType": "noMaterialize"
+                        }
+                      },
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 1105,
+                        "end": 1108
+                      }
                     }
+                  ],
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 1087,
+                    "end": 1109
                   }
-                ],
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 1071,
-                  "end": 1109
                 }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 1071,
+                "end": 1109
               }
-            ],
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 1029,
-              "end": 1109
             }
-          },
+          ],
           "loc": {
             "sourceLocationType": "source",
             "start": 1028,

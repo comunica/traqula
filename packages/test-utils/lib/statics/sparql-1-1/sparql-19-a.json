@@ -18,7 +18,7 @@
               "loc": {
                 "sourceLocationType": "noMaterialize"
               },
-              "label": "g_2"
+              "label": "g_0"
             },
             "triples": [
               {
@@ -29,7 +29,7 @@
                   "loc": {
                     "sourceLocationType": "noMaterialize"
                   },
-                  "label": "g_2"
+                  "label": "g_0"
                 },
                 "predicate": {
                   "type": "term",
@@ -49,7 +49,7 @@
                     "start": 36,
                     "end": 38
                   },
-                  "label": "g_3"
+                  "label": "g_1"
                 },
                 "loc": {
                   "sourceLocationType": "source",

@@ -56,7 +56,7 @@
             "start": 96,
             "end": 98
           },
-          "label": "g_2"
+          "label": "g_0"
         },
         "predicate": {
           "type": "term",
@@ -117,7 +117,7 @@
                 "start": 125,
                 "end": 127
               },
-              "label": "g_3"
+              "label": "g_1"
             },
             "predicate": {
               "type": "term",
@@ -154,7 +154,7 @@
               "loc": {
                 "sourceLocationType": "noMaterialize"
               },
-              "label": "g_3"
+              "label": "g_1"
             },
             "predicate": {
               "type": "term",

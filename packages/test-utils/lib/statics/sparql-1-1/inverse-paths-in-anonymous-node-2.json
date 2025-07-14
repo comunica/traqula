@@ -82,7 +82,7 @@
                 "loc": {
                   "sourceLocationType": "noMaterialize"
                 },
-                "label": "g_1"
+                "label": "g_0"
               },
               "triples": [
                 {
@@ -93,7 +93,7 @@
                     "loc": {
                       "sourceLocationType": "noMaterialize"
                     },
-                    "label": "g_1"
+                    "label": "g_0"
                   },
                   "predicate": {
                     "type": "term",
@@ -131,7 +131,7 @@
                     "loc": {
                       "sourceLocationType": "noMaterialize"
                     },
-                    "label": "g_1"
+                    "label": "g_0"
                   },
                   "predicate": {
                     "type": "path",

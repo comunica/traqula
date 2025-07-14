@@ -6,3 +6,4 @@ export * from './Sparql11types';
 export * from './SparqlParser';
 export * from './RoundTripTypes';
 export * from './factory';
+export * from './validation/validators';

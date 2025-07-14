@@ -102,7 +102,7 @@
                 "loc": {
                   "sourceLocationType": "noMaterialize"
                 },
-                "label": "g_3"
+                "label": "g_0"
               },
               "triples": [
                 {
@@ -113,7 +113,7 @@
                     "loc": {
                       "sourceLocationType": "noMaterialize"
                     },
-                    "label": "g_3"
+                    "label": "g_0"
                   },
                   "predicate": {
                     "type": "path",
@@ -198,7 +198,7 @@
                 "loc": {
                   "sourceLocationType": "noMaterialize"
                 },
-                "label": "g_4"
+                "label": "g_1"
               },
               "triples": [
                 {
@@ -209,7 +209,7 @@
                     "loc": {
                       "sourceLocationType": "noMaterialize"
                     },
-                    "label": "g_4"
+                    "label": "g_1"
                   },
                   "predicate": {
                     "type": "path",
@@ -368,7 +368,7 @@
                 "loc": {
                   "sourceLocationType": "noMaterialize"
                 },
-                "label": "g_5"
+                "label": "g_2"
               },
               "triples": [
                 {
@@ -379,7 +379,7 @@
                     "loc": {
                       "sourceLocationType": "noMaterialize"
                     },
-                    "label": "g_5"
+                    "label": "g_2"
                   },
                   "predicate": {
                     "type": "path",

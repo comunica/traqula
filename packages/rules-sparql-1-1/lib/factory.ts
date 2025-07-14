@@ -172,6 +172,19 @@ export class TraqulaFactory extends CoreFactory {
     return this.isTerm(x) && x.subType === 'literal';
   }
 
+  public isTermLiteralLangStr(x: TermLiteral): x is TermLiteralLangStr {
+    return 'langOrIri' in x && typeof x.langOrIri === 'string';
+  }
+
+  public isTermLiteralTyped(x: TermLiteral): x is TermLiteralTyped {
+    return 'langOrIri' in x && typeof x.langOrIri === 'object' &&
+      this.isTerm(x.langOrIri) && this.isTermIri(x.langOrIri);
+  }
+
+  public isTermLiteralStr(x: TermLiteral): x is TermLiteralStr {
+    return !('langOrIri' in x) || x.langOrIri === undefined;
+  }
+
   public isTermBlankNode(x: Expression | Term): x is TermBlank {
     return this.isTerm(x) && x.subType === 'blankNode';
   }
@@ -567,6 +580,10 @@ export class TraqulaFactory extends CoreFactory {
 
   public isPath(x: object): x is Path {
     return ('type' in x && x.type === 'path') || (this.isTerm(x) && this.isTermIri(x));
+  }
+
+  public isPathPure(x: object): x is Exclude<Path, TermIri> {
+    return 'type' in x && x.type === 'path';
   }
 
   public isPathChain(x: Path): x is PropertyPathChain {

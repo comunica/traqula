@@ -1,6 +1,7 @@
-import type { Localized, Node } from '@traqula/core';
+import type { Localized, Node, Patch } from '@traqula/core';
+import type * as T11 from '@traqula/rules-sparql-1-1';
 
-export type Sparql11Nodes =
+export type Sparql12Nodes =
   | GraphRef
   | UpdateOperation
   | Update
@@ -16,28 +17,12 @@ export type Sparql11Nodes =
   | Wildcard
   | Term;
 
-export type GraphRefBase = Node & {
-  type: 'graphRef';
-  subType: string;
-};
-export type GraphRefDefault = GraphRefBase & {
-  subType: 'default';
-};
-export type GraphRefNamed = GraphRefBase & {
-  subType: 'named';
-};
-export type GraphRefAll = GraphRefBase & {
-  subType: 'all';
-};
-export type GraphRefSpecific = GraphRefBase & {
-  subType: 'specific';
-  graph: TermIri;
-};
-export type GraphRef =
-  | GraphRefDefault
-  | GraphRefNamed
-  | GraphRefAll
-  | GraphRefSpecific;
+export type GraphRefBase = T11.GraphRefBase;
+export type GraphRefDefault = T11.GraphRefDefault;
+export type GraphRefNamed = T11.GraphRefNamed;
+export type GraphRefAll = T11.GraphRefAll;
+export type GraphRefSpecific = T11.GraphRefSpecific;
+export type GraphRef = T11.GraphRef;
 
 export type Quads = PatternBgp | GraphQuads;
 
@@ -165,32 +150,39 @@ export type TripleCollectionBase = Node & {
   identifier: Term;
 };
 /**
- * The subject of the triples does not have a string manifestation.
+ * Both subject and predicate of the triples do not have a string manifestation.
  */
 export type TripleCollectionList = TripleCollectionBase & {
   subType: 'list';
   identifier: TermBlank;
 };
 /**
- * Bot subject and predicate of the triples do not have a string manifestation.
+ * The subject of the triples does not have a string manifestation.
  */
-export type TripleCollectionBlankNodeProperties = TripleCollectionBase & {
-  subType: 'blankNodeProperties';
-  identifier: TermBlank;
+export type TripleCollectionBlankNodeProperties = Patch<T11.TripleCollectionBlankNodeProperties, {
+  triples: TripleNesting[];
+  identifier: TermBlank | TermVariable | TermIri;
+}>;
+export type TripleCollectionReifiedTriple = TripleCollectionBase & {
+  subType: 'reifiedTriple';
+  identifier: TermVariable | TermIri | TermBlank;
 };
+
 export type TripleCollection =
   | TripleCollectionList
-  | TripleCollectionBlankNodeProperties;
+  | TripleCollectionBlankNodeProperties
+  | TripleCollectionReifiedTriple;
 
 // https://www.w3.org/TR/sparql11-query/#rGraphNode
 export type GraphNode = Term | TripleCollection;
-
+export type Annotation = TripleCollectionBlankNodeProperties | TermVariable | TermIri | TermBlank;
 // https://www.w3.org/TR/sparql11-query/#rTriplesBlock
 export type TripleNesting = Node & {
   type: 'triple';
   subject: GraphNode;
   predicate: TermIri | TermVariable | Path;
   object: GraphNode;
+  annotations?: Annotation[];
 };
 
 export type PatternBase = Node & { type: 'pattern'; subType: string };
@@ -288,8 +280,7 @@ export type SolutionModifierOrder = SolutionModifierBase & {
   subType: 'order';
   orderDefs: Ordering[];
 };
-export type SolutionModifierLimitOffset = SolutionModifierBase
-  & { subType: 'limitOffset'; limit: number | undefined; offset: number | undefined };
+export type SolutionModifierLimitOffset = T11.SolutionModifierLimitOffset;
 
 export type SolutionModifier =
   | SolutionModifierGroup
@@ -348,81 +339,42 @@ export type Expression =
   | ExpressionAggregate
   | TermIri
   | TermVariable
-  | TermLiteral;
+  | TermLiteral
+  | TermTriple;
 
-export type PropertyPathBase = Node & { type: 'path'; subType: string };
-export type PropertyPathChain = PropertyPathBase & {
-  subType: '|' | '/';
-  items: [Path, ...Path[]];
-};
-
-export type PathModified = PropertyPathBase & {
-  subType: '?' | '*' | '+' | '^';
-  items: [Path];
-};
-
-export type PathNegatedElt = PropertyPathBase & {
-  subType: '^';
-  items: [TermIri];
-};
-
-export type PathAlternativeLimited = PropertyPathBase & {
-  subType: '|';
-  items: [TermIri | PathNegatedElt, ...(TermIri | PathNegatedElt)[]];
-};
-
-export type PathNegated = PropertyPathBase & {
-  subType: '!';
-  items: [TermIri | PathNegatedElt | PathAlternativeLimited];
-};
-
+export type PropertyPathChain = T11.PropertyPathChain;
+export type PathModified = T11.PathModified;
+export type PathNegatedElt = T11.PathNegatedElt;
+export type PathAlternativeLimited = T11.PathAlternativeLimited;
+export type PathNegated = T11.PathNegated;
 // [[88]](https://www.w3.org/TR/sparql11-query/#rPath)
-export type Path =
-  | TermIri
-  | PropertyPathChain
-  | PathModified
-  | PathNegated;
+export type Path = T11.Path;
 
-export type ContextDefinitionBase_ = Node & { type: 'contextDef'; subType: string };
-export type ContextDefinitionPrefix = ContextDefinitionBase_ & {
-  subType: 'prefix';
-  key: string;
-  value: TermIriFull;
+export type ContextDefinitionPrefix = T11.ContextDefinitionPrefix;
+export type ContextDefinitionBase = T11.ContextDefinitionBase;
+export type ContextDefinitionVersion = T11.ContextDefinitionBase_ & {
+  subType: 'version';
+  version: string;
 };
-export type ContextDefinitionBase = ContextDefinitionBase_ & {
-  subType: 'base';
-  value: TermIriFull;
-};
-export type ContextDefinition = ContextDefinitionPrefix | ContextDefinitionBase;
+export type ContextDefinition = T11.ContextDefinition | ContextDefinitionVersion;
 
-export type Wildcard = Node & {
-  type: 'wildcard';
-};
+export type Wildcard = T11.Wildcard;
+export type TermLiteralStr = T11.TermLiteralStr;
+export type TermLiteralLangStr = T11.TermLiteralLangStr;
+export type TermLiteralTyped = T11.TermLiteralTyped;
+export type TermLiteral = T11.TermLiteral;
+export type TermVariable = T11.TermVariable;
+export type TermIriFull = T11.TermIriFull;
+export type TermIriPrefixed = T11.TermIriPrefixed;
+export type TermIri = T11.TermIri;
+export type TermBlank = T11.TermBlank;
 
-export type TermBase = Node & { type: 'term'; subType: string };
-export type TermLiteralBase = TermBase & {
-  subType: 'literal';
-  value: string;
-};
-export type TermLiteralStr = TermLiteralBase & { langOrIri: undefined };
-export type TermLiteralLangStr = TermLiteralBase & { langOrIri: string };
-export type TermLiteralTyped = TermLiteralBase & { langOrIri: TermIri };
-export type TermLiteral = TermLiteralStr | TermLiteralLangStr | TermLiteralTyped;
-
-export type TermVariable = TermBase & {
-  subType: 'variable';
-  value: string;
+export type TermTriple = T11.TermBase & {
+  subType: 'triple';
+  subject: Term;
+  predicate: TermIri | TermVariable;
+  object: Term;
 };
 
-export type TermIriBase = TermBase & { subType: 'namedNode' };
-export type TermIriFull = TermIriBase & { value: string };
-export type TermIriPrefixed = TermIriBase & {
-  value: string;
-  prefix: string;
-};
-export type TermIri = TermIriFull | TermIriPrefixed;
-
-export type TermBlank = TermBase & { subType: 'blankNode' } & { label: string };
-
-export type GraphTerm = TermIri | TermBlank | TermLiteral;
 export type Term = GraphTerm | TermVariable;
+export type GraphTerm = TermIri | TermBlank | TermLiteral | TermTriple;

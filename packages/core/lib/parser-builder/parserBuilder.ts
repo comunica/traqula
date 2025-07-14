@@ -54,6 +54,10 @@ export class Builder<Context, Names extends string, RuleDefs extends ParseRuleMa
     this.rules = startRules;
   }
 
+  public widenContext<NewContext extends Context>(): Builder<NewContext, Names, RuleDefs> {
+    return <Builder<NewContext, Names, RuleDefs>> <unknown> this;
+  }
+
   /**
    * Change the implementation of an existing grammar rule.
    */

@@ -13,7 +13,7 @@ const queryOrUpdate: T11.SparqlGeneratorRule<'queryOrUpdate', T11.Query | T11.Up
   },
 };
 
-const sparql11GeneratorBuilder = GeneratorBuilder.createBuilder(<const> [
+export const sparql11GeneratorBuilder = GeneratorBuilder.createBuilder(<const> [
   gram.query,
   gram.selectQuery,
   gram.constructQuery,

@@ -3,10 +3,12 @@ import { TraqulaFactory } from '@traqula/rules-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import type {
   Annotation,
+  Term,
   TermBlank,
   TermIri,
   TermTriple,
   TermVariable,
+  TripleCollection,
   TripleCollectionBlankNodeProperties,
   TripleCollectionReifiedTriple,
   TripleNesting,
@@ -45,38 +47,38 @@ export class Factory extends TraqulaFactory {
     };
   }
 
-  // eslint-disable-next-line ts/ban-ts-comment
-  // @ts-expect-error 2416
   public override tripleCollectionBlankNodeProperties(
     identifier: TermBlank | TermVariable | TermIri,
     triples: TripleNesting[],
     loc: SourceLocation,
-  ): TripleCollectionBlankNodeProperties {
-    return {
+  ): T11.TripleCollectionBlankNodeProperties {
+    return <T11.TripleCollectionBlankNodeProperties> {
       type: 'tripleCollection',
       subType: 'blankNodeProperties',
       triples,
       identifier,
       loc,
-    };
+    } satisfies TripleCollectionBlankNodeProperties;
   }
 
-  // eslint-disable-next-line ts/ban-ts-comment
-  // @ts-expect-error 2416
+  public isTripleCollection12(collection: object): collection is TripleCollection {
+    return super.isTripleCollection(collection);
+  }
+
   public override triple(
     subject: TripleNesting['subject'],
     predicate: TripleNesting['predicate'],
     object: TripleNesting['object'],
     loc?: SourceLocation,
-  ): TripleNesting {
-    return {
+  ): T11.TripleNesting {
+    return <T11.TripleNesting> {
       type: 'triple',
       subject,
       predicate,
       object,
       annotations: [],
       loc: loc ?? this.sourceLocation(subject, predicate, object),
-    };
+    } satisfies TripleNesting;
   }
 
   public annotatedTriple(
@@ -94,5 +96,13 @@ export class Factory extends TraqulaFactory {
       annotations: annotations ?? [],
       loc: loc ?? this.sourceLocation(subject, predicate, object, ...annotations ?? []),
     };
+  }
+
+  public isTermTriple(term: Term): term is TermTriple {
+    return term.subType === 'triple';
+  }
+
+  public isTripleCollectionReifiedTriple(collection: TripleCollection): collection is TripleCollectionReifiedTriple {
+    return collection.subType === 'reifiedTriple';
   }
 }

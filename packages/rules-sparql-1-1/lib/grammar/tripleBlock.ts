@@ -375,17 +375,19 @@ SparqlRule<T, TripleCollectionBlankNodeProperties> {
         C.factory.sourceLocation(startToken, endToken),
       ));
     },
-    gImpl: ({ SUBRULE, PRINT, PRINT_WORD }) => (ast, { factory: F }) => {
+    gImpl: ({ SUBRULE, PRINT, PRINT_WORD, HANDLE_LOC }) => (ast, { factory: F }) => {
       F.printFilter(ast, () => PRINT('['));
       for (const triple of ast.triples) {
-        if (F.isTerm(triple.predicate) && F.isTermVariable(triple.predicate)) {
-          SUBRULE(varOrTerm, triple.predicate, undefined);
-        } else {
-          SUBRULE(path, triple.predicate, undefined);
-        }
-        SUBRULE(graphNodePath, triple.object, undefined);
+        HANDLE_LOC(triple, () => {
+          if (F.isTerm(triple.predicate) && F.isTermVariable(triple.predicate)) {
+            SUBRULE(varOrTerm, triple.predicate, undefined);
+          } else {
+            SUBRULE(path, triple.predicate, undefined);
+          }
+          SUBRULE(graphNodePath, triple.object, undefined);
 
-        F.printFilter(ast, () => PRINT_WORD(';'));
+          F.printFilter(ast, () => PRINT_WORD(';'));
+        });
       }
       F.printFilter(ast, () => PRINT(']'));
     },
@@ -409,8 +411,8 @@ function graphNodeImpl<T extends string>(name: T, allowPaths: boolean): SparqlRu
         ALT: () => SUBRULE(triplesNodeRule, undefined),
       },
     ]),
-    gImpl: ({ SUBRULE }) => (ast) => {
-      if (ast.type === 'term') {
+    gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
+      if (F.isTerm(ast)) {
         SUBRULE(varOrTerm, ast, undefined);
       } else {
         SUBRULE(triplesNodeRule, ast, undefined);

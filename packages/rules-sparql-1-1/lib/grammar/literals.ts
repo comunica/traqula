@@ -297,7 +297,7 @@ export const blankNode: SparqlRule<'blankNode', TermBlank> = <const> {
     return result;
   },
   gImpl: ({ PRINT_WORD }) => (ast, { factory }) => {
-    factory.printFilter(ast, () => PRINT_WORD('_:', ast.label));
+    factory.printFilter(ast, () => PRINT_WORD('_:', ast.label.replace(/^e_/u, '')));
   },
 };
 

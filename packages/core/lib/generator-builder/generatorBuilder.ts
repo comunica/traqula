@@ -39,6 +39,21 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
     this.rules = startRules;
   }
 
+  public widenContext<NewContext extends Context>(): GeneratorBuilder<NewContext, Names, RuleDefs> {
+    return <GeneratorBuilder<NewContext, Names, RuleDefs>> <unknown> this;
+  }
+
+  public typePatch<Patch extends {[Key in Names]?: any }>():
+  GeneratorBuilder<Context, Names, {[Key in Names]: Key extends keyof Patch ? (
+    RuleDefs[Key] extends GeneratorRule<Context, Key, any, infer Args> ?
+      GeneratorRule<Context, Key, Patch[Key], Args> : never
+  ) : (RuleDefs[Key] extends GeneratorRule<Context, Key> ? RuleDefs[Key] : never) }> {
+    return <GeneratorBuilder<Context, Names, {[Key in Names]: Key extends keyof Patch ? (
+      RuleDefs[Key] extends GeneratorRule<Context, Key, any, infer Args> ?
+        GeneratorRule<Context, Key, Patch[Key], Args> : never
+    ) : (RuleDefs[Key] extends GeneratorRule<Context, Key> ? RuleDefs[Key] : never) }>> <unknown> this;
+  }
+
   /**
    * Change the implementation of an existing generator rule.
    */

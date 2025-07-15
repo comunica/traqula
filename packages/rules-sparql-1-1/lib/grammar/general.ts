@@ -151,11 +151,11 @@ export const graphTerm: SparqlRule<'graphTerm', GraphTerm> = <const> {
   ]),
   gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
     if (F.isTermIri(ast)) {
-      return SUBRULE(iri, ast, undefined);
+      SUBRULE(iri, ast, undefined);
+    } else if (F.isTermLiteral(ast)) {
+      SUBRULE(rdfLiteral, ast, undefined);
+    } else if (F.isTermBlankNode(ast)) {
+      SUBRULE(blankNode, ast, undefined);
     }
-    if (F.isTermLiteral(ast)) {
-      return SUBRULE(rdfLiteral, ast, undefined);
-    }
-    return SUBRULE(blankNode, ast, undefined);
   },
 };

@@ -1,0 +1,1 @@
+PREFIX : <http://example.com/ns#> SELECT * WHERE { ?s ?p ?o . BIND( triple( ?s triple, ?p triple, str( ?o ) ) AS ?t2 ) }

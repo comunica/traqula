@@ -10,7 +10,7 @@ interface Parser {
 export function importSparql11NoteTests(parser: Parser, dataFactory: DataFactory<BaseQuad>): void {
   function testErroneousQuery(query: string, _errorMsg: string): TestFunction<object> {
     return ({ expect }) => {
-      let error: any = null;
+      let error: any;
       try {
         parser.parse(query);
       } catch (e) {

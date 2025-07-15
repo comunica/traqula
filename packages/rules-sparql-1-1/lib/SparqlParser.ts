@@ -23,6 +23,7 @@ export function completeParseContext(
 
 export class SparqlParser<ParseRet> {
   public constructor(private readonly parser: Parser<ParseRet>) {}
+  private readonly F = new TraqulaFactory();
 
   public parse(query: string, context: Partial<SparqlContext> = {}): ParseRet {
     return this.parser.queryOrUpdate(query, completeParseContext(context), undefined);
@@ -31,7 +32,7 @@ export class SparqlParser<ParseRet> {
   public parsePath(query: string, context: Partial<SparqlContext> = {}):
     (Path & { prefixes: object }) | TermIri {
     const result = this.parser.path(query, completeParseContext(context), undefined);
-    if ('type' in result) {
+    if (this.F.isPathPure(result)) {
       return {
         ...result,
         prefixes: {},

@@ -1,134 +1,226 @@
 {
-  "queryType": "SELECT",
+  "context": [
+    {
+      "type": "contextDef",
+      "subType": "prefix",
+      "key": "",
+      "value": {
+        "type": "term",
+        "subType": "namedNode",
+        "value": "http://example.com/ns#",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 9,
+          "end": 33
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 33
+      }
+    }
+  ],
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "s",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 48,
+                "end": 50
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "p",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 51,
+                "end": 53
+              },
+              "prefix": ""
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "o",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 54,
+                "end": 56
+              }
+            },
+            "annotations": [
+              {
+                "type": "tripleCollection",
+                "subType": "blankNodeProperties",
+                "triples": [
+                  {
+                    "type": "triple",
+                    "subject": {
+                      "type": "term",
+                      "subType": "blankNode",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      },
+                      "label": "g_0"
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "r1",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 60,
+                        "end": 63
+                      },
+                      "prefix": ""
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "Z1",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 64,
+                        "end": 67
+                      }
+                    },
+                    "annotations": [],
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 60,
+                      "end": 67
+                    }
+                  }
+                ],
+                "identifier": {
+                  "type": "term",
+                  "subType": "blankNode",
+                  "loc": {
+                    "sourceLocationType": "noMaterialize"
+                  },
+                  "label": "g_0"
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 57,
+                  "end": 70
+                }
+              },
+              {
+                "type": "tripleCollection",
+                "subType": "blankNodeProperties",
+                "triples": [
+                  {
+                    "type": "triple",
+                    "subject": {
+                      "type": "term",
+                      "subType": "blankNode",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      },
+                      "label": "g_1"
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "r2",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 74,
+                        "end": 77
+                      },
+                      "prefix": ""
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "Z2",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 78,
+                        "end": 81
+                      }
+                    },
+                    "annotations": [],
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 74,
+                      "end": 81
+                    }
+                  }
+                ],
+                "identifier": {
+                  "type": "term",
+                  "subType": "blankNode",
+                  "loc": {
+                    "sourceLocationType": "noMaterialize"
+                  },
+                  "label": "g_1"
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 71,
+                  "end": 84
+                }
+              }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 48,
+              "end": 84
+            }
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 48,
+          "end": 86
+        }
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 44,
+      "end": 88
+    }
+  },
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
   "variables": [
     {
-      "termType": "Wildcard",
-      "value": "*"
+      "type": "wildcard",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 42,
+        "end": 43
+      }
     }
   ],
-  "where": [
-    {
-      "type": "bgp",
-      "triples": [
-        {
-          "subject": {
-            "termType": "Variable",
-            "value": "s"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://example.com/ns#p"
-          },
-          "object": {
-            "termType": "Variable",
-            "value": "o"
-          }
-        },
-        {
-          "termType": "Quad",
-          "value": "",
-          "subject": {
-            "termType": "BlankNode",
-            "value": "g_0"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies"
-          },
-          "object": {
-            "termType": "Quad",
-            "value": "",
-            "subject": {
-              "termType": "Variable",
-              "value": "s"
-            },
-            "predicate": {
-              "termType": "NamedNode",
-              "value": "http://example.com/ns#p"
-            },
-            "object": {
-              "termType": "Variable",
-              "value": "o"
-            },
-            "graph": {
-              "termType": "DefaultGraph",
-              "value": ""
-            }
-          },
-          "graph": {
-            "termType": "DefaultGraph",
-            "value": ""
-          }
-        },
-        {
-          "subject": {
-            "termType": "BlankNode",
-            "value": "g_0"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://example.com/ns#r1"
-          },
-          "object": {
-            "termType": "Variable",
-            "value": "Z1"
-          }
-        },
-        {
-          "termType": "Quad",
-          "value": "",
-          "subject": {
-            "termType": "BlankNode",
-            "value": "g_1"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies"
-          },
-          "object": {
-            "termType": "Quad",
-            "value": "",
-            "subject": {
-              "termType": "Variable",
-              "value": "s"
-            },
-            "predicate": {
-              "termType": "NamedNode",
-              "value": "http://example.com/ns#p"
-            },
-            "object": {
-              "termType": "Variable",
-              "value": "o"
-            },
-            "graph": {
-              "termType": "DefaultGraph",
-              "value": ""
-            }
-          },
-          "graph": {
-            "termType": "DefaultGraph",
-            "value": ""
-          }
-        },
-        {
-          "subject": {
-            "termType": "BlankNode",
-            "value": "g_1"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://example.com/ns#r2"
-          },
-          "object": {
-            "termType": "Variable",
-            "value": "Z2"
-          }
-        }
-      ]
-    }
-  ],
-  "type": "query",
-  "prefixes": {
-    "": "http://example.com/ns#"
-  }
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 88
+  },
+  "type": "query"
 }

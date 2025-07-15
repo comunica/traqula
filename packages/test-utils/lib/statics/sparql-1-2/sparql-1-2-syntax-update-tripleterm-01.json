@@ -2,47 +2,128 @@
   "type": "update",
   "updates": [
     {
-      "updateType": "insert",
-      "insert": [
+      "context": [
         {
-          "type": "bgp",
-          "triples": [
-            {
-              "subject": {
-                "termType": "NamedNode",
-                "value": "http://example.com/ns#s"
-              },
-              "predicate": {
-                "termType": "NamedNode",
-                "value": "http://example.com/ns#p"
-              },
-              "object": {
-                "termType": "Quad",
-                "value": "",
+          "type": "contextDef",
+          "subType": "prefix",
+          "key": "",
+          "value": {
+            "type": "term",
+            "subType": "namedNode",
+            "value": "http://example.com/ns#",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 9,
+              "end": 33
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 0,
+            "end": 33
+          }
+        }
+      ],
+      "operation": {
+        "type": "updateOperation",
+        "subType": "insertdata",
+        "data": [
+          {
+            "type": "pattern",
+            "subType": "bgp",
+            "triples": [
+              {
+                "type": "triple",
                 "subject": {
-                  "termType": "NamedNode",
-                  "value": "http://example.com/ns#a"
+                  "type": "term",
+                  "subType": "namedNode",
+                  "value": "s",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 53,
+                    "end": 55
+                  },
+                  "prefix": ""
                 },
                 "predicate": {
-                  "termType": "NamedNode",
-                  "value": "http://example.com/ns#b"
+                  "type": "term",
+                  "subType": "namedNode",
+                  "value": "p",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 56,
+                    "end": 58
+                  },
+                  "prefix": ""
                 },
                 "object": {
-                  "termType": "NamedNode",
-                  "value": "http://example.com/ns#c"
+                  "type": "term",
+                  "subType": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "a",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 63,
+                      "end": 65
+                    },
+                    "prefix": ""
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "b",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 66,
+                      "end": 68
+                    },
+                    "prefix": ""
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "c",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 69,
+                      "end": 71
+                    },
+                    "prefix": ""
+                  },
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 59,
+                    "end": 75
+                  }
                 },
-                "graph": {
-                  "termType": "DefaultGraph",
-                  "value": ""
+                "annotations": [],
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 53,
+                  "end": 75
                 }
               }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 53,
+              "end": 77
             }
-          ]
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 35,
+          "end": 79
         }
-      ]
+      }
     }
   ],
-  "prefixes": {
-    "": "http://example.com/ns#"
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 79
   }
 }

@@ -106,8 +106,8 @@ SparqlGrammarRule<T, BasicGraphPattern> {
         // Only the first occurrence of a subject is actually materialized.
         return ACTION(() => {
           if (res.length > 0) {
-            const { predicate, object } = res[0];
-            res[0] = C.factory.triple(subject, predicate, object, C.factory.sourceLocation(subject, object));
+            res[0].subject = subject;
+            res[0].loc = C.factory.sourceLocation(subject, res[0]);
           }
           return res;
         });
@@ -118,10 +118,14 @@ SparqlGrammarRule<T, BasicGraphPattern> {
           allowPaths ? propertyListPath : propertyList,
           { subject: ACTION(() => C.factory.graphNodeIdentifier(subjectNode)) },
         );
-        return ACTION(() => [
-          subjectNode,
-          ...restNode,
-        ]);
+        return ACTION(() => {
+          if (restNode.length === 0) {
+            return [ subjectNode ];
+          }
+          restNode[0].subject = subjectNode;
+          restNode[0].loc = C.factory.sourceLocation(subjectNode, restNode[0]);
+          return restNode;
+        });
       } },
     ]),
   };
@@ -295,7 +299,7 @@ function collectionImpl<T extends string>(name: T, allowPaths: boolean): SparqlR
           const headTriple: TripleNesting = F.triple(
             iterHead,
             predFirst,
-            F.graphNodeIdentifier(term),
+            term,
           );
           triples.push(headTriple);
 
@@ -315,8 +319,11 @@ function collectionImpl<T extends string>(name: T, allowPaths: boolean): SparqlR
     },
     gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
       F.printFilter(ast, () => PRINT_WORD('('));
-      for (const triple of ast.triples) {
-        SUBRULE(allowPaths ? graphNodePath : graphNode, triple.object, undefined);
+      // Only every 2 triple is relevant. The odd triples are linking triples.
+      for (const [ idx, triple ] of ast.triples.entries()) {
+        if (idx % 2 === 0) {
+          SUBRULE(allowPaths ? graphNodePath : graphNode, triple.object, undefined);
+        }
       }
       F.printFilter(ast, () => PRINT_WORD(')'));
     },

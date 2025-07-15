@@ -1,84 +1,168 @@
 {
-  "queryType": "SELECT",
-  "variables": [
+  "context": [
     {
-      "termType": "Wildcard",
-      "value": "*"
+      "type": "contextDef",
+      "subType": "prefix",
+      "key": "",
+      "value": {
+        "type": "term",
+        "subType": "namedNode",
+        "value": "http://example.com/ns#",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 9,
+          "end": 33
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 33
+      }
     }
   ],
-  "where": [
-    {
-      "type": "bgp",
-      "triples": [
-        {
-          "subject": {
-            "termType": "Variable",
-            "value": "s"
-          },
-          "predicate": {
-            "termType": "Variable",
-            "value": "p"
-          },
-          "object": {
-            "termType": "Variable",
-            "value": "o"
-          }
-        },
-        {
-          "termType": "Quad",
-          "value": "",
-          "subject": {
-            "termType": "BlankNode",
-            "value": "g_0"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies"
-          },
-          "object": {
-            "termType": "Quad",
-            "value": "",
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
             "subject": {
-              "termType": "Variable",
-              "value": "s"
+              "type": "term",
+              "subType": "variable",
+              "value": "s",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 48,
+                "end": 50
+              }
             },
             "predicate": {
-              "termType": "Variable",
-              "value": "p"
+              "type": "term",
+              "subType": "variable",
+              "value": "p",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 51,
+                "end": 53
+              }
             },
             "object": {
-              "termType": "Variable",
-              "value": "o"
+              "type": "term",
+              "subType": "variable",
+              "value": "o",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 54,
+                "end": 56
+              }
             },
-            "graph": {
-              "termType": "DefaultGraph",
-              "value": ""
+            "annotations": [
+              {
+                "type": "tripleCollection",
+                "subType": "blankNodeProperties",
+                "triples": [
+                  {
+                    "type": "triple",
+                    "subject": {
+                      "type": "term",
+                      "subType": "blankNode",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      },
+                      "label": "g_0"
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "r",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 60,
+                        "end": 62
+                      },
+                      "prefix": ""
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "Z",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 63,
+                        "end": 65
+                      }
+                    },
+                    "annotations": [],
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 60,
+                      "end": 65
+                    }
+                  }
+                ],
+                "identifier": {
+                  "type": "term",
+                  "subType": "blankNode",
+                  "loc": {
+                    "sourceLocationType": "noMaterialize"
+                  },
+                  "label": "g_0"
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 57,
+                  "end": 68
+                }
+              }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 48,
+              "end": 68
             }
-          },
-          "graph": {
-            "termType": "DefaultGraph",
-            "value": ""
           }
-        },
-        {
-          "subject": {
-            "termType": "BlankNode",
-            "value": "g_0"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://example.com/ns#r"
-          },
-          "object": {
-            "termType": "Variable",
-            "value": "Z"
-          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 48,
+          "end": 70
         }
-      ]
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 44,
+      "end": 72
+    }
+  },
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "wildcard",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 42,
+        "end": 43
+      }
     }
   ],
-  "type": "query",
-  "prefixes": {
-    "": "http://example.com/ns#"
-  }
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 72
+  },
+  "type": "query"
 }

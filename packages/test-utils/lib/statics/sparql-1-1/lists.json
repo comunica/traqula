@@ -142,15 +142,156 @@
                 }
               },
               "object": {
-                "type": "term",
-                "subType": "blankNode",
-                "loc": {
-                  "sourceLocationType": "noMaterialize"
+                "type": "tripleCollection",
+                "subType": "list",
+                "identifier": {
+                  "type": "term",
+                  "subType": "blankNode",
+                  "loc": {
+                    "sourceLocationType": "noMaterialize"
+                  },
+                  "label": "g_0"
                 },
-                "label": "g_0"
+                "triples": [
+                  {
+                    "type": "triple",
+                    "subject": {
+                      "type": "term",
+                      "subType": "blankNode",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      },
+                      "label": "g_0"
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      }
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "b0",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 42,
+                        "end": 46
+                      }
+                    },
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 42,
+                      "end": 46
+                    }
+                  },
+                  {
+                    "type": "triple",
+                    "subject": {
+                      "type": "term",
+                      "subType": "blankNode",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      },
+                      "label": "g_0"
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      }
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "blankNode",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      },
+                      "label": "g_1"
+                    },
+                    "loc": {
+                      "sourceLocationType": "autoGenerate"
+                    }
+                  },
+                  {
+                    "type": "triple",
+                    "subject": {
+                      "type": "term",
+                      "subType": "blankNode",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      },
+                      "label": "g_1"
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      }
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "c0",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 47,
+                        "end": 51
+                      }
+                    },
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 47,
+                      "end": 51
+                    }
+                  },
+                  {
+                    "type": "triple",
+                    "subject": {
+                      "type": "term",
+                      "subType": "blankNode",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      },
+                      "label": "g_1"
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      }
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      }
+                    },
+                    "loc": {
+                      "sourceLocationType": "autoGenerate"
+                    }
+                  }
+                ],
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 40,
+                  "end": 53
+                }
               },
               "loc": {
-                "sourceLocationType": "autoGenerate"
+                "sourceLocationType": "source",
+                "start": 40,
+                "end": 53
               }
             },
             {
@@ -197,157 +338,290 @@
         }
       },
       {
-        "type": "tripleCollection",
-        "subType": "list",
-        "identifier": {
-          "type": "term",
-          "subType": "blankNode",
-          "loc": {
-            "sourceLocationType": "noMaterialize"
+        "type": "triple",
+        "subject": {
+          "type": "tripleCollection",
+          "subType": "list",
+          "identifier": {
+            "type": "term",
+            "subType": "blankNode",
+            "loc": {
+              "sourceLocationType": "noMaterialize"
+            },
+            "label": "g_6"
           },
-          "label": "g_6"
-        },
-        "triples": [
-          {
-            "type": "triple",
-            "subject": {
-              "type": "term",
-              "subType": "blankNode",
-              "loc": {
-                "sourceLocationType": "noMaterialize"
+          "triples": [
+            {
+              "type": "triple",
+              "subject": {
+                "type": "term",
+                "subType": "blankNode",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                },
+                "label": "g_6"
               },
-              "label": "g_6"
-            },
-            "predicate": {
-              "type": "term",
-              "subType": "namedNode",
-              "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
-              "loc": {
-                "sourceLocationType": "noMaterialize"
-              }
-            },
-            "object": {
-              "type": "term",
-              "subType": "namedNode",
-              "value": "a0",
+              "predicate": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                }
+              },
+              "object": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "a0",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 61,
+                  "end": 65
+                }
+              },
               "loc": {
                 "sourceLocationType": "source",
                 "start": 61,
                 "end": 65
               }
             },
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 61,
-              "end": 65
-            }
-          },
-          {
-            "type": "triple",
-            "subject": {
-              "type": "term",
-              "subType": "blankNode",
-              "loc": {
-                "sourceLocationType": "noMaterialize"
+            {
+              "type": "triple",
+              "subject": {
+                "type": "term",
+                "subType": "blankNode",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                },
+                "label": "g_6"
               },
-              "label": "g_6"
-            },
-            "predicate": {
-              "type": "term",
-              "subType": "namedNode",
-              "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+              "predicate": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                }
+              },
+              "object": {
+                "type": "term",
+                "subType": "blankNode",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                },
+                "label": "g_7"
+              },
               "loc": {
-                "sourceLocationType": "noMaterialize"
+                "sourceLocationType": "autoGenerate"
               }
             },
-            "object": {
-              "type": "term",
-              "subType": "blankNode",
-              "loc": {
-                "sourceLocationType": "noMaterialize"
+            {
+              "type": "triple",
+              "subject": {
+                "type": "term",
+                "subType": "blankNode",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                },
+                "label": "g_7"
               },
-              "label": "g_7"
-            },
-            "loc": {
-              "sourceLocationType": "autoGenerate"
-            }
-          },
-          {
-            "type": "triple",
-            "subject": {
-              "type": "term",
-              "subType": "blankNode",
-              "loc": {
-                "sourceLocationType": "noMaterialize"
+              "predicate": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                }
               },
-              "label": "g_7"
-            },
-            "predicate": {
-              "type": "term",
-              "subType": "namedNode",
-              "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+              "object": {
+                "type": "tripleCollection",
+                "subType": "list",
+                "identifier": {
+                  "type": "term",
+                  "subType": "blankNode",
+                  "loc": {
+                    "sourceLocationType": "noMaterialize"
+                  },
+                  "label": "g_4"
+                },
+                "triples": [
+                  {
+                    "type": "triple",
+                    "subject": {
+                      "type": "term",
+                      "subType": "blankNode",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      },
+                      "label": "g_4"
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      }
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "b0",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 68,
+                        "end": 72
+                      }
+                    },
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 68,
+                      "end": 72
+                    }
+                  },
+                  {
+                    "type": "triple",
+                    "subject": {
+                      "type": "term",
+                      "subType": "blankNode",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      },
+                      "label": "g_4"
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      }
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "blankNode",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      },
+                      "label": "g_5"
+                    },
+                    "loc": {
+                      "sourceLocationType": "autoGenerate"
+                    }
+                  },
+                  {
+                    "type": "triple",
+                    "subject": {
+                      "type": "term",
+                      "subType": "blankNode",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      },
+                      "label": "g_5"
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      }
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "c0",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 73,
+                        "end": 77
+                      }
+                    },
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 73,
+                      "end": 77
+                    }
+                  },
+                  {
+                    "type": "triple",
+                    "subject": {
+                      "type": "term",
+                      "subType": "blankNode",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      },
+                      "label": "g_5"
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      }
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      }
+                    },
+                    "loc": {
+                      "sourceLocationType": "autoGenerate"
+                    }
+                  }
+                ],
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 66,
+                  "end": 79
+                }
+              },
               "loc": {
-                "sourceLocationType": "noMaterialize"
+                "sourceLocationType": "source",
+                "start": 66,
+                "end": 79
               }
             },
-            "object": {
-              "type": "term",
-              "subType": "blankNode",
-              "loc": {
-                "sourceLocationType": "noMaterialize"
+            {
+              "type": "triple",
+              "subject": {
+                "type": "term",
+                "subType": "blankNode",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                },
+                "label": "g_7"
               },
-              "label": "g_4"
-            },
-            "loc": {
-              "sourceLocationType": "autoGenerate"
-            }
-          },
-          {
-            "type": "triple",
-            "subject": {
-              "type": "term",
-              "subType": "blankNode",
-              "loc": {
-                "sourceLocationType": "noMaterialize"
+              "predicate": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                }
               },
-              "label": "g_7"
-            },
-            "predicate": {
-              "type": "term",
-              "subType": "namedNode",
-              "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+              "object": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                }
+              },
               "loc": {
-                "sourceLocationType": "noMaterialize"
+                "sourceLocationType": "autoGenerate"
               }
-            },
-            "object": {
-              "type": "term",
-              "subType": "namedNode",
-              "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil",
-              "loc": {
-                "sourceLocationType": "noMaterialize"
-              }
-            },
-            "loc": {
-              "sourceLocationType": "autoGenerate"
             }
-          }
-        ],
-        "loc": {
-          "sourceLocationType": "source",
-          "start": 59,
-          "end": 81
-        }
-      },
-      {
-        "type": "triple",
-        "subject": {
-          "type": "term",
-          "subType": "blankNode",
+          ],
           "loc": {
-            "sourceLocationType": "noMaterialize"
-          },
-          "label": "g_6"
+            "sourceLocationType": "source",
+            "start": 59,
+            "end": 81
+          }
         },
         "predicate": {
           "type": "term",
@@ -371,7 +645,7 @@
         },
         "loc": {
           "sourceLocationType": "source",
-          "start": 82,
+          "start": 59,
           "end": 89
         }
       }
@@ -976,15 +1250,156 @@
                     }
                   },
                   "object": {
-                    "type": "term",
-                    "subType": "blankNode",
-                    "loc": {
-                      "sourceLocationType": "noMaterialize"
+                    "type": "tripleCollection",
+                    "subType": "list",
+                    "identifier": {
+                      "type": "term",
+                      "subType": "blankNode",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      },
+                      "label": "g_12"
                     },
-                    "label": "g_12"
+                    "triples": [
+                      {
+                        "type": "triple",
+                        "subject": {
+                          "type": "term",
+                          "subType": "blankNode",
+                          "loc": {
+                            "sourceLocationType": "noMaterialize"
+                          },
+                          "label": "g_12"
+                        },
+                        "predicate": {
+                          "type": "term",
+                          "subType": "namedNode",
+                          "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+                          "loc": {
+                            "sourceLocationType": "noMaterialize"
+                          }
+                        },
+                        "object": {
+                          "type": "term",
+                          "subType": "namedNode",
+                          "value": "b5",
+                          "loc": {
+                            "sourceLocationType": "source",
+                            "start": 205,
+                            "end": 209
+                          }
+                        },
+                        "loc": {
+                          "sourceLocationType": "source",
+                          "start": 205,
+                          "end": 209
+                        }
+                      },
+                      {
+                        "type": "triple",
+                        "subject": {
+                          "type": "term",
+                          "subType": "blankNode",
+                          "loc": {
+                            "sourceLocationType": "noMaterialize"
+                          },
+                          "label": "g_12"
+                        },
+                        "predicate": {
+                          "type": "term",
+                          "subType": "namedNode",
+                          "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+                          "loc": {
+                            "sourceLocationType": "noMaterialize"
+                          }
+                        },
+                        "object": {
+                          "type": "term",
+                          "subType": "blankNode",
+                          "loc": {
+                            "sourceLocationType": "noMaterialize"
+                          },
+                          "label": "g_13"
+                        },
+                        "loc": {
+                          "sourceLocationType": "autoGenerate"
+                        }
+                      },
+                      {
+                        "type": "triple",
+                        "subject": {
+                          "type": "term",
+                          "subType": "blankNode",
+                          "loc": {
+                            "sourceLocationType": "noMaterialize"
+                          },
+                          "label": "g_13"
+                        },
+                        "predicate": {
+                          "type": "term",
+                          "subType": "namedNode",
+                          "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+                          "loc": {
+                            "sourceLocationType": "noMaterialize"
+                          }
+                        },
+                        "object": {
+                          "type": "term",
+                          "subType": "namedNode",
+                          "value": "c5",
+                          "loc": {
+                            "sourceLocationType": "source",
+                            "start": 210,
+                            "end": 214
+                          }
+                        },
+                        "loc": {
+                          "sourceLocationType": "source",
+                          "start": 210,
+                          "end": 214
+                        }
+                      },
+                      {
+                        "type": "triple",
+                        "subject": {
+                          "type": "term",
+                          "subType": "blankNode",
+                          "loc": {
+                            "sourceLocationType": "noMaterialize"
+                          },
+                          "label": "g_13"
+                        },
+                        "predicate": {
+                          "type": "term",
+                          "subType": "namedNode",
+                          "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+                          "loc": {
+                            "sourceLocationType": "noMaterialize"
+                          }
+                        },
+                        "object": {
+                          "type": "term",
+                          "subType": "namedNode",
+                          "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil",
+                          "loc": {
+                            "sourceLocationType": "noMaterialize"
+                          }
+                        },
+                        "loc": {
+                          "sourceLocationType": "autoGenerate"
+                        }
+                      }
+                    ],
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 203,
+                      "end": 216
+                    }
                   },
                   "loc": {
-                    "sourceLocationType": "autoGenerate"
+                    "sourceLocationType": "source",
+                    "start": 203,
+                    "end": 216
                   }
                 },
                 {
@@ -1031,157 +1446,290 @@
             }
           },
           {
-            "type": "tripleCollection",
-            "subType": "list",
-            "identifier": {
-              "type": "term",
-              "subType": "blankNode",
-              "loc": {
-                "sourceLocationType": "noMaterialize"
+            "type": "triple",
+            "subject": {
+              "type": "tripleCollection",
+              "subType": "list",
+              "identifier": {
+                "type": "term",
+                "subType": "blankNode",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                },
+                "label": "g_18"
               },
-              "label": "g_18"
-            },
-            "triples": [
-              {
-                "type": "triple",
-                "subject": {
-                  "type": "term",
-                  "subType": "blankNode",
-                  "loc": {
-                    "sourceLocationType": "noMaterialize"
+              "triples": [
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_18"
                   },
-                  "label": "g_18"
-                },
-                "predicate": {
-                  "type": "term",
-                  "subType": "namedNode",
-                  "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
-                  "loc": {
-                    "sourceLocationType": "noMaterialize"
-                  }
-                },
-                "object": {
-                  "type": "term",
-                  "subType": "namedNode",
-                  "value": "a6",
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    }
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "a6",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 224,
+                      "end": 228
+                    }
+                  },
                   "loc": {
                     "sourceLocationType": "source",
                     "start": 224,
                     "end": 228
                   }
                 },
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 224,
-                  "end": 228
-                }
-              },
-              {
-                "type": "triple",
-                "subject": {
-                  "type": "term",
-                  "subType": "blankNode",
-                  "loc": {
-                    "sourceLocationType": "noMaterialize"
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_18"
                   },
-                  "label": "g_18"
-                },
-                "predicate": {
-                  "type": "term",
-                  "subType": "namedNode",
-                  "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    }
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_19"
+                  },
                   "loc": {
-                    "sourceLocationType": "noMaterialize"
+                    "sourceLocationType": "autoGenerate"
                   }
                 },
-                "object": {
-                  "type": "term",
-                  "subType": "blankNode",
-                  "loc": {
-                    "sourceLocationType": "noMaterialize"
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_19"
                   },
-                  "label": "g_19"
-                },
-                "loc": {
-                  "sourceLocationType": "autoGenerate"
-                }
-              },
-              {
-                "type": "triple",
-                "subject": {
-                  "type": "term",
-                  "subType": "blankNode",
-                  "loc": {
-                    "sourceLocationType": "noMaterialize"
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    }
                   },
-                  "label": "g_19"
-                },
-                "predicate": {
-                  "type": "term",
-                  "subType": "namedNode",
-                  "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+                  "object": {
+                    "type": "tripleCollection",
+                    "subType": "list",
+                    "identifier": {
+                      "type": "term",
+                      "subType": "blankNode",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      },
+                      "label": "g_16"
+                    },
+                    "triples": [
+                      {
+                        "type": "triple",
+                        "subject": {
+                          "type": "term",
+                          "subType": "blankNode",
+                          "loc": {
+                            "sourceLocationType": "noMaterialize"
+                          },
+                          "label": "g_16"
+                        },
+                        "predicate": {
+                          "type": "term",
+                          "subType": "namedNode",
+                          "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+                          "loc": {
+                            "sourceLocationType": "noMaterialize"
+                          }
+                        },
+                        "object": {
+                          "type": "term",
+                          "subType": "namedNode",
+                          "value": "b6",
+                          "loc": {
+                            "sourceLocationType": "source",
+                            "start": 231,
+                            "end": 235
+                          }
+                        },
+                        "loc": {
+                          "sourceLocationType": "source",
+                          "start": 231,
+                          "end": 235
+                        }
+                      },
+                      {
+                        "type": "triple",
+                        "subject": {
+                          "type": "term",
+                          "subType": "blankNode",
+                          "loc": {
+                            "sourceLocationType": "noMaterialize"
+                          },
+                          "label": "g_16"
+                        },
+                        "predicate": {
+                          "type": "term",
+                          "subType": "namedNode",
+                          "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+                          "loc": {
+                            "sourceLocationType": "noMaterialize"
+                          }
+                        },
+                        "object": {
+                          "type": "term",
+                          "subType": "blankNode",
+                          "loc": {
+                            "sourceLocationType": "noMaterialize"
+                          },
+                          "label": "g_17"
+                        },
+                        "loc": {
+                          "sourceLocationType": "autoGenerate"
+                        }
+                      },
+                      {
+                        "type": "triple",
+                        "subject": {
+                          "type": "term",
+                          "subType": "blankNode",
+                          "loc": {
+                            "sourceLocationType": "noMaterialize"
+                          },
+                          "label": "g_17"
+                        },
+                        "predicate": {
+                          "type": "term",
+                          "subType": "namedNode",
+                          "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+                          "loc": {
+                            "sourceLocationType": "noMaterialize"
+                          }
+                        },
+                        "object": {
+                          "type": "term",
+                          "subType": "namedNode",
+                          "value": "c6",
+                          "loc": {
+                            "sourceLocationType": "source",
+                            "start": 236,
+                            "end": 240
+                          }
+                        },
+                        "loc": {
+                          "sourceLocationType": "source",
+                          "start": 236,
+                          "end": 240
+                        }
+                      },
+                      {
+                        "type": "triple",
+                        "subject": {
+                          "type": "term",
+                          "subType": "blankNode",
+                          "loc": {
+                            "sourceLocationType": "noMaterialize"
+                          },
+                          "label": "g_17"
+                        },
+                        "predicate": {
+                          "type": "term",
+                          "subType": "namedNode",
+                          "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+                          "loc": {
+                            "sourceLocationType": "noMaterialize"
+                          }
+                        },
+                        "object": {
+                          "type": "term",
+                          "subType": "namedNode",
+                          "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil",
+                          "loc": {
+                            "sourceLocationType": "noMaterialize"
+                          }
+                        },
+                        "loc": {
+                          "sourceLocationType": "autoGenerate"
+                        }
+                      }
+                    ],
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 229,
+                      "end": 242
+                    }
+                  },
                   "loc": {
-                    "sourceLocationType": "noMaterialize"
+                    "sourceLocationType": "source",
+                    "start": 229,
+                    "end": 242
                   }
                 },
-                "object": {
-                  "type": "term",
-                  "subType": "blankNode",
-                  "loc": {
-                    "sourceLocationType": "noMaterialize"
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_19"
                   },
-                  "label": "g_16"
-                },
-                "loc": {
-                  "sourceLocationType": "autoGenerate"
-                }
-              },
-              {
-                "type": "triple",
-                "subject": {
-                  "type": "term",
-                  "subType": "blankNode",
-                  "loc": {
-                    "sourceLocationType": "noMaterialize"
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    }
                   },
-                  "label": "g_19"
-                },
-                "predicate": {
-                  "type": "term",
-                  "subType": "namedNode",
-                  "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+                  "object": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    }
+                  },
                   "loc": {
-                    "sourceLocationType": "noMaterialize"
+                    "sourceLocationType": "autoGenerate"
                   }
-                },
-                "object": {
-                  "type": "term",
-                  "subType": "namedNode",
-                  "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil",
-                  "loc": {
-                    "sourceLocationType": "noMaterialize"
-                  }
-                },
-                "loc": {
-                  "sourceLocationType": "autoGenerate"
                 }
-              }
-            ],
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 222,
-              "end": 244
-            }
-          },
-          {
-            "type": "triple",
-            "subject": {
-              "type": "term",
-              "subType": "blankNode",
+              ],
               "loc": {
-                "sourceLocationType": "noMaterialize"
-              },
-              "label": "g_18"
+                "sourceLocationType": "source",
+                "start": 222,
+                "end": 244
+              }
             },
             "predicate": {
               "type": "term",
@@ -1205,7 +1753,7 @@
             },
             "loc": {
               "sourceLocationType": "source",
-              "start": 245,
+              "start": 222,
               "end": 252
             }
           },
@@ -1409,15 +1957,136 @@
                     }
                   },
                   "object": {
-                    "type": "term",
-                    "subType": "blankNode",
-                    "loc": {
-                      "sourceLocationType": "noMaterialize"
+                    "type": "tripleCollection",
+                    "subType": "blankNodeProperties",
+                    "identifier": {
+                      "type": "term",
+                      "subType": "blankNode",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      },
+                      "label": "g_22"
                     },
-                    "label": "g_22"
+                    "triples": [
+                      {
+                        "type": "triple",
+                        "subject": {
+                          "type": "term",
+                          "subType": "blankNode",
+                          "loc": {
+                            "sourceLocationType": "noMaterialize"
+                          },
+                          "label": "g_22"
+                        },
+                        "predicate": {
+                          "type": "term",
+                          "subType": "namedNode",
+                          "value": "a8",
+                          "loc": {
+                            "sourceLocationType": "source",
+                            "start": 285,
+                            "end": 289
+                          }
+                        },
+                        "object": {
+                          "type": "term",
+                          "subType": "namedNode",
+                          "value": "b8",
+                          "loc": {
+                            "sourceLocationType": "source",
+                            "start": 290,
+                            "end": 294
+                          }
+                        },
+                        "loc": {
+                          "sourceLocationType": "source",
+                          "start": 285,
+                          "end": 294
+                        }
+                      },
+                      {
+                        "type": "triple",
+                        "subject": {
+                          "type": "term",
+                          "subType": "blankNode",
+                          "loc": {
+                            "sourceLocationType": "noMaterialize"
+                          },
+                          "label": "g_22"
+                        },
+                        "predicate": {
+                          "type": "term",
+                          "subType": "namedNode",
+                          "value": "c8",
+                          "loc": {
+                            "sourceLocationType": "source",
+                            "start": 296,
+                            "end": 300
+                          }
+                        },
+                        "object": {
+                          "type": "term",
+                          "subType": "namedNode",
+                          "value": "d8",
+                          "loc": {
+                            "sourceLocationType": "source",
+                            "start": 301,
+                            "end": 305
+                          }
+                        },
+                        "loc": {
+                          "sourceLocationType": "source",
+                          "start": 296,
+                          "end": 305
+                        }
+                      },
+                      {
+                        "type": "triple",
+                        "subject": {
+                          "type": "term",
+                          "subType": "blankNode",
+                          "loc": {
+                            "sourceLocationType": "noMaterialize"
+                          },
+                          "label": "g_22"
+                        },
+                        "predicate": {
+                          "type": "term",
+                          "subType": "namedNode",
+                          "value": "c8",
+                          "loc": {
+                            "sourceLocationType": "source",
+                            "start": 296,
+                            "end": 300
+                          }
+                        },
+                        "object": {
+                          "type": "term",
+                          "subType": "namedNode",
+                          "value": "e8",
+                          "loc": {
+                            "sourceLocationType": "source",
+                            "start": 307,
+                            "end": 311
+                          }
+                        },
+                        "loc": {
+                          "sourceLocationType": "source",
+                          "start": 296,
+                          "end": 311
+                        }
+                      }
+                    ],
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 283,
+                      "end": 313
+                    }
                   },
                   "loc": {
-                    "sourceLocationType": "autoGenerate"
+                    "sourceLocationType": "source",
+                    "start": 283,
+                    "end": 313
                   }
                 },
                 {

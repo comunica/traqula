@@ -40,8 +40,5 @@
   "dependencies": {
     "@traqula/core": "^0.0.0",
     "@traqula/rules-sparql-1-1": "^0.0.0"
-  },
-  "devDependencies": {
-    "@rdfjs/types": "^2.0.0"
   }
 }

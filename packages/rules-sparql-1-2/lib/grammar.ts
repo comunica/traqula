@@ -40,7 +40,7 @@ T11.SparqlGrammarRule<T, T11.BasicGraphPattern> {
       const triple = SUBRULE(reifiedTriple, undefined);
       const properties = SUBRULE(
         allowPath ? S11.propertyListPath : S11.propertyList,
-        { subject: C.factory.dematerialized(triple.identifier) },
+        { subject: ACTION(() => C.factory.dematerialized(triple.identifier)) },
       );
 
       return ACTION(() => <T11.BasicGraphPattern> [ triple, ...properties ]);
@@ -98,8 +98,8 @@ export const reifier: T11.SparqlGrammarRule<'reifier', RuleDefReturn<typeof varO
 export const varOrReifierId: T11.SparqlGrammarRule<'varOrReifierId', TermVariable | TermIri | TermBlank> =
   <const> {
     name: 'varOrReifierId',
-    impl: ({ SUBRULE, OR }) => () => OR<RuleDefReturn<typeof varOrReifierId>>([
-      { ALT: () => SUBRULE(S11.var_, undefined) },
+    impl: ({ SUBRULE, OR }) => C => OR<RuleDefReturn<typeof varOrReifierId>>([
+      { GATE: () => C.parseMode.has('canParseVars'), ALT: () => SUBRULE(S11.var_, undefined) },
       { ALT: () => SUBRULE(S11.iri, undefined) },
       { ALT: () => SUBRULE(S11.blankNode, undefined) },
     ]),
@@ -267,7 +267,7 @@ export const graphNodePath: T11.SparqlGrammarRule<'graphNodePath', GraphNode> = 
 export const varOrTerm: T11.SparqlRule<'varOrTerm', Term> = <const> {
   name: 'varOrTerm',
   impl: ({ ACTION, SUBRULE, OR, CONSUME }) => C => OR<Term>([
-    { ALT: () => SUBRULE(S11.var_, undefined) },
+    { GATE: () => C.parseMode.has('canParseVars'), ALT: () => SUBRULE(S11.var_, undefined) },
     { ALT: () => SUBRULE(S11.iri, undefined) },
     { ALT: () => SUBRULE(rdfLiteral, undefined) },
     { ALT: () => SUBRULE(S11.numericLiteral, undefined) },
@@ -317,8 +317,8 @@ export const reifiedTriple: SparqlGrammarRule<'reifiedTriple', TripleCollectionR
 export const reifiedTripleSubject:
 T11.SparqlGrammarRule<'reifiedTripleSubject', Term | TripleCollectionReifiedTriple> = <const> {
   name: 'reifiedTripleSubject',
-  impl: ({ OR, SUBRULE }) => () => OR<RuleDefReturn<typeof reifiedTripleSubject>>([
-    { ALT: () => SUBRULE(S11.var_, undefined) },
+  impl: ({ OR, SUBRULE }) => C => OR<RuleDefReturn<typeof reifiedTripleSubject>>([
+    { GATE: () => C.parseMode.has('canParseVars'), ALT: () => SUBRULE(S11.var_, undefined) },
     { ALT: () => SUBRULE(S11.iri, undefined) },
     { ALT: () => SUBRULE(rdfLiteral, undefined) },
     { ALT: () => SUBRULE(S11.numericLiteral, undefined) },
@@ -361,8 +361,8 @@ export const tripleTerm: SparqlRule<'tripleTerm', TermTriple> = <const> {
 export const tripleTermSubject:
 T11.SparqlGrammarRule<'tripleTermSubject', TermVariable | TermIri | TermLiteral | TermBlank | TermTriple> = <const> {
   name: 'tripleTermSubject',
-  impl: ({ SUBRULE, OR }) => () => OR<RuleDefReturn<typeof tripleTermSubject>>([
-    { ALT: () => SUBRULE(S11.var_, undefined) },
+  impl: ({ SUBRULE, OR }) => C => OR<RuleDefReturn<typeof tripleTermSubject>>([
+    { GATE: () => C.parseMode.has('canParseVars'), ALT: () => SUBRULE(S11.var_, undefined) },
     { ALT: () => SUBRULE(S11.iri, undefined) },
     { ALT: () => SUBRULE(rdfLiteral, undefined) },
     { ALT: () => SUBRULE(S11.numericLiteral, undefined) },
@@ -466,13 +466,13 @@ export const exprTripleTerm: SparqlGrammarRule<'exprTripleTerm', TermTriple> = <
 export const exprTripleTermSubject:
 T11.SparqlGrammarRule<'exprTripleTermSubject', TermIri | TermVariable | TermLiteral | TermTriple> = <const> {
   name: 'exprTripleTermSubject',
-  impl: ({ OR, SUBRULE }) => () =>
+  impl: ({ OR, SUBRULE }) => C =>
     OR<RuleDefReturn<typeof exprTripleTermSubject>>([
       { ALT: () => SUBRULE(S11.iri, undefined) },
       { ALT: () => SUBRULE(rdfLiteral, undefined) },
       { ALT: () => SUBRULE(S11.numericLiteral, undefined) },
       { ALT: () => SUBRULE(S11.booleanLiteral, undefined) },
-      { ALT: () => SUBRULE(S11.var_, undefined) },
+      { GATE: () => C.parseMode.has('canParseVars'), ALT: () => SUBRULE(S11.var_, undefined) },
       { ALT: () => SUBRULE(exprTripleTerm, undefined) },
     ]),
 };

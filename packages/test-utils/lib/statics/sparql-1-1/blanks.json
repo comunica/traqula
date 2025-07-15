@@ -154,114 +154,106 @@
         }
       },
       {
-        "type": "tripleCollection",
-        "subType": "blankNodeProperties",
-        "identifier": {
-          "type": "term",
-          "subType": "blankNode",
-          "loc": {
-            "sourceLocationType": "noMaterialize"
+        "type": "triple",
+        "subject": {
+          "type": "tripleCollection",
+          "subType": "blankNodeProperties",
+          "identifier": {
+            "type": "term",
+            "subType": "blankNode",
+            "loc": {
+              "sourceLocationType": "noMaterialize"
+            },
+            "label": "g_2"
           },
-          "label": "g_2"
-        },
-        "triples": [
-          {
-            "type": "triple",
-            "subject": {
-              "type": "term",
-              "subType": "blankNode",
-              "loc": {
-                "sourceLocationType": "noMaterialize"
-              },
-              "label": "g_2"
-            },
-            "predicate": {
-              "type": "term",
-              "subType": "namedNode",
-              "value": "a0",
-              "loc": {
-                "sourceLocationType": "source",
-                "start": 61,
-                "end": 65
-              }
-            },
-            "object": {
-              "type": "tripleCollection",
-              "subType": "blankNodeProperties",
-              "identifier": {
+          "triples": [
+            {
+              "type": "triple",
+              "subject": {
                 "type": "term",
                 "subType": "blankNode",
                 "loc": {
                   "sourceLocationType": "noMaterialize"
                 },
-                "label": "g_3"
+                "label": "g_2"
               },
-              "triples": [
-                {
-                  "type": "triple",
-                  "subject": {
-                    "type": "term",
-                    "subType": "blankNode",
-                    "loc": {
-                      "sourceLocationType": "noMaterialize"
-                    },
-                    "label": "g_3"
+              "predicate": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "a0",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 61,
+                  "end": 65
+                }
+              },
+              "object": {
+                "type": "tripleCollection",
+                "subType": "blankNodeProperties",
+                "identifier": {
+                  "type": "term",
+                  "subType": "blankNode",
+                  "loc": {
+                    "sourceLocationType": "noMaterialize"
                   },
-                  "predicate": {
-                    "type": "term",
-                    "subType": "namedNode",
-                    "value": "b0",
+                  "label": "g_3"
+                },
+                "triples": [
+                  {
+                    "type": "triple",
+                    "subject": {
+                      "type": "term",
+                      "subType": "blankNode",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      },
+                      "label": "g_3"
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "b0",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 68,
+                        "end": 72
+                      }
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "c0",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 73,
+                        "end": 77
+                      }
+                    },
                     "loc": {
                       "sourceLocationType": "source",
                       "start": 68,
-                      "end": 72
-                    }
-                  },
-                  "object": {
-                    "type": "term",
-                    "subType": "namedNode",
-                    "value": "c0",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 73,
                       "end": 77
                     }
-                  },
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 68,
-                    "end": 77
                   }
+                ],
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 66,
+                  "end": 79
                 }
-              ],
+              },
               "loc": {
                 "sourceLocationType": "source",
-                "start": 66,
+                "start": 61,
                 "end": 79
               }
-            },
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 61,
-              "end": 79
             }
-          }
-        ],
-        "loc": {
-          "sourceLocationType": "source",
-          "start": 59,
-          "end": 81
-        }
-      },
-      {
-        "type": "triple",
-        "subject": {
-          "type": "term",
-          "subType": "blankNode",
+          ],
           "loc": {
-            "sourceLocationType": "noMaterialize"
-          },
-          "label": "g_2"
+            "sourceLocationType": "source",
+            "start": 59,
+            "end": 81
+          }
         },
         "predicate": {
           "type": "term",
@@ -285,7 +277,7 @@
         },
         "loc": {
           "sourceLocationType": "source",
-          "start": 82,
+          "start": 59,
           "end": 89
         }
       }
@@ -862,114 +854,106 @@
             }
           },
           {
-            "type": "tripleCollection",
-            "subType": "blankNodeProperties",
-            "identifier": {
-              "type": "term",
-              "subType": "blankNode",
-              "loc": {
-                "sourceLocationType": "noMaterialize"
+            "type": "triple",
+            "subject": {
+              "type": "tripleCollection",
+              "subType": "blankNodeProperties",
+              "identifier": {
+                "type": "term",
+                "subType": "blankNode",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                },
+                "label": "g_10"
               },
-              "label": "g_10"
-            },
-            "triples": [
-              {
-                "type": "triple",
-                "subject": {
-                  "type": "term",
-                  "subType": "blankNode",
-                  "loc": {
-                    "sourceLocationType": "noMaterialize"
-                  },
-                  "label": "g_10"
-                },
-                "predicate": {
-                  "type": "term",
-                  "subType": "namedNode",
-                  "value": "a6",
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 257,
-                    "end": 261
-                  }
-                },
-                "object": {
-                  "type": "tripleCollection",
-                  "subType": "blankNodeProperties",
-                  "identifier": {
+              "triples": [
+                {
+                  "type": "triple",
+                  "subject": {
                     "type": "term",
                     "subType": "blankNode",
                     "loc": {
                       "sourceLocationType": "noMaterialize"
                     },
-                    "label": "g_11"
+                    "label": "g_10"
                   },
-                  "triples": [
-                    {
-                      "type": "triple",
-                      "subject": {
-                        "type": "term",
-                        "subType": "blankNode",
-                        "loc": {
-                          "sourceLocationType": "noMaterialize"
-                        },
-                        "label": "g_11"
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "a6",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 257,
+                      "end": 261
+                    }
+                  },
+                  "object": {
+                    "type": "tripleCollection",
+                    "subType": "blankNodeProperties",
+                    "identifier": {
+                      "type": "term",
+                      "subType": "blankNode",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
                       },
-                      "predicate": {
-                        "type": "term",
-                        "subType": "namedNode",
-                        "value": "b6",
+                      "label": "g_11"
+                    },
+                    "triples": [
+                      {
+                        "type": "triple",
+                        "subject": {
+                          "type": "term",
+                          "subType": "blankNode",
+                          "loc": {
+                            "sourceLocationType": "noMaterialize"
+                          },
+                          "label": "g_11"
+                        },
+                        "predicate": {
+                          "type": "term",
+                          "subType": "namedNode",
+                          "value": "b6",
+                          "loc": {
+                            "sourceLocationType": "source",
+                            "start": 264,
+                            "end": 268
+                          }
+                        },
+                        "object": {
+                          "type": "term",
+                          "subType": "namedNode",
+                          "value": "c6",
+                          "loc": {
+                            "sourceLocationType": "source",
+                            "start": 269,
+                            "end": 273
+                          }
+                        },
                         "loc": {
                           "sourceLocationType": "source",
                           "start": 264,
-                          "end": 268
-                        }
-                      },
-                      "object": {
-                        "type": "term",
-                        "subType": "namedNode",
-                        "value": "c6",
-                        "loc": {
-                          "sourceLocationType": "source",
-                          "start": 269,
                           "end": 273
                         }
-                      },
-                      "loc": {
-                        "sourceLocationType": "source",
-                        "start": 264,
-                        "end": 273
                       }
+                    ],
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 262,
+                      "end": 275
                     }
-                  ],
+                  },
                   "loc": {
                     "sourceLocationType": "source",
-                    "start": 262,
+                    "start": 257,
                     "end": 275
                   }
-                },
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 257,
-                  "end": 275
                 }
-              }
-            ],
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 255,
-              "end": 277
-            }
-          },
-          {
-            "type": "triple",
-            "subject": {
-              "type": "term",
-              "subType": "blankNode",
+              ],
               "loc": {
-                "sourceLocationType": "noMaterialize"
-              },
-              "label": "g_10"
+                "sourceLocationType": "source",
+                "start": 255,
+                "end": 277
+              }
             },
             "predicate": {
               "type": "term",
@@ -993,7 +977,7 @@
             },
             "loc": {
               "sourceLocationType": "source",
-              "start": 278,
+              "start": 255,
               "end": 285
             }
           },

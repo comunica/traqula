@@ -1,8 +1,8 @@
 import { expect } from 'vitest';
 
 expect.extend({
-  toEqualParsedQuery(received, expected) {
-    const pass = objectsEqual(received, expected);
+  toEqualParsedQuery(received: unknown, expected: unknown) {
+    const pass = objectsEqual(received, expected, () => false, []);
     const message = pass ?
         () =>
           `${this.utils.matcherHint('toEqualParsedQuery')
@@ -25,10 +25,44 @@ expect.extend({
 
     return { pass, message };
   },
+  toEqualParsedQueryIgnoring(
+    received: unknown,
+    selector: (obj: object) => boolean,
+    ignoreKeys: string[],
+    expected: unknown,
+  ) {
+    const pass = objectsEqual(received, expected, selector, ignoreKeys);
+    const message = pass ?
+        () =>
+        `${this.utils.matcherHint('toEqualParsedQuery')
+        }\n\n` +
+        `Expected: ${this.utils.printExpected(expected)}\n` +
+        `Received: ${this.utils.printReceived(received)}` :
+        () => {
+          const diffString = this.utils.diff(expected, received, {
+            expand: this.expand,
+          });
+          return (
+          `${this.utils.matcherHint('toEqualParsedQuery')
+          }\n\n${
+            diffString && diffString.includes('- Expect') ?
+              `Difference:\n\n${diffString}` :
+              `Expected: ${this.utils.printExpected(expected)}\n` +
+              `Received: ${this.utils.printReceived(received)}`}`
+          );
+        };
+
+    return { pass, message };
+  },
 });
 
 // We cannot use native instanceOf to test whether expected is a Term!
-function objectsEqual(received: unknown, expected: unknown): boolean {
+function objectsEqual(
+  received: unknown,
+  expected: unknown,
+  selector: (obj: object) => boolean,
+  ignoreKeys: string[],
+): boolean {
   if (received === undefined || received === null || isPrimitive(received)) {
     return received === expected;
   }
@@ -53,7 +87,7 @@ function objectsEqual(received: unknown, expected: unknown): boolean {
       return false;
     }
     for (const [ i, element ] of received.entries()) {
-      if (!objectsEqual(element, expected[i])) {
+      if (!objectsEqual(element, expected[i], selector, ignoreKeys)) {
         return false;
       }
     }
@@ -63,11 +97,15 @@ function objectsEqual(received: unknown, expected: unknown): boolean {
       return false;
     }
     const keys_first = Object.keys(received);
+    const receivedMatches = selector(received);
 
     for (const key of keys_first) {
+      if (receivedMatches && ignoreKeys.includes(key)) {
+        continue;
+      }
       // eslint-disable-next-line ts/ban-ts-comment
       // @ts-expect-error TS7053
-      if (!objectsEqual(received[key], expected[key])) {
+      if (!objectsEqual(received[key], expected[key], selector, ignoreKeys)) {
         return false;
       }
     }
@@ -77,7 +115,7 @@ function objectsEqual(received: unknown, expected: unknown): boolean {
     for (const key of keys_second) {
       // eslint-disable-next-line ts/ban-ts-comment
       // @ts-expect-error TS7053
-      if (!objectsEqual(received[key], expected[key])) {
+      if (!objectsEqual(received[key], expected[key], selector, ignoreKeys)) {
         return false;
       }
     }

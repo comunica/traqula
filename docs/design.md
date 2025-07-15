@@ -36,3 +36,15 @@ Currently, the constructed generator does not support that you have a source tra
 That means that you need to use `F.forcedAutoGenTree()` to force the whole subtree on some node to be auto generated too.
 In the future we could change this implementation in such a way that we would detect when source bound nodes are present and use range arithmetics.
 We do not do that yet to keep things simple.
+
+### Altering subrule results
+
+Be careful when recreating nodes that have been created by subrules since the recreation might lose information if the a modified grammar adds more fields to the node.
+Example, do:
+```
+res[0].subject = subject;
+res[0].loc = C.factory.sourceLocation(subject, res[0]);
+// WARNING for future use: overwriting elements like this is
+//  bad practice since it will remove future extensions
+// res[0] = C.factory.triple(subject, predicate, object, C.factory.sourceLocation(subject, object));
+```

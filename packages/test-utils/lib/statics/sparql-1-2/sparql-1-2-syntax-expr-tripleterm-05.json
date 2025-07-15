@@ -1,116 +1,305 @@
 {
-  "queryType": "SELECT",
+  "context": [
+    {
+      "type": "contextDef",
+      "subType": "prefix",
+      "key": "",
+      "value": {
+        "type": "term",
+        "subType": "namedNode",
+        "value": "http://example.com/ns#",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 9,
+          "end": 33
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 33
+      }
+    }
+  ],
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "t",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 48,
+                "end": 50
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "source",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 51,
+                "end": 58
+              },
+              "prefix": ""
+            },
+            "object": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "g",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 59,
+                "end": 61
+              },
+              "prefix": ""
+            },
+            "annotations": [],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 48,
+              "end": 61
+            }
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 48,
+          "end": 61
+        }
+      },
+      {
+        "type": "pattern",
+        "subType": "filter",
+        "expression": {
+          "type": "expression",
+          "subType": "operation",
+          "operator": "istriple",
+          "args": [
+            {
+              "type": "term",
+              "subType": "variable",
+              "value": "t",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 80,
+                "end": 82
+              }
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 70,
+            "end": 84
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 64,
+          "end": 84
+        }
+      },
+      {
+        "type": "pattern",
+        "subType": "filter",
+        "expression": {
+          "type": "expression",
+          "subType": "operation",
+          "operator": "=",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "operation",
+              "operator": "subject",
+              "args": [
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "t",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 102,
+                    "end": 104
+                  }
+                }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 94,
+                "end": 105
+              }
+            },
+            {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "s",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 108,
+                "end": 110
+              },
+              "prefix": ""
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 93,
+            "end": 111
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 87,
+          "end": 111
+        }
+      },
+      {
+        "type": "pattern",
+        "subType": "filter",
+        "expression": {
+          "type": "expression",
+          "subType": "operation",
+          "operator": "=",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "operation",
+              "operator": "predicate",
+              "args": [
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "t",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 131,
+                    "end": 133
+                  }
+                }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 121,
+                "end": 134
+              }
+            },
+            {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "p",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 137,
+                "end": 139
+              },
+              "prefix": ""
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 120,
+            "end": 140
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 114,
+          "end": 140
+        }
+      },
+      {
+        "type": "pattern",
+        "subType": "filter",
+        "expression": {
+          "type": "expression",
+          "subType": "operation",
+          "operator": "=",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "operation",
+              "operator": "object",
+              "args": [
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "t",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 157,
+                    "end": 159
+                  }
+                }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 150,
+                "end": 160
+              }
+            },
+            {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "o",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 163,
+                "end": 165
+              },
+              "prefix": ""
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 149,
+            "end": 166
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 143,
+          "end": 166
+        }
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 44,
+      "end": 168
+    }
+  },
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
   "variables": [
     {
-      "termType": "Wildcard",
-      "value": "*"
-    }
-  ],
-  "where": [
-    {
-      "type": "bgp",
-      "triples": [
-        {
-          "subject": {
-            "termType": "Variable",
-            "value": "t"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://example.com/ns#source"
-          },
-          "object": {
-            "termType": "NamedNode",
-            "value": "http://example.com/ns#g"
-          }
-        }
-      ]
-    },
-    {
-      "type": "filter",
-      "expression": {
-        "type": "operation",
-        "operator": "istriple",
-        "args": [
-          {
-            "termType": "Variable",
-            "value": "t"
-          }
-        ]
-      }
-    },
-    {
-      "type": "filter",
-      "expression": {
-        "type": "operation",
-        "operator": "=",
-        "args": [
-          {
-            "type": "operation",
-            "operator": "subject",
-            "args": [
-              {
-                "termType": "Variable",
-                "value": "t"
-              }
-            ]
-          },
-          {
-            "termType": "NamedNode",
-            "value": "http://example.com/ns#s"
-          }
-        ]
-      }
-    },
-    {
-      "type": "filter",
-      "expression": {
-        "type": "operation",
-        "operator": "=",
-        "args": [
-          {
-            "type": "operation",
-            "operator": "predicate",
-            "args": [
-              {
-                "termType": "Variable",
-                "value": "t"
-              }
-            ]
-          },
-          {
-            "termType": "NamedNode",
-            "value": "http://example.com/ns#p"
-          }
-        ]
-      }
-    },
-    {
-      "type": "filter",
-      "expression": {
-        "type": "operation",
-        "operator": "=",
-        "args": [
-          {
-            "type": "operation",
-            "operator": "object",
-            "args": [
-              {
-                "termType": "Variable",
-                "value": "t"
-              }
-            ]
-          },
-          {
-            "termType": "NamedNode",
-            "value": "http://example.com/ns#o"
-          }
-        ]
+      "type": "wildcard",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 42,
+        "end": 43
       }
     }
   ],
-  "type": "query",
-  "prefixes": {
-    "": "http://example.com/ns#"
-  }
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 168
+  },
+  "type": "query"
 }

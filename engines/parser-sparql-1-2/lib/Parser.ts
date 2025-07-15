@@ -1,11 +1,12 @@
 import { Builder } from '@traqula/core';
 import { sparql11ParserBuilder } from '@traqula/parser-sparql-1-1';
-import { gram as g11 } from '@traqula/rules-sparql-1-1';
-import { completeParseContext, gram as S12, lex as l12 } from '@traqula/rules-sparql-1-2';
-import type { SparqlContext, Query, Update } from '@traqula/rules-sparql-1-2';
+import { gram as g11, type TermIri } from '@traqula/rules-sparql-1-1';
+import { completeParseContext, Factory, gram as S12, lex as l12 } from '@traqula/rules-sparql-1-2';
+import type { SparqlContext, Query, Update, Path } from '@traqula/rules-sparql-1-2';
 
 export const sparql12ParserBuilder = Builder.createBuilder(sparql11ParserBuilder)
   .widenContext<SparqlContext>()
+  // Needed for portable typing
   .addRuleRedundant(g11.object)
   .addMany(
     S12.reifiedTripleBlock,
@@ -28,6 +29,8 @@ export const sparql12ParserBuilder = Builder.createBuilder(sparql11ParserBuilder
     S12.exprTripleTerm,
     S12.exprTripleTermSubject,
     S12.exprTripleTermObject,
+  )
+  .addMany(
     S12.builtinLangDir,
     S12.builtinLangStrDir,
     S12.builtinHasLang,
@@ -53,7 +56,10 @@ export const sparql12ParserBuilder = Builder.createBuilder(sparql11ParserBuilder
 export class Parser {
   private readonly parser: {
     queryOrUpdate: (input: string, context: SparqlContext, arg: undefined) => Query | Update;
+    path: (input: string, context: SparqlContext, arg: undefined) => Path;
   };
+
+  private readonly F = new Factory();
 
   public constructor() {
     this.parser = sparql12ParserBuilder.consumeToParser({
@@ -63,5 +69,16 @@ export class Parser {
 
   public parse(query: string, context: Partial<SparqlContext> = {}): Query | Update {
     return this.parser.queryOrUpdate(query, completeParseContext(context), undefined);
+  }
+
+  public parsePath(query: string, context: Partial<SparqlContext> = {}): (Path & { prefixes: object }) | TermIri {
+    const res = this.parser.path(query, completeParseContext(context), undefined);
+    if (this.F.isPathPure(res)) {
+      return {
+        ...res,
+        prefixes: {},
+      };
+    }
+    return res;
   }
 }

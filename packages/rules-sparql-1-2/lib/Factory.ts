@@ -3,7 +3,8 @@ import { TraqulaFactory } from '@traqula/rules-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import type {
   Annotation,
-  TermBlank, TermIri,
+  TermBlank,
+  TermIri,
   TermTriple,
   TermVariable,
   TripleCollectionBlankNodeProperties,
@@ -57,6 +58,24 @@ export class Factory extends TraqulaFactory {
       triples,
       identifier,
       loc,
+    };
+  }
+
+  // eslint-disable-next-line ts/ban-ts-comment
+  // @ts-expect-error 2416
+  public override triple(
+    subject: TripleNesting['subject'],
+    predicate: TripleNesting['predicate'],
+    object: TripleNesting['object'],
+    loc?: SourceLocation,
+  ): TripleNesting {
+    return {
+      type: 'triple',
+      subject,
+      predicate,
+      object,
+      annotations: [],
+      loc: loc ?? this.sourceLocation(subject, predicate, object),
     };
   }
 

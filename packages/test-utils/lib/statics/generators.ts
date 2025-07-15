@@ -53,11 +53,17 @@ interface NegativeTest {
   }>;
 }
 
-export function* negativeTest(type: 'sparql-1-2-invalid'): Generator<NegativeTest> {
+export function* negativeTest(
+  type: 'sparql-1-2-invalid',
+  filter?: (name: string) => boolean,
+): Generator<NegativeTest> {
   const dir = path.join(__dirname, type);
   const statics = fs.readdirSync(dir);
   for (const file of statics) {
     if (file.endsWith('.sparql')) {
+      if (filter && !filter(file.replace('.sparql', ''))) {
+        continue;
+      }
       yield {
         name: file.replace(/\.sparql$/u, ''),
         statics: async() => {

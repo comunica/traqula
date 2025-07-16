@@ -3,11 +3,11 @@ import { Factory as Sparql11Factory } from '@traqula/rules-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import type {
   Annotation,
+  ContextDefinitionVersion,
   TermBlank,
   TermIri,
   TermTriple,
   TermVariable,
-  TripleCollection,
   TripleCollectionBlankNodeProperties,
   TripleCollectionReifiedTriple,
   TripleNesting,
@@ -68,10 +68,6 @@ export class Factory extends Sparql11Factory {
     } satisfies TripleCollectionBlankNodeProperties;
   }
 
-  public isTripleCollection12(collection: object): collection is TripleCollection {
-    return super.isTripleCollection(collection);
-  }
-
   /**
    * Overwritten triple constructor to always contain an empty annotations list
    */
@@ -100,5 +96,18 @@ export class Factory extends Sparql11Factory {
       annotations: annotations ?? [],
       loc: loc ?? this.sourceLocation(subject, predicate, object, ...annotations ?? []),
     };
+  }
+
+  public contextDefinitionVersion(version: string, loc: SourceLocation): ContextDefinitionVersion {
+    return {
+      type: 'contextDef',
+      subType: 'version',
+      version,
+      loc,
+    };
+  }
+
+  public isContextDefinitionVersion(obj: object): obj is SubTyped<'contextDef', 'version'> {
+    return this.isOfSubType(obj, 'contextDef', 'version');
   }
 }

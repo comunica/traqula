@@ -2,7 +2,7 @@
   "name": "@traqula/rules-sparql-1-1-adjust",
   "type": "module",
   "version": "0.0.0",
-  "description": "TRAQULA Lexer and Grammar Rules for sparql 1.1-ADJUST",
+  "description": "Traqula Lexer and Grammar Rules for sparql 1.1-ADJUST",
   "lsd:module": true,
   "license": "MIT",
   "repository": {

@@ -1,7 +1,7 @@
 /* eslint-disable import/no-nodejs-modules,no-sync */
 import * as fs from 'node:fs';
-import fsp from 'node:fs/promises';
 import * as path from 'node:path';
+import { readFile } from '../fileUtils';
 
 interface PositiveTest {
   name: string;
@@ -10,10 +10,6 @@ interface PositiveTest {
     ast: unknown;
     autoGen: string;
   }>;
-}
-
-function newLineClean(str: string): string {
-  return str.replaceAll(/(\r?\n)|(\r)/gu, '\n');
 }
 
 export function* positiveTest(
@@ -30,19 +26,17 @@ export function* positiveTest(
       yield {
         name: file.replace(/\.json$/u, ''),
         statics: async() => {
-          const query = await fsp.readFile(`${dir}/${file.replace('.json', '.sparql')}`, 'utf-8');
-          const unifiedQuery = newLineClean(query);
-          const result = await fsp.readFile(`${dir}/${file}`, 'utf-8');
+          const query = await readFile(`${dir}/${file.replace('.json', '.sparql')}`);
+          const result = await readFile(`${dir}/${file}`);
           let autoGen: string;
           try {
-            autoGen = await fsp.readFile(`${dir}/${file.replace('.json', '-generated.sparql')}`, 'utf-8');
-            autoGen = newLineClean(autoGen);
+            autoGen = await readFile(`${dir}/${file.replace('.json', '-generated.sparql')}`);
           } catch {
-            autoGen = unifiedQuery;
+            autoGen = query;
           }
           const json: unknown = JSON.parse(result);
           return {
-            query: unifiedQuery,
+            query,
             ast: json,
             autoGen,
           };
@@ -73,7 +67,7 @@ export function* negativeTest(
       yield {
         name: file.replace(/\.sparql$/u, ''),
         statics: async() => {
-          const query = newLineClean(await fsp.readFile(`${dir}/${file}`, 'utf-8'));
+          const query = await readFile(`${dir}/${file}`);
           return {
             query,
           };

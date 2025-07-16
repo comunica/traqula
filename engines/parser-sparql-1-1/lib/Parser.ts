@@ -1,6 +1,12 @@
-import { Builder } from '@traqula/core';
+import { ParserBuilder } from '@traqula/core';
 import type * as T11 from '@traqula/rules-sparql-1-1';
-import { lex as l, SparqlParser, gram, updateNoReuseBlankNodeLabels } from '@traqula/rules-sparql-1-1';
+import {
+  sparqlCodepointEscape,
+  lex as l,
+  SparqlParser,
+  gram,
+  updateNoReuseBlankNodeLabels,
+} from '@traqula/rules-sparql-1-1';
 import { queryUnitParserBuilder } from './queryUnitParser';
 import { updateParserBuilder } from './updateUnitParser';
 
@@ -71,14 +77,15 @@ const queryOrUpdate: T11.SparqlGrammarRule<'queryOrUpdate', T11.SparqlQuery> = {
   },
 };
 
-export const sparql11ParserBuilder = Builder.createBuilder(queryUnitParserBuilder)
+export const sparql11ParserBuilder = ParserBuilder.create(queryUnitParserBuilder)
   .merge(updateParserBuilder, <const> [])
   .addRule(queryOrUpdate);
 
 export class Parser extends SparqlParser<T11.SparqlQuery> {
   public constructor() {
-    const parser = sparql11ParserBuilder.consumeToParser({
-      tokenVocabulary: l.sparql11Tokens.build(),
+    const parser = sparql11ParserBuilder.build({
+      tokenVocabulary: l.sparql11Tokens.tokenVocabulary,
+      queryPreProcessor: sparqlCodepointEscape,
     });
     super(parser);
   }

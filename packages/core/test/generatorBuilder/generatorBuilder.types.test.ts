@@ -22,16 +22,16 @@ const RuleC: GeneratorRule<Context, 'coconut', { coconut: 'coconut' } & Node> = 
 describe('parserBuilder', () => {
   describe('types', () => {
     it('builder constructor', () => {
-      expectTypeOf(GeneratorBuilder.createBuilder(<const> [ RuleA ]))
+      expectTypeOf(GeneratorBuilder.create(<const> [ RuleA ]))
         .branded.toEqualTypeOf<GeneratorBuilder<Context, 'apple', { apple: typeof RuleA }>>();
-      expectTypeOf(GeneratorBuilder.createBuilder(<const> [ RuleB ]))
+      expectTypeOf(GeneratorBuilder.create(<const> [ RuleB ]))
         .branded.toEqualTypeOf<GeneratorBuilder<Context, 'banana', { banana: typeof RuleB }>>();
-      expectTypeOf(GeneratorBuilder.createBuilder(<const> [ RuleA, RuleB ]))
+      expectTypeOf(GeneratorBuilder.create(<const> [ RuleA, RuleB ]))
         .branded
         .toEqualTypeOf<GeneratorBuilder<Context, 'apple' | 'banana', { apple: typeof RuleA; banana: typeof RuleB }>>();
 
       // AddRule
-      expectTypeOf(GeneratorBuilder.createBuilder(<const> [ RuleA, RuleB ]).addRule(RuleC))
+      expectTypeOf(GeneratorBuilder.create(<const> [ RuleA, RuleB ]).addRule(RuleC))
         .branded.toEqualTypeOf<GeneratorBuilder<
         Context,
         'apple' | 'banana' | 'coconut',
@@ -40,14 +40,14 @@ describe('parserBuilder', () => {
 
       // Merge
       expectTypeOf(
-        GeneratorBuilder.createBuilder(<const> [ RuleA ])
-          .merge(GeneratorBuilder.createBuilder(<const> [ RuleB ]), <const> []),
+        GeneratorBuilder.create(<const> [ RuleA ])
+          .merge(GeneratorBuilder.create(<const> [ RuleB ]), <const> []),
       ).branded
         .toEqualTypeOf<GeneratorBuilder<Context, 'apple' | 'banana', { apple: typeof RuleA; banana: typeof RuleB }>>();
 
       expectTypeOf(
-        GeneratorBuilder.createBuilder(<const> [ RuleA, RuleB ])
-          .merge(GeneratorBuilder.createBuilder(<const> [ RuleB, RuleC ]), <const> []),
+        GeneratorBuilder.create(<const> [ RuleA, RuleB ])
+          .merge(GeneratorBuilder.create(<const> [ RuleB, RuleC ]), <const> []),
       ).branded
         .toEqualTypeOf<GeneratorBuilder<
           Context,

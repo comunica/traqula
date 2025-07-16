@@ -1,10 +1,10 @@
-import { Builder } from '@traqula/core';
+import { ParserBuilder } from '@traqula/core';
 import { gram } from '@traqula/rules-sparql-1-1';
 import { objectListBuilder } from './objectListParser';
 import { subSelectParserBuilder } from './subSelectParser';
 import { updateNoModifyParserBuilder } from './updateNoModifyParser';
 
-export const updateParserBuilder = Builder.createBuilder(updateNoModifyParserBuilder)
+export const updateParserBuilder = ParserBuilder.create(updateNoModifyParserBuilder)
   .patchRule(gram.update1)
   .addMany(
     gram.modify,

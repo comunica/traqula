@@ -4,7 +4,6 @@ export * from './generator-builder/generatorBuilder';
 export * from './generator-builder/generatorTypes';
 // Export lexer builder
 export * from './lexer-builder/LexerBuilder';
-export * from './lexer-helper/utils';
 // Export parser builder
 export * from './parser-builder/builderTypes';
 export * from './parser-builder/parserBuilder';

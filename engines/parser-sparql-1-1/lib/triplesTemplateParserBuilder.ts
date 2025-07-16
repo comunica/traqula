@@ -1,4 +1,4 @@
-import { Builder } from '@traqula/core';
+import { ParserBuilder } from '@traqula/core';
 import { gram } from '@traqula/rules-sparql-1-1';
 
 const rules = <const> [
@@ -31,4 +31,4 @@ const rules = <const> [
   gram.graphNode,
 ];
 
-export const triplesTemplateParserBuilder = Builder.createBuilder(rules);
+export const triplesTemplateParserBuilder = ParserBuilder.create(rules);

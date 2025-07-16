@@ -7,3 +7,4 @@ export * from './SparqlParser';
 export * from './RoundTripTypes';
 export * from './factory';
 export * from './validation/validators';
+export * from './utils';

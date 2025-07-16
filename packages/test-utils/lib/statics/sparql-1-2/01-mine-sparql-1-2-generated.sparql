@@ -1,0 +1,1 @@
+PREFIX : <http://example.com/ns#> VERSION "1.2" SELECT * WHERE { ?s ?p ?o {| :r ?Z ; |} . }

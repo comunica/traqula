@@ -2,7 +2,7 @@
   "name": "@traqula/core",
   "type": "module",
   "version": "0.0.0",
-  "description": "Core components of TRAQULA",
+  "description": "Core components of Traqula",
   "lsd:module": true,
   "license": "MIT",
   "repository": {

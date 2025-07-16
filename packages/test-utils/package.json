@@ -2,7 +2,7 @@
   "name": "@traqula/test-utils",
   "type": "module",
   "version": "0.0.0",
-  "description": "Test utils used by the TRAQULA monorepo",
+  "description": "Test utils used by the Traqula monorepo",
   "lsd:module": true,
   "license": "MIT",
   "repository": {

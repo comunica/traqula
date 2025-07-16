@@ -5,7 +5,7 @@
  * It is therefore essential that the parser retypes the rules from the core grammar.
  */
 
-import type { RuleDefReturn } from '@traqula/core';
+import type { RuleDefReturn, Wrap } from '@traqula/core';
 import {
   funcExpr1,
   funcExpr3,
@@ -18,6 +18,8 @@ import * as l12 from './lexer';
 import type { SparqlGeneratorRule, SparqlGrammarRule, SparqlRule } from './sparql12HelperTypes';
 import type {
   Annotation,
+  ContextDefinition,
+  ContextDefinitionVersion,
   Expression,
   GraphNode,
   GraphTerm,
@@ -33,6 +35,68 @@ import type {
   TripleNesting,
 } from './sparql12Types';
 import { langTagHasCorrectDomain } from './validator';
+
+/**
+ *[[7]](https://www.w3.org/TR/sparql12-query/#rVersionDecl)
+ */
+export const versionDecl: SparqlRule<'versionDecl', ContextDefinitionVersion> = {
+  name: 'versionDecl',
+  impl: ({ ACTION, SUBRULE, CONSUME }) => (C) => {
+    const versionToken = CONSUME(l12.version);
+    const identifier = SUBRULE(versionSpecifier, undefined);
+    return ACTION(() =>
+      C.factory.contextDefinitionVersion(identifier.val, C.factory.sourceLocation(versionToken, identifier)));
+  },
+  gImpl: ({ PRINT_WORDS }) => (ast, { factory: F }) => {
+    F.printFilter(ast, () => {
+      PRINT_WORDS('VERSION', `${S11.stringEscapedLexical(ast.version)}`);
+    });
+  },
+};
+
+/**
+ * [[8]](https://www.w3.org/TR/sparql12-query/#rVersionSpecifier)
+ */
+export const versionSpecifier: SparqlGrammarRule<'versionSpecifier', Wrap<string>> = {
+  name: 'versionSpecifier',
+  impl: ({ ACTION, CONSUME, OR }) => (C) => {
+    const token = OR([
+      { ALT: () => CONSUME(l11.terminals.stringLiteral1) },
+      { ALT: () => CONSUME(l11.terminals.stringLiteral2) },
+    ]);
+    return ACTION(() => C.factory.wrap(token.image.slice(1, -1), C.factory.sourceLocation(token)));
+  },
+};
+
+/**
+ * OVERRIDING RULE {@link S11.prologue}
+ * [[8]](https://www.w3.org/TR/sparql12-query/#rVersionSpecifier)
+ */
+export const prologue: SparqlRule<'prologue', ContextDefinition[]> = {
+  name: 'prologue',
+  impl: ({ SUBRULE, MANY, OR }) => () => {
+    const result: ContextDefinition[] = [];
+    MANY(() => OR([
+      { ALT: () => result.push(SUBRULE(S11.baseDecl, undefined)) },
+      // TODO: the [spec](https://www.w3.org/TR/sparql11-query/#iriRefs) says you cannot redefine prefixes.
+      //  We might need to check this.
+      { ALT: () => result.push(SUBRULE(S11.prefixDecl, undefined)) },
+      { ALT: () => result.push(SUBRULE(versionDecl, undefined)) },
+    ]));
+    return result;
+  },
+  gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
+    for (const context of ast) {
+      if (F.isContextDefinitionBase(context)) {
+        SUBRULE(S11.baseDecl, context, undefined);
+      } else if (F.isContextDefinitionPrefix(context)) {
+        SUBRULE(S11.prefixDecl, context, undefined);
+      } else if (F.isContextDefinitionVersion(context)) {
+        SUBRULE(versionDecl, context, undefined);
+      }
+    }
+  },
+};
 
 function reifiedTripleBlockImpl<T extends string>(name: T, allowPath: boolean):
 T11.SparqlGrammarRule<T, T11.BasicGraphPattern> {
@@ -182,6 +246,7 @@ function annotationImpl<T extends string>(name: T, allowPaths: boolean): SparqlR
             });
             const block = SUBRULE(
               allowPaths ? annotationBlockPath : annotationBlock,
+
               currentReifier!,
             );
             ACTION(() => {
@@ -282,10 +347,10 @@ export const graphNodePath: SparqlRule<'graphNodePath', GraphNode> = <const> {
     { ALT: () => $.SUBRULE(reifiedTriple, undefined) },
   ]),
   gImpl: $ => (ast, C, params) => {
-    if (C.factory.isTripleCollection12(ast) && C.factory.isTripleCollectionReifiedTriple(ast)) {
+    if (C.factory.isTripleCollectionReifiedTriple(ast)) {
       $.SUBRULE(reifiedTriple, ast, undefined);
     } else {
-      S11.graphNodePath.gImpl($)(<T11.Term | T11.TripleCollection>ast, C, params);
+      S11.graphNodePath.gImpl($)(<T11.Term | T11.TripleCollection> ast, C, params);
     }
   },
 };
@@ -609,7 +674,7 @@ export const generateTriplesBlock: SparqlGeneratorRule<'triplesBlock', PatternBg
     for (const [ index, triple ] of ast.triples.entries()) {
       HANDLE_LOC(triple, () => {
         const nextTriple = ast.triples.at(index);
-        if (F.isTripleCollection12(triple)) {
+        if (F.isTripleCollection(triple)) {
           SUBRULE(graphNodePath, triple, undefined);
           // A top level tripleCollection block means that it is not used in a triple. So you end with DOT.
           F.printFilter(triple, () => PRINT_WORD('.'));
@@ -627,7 +692,7 @@ export const generateTriplesBlock: SparqlGeneratorRule<'triplesBlock', PatternBg
           SUBRULE(annotationPath, triple.annotations ?? [], undefined);
 
           // If no more things, or a top level collection (only possible if new block was part), or new subject: add DOT
-          if (nextTriple === undefined || F.isTripleCollection12(nextTriple) ||
+          if (nextTriple === undefined || F.isTripleCollection(nextTriple) ||
             !F.isSourceLocationNoMaterialize(nextTriple.subject.loc)) {
             F.printFilter(ast, () => PRINT_WORD('.'));
           } else if (F.isSourceLocationNoMaterialize(nextTriple.predicate.loc)) {

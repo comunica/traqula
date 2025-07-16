@@ -1,6 +1,16 @@
-# TRAQULA parser engine for SPARQL 1.1
+<p align="center">
+    <img alt="Traqula logo" width="70%" style="border-radius: 20px" src="/assets/white-on-red/logo-white-on-red-lettered-social.png">
+</p>
 
-TRAQULA Sparql 1.1 is a [SPARQL 1.1](https://www.w3.org/TR/sparql11-query/#grammar) query parser for TypeScript.
+<p align="center">
+  <strong>A query language transpiler framework for JavaScript</strong>
+</p>
+
+**WARNING:** V2 will come shortly and will have lots of breaking changes.
+
+# Traqula parser engine for SPARQL 1.1
+
+Traqula Sparql 1.1 is a [SPARQL 1.1](https://www.w3.org/TR/sparql11-query/#grammar) query parser for TypeScript.
 
 ## Installation
 
@@ -43,7 +53,7 @@ or to usage as a starting point for your own grammar.
 
 ### Consuming parserBuilder to parser
 
-At the core of TRAQULA, parser are constructed of multiple parser rules that have been consumed by the builder.
+At the core of Traqula, parser are constructed of multiple parser rules that have been consumed by the builder.
 This consumption returns a parser that can parse strings starting from any grammar rule.
 
 The `sparql11ParserBuilder` for example contains both the rules `queryOrUpdate` and `path` (among many others).

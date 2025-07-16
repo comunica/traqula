@@ -20,7 +20,7 @@ const queryOrUpdate: T12.SparqlGeneratorRule<'queryOrUpdate', T12.Query | T12.Up
 };
 
 const sparql12GeneratorBuilder =
-  GeneratorBuilder.createBuilder(sparql11GeneratorBuilder)
+  GeneratorBuilder.create(sparql11GeneratorBuilder)
     .widenContext<{ factory: Factory }>()
     .typePatch<{
       [g11.query.name]: T12.Query;
@@ -104,6 +104,8 @@ const sparql12GeneratorBuilder =
     .patchRule(g12.graphNodePath)
     .addRule(g12.annotationBlockPath)
     .addRule(g12.annotationPath)
+    .addRule(g12.versionDecl)
+    .patchRule(g12.prologue)
     .patchRule(queryOrUpdate)
     .patchRule(g12.generateTriplesBlock)
     .patchRule(g12.generateGraphTerm);
@@ -115,7 +117,7 @@ export class Generator {
 
   public generate(ast: T12.Query | T12.Update, origSource = ''): string {
     return this.generator.queryOrUpdate(ast, {
-      factory: <T11.Factory & Factory> this.F,
+      factory: this.F,
       offset: 0,
       origSource,
     }, undefined);
@@ -123,7 +125,7 @@ export class Generator {
 
   public generatePath(ast: T12.Path, origSource = ''): string {
     return this.generator.path(ast, {
-      factory: <T11.Factory & Factory> this.F,
+      factory: this.F,
       offset: 0,
       origSource,
     }, undefined);

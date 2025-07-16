@@ -1,4 +1,4 @@
-import { Builder } from '@traqula/core';
+import { ParserBuilder } from '@traqula/core';
 import type { UpdateOperation } from '@traqula/rules-sparql-1-1';
 import { gram } from '@traqula/rules-sparql-1-1';
 import { triplesTemplateParserBuilder } from './triplesTemplateParserBuilder';
@@ -50,8 +50,8 @@ const rulesNoUpdate1 = <const>[
  * Simple SPARQL 1.1 Update parser excluding MODIFY operations.
  * Top enable MODIFY, you need to path the update1 rule.
  */
-export const updateNoModifyParserBuilder = Builder
-  .createBuilder(rulesNoUpdate1)
+export const updateNoModifyParserBuilder = ParserBuilder
+  .create(rulesNoUpdate1)
   .addRule(update1Patch)
   .merge(triplesTemplateParserBuilder, <const> [])
   .addRule(gram.quadPattern)

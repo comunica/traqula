@@ -2,6 +2,7 @@
 import { LexerBuilder, createToken } from '@traqula/core';
 import { lex as l11 } from '@traqula/rules-sparql-1-1';
 
+export const version = createToken({ name: 'Version', pattern: /version/i, label: 'version identifier' });
 export const tilde = createToken({ name: 'Tilde', pattern: '~', label: '~' });
 export const annotationOpen = createToken({ name: 'AnnotationOpen', pattern: '{|', label: `Annotation Open: {|` });
 export const annotationClose = createToken({ name: 'AnnotationClose', pattern: '|}', label: 'Annotation Close |}' });
@@ -45,6 +46,7 @@ export const sparql12Tokens = LexerBuilder
     tripleTermClose,
     reificationOpen,
     reificationClose,
+    version,
   )
   .addBefore(
     l11.builtIn.langmatches,

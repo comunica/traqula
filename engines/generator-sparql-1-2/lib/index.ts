@@ -12,9 +12,9 @@ const queryOrUpdate: T12.SparqlGeneratorRule<'queryOrUpdate', T12.Query | T12.Up
   name: 'queryOrUpdate',
   gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
     if (F.isQuery(ast)) {
-      SUBRULE(g11.query, ast, undefined);
+      SUBRULE(g11.query, <T11.Query> ast, undefined);
     } else {
-      SUBRULE(g11.update, <T11.Update>ast, undefined);
+      SUBRULE(g11.update, <T11.Update> ast, undefined);
     }
   },
 };
@@ -115,7 +115,7 @@ export class Generator {
 
   public generate(ast: T12.Query | T12.Update, origSource = ''): string {
     return this.generator.queryOrUpdate(ast, {
-      factory: <T11.TraqulaFactory & Factory> this.F,
+      factory: <T11.Factory & Factory> this.F,
       offset: 0,
       origSource,
     }, undefined);
@@ -123,7 +123,7 @@ export class Generator {
 
   public generatePath(ast: T12.Path, origSource = ''): string {
     return this.generator.path(ast, {
-      factory: <T11.TraqulaFactory & Factory> this.F,
+      factory: <T11.Factory & Factory> this.F,
       offset: 0,
       origSource,
     }, undefined);

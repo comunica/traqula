@@ -1,7 +1,7 @@
-import { TraqulaFactory } from '@traqula/rules-sparql-1-1';
+import { Factory } from '@traqula/rules-sparql-1-1';
 import type { TermLiteral } from './sparql12Types';
 
-const F = new TraqulaFactory();
+const F = new Factory();
 
 function isLangDir(dir: string): dir is 'ltr' | 'rtl' {
   return dir === 'ltr' || dir === 'rtl';

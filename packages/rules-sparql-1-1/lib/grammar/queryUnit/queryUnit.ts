@@ -68,7 +68,7 @@ export const query: SparqlRule<'query', Query> = <const> {
     SUBRULE(prologue, ast.context, undefined);
     if (F.isQuerySelect(ast)) {
       SUBRULE(selectQuery, ast, undefined);
-    } else if (F.isQueryConstruc(ast)) {
+    } else if (F.isQueryConstruct(ast)) {
       SUBRULE(constructQuery, ast, undefined);
     } else if (F.isQueryDescribe(ast)) {
       SUBRULE(describeQuery, ast, undefined);

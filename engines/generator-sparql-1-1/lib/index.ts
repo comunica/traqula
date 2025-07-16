@@ -1,5 +1,5 @@
 import { GeneratorBuilder } from '@traqula/core';
-import { gram, TraqulaFactory } from '@traqula/rules-sparql-1-1';
+import { gram, Factory } from '@traqula/rules-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 
 const queryOrUpdate: T11.SparqlGeneratorRule<'queryOrUpdate', T11.Query | T11.Update> = {
@@ -98,7 +98,7 @@ export const sparql11GeneratorBuilder = GeneratorBuilder.createBuilder(<const> [
 
 export class Generator {
   private readonly generator = sparql11GeneratorBuilder.build();
-  private readonly factory = new TraqulaFactory();
+  private readonly factory = new Factory();
 
   public generate(ast: T11.Query | T11.Update, origSource = ''): string {
     return this.generator.queryOrUpdate(ast, {

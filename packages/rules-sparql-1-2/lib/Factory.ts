@@ -1,9 +1,8 @@
-import type { SourceLocation } from '@traqula/core';
-import { TraqulaFactory } from '@traqula/rules-sparql-1-1';
+import type { SourceLocation, SubTyped } from '@traqula/core';
+import { Factory as Sparql11Factory } from '@traqula/rules-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import type {
   Annotation,
-  Term,
   TermBlank,
   TermIri,
   TermTriple,
@@ -14,7 +13,7 @@ import type {
   TripleNesting,
 } from './sparql12Types';
 
-export class Factory extends TraqulaFactory {
+export class Factory extends Sparql11Factory {
   public termTriple(
     subject: TermTriple['subject'],
     predicate: TermTriple['predicate'],
@@ -31,6 +30,10 @@ export class Factory extends TraqulaFactory {
     };
   }
 
+  public isTermTriple(obj: object): obj is SubTyped<'term', 'triple'> {
+    return this.isOfSubType(obj, 'term', 'triple');
+  }
+
   public tripleCollectionReifiedTriple(
     loc: SourceLocation,
     subject: TripleNesting['subject'],
@@ -45,6 +48,10 @@ export class Factory extends TraqulaFactory {
       identifier: reifier ?? this.blankNode(undefined, this.sourceLocationNoMaterialize()),
       loc,
     };
+  }
+
+  public isTripleCollectionReifiedTriple(obj: object): obj is SubTyped<'tripleCollection', 'reifiedTriple'> {
+    return this.isOfSubType(obj, 'tripleCollection', 'reifiedTriple');
   }
 
   public override tripleCollectionBlankNodeProperties(
@@ -65,13 +72,11 @@ export class Factory extends TraqulaFactory {
     return super.isTripleCollection(collection);
   }
 
-  public override triple(
-    subject: TripleNesting['subject'],
-    predicate: TripleNesting['predicate'],
-    object: TripleNesting['object'],
-    loc?: SourceLocation,
-  ): T11.TripleNesting {
-    return <T11.TripleNesting> {
+  /**
+   * Overwritten triple constructor to always contain an empty annotations list
+   */
+  public override triple: Sparql11Factory['triple'] =
+    (subject, predicate, object, loc) => <T11.TripleNesting> {
       type: 'triple',
       subject,
       predicate,
@@ -79,7 +84,6 @@ export class Factory extends TraqulaFactory {
       annotations: [],
       loc: loc ?? this.sourceLocation(subject, predicate, object),
     } satisfies TripleNesting;
-  }
 
   public annotatedTriple(
     subject: TripleNesting['subject'],
@@ -96,13 +100,5 @@ export class Factory extends TraqulaFactory {
       annotations: annotations ?? [],
       loc: loc ?? this.sourceLocation(subject, predicate, object, ...annotations ?? []),
     };
-  }
-
-  public isTermTriple(term: Term): term is TermTriple {
-    return term.subType === 'triple';
-  }
-
-  public isTripleCollectionReifiedTriple(collection: TripleCollection): collection is TripleCollectionReifiedTriple {
-    return collection.subType === 'reifiedTriple';
   }
 }

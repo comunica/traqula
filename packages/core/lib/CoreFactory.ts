@@ -12,6 +12,9 @@ import type {
   Wrap,
 } from './nodeTypings';
 
+export type Typed<Type extends string> = { type: Type };
+export type SubTyped<Type extends string, Subtype extends string> = { type: Type; subType: Subtype };
+
 export class CoreFactory {
   public wrap<T>(val: T, loc: SourceLocation): Wrap<T> {
     return { val, loc };
@@ -57,7 +60,7 @@ export class CoreFactory {
     return { ...arg, loc: this.sourceLocationNoMaterialize() };
   }
 
-  private safeObjectTransform(value: unknown, mapper: (some: object) => any): any {
+  public safeObjectTransform(value: unknown, mapper: (some: object) => any): any {
     if (value && typeof value === 'object') {
       // If you wonder why this is all so hard, this is the reason. We cannot lose the methods of our Array objects
       if (Array.isArray(value)) {
@@ -157,5 +160,16 @@ export class CoreFactory {
 
   public isSourceLocationNoMaterialize(loc: object): loc is SourceLocationNoMaterialize {
     return this.isSourceLocation(loc) && loc.sourceLocationType === 'noMaterialize';
+  }
+
+  public isOfType<Type extends string>(obj: object, type: Type): obj is Typed<Type> {
+    const casted: { type?: any } = obj;
+    return casted.type === type;
+  }
+
+  public isOfSubType<Type extends string, SubType extends string>(obj: object, type: Type, subType: SubType):
+    obj is SubTyped<Type, SubType> {
+    const temp: { type?: unknown; subType?: unknown } = obj;
+    return temp.type === type && temp.subType === subType;
   }
 }

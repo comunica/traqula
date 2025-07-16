@@ -148,7 +148,7 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
         }
         F.printFilter(ast, () => PRINT_WORD(')'));
       }
-    } else if (F.isExpressionPatternOperator(ast)) {
+    } else if (F.isExpressionPatternOperation(ast)) {
       const patterns = ast.args;
       F.printFilter(ast, () => PRINT_WORD(ast.operator === 'exists' ? 'EXISTS' : 'NOT EXISTS'));
       SUBRULE(groupGraphPattern, patterns, undefined);
@@ -460,7 +460,7 @@ export const iriOrFunction: SparqlRule<'iriOrFunction', TermIri | ExpressionFunc
     return functionCall ?? iriVal;
   },
   gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
-    if (F.isTermIri(ast)) {
+    if (F.isTermNamed(ast)) {
       SUBRULE(iri, ast, undefined);
     } else {
       SUBRULE(iri, ast.function, undefined);

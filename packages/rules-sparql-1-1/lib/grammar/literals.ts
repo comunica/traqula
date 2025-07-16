@@ -231,7 +231,7 @@ export const iri: SparqlRule<'iri', TermIri> = <const> {
     { ALT: () => SUBRULE(prefixedName, undefined) },
   ]),
   gImpl: ({ SUBRULE }) => (ast, { factory: F }) =>
-    F.isTermIriPrefixed(ast) ? SUBRULE(prefixedName, ast, undefined) : SUBRULE(iriFull, ast, undefined),
+    F.isTermNamedPrefixed(ast) ? SUBRULE(prefixedName, ast, undefined) : SUBRULE(iriFull, ast, undefined),
 };
 
 export const iriFull: SparqlRule<'iriFull', TermIriFull> = <const> {

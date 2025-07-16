@@ -343,7 +343,7 @@ export const reifiedTriple: SparqlRule<'reifiedTriple', TripleCollectionReifiedT
     F.printFilter(ast, () => PRINT_WORD('<<'));
     const triple = ast.triples[0];
     SUBRULE(graphNodePath, triple.subject, undefined);
-    if (F.isPath(triple.predicate)) {
+    if (F.isPathPure(triple.predicate)) {
       SUBRULE(S11.path, triple.predicate, undefined);
     } else {
       SUBRULE(graphNodePath, triple.predicate, undefined);
@@ -617,7 +617,7 @@ export const generateTriplesBlock: SparqlGeneratorRule<'triplesBlock', PatternBg
           // Subject
           SUBRULE(graphNodePath, triple.subject, undefined);
           // Predicate
-          if (F.isPath(triple.predicate)) {
+          if (F.isPathPure(triple.predicate)) {
             SUBRULE(S11.path, triple.predicate, undefined);
           } else {
             SUBRULE(graphNodePath, triple.predicate, undefined);

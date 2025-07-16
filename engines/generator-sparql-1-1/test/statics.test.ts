@@ -1,14 +1,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type * as T11 from '@traqula/rules-sparql-1-1';
-import { TraqulaFactory } from '@traqula/rules-sparql-1-1';
+import { Factory } from '@traqula/rules-sparql-1-1';
 import { positiveTest } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
 import { Generator } from '../lib';
 
 describe('a SPARQL 1.1 generator', () => {
   const generator = new Generator();
-  const F = new TraqulaFactory();
+  const F = new Factory();
 
   function _sinkGenerated(suite: string, test: string, response: string): void {
     const dir = '/home/jitsedesmet/Documents/PhD/code/traqula/packages/test-utils/lib/statics/';

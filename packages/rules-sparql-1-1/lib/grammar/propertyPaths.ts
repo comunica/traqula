@@ -15,7 +15,7 @@ export const path: SparqlRule<'path', Path> = <const> {
   name: 'path',
   impl: ({ SUBRULE }) => () => SUBRULE(pathAlternative, undefined),
   gImpl: ({ PRINT, SUBRULE }) => (ast, { factory: F }) => {
-    if (F.isTerm(ast) && F.isTermIri(ast)) {
+    if (F.isTerm(ast) && F.isTermNamed(ast)) {
       SUBRULE(iri, ast, undefined);
     } else {
       switch (ast.subType) {

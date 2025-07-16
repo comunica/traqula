@@ -1,5 +1,5 @@
 import type { GeneratorRule, ParserRule } from '@traqula/core';
-import type { TraqulaFactory } from './factory';
+import type { Factory } from './factory';
 
 export type SparqlRule<
   /**
@@ -33,7 +33,7 @@ export type SparqlGeneratorRule<
    * Function arguments that can be given to convey the state of the current parse operation.
    */
   ParamType = undefined,
-> = GeneratorRule<{ factory: TraqulaFactory }, NameType, ReturnType, ParamType>;
+> = GeneratorRule<{ factory: Factory }, NameType, ReturnType, ParamType>;
 
 export type SparqlGrammarRule<
   /**
@@ -53,9 +53,9 @@ export type SparqlGrammarRule<
 
 export interface SparqlContext {
   /**
-   * Data-factory to be used when constructing rdf primitives.
+   * Data-factoryMixins to be used when constructing rdf primitives.
    */
-  factory: TraqulaFactory;
+  factory: Factory;
   /**
    * Current scoped prefixes. Used for resolving prefixed names.
    */

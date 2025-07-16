@@ -1,8 +1,7 @@
 import { Transformer } from '@traqula/core';
-import { TraqulaFactory } from '../factory';
+import { Factory } from '../factory';
 import type {
   Wildcard,
-
   Expression,
   ExpressionAggregate,
   Pattern,
@@ -19,7 +18,7 @@ import type {
   Term,
 } from '../RoundTripTypes';
 
-const F = new TraqulaFactory();
+const F = new Factory();
 const transformer = new Transformer<Sparql11Nodes>();
 
 /**
@@ -48,9 +47,8 @@ function getExpressionId(expression: SolutionModifierGroupBind | Expression | Te
     return expression.value;
   }
   if (F.isExpression(expression)) {
-    if (F.isExpressionAggregate(expression) && F.isTerm(expression.expression) &&
-      F.isTermVariable(expression.expression)) {
-      return expression.expression.value;
+    if (F.isExpressionAggregate(expression) && F.isTermVariable(expression.expression[0])) {
+      return expression.expression[0].value;
     }
     return undefined;
   }

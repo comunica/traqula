@@ -1,5 +1,10 @@
 {
-  "prefixes": {},
-  "termType": "NamedNode",
-  "value": "http://example.org/a"
+  "type": "term",
+  "subType": "namedNode",
+  "value": "http://example.org/a",
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 22
+  }
 }

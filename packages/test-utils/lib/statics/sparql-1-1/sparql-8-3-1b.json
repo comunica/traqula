@@ -1,55 +1,148 @@
 {
-  "queryType": "SELECT",
+  "context": [],
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "s",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 15,
+                "end": 17
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "variable",
+              "value": "p",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 18,
+                "end": 20
+              }
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "o",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 21,
+                "end": 23
+              }
+            },
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 15,
+              "end": 23
+            }
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 15,
+          "end": 23
+        }
+      },
+      {
+        "type": "pattern",
+        "subType": "minus",
+        "patterns": [
+          {
+            "type": "pattern",
+            "subType": "bgp",
+            "triples": [
+              {
+                "type": "triple",
+                "subject": {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "x",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 42,
+                    "end": 44
+                  }
+                },
+                "predicate": {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "y",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 45,
+                    "end": 47
+                  }
+                },
+                "object": {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "z",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 48,
+                    "end": 50
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 42,
+                  "end": 50
+                }
+              }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 42,
+              "end": 50
+            }
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 28,
+          "end": 52
+        }
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 9,
+      "end": 54
+    }
+  },
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
   "variables": [
     {
-      "termType": "Wildcard"
+      "type": "wildcard",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 7,
+        "end": 8
+      }
     }
   ],
-  "where": [
-    {
-      "type": "bgp",
-      "triples": [
-        {
-          "subject": {
-            "termType": "Variable",
-            "value": "s"
-          },
-          "predicate": {
-            "termType": "Variable",
-            "value": "p"
-          },
-          "object": {
-            "termType": "Variable",
-            "value": "o"
-          }
-        }
-      ]
-    },
-    {
-      "type": "minus",
-      "patterns": [
-        {
-          "type": "bgp",
-          "triples": [
-            {
-              "subject": {
-                "termType": "Variable",
-                "value": "x"
-              },
-              "predicate": {
-                "termType": "Variable",
-                "value": "y"
-              },
-              "object": {
-                "termType": "Variable",
-                "value": "z"
-              }
-            }
-          ]
-        }
-      ]
-    }
-  ],
-  "type": "query",
-  "prefixes": {}
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 54
+  },
+  "type": "query"
 }

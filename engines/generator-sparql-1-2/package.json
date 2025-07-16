@@ -1,0 +1,51 @@
+{
+  "name": "@traqula/generator-sparql-1-2",
+  "type": "module",
+  "version": "0.0.0",
+  "description": "SPARQL 1.2 generator",
+  "lsd:module": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/comunica/traqula.git",
+    "directory": "engines/generator-sparql-1-2"
+  },
+  "bugs": {
+    "url": "https://github.com/comunica/traqula/issues"
+  },
+  "sideEffects": false,
+  "exports": {
+    "import": "./lib/index.js",
+    "require": "./lib/index.cjs"
+  },
+  "main": "lib/index.js",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "lib/**/*.cjs",
+    "lib/**/*.d.ts",
+    "lib/**/*.js",
+    "lib/**/*.js.map"
+  ],
+  "engines": {
+    "node": ">=18.0"
+  },
+  "typings": "lib/index",
+  "scripts": {
+    "build": "yarn build:ts && yarn build:transpile",
+    "build:ts": "node \"../../node_modules/typescript/bin/tsc\"",
+    "build:transpile": " node \"../../node_modules/esbuild/bin/esbuild\" --format=cjs --bundle --log-level=error --outfile=lib/index.cjs lib/index.ts"
+  },
+  "dependencies": {
+    "@traqula/core": "^0.0.0",
+    "@traqula/generator-sparql-1-1": "^0.0.0",
+    "@traqula/rules-sparql-1-1": "^0.0.0",
+    "@traqula/rules-sparql-1-2": "^0.0.0"
+  },
+  "devDependencies": {
+    "@traqula/parser-sparql-1-2": "^0.0.0",
+    "@traqula/rules-sparql-1-2": "^0.0.0",
+    "@traqula/test-utils": "^0.0.0"
+  }
+}

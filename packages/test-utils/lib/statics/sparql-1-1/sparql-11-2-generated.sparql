@@ -1,0 +1,1 @@
+PREFIX : <http://data.example/> SELECT ( avg( ?y ) AS ?avg ) WHERE { ?a :x ?x . ?a :y ?y . } GROUPBY ?x

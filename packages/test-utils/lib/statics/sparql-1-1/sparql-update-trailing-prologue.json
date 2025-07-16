@@ -2,37 +2,96 @@
   "type": "update",
   "updates": [
     {
-      "updateType": "insert",
-      "insert": [
-        {
-          "type": "bgp",
-          "triples": [
-            {
-              "subject": {
-                "termType": "NamedNode",
-                "value": "http://example/book1"
-              },
-              "predicate": {
-                "termType": "NamedNode",
-                "value": "urn:label"
-              },
-              "object": {
-                "termType": "Literal",
-                "value": "A new book",
-                "language": "",
-                "datatype": {
-                  "termType": "NamedNode",
-                  "value": "http://www.w3.org/2001/XMLSchema#string"
+      "context": [],
+      "operation": {
+        "type": "updateOperation",
+        "subType": "insertdata",
+        "data": [
+          {
+            "type": "pattern",
+            "subType": "bgp",
+            "triples": [
+              {
+                "type": "triple",
+                "subject": {
+                  "type": "term",
+                  "subType": "namedNode",
+                  "value": "http://example/book1",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 14,
+                    "end": 36
+                  }
                 },
-                "direction": ""
+                "predicate": {
+                  "type": "term",
+                  "subType": "namedNode",
+                  "value": "urn:label",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 37,
+                    "end": 48
+                  }
+                },
+                "object": {
+                  "type": "term",
+                  "subType": "literal",
+                  "value": "A new book",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 49,
+                    "end": 61
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 14,
+                  "end": 61
+                }
               }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 14,
+              "end": 63
             }
-          ]
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 0,
+          "end": 64
+        }
+      }
+    },
+    {
+      "context": [
+        {
+          "type": "contextDef",
+          "subType": "prefix",
+          "key": "a",
+          "value": {
+            "type": "term",
+            "subType": "namedNode",
+            "value": "urn:a",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 77,
+              "end": 84
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 67,
+            "end": 84
+          }
         }
       ]
     }
   ],
-  "prefixes": {
-    "a": "urn:a"
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 84
   }
 }

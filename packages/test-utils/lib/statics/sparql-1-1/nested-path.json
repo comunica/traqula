@@ -1,54 +1,157 @@
 {
-  "queryType": "SELECT",
-  "variables": [
+  "context": [
     {
-      "termType": "Variable",
-      "value": "X"
-    }
-  ],
-  "where": [
-    {
-      "type": "bgp",
-      "triples": [
-        {
-          "subject": {
-            "termType": "NamedNode",
-            "value": "http://example.org/A0"
-          },
-          "predicate": {
-            "type": "path",
-            "pathType": "*",
-            "items": [
-              {
-                "type": "path",
-                "pathType": "*",
-                "items": [
-                  {
-                    "termType": "NamedNode",
-                    "value": "http://example.org/P"
-                  }
-                ]
-              }
-            ]
-          },
-          "object": {
-            "termType": "Variable",
-            "value": "X"
-          }
+      "type": "contextDef",
+      "subType": "prefix",
+      "key": "",
+      "value": {
+        "type": "term",
+        "subType": "namedNode",
+        "value": "http://example.org/",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 9,
+          "end": 30
         }
-      ]
-    }
-  ],
-  "order": [
-    {
-      "expression": {
-        "termType": "Variable",
-        "value": "X"
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 30
       }
     }
   ],
-  "type": "query",
-  "prefixes": {
-    "": "http://example.org/"
-  }
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "A0",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 49,
+                "end": 52
+              },
+              "prefix": ""
+            },
+            "predicate": {
+              "type": "path",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 55,
+                "end": 61
+              },
+              "items": [
+                {
+                  "type": "path",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 55,
+                    "end": 59
+                  },
+                  "items": [
+                    {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "P",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 55,
+                        "end": 57
+                      },
+                      "prefix": ""
+                    }
+                  ],
+                  "subType": "*"
+                }
+              ],
+              "subType": "*"
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "X",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 62,
+                "end": 64
+              }
+            },
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 49,
+              "end": 64
+            }
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 49,
+          "end": 64
+        }
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 47,
+      "end": 66
+    }
+  },
+  "solutionModifiers": {
+    "order": {
+      "type": "solutionModifier",
+      "subType": "order",
+      "orderDefs": [
+        {
+          "type": "term",
+          "subType": "variable",
+          "value": "X",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 76,
+            "end": 78
+          }
+        }
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 67,
+        "end": 78
+      }
+    }
+  },
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "term",
+      "subType": "variable",
+      "value": "X",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 38,
+        "end": 40
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 78
+  },
+  "type": "query"
 }

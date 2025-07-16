@@ -2,42 +2,140 @@
   "type": "update",
   "updates": [
     {
-      "updateType": "insert",
-      "insert": [
+      "context": [
         {
-          "type": "graph",
-          "triples": [
-            {
-              "subject": {
-                "termType": "NamedNode",
-                "value": "http://example/book1"
-              },
-              "predicate": {
-                "termType": "NamedNode",
-                "value": "http://example.org/ns#price"
-              },
-              "object": {
-                "termType": "Literal",
-                "value": "42",
-                "language": "",
-                "datatype": {
-                  "termType": "NamedNode",
-                  "value": "http://www.w3.org/2001/XMLSchema#integer"
-                },
-                "direction": ""
-              }
+          "type": "contextDef",
+          "subType": "prefix",
+          "key": "dc",
+          "value": {
+            "type": "term",
+            "subType": "namedNode",
+            "value": "http://purl.org/dc/elements/1.1/",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 11,
+              "end": 45
             }
-          ],
-          "name": {
-            "termType": "NamedNode",
-            "value": "http://example/bookStore"
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 0,
+            "end": 45
+          }
+        },
+        {
+          "type": "contextDef",
+          "subType": "prefix",
+          "key": "ns",
+          "value": {
+            "type": "term",
+            "subType": "namedNode",
+            "value": "http://example.org/ns#",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 57,
+              "end": 81
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 46,
+            "end": 81
           }
         }
-      ]
+      ],
+      "operation": {
+        "type": "updateOperation",
+        "subType": "insertdata",
+        "data": [
+          {
+            "type": "graph",
+            "graph": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "http://example/bookStore",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 102,
+                "end": 128
+              }
+            },
+            "triples": {
+              "type": "pattern",
+              "subType": "bgp",
+              "triples": [
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "http://example/book1",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 131,
+                      "end": 153
+                    }
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "price",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 155,
+                      "end": 163
+                    },
+                    "prefix": "ns"
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "literal",
+                    "value": "42",
+                    "langOrIri": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "http://www.w3.org/2001/XMLSchema#integer",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      }
+                    },
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 165,
+                      "end": 167
+                    }
+                  },
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 131,
+                    "end": 167
+                  }
+                }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 131,
+                "end": 167
+              }
+            },
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 96,
+              "end": 169
+            }
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 82,
+          "end": 171
+        }
+      }
     }
   ],
-  "prefixes": {
-    "dc": "http://purl.org/dc/elements/1.1/",
-    "ns": "http://example.org/ns#"
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 171
   }
 }

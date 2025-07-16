@@ -1,93 +1,273 @@
 {
-  "queryType": "SELECT",
-  "variables": [
+  "context": [
     {
-      "termType": "Variable",
-      "value": "O12"
-    },
-    {
-      "expression": {
-        "expression": {
-          "termType": "Variable",
-          "value": "O1"
-        },
-        "type": "aggregate",
-        "aggregation": "count",
-        "distinct": false
+      "type": "contextDef",
+      "subType": "prefix",
+      "key": "",
+      "value": {
+        "type": "term",
+        "subType": "namedNode",
+        "value": "http://www.example.org/",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 9,
+          "end": 34
+        }
       },
-      "variable": {
-        "termType": "Variable",
-        "value": "C"
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 34
       }
     }
   ],
-  "where": [
-    {
-      "type": "bgp",
-      "triples": [
-        {
-          "subject": {
-            "termType": "Variable",
-            "value": "S"
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "S",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 74,
+                "end": 76
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "p",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 77,
+                "end": 79
+              },
+              "prefix": ""
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "O1",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 80,
+                "end": 83
+              }
+            },
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 74,
+              "end": 83
+            }
           },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://www.example.org/p"
-          },
-          "object": {
-            "termType": "Variable",
-            "value": "O1"
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "S",
+              "loc": {
+                "sourceLocationType": "noMaterialize"
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "q",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 85,
+                "end": 87
+              },
+              "prefix": ""
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "O2",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 88,
+                "end": 91
+              }
+            },
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 85,
+              "end": 91
+            }
           }
-        },
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 74,
+          "end": 91
+        }
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 72,
+      "end": 93
+    }
+  },
+  "solutionModifiers": {
+    "group": {
+      "type": "solutionModifier",
+      "subType": "group",
+      "groupings": [
         {
-          "subject": {
-            "termType": "Variable",
-            "value": "S"
+          "variable": {
+            "type": "term",
+            "subType": "variable",
+            "value": "O12",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 119,
+              "end": 123
+            }
           },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://www.example.org/q"
+          "value": {
+            "type": "expression",
+            "subType": "operation",
+            "operator": "+",
+            "args": [
+              {
+                "type": "term",
+                "subType": "variable",
+                "value": "O1",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 105,
+                  "end": 108
+                }
+              },
+              {
+                "type": "term",
+                "subType": "variable",
+                "value": "O2",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 111,
+                  "end": 114
+                }
+              }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 104,
+              "end": 115
+            }
           },
-          "object": {
-            "termType": "Variable",
-            "value": "O2"
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 103,
+            "end": 124
           }
         }
-      ]
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 94,
+        "end": 124
+      }
+    },
+    "order": {
+      "type": "solutionModifier",
+      "subType": "order",
+      "orderDefs": [
+        {
+          "type": "term",
+          "subType": "variable",
+          "value": "O12",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 134,
+            "end": 138
+          }
+        }
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 125,
+        "end": 138
+      }
     }
-  ],
-  "group": [
+  },
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
     {
+      "type": "term",
+      "subType": "variable",
+      "value": "O12",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 42,
+        "end": 46
+      }
+    },
+    {
+      "type": "pattern",
+      "subType": "bind",
       "expression": {
-        "type": "operation",
-        "operator": "+",
-        "args": [
+        "type": "expression",
+        "subType": "aggregate",
+        "aggregation": "count",
+        "distinct": false,
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 48,
+          "end": 58
+        },
+        "expression": [
           {
-            "termType": "Variable",
-            "value": "O1"
-          },
-          {
-            "termType": "Variable",
-            "value": "O2"
+            "type": "term",
+            "subType": "variable",
+            "value": "O1",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 54,
+              "end": 57
+            }
           }
         ]
       },
       "variable": {
-        "termType": "Variable",
-        "value": "O12"
+        "type": "term",
+        "subType": "variable",
+        "value": "C",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 62,
+          "end": 64
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 47,
+        "end": 65
       }
     }
   ],
-  "order": [
-    {
-      "expression": {
-        "termType": "Variable",
-        "value": "O12"
-      }
-    }
-  ],
-  "type": "query",
-  "prefixes": {
-    "": "http://www.example.org/"
-  }
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 138
+  },
+  "type": "query"
 }

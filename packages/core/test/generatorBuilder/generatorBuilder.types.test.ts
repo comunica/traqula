@@ -1,22 +1,22 @@
 import { describe, it, expectTypeOf } from 'vitest';
-import type { GeneratorRule } from '../../lib';
+import type { GeneratorRule, Node } from '../../lib';
 import { GeneratorBuilder } from '../../lib';
 
 interface Context {
   world: 'hello';
 }
 
-const RuleA: GeneratorRule<Context, 'apple', 'apple'> = {
+const RuleA: GeneratorRule<Context, 'apple', { apple: 'apple' } & Node> = {
   name: 'apple',
-  gImpl: () => () => 'apple',
+  gImpl: () => () => {},
 };
-const RuleB: GeneratorRule<Context, 'banana', 'banana'> = {
+const RuleB: GeneratorRule<Context, 'banana', { banana: 'banana' } & Node> = {
   name: 'banana',
-  gImpl: () => () => 'banana',
+  gImpl: () => () => {},
 };
-const RuleC: GeneratorRule<Context, 'coconut', 'coconut'> = {
+const RuleC: GeneratorRule<Context, 'coconut', { coconut: 'coconut' } & Node> = {
   name: 'coconut',
-  gImpl: () => () => 'coconut',
+  gImpl: () => () => {},
 };
 
 describe('parserBuilder', () => {

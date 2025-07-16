@@ -1,22 +1,36 @@
-import type * as r from './TypeHelpersRTT';
-import type { ITOS } from './TypeHelpersRTT';
-import type { Wildcard } from './Wildcard';
+import type { Localized, Node } from '@traqula/core';
 
-export type GraphRefBase = {
+export type Sparql11Nodes =
+  | GraphRef
+  | UpdateOperation
+  | Update
+  | Query
+  | DatasetClauses
+  | TripleCollection
+  | TripleNesting
+  | Pattern
+  | SolutionModifier
+  | Expression
+  | Path
+  | ContextDefinition
+  | Wildcard
+  | Term;
+
+export type GraphRefBase = Node & {
   type: 'graphRef';
-  graphRefType: string;
+  subType: string;
 };
-export type GraphRefDefault = GraphRefBase & r.ReconstructRTT & {
-  graphRefType: 'default';
+export type GraphRefDefault = GraphRefBase & {
+  subType: 'default';
 };
-export type GraphRefNamed = GraphRefBase & r.ReconstructRTT & {
-  graphRefType: 'named';
+export type GraphRefNamed = GraphRefBase & {
+  subType: 'named';
 };
-export type GraphRefAll = GraphRefBase & r.ReconstructRTT & {
-  graphRefType: 'all';
+export type GraphRefAll = GraphRefBase & {
+  subType: 'all';
 };
-export type GraphRefSpecific = GraphRefBase & r.ReconstructRTT & {
-  graphRefType: 'specific';
+export type GraphRefSpecific = GraphRefBase & {
+  subType: 'specific';
   graph: TermIri;
 };
 export type GraphRef =
@@ -27,247 +41,215 @@ export type GraphRef =
 
 export type Quads = PatternBgp | GraphQuads;
 
-export type GraphQuads = r.ImageRTT & r.IgnoredRTT & {
+export type GraphQuads = Node & {
   type: 'graph';
   graph: TermIri | TermVariable;
-  triples: Triple[];
-  RTT: {
-    tripleBraces: [r.ITOS, r.ITOS];
-    ignored: r.ITOS[];
-  };
+  triples: PatternBgp;
 };
 
-export type UpdateOperationBase = { type: 'updateOperation'; operationType: string };
-export type UpdateOperationLoad = UpdateOperationBase & r.ImageRTT3 & r.IgnoredRTT2 & {
-  operationType: 'load';
+// https://www.w3.org/TR/sparql11-query/#rUpdate1
+export type UpdateOperationBase = Node & { type: 'updateOperation'; subType: string };
+export type UpdateOperationLoad = UpdateOperationBase & {
+  subType: 'load';
   silent: boolean;
   source: TermIri;
   destination?: GraphRefSpecific;
 };
-export type UpdateOperationClearDrop = UpdateOperationBase & r.ImageRTT2 & r.IgnoredRTT1 & {
-  operationType: 'clear' | 'drop';
+type UpdateOperationClearDropCreateBase = UpdateOperationBase & {
+  subType: 'clear' | 'drop' | 'create';
   silent: boolean;
   destination: GraphRef;
 };
-export type UpdateOperationCreate = Omit<UpdateOperationClearDrop, 'operationType' | 'destination'> & {
-  operationType: 'create';
+export type UpdateOperationClear = UpdateOperationClearDropCreateBase & { subType: 'clear' };
+export type UpdateOperationDrop = UpdateOperationClearDropCreateBase & { subType: 'drop' };
+export type UpdateOperationCreate = UpdateOperationClearDropCreateBase & {
+  subType: 'create';
   destination: GraphRefSpecific;
 };
-export type UpdateOperationAddMoveCopy = UpdateOperationBase & r.ImageRTT3 & r.IgnoredRTT2 & {
-  operationType: 'add' | 'move' | 'copy';
+type UpdateOperationAddMoveCopy = UpdateOperationBase & {
+  subType: 'add' | 'move' | 'copy';
   silent: boolean;
   source: GraphRefDefault | GraphRefSpecific;
   destination: GraphRefDefault | GraphRefSpecific;
 };
-export type UpdateOperationInsertDeleteDelWhere = UpdateOperationBase & r.ImageRTT2 & r.IgnoredRTT1 & {
-  operationType: 'insertdata' | 'deletedata' | 'deletewhere';
+export type UpdateOperationAdd = UpdateOperationAddMoveCopy & { subType: 'add' };
+export type UpdateOperationMove = UpdateOperationAddMoveCopy & { subType: 'move' };
+export type UpdateOperationCopy = UpdateOperationAddMoveCopy & { subType: 'copy' };
+type UpdateOperationInsertDeleteDelWhere = UpdateOperationBase & {
+  subType: 'insertdata' | 'deletedata' | 'deletewhere';
   data: Quads[];
-  RTT: {
-    dataBraces: [r.ITOS, r.ITOS];
-  };
 };
-/**
- * RTT order: WITH, DELETE, INSERT, USING, WHERE
- */
-export type UpdateOperationModify = UpdateOperationBase & r.ImageRTT4 & r.IgnoredRTT3 & {
-  operationType: 'modify';
+export type UpdateOperationInsertData = UpdateOperationInsertDeleteDelWhere & { subType: 'insertdata' };
+export type UpdateOperationDeleteData = UpdateOperationInsertDeleteDelWhere & { subType: 'deletedata' };
+export type UpdateOperationDeleteWhere = UpdateOperationInsertDeleteDelWhere & { subType: 'deletewhere' };
+export type UpdateOperationModify = UpdateOperationBase & {
+  subType: 'modify';
   graph: TermIri | undefined;
   insert: Quads[];
   delete: Quads[];
   from: DatasetClauses;
   where: Pattern[];
-  RTT: {
-    deleteBraces: [r.ITOS, r.ITOS] | [];
-    insertBraces: [r.ITOS, r.ITOS] | [];
-    patternBraces: BracketWrapper;
-  };
 };
 export type UpdateOperation =
   | UpdateOperationLoad
-  | UpdateOperationClearDrop
+  | UpdateOperationClear
+  | UpdateOperationDrop
   | UpdateOperationCreate
-  | UpdateOperationAddMoveCopy
-  | UpdateOperationInsertDeleteDelWhere
+  | UpdateOperationAdd
+  | UpdateOperationMove
+  | UpdateOperationCopy
+  | UpdateOperationInsertData
+  | UpdateOperationDeleteData
+  | UpdateOperationDeleteWhere
   | UpdateOperationModify;
 
-export type Update = {
+// https://www.w3.org/TR/sparql11-query/#rUpdate
+export type Update = Node & {
   type: 'update';
   updates: {
-    operation: UpdateOperation;
+    operation?: UpdateOperation;
     context: ContextDefinition[];
-    i0: r.ITOS;
   }[];
 };
 
-export type QueryBase = {
+// https://www.w3.org/TR/sparql11-query/#rQueryUnit
+export type QueryBase = Node & {
   type: 'query';
-  context?: ContextDefinition[];
-  values?: PatternValues;
+  subType: string;
 
-  queryType: string;
-  solutionModifiers?: SolutionModifiers;
-  datasets?: DatasetClauses;
-  where?: Pattern[];
-  RTT: {
-    where: [r.ITOS, string];
-    whereBraces: BracketWrapper;
-  };
+  context: ContextDefinition[];
+  values?: PatternValues;
+  solutionModifiers: SolutionModifiers;
+  datasets: DatasetClauses;
+  where?: PatternGroup;
 };
-export type QuerySelect = QueryBase & r.ImageRTT2 & r.IgnoredRTT2 & {
-  queryType: 'select';
+export type QuerySelect = QueryBase & {
+  subType: 'select';
   variables: (TermVariable | PatternBind)[] | [Wildcard];
   distinct?: true;
   reduced?: true;
+  where: PatternGroup;
 };
-export type QueryConstruct = QueryBase & r.ImageRTT & r.IgnoredRTT & {
-  queryType: 'construct';
-  template: Triple[];
-  RTT: {
-    templateIgnored: r.ITOS[];
-    templateBraces: [r.ITOS, r.ITOS];
-  };
+export type QueryConstruct = QueryBase & {
+  subType: 'construct';
+  template: PatternBgp;
+  where: PatternGroup;
 };
-export type QueryDescribe = QueryBase & r.ImageRTT & r.IgnoredRTT1 & {
-  queryType: 'describe';
+export type QueryDescribe = QueryBase & {
+  subType: 'describe';
   variables: (TermVariable | TermIri)[] | [Wildcard];
 };
-export type QueryAsk = QueryBase & r.ImageRTT & r.IgnoredRTT & {
-  queryType: 'ask';
+export type QueryAsk = QueryBase & {
+  subType: 'ask';
+  where: PatternGroup;
 };
-
 export type Query =
   | QuerySelect
   | QueryConstruct
   | QueryDescribe
   | QueryAsk;
 
-export type DatasetClauses = {
+export type SparqlQuery = Query | Update;
+
+// https://www.w3.org/TR/sparql11-query/#rDatasetClause
+export type DatasetClauses = Node & {
   type: 'datasetClauses';
-  default: TermIri[];
-  named: TermIri[];
-  RTT: {
-    namedIndexes: number[];
-    completion: r.CTOS[];
-  };
+  clauses: { clauseType: 'default' | 'named'; value: TermIri }[];
 };
 
+// https://www.w3.org/TR/sparql11-query/#rGraphNode
+export type TripleCollectionBase = Node & {
+  type: 'tripleCollection';
+  subType: string;
+  triples: TripleNesting[];
+  identifier: Term;
+};
 /**
- * ShareSubjectDef: ; or ,
- * sharePrefixDef: ,
- * i0 should be [] when false, false
+ * The subject of the triples does not have a string manifestation.
  */
-export type RTTTripleBase =
-  | { shareSubjectDef: false; sharePrefixDef: false }
-  | { shareSubjectDef: true; sharePrefixDef: true; i0: r.ITOS }
-  // Rather special approach here since the rule allows repetition of ;.
-  // As such, a triple ; sequences after, and only the first one will require a normal ITOS.
-  // CONTRACT: only first item in chain of ; has i0 !== [].
-  | { shareSubjectDef: true; sharePrefixDef: false; i0: r.ITOS; ignoredAfter: r.ITOS[] };
-export type RTTTriplePartStartCollection = r.Ignores1 & {
-  collectionSize: number;
+export type TripleCollectionList = TripleCollectionBase & {
+  subType: 'list';
+  identifier: TermBlank;
 };
-export type RTTTriplePartStartBlankNodeList = r.Ignores1 & {
-  blankNodeListSize: number;
+/**
+ * Bot subject and predicate of the triples do not have a string manifestation.
+ */
+export type TripleCollectionBlankNodeProperties = TripleCollectionBase & {
+  subType: 'blankNodeProperties';
+  identifier: TermBlank;
 };
-export type RTTTriplePart = RTTTriplePartStartCollection | RTTTriplePartStartBlankNodeList;
+export type TripleCollection =
+  | TripleCollectionList
+  | TripleCollectionBlankNodeProperties;
 
-export type Triple = {
-  subject: Term & { RTT?: { triplePart?: RTTTriplePart }};
+// https://www.w3.org/TR/sparql11-query/#rGraphNode
+export type GraphNode = Term | TripleCollection;
+
+// https://www.w3.org/TR/sparql11-query/#rTriplesBlock
+export type TripleNesting = Node & {
+  type: 'triple';
+  subject: GraphNode;
   predicate: TermIri | TermVariable | Path;
-  object: Term & { RTT?: { triplePart?: RTTTriplePart }};
-  RTT: RTTTripleBase;
+  object: GraphNode;
 };
 
-export type PatternBase = { type: 'pattern'; patternType: string };
-export type PatternFilter = r.ImageRTT & r.IgnoredRTT & PatternBase & {
-  patternType: 'filter';
+export type PatternBase = Node & { type: 'pattern'; subType: string };
+export type PatternFilter = PatternBase & {
+  subType: 'filter';
   expression: Expression;
 };
-export type PatternMinus = r.ImageRTT & r.IgnoredRTT2 & PatternBase & {
-  patternType: 'minus';
+export type PatternMinus = PatternBase & {
+  subType: 'minus';
   patterns: Pattern[];
 };
 
-/**
- * Tracks the dot for this empty group - dot after braces
- */
-export type EmptyGroup = { braces: [r.ITOS, r.ITOS]; patterns: EmptyGroup[]; dotIgnore: ITOS | undefined };
-export type PatternGroup = r.IgnoredRTT1 & PatternBase & {
-  patternType: 'group';
-  patterns: Pattern[];
-  RTT: {
-    /**
-     * You can put a dot after persisting
-     */
-    dotTracker: Record<number, ITOS>;
-    emptyGroups: Record<number, EmptyGroup[]>;
-  };
-};
-export type PatternOptional = r.IgnoredRTT & r.ImageRTT & PatternBase & {
-  patternType: 'optional';
+export type PatternGroup = PatternBase & {
+  subType: 'group';
   patterns: Pattern[];
 };
-export type PatternGraph = r.IgnoredRTT & r.ImageRTT & PatternBase & {
-  patternType: 'graph';
+export type PatternOptional = PatternBase & {
+  subType: 'optional';
+  patterns: Pattern[];
+};
+export type PatternGraph = PatternBase & {
+  subType: 'graph';
   name: TermIri | TermVariable;
   patterns: Pattern[];
 };
 export type PatternUnion = PatternBase & {
-  patternType: 'union';
-  patterns: Pattern[];
-  RTT: {
-    images: string[];
-    ignores: r.ITOS[];
-  };
+  subType: 'union';
+  patterns: PatternGroup[];
 };
+export type BasicGraphPattern = (TripleNesting | TripleCollection)[];
 export type PatternBgp = PatternBase & {
-  patternType: 'bgp';
-  triples: Triple[];
-  RTT: {
-    ignored: r.ITOS[];
-  };
+  subType: 'bgp';
+  /**
+   * Only the first appearance of a subject and predicate have a string manifestation
+   */
+  triples: BasicGraphPattern;
 };
-export type PatternBind = r.IgnoredRTT3 & r.ImageRTT2 & PatternBase & {
-  patternType: 'bind';
+export type PatternBind = PatternBase & {
+  subType: 'bind';
   expression: Expression;
   variable: TermVariable;
 };
-export type PatternService = r.IgnoredRTT3 & r.ImageRTT2 & PatternBase & {
-  patternType: 'service';
+export type PatternService = PatternBase & {
+  subType: 'service';
   name: TermIri | TermVariable;
   silent: boolean;
   patterns: Pattern[];
 };
+/**
+ * A single list of assignments maps the variable identifier to the value
+ */
 export type ValuePatternRow = Record<string, TermIri | TermBlank | TermLiteral | undefined>;
-export type PatternValues = r.IgnoredRTT & r.ImageRTT & PatternBase & {
-  patternType: 'values';
+export type PatternValues = PatternBase & {
+  subType: 'values';
   values: ValuePatternRow[];
-  RTT: {
-    varBrackets: [r.ITOS, r.ITOS] | [];
-    vars: TermVariable[];
-    valueBrackets: [r.ITOS, r.ITOS];
-    valueInnerBrackets: [r.ITOS, r.ITOS][];
-    undefRtt: [number, string, r.ITOS][];
-  };
 };
-export type SubSelect = Omit<QuerySelect, 'context' | 'datasets'>;
-// Curlies are pushed up instead of down because the syntax `{ { } { } }` is valid, but does not resolve in a pattern
-// postEmpty is always [] except for the last pattern in a group
-export type Pattern = { RTT: {
-  // One object is one deconstructed group
-  unGroupedInfo?: {
-    // First item is one closest to the pattern
-    containedIn: {
-      preBrace: r.ITOS;
-      postBrace: r.ITOS;
-      // Dot after braces
-      dot: r.ITOS | undefined;
-      preEmpty: EmptyGroup[];
-      postEmpty: EmptyGroup[];
-    }[];
-    patternDot: r.ITOS | undefined;
-  };
-}; } & (
+export type SubSelect = QuerySelect;
+
+export type Pattern =
   | PatternBgp
   | PatternGroup
   | PatternUnion
@@ -278,8 +260,7 @@ export type Pattern = { RTT: {
   | PatternFilter
   | PatternBind
   | PatternValues
-  | SubSelect
-);
+  | SubSelect;
 
 export type SolutionModifiers = {
   group?: SolutionModifierGroup;
@@ -287,47 +268,50 @@ export type SolutionModifiers = {
   order?: SolutionModifierOrder;
   limitOffset?: SolutionModifierLimitOffset;
 };
-export type SolutionModifierBase = { type: 'solutionModifier'; modifierType: string };
-export type SolutionModifierGroupBind = r.IgnoredRTT2 & r.ImageRTT & {
+export type SolutionModifierBase = Node & { type: 'solutionModifier'; subType: string };
+export type SolutionModifierGroupBind = Localized & {
   variable: TermVariable;
   value: Expression;
 };
-export type SolutionModifierGroup = r.IgnoredRTT1 & r.ImageRTT2 & SolutionModifierBase & {
-  modifierType: 'group';
+export type SolutionModifierGroup = SolutionModifierBase & {
+  subType: 'group';
   groupings: (Expression | SolutionModifierGroupBind)[];
 };
-export type SolutionModifierHaving = r.IgnoredRTT & r.ImageRTT & SolutionModifierBase & {
-  modifierType: 'having';
+export type SolutionModifierHaving = SolutionModifierBase & {
+  subType: 'having';
   having: Expression[];
 };
 export type Ordering =
   | Expression
-  | (r.ImageRTT & r.IgnoredRTT & { descending: boolean; expression: Expression });
-export type SolutionModifierOrder = r.IgnoredRTT1 & r.ImageRTT2 & SolutionModifierBase & {
-  modifierType: 'order';
+  | (Localized & { descending: boolean; expression: Expression });
+export type SolutionModifierOrder = SolutionModifierBase & {
+  subType: 'order';
   orderDefs: Ordering[];
 };
-export type SolutionModifierLimitOffset = r.ImageRTT2 & r.IgnoredRTT3 & SolutionModifierBase
-  & { modifierType: 'limitOffset' }
-  & ({ limit: number; offset: number | undefined } | { limit: number | undefined; offset: number });
+export type SolutionModifierLimitOffset = SolutionModifierBase
+  & { subType: 'limitOffset'; limit: number | undefined; offset: number | undefined };
 
-export type ExpressionBase = { type: 'expression' };
-/**
- * RTT.img2 image and RTT.i2 can be ignored if not distinct.
- */
-type ExpressionAggregateBase = ExpressionBase & r.ImageRTT2 & r.IgnoredRTT3 & {
-  expressionType: 'aggregate';
+export type SolutionModifier =
+  | SolutionModifierGroup
+  | SolutionModifierHaving
+  | SolutionModifierOrder
+  | SolutionModifierLimitOffset;
+
+export type ExpressionBase = Node & { type: 'expression'; subType: string };
+
+type ExpressionAggregateBase = ExpressionBase & {
+  subType: 'aggregate';
   distinct: boolean;
 };
 export type ExpressionAggregateDefault = ExpressionAggregateBase & {
   expression: [Expression];
   aggregation: string;
 };
-export type ExpressionAggregateOnWildcard = ExpressionAggregateBase & r.IgnoredRTT4 & {
+export type ExpressionAggregateOnWildcard = ExpressionAggregateBase & {
   expression: [Wildcard];
   aggregation: string;
 };
-export type ExpressionAggregateSeparator = ExpressionAggregateBase & r.ImageRTT4 & r.IgnoredRTT7 & {
+export type ExpressionAggregateSeparator = ExpressionAggregateBase & {
   expression: [Expression];
   aggregation: string;
   separator: string;
@@ -337,137 +321,108 @@ export type ExpressionAggregate =
   | ExpressionAggregateOnWildcard
   | ExpressionAggregateSeparator;
 
-export type ExpressionOperation = ExpressionBase & r.ImageRTT & {
-  expressionType: 'operation';
+export type ExpressionOperation = ExpressionBase & {
+  subType: 'operation';
   operator: string;
   args: Expression[];
-  RTT: {
-    /**
-     * For builtInCall Having length = min(3, args.length +1) - ...Name...(xxx...)
-     */
-    ignored: r.ITOS[];
-  };
 };
 
-export type ExpressionPatternOperation = ExpressionBase & r.ImageRTT & r.IgnoredRTT & {
-  expressionType: 'patternOperation';
+export type ExpressionPatternOperation = ExpressionBase & {
+  subType: 'patternOperation';
   operator: string;
   // Can be a pattern in case of exists and not exists
-  args: Pattern[];
+  args: PatternGroup;
 };
 
-export type ExpressionFunctionCall = ExpressionBase & r.ImageRTT & {
-  expressionType: 'functionCall';
+export type ExpressionFunctionCall = ExpressionBase & {
+  subType: 'functionCall';
   function: TermIri;
   distinct: boolean;
   args: Expression[];
-  RTT: {
-    ignored: r.ITOS[];
-  };
 };
 
-export type Expression = BrackettedRTT & (
+export type Expression =
   | ExpressionOperation
   | ExpressionPatternOperation
   | ExpressionFunctionCall
   | ExpressionAggregate
   | TermIri
   | TermVariable
-  | TermLiteral);
+  | TermLiteral;
 
-/**
- * Each tuple handles a single bracket recursion
- */
-export type BracketWrapper = { idx: number; braceSpaces: [r.ITOS, r.ITOS][] }[];
-export type BrackettedRTT = { RTT: { preBracket?: [r.ITOS, r.ITOS][] }};
-export type CurliedRTT = { RTT: { preCurls?: BracketWrapper }};
-
-type PropertyPathBase = { type: 'path' };
+export type PropertyPathBase = Node & { type: 'path'; subType: string };
 export type PropertyPathChain = PropertyPathBase & {
-  pathType: '|' | '/';
+  subType: '|' | '/';
   items: [Path, ...Path[]];
-  RTT: {
-    preSepIgnores: [r.ITOS, ...r.ITOS[]];
-  };
 };
 
-export type PathModified = r.IgnoredRTT & PropertyPathBase & {
-  pathType: '?' | '*' | '+' | '^';
+export type PathModified = PropertyPathBase & {
+  subType: '?' | '*' | '+' | '^';
   items: [Path];
 };
 
-export type PathNegatedElt = r.IgnoredRTT & PropertyPathBase & {
-  pathType: '^';
+export type PathNegatedElt = PropertyPathBase & {
+  subType: '^';
   items: [TermIri];
 };
 
 export type PathAlternativeLimited = PropertyPathBase & {
-  pathType: '|';
+  subType: '|';
   items: [TermIri | PathNegatedElt, ...(TermIri | PathNegatedElt)[]];
-  RTT: {
-    preSepIgnores: [r.ITOS, ...r.ITOS[]];
-  };
 };
 
-type PathNegatedNoRTT<T> = PropertyPathBase & {
-  pathType: '!';
-  items: [T];
+export type PathNegated = PropertyPathBase & {
+  subType: '!';
+  items: [TermIri | PathNegatedElt | PathAlternativeLimited];
 };
-// Bracketted or non-bracketted
-export type PathNegated =
-  | r.IgnoredRTT & PathNegatedNoRTT<TermIri | PathNegatedElt>
-  | r.IgnoredRTT2 & PathNegatedNoRTT<TermIri | PathNegatedElt | PathAlternativeLimited>;
 
 // [[88]](https://www.w3.org/TR/sparql11-query/#rPath)
-export type Path = BrackettedRTT & (
+export type Path =
   | TermIri
   | PropertyPathChain
   | PathModified
-  | PathNegated);
+  | PathNegated;
 
-type ContextDefinitionBase = { type: 'contextDef' };
-export type ContextDefinitionPrefixDecl = r.IgnoredRTT2 & r.ImageRTT & ContextDefinitionBase & {
-  contextType: 'prefix';
+export type ContextDefinitionBase_ = Node & { type: 'contextDef'; subType: string };
+export type ContextDefinitionPrefix = ContextDefinitionBase_ & {
+  subType: 'prefix';
   key: string;
   value: TermIriFull;
 };
-export type ContextDefinitionBaseDecl = r.IgnoredRTT & r.ImageRTT & ContextDefinitionBase & {
-  contextType: 'base';
+export type ContextDefinitionBase = ContextDefinitionBase_ & {
+  subType: 'base';
   value: TermIriFull;
 };
-export type ContextDefinition = ContextDefinitionPrefixDecl | ContextDefinitionBaseDecl;
+export type ContextDefinition = ContextDefinitionPrefix | ContextDefinitionBase;
 
-type TermBase = { type: 'term' };
-type TermLiteralBase = TermBase & {
-  termType: 'Literal';
-  value: string;
-};
-export type TermLiteralStr = r.ReconstructRTT & TermLiteralBase & { langOrIri: undefined };
-export type TermLiteralLangStr = r.IgnoredRTT1 & r.ImageRTT & TermLiteralBase & { langOrIri: string };
-export type TermLiteralTyped = r.IgnoredRTT1 & r.ImageRTT & TermLiteralBase & { langOrIri: TermIri };
-export type TermLiteralPrimitive = r.ReconstructRTT & TermLiteralBase & { langOrIri: TermIri };
-export type TermLiteral = TermLiteralStr | TermLiteralLangStr | TermLiteralTyped | TermLiteralPrimitive;
-
-export type TermVariable = r.ReconstructRTT & TermBase & {
-  termType: 'Variable';
-  value: string;
+export type Wildcard = Node & {
+  type: 'wildcard';
 };
 
-type TermIriBase = TermBase & { termType: 'NamedNode' };
-export type TermIriFull = r.IgnoredRTT & TermIriBase & { value: string };
-export type TermIriPrimitive = r.ReconstructRTT & TermIriBase & { value: string };
-export type TermIriPrefixed = r.IgnoredRTT & TermIriBase & {
+export type TermBase = Node & { type: 'term'; subType: string };
+export type TermLiteralBase = TermBase & {
+  subType: 'literal';
+  value: string;
+};
+export type TermLiteralStr = TermLiteralBase & { langOrIri: undefined };
+export type TermLiteralLangStr = TermLiteralBase & { langOrIri: string };
+export type TermLiteralTyped = TermLiteralBase & { langOrIri: TermIri };
+export type TermLiteral = TermLiteralStr | TermLiteralLangStr | TermLiteralTyped;
+
+export type TermVariable = TermBase & {
+  subType: 'variable';
+  value: string;
+};
+
+export type TermIriBase = TermBase & { subType: 'namedNode' };
+export type TermIriFull = TermIriBase & { value: string };
+export type TermIriPrefixed = TermIriBase & {
   value: string;
   prefix: string;
 };
-export type TermIri = TermIriFull | TermIriPrefixed | TermIriPrimitive;
+export type TermIri = TermIriFull | TermIriPrefixed;
 
-type TermBlankBase = TermBase & { termType: 'BlankNode' };
-export type TermBlankLabeled = r.IgnoredRTT & TermBlankBase & { label: string };
-export type TermBlankAnon = r.IgnoredRTT & r.ImageRTT & TermBlankBase & { label: undefined };
-export type TermBlankImplicit = TermBlankBase & { count: number };
-export type TermBlankExplicit = TermBlankLabeled | TermBlankAnon;
-export type TermBlank = TermBlankExplicit | TermBlankImplicit;
+export type TermBlank = TermBase & { subType: 'blankNode' } & { label: string };
 
 export type GraphTerm = TermIri | TermBlank | TermLiteral;
 export type Term = GraphTerm | TermVariable;

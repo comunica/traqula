@@ -14,13 +14,13 @@ const rules = <const> [
   gram.valuesClause,
   gram.baseDecl,
   gram.prefixDecl,
-  gram.datasetClauses,
 ];
 
 export const queryUnitParserBuilder = Builder.createBuilder(rules)
   // Select Query
   .merge(subSelectParserBuilder, <const> [])
   .addRule(gram.datasetClause)
+  .addRule(gram.datasetClauseStar)
   .addRule(gram.defaultGraphClause)
   .addRule(gram.namedGraphClause)
   .addRule(gram.sourceSelector)

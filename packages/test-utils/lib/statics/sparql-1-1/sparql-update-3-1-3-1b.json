@@ -2,77 +2,199 @@
   "type": "update",
   "updates": [
     {
-      "updateType": "insertdelete",
-      "graph": {
-        "termType": "NamedNode",
-        "value": "http://example/addresses"
-      },
-      "delete": [
+      "context": [
         {
-          "type": "bgp",
-          "triples": [
-            {
-              "subject": {
-                "termType": "Variable",
-                "value": "person"
-              },
-              "predicate": {
-                "termType": "Variable",
-                "value": "property"
-              },
-              "object": {
-                "termType": "Variable",
-                "value": "value"
-              }
+          "type": "contextDef",
+          "subType": "prefix",
+          "key": "foaf",
+          "value": {
+            "type": "term",
+            "subType": "namedNode",
+            "value": "http://xmlns.com/foaf/0.1/",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 14,
+              "end": 42
             }
-          ]
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 0,
+            "end": 42
+          }
         }
       ],
-      "insert": [],
-      "where": [
-        {
-          "type": "bgp",
-          "triples": [
-            {
-              "subject": {
-                "termType": "Variable",
-                "value": "person"
-              },
-              "predicate": {
-                "termType": "Variable",
-                "value": "property"
-              },
-              "object": {
-                "termType": "Variable",
-                "value": "value"
-              }
-            },
-            {
-              "subject": {
-                "termType": "Variable",
-                "value": "person"
-              },
-              "predicate": {
-                "termType": "NamedNode",
-                "value": "http://xmlns.com/foaf/0.1/givenName"
-              },
-              "object": {
-                "termType": "Literal",
-                "value": "Fred",
-                "language": "",
-                "datatype": {
-                  "termType": "NamedNode",
-                  "value": "http://www.w3.org/2001/XMLSchema#string"
+      "operation": {
+        "type": "updateOperation",
+        "subType": "modify",
+        "insert": [],
+        "delete": [
+          {
+            "type": "pattern",
+            "subType": "bgp",
+            "triples": [
+              {
+                "type": "triple",
+                "subject": {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "person",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 85,
+                    "end": 92
+                  }
                 },
-                "direction": ""
+                "predicate": {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "property",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 93,
+                    "end": 102
+                  }
+                },
+                "object": {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "value",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 103,
+                    "end": 109
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 85,
+                  "end": 109
+                }
               }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 85,
+              "end": 109
             }
-          ]
+          }
+        ],
+        "graph": {
+          "type": "term",
+          "subType": "namedNode",
+          "value": "http://example/addresses",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 49,
+            "end": 75
+          }
+        },
+        "where": [
+          {
+            "type": "pattern",
+            "subType": "bgp",
+            "triples": [
+              {
+                "type": "triple",
+                "subject": {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "person",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 121,
+                    "end": 128
+                  }
+                },
+                "predicate": {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "property",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 129,
+                    "end": 138
+                  }
+                },
+                "object": {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "value",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 139,
+                    "end": 145
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 121,
+                  "end": 145
+                }
+              },
+              {
+                "type": "triple",
+                "subject": {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "person",
+                  "loc": {
+                    "sourceLocationType": "noMaterialize"
+                  }
+                },
+                "predicate": {
+                  "type": "term",
+                  "subType": "namedNode",
+                  "value": "givenName",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 148,
+                    "end": 162
+                  },
+                  "prefix": "foaf"
+                },
+                "object": {
+                  "type": "term",
+                  "subType": "literal",
+                  "value": "Fred",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 163,
+                    "end": 169
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 148,
+                  "end": 169
+                }
+              }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 121,
+              "end": 169
+            }
+          }
+        ],
+        "from": {
+          "type": "datasetClauses",
+          "clauses": [],
+          "loc": {
+            "sourceLocationType": "noMaterialize"
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 44,
+          "end": 171
         }
-      ]
+      }
     }
   ],
-  "prefixes": {
-    "foaf": "http://xmlns.com/foaf/0.1/"
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 171
   }
 }

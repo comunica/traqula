@@ -23,13 +23,11 @@ import type {
   ExpressionAggregateDefault,
   ExpressionAggregateOnWildcard,
   ExpressionAggregateSeparator,
+  Wildcard,
 } from '../RoundTripTypes';
 import type { SparqlGrammarRule, SparqlRule } from '../Sparql11types';
-import type { ITOS } from '../TypeHelpersRTT';
-import { Wildcard } from '../Wildcard';
 import { expression } from './expression';
-import { blank, genB } from './general';
-import { string } from './literals';
+import { string, stringEscapedLexical } from './literals';
 
 export const builtInStr = funcExpr1(l.builtIn.str);
 export const builtInLang = funcExpr1(l.builtIn.lang);
@@ -185,37 +183,39 @@ export const notExistsFunc = funcGroupGraphPattern(l.builtIn.notexists);
 export const aggregateCount:
 SparqlGrammarRule<'builtInCount', ExpressionAggregateOnWildcard | ExpressionAggregateDefault> = {
   name: unCapitalize(l.builtIn.count.name),
-  impl: ({ ACTION, CONSUME, SUBRULE, OR, OPTION, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4, SUBRULE5 }) => (C) => {
-    const i0 = SUBRULE1(blank, undefined);
-    const img1 = CONSUME(l.builtIn.count).image;
-    const i1 = SUBRULE2(blank, undefined);
+  impl: ({ ACTION, CONSUME, SUBRULE, OR, OPTION }) => (C) => {
+    const operatorToken = CONSUME(l.builtIn.count);
     CONSUME(l.symbols.LParen);
-    let i2: ITOS | undefined;
-    let img2: string | undefined;
-    OPTION(() => {
-      i2 = SUBRULE3(blank, undefined);
-      img2 = CONSUME(l.distinct).image;
-    });
+    const distinctToken = OPTION(() => CONSUME(l.distinct));
 
-    const expressionVal = OR<[Expression] | [ITOS, Wildcard]>([
-      {
-        ALT: () => {
-          const i3 = SUBRULE4(blank, undefined);
-          CONSUME(l.symbols.star);
-          return [ i3, new Wildcard() ];
-        },
-      },
-      { ALT: () => [ SUBRULE(expression, undefined) ]},
+    const expressionVal = OR<Expression | Wildcard>([
+      { ALT: () => {
+        const starToken = CONSUME(l.symbols.star);
+        return ACTION(() => C.factory.wildcard(C.factory.sourceLocation(starToken)));
+      } },
+      { ALT: () => SUBRULE(expression, undefined) },
     ]);
-    const i4 = SUBRULE5(blank, undefined);
-    CONSUME(l.symbols.RParen);
+    const closeToken = CONSUME(l.symbols.RParen);
 
-    if (expressionVal[1] === undefined) {
-      const expr = <Expression>expressionVal[0];
-      return ACTION(() => C.factory.aggregate(i0, i1, i2, i4, img1, img2, expr));
-    }
-    return ACTION(() =>
-      C.factory.aggregate(i0, i1, i2, <ITOS>expressionVal[0], i4, img1, img2, expressionVal[1]!));
+    return ACTION(() => {
+      const F = C.factory;
+      if (C.factory.isWildcard(expressionVal)) {
+        return F.aggregate(
+          operatorToken.image,
+          Boolean(distinctToken),
+          expressionVal,
+          undefined,
+          C.factory.sourceLocation(operatorToken, closeToken),
+        );
+      }
+      return F.aggregate(
+        operatorToken.image,
+        Boolean(distinctToken),
+        expressionVal,
+        undefined,
+        C.factory.sourceLocation(operatorToken, closeToken),
+      );
+    });
   },
 };
 export const aggregateSum = baseAggregateFunc(l.builtIn.sum);
@@ -226,50 +226,39 @@ export const aggregateSample = baseAggregateFunc(l.builtIn.sample);
 export const aggregateGroup_concat:
 SparqlGrammarRule<'builtInGroup_concat', ExpressionAggregateDefault | ExpressionAggregateSeparator> = <const>{
   name: unCapitalize(l.builtIn.groupConcat.name),
-  impl: ({ ACTION, CONSUME, OPTION1, SUBRULE, SUBRULE1, SUBRULE2, SUBRULE3, SUBRULE4, SUBRULE5, SUBRULE6, OPTION2 }) =>
+  impl: ({ ACTION, CONSUME, OPTION1, SUBRULE, OPTION2 }) =>
     (C) => {
-      const i0 = SUBRULE1(blank, undefined);
-      const img1 = CONSUME(l.builtIn.groupConcat).image;
-      const i1 = SUBRULE2(blank, undefined);
+      const operatorToken = CONSUME(l.builtIn.groupConcat);
       CONSUME(l.symbols.LParen);
-      let i2: ITOS | undefined;
-      let img2: string | undefined;
-      OPTION1(() => {
-        i2 = SUBRULE3(blank, undefined);
-        img2 = CONSUME(l.distinct).image;
-      });
+      const distinctToken = OPTION1(() => CONSUME(l.distinct));
+
       const expr = SUBRULE(expression, undefined);
       const sep = OPTION2(() => {
-        const i3 = SUBRULE4(blank, undefined);
         CONSUME(l.symbols.semi);
-        const i4 = SUBRULE5(blank, undefined);
-        const img3 = CONSUME(l.separator).image;
-        const i5 = SUBRULE6(blank, undefined);
+        CONSUME(l.separator);
         CONSUME(l.symbols.equal);
-        const { val: separator, img1: img4, i0: i6 } = SUBRULE(string, undefined);
-        return { separator, img3, img4, i3, i4, i5, i6 };
+        return SUBRULE(string, undefined);
       });
-      const i7 = SUBRULE(blank, undefined);
-      CONSUME(l.symbols.RParen);
+      const closeToken = CONSUME(l.symbols.RParen);
 
-      return ACTION(() => sep ?
-        C.factory.aggregate(
-          i0,
-          i1,
-          i2,
-          sep.i3,
-          sep.i4,
-          sep.i5,
-          sep.i6,
-          i7,
-          img1,
-          img2,
-          sep.img3,
-          sep.img4,
-          expr,
-          sep.separator,
-        ) :
-        C.factory.aggregate(i0, i1, i2, i7, img1, img2, expr));
+      return ACTION(() => {
+        const F = C.factory;
+        return sep ?
+          F.aggregate(
+            operatorToken.image,
+            Boolean(distinctToken),
+            expr,
+            sep.value,
+            F.sourceLocation(operatorToken, closeToken),
+          ) :
+          F.aggregate(
+            operatorToken.image,
+            Boolean(distinctToken),
+            expr,
+            undefined,
+            F.sourceLocation(operatorToken, closeToken),
+          );
+      });
     },
 };
 
@@ -305,43 +294,22 @@ export const aggregate: SparqlRule<'aggregate', ExpressionAggregate> = <const>{
 
     return result;
   },
-  gImpl: ({ SUBRULE: s }) => (ast, { factory: F }) => {
-    const builder = [
-      genB(s, ast.RTT.i0),
-      ast.RTT.img1,
-      genB(s, ast.RTT.i1),
-      '(',
-      genB(s, ast.RTT.i2),
-      ast.RTT.img2,
-    ];
-    if (F.isExpressionAggregateOnWildcard(ast)) {
-      builder.push(
-        genB(s, ast.RTT.i3),
-        '*',
-        genB(s, ast.RTT.i4),
-        ')',
-      );
-    } else if (F.isExpressionAggregateSeparator(ast)) {
-      builder.push(
-        ...ast.expression.map(expr => s(expression, expr, undefined)),
-        genB(s, ast.RTT.i3),
-        ';',
-        genB(s, ast.RTT.i4),
-        ast.RTT.img3,
-        genB(s, ast.RTT.i5),
-        '=',
-        genB(s, ast.RTT.i6),
-        ast.RTT.img4,
-        genB(s, ast.RTT.i7),
-        ')',
-      );
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+    F.printFilter(ast, () => {
+      PRINT_WORD(ast.aggregation, '(');
+      if (ast.distinct) {
+        PRINT_WORD('DISTINCT');
+      }
+    });
+    const arg = ast.expression[0];
+    if (F.isWildcard(arg)) {
+      F.printFilter(ast, () => PRINT_WORD('*'));
     } else {
-      builder.push(
-        ...ast.expression.map(expr => s(expression, expr, undefined)),
-        genB(s, ast.RTT.i3),
-        ')',
-      );
+      SUBRULE(expression, arg, undefined);
     }
-    return builder.join('');
+    if (F.isExpressionAggregateSeparator(ast)) {
+      F.printFilter(ast, () => PRINT_WORD(';', 'SEPARATOR', '=', stringEscapedLexical(ast.separator)));
+    }
+    F.printFilter(ast, () => PRINT_WORD(')'));
   },
 };

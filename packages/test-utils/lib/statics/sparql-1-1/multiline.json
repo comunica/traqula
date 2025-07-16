@@ -1,38 +1,91 @@
 {
-  "queryType": "SELECT",
+  "context": [],
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "p",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 22,
+                "end": 24
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "http://xmlns.com/foaf/0.1/name",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 25,
+                "end": 57
+              }
+            },
+            "object": {
+              "type": "term",
+              "subType": "literal",
+              "value": "York\ntest",
+              "langOrIri": "en",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 58,
+                "end": 73
+              }
+            },
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 22,
+              "end": 73
+            }
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 22,
+          "end": 74
+        }
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 16,
+      "end": 76
+    }
+  },
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
   "variables": [
     {
-      "termType": "Variable",
-      "value": "p"
+      "type": "term",
+      "subType": "variable",
+      "value": "p",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 7,
+        "end": 9
+      }
     }
   ],
-  "where": [
-    {
-      "type": "bgp",
-      "triples": [
-        {
-          "subject": {
-            "termType": "Variable",
-            "value": "p"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://xmlns.com/foaf/0.1/name"
-          },
-          "object": {
-            "termType": "Literal",
-            "value": "York\ntest",
-            "language": "en",
-            "datatype": {
-              "termType": "NamedNode",
-              "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
-            },
-            "direction": ""
-          }
-        }
-      ]
-    }
-  ],
-  "type": "query",
-  "prefixes": {}
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 76
+  },
+  "type": "query"
 }

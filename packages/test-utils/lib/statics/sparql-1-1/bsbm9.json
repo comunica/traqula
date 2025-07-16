@@ -1,34 +1,112 @@
 {
-  "queryType": "DESCRIBE",
+  "context": [
+    {
+      "type": "contextDef",
+      "subType": "prefix",
+      "key": "rev",
+      "value": {
+        "type": "term",
+        "subType": "namedNode",
+        "value": "http://purl.org/stuff/rev#",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 12,
+          "end": 40
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 40
+      }
+    }
+  ],
+  "subType": "describe",
   "variables": [
     {
-      "termType": "Variable",
-      "value": "x"
+      "type": "term",
+      "subType": "variable",
+      "value": "x",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 51,
+        "end": 53
+      }
     }
   ],
-  "where": [
-    {
-      "type": "bgp",
-      "triples": [
-        {
-          "subject": {
-            "termType": "NamedNode",
-            "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromRatingSite1/Review7958"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://purl.org/stuff/rev#reviewer"
-          },
-          "object": {
-            "termType": "Variable",
-            "value": "x"
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromRatingSite1/Review7958",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 62,
+                "end": 151
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "reviewer",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 152,
+                "end": 164
+              },
+              "prefix": "rev"
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "x",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 165,
+                "end": 167
+              }
+            },
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 62,
+              "end": 167
+            }
           }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 62,
+          "end": 167
         }
-      ]
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 60,
+      "end": 169
     }
-  ],
-  "type": "query",
-  "prefixes": {
-    "rev": "http://purl.org/stuff/rev#"
-  }
+  },
+  "solutionModifiers": {},
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 169
+  },
+  "type": "query"
 }

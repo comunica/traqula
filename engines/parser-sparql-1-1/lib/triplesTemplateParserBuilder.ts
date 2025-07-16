@@ -2,7 +2,6 @@ import { Builder } from '@traqula/core';
 import { gram } from '@traqula/rules-sparql-1-1';
 
 const rules = <const> [
-  gram.blank,
   gram.triplesTemplate,
   gram.triplesSameSubject,
   gram.varOrTerm,

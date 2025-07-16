@@ -1,38 +1,88 @@
 {
-  "queryType": "SELECT",
+  "context": [],
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "🎄🎉",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 21,
+                "end": 26
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "variable",
+              "value": "🎁🎀",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 27,
+                "end": 32
+              }
+            },
+            "object": {
+              "type": "term",
+              "subType": "literal",
+              "value": "𓅃 𓃽 𓆟",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 33,
+                "end": 43
+              }
+            },
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 21,
+              "end": 43
+            }
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 21,
+          "end": 43
+        }
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 15,
+      "end": 45
+    }
+  },
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
   "variables": [
     {
-      "termType": "Wildcard",
-      "value": "*"
+      "type": "wildcard",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 7,
+        "end": 8
+      }
     }
   ],
-  "where": [
-    {
-      "type": "bgp",
-      "triples": [
-        {
-          "subject": {
-            "termType": "Variable",
-            "value": "🎄🎉"
-          },
-          "predicate": {
-            "termType": "Variable",
-            "value": "🎁🎀"
-          },
-          "object": {
-            "termType": "Literal",
-            "value": "𓅃 𓃽 𓆟",
-            "language": "",
-            "datatype": {
-              "termType": "NamedNode",
-              "value": "http://www.w3.org/2001/XMLSchema#string"
-            },
-            "direction": ""
-          }
-        }
-      ]
-    }
-  ],
-  "type": "query",
-  "prefixes": {}
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 45
+  },
+  "type": "query"
 }

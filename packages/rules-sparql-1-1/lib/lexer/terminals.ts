@@ -1,5 +1,6 @@
 /* eslint-disable require-unicode-regexp,no-misleading-character-class,max-len,unicorn/better-regex,no-control-regex */
 import { LexerBuilder, createToken } from '@traqula/core';
+import { Lexer } from 'chevrotain';
 
 export const pnCharsBasePattern = /[A-Za-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD]|[\uD800-\uDB7F][\uDC00-\uDFFF]/;
 export const pnCharsUPattern = new RegExp(`${pnCharsBasePattern.source}|_`);
@@ -58,13 +59,10 @@ export const stringLiteral1 = createToken({ name: 'StringLiteral1', pattern: str
 export const stringLiteral2 = createToken({ name: 'StringLiteral2', pattern: stringLiteral2Pattern });
 export const stringLiteralLong1 = createToken({ name: 'StringLiteralLong1', pattern: stringLiteralLong1Pattern });
 export const stringLiteralLong2 = createToken({ name: 'StringLiteralLong2', pattern: stringLiteralLong2Pattern });
+export const ws = createToken({ name: 'Ws', pattern: wsPattern, group: Lexer.SKIPPED });
+export const comment = createToken({ name: 'Comment', pattern: /#[^\n]*/, group: Lexer.SKIPPED });
 export const nil = createToken({ name: 'Nil', pattern: nilPattern });
 export const anon = createToken({ name: 'Anon', pattern: anonPattern });
-/**
- * In order to keep the complexity of the parser down (maxLookahead),
- * we need to track whitespace and comments as a single token.
- */
-export const ignoredSpace = createToken({ name: 'IgnoredSpace', pattern: /(?:[\u0020\u0009\u000D\u000A]|#[^\n]*\n)+/ });
 
 export const allTerminals = LexerBuilder.create().add(
   iriRef,
@@ -87,7 +85,8 @@ export const allTerminals = LexerBuilder.create().add(
   stringLiteralLong2,
   stringLiteral1,
   stringLiteral2,
-  ignoredSpace,
+  ws,
+  comment,
   nil,
   anon,
 );

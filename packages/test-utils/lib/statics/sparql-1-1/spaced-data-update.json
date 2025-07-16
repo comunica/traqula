@@ -1,90 +1,202 @@
 {
-  "prefixes": {},
   "type": "update",
   "updates": [
     {
-      "insert": [
-        {
-          "triples": [
-            {
-              "object": {
-                "datatype": {
-                  "termType": "NamedNode",
-                  "value": "http://www.w3.org/2001/XMLSchema#string"
+      "context": [],
+      "operation": {
+        "type": "updateOperation",
+        "subType": "insertdata",
+        "data": [
+          {
+            "type": "pattern",
+            "subType": "bgp",
+            "triples": [
+              {
+                "type": "triple",
+                "subject": {
+                  "type": "term",
+                  "subType": "namedNode",
+                  "value": "http://example.org/subject",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 68,
+                    "end": 96
+                  }
                 },
-                "direction": "",
-                "language": "",
-                "termType": "Literal",
-                "value": "object"
-              },
-              "predicate": {
-                "termType": "NamedNode",
-                "value": "http://example.org/predicate"
-              },
-              "subject": {
-                "termType": "NamedNode",
-                "value": "http://example.org/subject"
+                "predicate": {
+                  "type": "term",
+                  "subType": "namedNode",
+                  "value": "http://example.org/predicate",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 97,
+                    "end": 127
+                  }
+                },
+                "object": {
+                  "type": "term",
+                  "subType": "literal",
+                  "value": "object",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 128,
+                    "end": 136
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 68,
+                  "end": 136
+                }
               }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 68,
+              "end": 138
             }
-          ],
-          "type": "bgp"
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 48,
+          "end": 140
         }
-      ],
-      "updateType": "insert"
+      }
     },
     {
-      "delete": [
-        {
-          "triples": [
-            {
-              "object": {
-                "datatype": {
-                  "termType": "NamedNode",
-                  "value": "http://www.w3.org/2001/XMLSchema#string"
+      "context": [],
+      "operation": {
+        "type": "updateOperation",
+        "subType": "deletedata",
+        "data": [
+          {
+            "type": "pattern",
+            "subType": "bgp",
+            "triples": [
+              {
+                "type": "triple",
+                "subject": {
+                  "type": "term",
+                  "subType": "namedNode",
+                  "value": "http://example.org/subject",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 158,
+                    "end": 186
+                  }
                 },
-                "direction": "",
-                "language": "",
-                "termType": "Literal",
-                "value": "object"
-              },
-              "predicate": {
-                "termType": "NamedNode",
-                "value": "http://example.org/predicate"
-              },
-              "subject": {
-                "termType": "NamedNode",
-                "value": "http://example.org/subject"
+                "predicate": {
+                  "type": "term",
+                  "subType": "namedNode",
+                  "value": "http://example.org/predicate",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 187,
+                    "end": 217
+                  }
+                },
+                "object": {
+                  "type": "term",
+                  "subType": "literal",
+                  "value": "object",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 218,
+                    "end": 226
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 158,
+                  "end": 226
+                }
               }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 158,
+              "end": 228
             }
-          ],
-          "type": "bgp"
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 142,
+          "end": 230
         }
-      ],
-      "updateType": "delete"
+      }
     },
     {
-      "delete": [
-        {
-          "triples": [
-            {
-              "object": {
-                "termType": "Variable",
-                "value": "o"
-              },
-              "predicate": {
-                "termType": "NamedNode",
-                "value": "http://example.org/predicate"
-              },
-              "subject": {
-                "termType": "NamedNode",
-                "value": "http://example.org/subject"
+      "context": [],
+      "operation": {
+        "type": "updateOperation",
+        "subType": "deletewhere",
+        "data": [
+          {
+            "type": "pattern",
+            "subType": "bgp",
+            "triples": [
+              {
+                "type": "triple",
+                "subject": {
+                  "type": "term",
+                  "subType": "namedNode",
+                  "value": "http://example.org/subject",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 249,
+                    "end": 277
+                  }
+                },
+                "predicate": {
+                  "type": "term",
+                  "subType": "namedNode",
+                  "value": "http://example.org/predicate",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 278,
+                    "end": 308
+                  }
+                },
+                "object": {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "o",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 309,
+                    "end": 311
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 249,
+                  "end": 311
+                }
               }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 249,
+              "end": 313
             }
-          ],
-          "type": "bgp"
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 232,
+          "end": 315
         }
-      ],
-      "updateType": "deletewhere"
+      }
+    },
+    {
+      "context": []
     }
-  ]
+  ],
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 48,
+    "end": 140
+  }
 }

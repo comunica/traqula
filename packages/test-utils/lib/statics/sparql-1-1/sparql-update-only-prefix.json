@@ -1,5 +1,34 @@
 {
-  "prefixes": {
-    "a": "urn:a"
+  "type": "update",
+  "updates": [
+    {
+      "context": [
+        {
+          "type": "contextDef",
+          "subType": "prefix",
+          "key": "a",
+          "value": {
+            "type": "term",
+            "subType": "namedNode",
+            "value": "urn:a",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 10,
+              "end": 17
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 0,
+            "end": 17
+          }
+        }
+      ]
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 17
   }
 }

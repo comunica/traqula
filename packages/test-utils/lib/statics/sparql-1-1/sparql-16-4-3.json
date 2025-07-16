@@ -1,40 +1,112 @@
 {
-  "queryType": "DESCRIBE",
+  "context": [
+    {
+      "type": "contextDef",
+      "subType": "prefix",
+      "key": "ent",
+      "value": {
+        "type": "term",
+        "subType": "namedNode",
+        "value": "http://org.example.com/employees#",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 13,
+          "end": 48
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 48
+      }
+    }
+  ],
+  "subType": "describe",
   "variables": [
     {
-      "termType": "Variable",
-      "value": "x"
+      "type": "term",
+      "subType": "variable",
+      "value": "x",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 58,
+        "end": 60
+      }
     }
   ],
-  "where": [
-    {
-      "type": "bgp",
-      "triples": [
-        {
-          "subject": {
-            "termType": "Variable",
-            "value": "x"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://org.example.com/employees#employeeId"
-          },
-          "object": {
-            "termType": "Literal",
-            "value": "1234",
-            "language": "",
-            "datatype": {
-              "termType": "NamedNode",
-              "value": "http://www.w3.org/2001/XMLSchema#string"
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "x",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 69,
+                "end": 71
+              }
             },
-            "direction": ""
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "employeeId",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 72,
+                "end": 86
+              },
+              "prefix": "ent"
+            },
+            "object": {
+              "type": "term",
+              "subType": "literal",
+              "value": "1234",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 87,
+                "end": 93
+              }
+            },
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 69,
+              "end": 93
+            }
           }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 69,
+          "end": 93
         }
-      ]
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 67,
+      "end": 95
     }
-  ],
-  "type": "query",
-  "prefixes": {
-    "ent": "http://org.example.com/employees#"
-  }
+  },
+  "solutionModifiers": {},
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 95
+  },
+  "type": "query"
 }

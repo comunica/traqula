@@ -27,5 +27,5 @@ export type GenRulesToObject<
 
 export type GeneratorFromRules<Context, Names extends string, RuleDefs extends GenRuleMap<Names>> = {
   [K in Names]: RuleDefs[K] extends GeneratorRule<Context, K, infer RET, infer ARGS> ?
-      (input: RET, context: Context, args: ARGS) => string : never
+      (input: RET, context: Context & { origSource: string; offset?: number }, args: ARGS) => string : never
 };

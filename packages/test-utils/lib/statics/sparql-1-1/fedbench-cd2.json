@@ -1,64 +1,176 @@
 {
-  "queryType": "SELECT",
+  "context": [],
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "http://dbpedia.org/resource/Barack_Obama",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 32,
+                "end": 74
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "http://dbpedia.org/ontology/party",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 75,
+                "end": 110
+              }
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "party",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 111,
+                "end": 117
+              }
+            },
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 32,
+              "end": 117
+            }
+          },
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "x",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 123,
+                "end": 125
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "http://data.nytimes.com/elements/topicPage",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 126,
+                "end": 170
+              }
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "page",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 171,
+                "end": 176
+              }
+            },
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 123,
+              "end": 176
+            }
+          },
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "x",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 182,
+                "end": 184
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "http://www.w3.org/2002/07/owl#sameAs",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 185,
+                "end": 223
+              }
+            },
+            "object": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "http://dbpedia.org/resource/Barack_Obama",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 224,
+                "end": 266
+              }
+            },
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 182,
+              "end": 266
+            }
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 32,
+          "end": 268
+        }
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 27,
+      "end": 270
+    }
+  },
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
   "variables": [
     {
-      "termType": "Variable",
-      "value": "party"
+      "type": "term",
+      "subType": "variable",
+      "value": "party",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 7,
+        "end": 13
+      }
     },
     {
-      "termType": "Variable",
-      "value": "page"
+      "type": "term",
+      "subType": "variable",
+      "value": "page",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 14,
+        "end": 19
+      }
     }
   ],
-  "where": [
-    {
-      "type": "bgp",
-      "triples": [
-        {
-          "subject": {
-            "termType": "NamedNode",
-            "value": "http://dbpedia.org/resource/Barack_Obama"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://dbpedia.org/ontology/party"
-          },
-          "object": {
-            "termType": "Variable",
-            "value": "party"
-          }
-        },
-        {
-          "subject": {
-            "termType": "Variable",
-            "value": "x"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://data.nytimes.com/elements/topicPage"
-          },
-          "object": {
-            "termType": "Variable",
-            "value": "page"
-          }
-        },
-        {
-          "subject": {
-            "termType": "Variable",
-            "value": "x"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://www.w3.org/2002/07/owl#sameAs"
-          },
-          "object": {
-            "termType": "NamedNode",
-            "value": "http://dbpedia.org/resource/Barack_Obama"
-          }
-        }
-      ]
-    }
-  ],
-  "type": "query",
-  "prefixes": {}
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 270
+  },
+  "type": "query"
 }

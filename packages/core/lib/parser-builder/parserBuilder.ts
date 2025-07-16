@@ -54,6 +54,10 @@ export class Builder<Context, Names extends string, RuleDefs extends ParseRuleMa
     this.rules = startRules;
   }
 
+  public widenContext<NewContext extends Context>(): Builder<NewContext, Names, RuleDefs> {
+    return <Builder<NewContext, Names, RuleDefs>> <unknown> this;
+  }
+
   /**
    * Change the implementation of an existing grammar rule.
    */
@@ -190,7 +194,7 @@ export class Builder<Context, Names extends string, RuleDefs extends ParseRuleMa
     lexerConfig?: ILexerConfig;
   }): ParserFromRules<Context, Names, RuleDefs> {
     const lexer: Lexer = new Lexer(tokenVocabulary, {
-      positionTracking: 'onlyStart',
+      positionTracking: 'full',
       recoveryEnabled: false,
       safeMode: true,
       // SkipValidations: true,
@@ -233,7 +237,7 @@ export class Builder<Context, Names extends string, RuleDefs extends ParseRuleMa
         parser.setContext(context);
         const result = parser[rule.name](context, arg);
         if (parser.errors.length > 0) {
-          console.log(lexResult.tokens);
+          // Console.log(lexResult.tokens);
           throw new Error(`Parse error on line ${parser.errors.map(x => x.token.startLine).join(', ')}
 ${parser.errors.map(x => `${x.token.startLine}: ${x.message}`).join('\n')}
 ${parser.errors.map(x => x.stack).join('\n')}`);

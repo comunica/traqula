@@ -2,13 +2,32 @@
   "type": "update",
   "updates": [
     {
-      "type": "load",
-      "silent": false,
-      "source": {
-        "termType": "NamedNode",
-        "value": "http://www.w3.org/TR/skos-reference/skos.rdf"
+      "context": [],
+      "operation": {
+        "type": "updateOperation",
+        "subType": "load",
+        "silent": false,
+        "source": {
+          "type": "term",
+          "subType": "namedNode",
+          "value": "http://www.w3.org/TR/skos-reference/skos.rdf",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 5,
+            "end": 51
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 0,
+          "end": 51
+        }
       }
     }
   ],
-  "prefixes": {}
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 51
+  }
 }

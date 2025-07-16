@@ -1,0 +1,1 @@
+PREFIX : <http://www.example.org/> SELECT ?O12 ( count( ?O1 ) AS ?C ) WHERE { ?S :p ?O1 . ?S :q ?O2 . } GROUPBY ( ( ?O1 + ?O2 ) AS ?O12 ) ORDERBY ?O12

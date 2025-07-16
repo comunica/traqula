@@ -1,49 +1,144 @@
 {
-  "queryType": "SELECT",
-  "variables": [
+  "context": [
     {
-      "termType": "Wildcard",
-      "value": "*"
+      "type": "contextDef",
+      "subType": "prefix",
+      "key": "",
+      "value": {
+        "type": "term",
+        "subType": "namedNode",
+        "value": "http://example.com/ns#",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 9,
+          "end": 33
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 33
+      }
     }
   ],
-  "where": [
-    {
-      "type": "bgp",
-      "triples": [
-        {
-          "subject": {
-            "termType": "Quad",
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
             "subject": {
-              "termType": "NamedNode",
-              "value": "http://example.com/ns#a"
+              "type": "term",
+              "subType": "triple",
+              "subject": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "a",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 54,
+                  "end": 56
+                },
+                "prefix": ""
+              },
+              "predicate": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "b",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 57,
+                  "end": 59
+                },
+                "prefix": ""
+              },
+              "object": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "c",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 60,
+                  "end": 62
+                },
+                "prefix": ""
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 50,
+                "end": 66
+              }
             },
             "predicate": {
-              "termType": "NamedNode",
-              "value": "http://example.com/ns#b"
+              "type": "term",
+              "subType": "namedNode",
+              "value": "p1",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 67,
+                "end": 70
+              },
+              "prefix": ""
             },
             "object": {
-              "termType": "NamedNode",
-              "value": "http://example.com/ns#c"
+              "type": "term",
+              "subType": "namedNode",
+              "value": "o1",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 71,
+                "end": 74
+              },
+              "prefix": ""
             },
-            "graph": {
-              "termType": "DefaultGraph",
-              "value": ""
+            "annotations": [],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 50,
+              "end": 74
             }
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://example.com/ns#p1"
-          },
-          "object": {
-            "termType": "NamedNode",
-            "value": "http://example.com/ns#o1"
           }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 50,
+          "end": 75
         }
-      ]
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 44,
+      "end": 77
+    }
+  },
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "wildcard",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 42,
+        "end": 43
+      }
     }
   ],
-  "type": "query",
-  "prefixes": {
-    "": "http://example.com/ns#"
-  }
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 77
+  },
+  "type": "query"
 }

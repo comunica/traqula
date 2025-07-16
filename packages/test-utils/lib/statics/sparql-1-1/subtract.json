@@ -1,40 +1,98 @@
 {
-  "queryType": "SELECT",
+  "context": [],
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bind",
+        "expression": {
+          "type": "expression",
+          "subType": "operation",
+          "operator": "-",
+          "args": [
+            {
+              "type": "term",
+              "subType": "variable",
+              "value": "a",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 25,
+                "end": 27
+              }
+            },
+            {
+              "type": "term",
+              "subType": "literal",
+              "value": "1",
+              "langOrIri": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "http://www.w3.org/2001/XMLSchema#integer",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 27,
+                "end": 29
+              }
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 25,
+            "end": 29
+          }
+        },
+        "variable": {
+          "type": "term",
+          "subType": "variable",
+          "value": "b",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 33,
+            "end": 35
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 19,
+          "end": 36
+        }
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 15,
+      "end": 38
+    }
+  },
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
   "variables": [
     {
-      "termType": "Wildcard",
-      "value": "*"
-    }
-  ],
-  "where": [
-    {
-      "type": "bind",
-      "variable": {
-        "termType": "Variable",
-        "value": "b"
-      },
-      "expression": {
-        "type": "operation",
-        "operator": "-",
-        "args": [
-          {
-            "termType": "Variable",
-            "value": "a"
-          },
-          {
-            "termType": "Literal",
-            "value": "1",
-            "language": "",
-            "datatype": {
-              "termType": "NamedNode",
-              "value": "http://www.w3.org/2001/XMLSchema#integer"
-            },
-            "direction": ""
-          }
-        ]
+      "type": "wildcard",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 7,
+        "end": 8
       }
     }
   ],
-  "type": "query",
-  "prefixes": {}
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 38
+  },
+  "type": "query"
 }

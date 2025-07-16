@@ -2,20 +2,50 @@
   "type": "update",
   "updates": [
     {
-      "type": "move",
-      "silent": false,
-      "source": {
-        "type": "graph",
-        "default": true
-      },
-      "destination": {
-        "type": "graph",
-        "name": {
-          "termType": "NamedNode",
-          "value": "http://example.org/named"
+      "context": [],
+      "operation": {
+        "type": "updateOperation",
+        "subType": "move",
+        "silent": false,
+        "source": {
+          "type": "graphRef",
+          "subType": "default",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 5,
+            "end": 12
+          }
+        },
+        "destination": {
+          "type": "graphRef",
+          "subType": "specific",
+          "graph": {
+            "type": "term",
+            "subType": "namedNode",
+            "value": "http://example.org/named",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 16,
+              "end": 42
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 16,
+            "end": 42
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 0,
+          "end": 42
         }
       }
     }
   ],
-  "prefixes": {}
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 42
+  }
 }

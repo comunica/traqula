@@ -2,39 +2,103 @@
   "type": "update",
   "updates": [
     {
-      "updateType": "insertdelete",
-      "insert": [
+      "context": [
         {
-          "type": "bgp",
-          "triples": [
-            {
-              "subject": {
-                "termType": "NamedNode",
-                "value": "http://example/egbook"
-              },
-              "predicate": {
-                "termType": "NamedNode",
-                "value": "http://purl.org/dc/elements/1.1/title"
-              },
-              "object": {
-                "termType": "Literal",
-                "value": "This is an example title",
-                "language": "",
-                "datatype": {
-                  "termType": "NamedNode",
-                  "value": "http://www.w3.org/2001/XMLSchema#string"
-                },
-                "direction": ""
-              }
+          "type": "contextDef",
+          "subType": "prefix",
+          "key": "dc",
+          "value": {
+            "type": "term",
+            "subType": "namedNode",
+            "value": "http://purl.org/dc/elements/1.1/",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 11,
+              "end": 45
             }
-          ]
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 0,
+            "end": 45
+          }
         }
       ],
-      "delete": [],
-      "where": []
+      "operation": {
+        "type": "updateOperation",
+        "subType": "modify",
+        "insert": [
+          {
+            "type": "pattern",
+            "subType": "bgp",
+            "triples": [
+              {
+                "type": "triple",
+                "subject": {
+                  "type": "term",
+                  "subType": "namedNode",
+                  "value": "http://example/egbook",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 55,
+                    "end": 78
+                  }
+                },
+                "predicate": {
+                  "type": "term",
+                  "subType": "namedNode",
+                  "value": "title",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 79,
+                    "end": 87
+                  },
+                  "prefix": "dc"
+                },
+                "object": {
+                  "type": "term",
+                  "subType": "literal",
+                  "value": "This is an example title",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 89,
+                    "end": 115
+                  }
+                },
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 55,
+                  "end": 115
+                }
+              }
+            ],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 55,
+              "end": 115
+            }
+          }
+        ],
+        "delete": [],
+        "where": [],
+        "from": {
+          "type": "datasetClauses",
+          "clauses": [],
+          "loc": {
+            "sourceLocationType": "noMaterialize"
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 46,
+          "end": 126
+        }
+      }
     }
   ],
-  "prefixes": {
-    "dc": "http://purl.org/dc/elements/1.1/"
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 126
   }
 }

@@ -1,15 +1,32 @@
 {
+  "type": "path",
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 45
+  },
   "items": [
     {
-      "termType": "NamedNode",
-      "value": "http://example.org/a"
+      "type": "term",
+      "subType": "namedNode",
+      "value": "http://example.org/a",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 22
+      }
     },
     {
-      "termType": "NamedNode",
-      "value": "http://example.org/b"
+      "type": "term",
+      "subType": "namedNode",
+      "value": "http://example.org/b",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 23,
+        "end": 45
+      }
     }
   ],
-  "pathType": "/",
-  "prefixes": {},
-  "type": "path"
+  "subType": "/",
+  "prefixes": {}
 }

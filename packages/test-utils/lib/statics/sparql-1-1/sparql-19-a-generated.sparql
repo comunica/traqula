@@ -1,0 +1,1 @@
+SELECT ?p ( count( * ) AS ?n ) WHERE { [ ?p _:g_1 ; ] . }

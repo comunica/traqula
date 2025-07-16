@@ -1,45 +1,170 @@
 {
-  "queryType": "CONSTRUCT",
-  "template": [
+  "context": [
     {
-      "subject": {
-        "termType": "NamedNode",
-        "value": "http://example.org/person#Alice"
+      "type": "contextDef",
+      "subType": "prefix",
+      "key": "foaf",
+      "value": {
+        "type": "term",
+        "subType": "namedNode",
+        "value": "http://xmlns.com/foaf/0.1/",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 16,
+          "end": 44
+        }
       },
-      "predicate": {
-        "termType": "NamedNode",
-        "value": "http://www.w3.org/2001/vcard-rdf/3.0#FN"
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 44
+      }
+    },
+    {
+      "type": "contextDef",
+      "subType": "prefix",
+      "key": "vcard",
+      "value": {
+        "type": "term",
+        "subType": "namedNode",
+        "value": "http://www.w3.org/2001/vcard-rdf/3.0#",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 61,
+          "end": 100
+        }
       },
-      "object": {
-        "termType": "Variable",
-        "value": "name"
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 45,
+        "end": 100
       }
     }
   ],
-  "where": [
-    {
-      "type": "bgp",
-      "triples": [
-        {
-          "subject": {
-            "termType": "Variable",
-            "value": "x"
-          },
-          "predicate": {
-            "termType": "NamedNode",
-            "value": "http://xmlns.com/foaf/0.1/name"
-          },
-          "object": {
-            "termType": "Variable",
-            "value": "name"
+  "subType": "construct",
+  "template": {
+    "type": "pattern",
+    "subType": "bgp",
+    "triples": [
+      {
+        "type": "triple",
+        "subject": {
+          "type": "term",
+          "subType": "namedNode",
+          "value": "http://example.org/person#Alice",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 115,
+            "end": 148
           }
+        },
+        "predicate": {
+          "type": "term",
+          "subType": "namedNode",
+          "value": "FN",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 149,
+            "end": 157
+          },
+          "prefix": "vcard"
+        },
+        "object": {
+          "type": "term",
+          "subType": "variable",
+          "value": "name",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 158,
+            "end": 163
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 115,
+          "end": 163
         }
-      ]
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 115,
+      "end": 163
     }
-  ],
-  "type": "query",
-  "prefixes": {
-    "foaf": "http://xmlns.com/foaf/0.1/",
-    "vcard": "http://www.w3.org/2001/vcard-rdf/3.0#"
-  }
+  },
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "x",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 180,
+                "end": 182
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "name",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 183,
+                "end": 192
+              },
+              "prefix": "foaf"
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "name",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 193,
+                "end": 198
+              }
+            },
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 180,
+              "end": 198
+            }
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 180,
+          "end": 198
+        }
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 178,
+      "end": 200
+    }
+  },
+  "solutionModifiers": {},
+  "loc": {
+    "sourceLocationType": "source",
+    "start": 0,
+    "end": 200
+  },
+  "type": "query"
 }

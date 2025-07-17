@@ -14,11 +14,11 @@ export default class Factory {
   }
 
   public createAlt(input: A.PropertyPathSymbol[], flatten = true): A.Alt {
-    return this.flattenMulti({ type: A.types.ALT, input }, flatten);
+    return this.flattenMulti({ type: A.Types.ALT, input }, flatten);
   }
 
   public createAsk(input: A.Operation): A.Ask {
-    return { type: A.types.ASK, input };
+    return { type: A.Types.ASK, input };
   }
 
   public createBoundAggregate(
@@ -34,131 +34,131 @@ export default class Factory {
   }
 
   public createBgp(patterns: A.Pattern[]): A.Bgp {
-    return { type: A.types.BGP, patterns };
+    return { type: A.Types.BGP, patterns };
   }
 
   public createConstruct(input: A.Operation, template: A.Pattern[]): A.Construct {
-    return { type: A.types.CONSTRUCT, input, template };
+    return { type: A.Types.CONSTRUCT, input, template };
   }
 
   public createDescribe(input: A.Operation, terms: (RDF.Variable | RDF.NamedNode)[]): A.Describe {
-    return { type: A.types.DESCRIBE, input, terms };
+    return { type: A.Types.DESCRIBE, input, terms };
   }
 
   public createDistinct(input: A.Operation): A.Distinct {
-    return { type: A.types.DISTINCT, input };
+    return { type: A.Types.DISTINCT, input };
   }
 
   public createExtend(input: A.Operation, variable: RDF.Variable, expression: A.Expression): A.Extend {
-    return { type: A.types.EXTEND, input, variable, expression };
+    return { type: A.Types.EXTEND, input, variable, expression };
   }
 
   public createFrom(input: A.Operation, def: RDF.NamedNode[], named: RDF.NamedNode[]): A.From {
-    return { type: A.types.FROM, input, default: def, named };
+    return { type: A.Types.FROM, input, default: def, named };
   }
 
   public createFilter(input: A.Operation, expression: A.Expression): A.Filter {
-    return { type: A.types.FILTER, input, expression };
+    return { type: A.Types.FILTER, input, expression };
   }
 
   public createGraph(input: A.Operation, name: RDF.Variable | RDF.NamedNode): A.Graph {
-    return { type: A.types.GRAPH, input, name };
+    return { type: A.Types.GRAPH, input, name };
   }
 
   public createGroup(input: A.Operation, variables: RDF.Variable[], aggregates: A.BoundAggregate[]): A.Group {
-    return { type: A.types.GROUP, input, variables, aggregates };
+    return { type: A.Types.GROUP, input, variables, aggregates };
   }
 
   public createInv(path: A.PropertyPathSymbol): A.Inv {
-    return { type: A.types.INV, path };
+    return { type: A.Types.INV, path };
   }
 
   public createJoin(input: A.Operation[], flatten = true): A.Join {
-    return this.flattenMulti({ type: A.types.JOIN, input }, flatten);
+    return this.flattenMulti({ type: A.Types.JOIN, input }, flatten);
   }
 
   public createLeftJoin(left: A.Operation, right: A.Operation, expression?: A.Expression): A.LeftJoin {
     if (expression) {
-      return { type: A.types.LEFT_JOIN, input: [ left, right ], expression };
+      return { type: A.Types.LEFT_JOIN, input: [ left, right ], expression };
     }
-    return { type: A.types.LEFT_JOIN, input: [ left, right ]};
+    return { type: A.Types.LEFT_JOIN, input: [ left, right ]};
   }
 
   public createLink(iri: RDF.NamedNode): A.Link {
-    return { type: A.types.LINK, iri };
+    return { type: A.Types.LINK, iri };
   }
 
   public createMinus(left: A.Operation, right: A.Operation): A.Minus {
-    return { type: A.types.MINUS, input: [ left, right ]};
+    return { type: A.Types.MINUS, input: [ left, right ]};
   }
 
   public createNop(): A.Nop {
-    return { type: A.types.NOP };
+    return { type: A.Types.NOP };
   }
 
   public createNps(iris: RDF.NamedNode[]): A.Nps {
-    return { type: A.types.NPS, iris };
+    return { type: A.Types.NPS, iris };
   }
 
   public createOneOrMorePath(path: A.PropertyPathSymbol): A.OneOrMorePath {
-    return { type: A.types.ONE_OR_MORE_PATH, path };
+    return { type: A.Types.ONE_OR_MORE_PATH, path };
   }
 
   public createOrderBy(input: A.Operation, expressions: A.Expression[]): A.OrderBy {
-    return { type: A.types.ORDER_BY, input, expressions };
+    return { type: A.Types.ORDER_BY, input, expressions };
   }
 
   public createPath(subject: RDF.Term, predicate: A.PropertyPathSymbol, object: RDF.Term, graph?: RDF.Term): A.Path {
     if (graph) {
-      return { type: A.types.PATH, subject, predicate, object, graph };
+      return { type: A.Types.PATH, subject, predicate, object, graph };
     }
-    return { type: A.types.PATH, subject, predicate, object, graph: this.dataFactory.defaultGraph() };
+    return { type: A.Types.PATH, subject, predicate, object, graph: this.dataFactory.defaultGraph() };
   }
 
   public createPattern(subject: RDF.Term, predicate: RDF.Term, object: RDF.Term, graph?: RDF.Term): A.Pattern {
     const pattern = <A.Pattern> this.dataFactory.quad(subject, predicate, object, graph);
-    pattern.type = A.types.PATTERN;
+    pattern.type = A.Types.PATTERN;
     return pattern;
   }
 
   public createProject(input: A.Operation, variables: RDF.Variable[]): A.Project {
-    return { type: A.types.PROJECT, input, variables };
+    return { type: A.Types.PROJECT, input, variables };
   }
 
   public createReduced(input: A.Operation): A.Reduced {
-    return { type: A.types.REDUCED, input };
+    return { type: A.Types.REDUCED, input };
   }
 
   public createSeq(input: A.PropertyPathSymbol[], flatten = true): A.Seq {
-    return this.flattenMulti({ type: A.types.SEQ, input }, flatten);
+    return this.flattenMulti({ type: A.Types.SEQ, input }, flatten);
   }
 
   public createService(input: A.Operation, name: RDF.NamedNode | RDF.Variable, silent?: boolean): A.Service {
-    return { type: A.types.SERVICE, input, name, silent: Boolean(silent) };
+    return { type: A.Types.SERVICE, input, name, silent: Boolean(silent) };
   }
 
   public createSlice(input: A.Operation, start: number, length?: number): A.Slice {
     start = start || 0;
     if (length !== undefined) {
-      return { type: A.types.SLICE, input, start, length };
+      return { type: A.Types.SLICE, input, start, length };
     }
-    return { type: A.types.SLICE, input, start };
+    return { type: A.Types.SLICE, input, start };
   }
 
   public createUnion(input: A.Operation[], flatten = true): A.Union {
-    return this.flattenMulti({ type: A.types.UNION, input }, flatten);
+    return this.flattenMulti({ type: A.Types.UNION, input }, flatten);
   }
 
   public createValues(variables: RDF.Variable[], bindings: Record<string, RDF.Literal | RDF.NamedNode>[]): A.Values {
-    return { type: A.types.VALUES, variables, bindings };
+    return { type: A.Types.VALUES, variables, bindings };
   }
 
   public createZeroOrMorePath(path: A.PropertyPathSymbol): A.ZeroOrMorePath {
-    return { type: A.types.ZERO_OR_MORE_PATH, path };
+    return { type: A.Types.ZERO_OR_MORE_PATH, path };
   }
 
   public createZeroOrOnePath(path: A.PropertyPathSymbol): A.ZeroOrOnePath {
-    return { type: A.types.ZERO_OR_ONE_PATH, path };
+    return { type: A.Types.ZERO_OR_ONE_PATH, path };
   }
 
   public createAggregateExpression(
@@ -169,7 +169,7 @@ export default class Factory {
   ): A.AggregateExpression {
     if (separator) {
       return {
-        type: A.types.EXPRESSION,
+        type: A.Types.EXPRESSION,
         expressionType: A.expressionTypes.AGGREGATE,
         aggregator: <any> aggregator,
         expression,
@@ -178,7 +178,7 @@ export default class Factory {
       };
     }
     return {
-      type: A.types.EXPRESSION,
+      type: A.Types.EXPRESSION,
       expressionType: A.expressionTypes.AGGREGATE,
       aggregator: <any> aggregator,
       expression,
@@ -187,23 +187,23 @@ export default class Factory {
   }
 
   public createExistenceExpression(not: boolean, input: A.Operation): A.ExistenceExpression {
-    return { type: A.types.EXPRESSION, expressionType: A.expressionTypes.EXISTENCE, not, input };
+    return { type: A.Types.EXPRESSION, expressionType: A.expressionTypes.EXISTENCE, not, input };
   }
 
   public createNamedExpression(name: RDF.NamedNode, args: A.Expression[]): A.NamedExpression {
-    return { type: A.types.EXPRESSION, expressionType: A.expressionTypes.NAMED, name, args };
+    return { type: A.Types.EXPRESSION, expressionType: A.expressionTypes.NAMED, name, args };
   }
 
   public createOperatorExpression(operator: string, args: A.Expression[]): A.OperatorExpression {
-    return { type: A.types.EXPRESSION, expressionType: A.expressionTypes.OPERATOR, operator, args };
+    return { type: A.Types.EXPRESSION, expressionType: A.expressionTypes.OPERATOR, operator, args };
   }
 
   public createTermExpression(term: RDF.Term): A.TermExpression {
-    return { type: A.types.EXPRESSION, expressionType: A.expressionTypes.TERM, term };
+    return { type: A.Types.EXPRESSION, expressionType: A.expressionTypes.TERM, term };
   }
 
   public createWildcardExpression(): A.WildcardExpression {
-    return { type: A.types.EXPRESSION, expressionType: A.expressionTypes.WILDCARD, wildcard: new Wildcard() };
+    return { type: A.Types.EXPRESSION, expressionType: A.expressionTypes.WILDCARD, wildcard: new Wildcard() };
   }
 
   public createTerm(str: string): RDF.Term {
@@ -215,11 +215,11 @@ export default class Factory {
 
   // Update functions
   public createCompositeUpdate(updates: A.Update[]): A.CompositeUpdate {
-    return { type: A.types.COMPOSITE_UPDATE, updates };
+    return { type: A.Types.COMPOSITE_UPDATE, updates };
   }
 
   public createDeleteInsert(deleteQuads?: A.Pattern[], insertQuads?: A.Pattern[], where?: A.Operation): A.DeleteInsert {
-    const result: A.DeleteInsert = { type: A.types.DELETE_INSERT };
+    const result: A.DeleteInsert = { type: A.Types.DELETE_INSERT };
     if (deleteQuads) {
       result.delete = deleteQuads;
     }
@@ -233,7 +233,7 @@ export default class Factory {
   }
 
   public createLoad(source: RDF.NamedNode, destination?: RDF.NamedNode, silent?: boolean): A.Load {
-    const result: A.Load = { type: A.types.LOAD, source };
+    const result: A.Load = { type: A.Types.LOAD, source };
     if (destination) {
       result.destination = destination;
     }
@@ -241,19 +241,19 @@ export default class Factory {
   }
 
   public createClear(source: 'DEFAULT' | 'NAMED' | 'ALL' | RDF.NamedNode, silent?: boolean): A.Clear {
-    return this.addSilent({ type: A.types.CLEAR, source }, Boolean(silent));
+    return this.addSilent({ type: A.Types.CLEAR, source }, Boolean(silent));
   }
 
   public createCreate(source: RDF.NamedNode, silent?: boolean): A.Create {
-    return this.addSilent({ type: A.types.CREATE, source }, Boolean(silent));
+    return this.addSilent({ type: A.Types.CREATE, source }, Boolean(silent));
   }
 
   public createDrop(source: 'DEFAULT' | 'NAMED' | 'ALL' | RDF.NamedNode, silent?: boolean): A.Drop {
-    return this.addSilent({ type: A.types.DROP, source }, Boolean(silent));
+    return this.addSilent({ type: A.Types.DROP, source }, Boolean(silent));
   }
 
   public createAdd(source: 'DEFAULT' | RDF.NamedNode, destination: 'DEFAULT' | RDF.NamedNode, silent?: boolean): A.Add {
-    return this.addSilent({ type: A.types.ADD, source, destination }, Boolean(silent));
+    return this.addSilent({ type: A.Types.ADD, source, destination }, Boolean(silent));
   }
 
   public createMove(
@@ -262,7 +262,7 @@ export default class Factory {
     silent?: boolean,
   ): A.Move {
     return this.addSilent({
-      type: A.types.MOVE,
+      type: A.Types.MOVE,
       source,
       destination,
     }, Boolean(silent));
@@ -274,7 +274,7 @@ export default class Factory {
     silent?: boolean,
   ): A.Copy {
     return this.addSilent({
-      type: A.types.COPY,
+      type: A.Types.COPY,
       source,
       destination,
     }, Boolean(silent));

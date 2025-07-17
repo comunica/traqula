@@ -38,7 +38,7 @@ import * as Algebra from './algebra';
 import Factory from './factory';
 import Util from './util';
 
-const types = Algebra.types;
+const types = Algebra.Types;
 const eTypes = Algebra.expressionTypes;
 
 let context: {

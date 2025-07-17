@@ -1,7 +1,7 @@
 import type * as rdfjs from '@rdfjs/types';
 import type { Wildcard } from 'sparqljs';
 
-export enum types {
+export enum Types {
   ALT = 'alt',
   ASK = 'ask',
   BGP = 'bgp',
@@ -69,14 +69,14 @@ export type PropertyPathSymbol = Alt | Inv | Link | Nps | OneOrMorePath | Seq | 
 export type Update = CompositeUpdate | DeleteInsert | Load | Clear | Create | Drop | Add | Move | Copy | Nop;
 
 // Returns the correct type based on the type enum
-export type TypedOperation<T extends types> = Extract<Operation, { type: T }>;
+export type TypedOperation<T extends Types> = Extract<Operation, { type: T }>;
 export type TypedExpression<T extends expressionTypes> = Extract<Expression, { expressionType: T }>;
 // ----------------------- ABSTRACTS -----------------------
 
 export interface BaseOperation {
   [key: string]: any;
   metadata?: Record<string, unknown>;
-  type: types;
+  type: Types;
 }
 
 export interface Single extends BaseOperation {
@@ -92,7 +92,7 @@ export interface Double extends Multi {
 }
 
 export interface BaseExpression extends BaseOperation {
-  type: types.EXPRESSION;
+  type: Types.EXPRESSION;
   expressionType: expressionTypes;
 }
 
@@ -141,12 +141,12 @@ export interface WildcardExpression extends BaseExpression {
 // ----------------------- ACTUAL FUNCTIONS -----------------------
 
 export interface Alt extends Multi {
-  type: types.ALT;
+  type: Types.ALT;
   input: PropertyPathSymbol[];
 }
 
 export interface Ask extends Single {
-  type: types.ASK;
+  type: Types.ASK;
 }
 
 // Also an expression
@@ -155,160 +155,163 @@ export interface BoundAggregate extends AggregateExpression {
 }
 
 export interface Bgp extends BaseOperation {
-  type: types.BGP;
+  type: Types.BGP;
   patterns: Pattern[];
 }
 
 export interface Construct extends Single {
-  type: types.CONSTRUCT;
+  type: Types.CONSTRUCT;
   template: Pattern[];
 }
 
 export interface Describe extends Single {
-  type: types.DESCRIBE;
+  type: Types.DESCRIBE;
   terms: (rdfjs.Variable | rdfjs.NamedNode)[];
 }
 
 export interface Distinct extends Single {
-  type: types.DISTINCT;
+  type: Types.DISTINCT;
 }
 
 export interface Extend extends Single {
-  type: types.EXTEND;
+  type: Types.EXTEND;
   variable: rdfjs.Variable;
   expression: Expression;
 }
 
 export interface From extends Single {
-  type: types.FROM;
+  type: Types.FROM;
   default: rdfjs.NamedNode[];
   named: rdfjs.NamedNode[];
 }
 
 export interface Filter extends Single {
-  type: types.FILTER;
+  type: Types.FILTER;
   expression: Expression;
 }
 
 export interface Graph extends Single {
-  type: types.GRAPH;
+  type: Types.GRAPH;
   name: rdfjs.Variable | rdfjs.NamedNode;
 }
 
 export interface Group extends Single {
-  type: types.GROUP;
+  type: Types.GROUP;
   variables: rdfjs.Variable[];
   aggregates: BoundAggregate[];
 }
 
 export interface Inv extends BaseOperation {
-  type: types.INV;
+  type: Types.INV;
   path: PropertyPathSymbol;
 }
 
 export interface Join extends Multi {
-  type: types.JOIN;
+  type: Types.JOIN;
 }
 
 export interface LeftJoin extends Double {
-  type: types.LEFT_JOIN;
+  type: Types.LEFT_JOIN;
   expression?: Expression;
 }
 
 export interface Link extends BaseOperation {
-  type: types.LINK;
+  type: Types.LINK;
   iri: rdfjs.NamedNode;
 }
 
 export interface Minus extends Double {
-  type: types.MINUS;
+  type: Types.MINUS;
 }
 
 export interface Nop extends BaseOperation {
-  type: types.NOP;
+  type: Types.NOP;
 }
 
 export interface Nps extends BaseOperation {
-  type: types.NPS;
+  type: Types.NPS;
   iris: rdfjs.NamedNode[];
 }
 
 export interface OneOrMorePath extends BaseOperation {
-  type: types.ONE_OR_MORE_PATH;
+  type: Types.ONE_OR_MORE_PATH;
   path: PropertyPathSymbol;
 }
 
 export interface OrderBy extends Single {
-  type: types.ORDER_BY;
+  type: Types.ORDER_BY;
   expressions: Expression[];
 }
 
 export interface Path extends BaseOperation {
-  type: types.PATH;
+  type: Types.PATH;
   subject: rdfjs.Term;
   predicate: PropertyPathSymbol;
   object: rdfjs.Term;
   graph: rdfjs.Term;
 }
 
+/**
+ * Simple BGP entry (triple)
+ */
 export interface Pattern extends BaseOperation, rdfjs.BaseQuad {
-  type: types.PATTERN;
+  type: Types.PATTERN;
 }
 
 export interface Project extends Single {
-  type: types.PROJECT;
+  type: Types.PROJECT;
   variables: rdfjs.Variable[];
 }
 
 export interface Reduced extends Single {
-  type: types.REDUCED;
+  type: Types.REDUCED;
 }
 
 export interface Seq extends Multi {
-  type: types.SEQ;
+  type: Types.SEQ;
   input: PropertyPathSymbol[];
 }
 
 export interface Service extends Single {
-  type: types.SERVICE;
+  type: Types.SERVICE;
   name: rdfjs.Variable | rdfjs.NamedNode;
   silent: boolean;
 }
 
 export interface Slice extends Single {
-  type: types.SLICE;
+  type: Types.SLICE;
   start: number;
   length?: number;
 }
 
 export interface Union extends Multi {
-  type: types.UNION;
+  type: Types.UNION;
 }
 
 export interface Values extends BaseOperation {
-  type: types.VALUES;
+  type: Types.VALUES;
   variables: rdfjs.Variable[];
   bindings: Record<string, rdfjs.Literal | rdfjs.NamedNode>[];
 }
 
 export interface ZeroOrMorePath extends BaseOperation {
-  type: types.ZERO_OR_MORE_PATH;
+  type: Types.ZERO_OR_MORE_PATH;
   path: PropertyPathSymbol;
 }
 
 export interface ZeroOrOnePath extends BaseOperation {
-  type: types.ZERO_OR_ONE_PATH;
+  type: Types.ZERO_OR_ONE_PATH;
   path: PropertyPathSymbol;
 }
 
 // ----------------------- UPDATE FUNCTIONS -----------------------
 export interface CompositeUpdate extends BaseOperation {
-  type: types.COMPOSITE_UPDATE;
+  type: Types.COMPOSITE_UPDATE;
   updates: Update[];
 }
 
 export interface DeleteInsert extends BaseOperation {
-  type: types.DELETE_INSERT;
+  type: Types.DELETE_INSERT;
   delete?: Pattern[];
   insert?: Pattern[];
   where?: Operation;
@@ -319,23 +322,23 @@ export interface UpdateGraph extends BaseOperation {
 }
 
 export interface Load extends UpdateGraph {
-  type: types.LOAD;
+  type: Types.LOAD;
   source: rdfjs.NamedNode;
   destination?: rdfjs.NamedNode;
 }
 
 export interface Clear extends UpdateGraph {
-  type: types.CLEAR;
+  type: Types.CLEAR;
   source: 'DEFAULT' | 'NAMED' | 'ALL' | rdfjs.NamedNode;
 }
 
 export interface Create extends UpdateGraph {
-  type: types.CREATE;
+  type: Types.CREATE;
   source: rdfjs.NamedNode;
 }
 
 export interface Drop extends UpdateGraph {
-  type: types.DROP;
+  type: Types.DROP;
   source: 'DEFAULT' | 'NAMED' | 'ALL' | rdfjs.NamedNode;
 }
 
@@ -345,13 +348,19 @@ export interface UpdateGraphShortcut extends UpdateGraph {
 }
 
 export interface Add extends UpdateGraphShortcut {
-  type: types.ADD;
+  type: Types.ADD;
 }
 
 export interface Move extends UpdateGraphShortcut {
-  type: types.MOVE;
+  type: Types.MOVE;
 }
 
 export interface Copy extends UpdateGraphShortcut {
-  type: types.COPY;
+  type: Types.COPY;
+}
+
+export interface Triple {
+  subject: rdfjs.Term;
+  predicate: rdfjs.Term | Path;
+  object: rdfjs.Term;
 }

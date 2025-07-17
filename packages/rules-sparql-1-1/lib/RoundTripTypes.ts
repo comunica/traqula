@@ -382,6 +382,7 @@ export type Path =
   | PropertyPathChain
   | PathModified
   | PathNegated;
+export type PathPure = PropertyPathChain | PathModified | PathNegated;
 
 export type ContextDefinitionBase_ = Node & { type: 'contextDef'; subType: string };
 export type ContextDefinitionPrefix = ContextDefinitionBase_ & {

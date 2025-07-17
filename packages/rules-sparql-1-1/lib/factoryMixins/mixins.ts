@@ -1,3 +1,8 @@
+/**
+ * We use mixins as explained by the official TypeScript documentation:
+ * https://www.typescriptlang.org/docs/handbook/mixins.html
+ */
+
 export type Constructor<T = object> = new (...args: any[]) => T;
 
 export type Mixin<Base = object, U extends Base = Base> = (superclass: Constructor<Base>) => Constructor<U>;

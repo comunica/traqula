@@ -8,7 +8,18 @@
     "type": "git",
     "url": "https://github.com/joachimvh/SPARQLAlgebra.js"
   },
+  "main": "index.js",
   "bin": "./bin/sparqlalgebrajs.js",
+  "files": [
+    "bin/**/*.js",
+    "bin/**/*.js.map",
+    "index.d.ts",
+    "index.js",
+    "index.js.map",
+    "lib/**/*.d.ts",
+    "lib/**/*.js",
+    "lib/**/*.js.map"
+  ],
   "scripts": {
     "build": "tsc",
     "prepare": "npm run build",
@@ -37,16 +48,5 @@
   },
   "pre-commit": [
     "test"
-  ],
-  "files": [
-    "index.js",
-    "index.d.ts",
-    "index.js.map",
-    "lib/**/*.js",
-    "lib/**/*.d.ts",
-    "lib/**/*.js.map",
-    "bin/**/*.js",
-    "bin/**/*.js.map"
-  ],
-  "main": "index.js"
+  ]
 }

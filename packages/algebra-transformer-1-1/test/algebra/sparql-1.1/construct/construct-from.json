@@ -1,65 +1,65 @@
 {
-    "default": [
-        {
-            "termType": "NamedNode",
-            "value": "http://example.com/data"
-        }
-    ],
+  "default": [
+    {
+      "termType": "NamedNode",
+      "value": "http://example.com/data"
+    }
+  ],
+  "input": {
     "input": {
-        "input": {
-            "input": {
-                "patterns": [
-                    {
-                        "graph": {
-                            "termType": "DefaultGraph",
-                            "value": ""
-                        },
-                        "object": {
-                            "termType": "Variable",
-                            "value": "o"
-                        },
-                        "predicate": {
-                            "termType": "Variable",
-                            "value": "p"
-                        },
-                        "subject": {
-                            "termType": "Variable",
-                            "value": "s"
-                        },
-                        "termType": "Quad",
-                        "type": "pattern"
-                    }
-                ],
-                "type": "bgp"
+      "input": {
+        "patterns": [
+          {
+            "graph": {
+              "termType": "DefaultGraph",
+              "value": ""
             },
-            "template": [
-                {
-                    "graph": {
-                        "termType": "DefaultGraph",
-                        "value": ""
-                    },
-                    "object": {
-                        "termType": "Variable",
-                        "value": "o"
-                    },
-                    "predicate": {
-                        "termType": "Variable",
-                        "value": "p"
-                    },
-                    "subject": {
-                        "termType": "Variable",
-                        "value": "s"
-                    },
-                    "termType": "Quad",
-                    "type": "pattern"
-                }
-            ],
-            "type": "construct"
-        },
-        "length": 100,
-        "start": 0,
-        "type": "slice"
+            "object": {
+              "termType": "Variable",
+              "value": "o"
+            },
+            "predicate": {
+              "termType": "Variable",
+              "value": "p"
+            },
+            "subject": {
+              "termType": "Variable",
+              "value": "s"
+            },
+            "termType": "Quad",
+            "type": "pattern"
+          }
+        ],
+        "type": "bgp"
+      },
+      "template": [
+        {
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
+          },
+          "object": {
+            "termType": "Variable",
+            "value": "o"
+          },
+          "predicate": {
+            "termType": "Variable",
+            "value": "p"
+          },
+          "subject": {
+            "termType": "Variable",
+            "value": "s"
+          },
+          "termType": "Quad",
+          "type": "pattern"
+        }
+      ],
+      "type": "construct"
     },
-    "named": [],
-    "type": "from"
+    "length": 100,
+    "start": 0,
+    "type": "slice"
+  },
+  "named": [],
+  "type": "from"
 }

@@ -358,9 +358,3 @@ export interface Move extends UpdateGraphShortcut {
 export interface Copy extends UpdateGraphShortcut {
   type: Types.COPY;
 }
-
-export interface Triple {
-  subject: rdfjs.Term;
-  predicate: rdfjs.Term | Path;
-  object: rdfjs.Term;
-}

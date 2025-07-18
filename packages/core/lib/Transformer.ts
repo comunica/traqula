@@ -1,3 +1,4 @@
+import type { SubTyped } from './CoreFactory';
 import type { Node } from './nodeTypings';
 
 type MapNodeTypeToImpls<Nodes extends Node> = {[Node in Nodes as Node['type']]: Node };
@@ -13,7 +14,7 @@ export type AlterNodeOutput<RecursiveObject extends object, Input, Out>
 
 export class Transformer<
   Nodes extends Node,
-NodeMapping extends MapNodeTypeToImpls<Nodes> = MapNodeTypeToImpls<Nodes>,
+NodeMapping extends MapNodeTypeToImpls<Nodes> & Record<string, unknown> = MapNodeTypeToImpls<Nodes>,
 > {
   public transformNode<Input extends object, TypeFilter extends keyof NodeMapping, Out>(
     curObject: Input,
@@ -43,7 +44,7 @@ SpecificNodes = NodeMapping[TypeFilter] extends Node & { subType: string } ?
     searchType: TypeFilter,
     searchSubType: SpecificType,
     patch: (current: SpecificNodes[SpecificType]) => Out,
-  ): AlterNodeOutput<Input, SpecificNodes[SpecificType], Out> {
+  ): AlterNodeOutput<Input, SubTyped<TypeFilter, SpecificType>, Out> {
     const copy: { type?: unknown; subType?: unknown } = { ...curObject };
     for (const [ key, value ] of Object.entries(copy)) {
       (<Record<string, unknown>> copy)[key] =

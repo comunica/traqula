@@ -242,7 +242,7 @@ export type PatternService = PatternBase & {
 /**
  * A single list of assignments maps the variable identifier to the value
  */
-export type ValuePatternRow = Record<string, TermIri | TermBlank | TermLiteral | undefined>;
+export type ValuePatternRow = Record<string, TermIri | TermLiteral | undefined>;
 export type PatternValues = PatternBase & {
   subType: 'values';
   values: ValuePatternRow[];
@@ -281,9 +281,10 @@ export type SolutionModifierHaving = SolutionModifierBase & {
   subType: 'having';
   having: Expression[];
 };
-export type Ordering =
-  | Expression
-  | (Localized & { descending: boolean; expression: Expression });
+export type Ordering = Localized & {
+  descending: boolean;
+  expression: Expression;
+};
 export type SolutionModifierOrder = SolutionModifierBase & {
   subType: 'order';
   orderDefs: Ordering[];
@@ -302,6 +303,7 @@ export type ExpressionBase = Node & { type: 'expression'; subType: string };
 type ExpressionAggregateBase = ExpressionBase & {
   subType: 'aggregate';
   distinct: boolean;
+  expression: [Expression | Wildcard];
 };
 export type ExpressionAggregateDefault = ExpressionAggregateBase & {
   expression: [Expression];

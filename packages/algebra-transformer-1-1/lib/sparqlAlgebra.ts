@@ -2,20 +2,8 @@ import type * as RDF from '@rdfjs/types';
 import type { AlterNodeOutput, SubTyped } from '@traqula/core';
 import { Transformer } from '@traqula/core';
 import {
-  DatasetClauses,
-
   Factory as AstFactory,
-  GraphRef,
-  GraphRefAll,
-  GraphRefDefault,
-  GraphRefNamed,
-  GraphRefSpecific, Quads,
-  UpdateOperationCopy,
-  UpdateOperationDeleteData,
-  UpdateOperationDeleteWhere,
-  UpdateOperationInsertData,
-  UpdateOperationModify,
-  UpdateOperationMove,
+  findPatternBoundedVars,
 } from '@traqula/rules-sparql-1-1';
 import type {
 
@@ -48,8 +36,19 @@ import type {
   UpdateOperation,
   UpdateOperationLoad,
   UpdateOperationCreate,
-  type UpdateOperationClear,
-  type UpdateOperationDrop,
+
+  DatasetClauses,
+  GraphRef,
+  GraphRefAll,
+  GraphRefDefault,
+  GraphRefNamed,
+  UpdateOperationDeleteData,
+  UpdateOperationDeleteWhere,
+  UpdateOperationInsertData,
+  UpdateOperationModify,
+  Path,
+  UpdateOperationClear,
+  UpdateOperationDrop,
 } from '@traqula/rules-sparql-1-1';
 import equal from 'fast-deep-equal/es6';
 import { DataFactory } from 'rdf-data-factory';
@@ -57,11 +56,7 @@ import * as Algebra from './algebra';
 import Factory from './factory';
 import Util from './util';
 
-const Parser = require('sparqljs').Parser;
-
 const types = Algebra.Types;
-const typeVals = Object.values(types);
-
 type mapAggregateType = Wildcard | Expression | Ordering | PatternBind;
 type TempDelIns = (PatternBgp | GraphQuads)[];
 
@@ -70,7 +65,7 @@ type AstToRdfTerm<T extends Term> = T extends TermVariable ? RDF.Variable :
   T extends TermBlank ? RDF.BlankNode :
     T extends TermLiteral ? RDF.Literal :
       T extends TermIri ? RDF.NamedNode : never;
-type TransformGraphRef<T extends GraphRef> = T extends GraphRefDefault ?  'DEFAULT' : T extends GraphRefNamed ? 'NAMED' :
+type TransformGraphRef<T extends GraphRef> = T extends GraphRefDefault ? 'DEFAULT' : T extends GraphRefNamed ? 'NAMED' :
   T extends GraphRefAll ? 'ALL' : T extends TermIri ? RDF.NamedNode : never;
 export interface FlattenedTriple {
   subject: RDF.Term;
@@ -112,6 +107,7 @@ class QueryTranslator {
   private readonly transformer = new Transformer<Sparql11Nodes>();
   private readonly astFactory = new AstFactory();
   private readonly dataFactory = new DataFactory();
+  private static readonly typeVals = Object.values(types);
 
   public constructor(private readonly factory: Factory) {}
 
@@ -174,69 +170,99 @@ class QueryTranslator {
   }
 
   // 18.2.1
-  private inScopeVariables(thingy: SparqlQuery | Pattern | PropertyPath | RDF.Term): Record<string, RDF.Variable> {
-    const inScope: Record<string, RDF.Variable> = {};
-
-    if (this.isTriple(thingy)) {
-      // Note that this could both be an actual Quad or a SPARQL.js triple (without graph)
-      const result = [
-        this.inScopeVariables(thingy.subject),
-        this.inScopeVariables(thingy.predicate),
-        this.inScopeVariables(thingy.object),
-        thingy.graph ? this.inScopeVariables(thingy.graph) : {},
-      ];
-      Object.assign(inScope, ...result);
-    } else if (this.isTerm(thingy)) {
-      if (this.isVariable(thingy)) {
-        inScope[thingy.value] = thingy;
-      }
-    } else if (thingy.type === 'bgp') {
-      // Slightly cheating but this is a subset of what we support so is fine
-      const quads = <RDF.Quad[]> thingy.triples;
-      Object.assign(inScope, ...quads.map(this.inScopeVariables));
-    } else if (thingy.type === 'path') {
-      // A path predicate should not have variables but just iterating so we could theoretically support this
-      Object.assign(inScope, ...thingy.items.map(this.inScopeVariables));
-    } else if (thingy.type === 'group' || thingy.type === 'union' || thingy.type === 'optional') {
-      Object.assign(inScope, ...thingy.patterns.map(this.inScopeVariables));
-    } else if (thingy.type === 'service' || thingy.type === 'graph') {
-      Object.assign(inScope, this.inScopeVariables(thingy.name));
-      Object.assign(inScope, ...thingy.patterns.map(this.inScopeVariables));
-    } else if (thingy.type === 'bind') {
-      Object.assign(inScope, this.inScopeVariables(thingy.variable));
-    } else if (thingy.type === 'values') {
-      if (thingy.values.length > 0) {
-        const vars = Object.keys(thingy.values[0]).map(v => this.factory.createTerm(v));
-        Object.assign(inScope, ...vars.map(this.inScopeVariables));
-      }
-    } else if (thingy.type === 'query' && (thingy.queryType === 'SELECT' || thingy.queryType === 'DESCRIBE')) {
-      if (thingy.where && thingy.variables.some(Util.isWildcard)) {
-        Object.assign(inScope, ...thingy.where.map(this.inScopeVariables));
-      }
-      for (const v of thingy.variables) {
-        if (this.isVariable(v)) {
-          Object.assign(inScope, this.inScopeVariables(v));
-        } else if ((<VariableExpression> v).variable) {
-          Object.assign(inScope, this.inScopeVariables((<VariableExpression> v).variable));
+  private inScopeVariables(thingy: SparqlQuery | TripleNesting | TripleCollection | Path | Term): Set<string> {
+    const F = this.astFactory;
+    const vars = new Set<string>();
+    if (F.isQuery(thingy) || F.isUpdate(thingy)) {
+      if (F.isQuerySelect(thingy)) {
+        if (thingy.where && thingy.variables.some(Util.isWildcard)) {
+          findPatternBoundedVars(thingy.where, vars);
+        } else {
+          for (const v of thingy.variables) {
+            findPatternBoundedVars(v, vars);
+          }
         }
-      }
-      if (thingy.queryType === 'SELECT') {
-        if (thingy.group) {
-          // Grouping can be a VariableExpression, typings are wrong
-          for (const g of thingy.group) {
-            if ((<VariableExpression> g).variable) {
-              Object.assign(inScope, this.inScopeVariables((<VariableExpression> g).variable));
+        if (thingy.solutionModifiers.group) {
+          const grouping = thingy.solutionModifiers.group;
+          for (const g of grouping.groupings) {
+            if ('variable' in g) {
+              findPatternBoundedVars(g.variable, vars);
             }
           }
         }
-        if (thingy.values) {
-          const values: ValuesPattern = { type: 'values', values: thingy.values };
-          Object.assign(inScope, this.inScopeVariables(values));
+        if (thingy.values?.values && thingy.values.values.length > 0) {
+          const values = thingy.values.values;
+          for (const v of Object.keys(values[0])) {
+            vars.add(v);
+          }
         }
       }
+    } else {
+      findPatternBoundedVars(thingy, vars);
     }
+    return vars;
 
-    return inScope;
+    // Const inScope: Record<string, RDF.Variable> = {};
+    // if (this.isTriple(thingy)) {
+    //   // Note that this could both be an actual Quad or a SPARQL.js triple (without graph)
+    //   const result = [
+    //     this.inScopeVariables(thingy.subject),
+    //     this.inScopeVariables(thingy.predicate),
+    //     this.inScopeVariables(thingy.object),
+    //     thingy.graph ? this.inScopeVariables(thingy.graph) : {},
+    //   ];
+    //   Object.assign(inScope, ...result);
+    // } else if (this.isTerm(thingy)) {
+    //   if (this.isVariable(thingy)) {
+    //     inScope[thingy.value] = thingy;
+    //   }
+    // } else if (thingy.type === 'bgp') {
+    //   // Slightly cheating but this is a subset of what we support so is fine
+    //   const quads = <RDF.Quad[]> thingy.triples;
+    //   Object.assign(inScope, ...quads.map(this.inScopeVariables));
+    // } else if (thingy.type === 'path') {
+    //   // A path predicate should not have variables but just iterating so we could theoretically support this
+    //   Object.assign(inScope, ...thingy.items.map(this.inScopeVariables));
+    // } else if (thingy.type === 'group' || thingy.type === 'union' || thingy.type === 'optional') {
+    //   Object.assign(inScope, ...thingy.patterns.map(this.inScopeVariables));
+    // } else if (thingy.type === 'service' || thingy.type === 'graph') {
+    //   Object.assign(inScope, this.inScopeVariables(thingy.name));
+    //   Object.assign(inScope, ...thingy.patterns.map(this.inScopeVariables));
+    // } else if (thingy.type === 'bind') {
+    //   Object.assign(inScope, this.inScopeVariables(thingy.variable));
+    // } else if (thingy.type === 'values') {
+    //   if (thingy.values.length > 0) {
+    //     const vars = Object.keys(thingy.values[0]).map(v => this.factory.createTerm(v));
+    //     Object.assign(inScope, ...vars.map(this.inScopeVariables));
+    //   }
+    // } else if (thingy.type === 'query' && (thingy.queryType === 'SELECT' || thingy.queryType === 'DESCRIBE')) {
+    //   if (thingy.where && thingy.variables.some(Util.isWildcard)) {
+    //     Object.assign(inScope, ...thingy.where.map(this.inScopeVariables));
+    //   }
+    //   for (const v of thingy.variables) {
+    //     if (this.isVariable(v)) {
+    //       Object.assign(inScope, this.inScopeVariables(v));
+    //     } else if ((<VariableExpression> v).variable) {
+    //       Object.assign(inScope, this.inScopeVariables((<VariableExpression> v).variable));
+    //     }
+    //   }
+    //   if (thingy.queryType === 'SELECT') {
+    //     if (thingy.group) {
+    //       // Grouping can be a VariableExpression, typings are wrong
+    //       for (const g of thingy.group) {
+    //         if ((<VariableExpression> g).variable) {
+    //           Object.assign(inScope, this.inScopeVariables((<VariableExpression> g).variable));
+    //         }
+    //       }
+    //     }
+    //     if (thingy.values) {
+    //       const values: ValuesPattern = { type: 'values', values: thingy.values };
+    //       Object.assign(inScope, this.inScopeVariables(values));
+    //     }
+    //   }
+    // }
+    //
+    // return inScope;
   }
 
   /**
@@ -690,7 +716,7 @@ class QueryTranslator {
       for (const key of Object.keys(thingy)) {
         if (Array.isArray(thingy[key])) {
           thingy[key] = thingy[key].map((x: any) => this.recurseGraph(x, graph, replacement));
-        } else if (this.typeVals.includes(thingy[key].type)) {
+        } else if (QueryTranslator.typeVals.includes(thingy[key].type)) {
           // Can't do instanceof on an interface
           thingy[key] = this.recurseGraph(thingy[key], graph, replacement);
         } else if (replacement && this.isVariable(thingy[key]) && thingy[key].equals(graph)) {
@@ -965,10 +991,15 @@ class QueryTranslator {
   }
 
   private translateUpdate(thingy: Update): Algebra.Operation {
-    if (thingy.updates.length === 1) {
-      return this.translateSingleUpdate(thingy.updates[0]);
+    const updateOperation: UpdateOperation[] = [];
+    for (const update of thingy.updates) {
+      // TODO: apply context
+      updateOperation.push(update.operation!);
     }
-    return this.factory.createCompositeUpdate(thingy.updates.map(this.translateSingleUpdate));
+    if (updateOperation.length === 1) {
+      return this.translateSingleUpdate(updateOperation[0]);
+    }
+    return this.factory.createCompositeUpdate(updateOperation.map(x => this.translateSingleUpdate(x)));
   }
 
   private translateSingleUpdate(op: UpdateOperation): Algebra.Update {
@@ -986,13 +1017,25 @@ class QueryTranslator {
       return this.factory.createDrop(this.translateGraphRef(op.destination), op.silent);
     }
     if (F.isUpdateOperationAdd(op)) {
-      return this.factory.createAdd(this.translateGraphRef(op.source), this.translateGraphRef(op.destination), op.silent);
+      return this.factory.createAdd(
+        this.translateGraphRef(op.source),
+        this.translateGraphRef(op.destination),
+        op.silent,
+      );
     }
     if (F.isUpdateOperationCopy(op)) {
-      return this.factory.createCopy(this.translateGraphRef(op.source), this.translateGraphRef(op.destination), op.silent);
-
-    } if( F.isUpdateOperationMove(op)) {
-      return this.factory.createMove(this.translateGraphRef(op.source), this.translateGraphRef(op.destination), op.silent);
+      return this.factory.createCopy(
+        this.translateGraphRef(op.source),
+        this.translateGraphRef(op.destination),
+        op.silent,
+      );
+    }
+    if (F.isUpdateOperationMove(op)) {
+      return this.factory.createMove(
+        this.translateGraphRef(op.source),
+        this.translateGraphRef(op.destination),
+        op.silent,
+      );
     }
     if (F.isUpdateOperationInsertData(op) || F.isUpdateOperationDeleteData(op) || F.isUpdateOperationDeleteWhere(op) ||
       F.isUpdateOperationModify(op)) {
@@ -1003,7 +1046,7 @@ class QueryTranslator {
   }
 
   private translateInsertDelete(
-    op: UpdateOperationInsertData | UpdateOperationDeleteData | UpdateOperationDeleteWhere | UpdateOperationModify
+    op: UpdateOperationInsertData | UpdateOperationDeleteData | UpdateOperationDeleteWhere | UpdateOperationModify,
   ): Algebra.Update {
     if (!this.useQuads) {
       throw new Error('INSERT/DELETE operations are only supported with quads option enabled');
@@ -1014,15 +1057,15 @@ class QueryTranslator {
     const insertTriples: Algebra.Pattern[] = [];
     let where: Algebra.Operation | undefined;
     if (F.isUpdateOperationDeleteData(op) || F.isUpdateOperationDeleteWhere(op)) {
-      deleteTriples.push(...op.data.flatMap(quad => this.translateUpdateTriplesBlock(quad)))
+      deleteTriples.push(...op.data.flatMap(quad => this.translateUpdateTriplesBlock(quad)));
       if (F.isUpdateOperationDeleteWhere(op)) {
         where = this.factory.createBgp(deleteTriples);
       }
     } else if (F.isUpdateOperationInsertData(op)) {
-      insertTriples.push(...op.data.flatMap(quad => this.translateUpdateTriplesBlock(quad)))
+      insertTriples.push(...op.data.flatMap(quad => this.translateUpdateTriplesBlock(quad)));
     } else {
-      deleteTriples.push(...op.delete.flatMap(quad => this.translateUpdateTriplesBlock(quad)))
-      insertTriples.push(...op.insert.flatMap(quad => this.translateUpdateTriplesBlock(quad)))
+      deleteTriples.push(...op.delete.flatMap(quad => this.translateUpdateTriplesBlock(quad)));
+      insertTriples.push(...op.insert.flatMap(quad => this.translateUpdateTriplesBlock(quad)));
       if (op.where.length > 0) {
         where = this.translateGraphPattern(F.patternGroup(op.where, F.sourceLocation(...op.where)));
         const use: { default: RDF.NamedNode[]; named: RDF.NamedNode[] } = this.translateDatasetClause(op.from);
@@ -1046,34 +1089,42 @@ class QueryTranslator {
     return {
       default: dataset.clauses.filter(x => x.clauseType === 'default').map(x => this.translateTerm(x.value)),
       named: dataset.clauses.filter(x => x.clauseType === 'named').map(x => this.translateTerm(x.value)),
-    }
+    };
   }
 
   // UPDATE parsing will always return quads and have no GRAPH elements
-  private translateUpdateTriplesBlock(thingy: BgpPattern | GraphQuads, graph?: RDF.NamedNode): Algebra.Pattern[] {
-    let currentGraph: RDF.NamedNode | RDF.Variable | undefined = graph;
-    if (thingy.type === 'graph') {
-      currentGraph = thingy.name;
+  private translateUpdateTriplesBlock(thingy: PatternBgp | GraphQuads): Algebra.Pattern[] {
+    const F = this.astFactory;
+    let graph: TermIri | TermVariable | undefined;
+    let patternBgp: PatternBgp;
+    if (F.isGraphQuads(thingy)) {
+      graph = thingy.graph;
+      patternBgp = thingy.triples;
+    } else {
+      patternBgp = thingy;
     }
-    let currentTriples = thingy.triples;
-    if (currentGraph) {
-      currentTriples = currentTriples.map(triple => Object.assign(triple, { graph: currentGraph }));
+    let triples: FlattenedTriple[] = [];
+    this.translateBasicGraphPattern(patternBgp.triples, triples);
+    if (graph) {
+      triples = triples.map(triple => Object.assign(triple, { graph }));
     }
-    return currentTriples.map(translateQuad);
+    return triples.map(triple => this.translateQuad(triple));
   }
 
   private translateGraphRef<T extends GraphRef>(graph: T): TransformGraphRef<T> {
     const F = this.astFactory;
     if (F.isGraphRefAll(graph)) {
       return <TransformGraphRef<T>> 'ALL';
-    } else if (F.isGraphRefDefault(graph)) {
-      return <TransformGraphRef<T>> 'DEFAULT';
-    } else if (F.isGraphRefNamed(graph)) {
-      return <TransformGraphRef<T>> 'NAMED';
-    } else {
-      return <TransformGraphRef<T>> this.translateTerm(graph.graph);
     }
+    if (F.isGraphRefDefault(graph)) {
+      return <TransformGraphRef<T>> 'DEFAULT';
+    }
+    if (F.isGraphRefNamed(graph)) {
+      return <TransformGraphRef<T>> 'NAMED';
+    }
+    return <TransformGraphRef<T>> this.translateTerm(graph.graph);
   }
+
   private translateUpdateGraph(op: UpdateOperationClear | UpdateOperationDrop | UpdateOperationCreate):
   Algebra.Update {
     const F = this.astFactory;
@@ -1089,7 +1140,7 @@ class QueryTranslator {
       source = this.translateTerm(dest.graph);
     }
 
-    switch (op.) {
+    switch (op.subType) {
       case 'clear': return this.factory.createClear(source, op.silent);
       case 'create': return this.factory.createCreate(<RDF.NamedNode> source, op.silent);
       case 'drop': return this.factory.createDrop(source, op.silent);
@@ -1107,11 +1158,8 @@ class QueryTranslator {
   private translateBlankNodesToVariables(res: Algebra.Operation): Algebra.Operation {
     const factory = this.factory;
     const blankToVariableMapping: Record<string, RDF.Variable> = {};
-    const variablesRaw: Record<string, boolean> = [ ...this.variables ]
-      .reduce((acc: Record<string, boolean>, variable: string) => {
-        acc[variable] = true;
-        return acc;
-      }, {});
+    const variablesRaw: Set<string> = new Set(this.variables);
+
     return Util.mapOperation(res, {
       [Algebra.Types.DELETE_INSERT]: (op: Algebra.DeleteInsert) =>
         // Make sure blank nodes remain in the INSERT block, but do update the WHERE block
@@ -1155,7 +1203,7 @@ class QueryTranslator {
         let variable = blankToVariableMapping[term.value];
         if (!variable) {
           variable = Util.createUniqueVariable(term.value, variablesRaw, factory.dataFactory);
-          variablesRaw[variable.value] = true;
+          variablesRaw.add(variable.value);
           blankToVariableMapping[term.value] = variable;
         }
         return variable;

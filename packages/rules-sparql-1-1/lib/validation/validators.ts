@@ -131,8 +131,8 @@ export function queryIsGood(query: Pick<QuerySelect, 'variables' | 'solutionModi
   }
 }
 
-function findPatternBoundedVars(
-  iter: Pattern | TripleNesting | TripleCollection | Path | Term,
+export function findPatternBoundedVars(
+  iter: Pattern | TripleNesting | TripleCollection | Path | Term | Wildcard,
   boundedVars: Set<string>,
 ): void {
   if (F.isTerm(iter)) {

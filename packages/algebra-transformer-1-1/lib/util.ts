@@ -622,12 +622,12 @@ expr.separator,
 
   public static createUniqueVariable(
     label: string,
-    variables: Record<string, boolean>,
+    variables: Set<string>,
     dataFactory: RDF.DataFactory<RDF.BaseQuad, RDF.BaseQuad>,
   ): RDF.Variable {
     let counter = 0;
     let labelLoop = label;
-    while (variables[labelLoop]) {
+    while (variables.has(labelLoop)) {
       labelLoop = `${label}${counter++}`;
     }
     return dataFactory.variable!(labelLoop);

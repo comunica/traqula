@@ -13,12 +13,17 @@ import { UpdateOperationFactoryMixin } from './factoryMixins/UpdateOperationFact
 import type {
   DatasetClauses,
   GraphNode,
+  GraphQuads,
+  PatternBgp,
   Sparql11Nodes,
   Term,
   TermBlank,
+  TermIri,
+  TermVariable,
   TripleCollectionBlankNodeProperties,
   TripleCollectionList,
   TripleNesting,
+  Update,
   Wildcard,
 } from './RoundTripTypes';
 
@@ -129,5 +134,22 @@ export class Factory extends asArg(CoreFactory)
   public isTripleCollectionList(obj: object):
     obj is SubTyped<'tripleCollection', 'list'> {
     return this.isOfSubType(obj, 'tripleCollection', 'list');
+  }
+
+  public graphQuads(graph: TermIri | TermVariable, triples: PatternBgp, loc: SourceLocation): GraphQuads {
+    return {
+      type: 'graph',
+      graph,
+      triples,
+      loc,
+    };
+  }
+
+  public isGraphQuads(obj: object): obj is GraphQuads {
+    return super.isOfType(obj, 'graph');
+  }
+
+  public isUpdate(obj: object): obj is Update {
+    return super.isOfType(obj, 'update');
   }
 }

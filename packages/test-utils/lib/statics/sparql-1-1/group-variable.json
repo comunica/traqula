@@ -186,9 +186,17 @@
       "subType": "order",
       "orderDefs": [
         {
-          "type": "term",
-          "subType": "variable",
-          "value": "O12",
+          "expression": {
+            "type": "term",
+            "subType": "variable",
+            "value": "O12",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 134,
+              "end": 138
+            }
+          },
+          "descending": false,
           "loc": {
             "sourceLocationType": "source",
             "start": 134,

@@ -89,9 +89,17 @@
       "subType": "order",
       "orderDefs": [
         {
-          "type": "term",
-          "subType": "variable",
-          "value": "name",
+          "expression": {
+            "type": "term",
+            "subType": "variable",
+            "value": "name",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 97,
+              "end": 102
+            }
+          },
+          "descending": false,
           "loc": {
             "sourceLocationType": "source",
             "start": 97,

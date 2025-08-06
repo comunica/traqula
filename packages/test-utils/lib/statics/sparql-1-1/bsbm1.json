@@ -366,9 +366,17 @@
       "subType": "order",
       "orderDefs": [
         {
-          "type": "term",
-          "subType": "variable",
-          "value": "label",
+          "expression": {
+            "type": "term",
+            "subType": "variable",
+            "value": "label",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 592,
+              "end": 598
+            }
+          },
+          "descending": false,
           "loc": {
             "sourceLocationType": "source",
             "start": 592,

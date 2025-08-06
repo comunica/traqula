@@ -211,8 +211,9 @@ function translateTermExpression(expr: Algebra.TermExpression): RDF.Term {
   return expr.term;
 }
 
+// eslint-disable-next-line unused-imports/no-unused-vars
 function translateWildcardExpression(expr: Algebra.WildcardExpression): Wildcard {
-  return expr.wildcard;
+  return new Wildcard();
 }
 
 function arrayToPattern(input: any): Pattern {

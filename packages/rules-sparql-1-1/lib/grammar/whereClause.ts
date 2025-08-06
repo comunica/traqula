@@ -9,7 +9,6 @@ import type {
   PatternUnion,
   PatternMinus,
   TermIri,
-  TermBlank,
   TermLiteral,
   PatternBind,
   PatternService,
@@ -402,7 +401,7 @@ export const inlineDataFull: SparqlGrammarRule<'inlineDataFull', Wrap<ValuePatte
 /**
  * [[65]](https://www.w3.org/TR/sparql11-query/#rDataBlockValue)
  */
-export const dataBlockValue: SparqlGrammarRule<'dataBlockValue', TermIri | TermBlank | TermLiteral | undefined> = {
+export const dataBlockValue: SparqlGrammarRule<'dataBlockValue', TermIri | TermLiteral | undefined> = {
   name: 'dataBlockValue',
   impl: ({ SUBRULE, CONSUME, OR }) => () => OR<RuleDefReturn<typeof dataBlockValue>>([
     { ALT: () => SUBRULE(iri, undefined) },

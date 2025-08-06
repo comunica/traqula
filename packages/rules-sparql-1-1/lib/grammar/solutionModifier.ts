@@ -179,18 +179,14 @@ export const orderClause: SparqlRule<'orderClause', SolutionModifierOrder> = <co
   gImpl: ({ PRINT_WORD, SUBRULE }) => (ast, { factory: F }) => {
     F.printFilter(ast, () => PRINT_WORD('ORDER', 'BY'));
     for (const ordering of ast.orderDefs) {
-      if (F.isExpression(ordering)) {
-        SUBRULE(expression, ordering, undefined);
+      if (ordering.descending) {
+        F.printFilter(ast, () => PRINT_WORD('DESC'));
       } else {
-        if (ordering.descending) {
-          F.printFilter(ast, () => PRINT_WORD('DESC'));
-        } else {
-          F.printFilter(ast, () => PRINT_WORD('ASC'));
-        }
-        F.printFilter(ast, () => PRINT_WORD('('));
-        SUBRULE(expression, ordering.expression, undefined);
-        F.printFilter(ast, () => PRINT_WORD(')'));
+        F.printFilter(ast, () => PRINT_WORD('ASC'));
       }
+      F.printFilter(ast, () => PRINT_WORD('('));
+      SUBRULE(expression, ordering.expression, undefined);
+      F.printFilter(ast, () => PRINT_WORD(')'));
     }
   },
 };
@@ -221,8 +217,14 @@ export const orderCondition: SparqlGrammarRule<'orderCondition', Ordering> = <co
         loc: C.factory.sourceLocation(descending[1], expr),
       }));
     } },
-    { ALT: () => SUBRULE(constraint, undefined) },
-    { ALT: () => SUBRULE(var_, undefined) },
+    { ALT: () => {
+      const expr = SUBRULE(constraint, undefined);
+      return ACTION(() => ({ expression: expr, descending: false, loc: expr.loc }));
+    } },
+    { ALT: () => {
+      const expr = SUBRULE(var_, undefined);
+      return ACTION(() => ({ expression: expr, descending: false, loc: expr.loc }));
+    } },
   ]),
 };
 

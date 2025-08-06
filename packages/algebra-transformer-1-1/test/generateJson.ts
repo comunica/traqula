@@ -1,11 +1,13 @@
 /* eslint-disable no-sync */
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { Parser } from '@traqula/parser-sparql-1-1';
 import translate from '../lib/sparqlAlgebra';
 import Util from '../lib/util';
 
 // WARNING: use this script with caution!
 // After running this script, manual inspection of the output is needed to make sure that conversion happened correctly.
+const parser = new Parser();
 
 function generateJsonFromSparqlInPath(currentPath: string, stack: string[]): void {
   if (fs.lstatSync(currentPath).isDirectory()) {
@@ -20,9 +22,9 @@ function generateJsonFromSparqlInPath(currentPath: string, stack: string[]): voi
     const name = filename!.replace(/\.sparql$/u, '');
     for (const blankToVariable of [ false, true ]) {
       try {
-        const algebra = Util.objectify(translate(sparql, {
+        const ast = parser.parse(sparql);
+        const algebra = Util.objectify(translate(ast, {
           quads: name.endsWith('(quads)'),
-          sparqlStar: true,
           blankToVariable,
         }));
         filename = `${name}.json`;

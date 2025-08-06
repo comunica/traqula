@@ -1,5 +1,4 @@
 import type * as rdfjs from '@rdfjs/types';
-import type { Wildcard } from 'sparqljs';
 
 export enum Types {
   ALT = 'alt',
@@ -133,7 +132,9 @@ export interface TermExpression extends BaseExpression {
 
 export interface WildcardExpression extends BaseExpression {
   expressionType: expressionTypes.WILDCARD;
-  wildcard: Wildcard;
+  wildcard: {
+    type: 'wildcard';
+  };
 }
 
 // TODO: currently not differentiating between lists and multisets

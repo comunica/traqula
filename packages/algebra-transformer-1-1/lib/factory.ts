@@ -1,7 +1,6 @@
 import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
 import { stringToTerm } from 'rdf-string';
-import { Wildcard } from 'sparqljs';
 import * as A from './algebra';
 
 export default class Factory {
@@ -203,7 +202,7 @@ export default class Factory {
   }
 
   public createWildcardExpression(): A.WildcardExpression {
-    return { type: A.Types.EXPRESSION, expressionType: A.expressionTypes.WILDCARD, wildcard: new Wildcard() };
+    return { type: A.Types.EXPRESSION, expressionType: A.expressionTypes.WILDCARD, wildcard: { type: 'wildcard' }};
   }
 
   public createTerm(str: string): RDF.Term {

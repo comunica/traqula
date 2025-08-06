@@ -49,6 +49,8 @@ import type {
   Path,
   UpdateOperationClear,
   UpdateOperationDrop,
+
+  ContextDefinition,
 } from '@traqula/rules-sparql-1-1';
 import equal from 'fast-deep-equal/es6';
 import { DataFactory } from 'rdf-data-factory';
@@ -58,7 +60,7 @@ import Util from './util';
 
 const types = Algebra.Types;
 type mapAggregateType = Wildcard | Expression | Ordering | PatternBind;
-type TempDelIns = (PatternBgp | GraphQuads)[];
+// Type TempDelIns = (PatternBgp | GraphQuads)[];
 
 export type TransformedNamed<T extends object> = AlterNodeOutput<T, SubTyped<'term', 'namedNode'>, RDF.Term>;
 type AstToRdfTerm<T extends Term> = T extends TermVariable ? RDF.Variable :
@@ -108,6 +110,8 @@ class QueryTranslator {
   private readonly astFactory = new AstFactory();
   private readonly dataFactory = new DataFactory();
   private static readonly typeVals = Object.values(types);
+  private currentBase: string | undefined;
+  private readonly currentPrefixes: Record<string, string> = {};
 
   public constructor(private readonly factory: Factory) {}
 
@@ -122,6 +126,7 @@ class QueryTranslator {
     this.findAllVariables(sparql);
 
     if (this.astFactory.isQuery(sparql)) {
+      this.registerContextDefinitions(sparql.context);
       // Group and where are identical, having only 1 makes parsing easier, can be undefined in DESCRIBE
       const group: PatternGroup = sparql.where ?? this.astFactory.patternGroup([], this.astFactory.sourceLocation());
       result = this.translateGraphPattern(group);
@@ -135,6 +140,18 @@ class QueryTranslator {
     }
 
     return result!;
+  }
+
+  private registerContextDefinitions(definitions: ContextDefinition[]): void {
+    const F = this.astFactory;
+    for (const def of definitions) {
+      if (F.isContextDefinitionPrefix(def)) {
+        this.currentPrefixes[def.key] = this.translateTerm(def.value).value;
+      }
+      if (F.isContextDefinitionBase(def)) {
+        this.currentBase = this.translateTerm(def.value).value;
+      }
+    }
   }
 
   public isString(str: any): str is string {
@@ -265,26 +282,11 @@ class QueryTranslator {
     // return inScope;
   }
 
-  /**
-   * 18.2.2.1: Expand Syntax Forms - partly done by sparql parser, partly here, and partly in BGP
-   * https://www.w3.org/TR/sparql11-query/#sparqlExpandForms
-   * https://www.w3.org/TR/sparql11-query/#QSynIRI
-   */
-  private expandNamedNodes<Node extends Sparql11Nodes>(node: Node): Node {
-    const F = this.astFactory;
-    return <Node> this.transformer.transformNodeSpecific(node, 'term', 'namedNode', (cur) => {
-      if (F.isTermNamedPrefixed(cur)) {
-        // TODO: relate yourself prefix
-        return F.namedNode(cur.loc, cur.value);
-      }
-      // TODO: relate yourself to base
-      return F.namedNode(cur.loc, cur.value);
-    });
-  }
-
   private translateGraphPattern(pattern: Pattern): Algebra.Operation {
-    pattern = this.expandNamedNodes(pattern);
-
+    // 18.2.2.1: Expand Syntax Forms -
+    //    partly done by sparql parser, partly in this.translateTerm, and partly in BGP
+    // https://www.w3.org/TR/sparql11-query/#sparqlExpandForms
+    // https://www.w3.org/TR/sparql11-query/#QSynIRI
     if (this.astFactory.isPatternBgp(pattern)) {
       return this.translateBgp(pattern);
     }
@@ -305,7 +307,7 @@ class QueryTranslator {
 
       // Output depends on if we use quads or not
       if (this.useQuads) {
-        result = this.recurseGraph(result, pattern.name);
+        result = this.recurseGraph(result, this.translateTerm(pattern.name));
       } else {
         result = this.factory.createGraph(result, this.translateTerm(pattern.name));
       }
@@ -410,7 +412,15 @@ class QueryTranslator {
     const F = this.astFactory;
     const dataFact = this.dataFactory;
     if (F.isTermNamed(term)) {
-      return <AstToRdfTerm<T>> dataFact.namedNode(term.value);
+      let fullIri: string = term.value;
+      if (F.isTermNamedPrefixed(term)) {
+        const expanded = this.currentPrefixes[term.prefix];
+        if (!expanded) {
+          throw new Error(`Unknown prefix: ${term.prefix}`);
+        }
+        fullIri = expanded + term.value;
+      }
+      return <AstToRdfTerm<T>> dataFact.namedNode(Util.resolveIRI(fullIri, this.currentBase));
     }
     if (F.isTermBlank(term)) {
       return <AstToRdfTerm<T>> dataFact.blankNode(term.label);
@@ -653,22 +663,25 @@ class QueryTranslator {
   }
 
   /**
-   * Translate terms to be of some graph (Jitse thinks?)
+   * Translate terms to be of some graph
+   * @param algOp algebra operation to translate
+   * @param graph that should be assigned to the triples in algOp
+   * @param replacement used for replacing shadowed variables.
    */
-  private recurseGraph(thingy: Algebra.Operation, graph: RDF.Term, replacement?: RDF.Variable): Algebra.Operation {
-    if (thingy.type === types.GRAPH) {
+  private recurseGraph(algOp: Algebra.Operation, graph: RDF.Term, replacement?: RDF.Variable): Algebra.Operation {
+    if (algOp.type === types.GRAPH) {
       if (replacement) {
         // At this point we would lose track of the replacement which would result in incorrect results
         // This would indicate the library is not being used as intended though
         throw new Error('Recursing through nested GRAPH statements with a replacement is impossible.');
       }
       // In case there were nested GRAPH statements that were not recursed yet for some reason
-      thingy = this.recurseGraph(thingy.input, thingy.name);
-    } else if (thingy.type === types.SERVICE) {
+      algOp = this.recurseGraph(algOp.input, algOp.name);
+    } else if (algOp.type === types.SERVICE) {
       // Service blocks are not affected by enclosing GRAPH statements, so nothing is modified in this block.
       // See https://github.com/joachimvh/SPARQLAlgebra.js/pull/104#issuecomment-1838016303
-    } else if (thingy.type === types.BGP) {
-      thingy.patterns = thingy.patterns.map((quad) => {
+    } else if (algOp.type === types.BGP) {
+      algOp.patterns = algOp.patterns.map((quad) => {
         if (replacement) {
           if (quad.subject.equals(graph)) {
             quad.subject = replacement;
@@ -685,47 +698,47 @@ class QueryTranslator {
         }
         return quad;
       });
-    } else if (thingy.type === types.PATH) {
+    } else if (algOp.type === types.PATH) {
       if (replacement) {
-        if (thingy.subject.equals(graph)) {
-          thingy.subject = replacement;
+        if (algOp.subject.equals(graph)) {
+          algOp.subject = replacement;
         }
-        if (thingy.object.equals(graph)) {
-          thingy.object = replacement;
+        if (algOp.object.equals(graph)) {
+          algOp.object = replacement;
         }
       }
-      if (thingy.graph.termType === 'DefaultGraph') {
-        thingy.graph = graph;
+      if (algOp.graph.termType === 'DefaultGraph') {
+        algOp.graph = graph;
       }
-    } else if (thingy.type === types.PROJECT && !replacement) {
+    } else if (algOp.type === types.PROJECT && !replacement) {
       // Need to replace variables in subqueries should the graph also be a variable of the same name
       // unless the subquery projects that variable
-      if (!thingy.variables.some(v => v.equals(graph))) {
+      if (!algOp.variables.some(v => v.equals(graph))) {
         replacement = this.generateFreshVar();
       }
-      thingy.input = this.recurseGraph(thingy.input, graph, replacement);
-    } else if (thingy.type === types.EXTEND && !replacement) {
+      algOp.input = this.recurseGraph(algOp.input, graph, replacement);
+    } else if (algOp.type === types.EXTEND && !replacement) {
       // This can happen if the query extends an expression to the name of the graph
       // since the extend happens here there should be no further occurrences of this name
       // if there are it's the same situation as above
-      if (thingy.variable.equals(graph)) {
+      if (algOp.variable.equals(graph)) {
         replacement = this.generateFreshVar();
       }
-      thingy.input = this.recurseGraph(thingy.input, graph, replacement);
+      algOp.input = this.recurseGraph(algOp.input, graph, replacement);
     } else {
-      for (const key of Object.keys(thingy)) {
-        if (Array.isArray(thingy[key])) {
-          thingy[key] = thingy[key].map((x: any) => this.recurseGraph(x, graph, replacement));
-        } else if (QueryTranslator.typeVals.includes(thingy[key].type)) {
+      for (const key of Object.keys(algOp)) {
+        if (Array.isArray(algOp[key])) {
+          algOp[key] = algOp[key].map((x: any) => this.recurseGraph(x, graph, replacement));
+        } else if (QueryTranslator.typeVals.includes(algOp[key].type)) {
           // Can't do instanceof on an interface
-          thingy[key] = this.recurseGraph(thingy[key], graph, replacement);
-        } else if (replacement && this.isVariable(thingy[key]) && thingy[key].equals(graph)) {
-          thingy[key] = replacement;
+          algOp[key] = this.recurseGraph(algOp[key], graph, replacement);
+        } else if (replacement && this.isVariable(algOp[key]) && algOp[key].equals(graph)) {
+          algOp[key] = replacement;
         }
       }
     }
 
-    return thingy;
+    return algOp;
   }
 
   /**
@@ -991,15 +1004,14 @@ class QueryTranslator {
   }
 
   private translateUpdate(thingy: Update): Algebra.Operation {
-    const updateOperation: UpdateOperation[] = [];
-    for (const update of thingy.updates) {
-      // TODO: apply context
-      updateOperation.push(update.operation!);
+    const updates: Algebra.Update[] = thingy.updates.flatMap((update) => {
+      this.registerContextDefinitions(update.context);
+      return update.operation ? [ this.translateSingleUpdate(update.operation) ] : [];
+    });
+    if (updates.length === 1) {
+      return updates[0];
     }
-    if (updateOperation.length === 1) {
-      return this.translateSingleUpdate(updateOperation[0]);
-    }
-    return this.factory.createCompositeUpdate(updateOperation.map(x => this.translateSingleUpdate(x)));
+    return this.factory.createCompositeUpdate(updates);
   }
 
   private translateSingleUpdate(op: UpdateOperation): Algebra.Update {

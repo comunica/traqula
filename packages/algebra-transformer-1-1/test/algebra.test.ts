@@ -3,7 +3,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { Parser } from '@traqula/parser-sparql-1-1';
 import { describe, it } from 'vitest';
-import { translate } from '../index';
+import { translate } from '../lib/index';
 import LibUtil from '../lib/util';
 import Util from './util';
 
@@ -18,25 +18,28 @@ describe('algebra output', () => {
   const canon = Util.getCanonicalizerInstance();
   const parser = new Parser();
 
-  function testPath(root: string, fileName: string, testName: string, blankToVariable: boolean): void {
-    const sparqlName = path.join(rootSparql, fileName);
-    if (fs.lstatSync(sparqlName).isDirectory()) {
-      for (const sub of fs.readdirSync(sparqlName)) {
-        testPath(root, path.join(fileName, sub), `${testName}/${sub}`, blankToVariable);
+  function testPath(fileName: string, testName: string, blankToVariable: boolean): void {
+    const fullTestPath = path.join(rootSparql, fileName);
+    const algebraRoot = blankToVariable ? rootJsonBlankToVariable : rootJson;
+
+    if (fs.lstatSync(fullTestPath).isDirectory()) {
+      // If it's, a dir, read files and recurse.
+      for (const sub of fs.readdirSync(fullTestPath)) {
+        testPath(path.join(fileName, sub), `${testName}/${sub}`, blankToVariable);
       }
     } else if (fileName.endsWith('.sparql')) {
-      const name = `${root}/${testName.replace(/\.sparql$/u, '')}`;
-      const jsonPath = path.join(root, fileName.replace(/\.sparql$/u, '.json'));
+      const name = testName.replace(/\.sparql$/u, '');
+      const jsonPath = path.join(algebraRoot, fileName.replace(/\.sparql$/u, '.json'));
       // Not all tests need a blank version
       if (!fs.existsSync(jsonPath) && blankToVariable) {
         return;
       }
-      it(`${name.replace(rootJson, '')}${blankToVariable ? ' (no blanks)' : ''}`, ({ expect }) => {
-        const query = fs.readFileSync(sparqlName, 'utf8');
+      it(`${name}${blankToVariable ? ' (no blanks)' : ''}`, ({ expect }) => {
+        const query = fs.readFileSync(fullTestPath, 'utf8');
         const ast = parser.parse(query);
         const algebra = LibUtil.objectify(
           translate(ast, {
-            quads: name.endsWith('(quads)'),
+            quads: name.endsWith('-quads'),
             blankToVariable,
           }),
         );
@@ -47,11 +50,9 @@ describe('algebra output', () => {
     }
   }
 
-  // Dawg/sparql
   const subfolders = fs.readdirSync(rootSparql);
-
   for (const subfolder of subfolders) {
-    testPath(rootJson, subfolder, subfolder, false);
-    testPath(rootJsonBlankToVariable, subfolder, subfolder, true);
+    testPath(subfolder, subfolder, false);
+    testPath(subfolder, subfolder, true);
   }
 });

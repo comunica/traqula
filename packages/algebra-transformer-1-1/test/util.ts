@@ -1,7 +1,7 @@
 import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
-import { Algebra } from '../index';
 import type Factory from '../lib/factory';
+import { Algebra } from '../lib/index';
 import * as LibUtil from '../lib/util';
 
 // eslint-disable-next-line ts/no-extraneous-class

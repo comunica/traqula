@@ -3,7 +3,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { Parser } from '@traqula/parser-sparql-1-1';
 import { describe, it } from 'vitest';
-import { translate, toSparql } from '../index';
+import { translate, toSparql } from '../lib/index';
 import LibUtil from '../lib/util';
 import Util from './util';
 

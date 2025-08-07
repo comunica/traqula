@@ -15,7 +15,8 @@ import type {
   TripleCollection,
   Path,
   TripleNesting,
-  Term, SparqlQuery,
+  Term,
+  SparqlQuery,
 } from '../RoundTripTypes';
 
 const F = new Factory();

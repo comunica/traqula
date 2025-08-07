@@ -15,8 +15,6 @@ describe('algebra output', () => {
   const rootJson = path.join(__dirname, 'algebra');
   const rootJsonBlankToVariable = path.join(__dirname, 'algebra-blank-to-var');
 
-  console.error(rootSparql);
-
   const canon = Util.getCanonicalizerInstance();
   const parser = new Parser();
 
@@ -33,7 +31,7 @@ describe('algebra output', () => {
       if (!fs.existsSync(jsonPath) && blankToVariable) {
         return;
       }
-      it (`${name.replace(rootJson, '')}${blankToVariable ? ' (no blanks)' : ''}`, ({ expect }) => {
+      it(`${name.replace(rootJson, '')}${blankToVariable ? ' (no blanks)' : ''}`, ({ expect }) => {
         const query = fs.readFileSync(sparqlName, 'utf8');
         const ast = parser.parse(query);
         const algebra = LibUtil.objectify(

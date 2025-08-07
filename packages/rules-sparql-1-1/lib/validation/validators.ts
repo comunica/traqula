@@ -15,7 +15,7 @@ import type {
   TripleCollection,
   Path,
   TripleNesting,
-  Term,
+  Term, SparqlQuery,
 } from '../RoundTripTypes';
 
 const F = new Factory();
@@ -132,10 +132,34 @@ export function queryIsGood(query: Pick<QuerySelect, 'variables' | 'solutionModi
 }
 
 export function findPatternBoundedVars(
-  iter: Pattern | TripleNesting | TripleCollection | Path | Term | Wildcard,
+  iter: SparqlQuery | Pattern | TripleNesting | TripleCollection | Path | Term | Wildcard,
   boundedVars: Set<string>,
 ): void {
-  if (F.isTerm(iter)) {
+  if (F.isQuery(iter) || F.isUpdate(iter)) {
+    if (F.isQuerySelect(iter) || F.isQueryDescribe(iter)) {
+      if (iter.where && iter.variables.some(x => F.isWildcard(x))) {
+        findPatternBoundedVars(iter.where, boundedVars);
+      } else {
+        for (const v of iter.variables) {
+          findPatternBoundedVars(v, boundedVars);
+        }
+      }
+      if (iter.solutionModifiers.group) {
+        const grouping = iter.solutionModifiers.group;
+        for (const g of grouping.groupings) {
+          if ('variable' in g) {
+            findPatternBoundedVars(g.variable, boundedVars);
+          }
+        }
+      }
+      if (iter.values?.values && iter.values.values.length > 0) {
+        const values = iter.values.values;
+        for (const v of Object.keys(values[0])) {
+          boundedVars.add(v);
+        }
+      }
+    }
+  } else if (F.isTerm(iter)) {
     if (F.isTermVariable(iter)) {
       boundedVars.add(iter.value);
     }
@@ -166,6 +190,11 @@ export function findPatternBoundedVars(
   } else if (F.isPatternValues(iter)) {
     for (const variable of Object.keys(iter.values.at(0) ?? {})) {
       boundedVars.add(variable);
+    }
+  } else if (F.isPatternGraph(iter)) {
+    findPatternBoundedVars(iter.name, boundedVars);
+    for (const pattern of iter.patterns) {
+      findPatternBoundedVars(pattern, boundedVars);
     }
   }
 }

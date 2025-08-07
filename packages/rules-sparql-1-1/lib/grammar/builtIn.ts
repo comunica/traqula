@@ -255,7 +255,7 @@ SparqlGrammarRule<'builtInGroup_concat', ExpressionAggregateDefault | Expression
             operatorToken.image,
             Boolean(distinctToken),
             expr,
-            undefined,
+            ' ',
             F.sourceLocation(operatorToken, closeToken),
           );
       });

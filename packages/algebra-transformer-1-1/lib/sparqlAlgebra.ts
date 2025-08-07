@@ -59,7 +59,7 @@ import Factory from './factory';
 import Util from './util';
 
 const types = Algebra.Types;
-type mapAggregateType = Wildcard | Expression | Ordering | PatternBind;
+type MapAggregateType = Wildcard | Expression | Ordering | PatternBind;
 // Type TempDelIns = (PatternBgp | GraphQuads)[];
 
 export type TransformedNamed<T extends object> = AlterNodeOutput<T, SubTyped<'term', 'namedNode'>, RDF.Term>;
@@ -188,35 +188,8 @@ class QueryTranslator {
 
   // 18.2.1
   private inScopeVariables(thingy: SparqlQuery | TripleNesting | TripleCollection | Path | Term): Set<string> {
-    const F = this.astFactory;
     const vars = new Set<string>();
-    if (F.isQuery(thingy) || F.isUpdate(thingy)) {
-      if (F.isQuerySelect(thingy)) {
-        if (thingy.where && thingy.variables.some(Util.isWildcard)) {
-          findPatternBoundedVars(thingy.where, vars);
-        } else {
-          for (const v of thingy.variables) {
-            findPatternBoundedVars(v, vars);
-          }
-        }
-        if (thingy.solutionModifiers.group) {
-          const grouping = thingy.solutionModifiers.group;
-          for (const g of grouping.groupings) {
-            if ('variable' in g) {
-              findPatternBoundedVars(g.variable, vars);
-            }
-          }
-        }
-        if (thingy.values?.values && thingy.values.values.length > 0) {
-          const values = thingy.values.values;
-          for (const v of Object.keys(values[0])) {
-            vars.add(v);
-          }
-        }
-      }
-    } else {
-      findPatternBoundedVars(thingy, vars);
-    }
+    findPatternBoundedVars(thingy, vars);
     return vars;
 
     // Const inScope: Record<string, RDF.Variable> = {};
@@ -428,6 +401,10 @@ class QueryTranslator {
     if (F.isTermVariable(term)) {
       return <AstToRdfTerm<T>> dataFact.variable(term.value);
     }
+    if (F.isTermLiteral(term)) {
+      const langOrIri = typeof term.langOrIri === 'object' ? this.translateTerm(term.langOrIri) : term.langOrIri;
+      return <AstToRdfTerm<T>> dataFact.literal(term.value, langOrIri);
+    }
     throw new Error(`Unexpected term: ${JSON.stringify(term)}`);
   }
 
@@ -467,6 +444,9 @@ class QueryTranslator {
     });
   }
 
+  /**
+   * When flattening, nested subject triples first, followed by nested object triples, lastly the current tripple.
+   */
   private translateBasicGraphPattern(triples: BasicGraphPattern, result: FlattenedTriple[]): void {
     const F = this.astFactory;
     for (const triple of triples) {
@@ -535,7 +515,10 @@ class QueryTranslator {
   /**
    * 18.2.2.3 Translate Property Path Expressions
    */
-  private translatePathPredicate(predicate: RDF.NamedNode | PathPure): Algebra.PropertyPathSymbol {
+  private translatePathPredicate(predicate: RDF.NamedNode | Path): Algebra.PropertyPathSymbol {
+    if (this.astFactory.isTerm(predicate)) {
+      return this.translatePathPredicate(this.translateTerm(predicate));
+    }
     // Iri -> link(iri)
     if (this.isTerm(predicate)) {
       return this.factory.createLink(predicate);
@@ -548,30 +531,30 @@ class QueryTranslator {
 
     if (predicate.subType === '!') {
       // Negation is either over a single predicate or a list of disjuncted properties - that can only have modifier '^'
-      const normals: RDF.NamedNode[] = [];
-      const inverted: RDF.NamedNode[] = [];
+      const normals: TermIri[] = [];
+      const inverted: TermIri[] = [];
       // Either the item of this one is an `|`, `^` or `iri`
       const contained = predicate.items[0];
-      let items: (RDF.NamedNode | PathNegatedElt)[];
+      let items: (TermIri | PathNegatedElt)[];
       if (this.astFactory.isPathPure(contained) && contained.subType === '|') {
-        items = <(RDF.NamedNode | PathNegatedElt)[]> contained.items;
+        items = <(TermIri | PathNegatedElt)[]> contained.items;
       } else {
-        items = [ <RDF.NamedNode | PathNegatedElt> contained ];
+        items = [ contained ];
       }
 
       for (const item of items) {
-        if (this.isTerm(item)) {
+        if (this.astFactory.isTerm(item)) {
           normals.push(item);
         } else if (item.subType === '^') {
-          inverted.push(<RDF.NamedNode> <unknown> item.items[0]);
+          inverted.push(item.items[0]);
         } else {
           throw new Error(`Unexpected item: ${JSON.stringify(item)}`);
         }
       }
 
       // NPS elements do not have the LINK function
-      const normalElement = this.factory.createNps(normals);
-      const invertedElement = this.factory.createInv(this.factory.createNps(inverted));
+      const normalElement = this.factory.createNps(normals.map(x => this.translateTerm(x)));
+      const invertedElement = this.factory.createInv(this.factory.createNps(inverted.map(x => this.translateTerm(x))));
 
       // !(:iri1|...|:irin) -> NPS({:iri1 ... :irin})
       if (inverted.length === 0) {
@@ -824,21 +807,15 @@ class QueryTranslator {
     const bindPatterns: PatternBind[] = [];
 
     const varAggrMap: Record<string, ExpressionAggregate> = {};
-    if (F.isQuerySelect(query)) {
-      for (const val of query.variables) {
-        this.mapAggregate(val, varAggrMap);
-      }
-    }
-    if (query.solutionModifiers.having) {
-      for (const val of query.solutionModifiers.having.having) {
-        this.mapAggregate(val, varAggrMap);
-      }
-    }
-    if (query.solutionModifiers.order) {
-      for (const val of query.solutionModifiers.order.orderDefs) {
-        this.mapAggregate(val, varAggrMap);
-      }
-    }
+    const variables = F.isQuerySelect(query) || F.isQueryDescribe(query) ?
+      query.variables.map(x => this.mapAggregate(x, varAggrMap)) :
+      undefined;
+    const having = query.solutionModifiers.having ?
+      query.solutionModifiers.having.having.map(x => this.mapAggregate(x, varAggrMap)) :
+      undefined;
+    const order = query.solutionModifiers.order ?
+      query.solutionModifiers.order.orderDefs.map(x => this.mapAggregate(x, varAggrMap)) :
+      undefined;
 
     // Step: GROUP BY - If we found an aggregate, in group by or implicitly, do Group function.
     // 18.2.4.1 Grouping and Aggregation
@@ -852,12 +829,17 @@ class QueryTranslator {
           if (F.isTerm(expression)) {
             // This will always be a var, otherwise sparql would be invalid
             vars.push(this.translateTerm(<TermVariable> expression));
-          } else if ('variable' in expression) {
-            const var_ = this.translateTerm(expression.variable);
-            res = this.factory.createExtend(res, var_, this.translateExpression(expression.value));
           } else {
-            const var_ = this.generateFreshVar();
-            res = this.factory.createExtend(res, var_, this.translateExpression(expression));
+            let var_: RDF.Variable;
+            let expr: Expression;
+            if ('variable' in expression) {
+              var_ = this.translateTerm(expression.variable);
+              expr = expression.value;
+            } else {
+              var_ = this.generateFreshVar();
+              expr = expression;
+            }
+            res = this.factory.createExtend(res, var_, this.translateExpression(expr));
             vars.push(var_);
           }
         }
@@ -866,8 +848,8 @@ class QueryTranslator {
     }
 
     // 18.2.4.2
-    if (query.solutionModifiers.having) {
-      for (const filter of query.solutionModifiers.having.having) {
+    if (having) {
+      for (const filter of having) {
         res = this.factory.createFilter(res, this.translateExpression(filter));
       }
     }
@@ -880,14 +862,14 @@ class QueryTranslator {
     // 18.2.4.4
     let PatternValues: (RDF.Variable | RDF.NamedNode)[] = [];
 
-    if (F.isQuerySelect(query) || F.isQueryDescribe(query)) {
+    if (variables) {
       // Sort variables for consistent output
-      if (query.variables.some(wild => F.isWildcard(wild))) {
-        PatternValues = Object.values(this.inScopeVariables(query))
+      if (variables.some(wild => F.isWildcard(wild))) {
+        PatternValues = [ ...this.inScopeVariables(query).values() ].map(x => this.dataFactory.variable(x))
           .sort((left, right) => left.value.localeCompare(right.value));
       } else {
         // Wildcard has been filtered out above
-        for (const var_ of <Exclude<typeof query.variables, [Wildcard]>> query.variables) {
+        for (const var_ of <(TermVariable | TermIri | PatternBind)[]> variables) {
           // Can have non-variables with DESCRIBE
           if (F.isTerm(var_)) {
             PatternValues.push(this.translateTerm(var_));
@@ -913,8 +895,8 @@ class QueryTranslator {
     // not using toList and toMultiset
 
     // 18.2.5.1
-    if (query.solutionModifiers.order) {
-      res = this.factory.createOrderBy(res, query.solutionModifiers.order.orderDefs.map((expr) => {
+    if (order) {
+      res = this.factory.createOrderBy(res, order.map((expr) => {
         let result = this.translateExpression(expr.expression);
         if (expr.descending) {
           result = this.factory.createOperatorExpression('desc', [ result ]);
@@ -965,37 +947,42 @@ class QueryTranslator {
     return res;
   }
 
-  // Rewrites some of the input sparql object to make use of aggregate variables
-  private mapAggregate(thingy: mapAggregateType, aggregates: Record<string, ExpressionAggregate>): void {
+  /**
+   * Rewrites some of the input sparql object to make use of aggregate variables
+   * It thus replaces aggregates by their representative variable and registers the mapping.
+   *
+   * DEBUG NOTE: The type is tricky since it does replace aggregates by variables, but it works for the most part
+   */
+  private mapAggregate<T extends MapAggregateType>(thingy: T, aggregates: Record<string, ExpressionAggregate>): T {
     const F = this.astFactory;
 
     if (F.isExpressionAggregate(thingy)) {
-      let val: RDF.Variable | undefined;
+      // Needed to take away the difference in the various `loc` descriptions
+      const canonicalAggregate = this.astFactory.forcedAutoGenTree<ExpressionAggregate>(thingy);
+      let val: TermVariable | undefined;
+      // Look for the matching aggregate
       for (const [ key, aggregate ] of Object.entries(aggregates)) {
-        if (equal(aggregate, thingy)) {
-          val = this.dataFactory.variable(key);
+        if (equal(aggregate, canonicalAggregate)) {
+          val = F.variable(key, F.sourceLocation());
           break;
         }
       }
       if (val !== undefined) {
-        return;
+        return <T> val;
       }
       const freshVar = this.generateFreshVar();
-      aggregates[freshVar.value] = thingy;
-      return;
+      aggregates[freshVar.value] = canonicalAggregate;
+      return <T> F.variable(freshVar.value, F.sourceLocation());
     }
 
     if (F.isExpressionPure(thingy) && !F.isExpressionPatternOperation(thingy)) {
-      for (const expr of thingy.args) {
-        this.mapAggregate(expr, aggregates);
-      }
-      return;
+      return { ...thingy, args: thingy.args.map(x => this.mapAggregate(x, aggregates)) };
     }
-
     // Non-aggregate expression
     if ('expression' in thingy && thingy.expression) {
-      this.mapAggregate(thingy.expression, aggregates);
+      return { ...thingy, expression: this.mapAggregate(thingy.expression, aggregates) };
     }
+    return thingy;
   }
 
   private translateBoundAggregate(thingy: ExpressionAggregate, variable: RDF.Variable): Algebra.BoundAggregate {
@@ -1008,6 +995,9 @@ class QueryTranslator {
       this.registerContextDefinitions(update.context);
       return update.operation ? [ this.translateSingleUpdate(update.operation) ] : [];
     });
+    if (updates.length === 0) {
+      return this.factory.createNop();
+    }
     if (updates.length === 1) {
       return updates[0];
     }
@@ -1076,8 +1066,10 @@ class QueryTranslator {
     } else if (F.isUpdateOperationInsertData(op)) {
       insertTriples.push(...op.data.flatMap(quad => this.translateUpdateTriplesBlock(quad)));
     } else {
-      deleteTriples.push(...op.delete.flatMap(quad => this.translateUpdateTriplesBlock(quad)));
-      insertTriples.push(...op.insert.flatMap(quad => this.translateUpdateTriplesBlock(quad)));
+      deleteTriples.push(...op.delete.flatMap(quad =>
+        this.translateUpdateTriplesBlock(quad, op.graph ? this.translateTerm(op.graph) : op.graph)));
+      insertTriples.push(...op.insert.flatMap(quad =>
+        this.translateUpdateTriplesBlock(quad, op.graph ? this.translateTerm(op.graph) : op.graph)));
       if (op.where.length > 0) {
         where = this.translateGraphPattern(F.patternGroup(op.where, F.sourceLocation(...op.where)));
         const use: { default: RDF.NamedNode[]; named: RDF.NamedNode[] } = this.translateDatasetClause(op.from);
@@ -1105,20 +1097,21 @@ class QueryTranslator {
   }
 
   // UPDATE parsing will always return quads and have no GRAPH elements
-  private translateUpdateTriplesBlock(thingy: PatternBgp | GraphQuads): Algebra.Pattern[] {
+  private translateUpdateTriplesBlock(thingy: PatternBgp | GraphQuads, graph: RDF.NamedNode | undefined = undefined):
+  Algebra.Pattern[] {
     const F = this.astFactory;
-    let graph: TermIri | TermVariable | undefined;
+    let currentGraph: RDF.NamedNode | RDF.Variable | undefined = graph;
     let patternBgp: PatternBgp;
     if (F.isGraphQuads(thingy)) {
-      graph = thingy.graph;
+      currentGraph = this.translateTerm(thingy.graph);
       patternBgp = thingy.triples;
     } else {
       patternBgp = thingy;
     }
     let triples: FlattenedTriple[] = [];
     this.translateBasicGraphPattern(patternBgp.triples, triples);
-    if (graph) {
-      triples = triples.map(triple => Object.assign(triple, { graph }));
+    if (currentGraph) {
+      triples = triples.map(triple => Object.assign(triple, { graph: currentGraph }));
     }
     return triples.map(triple => this.translateQuad(triple));
   }

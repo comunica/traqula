@@ -1,6 +1,7 @@
 /* eslint-disable no-sync */
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { Generator } from '@traqula/generator-sparql-1-1';
 import { Parser } from '@traqula/parser-sparql-1-1';
 import { describe, it } from 'vitest';
 import { translate, toSparql } from '../lib/index';
@@ -14,10 +15,12 @@ describe('sparql output', () => {
   const rootJson = path.join(__dirname, 'algebra');
   const canon = Util.getCanonicalizerInstance();
   const parser = new Parser();
+  const generator = new Generator();
 
   function testPath(fileName: string, testName: string): void {
     const jsonName = path.join(rootJson, fileName);
     if (fs.lstatSync(jsonName).isDirectory()) {
+      // Recursion
       for (const sub of fs.readdirSync(jsonName)) {
         testPath(path.join(fileName, sub), `${testName}/${sub}`);
       }
@@ -25,17 +28,19 @@ describe('sparql output', () => {
       const name = testName.replace(/\.json$/u, '');
       it (name, ({ expect }) => {
         const expected = JSON.parse(fs.readFileSync(jsonName, 'utf8'));
-        const query = toSparql(expected, { sparqlStar: testName.includes('sparqlstar') });
-        const ast = parser.parse(query);
+        const genAst = toSparql(expected);
+        console.log(JSON.stringify(genAst, null, 2));
+        const genQuery = generator.generate(genAst);
+        console.log(genQuery);
+        const ast = parser.parse(genQuery);
         const algebra = LibUtil.objectify(translate(ast, {
-          quads: name.endsWith('(quads)'),
+          quads: name.endsWith('-quads'),
         }));
         expect(canon.canonicalizeQuery(algebra, false)).toEqual(canon.canonicalizeQuery(expected, false));
       });
     }
   }
 
-  // Dawg/sparql
   const subfolders = fs.readdirSync(rootJson);
   for (const subfolder of subfolders) {
     testPath(subfolder, subfolder);

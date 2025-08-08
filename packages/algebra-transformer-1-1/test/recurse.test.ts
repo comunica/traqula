@@ -2,9 +2,9 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { describe, it } from 'vitest';
+import { toSparql } from '../lib';
 import type { Operation, Project } from '../lib/algebra';
 import Factory from '../lib/factory';
-import { toSparqlJs } from '../lib/sparql';
 import translate from '../lib/sparqlAlgebra';
 import Util from '../lib/util';
 
@@ -28,7 +28,7 @@ describe('util functions', () => {
         const clone: Operation = Util.mapOperation(expected, {});
         if (clone.type === 'project') {
           // Const scope = Util.inScopeVariables(clone.input);
-          const project = <Project> translate(toSparqlJs(factory.createProject(clone.input, [])));
+          const project = <Project> translate(toSparql(factory.createProject(clone.input, [])));
           for (const v of project.variables.map(v => v.value)) {
             // Expect(scope.map(v => v.value)).toContain(v);
           }

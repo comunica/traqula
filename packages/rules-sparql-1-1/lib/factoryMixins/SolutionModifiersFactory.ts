@@ -2,6 +2,8 @@ import type { CoreFactory, SourceLocation, Typed, SubTyped } from '@traqula/core
 import type {
   Expression,
   Ordering,
+  SolutionModifierGroup,
+  SolutionModifierGroupBind,
   SolutionModifierHaving,
   SolutionModifierLimitOffset,
   SolutionModifierOrder,
@@ -60,6 +62,20 @@ export function SolutionModifiersFactoryMixin<TBase extends Constructor<CoreFact
 
     public isSolutionModifierLimitOffset(obj: object): obj is SubTyped<NodeType, 'limitOffset'> {
       return this.isOfSubType(obj, nodeType, 'limitOffset');
+    }
+
+    public solutionModifierGroup(groupings: (Expression | SolutionModifierGroupBind)[], loc: SourceLocation):
+    SolutionModifierGroup {
+      return {
+        type: 'solutionModifier',
+        subType: 'group',
+        groupings,
+        loc,
+      };
+    }
+
+    public isSolutionModifierGroup(obj: object): obj is SubTyped<NodeType, 'group'> {
+      return this.isOfSubType(obj, nodeType, 'group');
     }
   };
 }

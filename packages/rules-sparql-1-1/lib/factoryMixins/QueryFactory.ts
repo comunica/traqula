@@ -1,6 +1,13 @@
 import type { CoreFactory, SourceLocation, Typed, SubTyped } from '@traqula/core';
 import type {
+  ContextDefinition,
+  DatasetClauses,
+  PatternBgp,
+  PatternGroup,
+  PatternValues,
+  QueryConstruct,
   QuerySelect,
+  SolutionModifiers,
 } from '../RoundTripTypes';
 import type { Constructor } from './mixins';
 
@@ -16,6 +23,28 @@ export function QueryFactoryMixin<TBase extends Constructor<CoreFactory>>(Base: 
 
     public isQuerySelect(obj: object): obj is SubTyped<NodeType, 'select'> {
       return this.isOfSubType(obj, nodeType, 'select');
+    }
+
+    public queryConstruct(
+      loc: SourceLocation,
+      context: ContextDefinition[],
+      template: PatternBgp,
+      where: PatternGroup,
+      solutionModifiers: SolutionModifiers,
+      datasets: DatasetClauses,
+      values?: PatternValues,
+    ): QueryConstruct {
+      return {
+        type: 'query',
+        subType: 'construct',
+        context,
+        template,
+        where,
+        solutionModifiers,
+        datasets,
+        values,
+        loc,
+      };
     }
 
     public isQueryConstruct(obj: object): obj is SubTyped<NodeType, 'construct'> {

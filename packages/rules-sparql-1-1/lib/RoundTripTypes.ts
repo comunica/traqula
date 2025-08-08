@@ -355,7 +355,7 @@ export type Expression =
 export type PropertyPathBase = Node & { type: 'path'; subType: string };
 export type PropertyPathChain = PropertyPathBase & {
   subType: '|' | '/';
-  items: [Path, ...Path[]];
+  items: Path[];
 };
 
 export type PathModified = PropertyPathBase & {
@@ -370,7 +370,7 @@ export type PathNegatedElt = PropertyPathBase & {
 
 export type PathAlternativeLimited = PropertyPathBase & {
   subType: '|';
-  items: [TermIri | PathNegatedElt, ...(TermIri | PathNegatedElt)[]];
+  items: (TermIri | PathNegatedElt)[];
 };
 
 export type PathNegated = PropertyPathBase & {

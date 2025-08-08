@@ -1,39 +1,61 @@
 import type * as RDF from '@rdfjs/types';
-import { isomorphic } from 'rdf-isomorphic';
-import { stringToTerm, termToString } from 'rdf-string';
-import type {
-  AggregateExpression,
-  BgpPattern,
-  ClearDropOperation,
-  ConstructQuery,
-  CopyMoveAddOperation,
-  CreateOperation,
-  FunctionCallExpression,
-  GraphOrDefault,
-  GraphPattern,
-  GraphReference,
-  GroupPattern,
-  InsertDeleteOperation,
-  IriTerm,
-  LoadOperation,
-  OperationExpression,
-  Ordering,
-  Pattern,
-  PropertyPath,
-  Query,
-  SelectQuery,
-  ServicePattern,
-  Triple,
-  UnionPattern,
-  Update,
-  ValuePatternRow,
-  ValuesPattern,
-  Variable,
-} from 'sparqljs';
 import {
-  Generator,
+
+  Factory as AstFactory,
+} from '@traqula/rules-sparql-1-1';
+import type {
+  Expression,
+  ExpressionAggregate,
+  ExpressionFunctionCall,
+  ExpressionOperation,
+  ExpressionPatternOperation,
+  Ordering,
+  Path,
+  Pattern,
+  PatternBgp,
+  PatternBind,
+  PatternGraph,
+  PatternGroup,
+  QueryBase,
+  QueryConstruct,
+  QuerySelect,
+  SolutionModifierGroupBind,
+  SparqlQuery,
+  TermBlank,
+  TermIri,
+  TermLiteral,
+  TermVariable,
+  TripleNesting,
   Wildcard,
-} from 'sparqljs';
+  PatternService,
+  PatternUnion,
+  PatternValues,
+  ValuePatternRow,
+  PathPure,
+  PathNegatedElt,
+  PathModified,
+  PropertyPathChain,
+  PathAlternativeLimited,
+  Update,
+  UpdateOperation,
+  UpdateOperationClear,
+  UpdateOperationCreate,
+  UpdateOperationDrop,
+  UpdateOperationLoad,
+  UpdateOperationModify,
+  UpdateOperationAdd,
+  UpdateOperationCopy,
+  UpdateOperationMove,
+  GraphRefAll,
+  GraphRefDefault,
+  GraphRefNamed,
+  GraphRefSpecific,
+  UpdateOperationInsertData,
+  UpdateOperationDeleteData,
+  UpdateOperationDeleteWhere,
+  Term,
+} from '@traqula/rules-sparql-1-1';
+import { isomorphic } from 'rdf-isomorphic';
 import * as Algebra from './algebra';
 import Factory from './factory';
 import Util from './util';
@@ -41,957 +63,933 @@ import Util from './util';
 const types = Algebra.Types;
 const eTypes = Algebra.expressionTypes;
 
-let context: {
-  project: boolean;
-  extend: Algebra.Extend[];
-  group: RDF.Variable[];
-  aggregates: Algebra.BoundAggregate[];
-  order: Algebra.Expression[];
-};
-const factory = new Factory();
+type RdfTermToAst<T extends RDF.Term> = T extends RDF.Variable ? TermVariable :
+  T extends RDF.BlankNode ? TermBlank :
+    T extends RDF.Literal ? TermLiteral :
+      T extends RDF.NamedNode ? TermIri : never;
+type GraphToGraphRef<T extends 'DEFAULT' | 'NAMED' | 'ALL' | RDF.NamedNode> = T extends 'DEFAULT' ? GraphRefDefault :
+  T extends 'NAMED' ? GraphRefNamed : T extends 'ALL' ? GraphRefAll : GraphRefSpecific;
 
-export function toSparql(op: Algebra.Operation, options = {}): string {
-  const generator = new Generator(options);
-  return generator.stringify(toSparqlJs(op));
+export function toSparql(op: Algebra.Operation): SparqlQuery {
+  const translator = new Translator();
+  return translator.toSparqlJs(op);
 }
 
-export function toSparqlJs(op: Algebra.Operation): any {
-  resetContext();
-  op = removeQuads(op);
-  const result = translateOperation(op);
-  if (result.type === 'group') {
-    return result.patterns[0];
-  }
-  return result;
-}
+class Translator {
+  private project: boolean;
+  private extend: Algebra.Extend[];
+  private group: RDF.Variable[];
+  private aggregates: Algebra.BoundAggregate[];
+  private order: Algebra.Expression[];
+  private readonly factory = new Factory();
+  private readonly astFactory = new AstFactory();
 
-function resetContext(): void {
-  context = { project: false, extend: [], group: [], aggregates: [], order: []};
-}
-
-function translateOperation(op: Algebra.Operation): any {
-  // This allows us to differentiate between BIND and SELECT when translating EXTEND
-  // GRAPH was added because the way graphs get added back here is not the same as how they get added in the future
-  // ^ seems fine but might have to be changed if problems get detected in the future
-  if (op.type !== types.EXTEND && op.type !== types.ORDER_BY && op.type !== types.GRAPH) {
-    context.project = false;
-  }
-
-  switch (op.type) {
-    case types.EXPRESSION: return translateExpression(op);
-
-    case types.ASK: return translateProject(op, types.ASK);
-    case types.BGP: return translateBgp(op);
-    case types.CONSTRUCT: return translateConstruct(op);
-    case types.DESCRIBE: return translateProject(op, types.DESCRIBE);
-    case types.DISTINCT: return translateDistinct(op);
-    case types.EXTEND: return translateExtend(op);
-    case types.FROM: return translateFrom(op);
-    case types.FILTER: return translateFilter(op);
-    case types.GRAPH: return translateGraph(op);
-    case types.GROUP: return translateGroup(op);
-    case types.JOIN: return translateJoin(op);
-    case types.LEFT_JOIN: return translateLeftJoin(op);
-    case types.MINUS: return translateMinus(op);
-    case types.NOP: return {};
-    case types.ORDER_BY: return translateOrderBy(op);
-    case types.PATH: return translatePath(op);
-    case types.PATTERN: return translatePattern(op);
-    case types.PROJECT: return translateProject(op, types.PROJECT);
-    case types.REDUCED: return translateReduced(op);
-    case types.SERVICE: return translateService(op);
-    case types.SLICE: return translateSlice(op);
-    case types.UNION: return translateUnion(op);
-    case types.VALUES: return translateValues(op);
-      // UPDATE operations
-    case types.COMPOSITE_UPDATE: return translateCompositeUpdate(op);
-    case types.DELETE_INSERT: return translateDeleteInsert(op);
-    case types.LOAD: return translateLoad(op);
-    case types.CLEAR: return translateClear(op);
-    case types.CREATE: return translateCreate(op);
-    case types.DROP: return translateDrop(op);
-    case types.ADD: return translateAdd(op);
-    case types.MOVE: return translateMove(op);
-    case types.COPY: return translateCopy(op);
-    default:
-      throw new Error(`Unknown Operation type ${op.type}`);
-  }
-}
-
-function translateExpression(expr: Algebra.Expression): any {
-  switch (expr.expressionType) {
-    case eTypes.AGGREGATE: return translateAggregateExpression(expr);
-    case eTypes.EXISTENCE: return translateExistenceExpression(expr);
-    case eTypes.NAMED: return translateNamedExpression(expr);
-    case eTypes.OPERATOR: return translateOperatorExpression(expr);
-    case eTypes.TERM: return translateTermExpression(expr);
-    case eTypes.WILDCARD: return translateWildcardExpression(expr);
-  }
-
-  throw new Error(`Unknown Expression Operation type ${(<any> expr).expressionType}`);
-}
-
-function translatePathComponent(path: Algebra.Operation): IriTerm | PropertyPath {
-  switch (path.type) {
-    case types.ALT: return translateAlt(path);
-    case types.INV: return translateInv(path);
-    case types.LINK: return translateLink(path);
-    case types.NPS: return translateNps(path);
-    case types.ONE_OR_MORE_PATH: return translateOneOrMorePath(path);
-    case types.SEQ: return translateSeq(path);
-    case types.ZERO_OR_MORE_PATH: return translateZeroOrMorePath(path);
-    case types.ZERO_OR_ONE_PATH: return translateZeroOrOnePath(path);
-    default:
-      throw new Error(`Unknown Path type ${path.type}`);
-  }
-}
-
-function translateTerm(term: RDF.Term): string {
-  return termToString(term);
-}
-
-// ------------------------- EXPRESSIONS -------------------------
-
-function translateAggregateExpression(expr: Algebra.AggregateExpression): AggregateExpression {
-  const result: any = {
-    expression: translateExpression(expr.expression),
-    type: 'aggregate',
-    aggregation: expr.aggregator,
-    distinct: expr.distinct,
-  };
-
-  if (expr.separator) {
-    result.separator = expr.separator;
-  }
-
-  return result;
-}
-
-function translateExistenceExpression(expr: Algebra.ExistenceExpression): OperationExpression {
-  return {
-    type: 'operation',
-    operator: expr.not ? 'notexists' : 'exists',
-    args: [{
-      type: 'group',
-      patterns: Util.flatten([ translateOperation(expr.input) ]),
-    }],
-  };
-}
-
-function translateNamedExpression(expr: Algebra.NamedExpression): FunctionCallExpression {
-  return {
-    type: 'functionCall',
-    // Wrong typings
-    function: <any> expr.name,
-    args: expr.args.map(translateExpression),
-  };
-}
-
-function translateOperatorExpression(expr: Algebra.OperatorExpression): Ordering | OperationExpression {
-  if (expr.operator === 'desc') {
-    const result: Ordering = { expression: translateExpression(expr.args[0]) };
-    result.descending = true;
-    return result;
-  }
-
-  const result: OperationExpression = {
-    type: 'operation',
-    operator: expr.operator,
-    args: expr.args.map(translateExpression),
-  };
-
-  if (result.operator === 'in' || result.operator === 'notin') {
-    result.args = [ result.args[0], <any> result.args.slice(1) ];
-  }
-
-  return result;
-}
-
-function translateTermExpression(expr: Algebra.TermExpression): RDF.Term {
-  return expr.term;
-}
-
-// eslint-disable-next-line unused-imports/no-unused-vars
-function translateWildcardExpression(expr: Algebra.WildcardExpression): Wildcard {
-  return new Wildcard();
-}
-
-function arrayToPattern(input: any): Pattern {
-  if (!Array.isArray(input)) {
-    return input;
-  }
-  if (input.length === 1) {
-    return input[0];
-  }
-  return {
-    type: 'group',
-    patterns: input,
-  } satisfies GroupPattern;
-}
-
-// ------------------------- OPERATIONS -------------------------
-// these get translated in the project function
-function translateBoundAggregate(op: Algebra.BoundAggregate): Algebra.BoundAggregate {
-  return op;
-}
-
-function translateBgp(op: Algebra.Bgp): BgpPattern | null {
-  const patterns = op.patterns.map(translatePattern);
-  if (patterns.length === 0) {
-    return null;
-  }
-  return {
-    type: 'bgp',
-    triples: patterns,
-  };
-}
-
-function translateConstruct(op: Algebra.Construct): ConstructQuery {
-  return {
-    type: 'query',
-    prefixes: {},
-    queryType: 'CONSTRUCT',
-    template: op.template.map(translatePattern),
-    where: Util.flatten([
-      translateOperation(op.input),
-    ]),
-  };
-}
-
-function translateDistinct(op: Algebra.Distinct): GroupPattern {
-  const result = translateOperation(op.input);
-  // Project is nested in group object
-  result.patterns[0].distinct = true;
-  return result;
-}
-
-function translateExtend(op: Algebra.Extend): any {
-  if (context.project) {
-    context.extend.push(op);
-    return translateOperation(op.input);
-  }
-  return Util.flatten([
-    translateOperation(op.input),
-    {
-      type: 'bind',
-      variable: op.variable,
-      expression: translateExpression(op.expression),
-    },
-  ]);
-}
-
-function translateFrom(op: Algebra.From): GroupPattern {
-  const result = translateOperation(op.input);
-  // Can't type as CONSTRUCT queries do not have `from` field in their type
-  let obj = result;
-  // Project is nested in group object
-  if (result.type === 'group') {
-    obj = result.patterns[0];
-  }
-  obj.from = {
-    default: op.default,
-    named: op.named,
-  };
-  return result;
-}
-
-function translateFilter(op: Algebra.Filter): GroupPattern {
-  return {
-    type: 'group',
-    patterns: Util.flatten ([
-      translateOperation(op.input),
-      { type: 'filter', expression: translateExpression(op.expression) },
-    ]),
-  };
-}
-
-function translateGraph(op: Algebra.Graph): GraphPattern {
-  return {
-    type: 'graph',
-    patterns: Util.flatten([ translateOperation(op.input) ]),
-    name: <IriTerm> op.name,
-  };
-}
-
-function translateGroup(op: Algebra.Group): any {
-  const input = translateOperation(op.input);
-  const aggs = op.aggregates.map(translateBoundAggregate);
-  context.aggregates.push(...aggs);
-  // TODO: apply possible extends
-  context.group.push(...op.variables);
-
-  return input;
-}
-
-function translateJoin(op: Algebra.Join): Pattern[] {
-  const arr: any[] = Util.flatten(op.input.map(translateOperation));
-
-  // Merge bgps
-  // This is possible if one side was a path and the other a bgp for example
-  return arr.reduce((result, val) => {
-    if (val.type !== 'bgp' || result.length === 0 || result.at(-1).type !== 'bgp') {
-      result.push(val);
-    } else {
-      result.at(-1).triples.push(...val.triples);
+  public toSparqlJs(op: Algebra.Operation): SparqlQuery {
+    this.resetContext();
+    op = this.removeQuads(op);
+    const result = this.translateOperation(op);
+    if (result.type === 'group') {
+      return result.patterns[0];
     }
     return result;
-  }, []);
-}
+  }
 
-function translateLeftJoin(op: Algebra.LeftJoin): Pattern[] {
-  const leftjoin = {
-    type: 'optional',
-    patterns: [
-      translateOperation(op.input[1]),
-    ],
-  };
+  private resetContext(): void {
+    this.project = false;
+    this.extend = [];
+    this.group = [];
+    this.aggregates = [];
+    this.order = [];
+  }
 
-  if (op.expression) {
-    leftjoin.patterns.push(
-      {
-        type: 'filter',
-        expression: translateExpression(op.expression),
-      },
+  private translateOperation(op: Algebra.Operation): any {
+    // This allows us to differentiate between BIND and SELECT when translating EXTEND
+    // GRAPH was added because the way graphs get added back here is not the same as how they get added in the future
+    // ^ seems fine but might have to be changed if problems get detected in the future
+    if (op.type !== types.EXTEND && op.type !== types.ORDER_BY && op.type !== types.GRAPH) {
+      this.project = false;
+    }
+
+    switch (op.type) {
+      case types.EXPRESSION: return this.translateExpression(op);
+      case types.ASK: return this.translateProject(op, types.ASK);
+      case types.BGP: return this.translateBgp(op);
+      case types.CONSTRUCT: return this.translateConstruct(op);
+      case types.DESCRIBE: return this.translateProject(op, types.DESCRIBE);
+      case types.DISTINCT: return this.translateDistinct(op);
+      case types.EXTEND: return this.translateExtend(op);
+      case types.FROM: return this.translateFrom(op);
+      case types.FILTER: return this.translateFilter(op);
+      case types.GRAPH: return this.translateGraph(op);
+      case types.GROUP: return this.translateGroup(op);
+      case types.JOIN: return this.translateJoin(op);
+      case types.LEFT_JOIN: return this.translateLeftJoin(op);
+      case types.MINUS: return this.translateMinus(op);
+      case types.NOP: return {};
+      case types.ORDER_BY: return this.translateOrderBy(op);
+      case types.PATH: return this.translatePath(op);
+      case types.PATTERN: return this.translatePattern(op);
+      case types.PROJECT: return this.translateProject(op, types.PROJECT);
+      case types.REDUCED: return this.translateReduced(op);
+      case types.SERVICE: return this.translateService(op);
+      case types.SLICE: return this.translateSlice(op);
+      case types.UNION: return this.translateUnion(op);
+      case types.VALUES: return this.translateValues(op);
+      // UPDATE operations
+      case types.COMPOSITE_UPDATE: return this.translateCompositeUpdate(op);
+      case types.DELETE_INSERT: return this.translateDeleteInsert(op);
+      case types.LOAD: return this.translateLoad(op);
+      case types.CLEAR: return this.translateClear(op);
+      case types.CREATE: return this.translateCreate(op);
+      case types.DROP: return this.translateDrop(op);
+      case types.ADD: return this.translateAdd(op);
+      case types.MOVE: return this.translateMove(op);
+      case types.COPY: return this.translateCopy(op);
+      default:
+        throw new Error(`Unknown Operation type ${op.type}`);
+    }
+  }
+
+  private translateExpression(expr: Algebra.Expression): Expression {
+    switch (expr.expressionType) {
+      case eTypes.AGGREGATE: return this.translateAggregateExpression(expr);
+      case eTypes.EXISTENCE: return this.translateExistenceExpression(expr);
+      case eTypes.NAMED: return this.translateNamedExpression(expr);
+      case eTypes.OPERATOR: return <any> this.translateOperatorExpression(expr);
+      case eTypes.TERM: return <Expression> this.translateTermExpression(expr);
+      case eTypes.WILDCARD: return <any> this.translateWildcardExpression(expr);
+    }
+
+    throw new Error(`Unknown Expression Operation type ${(<Expression> expr).subType}`);
+  }
+
+  private translatePathComponent(path: Algebra.Operation): Path {
+    switch (path.type) {
+      case types.ALT: return this.translateAlt(path);
+      case types.INV: return this.translateInv(path);
+      case types.LINK: return this.translateLink(path);
+      case types.NPS: return this.translateNps(path);
+      case types.ONE_OR_MORE_PATH: return this.translateOneOrMorePath(path);
+      case types.SEQ: return this.translateSeq(path);
+      case types.ZERO_OR_MORE_PATH: return this.translateZeroOrMorePath(path);
+      case types.ZERO_OR_ONE_PATH: return this.translateZeroOrOnePath(path);
+      default:
+        throw new Error(`Unknown Path type ${path.type}`);
+    }
+  }
+
+  private translateTerm<T extends RDF.Term>(term: T): RdfTermToAst<T> {
+    const F = this.astFactory;
+    if (term.termType === 'NamedNode') {
+      return <RdfTermToAst<T>> F.namedNode(F.gen(), term.value);
+    }
+    if (term.termType === 'BlankNode') {
+      return <RdfTermToAst<T>> F.blankNode(term.value, F.gen());
+    }
+    if (term.termType === 'Variable') {
+      return <RdfTermToAst<T>> F.variable(term.value, F.gen());
+    }
+    if (term.termType === 'Literal') {
+      return <RdfTermToAst<T>> F.literalTerm(F.gen(), term.value, term.language);
+    }
+    throw new Error(`invalid term type: ${term.termType}`);
+  }
+
+  private translateTermExpression(expr: Algebra.TermExpression): Term {
+    return this.translateTerm(expr.term);
+  }
+
+  // ------------------------- EXPRESSIONS -------------------------
+
+  private translateAggregateExpression(expr: Algebra.AggregateExpression): ExpressionAggregate {
+    return this.astFactory.aggregate(
+      expr.aggregator,
+      expr.distinct,
+      this.translateExpression(expr.expression),
+      expr.separator,
+      this.astFactory.gen(),
     );
   }
-  leftjoin.patterns = Util.flatten(leftjoin.patterns);
 
-  return Util.flatten([
-    translateOperation(op.input[0]),
-    leftjoin,
-  ]);
-}
-
-function translateMinus(op: Algebra.Minus): Pattern[] {
-  let patterns = translateOperation(op.input[1]);
-  if (patterns.type === 'group') {
-    patterns = patterns.patterns;
+  private translateExistenceExpression(expr: Algebra.ExistenceExpression): ExpressionPatternOperation {
+    return this.astFactory.expressionPatternOperation(
+      expr.not ? 'notexists' : 'exists',
+      this.astFactory.patternGroup(Util.flatten([ this.translateOperation(expr.input) ]), this.astFactory.gen()),
+      this.astFactory.gen(),
+    );
   }
-  if (!Array.isArray(patterns)) {
-    patterns = [ patterns ];
+
+  private translateNamedExpression(expr: Algebra.NamedExpression): ExpressionFunctionCall {
+    return this.astFactory.expressionFunctionCall(
+      this.translateTerm(expr.name),
+      expr.args.map(x => this.translateExpression(x)),
+      false,
+      this.astFactory.gen(),
+    );
   }
-  return Util.flatten([
-    translateOperation(op.input[0]),
-    {
-      type: 'minus',
-      patterns,
-    },
-  ]);
-}
 
-function translateOrderBy(op: Algebra.OrderBy): any {
-  context.order.push(...op.expressions);
-  return translateOperation(op.input);
-}
-
-function translatePath(op: Algebra.Path): BgpPattern {
-  return {
-    type: 'bgp',
-    triples: [{
-      subject: <RDF.Quad_Subject> op.subject,
-      predicate: translatePathComponent(op.predicate),
-      object: <RDF.Quad_Object> op.object,
-    }],
-  };
-}
-
-function translatePattern(op: Algebra.Pattern): Triple {
-  return {
-    subject: <RDF.Quad_Subject> op.subject,
-    predicate: <RDF.Quad_Predicate> op.predicate,
-    object: <RDF.Quad_Object> op.object,
-  };
-}
-
-function replaceAggregatorVariables(s: any, map: any): any {
-  const st = Util.isSimpleTerm(s) ? translateTerm(s) : s;
-
-  if (typeof st === 'string') {
-    if (map[st]) {
-      return map[st];
+  private translateOperatorExpression(expr: Algebra.OperatorExpression): Ordering | ExpressionOperation {
+    if (expr.operator === 'desc') {
+      return { expression: this.translateExpression(expr.args[0]), descending: true, loc: this.astFactory.gen() };
     }
-  } else if (Array.isArray(s)) {
-    s = s.map(e => replaceAggregatorVariables(e, map));
-  } else {
-    for (const key of Object.keys(s)) {
-      s[key] = replaceAggregatorVariables(s[key], map);
+
+    return this.astFactory.expressionOperation(
+      expr.operator,
+      expr.args.map(x => this.translateExpression(x)),
+      this.astFactory.gen(),
+    );
+  }
+
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  private translateWildcardExpression(expr: Algebra.WildcardExpression): Wildcard {
+    return this.astFactory.wildcard(this.astFactory.gen());
+  }
+
+  private arrayToPattern(input: Pattern[]): Pattern {
+    if (!Array.isArray(input)) {
+      return input;
     }
-  }
-  return s;
-}
-
-function translateProject(op: Algebra.Project | Algebra.Ask | Algebra.Describe, type: string): GroupPattern {
-  const result: Query = <any> {
-    type: 'query',
-    prefixes: {},
-  };
-
-  // Makes typing easier in some places
-  const select: SelectQuery = <any> result;
-  let variables: RDF.Variable[] | undefined;
-
-  if (type === types.PROJECT) {
-    result.queryType = 'SELECT';
-    variables = op.variables;
-  } else if (type === types.ASK) {
-    result.queryType = 'ASK';
-  } else if (type === types.DESCRIBE) {
-    result.queryType = 'DESCRIBE';
-    variables = op.terms;
-  }
-
-  // Backup values in case of nested queries
-  // everything in extend, group, etc. is irrelevant for this project call
-  const extend = context.extend;
-  const group = context.group;
-  const aggregates = context.aggregates;
-  const order = context.order;
-  resetContext();
-
-  context.project = true;
-  let input = Util.flatten<any>([ translateOperation(op.input) ]);
-  if (input.length === 1 && input[0].type === 'group') {
-    input = input[0].patterns;
-  }
-  result.where = input;
-
-  const aggregators: any = {};
-  // These can not reference each other
-  for (const agg of context.aggregates) {
-    aggregators[translateTerm(agg.variable)] = translateExpression(agg);
-  }
-
-  // Do these in reverse order since variables in one extend might apply to an expression in an other extend
-  const extensions: Record<string, any> = {};
-  for (let i = context.extend.length - 1; i >= 0; --i) {
-    const e = context.extend[i];
-    extensions[translateTerm(e.variable)] = replaceAggregatorVariables(translateExpression(e.expression), aggregators);
-  }
-  if (context.group.length > 0) {
-    select.group = context.group.map((variable) => {
-      const v = translateTerm(variable);
-      if (extensions[v]) {
-        const result = extensions[v];
-        // Make sure there is only 1 'AS' statement
-        delete extensions[v];
-        return {
-          variable,
-          expression: result,
-        };
-      }
-      return { expression: variable };
-    });
-  }
-
-  // Descending expressions will already be in the correct format due to the structure of those
-  if (context.order.length > 0) {
-    select.order = context.order.map(translateOperation).map(o => o.descending ? o : ({ expression: o }));
-  }
-
-  // This needs to happen after the group because it might depend on variables generated there
-  if (variables) {
-    select.variables = variables.map((term): Variable => {
-      const v = translateTerm(term);
-      if (extensions[v]) {
-        const result = extensions[v];
-        // Remove used extensions so only unused ones remain
-        delete extensions[v];
-        return {
-          variable: term,
-          expression: result,
-        };
-      }
-      return term;
-    });
-    // If the * didn't match any variables this would be empty
-    if (select.variables.length === 0) {
-      select.variables = [ new Wildcard() ];
+    if (input.length === 1) {
+      return input[0];
     }
+    return this.astFactory.patternGroup(input, this.astFactory.gen());
   }
 
-  // It is possible that at this point some extensions have not yet been resolved.
-  // These would be bind operations that are not used in a GROUP BY or SELECT body.
-  // We still need to add them though, as they could be relevant to the other extensions.
-  const extensionEntries = Object.entries(extensions);
-  if (extensionEntries.length > 0) {
-    select.where = select.where ?? [];
-    for (const [ key, value ] of extensionEntries) {
-      select.where.push({
-        type: 'bind',
-        variable: <RDF.Variable> stringToTerm(key),
-        expression: value,
-      });
+  // ------------------------- OPERATIONS -------------------------
+  // these get translated in the project function
+  private translateBoundAggregate(op: Algebra.BoundAggregate): Algebra.BoundAggregate {
+    return op;
+  }
+
+  private translateBgp(op: Algebra.Bgp): PatternBgp | null {
+    const patterns = op.patterns.map(x => this.translatePattern(x));
+    if (patterns.length === 0) {
+      return null;
     }
+    return this.astFactory.patternBgp(patterns, this.astFactory.gen());
   }
 
-  // Convert filter to 'having' if it contains an aggregator variable
-  // could always convert, but is nicer to use filter when possible
-  if (result.where.length > 0 && result.where.at(-1)!.type === 'filter') {
-    const filter = result.where.at(-1);
-    if (objectContainsValues(filter, Object.keys(aggregators))) {
-      select.having = Util.flatten([ replaceAggregatorVariables((<any> filter).expression, aggregators) ]);
-      result.where.splice(-1);
+  private translateConstruct(op: Algebra.Construct): QueryConstruct {
+    return this.astFactory.queryConstruct(
+      this.astFactory.gen(),
+      [],
+      this.astFactory.patternBgp(op.template.map(x => this.translatePattern(x)), this.astFactory.gen()),
+      this.astFactory.patternGroup(Util.flatten([
+        this.translateOperation(op.input),
+      ]), this.astFactory.gen()),
+      {},
+      this.astFactory.datasetClauses([], this.astFactory.gen()),
+    );
+  }
+
+  private translateDistinct(op: Algebra.Distinct): PatternGroup {
+    const result = this.translateOperation(op.input);
+    // Project is nested in group object
+    result.patterns[0].distinct = true;
+    return result;
+  }
+
+  private translateExtend(op: Algebra.Extend): Pattern[] {
+    if (this.project) {
+      this.extend.push(op);
+      return this.translateOperation(op.input);
     }
+    return Util.flatten([
+      this.translateOperation(op.input),
+      this.astFactory.patternBind(
+        this.translateExpression(op.expression),
+        this.translateTerm(op.variable),
+        this.astFactory.gen(),
+      ),
+    ]);
   }
 
-  context.extend = extend;
-  context.group = group;
-  context.aggregates = aggregates;
-  context.order = order;
+  private translateFrom(op: Algebra.From): PatternGroup {
+    const result = this.translateOperation(op.input);
+    // Can't type as CONSTRUCT queries do not have `from` field in their type
+    let obj = result;
+    // Project is nested in group object
+    if (result.type === 'group') {
+      obj = result.patterns[0];
+    }
+    obj.from = {
+      default: op.default,
+      named: op.named,
+    };
+    return result;
+  }
 
-  // Subqueries need to be in a group, this will be removed again later for the root query
-  return { type: 'group', patterns: [ select ]};
-}
+  private translateFilter(op: Algebra.Filter): PatternGroup {
+    return this.astFactory.patternGroup(
+      Util.flatten ([
+        this.translateOperation(op.input),
+        this.astFactory.patternFilter(this.translateExpression(op.expression), this.astFactory.gen()),
+      ]),
+      this.astFactory.gen(),
+    );
+  }
 
-function objectContainsValues(o: any, vals: string[]): boolean {
-  if (Util.isSimpleTerm(o)) {
-    return vals.includes(translateTerm(o));
+  private translateGraph(op: Algebra.Graph): PatternGraph {
+    return this.astFactory.patternGraph(
+      this.translateTerm(op.name),
+      Util.flatten([ this.translateOperation(op.input) ]),
+      this.astFactory.gen(),
+    );
   }
-  if (Array.isArray(o)) {
-    return o.some(e => objectContainsValues(e, vals));
-  }
-  if (o === Object(o)) {
-    return Object.keys(o).some(key => objectContainsValues(o[key], vals));
-  }
-  return vals.includes(o);
-}
 
-function translateReduced(op: Algebra.Reduced): Pattern {
-  const result = translateOperation(op.input);
-  // Project is nested in group object
-  result.patterns[0].reduced = true;
-  return result;
-}
+  private translateGroup(op: Algebra.Group): PatternGroup {
+    const input = this.translateOperation(op.input);
+    const aggs = op.aggregates.map(x => this.translateBoundAggregate(x));
+    this.aggregates.push(...aggs);
+    // TODO: apply possible extends
+    this.group.push(...op.variables);
 
-function translateService(op: Algebra.Service): ServicePattern {
-  let patterns = translateOperation(op.input);
-  if (patterns.type === 'group') {
-    patterns = patterns.patterns;
+    return input;
   }
-  if (!Array.isArray(patterns)) {
-    patterns = [ patterns ];
-  }
-  return {
-    type: 'service',
-    // Typings are wrong, name can also be a variable
-    name: <RDF.NamedNode> op.name,
-    silent: op.silent,
-    patterns,
-  };
-}
 
-function translateSlice(op: Algebra.Slice): Pattern {
-  const result = translateOperation(op.input);
-  // Results can be nested in a group object
-  let obj = result;
-  if (result.type && result.type === 'group') {
-    obj = result.patterns[0];
-  }
-  if (op.start !== 0) {
-    obj.offset = op.start;
-  }
-  if (op.length !== undefined) {
-    obj.limit = op.length;
-  }
-  return result;
-}
+  private translateJoin(op: Algebra.Join): Pattern[] {
+    const arr: any[] = Util.flatten(op.input.map(x => this.translateOperation(x)));
 
-function translateUnion(op: Algebra.Union): UnionPattern {
-  return {
-    type: 'union',
-    patterns: op.input.map(translateOperation).map(arrayToPattern),
-  };
-}
-
-function translateValues(op: Algebra.Values): ValuesPattern {
-  // TODO: check if handled correctly when outside of select block
-  return {
-    type: 'values',
-    values: op.bindings.map((binding) => {
-      const result: ValuePatternRow = {};
-      for (const v of op.variables) {
-        const s = `?${v.value}`;
-        if (binding[s]) {
-          result[s] = binding[s];
-        } else {
-          result[s] = undefined;
-        }
+    // Merge bgps
+    // This is possible if one side was a path and the other a bgp for example
+    return arr.reduce((result, val) => {
+      if (val.type !== 'bgp' || result.length === 0 || result.at(-1).type !== 'bgp') {
+        result.push(val);
+      } else {
+        result.at(-1).triples.push(...val.triples);
       }
       return result;
-    }),
-  };
-}
-
-// PATH COMPONENTS
-
-function translateAlt(path: Algebra.Alt): any {
-  const mapped = path.input.map(translatePathComponent);
-  if (mapped.every(entry => 'pathType' in entry && entry.pathType === '!')) {
-    return {
-      type: 'path',
-      pathType: '!',
-      items: [{
-        type: 'path',
-        pathType: '|',
-        items: Util.flatten(mapped.map(entry => (<PropertyPath> entry).items)),
-      }],
-    };
+    }, []);
   }
 
-  return {
-    type: 'path',
-    pathType: '|',
-    items: mapped,
-  };
-}
+  private translateLeftJoin(op: Algebra.LeftJoin): Pattern[] {
+    const leftjoin = this.astFactory.patternOptional([
+      this.translateOperation(op.input[1]),
+    ], this.astFactory.gen());
 
-function translateInv(path: Algebra.Inv): PropertyPath {
-  if (path.path.type === types.NPS) {
-    const inv: PropertyPath[] = path.path.iris.map((iri: RDF.NamedNode) => ({
-      type: 'path',
-      pathType: '^',
-      items: [ iri ],
-    }));
+    if (op.expression) {
+      leftjoin.patterns.push(
+        this.astFactory.patternFilter(this.translateExpression(op.expression), this.astFactory.gen()),
+      );
+    }
+    // Leftjoin.patterns = Util.flatten(leftjoin.patterns);
 
-    if (inv.length <= 1) {
-      return <PropertyPath> {
-        type: 'path',
-        pathType: '!',
-        items: inv,
-      };
+    return Util.flatten([
+      this.translateOperation(op.input[0]),
+      leftjoin,
+    ]);
+  }
+
+  private translateMinus(op: Algebra.Minus): Pattern[] {
+    let patterns = this.translateOperation(op.input[1]);
+    if (patterns.type === 'group') {
+      patterns = patterns.patterns;
+    }
+    if (!Array.isArray(patterns)) {
+      patterns = [ patterns ];
+    }
+    return Util.flatten([
+      this.translateOperation(op.input[0]),
+      {
+        type: 'minus',
+        patterns,
+      },
+    ]);
+  }
+
+  private translateOrderBy(op: Algebra.OrderBy): any {
+    this.order.push(...op.expressions);
+    return this.translateOperation(op.input);
+  }
+
+  private translatePath(op: Algebra.Path): PatternBgp {
+    return this.astFactory.patternBgp([
+      this.astFactory.triple(
+        this.translateTerm(op.subject),
+        this.translatePathComponent(op.predicate),
+        this.translateTerm(op.object),
+      ),
+    ], this.astFactory.gen());
+  }
+
+  private translatePattern(op: Algebra.Pattern): TripleNesting {
+    return this.astFactory.triple(
+      this.translateTerm(op.subject),
+       <any> this.translateTerm(op.predicate),
+       this.translateTerm(op.object),
+    );
+  }
+
+  private replaceAggregatorVariables(s: any, map: any): any {
+    const st = Util.isSimpleTerm(s) ? this.translateTerm(s) : s;
+
+    if (typeof st === 'string') {
+      if (map[st]) {
+        return map[st];
+      }
+    } else if (Array.isArray(s)) {
+      s = s.map(e => this.replaceAggregatorVariables(e, map));
+    } else {
+      for (const key of Object.keys(s)) {
+        s[key] = this.replaceAggregatorVariables(s[key], map);
+      }
+    }
+    return s;
+  }
+
+  private translateProject(op: Algebra.Project | Algebra.Ask | Algebra.Describe, type: string): PatternGroup {
+    const result: QueryBase = <any> {
+      type: 'query',
+      prefixes: {},
+    };
+
+    // Makes typing easier in some places
+    const select: QuerySelect = <any> result;
+    let variables: RDF.Variable[] | undefined;
+
+    if (type === types.PROJECT) {
+      result.subType = 'select';
+      variables = op.variables;
+    } else if (type === types.ASK) {
+      result.subType = 'ask';
+    } else if (type === types.DESCRIBE) {
+      result.subType = 'describe';
+      variables = op.terms;
     }
 
-    return <PropertyPath> <unknown> {
-      type: 'path',
-      pathType: '!',
-      items: [{
-        type: 'path',
-        pathType: '|',
-        items: inv,
-      }],
-    };
+    // Backup values in case of nested queries
+    // everything in extend, group, etc. is irrelevant for this project call
+    const extend = this.extend;
+    const group = this.group;
+    const aggregates = this.aggregates;
+    const order = this.order;
+    this.resetContext();
+
+    this.project = true;
+    let input = Util.flatten<any>([ this.translateOperation(op.input) ]);
+    if (input.length === 1 && input[0].type === 'group') {
+      input = input[0].patterns;
+    }
+    result.where = this.astFactory.patternGroup(input, this.astFactory.gen());
+
+    const aggregators: any = {};
+    // These can not reference each other
+    for (const agg of this.aggregates) {
+      aggregators[this.translateTerm(agg.variable).value] = this.translateExpression(agg);
+    }
+
+    // Do these in reverse order since variables in one extend might apply to an expression in an other extend
+    const extensions: Record<string, any> = {};
+    for (let i = this.extend.length - 1; i >= 0; --i) {
+      const e = this.extend[i];
+      extensions[this.translateTerm(e.variable).value] =
+        this.replaceAggregatorVariables(this.translateExpression(e.expression), aggregators);
+    }
+    if (this.group.length > 0) {
+      select.solutionModifiers.group = this.astFactory.solutionModifierGroup(
+        this.group.map((variable) => {
+          const v = this.translateTerm(variable);
+          if (extensions[v.value]) {
+            const result = extensions[v.value];
+            // Make sure there is only 1 'AS' statement
+            delete extensions[v.value];
+            return {
+              variable: v,
+              value: result,
+              loc: this.astFactory.gen(),
+            } satisfies SolutionModifierGroupBind;
+          }
+          return v;
+        }),
+        this.astFactory.gen(),
+      );
+    }
+
+    if (this.order.length > 0) {
+      select.solutionModifiers.order = this.astFactory.solutionModifierOrder(
+        this.order.map(x => this.translateOperation(x)).map(o => ({
+          expression: o,
+          descending: o.descending,
+          loc: this.astFactory.gen(),
+        } satisfies Ordering)),
+        this.astFactory.gen(),
+      );
+    }
+
+    // This needs to happen after the group because it might depend on variables generated there
+    if (variables) {
+      select.variables = variables.map((term): TermVariable | PatternBind => {
+        const v = this.translateTerm(term);
+        if (extensions[v.value]) {
+          const result: Expression = extensions[v.value];
+          // Remove used extensions so only unused ones remain
+          delete extensions[v.value];
+          return this.astFactory.patternBind(result, v, this.astFactory.gen());
+        }
+        return v;
+      });
+      // If the * didn't match any variables this would be empty
+      if (select.variables.length === 0) {
+        select.variables = [ this.astFactory.wildcard(this.astFactory.gen()) ];
+      }
+    }
+
+    // It is possible that at this point some extensions have not yet been resolved.
+    // These would be bind operations that are not used in a GROUP BY or SELECT body.
+    // We still need to add them though, as they could be relevant to the other extensions.
+    const extensionEntries = Object.entries(extensions);
+    if (extensionEntries.length > 0) {
+      select.where = select.where ?? this.astFactory.patternGroup([], this.astFactory.gen());
+      for (const [ key, value ] of extensionEntries) {
+        select.where.patterns.push(
+          this.astFactory.patternBind(
+            value,
+            this.astFactory.variable(key, this.astFactory.gen()),
+            this.astFactory.gen(),
+          ),
+        );
+      }
+    }
+
+    // Convert filter to 'having' if it contains an aggregator variable
+    // could always convert, but is nicer to use filter when possible
+    if (result.where && this.astFactory.isPatternFilter(result.where.patterns.at(-1) ?? {})) {
+      // TODO: jitsy: inspect closer
+      // const filter = <PatternFilter> result.where.patterns.at(-1);
+      // if (this.objectContainsValues(filter, Object.keys(aggregators))) {
+      //   select.solutionModifiers.having = this.astFactory.solutionModifierHaving(
+      //     Util.flatten([ this.replaceAggregatorVariables((<any> filter).expression, aggregators) ]),
+      //     this.astFactory.gen(),
+      //   );
+      //   result.where.patterns.splice(-1);
+      // }
+    }
+
+    this.extend = extend;
+    this.group = group;
+    this.aggregates = aggregates;
+    this.order = order;
+
+    // Subqueries need to be in a group, this will be removed again later for the root query
+    return this.astFactory.patternGroup([ select ], this.astFactory.gen());
   }
 
-  return {
-    type: 'path',
-    pathType: '^',
-    items: [ translatePathComponent(path.path) ],
-  };
-}
+  private translateReduced(op: Algebra.Reduced): Pattern {
+    const result = this.translateOperation(op.input);
+    // Project is nested in group object
+    result.patterns[0].reduced = true;
+    return result;
+  }
 
-function translateLink(path: Algebra.Link): RDF.NamedNode {
-  return path.iri;
-}
+  private translateService(op: Algebra.Service): PatternService {
+    let patterns: Pattern | Pattern[] = <Pattern> this.translateOperation(op.input);
+    if (this.astFactory.isPatternGroup(patterns)) {
+      patterns = patterns.patterns;
+    }
+    if (!Array.isArray(patterns)) {
+      patterns = [ patterns ];
+    }
+    return this.astFactory.patternService(
+      this.translateTerm(op.name),
+      patterns,
+      op.silent,
+      this.astFactory.gen(),
+    );
+  }
 
-function translateNps(path: Algebra.Nps): PropertyPath {
-  if (path.iris.length <= 1) {
+  private translateSlice(op: Algebra.Slice): Pattern {
+    const result = <Pattern> this.translateOperation(op.input);
+    // Results can be nested in a group object
+    let obj = <any> result;
+    if (this.astFactory.isPatternGroup(result)) {
+      obj = result.patterns[0];
+    }
+    if (op.start !== 0) {
+      obj.offset = op.start;
+    }
+    if (op.length !== undefined) {
+      obj.limit = op.length;
+    }
+    return result;
+  }
+
+  private translateUnion(op: Algebra.Union): PatternUnion {
+    return this.astFactory.patternUnion(
+      <PatternGroup[]> op.input.map(x => this.translateOperation(x)).map(x => this.arrayToPattern(x)),
+      this.astFactory.gen(),
+    );
+  }
+
+  private translateValues(op: Algebra.Values): PatternValues {
+    // TODO: check if handled correctly when outside of select block
+    return this.astFactory.patternValues(
+      op.bindings.map((binding) => {
+        const result: ValuePatternRow = {};
+        for (const v of op.variables) {
+          const s = v.value;
+          if (binding[s]) {
+            result[s] = this.translateTerm(binding[s]);
+          } else {
+            result[s] = undefined;
+          }
+        }
+        return result;
+      }),
+      this.astFactory.gen(),
+    );
+  }
+
+  // PATH COMPONENTS
+
+  private translateAlt(path: Algebra.Alt): any {
+    const mapped = path.input.map(x => this.translatePathComponent(x));
+    if (mapped.every(entry => this.astFactory.isPathOfType(entry, [ '!' ]))) {
+      return this.astFactory.path(
+        '!',
+        [ this.astFactory.path(
+          '|',
+          <(TermIri | PathNegatedElt)[]> Util.flatten(mapped.map(entry => (<PathPure> entry).items)),
+          this.astFactory.gen(),
+        ) ],
+        this.astFactory.gen(),
+      );
+    }
+    return this.astFactory.path('|', mapped, this.astFactory.gen());
+  }
+
+  private translateInv(path: Algebra.Inv): Path {
+    const F = this.astFactory;
+    if (path.path.type === types.NPS) {
+      const inv: Path[] = path.path.iris.map((iri: RDF.NamedNode) => F.path(
+        '^',
+        [ this.translateTerm(iri) ],
+        F.gen(),
+      ));
+
+      if (inv.length <= 1) {
+        return F.path(
+          '!',
+<[TermIri | PathNegatedElt | PathAlternativeLimited]> inv,
+F.gen(),
+        );
+      }
+
+      return F.path('!', [ <PathAlternativeLimited> F.path('|', inv, F.gen()) ], F.gen());
+    }
+
+    return F.path('^', [ this.translatePathComponent(path.path) ], F.gen());
+  }
+
+  private translateLink(path: Algebra.Link): TermIri {
+    return this.translateTerm(path.iri);
+  }
+
+  private translateNps(path: Algebra.Nps): Path {
+    const F = this.astFactory;
+    if (path.iris.length === 1) {
+      return F.path('!', [ this.translateTerm(path.iris[0]) ], F.gen());
+    }
+    return F.path('!', [ F.path('|', path.iris.map(x => this.translateTerm(x)), F.gen()) ], F.gen());
+  }
+
+  private translateOneOrMorePath(path: Algebra.OneOrMorePath): PathModified {
+    const F = this.astFactory;
+    return F.path('+', [ this.translatePathComponent(path.path) ], F.gen());
+  }
+
+  private translateSeq(path: Algebra.Seq): PropertyPathChain {
+    const F = this.astFactory;
+    return F.path(
+      '/',
+      path.input.map(x => this.translatePathComponent(x)),
+      F.gen(),
+    );
+  }
+
+  private translateZeroOrMorePath(path: Algebra.ZeroOrMorePath): PathModified {
+    const F = this.astFactory;
+    return F.path('*', [ this.translatePathComponent(path.path) ], F.gen());
+  }
+
+  private translateZeroOrOnePath(path: Algebra.ZeroOrOnePath): PathModified {
+    const F = this.astFactory;
+    return F.path('?', [ this.translatePathComponent(path.path) ], F.gen());
+  }
+
+  // UPDATE OPERATIONS
+
+  private translateCompositeUpdate(op: Algebra.CompositeUpdate): Update {
+    const updates = op.updates.map(update => <UpdateOperation> this.translateOperation(update));
     return {
-      type: 'path',
-      pathType: '!',
-      items: path.iris,
-    };
+      type: 'update',
+      updates: updates.map(op => ({ context: [], operation: op })),
+      loc: this.astFactory.gen(),
+    } satisfies Update;
   }
 
-  return <PropertyPath> <unknown> {
-    type: 'path',
-    pathType: '!',
-    items: [{
-      type: 'path',
-      pathType: '|',
-      items: path.iris,
-    }],
-  };
-}
+  private translateDeleteInsert(op: Algebra.DeleteInsert): UpdateOperationModify {
+    const F = this.astFactory;
+    let where: Algebra.Operation | undefined = op.where;
+    let use;
+    if (where && where.type === types.FROM) {
+      const from = where;
+      where = from.input;
+      use = { default: from.default, named: from.named };
+    }
 
-function translateOneOrMorePath(path: Algebra.OneOrMorePath): PropertyPath {
-  return {
-    type: 'path',
-    pathType: '+',
-    items: [ translatePathComponent(path.path) ],
-  };
-}
-
-function translateSeq(path: Algebra.Seq): PropertyPath {
-  return {
-    type: 'path',
-    pathType: '/',
-    items: path.input.map(translatePathComponent),
-  };
-}
-
-function translateZeroOrMorePath(path: Algebra.ZeroOrMorePath): PropertyPath {
-  return {
-    type: 'path',
-    pathType: '*',
-    items: [ translatePathComponent(path.path) ],
-  };
-}
-function translateZeroOrOnePath(path: Algebra.ZeroOrOnePath): PropertyPath {
-  // Typings are missing '?' operator
-  return {
-    type: 'path',
-    // Typings are missing this path
-    pathType: <any> '?',
-    items: [ translatePathComponent(path.path) ],
-  };
-}
-
-// UPDATE OPERATIONS
-
-function translateCompositeUpdate(op: Algebra.CompositeUpdate): Update {
-  const updates = op.updates.map((update) => {
-    const result = translateOperation(update);
-    return result.updates[0];
-  });
-
-  return { prefixes: {}, type: 'update', updates };
-}
-
-function translateDeleteInsert(op: Algebra.DeleteInsert): Update {
-  let where: Algebra.Operation | undefined = op.where;
-  let use;
-  if (where && where.type === types.FROM) {
-    const from = where;
-    where = from.input;
-    use = { default: from.default, named: from.named };
-  }
-
-  const updates = <[InsertDeleteOperation & { where?: unknown; delete?: unknown; insert?: unknown }]> [{
-    updateType: 'insertdelete',
-    delete: convertUpdatePatterns(op.delete ?? []),
-    insert: convertUpdatePatterns(op.insert ?? []),
-  }];
+    const updates = <[UpdateOperationModify & { where?: unknown; delete?: unknown; insert?: unknown }]> [{
+      type: 'updateOperation',
+      subType: 'modify',
+      delete: this.convertUpdatePatterns(op.delete ?? []),
+      insert: this.convertUpdatePatterns(op.insert ?? []),
+    }];
     // Typings don't support 'using' yet
-  if (use) {
-    (<any> updates[0]).using = use;
-  }
+    if (use) {
+      (<any> updates[0]).from = use;
+    }
 
-  // Corresponds to empty array in SPARQL.js
-  if (!where || (where.type === types.BGP && where.patterns.length === 0)) {
-    updates[0].where = [];
-  } else {
-    const graphs: RDF.NamedNode[] = [];
-    const result = translateOperation(removeQuadsRecursive(where, graphs));
-    if (result.type === 'group') {
-      updates[0].where = result.patterns;
+    // Corresponds to empty array in SPARQL.js
+    if (!where || (where.type === types.BGP && where.patterns.length === 0)) {
+      updates[0].where = [];
     } else {
-      updates[0].where = [ result ];
-    }
-    // Graph might not be applied yet since there was no project
-    // this can only happen if there was a single graph
-    if (graphs.length > 0) {
-      if (graphs.length !== 1) {
-        throw new Error('This is unexpected and might indicate an error in graph handling for updates.');
+      const graphs: RDF.NamedNode[] = [];
+      const result = this.translateOperation(this.removeQuadsRecursive(where, graphs));
+      if (result.type === 'group') {
+        updates[0].where = result.patterns;
+      } else {
+        updates[0].where = [ result ];
       }
-      // Ignore if default graph
-      if (graphs[0]?.value !== '') {
-        updates[0].where = [{ type: 'graph', patterns: updates[0].where!, name: graphs[0] }];
-      }
-    }
-  }
-
-  // Not really necessary but can give cleaner looking queries
-  if (!op.delete && !op.where) {
-    updates[0].updateType = 'insert';
-    delete updates[0].delete;
-    delete updates[0].where;
-  } else if (!op.insert && !op.where) {
-    delete updates[0].insert;
-    delete updates[0].where;
-    if (op.delete!.some(pattern =>
-      pattern.subject.termType === 'Variable' ||
-          pattern.predicate.termType === 'Variable' ||
-          pattern.object.termType === 'Variable')) {
-      updates[0].updateType = 'deletewhere';
-    } else {
-      updates[0].updateType = 'delete';
-    }
-  } else if (!op.insert && op.where && op.where.type === 'bgp' && isomorphic(op.delete!, op.where.patterns)) {
-    delete updates[0].where;
-    updates[0].updateType = 'deletewhere';
-  }
-
-  return { prefixes: {}, type: 'update', updates };
-}
-
-function translateLoad(op: Algebra.Load): Update {
-  // Typings are wrong, destiniation is optional
-  const updates: [LoadOperation] = [ <any> { type: 'load', silent: Boolean(op.silent), source: op.source } ];
-  if (op.destination) {
-    updates[0].destination = op.destination;
-  }
-  return { prefixes: {}, type: 'update', updates };
-}
-
-function translateClear(op: Algebra.Clear): Update {
-  return translateClearCreateDrop(op, 'clear');
-}
-
-function translateCreate(op: Algebra.Create): Update {
-  return translateClearCreateDrop(op, 'create');
-}
-
-function translateDrop(op: Algebra.Drop): Update {
-  return translateClearCreateDrop(op, 'drop');
-}
-
-function translateClearCreateDrop(
-  op: Algebra.Clear | Algebra.Create | Algebra.Drop,
-  type: 'clear' | 'create' | 'drop',
-): Update {
-  const updates: [CreateOperation | ClearDropOperation] = [ <any> { type, silent: Boolean(op.silent) } ];
-  // Typings are wrong, type is not required, see for example "clear-drop" test
-  if (op.source === 'DEFAULT') {
-    updates[0].graph = <GraphOrDefault> { default: true };
-  } else if (op.source === 'NAMED') {
-    updates[0].graph = <GraphReference> { named: true };
-  } else if (op.source === 'ALL') {
-    updates[0].graph = <GraphReference> { all: true };
-  } else {
-    updates[0].graph = { type: 'graph', name: op.source };
-  }
-
-  return { prefixes: {}, type: 'update', updates };
-}
-
-function translateAdd(op: Algebra.Add): Update {
-  return translateUpdateGraphShortcut(op, 'add');
-}
-
-function translateMove(op: Algebra.Move): Update {
-  return translateUpdateGraphShortcut(op, 'move');
-}
-
-function translateCopy(op: Algebra.Copy): Update {
-  return translateUpdateGraphShortcut(op, 'copy');
-}
-
-function translateUpdateGraphShortcut(op: Algebra.UpdateGraphShortcut, type: 'add' | 'move' | 'copy'): Update {
-  const updates: CopyMoveAddOperation[] = [ <any> { type, silent: Boolean(op.silent) } ];
-  updates[0].source = op.source === 'DEFAULT' ? { type: 'graph', default: true } : { type: 'graph', name: op.source };
-  updates[0].destination = op.destination === 'DEFAULT' ?
-      { type: 'graph', default: true } :
-      { type: 'graph', name: op.destination };
-
-  return { prefixes: {}, type: 'update', updates };
-}
-
-// Similar to removeQuads but more simplified for UPDATEs
-function convertUpdatePatterns(patterns: Algebra.Pattern[]): any[] {
-  if (!patterns) {
-    return [];
-  }
-  const graphs: Record<string, Algebra.Pattern[]> = {};
-  for (const pattern of patterns) {
-    const graph = pattern.graph.value;
-    if (!graphs[graph]) {
-      graphs[graph] = [];
-    }
-    graphs[graph].push(pattern);
-  }
-  return Object.keys(graphs).map((graph) => {
-    if (graph === '') {
-      return { type: 'bgp', triples: graphs[graph].map(translatePattern) };
-    }
-    return { type: 'graph', triples: graphs[graph].map(translatePattern), name: graphs[graph][0].graph };
-  });
-}
-
-function removeQuads(op: Algebra.Operation): any {
-  return removeQuadsRecursive(op, []);
-}
-
-// Remove quads
-function removeQuadsRecursive(op: any, graphs: RDF.NamedNode[]): any {
-  if (Array.isArray(op)) {
-    return op.map(sub => removeQuadsRecursive(sub, graphs));
-  }
-
-  if (!op.type) {
-    return op;
-  }
-
-  // UPDATE operations with Patterns handle graphs a bit differently
-  if (op.type === types.DELETE_INSERT) {
-    return op;
-  }
-
-  if ((op.type === types.PATTERN || op.type === types.PATH) && op.graph) {
-    graphs.push(op.graph);
-    // Remove non-default graphs
-    if (op.graph.name !== '') {
-      return op.type === types.PATTERN ?
-        factory.createPattern(op.subject, op.predicate, op.object) :
-        factory.createPath(op.subject, op.predicate, op.object);
-    }
-    return op;
-  }
-
-  const result: any = {};
-  // Unique graph per key
-  const keyGraphs: Record<string, RDF.NamedNode[]> = {};
-  // Track all the unique graph names for the entire Operation
-  const globalNames: Record<string, RDF.NamedNode> = {};
-  for (const key of Object.keys(op)) {
-    const newGraphs: RDF.NamedNode[] = [];
-    result[key] = removeQuadsRecursive(op[key], newGraphs);
-
-    if (newGraphs.length > 0) {
-      keyGraphs[key] = newGraphs;
-      for (const graph of newGraphs) {
-        globalNames[graph.value] = graph;
-      }
-    }
-  }
-
-  const graphNameSet = Object.keys(globalNames);
-  if (graphNameSet.length > 0) {
-    // We also need to create graph statement if we are at the edge of certain operations
-    if (graphNameSet.length === 1 && ![ types.PROJECT, types.SERVICE ].includes(op.type)) {
-      graphs.push(globalNames[graphNameSet[0]]);
-    } else if (op.type === types.BGP) {
-      // This is the specific case that got changed because of using quads.
-      return splitBgpToGraphs(op, keyGraphs.patterns);
-    } else {
-      // Multiple graphs (or project), need to create graph objects for them
-      for (const key of Object.keys(keyGraphs)) {
-        const value = result[key];
-        if (Array.isArray(value)) {
-          result[key] = value.map((child, idx) =>
-            keyGraphs[key][0].value === '' ? child : factory.createGraph(child, keyGraphs[key][idx]));
-        } else if (keyGraphs[key][0].value !== '') {
-          result[key] = factory.createGraph(value, keyGraphs[key][0]);
+      // Graph might not be applied yet since there was no project
+      // this can only happen if there was a single graph
+      if (graphs.length > 0) {
+        if (graphs.length !== 1) {
+          throw new Error('This is unexpected and might indicate an error in graph handling for updates.');
+        }
+        // Ignore if default graph
+        if (graphs[0]?.value !== '') {
+          updates[0].where = [ F.patternGraph(this.translateTerm(graphs[0]), updates[0].where, F.gen()) ];
         }
       }
     }
+
+    // Not really necessary but can give cleaner looking queries
+    if (!op.delete && !op.where) {
+      const asInsert = <UpdateOperationInsertData & { delete?: unknown; where?: unknown }> <unknown> updates[0];
+      asInsert.subType = 'insertdata';
+      delete asInsert.delete;
+      delete asInsert.where;
+    } else if (!op.insert && !op.where) {
+      const asCasted =
+        <(UpdateOperationDeleteData | UpdateOperationDeleteWhere) & { insert?: unknown; where?: unknown }>
+          <unknown> updates[0];
+      delete asCasted.insert;
+      delete asCasted.where;
+      if (op.delete!.some(pattern =>
+        pattern.subject.termType === 'Variable' ||
+        pattern.predicate.termType === 'Variable' ||
+        pattern.object.termType === 'Variable')) {
+        asCasted.subType = 'deletewhere';
+      } else {
+        asCasted.subType = 'deletedata';
+      }
+    } else if (!op.insert && op.where && op.where.type === 'bgp' && isomorphic(op.delete!, op.where.patterns)) {
+      const asCasted = <UpdateOperationDeleteWhere & { where?: unknown }> <unknown> updates[0];
+      delete asCasted.where;
+      asCasted.subType = 'deletewhere';
+    }
+
+    return updates[0];
   }
 
-  return result;
-}
-
-// `graphs` should be an array of length identical to `op.patterns`, containing the corresponding graph for each triple.
-function splitBgpToGraphs(op: Algebra.Bgp, graphs: RDF.NamedNode[]): Algebra.Operation {
-  // Split patterns per graph
-  const graphPatterns: Record<string, { patterns: Algebra.Pattern[]; graph: RDF.NamedNode }> = {};
-  for (let i = 0; i < op.patterns.length; ++i) {
-    const pattern = op.patterns[i];
-    const graphName = graphs[i].value;
-    graphPatterns[graphName] = graphPatterns[graphName] ?? { patterns: [], graph: graphs[i] };
-    graphPatterns[graphName].patterns.push(pattern);
+  private translateLoad(op: Algebra.Load): UpdateOperationLoad {
+    const F = this.astFactory;
+    return F.updateOperationLoad(
+      F.gen(),
+      this.translateTerm(op.source),
+      Boolean(op.silent),
+      op.destination ? F.graphRefSpecific(this.translateTerm(op.destination), F.gen()) : undefined,
+    );
   }
 
-  // Create graph objects for every cluster
-  const children: (Algebra.Graph | Algebra.Bgp)[] = [];
-  for (const [ graphName, { patterns, graph }] of Object.entries(graphPatterns)) {
-    const bgp = factory.createBgp(patterns);
-    children.push(graphName === '' ? bgp : factory.createGraph(bgp, graph));
+  private translateGraphRef<T extends 'DEFAULT' | 'NAMED' | 'ALL' | RDF.NamedNode>(graphRef: T): GraphToGraphRef<T> {
+    const F = this.astFactory;
+    if (graphRef === 'DEFAULT') {
+      return <GraphToGraphRef<T>> F.graphRefDefault(F.gen());
+    }
+    if (graphRef === 'NAMED') {
+      return <GraphToGraphRef<T>> F.graphRefNamed(F.gen());
+    }
+    if (graphRef === 'ALL') {
+      return <GraphToGraphRef<T>> F.graphRefAll(F.gen());
+    }
+    return <GraphToGraphRef<T>> F.graphRefSpecific(<TermIri> this.translateTerm(graphRef), F.gen());
   }
 
-  // Join the graph objects
-  let join: Algebra.Operation = children[0];
-  for (let i = 1; i < children.length; ++i) {
-    join = factory.createJoin([ join, children[i] ]);
+  private translateClear(op: Algebra.Clear): UpdateOperationClear {
+    const F = this.astFactory;
+    return F.updateOperationClear(this.translateGraphRef(op.source), op.silent ?? false, F.gen());
   }
 
-  return join;
+  private translateCreate(op: Algebra.Create): UpdateOperationCreate {
+    const F = this.astFactory;
+    return F.updateOperationCreate(this.translateGraphRef(op.source), op.silent ?? false, F.gen());
+  }
+
+  private translateDrop(op: Algebra.Drop): UpdateOperationDrop {
+    const F = this.astFactory;
+    return F.updateOperationDrop(this.translateGraphRef(op.source), op.silent ?? false, F.gen());
+  }
+
+  private translateAdd(op: Algebra.Add): UpdateOperationAdd {
+    const F = this.astFactory;
+    return F.updateOperationAdd(
+      this.translateGraphRef(op.source),
+      this.translateGraphRef(op.destination),
+      op.silent ?? false,
+      F.gen(),
+    );
+  }
+
+  private translateMove(op: Algebra.Move): UpdateOperationMove {
+    const F = this.astFactory;
+    return F.updateOperationMove(
+      this.translateGraphRef(op.source),
+      this.translateGraphRef(op.destination),
+      op.silent ?? false,
+      F.gen(),
+    );
+  }
+
+  private translateCopy(op: Algebra.Copy): UpdateOperationCopy {
+    const F = this.astFactory;
+    return F.updateOperationCopy(
+      this.translateGraphRef(op.source),
+      this.translateGraphRef(op.destination),
+      op.silent ?? false,
+      F.gen(),
+    );
+  }
+
+  // Similar to removeQuads but more simplified for UPDATEs
+  private convertUpdatePatterns(patterns: Algebra.Pattern[]): any[] {
+    if (!patterns) {
+      return [];
+    }
+    const graphs: Record<string, Algebra.Pattern[]> = {};
+    for (const pattern of patterns) {
+      const graph = pattern.graph.value;
+      if (!graphs[graph]) {
+        graphs[graph] = [];
+      }
+      graphs[graph].push(pattern);
+    }
+    return Object.keys(graphs).map((graph) => {
+      if (graph === '') {
+        return { type: 'bgp', triples: graphs[graph].map(x => this.translatePattern(x)) };
+      }
+      return { type: 'graph', triples: graphs[graph].map(x => this.translatePattern(x)), name: graphs[graph][0].graph };
+    });
+  }
+
+  private removeQuads(op: Algebra.Operation): any {
+    return this.removeQuadsRecursive(op, []);
+  }
+
+  // Remove quads
+  private removeQuadsRecursive(op: any, graphs: RDF.NamedNode[]): any {
+    if (Array.isArray(op)) {
+      return op.map(sub => this.removeQuadsRecursive(sub, graphs));
+    }
+
+    if (!op.type) {
+      return op;
+    }
+
+    // UPDATE operations with Patterns handle graphs a bit differently
+    if (op.type === types.DELETE_INSERT) {
+      return op;
+    }
+
+    if ((op.type === types.PATTERN || op.type === types.PATH) && op.graph) {
+      graphs.push(op.graph);
+      // Remove non-default graphs
+      if (op.graph.name !== '') {
+        return op.type === types.PATTERN ?
+          this.factory.createPattern(op.subject, op.predicate, op.object) :
+          this.factory.createPath(op.subject, op.predicate, op.object);
+      }
+      return op;
+    }
+
+    const result: any = {};
+    // Unique graph per key
+    const keyGraphs: Record<string, RDF.NamedNode[]> = {};
+    // Track all the unique graph names for the entire Operation
+    const globalNames: Record<string, RDF.NamedNode> = {};
+    for (const key of Object.keys(op)) {
+      const newGraphs: RDF.NamedNode[] = [];
+      result[key] = this.removeQuadsRecursive(op[key], newGraphs);
+
+      if (newGraphs.length > 0) {
+        keyGraphs[key] = newGraphs;
+        for (const graph of newGraphs) {
+          globalNames[graph.value] = graph;
+        }
+      }
+    }
+
+    const graphNameSet = Object.keys(globalNames);
+    if (graphNameSet.length > 0) {
+      // We also need to create graph statement if we are at the edge of certain operations
+      if (graphNameSet.length === 1 && ![ types.PROJECT, types.SERVICE ].includes(op.type)) {
+        graphs.push(globalNames[graphNameSet[0]]);
+      } else if (op.type === types.BGP) {
+        // This is the specific case that got changed because of using quads.
+        return this.splitBgpToGraphs(op, keyGraphs.patterns);
+      } else {
+        // Multiple graphs (or project), need to create graph objects for them
+        for (const key of Object.keys(keyGraphs)) {
+          const value = result[key];
+          if (Array.isArray(value)) {
+            result[key] = value.map((child, idx) =>
+              keyGraphs[key][0].value === '' ? child : this.factory.createGraph(child, keyGraphs[key][idx]));
+          } else if (keyGraphs[key][0].value !== '') {
+            result[key] = this.factory.createGraph(value, keyGraphs[key][0]);
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Graphs should be an array of length identical to `op.patterns`,
+   * containing the corresponding graph for each triple.
+   */
+  private splitBgpToGraphs(op: Algebra.Bgp, graphs: RDF.NamedNode[]): Algebra.Operation {
+    // Split patterns per graph
+    const graphPatterns: Record<string, { patterns: Algebra.Pattern[]; graph: RDF.NamedNode }> = {};
+    for (let i = 0; i < op.patterns.length; ++i) {
+      const pattern = op.patterns[i];
+      const graphName = graphs[i].value;
+      graphPatterns[graphName] = graphPatterns[graphName] ?? { patterns: [], graph: graphs[i] };
+      graphPatterns[graphName].patterns.push(pattern);
+    }
+
+    // Create graph objects for every cluster
+    const children: (Algebra.Graph | Algebra.Bgp)[] = [];
+    for (const [ graphName, { patterns, graph }] of Object.entries(graphPatterns)) {
+      const bgp = this.factory.createBgp(patterns);
+      children.push(graphName === '' ? bgp : this.factory.createGraph(bgp, graph));
+    }
+
+    // Join the graph objects
+    let join: Algebra.Operation = children[0];
+    for (let i = 1; i < children.length; ++i) {
+      join = this.factory.createJoin([ join, children[i] ]);
+    }
+
+    return join;
+  }
 }

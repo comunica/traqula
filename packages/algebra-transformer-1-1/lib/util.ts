@@ -91,6 +91,119 @@ export default class Util {
   }
 
   /**
+   * Detects all in-scope variables.
+   * In practice this means iterating through the entire algebra tree, finding all variables,
+   * and stopping when a project function is found.
+   * @param {Operation} op - Input algebra tree.
+   * @returns {Variable[]} - List of unique in-scope variables.
+   */
+  public static inScopeVariables(op: A.Operation): RDF.Variable[] {
+    const variables: Record<string, RDF.Variable> = {};
+
+    function addVariable(v: RDF.Variable): void {
+      variables[v.value] = v;
+    }
+
+    function recurseTerm(quad: RDF.BaseQuad): void {
+      if (quad.subject.termType === 'Variable') {
+        addVariable(quad.subject);
+      }
+      if (quad.predicate.termType === 'Variable') {
+        addVariable(quad.predicate);
+      }
+      if (quad.object.termType === 'Variable') {
+        addVariable(quad.object);
+      }
+      if (quad.graph.termType === 'Variable') {
+        addVariable(quad.graph);
+      }
+      if (quad.subject.termType === 'Quad') {
+        recurseTerm(quad.subject);
+      }
+      if (quad.predicate.termType === 'Quad') {
+        recurseTerm(quad.predicate);
+      }
+      if (quad.object.termType === 'Quad') {
+        recurseTerm(quad.object);
+      }
+      if (quad.graph.termType === 'Quad') {
+        recurseTerm(quad.graph);
+      }
+    }
+
+    // https://www.w3.org/TR/sparql11-query/#variableScope
+    Util.recurseOperation(op, {
+      [Types.EXPRESSION]: (op) => {
+        if (op.expressionType === expressionTypes.AGGREGATE && op.variable) {
+          addVariable(op.variable);
+        }
+        return true;
+      },
+      [Types.EXTEND]: (op) => {
+        addVariable(op.variable);
+        return true;
+      },
+      [Types.GRAPH]: (op) => {
+        if (op.name.termType === 'Variable') {
+          addVariable(op.name);
+        }
+        return true;
+      },
+      [Types.GROUP]: (op) => {
+        for (const v of op.variables) {
+          addVariable(v);
+        }
+        return true;
+      },
+      [Types.PATH]: (op) => {
+        if (op.subject.termType === 'Variable') {
+          addVariable(op.subject);
+        }
+        if (op.object.termType === 'Variable') {
+          addVariable(op.object);
+        }
+        if (op.graph.termType === 'Variable') {
+          addVariable(op.graph);
+        }
+        if (op.subject.termType === 'Quad') {
+          recurseTerm(op.subject);
+        }
+        if (op.object.termType === 'Quad') {
+          recurseTerm(op.object);
+        }
+        if (op.graph.termType === 'Quad') {
+          recurseTerm(op.graph);
+        }
+        return true;
+      },
+      [Types.PATTERN]: (op) => {
+        recurseTerm(op);
+        return true;
+      },
+      [Types.PROJECT]: (op) => {
+        for (const v of op.variables) {
+          addVariable(v);
+        }
+        return false;
+      },
+      [Types.SERVICE]: (op) => {
+        if (op.name.termType === 'Variable') {
+          addVariable(op.name);
+        }
+        return true;
+      },
+      [Types.VALUES]: (op) => {
+        for (const v of op.variables) {
+          addVariable(v);
+        }
+        return true;
+      },
+    });
+
+    return Object.values(variables);
+  }
+
+  /**
    * Recurses through the given algebra tree
    * A map of callback functions can be provided for individual Operation types to gather data.
    * The return value of those callbacks should indicate whether recursion should be applied or not.

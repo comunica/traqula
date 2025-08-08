@@ -1,6 +1,6 @@
 import * as Algebra from './algebra';
+import { toSparql } from './algebraToAst/sparql';
 import Factory from './factory';
-import { toSparql } from './sparql';
 import translate from './sparqlAlgebra';
 import Util from './util';
 

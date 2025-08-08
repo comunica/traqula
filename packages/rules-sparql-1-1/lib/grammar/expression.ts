@@ -143,7 +143,7 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
           SUBRULE(expression, head, undefined);
         }
         for (const arg of tail) {
-          F.printFilter(ast, () => PRINT_WORD(ast.operator, ','));
+          F.printFilter(ast, () => PRINT_WORD(','));
           SUBRULE(expression, arg, undefined);
         }
         F.printFilter(ast, () => PRINT_WORD(')'));

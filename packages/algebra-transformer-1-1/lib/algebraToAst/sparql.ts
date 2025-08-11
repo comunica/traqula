@@ -56,6 +56,9 @@ import type {
   Term,
   Sparql11Nodes,
   Quads,
+
+  DatasetClauses,
+  PatternFilter,
 } from '@traqula/rules-sparql-1-1';
 import { isomorphic } from 'rdf-isomorphic';
 import * as Algebra from '../algebra';
@@ -258,7 +261,7 @@ class Translator {
     return this.astFactory.wildcard(this.astFactory.gen());
   }
 
-  private arrayToPattern(input: Pattern[]): Pattern {
+  private arrayToPattern(input: Pattern[]): PatternGroup {
     if (!Array.isArray(input)) {
       return this.astFactory.patternGroup([ input ], this.astFactory.gen());
     }
@@ -314,6 +317,14 @@ class Translator {
     ]);
   }
 
+  private translateDatasetClauses(_default: RDF.NamedNode[], named: RDF.NamedNode[]): DatasetClauses {
+    const F = this.astFactory;
+    return F.datasetClauses([
+      ..._default.map(x => (<const>{ clauseType: 'default', value: this.translateTerm(x) })),
+      ...named.map(x => (<const>{ clauseType: 'named', value: this.translateTerm(x) })),
+    ], F.gen());
+  }
+
   /**
    * Input of from is for example a project
    */
@@ -326,10 +337,7 @@ class Translator {
     } else {
       query = result;
     }
-    query.datasets = F.datasetClauses([
-      ...op.default.map(x => (<const>{ clauseType: 'default', value: this.translateTerm(x) })),
-      ...op.named.map(x => (<const>{ clauseType: 'named', value: this.translateTerm(x) })),
-    ], F.gen());
+    query.datasets = this.translateDatasetClauses(op.default, op.named);
     return <PatternGroup> result;
   }
 
@@ -395,6 +403,7 @@ class Translator {
   }
 
   private translateMinus(op: Algebra.Minus): Pattern[] {
+    const F = this.astFactory;
     let patterns = this.translateOperation(op.input[1]);
     if (patterns.type === 'group') {
       patterns = patterns.patterns;
@@ -404,10 +413,7 @@ class Translator {
     }
     return Util.flatten([
       this.translateOperation(op.input[0]),
-      {
-        type: 'minus',
-        patterns,
-      },
+      F.patternMinus(patterns, F.gen()),
     ]);
   }
 
@@ -578,15 +584,14 @@ class Translator {
     // Convert filter to 'having' if it contains an aggregator variable
     // could always convert, but is nicer to use filter when possible
     if (result.where && F.isPatternFilter(result.where.patterns.at(-1) ?? {})) {
-      // TODO: jitsy: inspect closer
-      // const filter = <PatternFilter> result.where.patterns.at(-1);
-      // if (this.objectContainsValues(filter, Object.keys(aggregators))) {
-      //   select.solutionModifiers.having = F.solutionModifierHaving(
-      //     Util.flatten([ this.replaceAggregatorVariables((<any> filter).expression, aggregators) ]),
-      //     F.gen(),
-      //   );
-      //   result.where.patterns.splice(-1);
-      // }
+      const filter = <PatternFilter> result.where.patterns.at(-1);
+      if (this.objectContainsVariable(filter, Object.keys(aggregators))) {
+        select.solutionModifiers.having = F.solutionModifierHaving(
+          Util.flatten([ this.replaceAggregatorVariables(filter.expression, aggregators) ]),
+          F.gen(),
+        );
+        result.where.patterns.splice(-1);
+      }
     }
 
     this.extend = extend;
@@ -596,6 +601,21 @@ class Translator {
 
     // Subqueries need to be in a group, this will be removed again later for the root query
     return F.patternGroup([ select ], F.gen());
+  }
+
+  private objectContainsVariable(o: any, vals: string[]): boolean {
+    const F = this.astFactory;
+    const casted = <Sparql11Nodes> o;
+    if (F.isTermVariable(casted)) {
+      return vals.includes(casted.value);
+    }
+    if (Array.isArray(o)) {
+      return o.some(e => this.objectContainsVariable(e, vals));
+    }
+    if (o === Object(o)) {
+      return Object.keys(o).some(key => this.objectContainsVariable(o[key], vals));
+    }
+    return false;
   }
 
   private translateReduced(op: Algebra.Reduced): Pattern {
@@ -646,7 +666,7 @@ class Translator {
 
   private translateUnion(op: Algebra.Union): PatternUnion {
     return this.astFactory.patternUnion(
-      <PatternGroup[]> op.input.map(x => this.translateOperation(x)).map(x => this.arrayToPattern(x)),
+      op.input.map(x => this.translateOperation(x)).map(x => this.arrayToPattern(x)),
       this.astFactory.gen(),
     );
   }
@@ -768,7 +788,7 @@ F.gen(),
     if (where && where.type === types.FROM) {
       const from = where;
       where = from.input;
-      use = { default: from.default, named: from.named };
+      use = this.translateDatasetClauses(from.default, from.named);
     }
 
     const updates = <[UpdateOperationModify & { where?: unknown; delete?: unknown; insert?: unknown }]> [{
@@ -776,25 +796,18 @@ F.gen(),
       subType: 'modify',
       delete: this.convertUpdatePatterns(op.delete ?? []),
       insert: this.convertUpdatePatterns(op.insert ?? []),
-      from: F.datasetClauses([], F.gen()),
+      where: F.patternGroup([], F.gen()),
+      from: use ?? F.datasetClauses([], F.gen()),
       loc: F.gen(),
     }];
-    // Typings don't support 'using' yet
-    if (use) {
-      (<any> updates[0]).from = use;
-    }
 
     // Corresponds to empty array in SPARQL.js
     if (!where || (where.type === types.BGP && where.patterns.length === 0)) {
-      updates[0].where = [];
+      updates[0].where = F.patternGroup([], F.gen());
     } else {
       const graphs: RDF.NamedNode[] = [];
-      const result = this.translateOperation(this.removeQuadsRecursive(where, graphs));
-      if (result.type === 'group') {
-        updates[0].where = result.patterns;
-      } else {
-        updates[0].where = [ result ];
-      }
+      const result = <Pattern[]> this.translateOperation(this.removeQuadsRecursive(where, graphs));
+      updates[0].where = this.arrayToPattern(result);
       // Graph might not be applied yet since there was no project
       // this can only happen if there was a single graph
       if (graphs.length > 0) {
@@ -803,7 +816,9 @@ F.gen(),
         }
         // Ignore if default graph
         if (graphs[0]?.value !== '') {
-          updates[0].where = [ F.patternGraph(this.translateTerm(graphs[0]), updates[0].where, F.gen()) ];
+          updates[0].where.patterns = [
+            F.patternGraph(this.translateTerm(graphs[0]), updates[0].where.patterns, F.gen()),
+          ];
         }
       }
     }

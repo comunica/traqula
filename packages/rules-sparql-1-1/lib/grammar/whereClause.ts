@@ -86,6 +86,8 @@ export const generatePattern: SparqlGeneratorRule<'generatePattern', Pattern> = 
         variables: ast.variables,
         solutionModifiers: ast.solutionModifiers,
         values: ast.values,
+        distinct: ast.distinct,
+        reduced: ast.reduced,
       }, ast.loc), undefined);
     } else if (ast.subType === 'group') {
       SUBRULE(groupGraphPattern, ast, undefined);

@@ -88,7 +88,7 @@ export type UpdateOperationModify = UpdateOperationBase & {
   insert: Quads[];
   delete: Quads[];
   from: DatasetClauses;
-  where: Pattern[];
+  where: PatternGroup;
 };
 export type UpdateOperation =
   | UpdateOperationLoad

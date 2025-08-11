@@ -414,7 +414,7 @@ export const modify: SparqlRule<'modify', UpdateOperationModify> = <const> {
       C.factory.sourceLocation(graph?.withToken, del, insert, where),
       insert?.val ?? [],
       del?.val ?? [],
-      where.patterns,
+      where,
       using,
       graph?.graph,
     ));
@@ -436,7 +436,7 @@ export const modify: SparqlRule<'modify', UpdateOperationModify> = <const> {
     }
     SUBRULE(usingClauseStar, ast.from, undefined);
     F.printFilter(ast, () => PRINT_WORD('WHERE'));
-    SUBRULE(groupGraphPattern, F.patternGroup(ast.where, ast.loc), undefined);
+    SUBRULE(groupGraphPattern, ast.where, undefined);
   },
 };
 

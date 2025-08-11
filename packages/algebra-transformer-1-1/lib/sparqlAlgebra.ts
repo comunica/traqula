@@ -538,7 +538,7 @@ class QueryTranslator {
       const contained = predicate.items[0];
       let items: (TermIri | PathNegatedElt)[];
       if (this.astFactory.isPathPure(contained) && contained.subType === '|') {
-        items = <(TermIri | PathNegatedElt)[]> contained.items;
+        items = contained.items;
       } else {
         items = [ contained ];
       }
@@ -1071,8 +1071,8 @@ class QueryTranslator {
         this.translateUpdateTriplesBlock(quad, op.graph ? this.translateTerm(op.graph) : op.graph)));
       insertTriples.push(...op.insert.flatMap(quad =>
         this.translateUpdateTriplesBlock(quad, op.graph ? this.translateTerm(op.graph) : op.graph)));
-      if (op.where.length > 0) {
-        where = this.translateGraphPattern(F.patternGroup(op.where, F.sourceLocation(...op.where)));
+      if (op.where.patterns.length > 0) {
+        where = this.translateGraphPattern(op.where);
         const use: { default: RDF.NamedNode[]; named: RDF.NamedNode[] } = this.translateDatasetClause(op.from);
         if (use.default.length > 0 || use.named.length > 0) {
           where = this.factory.createFrom(where, use.default, use.named);

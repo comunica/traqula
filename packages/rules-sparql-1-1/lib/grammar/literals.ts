@@ -64,8 +64,8 @@ export const rdfLiteral: SparqlRule<'rdfLiteral', TermLiteral> = <const> {
       } },
     ])) ?? value;
   },
-  gImpl: ({ SUBRULE, PRINT }) => (ast, { factory }) => {
-    factory.printFilter(ast, () => PRINT(stringEscapedLexical(ast.value)));
+  gImpl: ({ SUBRULE, PRINT, PRINT_SPACE_LEFT }) => (ast, { factory }) => {
+    factory.printFilter(ast, () => PRINT_SPACE_LEFT(stringEscapedLexical(ast.value)));
 
     if (ast.langOrIri) {
       if (typeof ast.langOrIri === 'string') {
@@ -240,8 +240,8 @@ export const iriFull: SparqlRule<'iriFull', TermIriFull> = <const> {
     const iriToken = CONSUME(l.terminals.iriRef);
     return ACTION(() => C.factory.namedNode(C.factory.sourceLocation(iriToken), iriToken.image.slice(1, -1)));
   },
-  gImpl: ({ PRINT_WORD }) => (ast, { factory }) => {
-    factory.printFilter(ast, () => PRINT_WORD('<', ast.value, '>'));
+  gImpl: ({ PRINT }) => (ast, { factory }) => {
+    factory.printFilter(ast, () => PRINT('<', ast.value, '>'));
   },
 };
 

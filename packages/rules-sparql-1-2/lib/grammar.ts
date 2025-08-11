@@ -305,7 +305,7 @@ function annotationBlockImpl<T extends string>(name: T, allowPaths: boolean):
           if (F.isTerm(triple.predicate)) {
             SUBRULE(graphNodePath, triple.predicate, undefined);
           } else {
-            SUBRULE(S11.path, triple.predicate, undefined);
+            SUBRULE(S11.pathGenerator, triple.predicate, undefined);
           }
           SUBRULE(graphNodePath, triple.object, undefined);
 
@@ -409,7 +409,7 @@ export const reifiedTriple: SparqlRule<'reifiedTriple', TripleCollectionReifiedT
     const triple = ast.triples[0];
     SUBRULE(graphNodePath, triple.subject, undefined);
     if (F.isPathPure(triple.predicate)) {
-      SUBRULE(S11.path, triple.predicate, undefined);
+      SUBRULE(S11.pathGenerator, triple.predicate, undefined);
     } else {
       SUBRULE(graphNodePath, triple.predicate, undefined);
     }
@@ -683,7 +683,7 @@ export const generateTriplesBlock: SparqlGeneratorRule<'triplesBlock', PatternBg
           SUBRULE(graphNodePath, triple.subject, undefined);
           // Predicate
           if (F.isPathPure(triple.predicate)) {
-            SUBRULE(S11.path, triple.predicate, undefined);
+            SUBRULE(S11.pathGenerator, triple.predicate, undefined);
           } else {
             SUBRULE(graphNodePath, triple.predicate, undefined);
           }

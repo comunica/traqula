@@ -54,6 +54,8 @@ import type {
   UpdateOperationDeleteData,
   UpdateOperationDeleteWhere,
   Term,
+  Sparql11Nodes,
+  Quads,
 } from '@traqula/rules-sparql-1-1';
 import { isomorphic } from 'rdf-isomorphic';
 import * as Algebra from '../algebra';
@@ -85,11 +87,18 @@ class Translator {
   private readonly astFactory = new AstFactory();
 
   public toSparqlJs(op: Algebra.Operation): SparqlQuery {
+    const F = this.astFactory;
     this.resetContext();
     op = this.removeQuads(op);
     const result = <SparqlQuery | PatternGroup> this.translateOperation(op);
-    if (this.astFactory.isPatternGroup(result)) {
+    if (F.isPatternGroup(result)) {
       return <SparqlQuery> result.patterns[0];
+    }
+    if (Object.keys(result).length === 0) {
+      return this.toUpdate([]);
+    }
+    if (F.isUpdateOperation(result)) {
+      return this.toUpdate([ result ]);
     }
     return result;
   }
@@ -251,10 +260,7 @@ class Translator {
 
   private arrayToPattern(input: Pattern[]): Pattern {
     if (!Array.isArray(input)) {
-      return input;
-    }
-    if (input.length === 1) {
-      return input[0];
+      return this.astFactory.patternGroup([ input ], this.astFactory.gen());
     }
     return this.astFactory.patternGroup(input, this.astFactory.gen());
   }
@@ -308,19 +314,23 @@ class Translator {
     ]);
   }
 
+  /**
+   * Input of from is for example a project
+   */
   private translateFrom(op: Algebra.From): PatternGroup {
-    const result = this.translateOperation(op.input);
-    // Can't type as CONSTRUCT queries do not have `from` field in their type
-    let obj = result;
-    // Project is nested in group object
-    if (result.type === 'group') {
-      obj = result.patterns[0];
+    const F = this.astFactory;
+    const result: QueryBase | PatternGroup = this.translateOperation(op.input);
+    let query: QueryBase;
+    if (F.isPatternGroup(result)) {
+      query = <QueryBase> <unknown> result.patterns[0];
+    } else {
+      query = result;
     }
-    obj.from = {
-      default: op.default,
-      named: op.named,
-    };
-    return result;
+    query.datasets = F.datasetClauses([
+      ...op.default.map(x => (<const>{ clauseType: 'default', value: this.translateTerm(x) })),
+      ...op.named.map(x => (<const>{ clauseType: 'named', value: this.translateTerm(x) })),
+    ], F.gen());
+    return <PatternGroup> result;
   }
 
   private translateFilter(op: Algebra.Filter): PatternGroup {
@@ -425,15 +435,18 @@ class Translator {
   }
 
   private replaceAggregatorVariables(s: any, map: any): any {
-    const st = Util.isSimpleTerm(s) ? this.translateTerm(s) : s;
+    const F = this.astFactory;
+    const st: Sparql11Nodes = Util.isSimpleTerm(s) ? this.translateTerm(s) : s;
 
-    if (typeof st === 'string') {
-      if (map[st]) {
-        return map[st];
+    // Look for TermVariable, if we find, replace it by the aggregator.
+    if (F.isTermVariable(st)) {
+      if (map[st.value]) {
+        // Returns the ExpressionAggregate
+        return map[st.value];
       }
     } else if (Array.isArray(s)) {
       s = s.map(e => this.replaceAggregatorVariables(e, map));
-    } else {
+    } else if (typeof s === 'object') {
       for (const key of Object.keys(s)) {
         s[key] = this.replaceAggregatorVariables(s[key], map);
       }
@@ -515,11 +528,14 @@ class Translator {
 
     if (this.order.length > 0) {
       select.solutionModifiers.order = F.solutionModifierOrder(
-        this.order.map(x => this.translateOperation(x)).map(o => ({
-          expression: o,
-          descending: o.descending,
-          loc: F.gen(),
-        } satisfies Ordering)),
+        this.order.map(x => this.translateOperation(x)).map((o: Ordering | Expression) =>
+          F.isExpression(o) ?
+              ({
+                expression: o,
+                descending: false,
+                loc: F.gen(),
+              } satisfies Ordering) :
+            o),
         F.gen(),
       );
     }
@@ -733,13 +749,16 @@ F.gen(),
 
   // UPDATE OPERATIONS
 
-  private translateCompositeUpdate(op: Algebra.CompositeUpdate): Update {
-    const updates = op.updates.map(update => <UpdateOperation> this.translateOperation(update));
+  private toUpdate(ops: UpdateOperation[]): Update {
     return {
       type: 'update',
-      updates: updates.map(op => ({ context: [], operation: op })),
+      updates: ops.map(op => ({ context: [], operation: op })),
       loc: this.astFactory.gen(),
     } satisfies Update;
+  }
+
+  private translateCompositeUpdate(op: Algebra.CompositeUpdate): Update {
+    return this.toUpdate(op.updates.map(update => <UpdateOperation> this.translateOperation(update)));
   }
 
   private translateDeleteInsert(op: Algebra.DeleteInsert): UpdateOperationModify {
@@ -757,6 +776,8 @@ F.gen(),
       subType: 'modify',
       delete: this.convertUpdatePatterns(op.delete ?? []),
       insert: this.convertUpdatePatterns(op.insert ?? []),
+      from: F.datasetClauses([], F.gen()),
+      loc: F.gen(),
     }];
     // Typings don't support 'using' yet
     if (use) {
@@ -791,12 +812,14 @@ F.gen(),
     if (!op.delete && !op.where) {
       const asInsert = <UpdateOperationInsertData & { delete?: unknown; where?: unknown }> <unknown> updates[0];
       asInsert.subType = 'insertdata';
+      asInsert.data = updates[0].insert;
       delete asInsert.delete;
       delete asInsert.where;
     } else if (!op.insert && !op.where) {
       const asCasted =
         <(UpdateOperationDeleteData | UpdateOperationDeleteWhere) & { insert?: unknown; where?: unknown }>
           <unknown> updates[0];
+      asCasted.data = updates[0].delete;
       delete asCasted.insert;
       delete asCasted.where;
       if (op.delete!.some(pattern =>
@@ -808,8 +831,10 @@ F.gen(),
         asCasted.subType = 'deletedata';
       }
     } else if (!op.insert && op.where && op.where.type === 'bgp' && isomorphic(op.delete!, op.where.patterns)) {
-      const asCasted = <UpdateOperationDeleteWhere & { where?: unknown }> <unknown> updates[0];
+      const asCasted = <UpdateOperationDeleteWhere & { where?: unknown; delete?: unknown }> <unknown> updates[0];
+      asCasted.data = updates[0].delete;
       delete asCasted.where;
+      delete op.delete;
       asCasted.subType = 'deletewhere';
     }
 
@@ -886,7 +911,8 @@ F.gen(),
   }
 
   // Similar to removeQuads but more simplified for UPDATEs
-  private convertUpdatePatterns(patterns: Algebra.Pattern[]): any[] {
+  private convertUpdatePatterns(patterns: Algebra.Pattern[]): Quads[] {
+    const F = this.astFactory;
     if (!patterns) {
       return [];
     }
@@ -899,10 +925,11 @@ F.gen(),
       graphs[graph].push(pattern);
     }
     return Object.keys(graphs).map((graph) => {
+      const patternBgp = F.patternBgp(graphs[graph].map(x => this.translatePattern(x)), F.gen());
       if (graph === '') {
-        return { type: 'bgp', triples: graphs[graph].map(x => this.translatePattern(x)) };
+        return patternBgp;
       }
-      return { type: 'graph', triples: graphs[graph].map(x => this.translatePattern(x)), name: graphs[graph][0].graph };
+      return F.graphQuads(<TermIri | TermVariable> this.translateTerm(graphs[graph][0].graph), patternBgp, F.gen());
     });
   }
 

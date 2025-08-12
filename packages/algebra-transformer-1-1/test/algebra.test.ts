@@ -35,7 +35,7 @@ describe('algebra output', () => {
         return;
       }
       it(`${name}${blankToVariable ? ' (no blanks)' : ''}`, ({ expect }) => {
-        const query = fs.readFileSync(fullTestPath, 'utf8');
+        const query = fs.readFileSync(fullTestPath, 'utf8').replaceAll(/\r?\n/gu, '\n');
         const ast = parser.parse(query);
         const algebra = LibUtil.objectify(
           translate(ast, {

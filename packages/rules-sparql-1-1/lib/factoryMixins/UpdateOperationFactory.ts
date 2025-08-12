@@ -4,7 +4,7 @@ import type {
   GraphRef,
   GraphRefDefault,
   GraphRefSpecific,
-  Pattern, PatternGroup,
+  PatternGroup,
   Quads,
   TermIri,
   UpdateOperationAdd,

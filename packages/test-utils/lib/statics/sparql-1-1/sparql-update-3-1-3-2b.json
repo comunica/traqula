@@ -157,140 +157,149 @@
           }
         ],
         "delete": [],
-        "where": [
-          {
-            "type": "pattern",
-            "subType": "graph",
-            "name": {
-              "type": "term",
-              "subType": "namedNode",
-              "value": "http://example/people",
-              "loc": {
-                "sourceLocationType": "source",
-                "start": 245,
-                "end": 268
-              }
-            },
-            "patterns": [
-              {
-                "type": "pattern",
-                "subType": "bgp",
-                "triples": [
-                  {
-                    "type": "triple",
-                    "subject": {
-                      "type": "term",
-                      "subType": "variable",
-                      "value": "person",
+        "where": {
+          "type": "pattern",
+          "subType": "group",
+          "patterns": [
+            {
+              "type": "pattern",
+              "subType": "graph",
+              "name": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "http://example/people",
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 245,
+                  "end": 268
+                }
+              },
+              "patterns": [
+                {
+                  "type": "pattern",
+                  "subType": "bgp",
+                  "triples": [
+                    {
+                      "type": "triple",
+                      "subject": {
+                        "type": "term",
+                        "subType": "variable",
+                        "value": "person",
+                        "loc": {
+                          "sourceLocationType": "source",
+                          "start": 281,
+                          "end": 288
+                        }
+                      },
+                      "predicate": {
+                        "type": "term",
+                        "subType": "namedNode",
+                        "value": "name",
+                        "loc": {
+                          "sourceLocationType": "source",
+                          "start": 290,
+                          "end": 299
+                        },
+                        "prefix": "foaf"
+                      },
+                      "object": {
+                        "type": "term",
+                        "subType": "variable",
+                        "value": "name",
+                        "loc": {
+                          "sourceLocationType": "source",
+                          "start": 301,
+                          "end": 306
+                        }
+                      },
                       "loc": {
                         "sourceLocationType": "source",
                         "start": 281,
-                        "end": 288
-                      }
-                    },
-                    "predicate": {
-                      "type": "term",
-                      "subType": "namedNode",
-                      "value": "name",
-                      "loc": {
-                        "sourceLocationType": "source",
-                        "start": 290,
-                        "end": 299
-                      },
-                      "prefix": "foaf"
-                    },
-                    "object": {
-                      "type": "term",
-                      "subType": "variable",
-                      "value": "name",
-                      "loc": {
-                        "sourceLocationType": "source",
-                        "start": 301,
                         "end": 306
                       }
-                    },
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 281,
-                      "end": 306
                     }
+                  ],
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 281,
+                    "end": 308
                   }
-                ],
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 281,
-                  "end": 308
-                }
-              },
-              {
-                "type": "pattern",
-                "subType": "optional",
-                "patterns": [
-                  {
-                    "type": "pattern",
-                    "subType": "bgp",
-                    "triples": [
-                      {
-                        "type": "triple",
-                        "subject": {
-                          "type": "term",
-                          "subType": "variable",
-                          "value": "person",
+                },
+                {
+                  "type": "pattern",
+                  "subType": "optional",
+                  "patterns": [
+                    {
+                      "type": "pattern",
+                      "subType": "bgp",
+                      "triples": [
+                        {
+                          "type": "triple",
+                          "subject": {
+                            "type": "term",
+                            "subType": "variable",
+                            "value": "person",
+                            "loc": {
+                              "sourceLocationType": "source",
+                              "start": 326,
+                              "end": 333
+                            }
+                          },
+                          "predicate": {
+                            "type": "term",
+                            "subType": "namedNode",
+                            "value": "mbox",
+                            "loc": {
+                              "sourceLocationType": "source",
+                              "start": 335,
+                              "end": 344
+                            },
+                            "prefix": "foaf"
+                          },
+                          "object": {
+                            "type": "term",
+                            "subType": "variable",
+                            "value": "email",
+                            "loc": {
+                              "sourceLocationType": "source",
+                              "start": 346,
+                              "end": 352
+                            }
+                          },
                           "loc": {
                             "sourceLocationType": "source",
                             "start": 326,
-                            "end": 333
-                          }
-                        },
-                        "predicate": {
-                          "type": "term",
-                          "subType": "namedNode",
-                          "value": "mbox",
-                          "loc": {
-                            "sourceLocationType": "source",
-                            "start": 335,
-                            "end": 344
-                          },
-                          "prefix": "foaf"
-                        },
-                        "object": {
-                          "type": "term",
-                          "subType": "variable",
-                          "value": "email",
-                          "loc": {
-                            "sourceLocationType": "source",
-                            "start": 346,
                             "end": 352
                           }
-                        },
-                        "loc": {
-                          "sourceLocationType": "source",
-                          "start": 326,
-                          "end": 352
                         }
+                      ],
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 326,
+                        "end": 352
                       }
-                    ],
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 326,
-                      "end": 352
                     }
+                  ],
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 315,
+                    "end": 354
                   }
-                ],
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 315,
-                  "end": 354
                 }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 238,
+                "end": 360
               }
-            ],
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 238,
-              "end": 360
             }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 236,
+            "end": 362
           }
-        ],
+        },
         "from": {
           "type": "datasetClauses",
           "clauses": [],

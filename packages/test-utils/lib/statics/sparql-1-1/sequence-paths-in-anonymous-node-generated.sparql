@@ -1,1 +1,1 @@
-PREFIX : <https://ex.com/> SELECT * WHERE { :a :a :a . :a :a [( :a )/( :a ) :a ; ] . }
+PREFIX : <https://ex.com/> SELECT * WHERE { :a :a :a . :a :a [( :a / :a ) :a ; ] . }

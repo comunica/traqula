@@ -29,7 +29,7 @@ describe('util functions', () => {
         if (clone.type === 'project') {
           // Const scope = Util.inScopeVariables(clone.input);
           const project = <Project> translate(toSparql(factory.createProject(clone.input, [])));
-          for (const v of project.variables.map(v => v.value)) {
+          for (const _v of project.variables.map(v => v.value)) {
             // Expect(scope.map(v => v.value)).toContain(v);
           }
         }

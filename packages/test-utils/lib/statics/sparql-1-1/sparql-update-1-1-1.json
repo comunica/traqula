@@ -80,7 +80,16 @@
           }
         ],
         "delete": [],
-        "where": [],
+        "where": {
+          "type": "pattern",
+          "subType": "group",
+          "patterns": [],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 124,
+            "end": 126
+          }
+        },
         "from": {
           "type": "datasetClauses",
           "clauses": [],

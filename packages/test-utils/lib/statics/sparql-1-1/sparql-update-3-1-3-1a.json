@@ -99,159 +99,168 @@
             }
           }
         ],
-        "where": [
-          {
-            "type": "pattern",
-            "subType": "bgp",
-            "triples": [
-              {
-                "type": "triple",
-                "subject": {
-                  "type": "term",
-                  "subType": "variable",
-                  "value": "book",
+        "where": {
+          "type": "pattern",
+          "subType": "group",
+          "patterns": [
+            {
+              "type": "pattern",
+              "subType": "bgp",
+              "triples": [
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "variable",
+                    "value": "book",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 129,
+                      "end": 134
+                    }
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "date",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 135,
+                      "end": 142
+                    },
+                    "prefix": "dc"
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "variable",
+                    "value": "date",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 143,
+                      "end": 148
+                    }
+                  },
                   "loc": {
                     "sourceLocationType": "source",
                     "start": 129,
-                    "end": 134
-                  }
-                },
-                "predicate": {
-                  "type": "term",
-                  "subType": "namedNode",
-                  "value": "date",
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 135,
-                    "end": 142
-                  },
-                  "prefix": "dc"
-                },
-                "object": {
-                  "type": "term",
-                  "subType": "variable",
-                  "value": "date",
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 143,
                     "end": 148
-                  }
-                },
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 129,
-                  "end": 148
-                }
-              }
-            ],
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 129,
-              "end": 150
-            }
-          },
-          {
-            "type": "pattern",
-            "subType": "filter",
-            "expression": {
-              "type": "expression",
-              "subType": "operation",
-              "operator": ">",
-              "args": [
-                {
-                  "type": "term",
-                  "subType": "variable",
-                  "value": "date",
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 163,
-                    "end": 168
-                  }
-                },
-                {
-                  "type": "term",
-                  "subType": "literal",
-                  "value": "1970-01-01T00:00:00-02:00",
-                  "langOrIri": {
-                    "type": "term",
-                    "subType": "namedNode",
-                    "value": "dateTime",
-                    "loc": {
-                      "sourceLocationType": "source",
-                      "start": 200,
-                      "end": 212
-                    },
-                    "prefix": "xsd"
-                  },
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 171,
-                    "end": 212
                   }
                 }
               ],
               "loc": {
                 "sourceLocationType": "source",
-                "start": 161,
+                "start": 129,
+                "end": 150
+              }
+            },
+            {
+              "type": "pattern",
+              "subType": "filter",
+              "expression": {
+                "type": "expression",
+                "subType": "operation",
+                "operator": ">",
+                "args": [
+                  {
+                    "type": "term",
+                    "subType": "variable",
+                    "value": "date",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 163,
+                      "end": 168
+                    }
+                  },
+                  {
+                    "type": "term",
+                    "subType": "literal",
+                    "value": "1970-01-01T00:00:00-02:00",
+                    "langOrIri": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "dateTime",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 200,
+                        "end": 212
+                      },
+                      "prefix": "xsd"
+                    },
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 171,
+                      "end": 212
+                    }
+                  }
+                ],
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 161,
+                  "end": 214
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 154,
                 "end": 214
               }
             },
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 154,
-              "end": 214
-            }
-          },
-          {
-            "type": "pattern",
-            "subType": "bgp",
-            "triples": [
-              {
-                "type": "triple",
-                "subject": {
-                  "type": "term",
-                  "subType": "variable",
-                  "value": "book",
+            {
+              "type": "pattern",
+              "subType": "bgp",
+              "triples": [
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "variable",
+                    "value": "book",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 218,
+                      "end": 223
+                    }
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "variable",
+                    "value": "p",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 224,
+                      "end": 226
+                    }
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "variable",
+                    "value": "v",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 227,
+                      "end": 229
+                    }
+                  },
                   "loc": {
                     "sourceLocationType": "source",
                     "start": 218,
-                    "end": 223
-                  }
-                },
-                "predicate": {
-                  "type": "term",
-                  "subType": "variable",
-                  "value": "p",
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 224,
-                    "end": 226
-                  }
-                },
-                "object": {
-                  "type": "term",
-                  "subType": "variable",
-                  "value": "v",
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 227,
                     "end": 229
                   }
-                },
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 218,
-                  "end": 229
                 }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 218,
+                "end": 229
               }
-            ],
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 218,
-              "end": 229
             }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 127,
+            "end": 232
           }
-        ],
+        },
         "from": {
           "type": "datasetClauses",
           "clauses": [],

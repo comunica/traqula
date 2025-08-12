@@ -29,9 +29,9 @@ describe('sparql output', () => {
       it (name, ({ expect }) => {
         const expected = JSON.parse(fs.readFileSync(jsonName, 'utf8'));
         const genAst = toSparql(expected);
-        console.log(JSON.stringify(genAst, null, 2));
+        // Console.log(JSON.stringify(genAst, null, 2));
         const genQuery = generator.generate(genAst);
-        console.log(genQuery);
+        // Console.log(genQuery);
         const ast = parser.parse(genQuery);
         const algebra = LibUtil.objectify(translate(ast, {
           quads: name.endsWith('-quads'),

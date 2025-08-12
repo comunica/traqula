@@ -30,7 +30,6 @@ describe('a SPARQL 1.2 generator', () => {
         const autoGenAst = F.forcedAutoGenTree(path);
         autoGenAst.loc = replaceLoc;
         const selfGenerated = generator.generatePath(autoGenAst);
-        // SinkGenerated('paths', name, selfGenerated);
         expect(selfGenerated).toEqual(autoGen);
       });
     }

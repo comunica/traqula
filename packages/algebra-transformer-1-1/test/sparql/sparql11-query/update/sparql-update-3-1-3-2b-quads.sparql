@@ -13,9 +13,3 @@ WHERE
       ?person  foaf:name  ?name .
       OPTIONAL { ?person  foaf:mbox  ?email }
     } }
-
-INSERT{
-GRAPH <http://example/addresses> {
-?person <http://xmlns.com/foaf/0.1/name> ?name .
-?person <http://xmlns.com/foaf/0.1/mbox> ?email . } } WHERE {
-GRAPH <http://example/people> { } } ;

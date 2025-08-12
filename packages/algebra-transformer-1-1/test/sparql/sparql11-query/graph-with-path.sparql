@@ -7,13 +7,3 @@ select * where {
         ?x :c ?t.
     }
 }
-
-
-
-SELECT ?g ?t ?x WHERE {
- GRAPH ?g {
-  <http://example/a> <http://example/b> ?x .
-   <http://example/a> ( <http://example/p> )/( <http://example/p> )? ?t .
-   ?x <http://example/c> ?t .
-   }
-}

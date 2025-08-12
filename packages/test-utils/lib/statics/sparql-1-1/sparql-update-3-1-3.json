@@ -141,58 +141,67 @@
             "end": 75
           }
         },
-        "where": [
-          {
-            "type": "pattern",
-            "subType": "bgp",
-            "triples": [
-              {
-                "type": "triple",
-                "subject": {
-                  "type": "term",
-                  "subType": "variable",
-                  "value": "person",
+        "where": {
+          "type": "pattern",
+          "subType": "group",
+          "patterns": [
+            {
+              "type": "pattern",
+              "subType": "bgp",
+              "triples": [
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "variable",
+                    "value": "person",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 171,
+                      "end": 178
+                    }
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "givenName",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 179,
+                      "end": 193
+                    },
+                    "prefix": "foaf"
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "literal",
+                    "value": "Bill",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 194,
+                      "end": 200
+                    }
+                  },
                   "loc": {
                     "sourceLocationType": "source",
                     "start": 171,
-                    "end": 178
-                  }
-                },
-                "predicate": {
-                  "type": "term",
-                  "subType": "namedNode",
-                  "value": "givenName",
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 179,
-                    "end": 193
-                  },
-                  "prefix": "foaf"
-                },
-                "object": {
-                  "type": "term",
-                  "subType": "literal",
-                  "value": "Bill",
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 194,
                     "end": 200
                   }
-                },
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 171,
-                  "end": 200
                 }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 171,
+                "end": 200
               }
-            ],
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 171,
-              "end": 200
             }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 169,
+            "end": 204
           }
-        ],
+        },
         "from": {
           "type": "datasetClauses",
           "clauses": [],

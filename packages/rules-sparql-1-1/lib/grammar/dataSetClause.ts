@@ -70,7 +70,7 @@ export function datasetClauseUsingStar<RuleName extends string>(
     },
     gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
       for (const clause of ast.clauses) {
-        PRINT_WORD(fromUsing);
+        F.printFilter(ast, () => PRINT_WORD(fromUsing));
         if (clause.clauseType === 'named') {
           F.printFilter(ast, () => PRINT_WORD('NAMED'));
         }

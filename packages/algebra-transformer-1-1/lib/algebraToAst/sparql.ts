@@ -1,6 +1,5 @@
 import type * as RDF from '@rdfjs/types';
 import {
-
   Factory as AstFactory,
 } from '@traqula/rules-sparql-1-1';
 import type {
@@ -56,7 +55,6 @@ import type {
   Term,
   Sparql11Nodes,
   Quads,
-
   DatasetClauses,
   PatternFilter,
 } from '@traqula/rules-sparql-1-1';
@@ -849,7 +847,7 @@ F.gen(),
       const asCasted = <UpdateOperationDeleteWhere & { where?: unknown; delete?: unknown }> <unknown> updates[0];
       asCasted.data = updates[0].delete;
       delete asCasted.where;
-      delete op.delete;
+      delete asCasted.delete;
       asCasted.subType = 'deletewhere';
     }
 

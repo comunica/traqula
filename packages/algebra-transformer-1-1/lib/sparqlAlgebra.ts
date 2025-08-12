@@ -6,7 +6,6 @@ import {
   findPatternBoundedVars,
 } from '@traqula/rules-sparql-1-1';
 import type {
-
   BasicGraphPattern,
   Expression,
   GraphQuads,
@@ -29,14 +28,12 @@ import type {
   TermIri,
   PatternFilter,
   PatternValues,
-
   ExpressionAggregate,
   PatternBind,
   Update,
   UpdateOperation,
   UpdateOperationLoad,
   UpdateOperationCreate,
-
   DatasetClauses,
   GraphRef,
   GraphRefAll,
@@ -49,7 +46,6 @@ import type {
   Path,
   UpdateOperationClear,
   UpdateOperationDrop,
-
   ContextDefinition,
 } from '@traqula/rules-sparql-1-1';
 import equal from 'fast-deep-equal/es6';
@@ -117,6 +113,7 @@ class QueryTranslator {
   public constructor(private readonly factory: Factory) {}
 
   public translateQuery(sparql: SparqlQuery, quads?: boolean, blankToVariable?: boolean): Algebra.Operation {
+    const F = this.astFactory;
     this.variables = new Set();
     this.varCount = 0;
     this.useQuads = quads ?? false;
@@ -126,14 +123,14 @@ class QueryTranslator {
     // Find ALL variables here to fill `variables` array - needed to create fresh variables
     this.findAllVariables(sparql);
 
-    if (this.astFactory.isQuery(sparql)) {
+    if (F.isQuery(sparql)) {
       this.registerContextDefinitions(sparql.context);
       // Group and where are identical, having only 1 makes parsing easier, can be undefined in DESCRIBE
-      const group: PatternGroup = sparql.where ?? this.astFactory.patternGroup([], this.astFactory.sourceLocation());
+      const group: PatternGroup = sparql.where ?? F.patternGroup([], F.gen());
       result = this.translateGraphPattern(group);
       // 18.2.4 Converting Groups, Aggregates, HAVING, final VALUES clause and SELECT Expressions
       result = this.translateAggregates(sparql, result);
-    } else if (sparql.type === 'update') {
+    } else if (F.isUpdate(sparql)) {
       result = this.translateUpdate(sparql);
     }
     if (blankToVariable) {

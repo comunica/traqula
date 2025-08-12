@@ -1,6 +1,5 @@
 import type * as RDF from '@rdfjs/types';
 import { someTermsNested } from 'rdf-terms';
-import type { Wildcard } from 'sparqljs';
 import type * as A from './algebra';
 import { expressionTypes, Types } from './algebra';
 import Factory from './factory';
@@ -680,10 +679,6 @@ expr.separator,
 
   public static hasQuadVariables(quad: RDF.Quad): boolean {
     return someTermsNested(quad, term => term.termType === 'Variable');
-  }
-
-  public static isWildcard(term: any): term is Wildcard {
-    return term.termType === 'Wildcard';
   }
 }
 

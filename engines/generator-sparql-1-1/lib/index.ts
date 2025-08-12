@@ -65,7 +65,7 @@ export const sparql11GeneratorBuilder = GeneratorBuilder.create(<const> [
     gram.prefixedName,
     gram.blankNode,
   )
-  .addRule(gram.path)
+  .addRule(gram.pathGenerator)
   .addMany(
     gram.solutionModifier,
     gram.groupClause,

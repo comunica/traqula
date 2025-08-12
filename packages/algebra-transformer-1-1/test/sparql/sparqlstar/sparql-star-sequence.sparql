@@ -1,5 +1,0 @@
-BASE <http://example.org/>
-PREFIX : <http://example.org/default>
-SELECT * WHERE {
-    <<<a> <b> <c>>> :p/:q ?o .
-}

@@ -3,50 +3,55 @@ import type { IToken, TokenType } from 'chevrotain';
 import * as l from '../lexer';
 import type { TermIri, PathNegatedElt, Path, PathModified, PathNegated } from '../RoundTripTypes';
 import type {
+  SparqlGeneratorRule,
   SparqlGrammarRule,
-  SparqlRule,
 } from '../Sparql11types';
 import { iri, verbA } from './literals';
 
 /**
  * [[88]](https://www.w3.org/TR/sparql11-query/#rPath)
  */
-export const path: SparqlRule<'path', Path> = <const> {
+export const path: SparqlGrammarRule<'path', Path> = <const> {
   name: 'path',
   impl: ({ SUBRULE }) => () => SUBRULE(pathAlternative, undefined),
-  gImpl: ({ PRINT, SUBRULE }) => (ast, { factory: F }) => {
+};
+
+export const pathGenerator: SparqlGeneratorRule<'path', Path, boolean | undefined> = {
+  name: 'path',
+  gImpl: ({ PRINT, SUBRULE }) => (ast, { factory: F }, braces = true) => {
     if (F.isTerm(ast) && F.isTermNamed(ast)) {
       SUBRULE(iri, ast, undefined);
     } else {
+      F.printFilter(ast, () => braces && PRINT('('));
       switch (ast.subType) {
         case '|':
         case '/': {
           const [ head, ...tail ] = ast.items;
-          F.printFilter(ast, () => PRINT('('));
-          SUBRULE(path, head, undefined);
-          F.printFilter(ast, () => PRINT(')'));
+          SUBRULE(pathGenerator, head, braces);
           for (const val of tail) {
-            F.printFilter(ast, () => PRINT(ast.subType, '('));
-            SUBRULE(path, val, undefined);
-            F.printFilter(ast, () => PRINT(')'));
+            F.printFilter(ast, () => PRINT(ast.subType));
+            SUBRULE(pathGenerator, val, braces);
           }
           break;
         }
         case '^':
           F.printFilter(ast, () => PRINT('^'));
-          SUBRULE(path, ast.items[0], undefined);
+          SUBRULE(pathGenerator, ast.items[0], braces);
           break;
         case '?':
         case '*':
         case '+':
-          SUBRULE(path, ast.items[0], undefined);
+          SUBRULE(pathGenerator, ast.items[0], braces);
           F.printFilter(ast, () => PRINT(ast.subType));
           break;
         case '!':
           F.printFilter(ast, () => PRINT('!'));
-          SUBRULE(path, ast.items[0], undefined);
+          F.printFilter(ast, () => PRINT('('));
+          SUBRULE(pathGenerator, ast.items[0], false);
+          F.printFilter(ast, () => PRINT(')'));
           break;
       }
+      F.printFilter(ast, () => braces && PRINT(')'));
     }
   },
 };

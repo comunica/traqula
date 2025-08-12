@@ -18,7 +18,7 @@ import type {
   SparqlRule,
 } from '../Sparql11types';
 import { var_, varOrTerm, verb } from './general';
-import { path } from './propertyPaths';
+import { path, pathGenerator } from './propertyPaths';
 
 function triplesDotSeperated(triplesSameSubjectSubrule: SparqlGrammarRule<string, BasicGraphPattern>):
 SparqlGrammarRule<string, PatternBgp>['impl'] {
@@ -66,7 +66,7 @@ export const triplesBlock: SparqlRule<'triplesBlock', PatternBgp> = <const>{
           if (F.isTerm(triple.predicate) && F.isTermVariable(triple.predicate)) {
             SUBRULE(varOrTerm, triple.predicate, undefined);
           } else {
-            SUBRULE(path, triple.predicate, undefined);
+            SUBRULE(pathGenerator, triple.predicate, undefined);
           }
           // Object
           SUBRULE(graphNodePath, triple.object, undefined);
@@ -382,7 +382,7 @@ SparqlRule<T, TripleCollectionBlankNodeProperties> {
           if (F.isTerm(triple.predicate) && F.isTermVariable(triple.predicate)) {
             SUBRULE(varOrTerm, triple.predicate, undefined);
           } else {
-            SUBRULE(path, triple.predicate, undefined);
+            SUBRULE(pathGenerator, triple.predicate, undefined);
           }
           SUBRULE(graphNodePath, triple.object, undefined);
 

@@ -76,7 +76,7 @@
         ],
         "bindings": [
           {
-            "?o2": {
+            "o2": {
               "termType": "NamedNode",
               "value": "http://example.org/b"
             }

@@ -51,6 +51,7 @@ export const usingClause = datasetClauseUsing('usingClause', l.usingClause);
 export function datasetClauseUsingStar<RuleName extends string>(
   name: RuleName,
   subRule: ReturnType<typeof datasetClauseUsing<any>>,
+  fromUsing: 'FROM' | 'USING',
 ): SparqlRule<RuleName, DatasetClauses> {
   return {
     name,
@@ -69,6 +70,7 @@ export function datasetClauseUsingStar<RuleName extends string>(
     },
     gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
       for (const clause of ast.clauses) {
+        F.printFilter(ast, () => PRINT_WORD(fromUsing));
         if (clause.clauseType === 'named') {
           F.printFilter(ast, () => PRINT_WORD('NAMED'));
         }
@@ -78,8 +80,8 @@ export function datasetClauseUsingStar<RuleName extends string>(
   };
 }
 
-export const datasetClauseStar = datasetClauseUsingStar(<const> 'datasetClauses', datasetClause);
-export const usingClauseStar = datasetClauseUsingStar(<const> 'usingClauses', usingClause);
+export const datasetClauseStar = datasetClauseUsingStar(<const> 'datasetClauses', datasetClause, 'FROM');
+export const usingClauseStar = datasetClauseUsingStar(<const> 'usingClauses', usingClause, 'USING');
 
 /**
  * [[15]](https://www.w3.org/TR/sparql11-query/#rNamedGraphClause)

@@ -70,7 +70,9 @@ export const argList: SparqlRule<'argList', Wrap<IArgList>> = <const> {
       }
     });
     const [ head, ...tail ] = ast.val.args;
-    SUBRULE(expression, head, undefined);
+    if (head) {
+      SUBRULE(expression, head, undefined);
+    }
     for (const expr of tail) {
       F.printFilter(ast, () => PRINT_WORD(','));
       SUBRULE(expression, expr, undefined);
@@ -104,7 +106,7 @@ export const expressionList: SparqlGrammarRule<'expressionList', Wrap<Expression
   ]),
 };
 
-const infixOperators = new Set([ '||', '&&', '=', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/' ]);
+const infixOperators = new Set([ 'in', 'notin', '||', '&&', '=', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/' ]);
 const prefixOperator = new Set([ '!', 'UPLUS', 'UMINUS' ]);
 
 /**
@@ -118,7 +120,7 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
       SUBRULE(varOrTerm, ast, undefined);
     } else if (F.isExpressionOperator(ast)) {
       if (infixOperators.has(ast.operator)) {
-        const [ left, right ] = <[Expression, Expression]>ast.args;
+        const [ left, ...right ] = ast.args;
         F.printFilter(ast, () => PRINT_WORD('('));
         SUBRULE(expression, left, undefined);
         F.printFilter(ast, () => {
@@ -130,7 +132,11 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
             PRINT_WORD(ast.operator);
           }
         });
-        SUBRULE(expression, right, undefined);
+        if (right.length === 1) {
+          SUBRULE(expression, right[0], undefined);
+        } else {
+          SUBRULE(argList, F.wrap({ args: right, distinct: false }, ast.loc), undefined);
+        }
         F.printFilter(ast, () => PRINT_WORD(')'));
       } else if (prefixOperator.has(ast.operator)) {
         const [ expr ] = <[Expression]>ast.args;
@@ -143,7 +149,7 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
           SUBRULE(expression, head, undefined);
         }
         for (const arg of tail) {
-          F.printFilter(ast, () => PRINT_WORD(ast.operator, ','));
+          F.printFilter(ast, () => PRINT_WORD(','));
           SUBRULE(expression, arg, undefined);
         }
         F.printFilter(ast, () => PRINT_WORD(')'));

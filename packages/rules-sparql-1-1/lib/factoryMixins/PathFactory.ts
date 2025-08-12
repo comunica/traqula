@@ -24,7 +24,7 @@ export function PathFactoryMixin<TBase extends Constructor<CoreFactory>>(Base: T
 
     public path(
       subType: '|',
-      items: [TermIri | PathNegatedElt, ...(TermIri | PathNegatedElt)[]],
+      items: (TermIri | PathNegatedElt)[],
       loc: SourceLocation
     ): PathAlternativeLimited;
     public path(
@@ -34,11 +34,11 @@ export function PathFactoryMixin<TBase extends Constructor<CoreFactory>>(Base: T
     ): PathNegated;
     public path(subType: '^', items: [TermIri], loc: SourceLocation): PathNegatedElt;
     public path(subType: PathModified['subType'], item: [Path], loc: SourceLocation): PathModified;
-    public path(subType: '|' | '/', items: [Path, ...Path[]], loc: SourceLocation):
+    public path(subType: '|' | '/', items: Path[], loc: SourceLocation):
     PropertyPathChain;
     public path(
       subType: (PropertyPathChain | PathModified | PathNegated)['subType'],
-      items: [Path, ...Path[]],
+      items: Path[],
       loc: SourceLocation,
     ): Path {
       const base = <const>{
@@ -75,6 +75,10 @@ export function PathFactoryMixin<TBase extends Constructor<CoreFactory>>(Base: T
         } satisfies PathNegated;
       }
       throw new Error('Invalid path type');
+    }
+
+    public isPathOfType<T extends U[], U extends string>(obj: object, subTypes: T): obj is SubTyped<NodeType, U> {
+      return this.isOfType(obj, nodeType) && subTypes.includes(<any>(<{ subType?: unknown }>obj).subType);
     }
 
     public isPathChain(obj: object): obj is SubTyped<NodeType, '|' | '/'> {

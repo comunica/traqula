@@ -252,9 +252,17 @@
       "subType": "order",
       "orderDefs": [
         {
-          "type": "term",
-          "subType": "variable",
-          "value": "totalPrice",
+          "expression": {
+            "type": "term",
+            "subType": "variable",
+            "value": "totalPrice",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 210,
+              "end": 221
+            }
+          },
+          "descending": false,
           "loc": {
             "sourceLocationType": "source",
             "start": 210,

@@ -88,7 +88,7 @@ export type UpdateOperationModify = UpdateOperationBase & {
   insert: Quads[];
   delete: Quads[];
   from: DatasetClauses;
-  where: Pattern[];
+  where: PatternGroup;
 };
 export type UpdateOperation =
   | UpdateOperationLoad
@@ -242,7 +242,7 @@ export type PatternService = PatternBase & {
 /**
  * A single list of assignments maps the variable identifier to the value
  */
-export type ValuePatternRow = Record<string, TermIri | TermBlank | TermLiteral | undefined>;
+export type ValuePatternRow = Record<string, TermIri | TermLiteral | undefined>;
 export type PatternValues = PatternBase & {
   subType: 'values';
   values: ValuePatternRow[];
@@ -281,9 +281,10 @@ export type SolutionModifierHaving = SolutionModifierBase & {
   subType: 'having';
   having: Expression[];
 };
-export type Ordering =
-  | Expression
-  | (Localized & { descending: boolean; expression: Expression });
+export type Ordering = Localized & {
+  descending: boolean;
+  expression: Expression;
+};
 export type SolutionModifierOrder = SolutionModifierBase & {
   subType: 'order';
   orderDefs: Ordering[];
@@ -302,6 +303,7 @@ export type ExpressionBase = Node & { type: 'expression'; subType: string };
 type ExpressionAggregateBase = ExpressionBase & {
   subType: 'aggregate';
   distinct: boolean;
+  expression: [Expression | Wildcard];
 };
 export type ExpressionAggregateDefault = ExpressionAggregateBase & {
   expression: [Expression];
@@ -353,7 +355,7 @@ export type Expression =
 export type PropertyPathBase = Node & { type: 'path'; subType: string };
 export type PropertyPathChain = PropertyPathBase & {
   subType: '|' | '/';
-  items: [Path, ...Path[]];
+  items: Path[];
 };
 
 export type PathModified = PropertyPathBase & {
@@ -368,7 +370,7 @@ export type PathNegatedElt = PropertyPathBase & {
 
 export type PathAlternativeLimited = PropertyPathBase & {
   subType: '|';
-  items: [TermIri | PathNegatedElt, ...(TermIri | PathNegatedElt)[]];
+  items: (TermIri | PathNegatedElt)[];
 };
 
 export type PathNegated = PropertyPathBase & {
@@ -382,6 +384,7 @@ export type Path =
   | PropertyPathChain
   | PathModified
   | PathNegated;
+export type PathPure = PropertyPathChain | PathModified | PathNegated;
 
 export type ContextDefinitionBase_ = Node & { type: 'contextDef'; subType: string };
 export type ContextDefinitionPrefix = ContextDefinitionBase_ & {

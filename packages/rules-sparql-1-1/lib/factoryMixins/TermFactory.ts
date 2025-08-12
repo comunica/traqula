@@ -55,7 +55,8 @@ export function TermFactoryMixin<TBase extends Constructor<CoreFactory>>(Base: T
     /**
      * Lexical form with a type
      */
-    public literalTerm(loc: SourceLocation, value: string, iri: TermIri,): TermLiteralTyped;
+    public literalTerm(loc: SourceLocation, value: string, iri: TermIri): TermLiteralTyped;
+    public literalTerm(loc: SourceLocation, value: string, langOrIri?: string | TermIri): TermLiteral;
     public literalTerm(loc: SourceLocation, value: string, langOrIri?: string | TermIri): TermLiteral {
       return {
         type: nodeType,

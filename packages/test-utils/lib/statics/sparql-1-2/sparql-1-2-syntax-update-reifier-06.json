@@ -156,81 +156,90 @@
           }
         ],
         "delete": [],
-        "where": [
-          {
-            "type": "pattern",
-            "subType": "bgp",
-            "triples": [
-              {
-                "type": "triple",
-                "subject": {
-                  "type": "term",
-                  "subType": "variable",
-                  "value": "s",
+        "where": {
+          "type": "pattern",
+          "subType": "group",
+          "patterns": [
+            {
+              "type": "pattern",
+              "subType": "bgp",
+              "triples": [
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "variable",
+                    "value": "s",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 103,
+                      "end": 105
+                    }
+                  },
+                  "predicate": {
+                    "type": "path",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 106,
+                      "end": 111
+                    },
+                    "items": [
+                      {
+                        "type": "term",
+                        "subType": "namedNode",
+                        "value": "p",
+                        "loc": {
+                          "sourceLocationType": "source",
+                          "start": 106,
+                          "end": 108
+                        },
+                        "prefix": ""
+                      },
+                      {
+                        "type": "term",
+                        "subType": "namedNode",
+                        "value": "q",
+                        "loc": {
+                          "sourceLocationType": "source",
+                          "start": 109,
+                          "end": 111
+                        },
+                        "prefix": ""
+                      }
+                    ],
+                    "subType": "/"
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "variable",
+                    "value": "o",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 112,
+                      "end": 114
+                    }
+                  },
+                  "annotations": [],
                   "loc": {
                     "sourceLocationType": "source",
                     "start": 103,
-                    "end": 105
-                  }
-                },
-                "predicate": {
-                  "type": "path",
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 106,
-                    "end": 111
-                  },
-                  "items": [
-                    {
-                      "type": "term",
-                      "subType": "namedNode",
-                      "value": "p",
-                      "loc": {
-                        "sourceLocationType": "source",
-                        "start": 106,
-                        "end": 108
-                      },
-                      "prefix": ""
-                    },
-                    {
-                      "type": "term",
-                      "subType": "namedNode",
-                      "value": "q",
-                      "loc": {
-                        "sourceLocationType": "source",
-                        "start": 109,
-                        "end": 111
-                      },
-                      "prefix": ""
-                    }
-                  ],
-                  "subType": "/"
-                },
-                "object": {
-                  "type": "term",
-                  "subType": "variable",
-                  "value": "o",
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 112,
                     "end": 114
                   }
-                },
-                "annotations": [],
-                "loc": {
-                  "sourceLocationType": "source",
-                  "start": 103,
-                  "end": 114
                 }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 103,
+                "end": 116
               }
-            ],
-            "loc": {
-              "sourceLocationType": "source",
-              "start": 103,
-              "end": 116
             }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 98,
+            "end": 118
           }
-        ],
+        },
         "from": {
           "type": "datasetClauses",
           "clauses": [],

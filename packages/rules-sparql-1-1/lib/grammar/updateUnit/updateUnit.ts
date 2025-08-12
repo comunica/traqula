@@ -414,7 +414,7 @@ export const modify: SparqlRule<'modify', UpdateOperationModify> = <const> {
       C.factory.sourceLocation(graph?.withToken, del, insert, where),
       insert?.val ?? [],
       del?.val ?? [],
-      where.patterns,
+      where,
       using,
       graph?.graph,
     ));
@@ -436,7 +436,7 @@ export const modify: SparqlRule<'modify', UpdateOperationModify> = <const> {
     }
     SUBRULE(usingClauseStar, ast.from, undefined);
     F.printFilter(ast, () => PRINT_WORD('WHERE'));
-    SUBRULE(groupGraphPattern, F.patternGroup(ast.where, ast.loc), undefined);
+    SUBRULE(groupGraphPattern, ast.where, undefined);
   },
 };
 
@@ -592,12 +592,11 @@ export const quadsNotTriples: SparqlRule<'quadsNotTriples', GraphQuads> = <const
     const triples = OPTION(() => SUBRULE1(triplesTemplate, undefined));
     const close = CONSUME(l.symbols.RCurly);
 
-    return ACTION(() => ({
-      type: 'graph',
-      graph: name,
-      triples: triples ?? C.factory.patternBgp([], C.factory.sourceLocationNoMaterialize()),
-      loc: C.factory.sourceLocation(graph, close),
-    }));
+    return ACTION(() => C.factory.graphQuads(
+      name,
+      triples ?? C.factory.patternBgp([], C.factory.sourceLocationNoMaterialize()),
+      C.factory.sourceLocation(graph, close),
+    ));
   },
   gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
     F.printFilter(ast, () => PRINT_WORD('GRAPH'));

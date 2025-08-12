@@ -1,1 +1,1 @@
-PREFIX : <http://books.example/> SELECT ( sum( ?lprice ) AS ?totalPrice ) WHERE { ?org :affiliates ?auth . ?auth :writesBook ?book . ?book :price ?lprice . } GROUPBY ?org HAVING ( sum( ?lprice ) > "10"^^ <http://www.w3.org/2001/XMLSchema#integer> )
+PREFIX : <http://books.example/> SELECT ( sum( ?lprice ) AS ?totalPrice ) WHERE { ?org :affiliates ?auth . ?auth :writesBook ?book . ?book :price ?lprice . } GROUP BY ?org HAVING ( sum( ?lprice ) > "10"^^<http://www.w3.org/2001/XMLSchema#integer> )

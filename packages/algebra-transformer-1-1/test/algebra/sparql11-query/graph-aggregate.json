@@ -46,8 +46,7 @@
             "type": "expression",
             "expressionType": "wildcard",
             "wildcard": {
-              "termType": "Wildcard",
-              "value": "*"
+              "type": "wildcard"
             }
           },
           "distinct": false,

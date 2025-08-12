@@ -73,7 +73,7 @@ export type UpdateOperationModify = UpdateOperationBase & {
   insert: Quads[];
   delete: Quads[];
   from: DatasetClauses;
-  where: Pattern[];
+  where: PatternGroup;
 };
 export type UpdateOperation =
   | UpdateOperationLoad
@@ -234,7 +234,7 @@ export type PatternService = PatternBase & {
 /**
  * A single list of assignments maps the variable identifier to the value
  */
-export type ValuePatternRow = Record<string, TermIri | TermBlank | TermLiteral | undefined>;
+export type ValuePatternRow = Record<string, TermIri | TermLiteral | undefined>;
 export type PatternValues = PatternBase & {
   subType: 'values';
   values: ValuePatternRow[];

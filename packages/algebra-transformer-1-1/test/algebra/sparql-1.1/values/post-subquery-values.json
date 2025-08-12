@@ -40,7 +40,7 @@
           ],
           "bindings": [
             {
-              "?o": {
+              "o": {
                 "termType": "NamedNode",
                 "value": "http://example.org/b"
               }

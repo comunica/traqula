@@ -126,7 +126,8 @@
               "end": 26
             }
           }
-        ]
+        ],
+        "separator": " "
       },
       "variable": {
         "type": "term",

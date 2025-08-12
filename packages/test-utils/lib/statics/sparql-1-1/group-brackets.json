@@ -149,9 +149,17 @@
       "subType": "order",
       "orderDefs": [
         {
-          "type": "term",
-          "subType": "variable",
-          "value": "company",
+          "expression": {
+            "type": "term",
+            "subType": "variable",
+            "value": "company",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 177,
+              "end": 185
+            }
+          },
+          "descending": false,
           "loc": {
             "sourceLocationType": "source",
             "start": 177,

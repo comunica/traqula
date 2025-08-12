@@ -1,1 +1,1 @@
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> SELECT ( sum( ?val ) AS ?sum ) ( count( ?a ) AS ?count ) ( count( * ) AS ?countAll ) WHERE { ?a rdf:value ?val . } GROUPBY ?a
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> SELECT ( sum( ?val ) AS ?sum ) ( count( ?a ) AS ?count ) ( count( * ) AS ?countAll ) WHERE { ?a rdf:value ?val . } GROUP BY ?a

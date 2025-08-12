@@ -21,18 +21,18 @@ translate('SELECT * WHERE { ?x ?y ?z }');
 ```
 Returns:
 ```json
-{ 
+{
   "type": "project",
   "input": {
     "type": "bgp",
-      "patterns": [{
-        "type": "pattern",
-        "termType": "Quad",
-        "subject": { "termType": "Variable", "value": "x" },
-        "predicate": { "termType": "Variable", "value": "y" },
-        "object": { "termType": "Variable", "value": "z" },
-        "graph": { "termType": "DefaultGraph", "value": "" }
-      }]
+    "patterns": [{
+      "type": "pattern",
+      "termType": "Quad",
+      "subject": { "termType": "Variable", "value": "x" },
+      "predicate": { "termType": "Variable", "value": "y" },
+      "object": { "termType": "Variable", "value": "z" },
+      "graph": { "termType": "DefaultGraph", "value": "" }
+    }]
   },
   "variables": [
     { "termType": "Variable", "value": "x" },
@@ -40,7 +40,6 @@ Returns:
     { "termType": "Variable", "value": "z" }
   ]
 }
-
 ```
 
 Translating back to SPARQL can be done with the `toSparql` (or `toSparqlJs`) function.
@@ -89,48 +88,46 @@ Default result:
 ```json
 {
   "type": "project",
-    "input": {
+  "input": {
     "type": "graph",
-      "input": {
-      "type": "bgp",
-        "patterns": [{
-          "type": "pattern",
-          "termType": "Quad",
-          "subject": { "termType": "Variable", "value": "x" },
-          "predicate": { "termType": "Variable", "value": "y" },
-          "object": { "termType": "Variable", "value": "z" },
-          "graph": { "termType": "DefaultGraph", "value": "" }
-        }]
-    },
-    "name": { "termType": "Variable", "value": "g" }
-  },
-  "variables": [{ "termType": "Variable", "value": "x" }]
-}
-
-```
-
-With quads:
-```json
-{
-  "type": "project",
     "input": {
-    "type": "bgp",
+      "type": "bgp",
       "patterns": [{
         "type": "pattern",
         "termType": "Quad",
         "subject": { "termType": "Variable", "value": "x" },
         "predicate": { "termType": "Variable", "value": "y" },
         "object": { "termType": "Variable", "value": "z" },
-        "graph": { "termType": "Variable", "value": "g" }
+        "graph": { "termType": "DefaultGraph", "value": "" }
       }]
+    },
+    "name": { "termType": "Variable", "value": "g" }
   },
   "variables": [{ "termType": "Variable", "value": "x" }]
 }
+```
 
+With quads:
+```json
+{
+  "type": "project",
+  "input": {
+    "type": "bgp",
+    "patterns": [{
+      "type": "pattern",
+      "termType": "Quad",
+      "subject": { "termType": "Variable", "value": "x" },
+      "predicate": { "termType": "Variable", "value": "y" },
+      "object": { "termType": "Variable", "value": "z" },
+      "graph": { "termType": "Variable", "value": "g" }
+    }]
+  },
+  "variables": [{ "termType": "Variable", "value": "x" }]
+}
 ```
 
 ### Flattened operators
-Several binary operators that can be nested, 
+Several binary operators that can be nested,
 such as the path operators,
 can take an array of input entries to simply this notation.
 For example, the following SPARQL:
@@ -147,9 +144,9 @@ outputs the following algebra:
     "predicate": {
       "type": "alt",
       "input": [
-        { "type": "link", "iri": { "termType": "NamedNode", "value": "a:a" }},
-        { "type": "link", "iri": { "termType": "NamedNode", "value": "b:b" }},
-        { "type": "link", "iri": { "termType": "NamedNode", "value": "c:c" }}
+        { "type": "link", "iri": { "termType": "NamedNode", "value": "a:a" } },
+        { "type": "link", "iri": { "termType": "NamedNode", "value": "b:b" } },
+        { "type": "link", "iri": { "termType": "NamedNode", "value": "c:c" } }
       ]
     },
     "object": { "termType": "Variable", "value": "z" },
@@ -160,7 +157,6 @@ outputs the following algebra:
     { "termType": "Variable", "value": "z" }
   ]
 }
-
 ```
 
 #### SPARQL*
@@ -170,9 +166,9 @@ outputs the following algebra:
 #### VALUES
 For the VALUES block we return the following output:
 ```
-PREFIX dc:   <http://purl.org/dc/elements/1.1/> 
-PREFIX :     <http://example.org/book/> 
-PREFIX ns:   <http://example.org/ns#> 
+PREFIX dc:   <http://purl.org/dc/elements/1.1/>
+PREFIX :     <http://example.org/book/>
+PREFIX ns:   <http://example.org/ns#>
 
 SELECT ?book ?title ?price
 {
@@ -191,8 +187,8 @@ SELECT ?book ?title ?price
         "type": "values",
         "variables": [{ "termType": "Variable", "value": "book" }],
         "bindings": [
-          { "?book": { "termType": "NamedNode", "value": "http://example.org/book/book1" }},
-          { "?book": { "termType": "NamedNode", "value": "http://example.org/book/book3" }}
+          { "?book": { "termType": "NamedNode", "value": "http://example.org/book/book1" } },
+          { "?book": { "termType": "NamedNode", "value": "http://example.org/book/book3" } }
         ]
       },
       {
@@ -224,7 +220,6 @@ SELECT ?book ?title ?price
     { "termType": "Variable", "value": "price" }
   ]
 }
-
 ```
 
 #### Differences from Jena ARQ
@@ -236,4 +231,4 @@ and the project operation always gets used (even in the case of `SELECT *`).
 Every test consists of a sparql file and a corresponding json file containing the algebra result.
 Tests ending with `(quads)` in their name are tested/generated with `quads: true` in the options.
 
-If you need to regenerate the parsed JSON files in bulk, you can invoke `node test/generate-json.js`.
+If you need to regenerate the parsed JSON files in bulk, you can invoke `node test/generateJson.js`.

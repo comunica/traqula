@@ -19,7 +19,7 @@ describe('a SPARQL 1.1 generator', () => {
 
   describe('positive paths', () => {
     for (const { name, statics } of positiveTest('paths')) {
-      it(`can parse ${name}`, async({ expect }) => {
+      it(`can generate ${name}`, async({ expect }) => {
         const { query, ast, autoGen } = await statics();
         const path = <T11.Path>ast;
 
@@ -38,7 +38,7 @@ describe('a SPARQL 1.1 generator', () => {
 
   describe('positive sparql 1.1', () => {
     for (const { name, statics } of positiveTest('sparql-1-1')) {
-      it(`can parse ${name}`, async({ expect }) => {
+      it(`can generate ${name}`, async({ expect }) => {
         const { query, ast, autoGen } = await statics();
         const queryUpdate = <T11.Query | T11.Update>ast;
 

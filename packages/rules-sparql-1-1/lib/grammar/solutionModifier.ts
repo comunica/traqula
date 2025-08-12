@@ -70,17 +70,17 @@ export const groupClause: SparqlRule<'groupClause', SolutionModifierGroup> = <co
       loc: C.factory.sourceLocation(start, groupings.at(-1)),
     }));
   },
-  gImpl: ({ PRINT_WORD, SUBRULE }) => (ast, { factory: F }) => {
-    F.printFilter(ast, () => PRINT_WORD('GROUP', 'BY'));
+  gImpl: ({ PRINT_WORDS, SUBRULE }) => (ast, { factory: F }) => {
+    F.printFilter(ast, () => PRINT_WORDS('GROUP', 'BY'));
     for (const grouping of ast.groupings) {
       if (F.isExpression(grouping)) {
         SUBRULE(expression, grouping, undefined);
       } else {
-        F.printFilter(ast, () => PRINT_WORD('('));
+        F.printFilter(ast, () => PRINT_WORDS('('));
         SUBRULE(expression, grouping.value, undefined);
-        F.printFilter(ast, () => PRINT_WORD('AS'));
+        F.printFilter(ast, () => PRINT_WORDS('AS'));
         SUBRULE(var_, grouping.variable, undefined);
-        F.printFilter(ast, () => PRINT_WORD(')'));
+        F.printFilter(ast, () => PRINT_WORDS(')'));
       }
     }
   },
@@ -176,21 +176,17 @@ export const orderClause: SparqlRule<'orderClause', SolutionModifierOrder> = <co
     return ACTION(() =>
       C.factory.solutionModifierOrder(orderings, C.factory.sourceLocation(order, orderings.at(-1))));
   },
-  gImpl: ({ PRINT_WORD, SUBRULE }) => (ast, { factory: F }) => {
-    F.printFilter(ast, () => PRINT_WORD('ORDER', 'BY'));
+  gImpl: ({ PRINT_WORDS, SUBRULE }) => (ast, { factory: F }) => {
+    F.printFilter(ast, () => PRINT_WORDS('ORDER', 'BY'));
     for (const ordering of ast.orderDefs) {
-      if (F.isExpression(ordering)) {
-        SUBRULE(expression, ordering, undefined);
+      if (ordering.descending) {
+        F.printFilter(ast, () => PRINT_WORDS('DESC'));
       } else {
-        if (ordering.descending) {
-          F.printFilter(ast, () => PRINT_WORD('DESC'));
-        } else {
-          F.printFilter(ast, () => PRINT_WORD('ASC'));
-        }
-        F.printFilter(ast, () => PRINT_WORD('('));
-        SUBRULE(expression, ordering.expression, undefined);
-        F.printFilter(ast, () => PRINT_WORD(')'));
+        F.printFilter(ast, () => PRINT_WORDS('ASC'));
       }
+      F.printFilter(ast, () => PRINT_WORDS('('));
+      SUBRULE(expression, ordering.expression, undefined);
+      F.printFilter(ast, () => PRINT_WORDS(')'));
     }
   },
 };
@@ -221,8 +217,14 @@ export const orderCondition: SparqlGrammarRule<'orderCondition', Ordering> = <co
         loc: C.factory.sourceLocation(descending[1], expr),
       }));
     } },
-    { ALT: () => SUBRULE(constraint, undefined) },
-    { ALT: () => SUBRULE(var_, undefined) },
+    { ALT: () => {
+      const expr = SUBRULE(constraint, undefined);
+      return ACTION(() => ({ expression: expr, descending: false, loc: expr.loc }));
+    } },
+    { ALT: () => {
+      const expr = SUBRULE(var_, undefined);
+      return ACTION(() => ({ expression: expr, descending: false, loc: expr.loc }));
+    } },
   ]),
 };
 
@@ -252,13 +254,13 @@ export const limitOffsetClauses: SparqlRule<'limitOffsetClauses', SolutionModifi
       ));
     } },
   ]),
-  gImpl: ({ PRINT_WORD }) => (ast, { factory: F }) => {
+  gImpl: ({ PRINT_WORDS }) => (ast, { factory: F }) => {
     F.printFilter(ast, () => {
       if (ast.limit) {
-        PRINT_WORD('LIMIT', String(ast.limit));
+        PRINT_WORDS('LIMIT', String(ast.limit));
       }
       if (ast.offset) {
-        PRINT_WORD('OFFSET', String(ast.limit));
+        PRINT_WORDS('OFFSET', String(ast.offset));
       }
     });
   },

@@ -4,7 +4,7 @@ import type {
   GraphRef,
   GraphRefDefault,
   GraphRefSpecific,
-  Pattern,
+  PatternGroup,
   Quads,
   TermIri,
   UpdateOperationAdd,
@@ -254,7 +254,7 @@ export function UpdateOperationFactoryMixin<TBase extends Constructor<CoreFactor
       loc: SourceLocation,
       insert: Quads[] | undefined,
       del: Quads[] | undefined,
-      where: Pattern[],
+      where: PatternGroup,
       from: DatasetClauses,
       graph?: TermIri | undefined,
     ): UpdateOperationModify {

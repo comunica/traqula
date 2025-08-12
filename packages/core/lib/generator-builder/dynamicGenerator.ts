@@ -48,6 +48,7 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
     const generate = (): void => def.gImpl({
       SUBRULE: this.subrule,
       PRINT: this.print,
+      PRINT_SPACE_LEFT: this.printSpaceLeft,
       PRINT_WORD: this.printWord,
       PRINT_WORDS: this.printWords,
       CATCHUP: this.catchup,
@@ -117,6 +118,11 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
     this.expectsSpace = true;
     this.print(...args);
     this.expectsSpace = true;
+  };
+
+  private readonly printSpaceLeft: RuleDefArg['PRINT_WORD'] = (...args) => {
+    this.expectsSpace = true;
+    this.print(...args);
   };
 
   private readonly printWords: RuleDefArg['PRINT_WORD'] = (...args) => {

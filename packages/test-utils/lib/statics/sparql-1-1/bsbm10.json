@@ -484,44 +484,52 @@
       "subType": "order",
       "orderDefs": [
         {
-          "type": "expression",
-          "subType": "functionCall",
-          "function": {
-            "type": "term",
-            "subType": "namedNode",
-            "value": "double",
+          "expression": {
+            "type": "expression",
+            "subType": "functionCall",
+            "function": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "double",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 686,
+                "end": 696
+              },
+              "prefix": "xsd"
+            },
+            "args": [
+              {
+                "type": "expression",
+                "subType": "operation",
+                "operator": "str",
+                "args": [
+                  {
+                    "type": "term",
+                    "subType": "variable",
+                    "value": "price",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 701,
+                      "end": 707
+                    }
+                  }
+                ],
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 697,
+                  "end": 708
+                }
+              }
+            ],
+            "distinct": false,
             "loc": {
               "sourceLocationType": "source",
               "start": 686,
-              "end": 696
-            },
-            "prefix": "xsd"
-          },
-          "args": [
-            {
-              "type": "expression",
-              "subType": "operation",
-              "operator": "str",
-              "args": [
-                {
-                  "type": "term",
-                  "subType": "variable",
-                  "value": "price",
-                  "loc": {
-                    "sourceLocationType": "source",
-                    "start": 701,
-                    "end": 707
-                  }
-                }
-              ],
-              "loc": {
-                "sourceLocationType": "source",
-                "start": 697,
-                "end": 708
-              }
+              "end": 709
             }
-          ],
-          "distinct": false,
+          },
+          "descending": false,
           "loc": {
             "sourceLocationType": "source",
             "start": 686,

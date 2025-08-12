@@ -12,8 +12,8 @@ import type {
   Wrap,
 } from './nodeTypings';
 
-export type Typed<Type extends string> = { type: Type };
-export type SubTyped<Type extends string, Subtype extends string> = { type: Type; subType: Subtype };
+export type Typed<Type extends PropertyKey> = { type: Type };
+export type SubTyped<Type extends PropertyKey, Subtype extends PropertyKey> = { type: Type; subType: Subtype };
 
 export class CoreFactory {
   public wrap<T>(val: T, loc: SourceLocation): Wrap<T> {

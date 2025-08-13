@@ -2,10 +2,9 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { describe, it } from 'vitest';
-import { toSparql } from '../lib';
+import { translate, toSparql } from '../lib';
 import type { Operation, Project } from '../lib/algebra';
 import Factory from '../lib/factory';
-import translate from '../lib/sparqlAlgebra';
 import Util from '../lib/util';
 
 // https://www.w3.org/2001/sw/DataAccess/tests/r2#syntax-basic-01

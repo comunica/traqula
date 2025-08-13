@@ -599,19 +599,10 @@ class Translator {
 
     // Convert all filters to 'having' if it contains an aggregator variable
     // could always convert, but is nicer to use filter when possible
-    result.where = this.flattenGroup(result.where);
-    if (result.where.patterns.some(pattern => F.isPatternFilter(pattern))) {
-      const havings: Expression[] = [];
-      result.where.patterns = result.where.patterns.flatMap((pattern) => {
-        if (F.isPatternFilter(pattern) && this.objectContainsVariable(pattern, Object.keys(aggregators))) {
-          havings.push(this.replaceAggregatorVariables(pattern.expression, aggregators));
-          return [];
-        }
-        return [ pattern ];
-      });
-      if (havings.length > 0) {
-        select.solutionModifiers.having = F.solutionModifierHaving(havings, F.gen());
-      }
+    const havings: Expression[] = [];
+    result.where = this.filterReplace(result.where, aggregators, havings);
+    if (havings.length > 0) {
+      select.solutionModifiers.having = F.solutionModifierHaving(havings, F.gen());
     }
 
     this.extend = extend;
@@ -623,17 +614,25 @@ class Translator {
     return F.patternGroup([ select ], F.gen());
   }
 
-  // TODO: Can not just ungoup since a select needs to be in a group!
-  private flattenGroup(group: PatternGroup): PatternGroup;
-  private flattenGroup(group: PatternGroup | Pattern): PatternGroup | Pattern;
-  private flattenGroup(group: PatternGroup | Pattern): PatternGroup | Pattern {
+  private filterReplace(group: PatternGroup, aggregators: Record<string, Expression>, havings: Expression[]):
+  PatternGroup;
+  private filterReplace(group: PatternGroup | Pattern, aggregators: Record<string, Expression>, havings: Expression[]):
+    PatternGroup | Pattern;
+  private filterReplace(group: PatternGroup | Pattern, aggregators: Record<string, Expression>, havings: Expression[]):
+    PatternGroup | Pattern {
     const F = this.astFactory;
     if (!F.isPatternGroup(group)) {
       return group;
     }
     const patterns = group.patterns
-      .map(x => this.flattenGroup(x))
-      .flatMap(pattern => F.isPatternGroup(pattern) ? pattern.patterns : pattern);
+      .map(x => this.filterReplace(x, aggregators, havings))
+      .flatMap((pattern) => {
+        if (F.isPatternFilter(pattern) && this.objectContainsVariable(pattern, Object.keys(aggregators))) {
+          havings.push(this.replaceAggregatorVariables(pattern.expression, aggregators));
+          return [];
+        }
+        return [ pattern ];
+      });
     return F.patternGroup(patterns, F.gen());
   }
 

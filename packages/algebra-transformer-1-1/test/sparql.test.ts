@@ -30,9 +30,9 @@ describe('sparql output', () => {
       it (name, ({ expect }) => {
         const expected = JSON.parse(fs.readFileSync(jsonName, 'utf8'));
         const genAst = toSparql(expected);
-        console.log(JSON.stringify(genAst, null, 2));
+        // Console.log(JSON.stringify(genAst, null, 2));
         const genQuery = generator.generate(genAst);
-        console.log(genQuery);
+        // Console.log(genQuery);
         const ast = parser.parse(genQuery);
         const algebra = LibUtil.objectify(translate(ast, {
           quads: name.endsWith('-quads'),
@@ -54,17 +54,19 @@ describe('sparql output', () => {
       // 2x Sequence path introduces new variable that is then scoped in projection
       'sequence-paths-in-anonymous-node',
       'sparql-9-3c',
+      // Values is pushed from being solution modifier to being in patternGroup
+      'sparql-values-clause',
     ].includes(x))) {
       it(`can algebra circle ${name}`, async({ expect }) => {
         const { query } = await statics();
         const path = parser.parse(query);
         // Console.log(JSON.stringify(path, null, 2));
         const algebra = LibUtil.objectify(translate(path, { quads: true }));
-        console.log(JSON.stringify(algebra, null, 2));
+        // Console.log(JSON.stringify(algebra, null, 2));
         const pathFromAlg = toSparql(algebra);
-        console.log(JSON.stringify(pathFromAlg, null, 2));
+        // Console.log(JSON.stringify(pathFromAlg, null, 2));
         const queryGen = generator.generate(pathFromAlg);
-        console.log(queryGen);
+        // Console.log(queryGen);
         const parsedGen = parser.parse(queryGen);
         const astFromGen = LibUtil.objectify(translate(parsedGen, { quads: true }));
         expect(canon.canonicalizeQuery(astFromGen, false)).toEqual(canon.canonicalizeQuery(algebra, false));

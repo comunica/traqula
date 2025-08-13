@@ -22,12 +22,13 @@ import type {
   UpdateOperationClear,
   Quads,
   TermVariable,
+  DatasetClauses,
 } from '@traqula/rules-sparql-1-1';
 import { isomorphic } from 'rdf-isomorphic';
 import type { Algebra } from '../index';
-import { types } from '../toAlgebra/core';
+import { isVariable, types } from '../toAlgebra/core';
 import type { AstContext } from './core';
-import { arrayToPattern } from './expression';
+import { wrapInPatternGroup } from './expression';
 import { translateDatasetClauses, translatePattern, translateTerm } from './general';
 import { translateOperation } from './pattern';
 import { removeQuadsRecursive } from './quads';
@@ -45,17 +46,18 @@ export function translateCompositeUpdate(c: AstContext, op: Algebra.CompositeUpd
   return toUpdate(c, op.updates.map(update => <UpdateOperation> translateOperation(c, update)));
 }
 
-export function translateDeleteInsert(c: AstContext, op: Algebra.DeleteInsert): UpdateOperationModify {
+export function translateDeleteInsert(c: AstContext, op: Algebra.DeleteInsert):
+ReturnType<typeof cleanUpUpdateOperationModify> {
   const F = c.astFactory;
   let where: Algebra.Operation | undefined = op.where;
-  let use;
+  let use: DatasetClauses | undefined;
   if (where && where.type === types.FROM) {
     const from = where;
     where = from.input;
     use = translateDatasetClauses(c, from.default, from.named);
   }
 
-  const updates = <[UpdateOperationModify & { where?: unknown; delete?: unknown; insert?: unknown }]> [{
+  const update: UpdateOperationModify = {
     type: 'updateOperation',
     subType: 'modify',
     delete: convertUpdatePatterns(c, op.delete ?? []),
@@ -63,61 +65,75 @@ export function translateDeleteInsert(c: AstContext, op: Algebra.DeleteInsert): 
     where: F.patternGroup([], F.gen()),
     from: use ?? F.datasetClauses([], F.gen()),
     loc: F.gen(),
-  }];
+    graph: undefined,
+  };
 
-  // Corresponds to empty array in SPARQL.js
-  if (!where || (where.type === types.BGP && where.patterns.length === 0)) {
-    updates[0].where = F.patternGroup([], F.gen());
-  } else {
-    const graphs: RDF.NamedNode[] = [];
+  // If not an empty where pattern, handle quads
+  if (where && (where.type !== types.BGP || where.patterns.length > 0)) {
+    const graphs: (RDF.NamedNode | RDF.DefaultGraph)[] = [];
     const result = <Pattern[]> translateOperation(c, removeQuadsRecursive(c, where, graphs));
-    updates[0].where = arrayToPattern(c, result);
+    update.where = wrapInPatternGroup(c, result);
     // Graph might not be applied yet since there was no project
     // this can only happen if there was a single graph
     if (graphs.length > 0) {
-      if (graphs.length !== 1) {
+      if (graphs.length === 1) {
+        // Ignore if default graph
+        if (graphs.at(0)?.value !== '') {
+          update.where.patterns = [
+            F.patternGraph(translateTerm(c, graphs[0]), update.where.patterns, F.gen()),
+          ];
+        }
+      } else {
         throw new Error('This is unexpected and might indicate an error in graph handling for updates.');
-      }
-      // Ignore if default graph
-      if (graphs[0]?.value !== '') {
-        updates[0].where.patterns = [
-          F.patternGraph(translateTerm(c, graphs[0]), updates[0].where.patterns, F.gen()),
-        ];
       }
     }
   }
 
-  // Not really necessary but can give cleaner looking queries
+  return cleanUpUpdateOperationModify(c, update, op);
+}
+
+/**
+ * Return the minimal version of the UpdateOperationModify.
+ * Not really necessary but can give cleaner looking queries
+ */
+function cleanUpUpdateOperationModify(c: AstContext, update: UpdateOperationModify, op: Algebra.DeleteInsert):
+  UpdateOperationModify | UpdateOperationDeleteData | UpdateOperationDeleteWhere | UpdateOperationInsertData {
+  const copy = { ...update };
+  // Check Insert Data
   if (!op.delete && !op.where) {
-    const asInsert = <UpdateOperationInsertData & { delete?: unknown; where?: unknown }> <unknown> updates[0];
+    const asInsert = <UpdateOperationInsertData & { delete?: unknown; where?: unknown }> <unknown> copy;
     asInsert.subType = 'insertdata';
-    asInsert.data = updates[0].insert;
+    asInsert.data = copy.insert;
     delete asInsert.delete;
     delete asInsert.where;
-  } else if (!op.insert && !op.where) {
+    return asInsert;
+  }
+  // Check DeleteWhere or DeleteData
+  if (!op.insert && !op.where) {
     const asCasted =
       <(UpdateOperationDeleteData | UpdateOperationDeleteWhere) & { insert?: unknown; where?: unknown }>
-        <unknown> updates[0];
-    asCasted.data = updates[0].delete;
+        <unknown> copy;
+    asCasted.data = copy.delete;
     delete asCasted.insert;
     delete asCasted.where;
     if (op.delete!.some(pattern =>
-      pattern.subject.termType === 'Variable' ||
-      pattern.predicate.termType === 'Variable' ||
-      pattern.object.termType === 'Variable')) {
+      isVariable(pattern.subject) || isVariable(pattern.predicate) || isVariable(pattern.object))) {
       asCasted.subType = 'deletewhere';
     } else {
       asCasted.subType = 'deletedata';
     }
-  } else if (!op.insert && op.where && op.where.type === 'bgp' && isomorphic(op.delete!, op.where.patterns)) {
-    const asCasted = <UpdateOperationDeleteWhere & { where?: unknown; delete?: unknown }> <unknown> updates[0];
-    asCasted.data = updates[0].delete;
+    return asCasted;
+  }
+  // Check if deleteWhere when modify but isomorphic.
+  if (!op.insert && op.where && op.where.type === 'bgp' && isomorphic(op.delete!, op.where.patterns)) {
+    const asCasted = <UpdateOperationDeleteWhere & { where?: unknown; delete?: unknown }> <unknown> copy;
+    asCasted.data = copy.delete;
     delete asCasted.where;
     delete asCasted.delete;
     asCasted.subType = 'deletewhere';
+    return asCasted;
   }
-
-  return updates[0];
+  return update;
 }
 
 export function translateLoad(c: AstContext, op: Algebra.Load): UpdateOperationLoad {
@@ -196,7 +212,7 @@ export function translateCopy(c: AstContext, op: Algebra.Copy): UpdateOperationC
 }
 
 /**
- * Similar to removeQuads but more simplified for UPDATEs
+ * Similar to removeQuads but more simplified for UPDATES
  */
 export function convertUpdatePatterns(c: AstContext, patterns: Algebra.Pattern[]): Quads[] {
   const F = c.astFactory;
@@ -213,6 +229,7 @@ export function convertUpdatePatterns(c: AstContext, patterns: Algebra.Pattern[]
   }
   return Object.keys(graphs).map((graph) => {
     const patternBgp = F.patternBgp(graphs[graph].map(x => translatePattern(c, x)), F.gen());
+    // If DefaultGraph, de not wrap
     if (graph === '') {
       return patternBgp;
     }

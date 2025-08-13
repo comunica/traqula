@@ -16,7 +16,7 @@ import Util from '../util';
 import type { AstContext } from './core';
 import { eTypes } from './core';
 import {
-  arrayToPattern,
+  wrapInPatternGroup,
   translateAggregateExpression,
   translateExistenceExpression,
   translateNamedExpression,
@@ -25,14 +25,15 @@ import {
 } from './expression';
 import {
   translateDatasetClauses,
+  translateDistinct,
   translateExtend,
   translateOrderBy,
-  translatePath,
   translatePattern,
   translateReduced,
   translateTerm,
 } from './general';
-import { translateConstruct, translateDistinct, translateProject } from './queryUnit';
+import { translatePath } from './path';
+import { translateConstruct, translateProject } from './queryUnit';
 import {
   translateAdd,
   translateClear,
@@ -115,7 +116,7 @@ export function translateBoundAggregate(c: AstContext, op: Algebra.BoundAggregat
 
 export function translateBgp(c: AstContext, op: Algebra.Bgp): PatternBgp | null {
   const F = c.astFactory;
-  const patterns = op.patterns.map(x => translatePattern(c, x));
+  const patterns = op.patterns.map(triple => translatePattern(c, triple));
   if (patterns.length === 0) {
     return null;
   }
@@ -123,21 +124,19 @@ export function translateBgp(c: AstContext, op: Algebra.Bgp): PatternBgp | null 
 }
 
 /**
- * Input of from is for example a project
+ * A from needs to be registered to the solutionModifiers.
+ * Similar to {@link translateDistinct}
  */
 export function translateFrom(c: AstContext, op: Algebra.From): PatternGroup {
-  const F = c.astFactory;
-  const result: QueryBase | PatternGroup = translateOperation(c, op.input);
-  let query: QueryBase;
-  if (F.isPatternGroup(result)) {
-    query = <QueryBase> <unknown> result.patterns[0];
-  } else {
-    query = result;
-  }
+  const result: PatternGroup = translateOperation(c, op.input);
+  const query = <QueryBase> result.patterns[0];
   query.datasets = translateDatasetClauses(c, op.default, op.named);
-  return <PatternGroup> result;
+  return result;
 }
 
+/**
+ * A patternFilter closes the group
+ */
 export function translateFilter(c: AstContext, op: Algebra.Filter): PatternGroup {
   const F = c.astFactory;
   return F.patternGroup(
@@ -153,40 +152,45 @@ export function translateGraph(c: AstContext, op: Algebra.Graph): PatternGraph {
   const F = c.astFactory;
   return F.patternGraph(
     translateTerm(c, op.name),
-    Util.flatten([ translateOperation(c, op.input) ]),
+    Util.flatten<Pattern>([ translateOperation(c, op.input) ]),
     F.gen(),
   );
 }
 
+/**
+ * A group needs to be handled by {@link translateProject}
+ */
 export function translateGroup(c: AstContext, op: Algebra.Group): PatternGroup {
-  const input = translateOperation(c, op.input);
+  const input: PatternGroup = translateOperation(c, op.input);
   const aggs = op.aggregates.map(x => translateBoundAggregate(c, x));
   c.aggregates.push(...aggs);
   // TODO: apply possible extends
   c.group.push(...op.variables);
-
   return input;
 }
 
 export function translateJoin(c: AstContext, op: Algebra.Join): Pattern[] {
-  const arr: any[] = Util.flatten(op.input.map(x => translateOperation(c, x)));
+  const F = c.astFactory;
+  const arr: Pattern[] = Util.flatten(op.input.map(x => translateOperation(c, x)));
 
   // Merge bgps
   // This is possible if one side was a path and the other a bgp for example
-  return arr.reduce((result, val) => {
-    if (val.type !== 'bgp' || result.length === 0 || result.at(-1).type !== 'bgp') {
+  const result: Pattern[] = [];
+  for (const val of arr) {
+    const lastResult = result.at(-1);
+    if (!F.isPatternBgp(val) || result.length === 0 || !F.isPatternBgp(lastResult!)) {
       result.push(val);
     } else {
-      result.at(-1).triples.push(...val.triples);
+      lastResult.triples.push(...val.triples);
     }
-    return result;
-  }, []);
+  }
+  return result;
 }
 
 export function translateLeftJoin(c: AstContext, op: Algebra.LeftJoin): Pattern[] {
   const F = c.astFactory;
   const leftJoin = F.patternOptional(
-    arrayToPattern(c, translateOperation(c, op.input[1])).patterns,
+    operationInputAsPatternList(c, op.input[1]),
     F.gen(),
   );
 
@@ -205,69 +209,67 @@ export function translateLeftJoin(c: AstContext, op: Algebra.LeftJoin): Pattern[
 
 export function translateMinus(c: AstContext, op: Algebra.Minus): Pattern[] {
   const F = c.astFactory;
-  let patterns = translateOperation(c, op.input[1]);
-  if (patterns.type === 'group') {
-    patterns = patterns.patterns;
-  }
-  if (!Array.isArray(patterns)) {
-    patterns = [ patterns ];
-  }
   return Util.flatten([
     translateOperation(c, op.input[0]),
-    F.patternMinus(patterns, F.gen()),
+    F.patternMinus(operationInputAsPatternList(c, op.input[1]), F.gen()),
   ]);
 }
 
 export function translateService(c: AstContext, op: Algebra.Service): PatternService {
   const F = c.astFactory;
-  let patterns: Pattern | Pattern[] = <Pattern> translateOperation(c, op.input);
-  if (F.isPatternGroup(patterns)) {
-    patterns = patterns.patterns;
-  }
-  if (!Array.isArray(patterns)) {
-    patterns = [ patterns ];
-  }
   return F.patternService(
     translateTerm(c, op.name),
-    patterns,
+    operationInputAsPatternList(c, op.input),
     op.silent,
     F.gen(),
   );
 }
 
+/**
+ * Unwrap single group patterns, create array if it was not yet.
+ */
+function operationInputAsPatternList(c: AstContext, input: Algebra.Operation): Pattern[] {
+  const result = <Pattern[] | Pattern | null> translateOperation(c, input);
+  // If (result && F.isPatternGroup(result)) {
+  //   return result.patterns;
+  // }
+  return result ? (Array.isArray(result) ? result : [ result ]) : [];
+}
+
+/**
+ * A limit offset needs to be registered to the solutionModifiers.
+ * Similar to {@link translateDistinct}
+ */
 export function translateSlice(c: AstContext, op: Algebra.Slice): Pattern {
   const F = c.astFactory;
-  const result = <Pattern> translateOperation(c, op.input);
-  // Results can be nested in a group object
-  let castedRes = <any> result;
-  if (F.isPatternGroup(result)) {
-    castedRes = result.patterns[0];
-  }
+  const result: PatternGroup = translateOperation(c, op.input);
+  const query = <QueryBase>result.patterns[0];
   if (op.start !== 0) {
-    const query = <QueryBase> castedRes;
     query.solutionModifiers.limitOffset = query.solutionModifiers.limitOffset ??
       F.solutionModifierLimitOffset(undefined, op.start, F.gen());
     query.solutionModifiers.limitOffset.offset = op.start;
   }
   if (op.length !== undefined) {
-    const query = <QueryBase> castedRes;
     query.solutionModifiers.limitOffset = query.solutionModifiers.limitOffset ??
       F.solutionModifierLimitOffset(op.length, undefined, F.gen());
     query.solutionModifiers.limitOffset.limit = op.length;
   }
-  return result;
+  return <Pattern> result;
 }
 
 export function translateUnion(c: AstContext, op: Algebra.Union): PatternUnion {
   const F = c.astFactory;
   return F.patternUnion(
-    op.input.map(x => translateOperation(c, x)).map(x => arrayToPattern(c, x)),
+    op.input
+      .map(operation => <Pattern | Pattern[]>translateOperation(c, operation))
+      .map(pattern => wrapInPatternGroup(c, pattern)),
     F.gen(),
   );
 }
 
 export function translateValues(c: AstContext, op: Algebra.Values): PatternValues {
-  // TODO: check if handled correctly when outside of select block
+  // TODO: check if handled correctly when outside of select block - the answer is no
+  //  - we always bring it within the group, but does it matter?
   const F = c.astFactory;
   return F.patternValues(
     op.bindings.map((binding) => {

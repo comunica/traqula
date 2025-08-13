@@ -32,6 +32,7 @@ export function translateExistenceExpression(
   const F = c.astFactory;
   return F.expressionPatternOperation(
     expr.not ? 'notexists' : 'exists',
+    // TranslateOperation can give an array
     F.patternGroup(Util.flatten([ translateOperation(c, expr.input) ]), F.gen()),
     F.gen(),
   );
@@ -63,13 +64,12 @@ export function translateOperatorExpression(
   );
 }
 
-// eslint-disable-next-line unused-imports/no-unused-vars
-export function translateWildcardExpression(c: AstContext, expr: Algebra.WildcardExpression): Wildcard {
+export function translateWildcardExpression(c: AstContext, _expr: Algebra.WildcardExpression): Wildcard {
   const F = c.astFactory;
   return F.wildcard(F.gen());
 }
 
-export function arrayToPattern(c: AstContext, input: Pattern[]): PatternGroup {
+export function wrapInPatternGroup(c: AstContext, input: Pattern[] | Pattern): PatternGroup {
   const F = c.astFactory;
   if (!Array.isArray(input)) {
     return F.patternGroup([ input ], F.gen());

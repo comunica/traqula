@@ -4,13 +4,16 @@ import { types } from '../toAlgebra/core';
 import type { AstContext } from './core';
 
 /**
+ * Removes quad component of triple and ...
  * DEBUG NOTE: the type is a little wrong but works in the general case.
  */
 export function removeQuads<T extends Algebra.Operation>(c: AstContext, op: T): T {
   return removeQuadsRecursive(c, op, []);
 }
 
-// Remove quads
+/**
+ * Removes quad component of triples and wrap found bgps in Algebra.GraphOperations
+ */
 export function removeQuadsRecursive<T extends Algebra.Operation | Algebra.Operation[]>(
   c: AstContext,
   op: T,
@@ -24,11 +27,12 @@ export function removeQuadsRecursive<T extends Algebra.Operation | Algebra.Opera
     return op;
   }
 
-  // UPDATE operations with Patterns handle graphs a bit differently
+  // UPDATE operations with Patterns handle graphs a bit differently - do not traverse
   if (op.type === types.DELETE_INSERT) {
     return op;
   }
 
+  // If triple or path register graph and return - graphs will be populated by in order graph occurrence
   if ((op.type === types.PATTERN || op.type === types.PATH) && op.graph) {
     const graph = <RDF.NamedNode | RDF.DefaultGraph> op.graph;
     // We create a list that tracks, for each pattern the original graph and remove the graph
@@ -52,6 +56,8 @@ export function removeQuadsRecursive<T extends Algebra.Operation | Algebra.Opera
     const newGraphs: (RDF.NamedNode | RDF.DefaultGraph)[] = [];
     result[key] = removeQuadsRecursive(c, op[key], newGraphs);
 
+    // If a graph was registered, we register the discovery we did at this key of the object
+    //  and create graph identifier map
     if (newGraphs.length > 0) {
       keyGraphs[key] = newGraphs;
       for (const graph of newGraphs) {
@@ -61,12 +67,13 @@ export function removeQuadsRecursive<T extends Algebra.Operation | Algebra.Opera
   }
 
   const graphNameSet = Object.keys(operationGraphNames);
+  // Finally, if we found graphs at some keys, wrap those keys in Algebra.graphOperations
   if (graphNameSet.length > 0) {
     // We also need to create graph statement if we are at the edge of certain operations
     if (graphNameSet.length === 1 && ![ types.PROJECT, types.SERVICE ].includes(op.type)) {
       graphs.push(operationGraphNames[graphNameSet[0]]);
     } else if (op.type === types.BGP) {
-      // This is the specific case that got changed because of using quads. - This is where the cast of T is shaky
+      // This is the specific case that `op` got changed because of using quads. - This is where the cast of T is shaky
       return <T> splitBgpToGraphs(c, op, keyGraphs.patterns);
     } else {
       // Multiple graphs (or project), need to create graph objects for them

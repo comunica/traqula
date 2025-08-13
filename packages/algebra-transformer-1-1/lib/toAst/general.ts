@@ -2,17 +2,17 @@ import type * as RDF from '@rdfjs/types';
 import type {
   DatasetClauses,
   Pattern,
-  PatternBgp,
+  PatternGroup,
+  QuerySelect,
   TermBlank,
   TermIri,
   TermLiteral,
   TermVariable,
   TripleNesting,
 } from '@traqula/rules-sparql-1-1';
-import type * as Algebra from '../algebra';
+import type { Algebra } from '../index';
 import Util from '../util';
 import type { AstContext } from './core';
-import { translatePathComponent } from './path';
 import { translateExpression, translateOperation } from './pattern';
 
 type RdfTermToAst<T extends RDF.Term> = T extends RDF.Variable ? TermVariable :
@@ -41,6 +41,12 @@ export function translateTerm<T extends RDF.Term>(c: AstContext, term: T): RdfTe
   throw new Error(`invalid term type: ${term.termType}`);
 }
 
+/**
+ * Extend is for example a bind, or an aggregator.
+ * The result is thus registered to be tackled at the project level,
+ *  or if we are not in project scope, we give it as a patternBind
+ *  - of course, the pattern bind is scoped with the other operations at this level
+ */
 export function translateExtend(c: AstContext, op: Algebra.Extend): Pattern[] {
   const F = c.astFactory;
   if (c.project) {
@@ -69,20 +75,12 @@ export function translateDatasetClauses(
   ], F.gen());
 }
 
-export function translateOrderBy(c: AstContext, op: Algebra.OrderBy): any {
+/**
+ * An order by is just registered to be handled in the creation of your QueryBase
+ */
+export function translateOrderBy(c: AstContext, op: Algebra.OrderBy): ReturnType<typeof translateOperation> {
   c.order.push(...op.expressions);
   return translateOperation(c, op.input);
-}
-
-export function translatePath(c: AstContext, op: Algebra.Path): PatternBgp {
-  const F = c.astFactory;
-  return F.patternBgp([
-    F.triple(
-      translateTerm(c, op.subject),
-      translatePathComponent(c, op.predicate),
-      translateTerm(c, op.object),
-    ),
-  ], F.gen());
 }
 
 export function translatePattern(c: AstContext, op: Algebra.Pattern): TripleNesting {
@@ -94,9 +92,22 @@ export function translatePattern(c: AstContext, op: Algebra.Pattern): TripleNest
   );
 }
 
-export function translateReduced(c: AstContext, op: Algebra.Reduced): Pattern {
-  const result = translateOperation(c, op.input);
-  // Project is nested in group object
-  result.patterns[0].reduced = true;
+/**
+ * Reduced is wrapped around a project, set the query contained to be distinct
+ */
+export function translateReduced(c: AstContext, op: Algebra.Reduced): PatternGroup {
+  const result: PatternGroup = translateOperation(c, op.input);
+  const select = <QuerySelect>result.patterns[0];
+  select.reduced = true;
+  return result;
+}
+
+/**
+ * District is wrapped around a project, set the query contained to be distinct
+ */
+export function translateDistinct(c: AstContext, op: Algebra.Distinct): PatternGroup {
+  const result: PatternGroup = translateOperation(c, op.input);
+  const select = <QuerySelect>result.patterns[0];
+  select.distinct = true;
   return result;
 }

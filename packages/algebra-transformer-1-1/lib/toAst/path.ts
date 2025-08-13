@@ -5,10 +5,11 @@ import type {
   PathModified,
   PathNegatedElt,
   PathPure,
+  PatternBgp,
   PropertyPathChain,
   TermIri,
 } from '@traqula/rules-sparql-1-1';
-import type { Algebra } from '../index';
+import type * as Algebra from '../algebra';
 import { types } from '../toAlgebra/core';
 import Util from '../util';
 import type { AstContext } from './core';
@@ -29,7 +30,7 @@ export function translatePathComponent(c: AstContext, path: Algebra.Operation): 
   }
 }
 
-export function translateAlt(c: AstContext, path: Algebra.Alt): any {
+export function translateAlt(c: AstContext, path: Algebra.Alt): Path {
   const F = c.astFactory;
   const mapped = path.input.map(x => translatePathComponent(c, x));
   if (mapped.every(entry => F.isPathOfType(entry, [ '!' ]))) {
@@ -103,4 +104,15 @@ export function translateZeroOrMorePath(c: AstContext, path: Algebra.ZeroOrMoreP
 export function translateZeroOrOnePath(c: AstContext, path: Algebra.ZeroOrOnePath): PathModified {
   const F = c.astFactory;
   return F.path('?', [ translatePathComponent(c, path.path) ], F.gen());
+}
+
+export function translatePath(c: AstContext, op: Algebra.Path): PatternBgp {
+  const F = c.astFactory;
+  return F.patternBgp([
+    F.triple(
+      translateTerm(c, op.subject),
+      translatePathComponent(c, op.predicate),
+      translateTerm(c, op.object),
+    ),
+  ], F.gen());
 }

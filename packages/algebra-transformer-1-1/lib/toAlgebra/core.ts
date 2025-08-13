@@ -50,6 +50,6 @@ export function isTriple(triple: any): triple is RDF.Quad {
   return triple.subject && triple.predicate && triple.object;
 }
 
-export function isVariable(term: any): term is RDF.Variable {
+export function isVariable(term: RDF.Term): term is RDF.Variable {
   return term?.termType === 'Variable';
 }

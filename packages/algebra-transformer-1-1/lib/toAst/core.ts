@@ -6,10 +6,25 @@ import * as Algebra from '../algebra';
 import Factory from '../factory';
 
 export interface AstContext {
+  /**
+   * Whether we are contained in a projection
+   */
   project: boolean;
+  /**
+   * All extends found in our suboperations
+   */
   extend: Algebra.Extend[];
+  /**
+   * All groups found in our suboperations
+   */
   group: RDF.Variable[];
+  /**
+   * All aggregates found in our suboperations
+   */
   aggregates: Algebra.BoundAggregate[];
+  /**
+   * All orderings found in our suboperations
+   */
   order: Algebra.Expression[];
   factory: Factory;
   astFactory: AstFactory;

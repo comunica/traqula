@@ -1,12 +1,12 @@
 import type * as RDF from '@rdfjs/types';
 import type {
+  BasicGraphPattern,
   Expression,
   Ordering,
   Pattern,
   PatternBind,
   PatternGroup,
   QueryBase,
-  QueryConstruct,
   QuerySelect,
   SolutionModifierGroupBind,
   Sparql11Nodes,
@@ -15,46 +15,52 @@ import type {
 import type { Algebra } from '../index';
 import { types } from '../toAlgebra/core';
 import Util from '../util';
-import { replaceAggregatorVariables } from './aggregate';
 import type { AstContext } from './core';
 import { resetContext } from './core';
 import { translatePattern, translateTerm } from './general';
 import { translateExpression, translateOperation } from './pattern';
 
-export function translateConstruct(c: AstContext, op: Algebra.Construct): QueryConstruct {
+export function translateConstruct(c: AstContext, op: Algebra.Construct): PatternGroup {
   const F = c.astFactory;
   const queryConstruct = F.queryConstruct(
     F.gen(),
     [],
-    F.patternBgp(op.template.map(x => translatePattern(c, x)), F.gen()),
+    F.patternBgp(<BasicGraphPattern> op.template.map(x => translatePattern(c, x)), F.gen()),
     F.patternGroup(Util.flatten([
       translateOperation(c, op.input),
     ]), F.gen()),
     {},
     F.datasetClauses([], F.gen()),
   );
-  if (c.order.length > 0) {
-    queryConstruct.solutionModifiers.order = F.solutionModifierOrder(
-      c.order.map(x => translateOperation(c, x)).map((o: Ordering | Expression) =>
-        F.isExpression(o) ?
-            ({
-              expression: o,
-              descending: false,
-              loc: F.gen(),
-            } satisfies Ordering) :
-          o),
-      F.gen(),
-    );
-    c.order.length = 0;
-  }
-  return queryConstruct;
+  registerOrderBy(c, queryConstruct);
+  c.order.length = 0;
+  // Subqueries need to be in a group! Top level grouping is removed at toAst function
+  //  - for consistency with the other operators, we also wrap here.
+  return F.patternGroup([ <Pattern> <unknown> queryConstruct ], F.gen());
 }
 
-export function translateDistinct(c: AstContext, op: Algebra.Distinct): PatternGroup {
-  const result = translateOperation(c, op.input);
-  // Project is nested in group object
-  result.patterns[0].distinct = true;
-  return result;
+/**
+ * DEBUG NOTE: The type is slightly of but works in the general case.
+ */
+function replaceAggregatorVariables<T>(c: AstContext, s: T, map: Record<string, Expression>): T {
+  const F = c.astFactory;
+  const st: Sparql11Nodes = Util.isSimpleTerm(s) ? translateTerm(c, s) : <Sparql11Nodes> s;
+
+  // Look for TermVariable, if we find, replace it by the aggregator.
+  if (F.isTermVariable(st)) {
+    if (map[st.value]) {
+      // Returns the ExpressionAggregate
+      return <T> map[st.value];
+    }
+  } else if (Array.isArray(s)) {
+    s = <T> s.map(e => replaceAggregatorVariables(c, e, map));
+  } else if (typeof s === 'object') {
+    const obj = <Record<string, any>> s;
+    for (const key of Object.keys(obj)) {
+      obj[key] = replaceAggregatorVariables(c, obj[key], map);
+    }
+  }
+  return s;
 }
 
 export function translateProject(
@@ -72,7 +78,7 @@ export function translateProject(
   } satisfies Partial<QueryBase>;
 
   // Makes typing easier in some places
-  const select: QuerySelect = <any> result;
+  const select = <QuerySelect> result;
   let variables: RDF.Variable[] | undefined;
 
   if (type === types.PROJECT) {
@@ -94,6 +100,7 @@ export function translateProject(
   resetContext(c);
   c.project = true;
 
+  // TranslateOperation could give an array.
   let input = Util.flatten<any>([ translateOperation(c, op.input) ]);
   if (input.length === 1 && F.isPatternGroup(input[0])) {
     input = (<PatternGroup> input[0]).patterns;
@@ -107,14 +114,39 @@ export function translateProject(
     aggregators[translateTerm(c, agg.variable).value] = translateExpression(c, agg);
   }
 
-  // Do these in reverse order since variables in one extend might apply to an expression in an other extend
+  // Do these in reverse order since variables in one extend might apply to an expression in another extend
   const extensions: Record<string, Expression> = {};
   for (const e of c.extend.reverse()) {
     extensions[translateTerm(c, e.variable).value] =
       replaceAggregatorVariables(c, translateExpression(c, e.expression), aggregators);
   }
+  registerGroupBy(c, result, extensions);
+  registerOrderBy(c, result);
+  registerVariables(c, select, variables, extensions);
+  putExtensionsInGroup(c, result, extensions);
+
+  // Convert all filters to 'having' if it contains an aggregator variable
+  // could always convert, but is nicer to keep as filter when possible
+  const havings: Expression[] = [];
+  result.where = filterReplace(c, result.where, aggregators, havings);
+  if (havings.length > 0) {
+    select.solutionModifiers.having = F.solutionModifierHaving(havings, F.gen());
+  }
+
+  // Recover state
+  c.extend = extend;
+  c.group = group;
+  c.aggregates = aggregates;
+  c.order = order;
+
+  // Subqueries need to be in a group! Top level grouping is removed at toAst function
+  return F.patternGroup([ select ], F.gen());
+}
+
+function registerGroupBy(c: AstContext, result: QueryBase, extensions: Record<string, Expression>): void {
+  const F = c.astFactory;
   if (c.group.length > 0) {
-    select.solutionModifiers.group = F.solutionModifierGroup(
+    result.solutionModifiers.group = F.solutionModifierGroup(
       c.group.map((variable) => {
         const v = translateTerm(c, variable);
         if (extensions[v.value]) {
@@ -132,9 +164,12 @@ export function translateProject(
       F.gen(),
     );
   }
+}
 
+function registerOrderBy(c: AstContext, result: QueryBase): void {
+  const F = c.astFactory;
   if (c.order.length > 0) {
-    select.solutionModifiers.order = F.solutionModifierOrder(
+    result.solutionModifiers.order = F.solutionModifierOrder(
       c.order.map(x => translateOperation(c, x)).map((o: Ordering | Expression) =>
         F.isExpression(o) ?
             ({
@@ -146,8 +181,15 @@ export function translateProject(
       F.gen(),
     );
   }
+}
 
-  // This needs to happen after the group because it might depend on variables generated there
+function registerVariables(
+  c: AstContext,
+  select: QuerySelect,
+  variables: RDF.Variable[] | undefined,
+  extensions: Record<string, Expression>,
+): void {
+  const F = c.astFactory;
   if (variables) {
     select.variables = variables.map((term): TermVariable | PatternBind => {
       const v = translateTerm(c, term);
@@ -164,15 +206,20 @@ export function translateProject(
       select.variables = [ F.wildcard(F.gen()) ];
     }
   }
+}
 
-  // It is possible that at this point some extensions have not yet been resolved.
-  // These would be bind operations that are not used in a GROUP BY or SELECT body.
-  // We still need to add them though, as they could be relevant to the other extensions.
+/**
+ * It is possible that at this point some extensions have not yet been resolved.
+ * These would be bind operations that are not used in a GROUP BY or SELECT body.
+ * We still need to add them though, as they could be relevant to the other extensions.
+ */
+function putExtensionsInGroup(c: AstContext, result: QueryBase, extensions: Record<string, Expression>): void {
+  const F = c.astFactory;
   const extensionEntries = Object.entries(extensions);
   if (extensionEntries.length > 0) {
-    select.where = select.where ?? F.patternGroup([], F.gen());
+    result.where = result.where ?? F.patternGroup([], F.gen());
     for (const [ key, value ] of extensionEntries) {
-      select.where.patterns.push(
+      result.where.patterns.push(
         F.patternBind(
           value,
           F.variable(key, F.gen()),
@@ -181,22 +228,6 @@ export function translateProject(
       );
     }
   }
-
-  // Convert all filters to 'having' if it contains an aggregator variable
-  // could always convert, but is nicer to use filter when possible
-  const havings: Expression[] = [];
-  result.where = filterReplace(c, result.where, aggregators, havings);
-  if (havings.length > 0) {
-    select.solutionModifiers.having = F.solutionModifierHaving(havings, F.gen());
-  }
-
-  c.extend = extend;
-  c.group = group;
-  c.aggregates = aggregates;
-  c.order = order;
-
-  // Subqueries need to be in a group, this will be removed again later for the root query
-  return F.patternGroup([ select ], F.gen());
 }
 
 function filterReplace(

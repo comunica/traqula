@@ -1,8 +1,8 @@
 import type * as RDF from '@rdfjs/types';
-import {Transformer} from '@traqula/core';
-import type {PathPure, Sparql11Nodes,} from '@traqula/rules-sparql-1-1';
-import {Factory as AstFactory,} from '@traqula/rules-sparql-1-1';
-import {DataFactory} from 'rdf-data-factory';
+import { Transformer } from '@traqula/core';
+import type { PathPure, Sparql11Nodes } from '@traqula/rules-sparql-1-1';
+import { Factory as AstFactory } from '@traqula/rules-sparql-1-1';
+import { DataFactory } from 'rdf-data-factory';
 import * as Algebra from '../algebra';
 import type Factory from '../factory';
 
@@ -53,4 +53,3 @@ export function isTriple(triple: any): triple is RDF.Quad {
 export function isVariable(term: any): term is RDF.Variable {
   return term?.termType === 'Variable';
 }
-

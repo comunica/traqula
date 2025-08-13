@@ -1,8 +1,9 @@
 import type * as RDF from '@rdfjs/types';
-import type {BasicGraphPattern, PathPure, TripleCollection, TripleNesting} from '@traqula/rules-sparql-1-1';
-import {AlgebraContext, FlattenedTriple, isVariable, types, typeVals} from './core';
-import type {Algebra} from "../index";
-import {generateFreshVar, translateTerm} from "./general";
+import type { BasicGraphPattern, PathPure, TripleCollection, TripleNesting } from '@traqula/rules-sparql-1-1';
+import type { Algebra } from '../index';
+import type { AlgebraContext, FlattenedTriple } from './core';
+import { isVariable, types, typeVals } from './core';
+import { generateFreshVar, translateTerm } from './general';
 
 export function translateTripleCollection(
   c: AlgebraContext,

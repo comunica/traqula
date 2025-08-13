@@ -12,8 +12,8 @@ import type { AlgebraContext, FlattenedTriple } from './core';
 import { types } from './core';
 import { translateInlineData, translateTerm } from './general';
 import { translatePath } from './path';
-import { translateQuery } from './sparqlAlgebra';
 import { recurseGraph, translateBasicGraphPattern, translateQuad } from './tripleAndQuad';
+import { translateQuery } from './index';
 
 /**
  * Handles part of: 18.2.2.2 Collect FILTER Elements

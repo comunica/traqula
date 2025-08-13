@@ -1,4 +1,5 @@
 import type * as RDF from '@rdfjs/types';
+import { Transformer } from '@traqula/core';
 import {
   Factory as AstFactory,
 } from '@traqula/rules-sparql-1-1';
@@ -56,7 +57,6 @@ import type {
   Sparql11Nodes,
   Quads,
   DatasetClauses,
-  PatternFilter,
 } from '@traqula/rules-sparql-1-1';
 import { isomorphic } from 'rdf-isomorphic';
 import * as Algebra from '../algebra';
@@ -86,6 +86,7 @@ class Translator {
   private order: Algebra.Expression[];
   private readonly factory = new Factory();
   private readonly astFactory = new AstFactory();
+  private readonly transformer = new Transformer<Sparql11Nodes>();
 
   public toSparqlJs(op: Algebra.Operation): SparqlQuery {
     const F = this.astFactory;
@@ -281,16 +282,32 @@ class Translator {
   }
 
   private translateConstruct(op: Algebra.Construct): QueryConstruct {
-    return this.astFactory.queryConstruct(
-      this.astFactory.gen(),
+    const F = this.astFactory;
+    const queryConstruct = F.queryConstruct(
+      F.gen(),
       [],
-      this.astFactory.patternBgp(op.template.map(x => this.translatePattern(x)), this.astFactory.gen()),
-      this.astFactory.patternGroup(Util.flatten([
+      F.patternBgp(op.template.map(x => this.translatePattern(x)), F.gen()),
+      F.patternGroup(Util.flatten([
         this.translateOperation(op.input),
-      ]), this.astFactory.gen()),
+      ]), F.gen()),
       {},
-      this.astFactory.datasetClauses([], this.astFactory.gen()),
+      F.datasetClauses([], F.gen()),
     );
+    if (this.order.length > 0) {
+      queryConstruct.solutionModifiers.order = F.solutionModifierOrder(
+        this.order.map(x => this.translateOperation(x)).map((o: Ordering | Expression) =>
+          F.isExpression(o) ?
+              ({
+                expression: o,
+                descending: false,
+                loc: F.gen(),
+              } satisfies Ordering) :
+            o),
+        F.gen(),
+      );
+      this.order.length = 0;
+    }
+    return queryConstruct;
   }
 
   private translateDistinct(op: Algebra.Distinct): PatternGroup {
@@ -383,9 +400,10 @@ class Translator {
   }
 
   private translateLeftJoin(op: Algebra.LeftJoin): Pattern[] {
-    const leftJoin = this.astFactory.patternOptional([
-      this.translateOperation(op.input[1]),
-    ], this.astFactory.gen());
+    const leftJoin = this.astFactory.patternOptional(
+      this.arrayToPattern(this.translateOperation(op.input[1])).patterns,
+      this.astFactory.gen(),
+    );
 
     if (op.expression) {
       leftJoin.patterns.push(
@@ -579,16 +597,20 @@ class Translator {
       }
     }
 
-    // Convert filter to 'having' if it contains an aggregator variable
+    // Convert all filters to 'having' if it contains an aggregator variable
     // could always convert, but is nicer to use filter when possible
-    if (result.where && F.isPatternFilter(result.where.patterns.at(-1) ?? {})) {
-      const filter = <PatternFilter> result.where.patterns.at(-1);
-      if (this.objectContainsVariable(filter, Object.keys(aggregators))) {
-        select.solutionModifiers.having = F.solutionModifierHaving(
-          Util.flatten([ this.replaceAggregatorVariables(filter.expression, aggregators) ]),
-          F.gen(),
-        );
-        result.where.patterns.splice(-1);
+    result.where = this.flattenGroup(result.where);
+    if (result.where.patterns.some(pattern => F.isPatternFilter(pattern))) {
+      const havings: Expression[] = [];
+      result.where.patterns = result.where.patterns.flatMap((pattern) => {
+        if (F.isPatternFilter(pattern) && this.objectContainsVariable(pattern, Object.keys(aggregators))) {
+          havings.push(this.replaceAggregatorVariables(pattern.expression, aggregators));
+          return [];
+        }
+        return [ pattern ];
+      });
+      if (havings.length > 0) {
+        select.solutionModifiers.having = F.solutionModifierHaving(havings, F.gen());
       }
     }
 
@@ -599,6 +621,20 @@ class Translator {
 
     // Subqueries need to be in a group, this will be removed again later for the root query
     return F.patternGroup([ select ], F.gen());
+  }
+
+  // TODO: Can not just ungoup since a select needs to be in a group!
+  private flattenGroup(group: PatternGroup): PatternGroup;
+  private flattenGroup(group: PatternGroup | Pattern): PatternGroup | Pattern;
+  private flattenGroup(group: PatternGroup | Pattern): PatternGroup | Pattern {
+    const F = this.astFactory;
+    if (!F.isPatternGroup(group)) {
+      return group;
+    }
+    const patterns = group.patterns
+      .map(x => this.flattenGroup(x))
+      .flatMap(pattern => F.isPatternGroup(pattern) ? pattern.patterns : pattern);
+    return F.patternGroup(patterns, F.gen());
   }
 
   private objectContainsVariable(o: any, vals: string[]): boolean {

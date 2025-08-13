@@ -84,7 +84,7 @@ export interface FlattenedTriple {
  * @param options.blankToVariable - translate all blank nodes into variables
  * @returns Operation
  */
-export default function translate(query: SparqlQuery, options: {
+export default function translate(query: SparqlQuery | Path, options: {
   dataFactory?: RDF.DataFactory;
   quads?: boolean;
   prefixes?: Record<string, string>;
@@ -112,7 +112,7 @@ class QueryTranslator {
 
   public constructor(private readonly factory: Factory) {}
 
-  public translateQuery(sparql: SparqlQuery, quads?: boolean, blankToVariable?: boolean): Algebra.Operation {
+  public translateQuery(sparql: SparqlQuery | Path, quads?: boolean, blankToVariable?: boolean): Algebra.Operation {
     const F = this.astFactory;
     this.variables = new Set();
     this.varCount = 0;

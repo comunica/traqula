@@ -5,3 +5,9 @@ ASK {
     }}
     FILTER(?g = "1 22" || ?g = "22 1")
 }
+
+
+
+ASK WHERE {
+  SELECT ( group_concat( ?o ;SEPARATOR=" " ) AS ?g ) WHERE { _:g_0 <http://www.example.org/p1> ?o . }
+  FILTER ( ( ( ?g = "1 22"^^<http://www.w3.org/2001/XMLSchema#string> ) || ( ?g = "22 1"^^<http://www.w3.org/2001/XMLSchema#string> ) ) ) }

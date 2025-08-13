@@ -3,6 +3,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { Generator } from '@traqula/generator-sparql-1-1';
 import { Parser } from '@traqula/parser-sparql-1-1';
+import { positiveTest } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
 import { translate, toSparql } from '../lib/index';
 import LibUtil from '../lib/util';
@@ -29,9 +30,9 @@ describe('sparql output', () => {
       it (name, ({ expect }) => {
         const expected = JSON.parse(fs.readFileSync(jsonName, 'utf8'));
         const genAst = toSparql(expected);
-        // Console.log(JSON.stringify(genAst, null, 2));
+        console.log(JSON.stringify(genAst, null, 2));
         const genQuery = generator.generate(genAst);
-        // Console.log(genQuery);
+        console.log(genQuery);
         const ast = parser.parse(genQuery);
         const algebra = LibUtil.objectify(translate(ast, {
           quads: name.endsWith('-quads'),
@@ -41,8 +42,33 @@ describe('sparql output', () => {
     }
   }
 
-  const subfolders = fs.readdirSync(rootJson);
-  for (const subfolder of subfolders) {
-    testPath(subfolder, subfolder);
-  }
+  describe('sparqlAlgebraTests', () => {
+    const subfolders = fs.readdirSync(rootJson);
+    for (const subfolder of subfolders) {
+      testPath(subfolder, subfolder);
+    }
+  });
+
+  describe('static paths', () => {
+    for (const { name, statics } of positiveTest('sparql-1-1', x => ![
+      // 2x Sequence path introduces new variable that is then scoped in projection
+      'sequence-paths-in-anonymous-node',
+      'sparql-9-3c',
+    ].includes(x))) {
+      it(`can algebra circle ${name}`, async({ expect }) => {
+        const { query } = await statics();
+        const path = parser.parse(query);
+        // Console.log(JSON.stringify(path, null, 2));
+        const algebra = LibUtil.objectify(translate(path, { quads: true }));
+        console.log(JSON.stringify(algebra, null, 2));
+        const pathFromAlg = toSparql(algebra);
+        console.log(JSON.stringify(pathFromAlg, null, 2));
+        const queryGen = generator.generate(pathFromAlg);
+        console.log(queryGen);
+        const parsedGen = parser.parse(queryGen);
+        const astFromGen = LibUtil.objectify(translate(parsedGen, { quads: true }));
+        expect(canon.canonicalizeQuery(astFromGen, false)).toEqual(canon.canonicalizeQuery(algebra, false));
+      });
+    }
+  });
 });

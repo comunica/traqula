@@ -10,8 +10,8 @@ export default class Util {
    * Flattens an array of arrays to an array.
    * @param arr - Array of arrays
    */
-  public static flatten<T>(arr: T[][]): T[] {
-    return arr.flat().filter(Boolean);
+  public static flatten<T>(arr: (T[] | T)[]): T[] {
+    return (<T[][]>arr).flat().filter(Boolean);
   }
 
   /**

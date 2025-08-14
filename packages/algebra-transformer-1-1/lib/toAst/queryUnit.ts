@@ -17,8 +17,9 @@ import { types } from '../toAlgebra/core';
 import Util from '../util';
 import type { AstContext } from './core';
 import { resetContext } from './core';
+import { translateExpressionOrOrdering, translatePureExpression } from './expression';
 import { translatePattern, translateTerm } from './general';
-import { translateExpression, translateOperation } from './pattern';
+import { translatePatternNew } from './pattern';
 
 export function translateConstruct(c: AstContext, op: Algebra.Construct): PatternGroup {
   const F = c.astFactory;
@@ -26,9 +27,7 @@ export function translateConstruct(c: AstContext, op: Algebra.Construct): Patter
     F.gen(),
     [],
     F.patternBgp(<BasicGraphPattern> op.template.map(x => translatePattern(c, x)), F.gen()),
-    F.patternGroup(Util.flatten([
-      translateOperation(c, op.input),
-    ]), F.gen()),
+    F.patternGroup(Util.flatten([ translatePatternNew(c, op.input) ]), F.gen()),
     {},
     F.datasetClauses([], F.gen()),
   );
@@ -101,9 +100,9 @@ export function translateProject(
   c.project = true;
 
   // TranslateOperation could give an array.
-  let input = Util.flatten<any>([ translateOperation(c, op.input) ]);
+  let input = Util.flatten([ translatePatternNew(c, op.input) ]);
   if (input.length === 1 && F.isPatternGroup(input[0])) {
-    input = (<PatternGroup> input[0]).patterns;
+    input = (input[0]).patterns;
   }
   result.where = F.patternGroup(input, F.gen());
 
@@ -111,14 +110,14 @@ export function translateProject(
   const aggregators: Record<string, Expression> = {};
   // These can not reference each other
   for (const agg of c.aggregates) {
-    aggregators[translateTerm(c, agg.variable).value] = translateExpression(c, agg);
+    aggregators[translateTerm(c, agg.variable).value] = translatePureExpression(c, agg);
   }
 
   // Do these in reverse order since variables in one extend might apply to an expression in another extend
   const extensions: Record<string, Expression> = {};
   for (const e of c.extend.reverse()) {
     extensions[translateTerm(c, e.variable).value] =
-      replaceAggregatorVariables(c, translateExpression(c, e.expression), aggregators);
+      replaceAggregatorVariables(c, translatePureExpression(c, e.expression), aggregators);
   }
   registerGroupBy(c, result, extensions);
   registerOrderBy(c, result);
@@ -170,14 +169,16 @@ function registerOrderBy(c: AstContext, result: QueryBase): void {
   const F = c.astFactory;
   if (c.order.length > 0) {
     result.solutionModifiers.order = F.solutionModifierOrder(
-      c.order.map(x => translateOperation(c, x)).map((o: Ordering | Expression) =>
-        F.isExpression(o) ?
-            ({
-              expression: o,
-              descending: false,
-              loc: F.gen(),
-            } satisfies Ordering) :
-          o),
+      c.order
+        .map(x => translateExpressionOrOrdering(c, x))
+        .map((o: Ordering | Expression) =>
+          F.isExpression(o) ?
+              ({
+                expression: o,
+                descending: false,
+                loc: F.gen(),
+              } satisfies Ordering) :
+            o),
       F.gen(),
     );
   }

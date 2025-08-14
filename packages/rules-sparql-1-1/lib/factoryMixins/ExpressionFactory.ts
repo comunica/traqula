@@ -111,6 +111,13 @@ export function ExpressionFactoryMixin<TBase extends Constructor<CoreFactory>>(B
       arg: Expression | Wildcard,
       separator: string | undefined,
       loc: SourceLocation,
+    ): ExpressionAggregate;
+    public aggregate(
+      aggregation: string,
+      distinct: boolean,
+      arg: Expression | Wildcard,
+      separator: string | undefined,
+      loc: SourceLocation,
     ): ExpressionAggregate {
       const base = <const> {
         type: 'expression',

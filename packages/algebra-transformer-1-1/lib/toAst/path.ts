@@ -15,7 +15,7 @@ import Util from '../util';
 import type { AstContext } from './core';
 import { translateTerm } from './general';
 
-export function translatePathComponent(c: AstContext, path: Algebra.Operation): Path {
+function translatePathComponent(c: AstContext, path: Algebra.Operation): Path {
   switch (path.type) {
     case types.ALT: return translateAlt(c, path);
     case types.INV: return translateInv(c, path);
@@ -30,7 +30,7 @@ export function translatePathComponent(c: AstContext, path: Algebra.Operation): 
   }
 }
 
-export function translateAlt(c: AstContext, path: Algebra.Alt): Path {
+function translateAlt(c: AstContext, path: Algebra.Alt): Path {
   const F = c.astFactory;
   const mapped = path.input.map(x => translatePathComponent(c, x));
   if (mapped.every(entry => F.isPathOfType(entry, [ '!' ]))) {
@@ -47,7 +47,7 @@ export function translateAlt(c: AstContext, path: Algebra.Alt): Path {
   return F.path('|', mapped, F.gen());
 }
 
-export function translateInv(c: AstContext, path: Algebra.Inv): Path {
+function translateInv(c: AstContext, path: Algebra.Inv): Path {
   const F = c.astFactory;
   if (path.path.type === types.NPS) {
     const inv: Path[] = path.path.iris.map((iri: RDF.NamedNode) => F.path(
@@ -70,11 +70,11 @@ export function translateInv(c: AstContext, path: Algebra.Inv): Path {
   return F.path('^', [ translatePathComponent(c, path.path) ], F.gen());
 }
 
-export function translateLink(c: AstContext, path: Algebra.Link): TermIri {
+function translateLink(c: AstContext, path: Algebra.Link): TermIri {
   return translateTerm(c, path.iri);
 }
 
-export function translateNps(c: AstContext, path: Algebra.Nps): Path {
+function translateNps(c: AstContext, path: Algebra.Nps): Path {
   const F = c.astFactory;
   if (path.iris.length === 1) {
     return F.path('!', [ translateTerm(c, path.iris[0]) ], F.gen());
@@ -87,7 +87,7 @@ export function translateOneOrMorePath(c: AstContext, path: Algebra.OneOrMorePat
   return F.path('+', [ translatePathComponent(c, path.path) ], F.gen());
 }
 
-export function translateSeq(c: AstContext, path: Algebra.Seq): PropertyPathChain {
+function translateSeq(c: AstContext, path: Algebra.Seq): PropertyPathChain {
   const F = c.astFactory;
   return F.path(
     '/',
@@ -96,12 +96,12 @@ export function translateSeq(c: AstContext, path: Algebra.Seq): PropertyPathChai
   );
 }
 
-export function translateZeroOrMorePath(c: AstContext, path: Algebra.ZeroOrMorePath): PathModified {
+function translateZeroOrMorePath(c: AstContext, path: Algebra.ZeroOrMorePath): PathModified {
   const F = c.astFactory;
   return F.path('*', [ translatePathComponent(c, path.path) ], F.gen());
 }
 
-export function translateZeroOrOnePath(c: AstContext, path: Algebra.ZeroOrOnePath): PathModified {
+function translateZeroOrOnePath(c: AstContext, path: Algebra.ZeroOrOnePath): PathModified {
   const F = c.astFactory;
   return F.path('?', [ translatePathComponent(c, path.path) ], F.gen());
 }

@@ -13,7 +13,8 @@ import type {
 import type { Algebra } from '../index';
 import Util from '../util';
 import type { AstContext } from './core';
-import { translateExpression, translateOperation } from './pattern';
+import { translatePureExpression } from './expression';
+import { translatePatternIntoGroup, translatePatternNew } from './pattern';
 
 type RdfTermToAst<T extends RDF.Term> = T extends RDF.Variable ? TermVariable :
   T extends RDF.BlankNode ? TermBlank :
@@ -47,16 +48,16 @@ export function translateTerm<T extends RDF.Term>(c: AstContext, term: T): RdfTe
  *  or if we are not in project scope, we give it as a patternBind
  *  - of course, the pattern bind is scoped with the other operations at this level
  */
-export function translateExtend(c: AstContext, op: Algebra.Extend): Pattern[] {
+export function translateExtend(c: AstContext, op: Algebra.Extend): Pattern | Pattern[] {
   const F = c.astFactory;
   if (c.project) {
     c.extend.push(op);
-    return translateOperation(c, op.input);
+    return translatePatternNew(c, op.input);
   }
   return Util.flatten([
-    translateOperation(c, op.input),
+    translatePatternNew(c, op.input),
     F.patternBind(
-      translateExpression(c, op.expression),
+      translatePureExpression(c, op.expression),
       translateTerm(c, op.variable),
       F.gen(),
     ),
@@ -78,9 +79,9 @@ export function translateDatasetClauses(
 /**
  * An order by is just registered to be handled in the creation of your QueryBase
  */
-export function translateOrderBy(c: AstContext, op: Algebra.OrderBy): ReturnType<typeof translateOperation> {
+export function translateOrderBy(c: AstContext, op: Algebra.OrderBy): Pattern | Pattern[] {
   c.order.push(...op.expressions);
-  return translateOperation(c, op.input);
+  return translatePatternNew(c, op.input);
 }
 
 export function translatePattern(c: AstContext, op: Algebra.Pattern): TripleNesting {
@@ -96,7 +97,7 @@ export function translatePattern(c: AstContext, op: Algebra.Pattern): TripleNest
  * Reduced is wrapped around a project, set the query contained to be distinct
  */
 export function translateReduced(c: AstContext, op: Algebra.Reduced): PatternGroup {
-  const result: PatternGroup = translateOperation(c, op.input);
+  const result = translatePatternIntoGroup(c, op.input);
   const select = <QuerySelect>result.patterns[0];
   select.reduced = true;
   return result;
@@ -106,7 +107,7 @@ export function translateReduced(c: AstContext, op: Algebra.Reduced): PatternGro
  * District is wrapped around a project, set the query contained to be distinct
  */
 export function translateDistinct(c: AstContext, op: Algebra.Distinct): PatternGroup {
-  const result: PatternGroup = translateOperation(c, op.input);
+  const result = translatePatternIntoGroup(c, op.input);
   const select = <QuerySelect>result.patterns[0];
   select.distinct = true;
   return result;

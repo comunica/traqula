@@ -1,36 +1,34 @@
 import type * as RDF from '@rdfjs/types';
 import type {
-  Pattern,
-  Update,
-  UpdateOperation,
-  UpdateOperationDeleteData,
-  UpdateOperationDeleteWhere,
-  UpdateOperationInsertData,
-  UpdateOperationLoad,
-  UpdateOperationModify,
-
+  DatasetClauses,
   GraphRefAll,
   GraphRefDefault,
   GraphRefNamed,
   GraphRefSpecific,
-  TermIri,
-  UpdateOperationCreate,
-  UpdateOperationDrop,
-  UpdateOperationAdd,
-  UpdateOperationMove,
-  UpdateOperationCopy,
-  UpdateOperationClear,
+  Pattern,
   Quads,
+  TermIri,
   TermVariable,
-  DatasetClauses,
+  Update,
+  UpdateOperation,
+  UpdateOperationAdd,
+  UpdateOperationClear,
+  UpdateOperationCopy,
+  UpdateOperationCreate,
+  UpdateOperationDeleteData,
+  UpdateOperationDeleteWhere,
+  UpdateOperationDrop,
+  UpdateOperationInsertData,
+  UpdateOperationLoad,
+  UpdateOperationModify,
+  UpdateOperationMove,
 } from '@traqula/rules-sparql-1-1';
 import { isomorphic } from 'rdf-isomorphic';
 import type { Algebra } from '../index';
 import { isVariable, types } from '../toAlgebra/core';
 import type { AstContext } from './core';
-import { wrapInPatternGroup } from './expression';
 import { translateDatasetClauses, translatePattern, translateTerm } from './general';
-import { translateOperation } from './pattern';
+import { translateOperation, wrapInPatternGroup } from './pattern';
 import { removeQuadsRecursive } from './quads';
 
 export function toUpdate(c: AstContext, ops: UpdateOperation[]): Update {
@@ -43,10 +41,10 @@ export function toUpdate(c: AstContext, ops: UpdateOperation[]): Update {
 }
 
 export function translateCompositeUpdate(c: AstContext, op: Algebra.CompositeUpdate): Update {
-  return toUpdate(c, op.updates.map(update => <UpdateOperation> translateOperation(c, update)));
+  return toUpdate(c, op.updates.map(update => translateUpdateOperation(c, update)));
 }
 
-export function translateDeleteInsert(c: AstContext, op: Algebra.DeleteInsert):
+function translateDeleteInsert(c: AstContext, op: Algebra.DeleteInsert):
 ReturnType<typeof cleanUpUpdateOperationModify> {
   const F = c.astFactory;
   let where: Algebra.Operation | undefined = op.where;
@@ -136,7 +134,7 @@ function cleanUpUpdateOperationModify(c: AstContext, update: UpdateOperationModi
   return update;
 }
 
-export function translateLoad(c: AstContext, op: Algebra.Load): UpdateOperationLoad {
+function translateLoad(c: AstContext, op: Algebra.Load): UpdateOperationLoad {
   const F = c.astFactory;
   return F.updateOperationLoad(
     F.gen(),
@@ -149,7 +147,7 @@ export function translateLoad(c: AstContext, op: Algebra.Load): UpdateOperationL
 type GraphToGraphRef<T extends 'DEFAULT' | 'NAMED' | 'ALL' | RDF.NamedNode> = T extends 'DEFAULT' ? GraphRefDefault :
   T extends 'NAMED' ? GraphRefNamed : T extends 'ALL' ? GraphRefAll : GraphRefSpecific;
 
-export function translateGraphRef<T extends 'DEFAULT' | 'NAMED' | 'ALL' | RDF.NamedNode>(
+function translateGraphRef<T extends 'DEFAULT' | 'NAMED' | 'ALL' | RDF.NamedNode>(
   c: AstContext,
   graphRef: T,
 ): GraphToGraphRef<T> {
@@ -166,22 +164,22 @@ export function translateGraphRef<T extends 'DEFAULT' | 'NAMED' | 'ALL' | RDF.Na
   return <GraphToGraphRef<T>> F.graphRefSpecific(<TermIri> translateTerm(c, graphRef), F.gen());
 }
 
-export function translateClear(c: AstContext, op: Algebra.Clear): UpdateOperationClear {
+function translateClear(c: AstContext, op: Algebra.Clear): UpdateOperationClear {
   const F = c.astFactory;
   return F.updateOperationClear(translateGraphRef(c, op.source), op.silent ?? false, F.gen());
 }
 
-export function translateCreate(c: AstContext, op: Algebra.Create): UpdateOperationCreate {
+function translateCreate(c: AstContext, op: Algebra.Create): UpdateOperationCreate {
   const F = c.astFactory;
   return F.updateOperationCreate(translateGraphRef(c, op.source), op.silent ?? false, F.gen());
 }
 
-export function translateDrop(c: AstContext, op: Algebra.Drop): UpdateOperationDrop {
+function translateDrop(c: AstContext, op: Algebra.Drop): UpdateOperationDrop {
   const F = c.astFactory;
   return F.updateOperationDrop(translateGraphRef(c, op.source), op.silent ?? false, F.gen());
 }
 
-export function translateAdd(c: AstContext, op: Algebra.Add): UpdateOperationAdd {
+function translateAdd(c: AstContext, op: Algebra.Add): UpdateOperationAdd {
   const F = c.astFactory;
   return F.updateOperationAdd(
     translateGraphRef(c, op.source),
@@ -191,7 +189,7 @@ export function translateAdd(c: AstContext, op: Algebra.Add): UpdateOperationAdd
   );
 }
 
-export function translateMove(c: AstContext, op: Algebra.Move): UpdateOperationMove {
+function translateMove(c: AstContext, op: Algebra.Move): UpdateOperationMove {
   const F = c.astFactory;
   return F.updateOperationMove(
     translateGraphRef(c, op.source),
@@ -201,7 +199,7 @@ export function translateMove(c: AstContext, op: Algebra.Move): UpdateOperationM
   );
 }
 
-export function translateCopy(c: AstContext, op: Algebra.Copy): UpdateOperationCopy {
+function translateCopy(c: AstContext, op: Algebra.Copy): UpdateOperationCopy {
   const F = c.astFactory;
   return F.updateOperationCopy(
     translateGraphRef(c, op.source),
@@ -214,7 +212,7 @@ export function translateCopy(c: AstContext, op: Algebra.Copy): UpdateOperationC
 /**
  * Similar to removeQuads but more simplified for UPDATES
  */
-export function convertUpdatePatterns(c: AstContext, patterns: Algebra.Pattern[]): Quads[] {
+function convertUpdatePatterns(c: AstContext, patterns: Algebra.Pattern[]): Quads[] {
   const F = c.astFactory;
   if (!patterns) {
     return [];
@@ -235,4 +233,27 @@ export function convertUpdatePatterns(c: AstContext, patterns: Algebra.Pattern[]
     }
     return F.graphQuads(<TermIri | TermVariable> translateTerm(c, graphs[graph][0].graph), patternBgp, F.gen());
   });
+}
+
+export function translateUpdateOperation(c: AstContext, op: Algebra.Operation): UpdateOperation {
+  switch (op.type) {
+    case types.DELETE_INSERT:
+      return translateDeleteInsert(c, op);
+    case types.LOAD:
+      return translateLoad(c, op);
+    case types.CLEAR:
+      return translateClear(c, op);
+    case types.CREATE:
+      return translateCreate(c, op);
+    case types.DROP:
+      return translateDrop(c, op);
+    case types.ADD:
+      return translateAdd(c, op);
+    case types.MOVE:
+      return translateMove(c, op);
+    case types.COPY:
+      return translateCopy(c, op);
+    default:
+      throw new Error(`Unknown Operation type ${op.type}`);
+  }
 }

@@ -1,9 +1,5 @@
+import type { ParseNamesFromList } from '../parser-builder/builderTypes';
 import type { GeneratorRule } from './generatorTypes';
-
-/**
- * Get union-type of names used in list of ruledefs.
- */
-export type GenNamesFromList<T extends readonly GeneratorRule[]> = T[number]['name'];
 
 /**
  * Convert a list of ruledefs to a record that maps each rule name to its definition.
@@ -15,7 +11,7 @@ export type GenRuleMap<RuleNames extends string> = {[Key in RuleNames]: Generato
  */
 export type GenRulesToObject<
   T extends readonly GeneratorRule[],
-  Names extends string = GenNamesFromList<T>,
+  Names extends string = ParseNamesFromList<T>,
   Agg extends Record<string, GeneratorRule> = Record<never, never>,
 > = T extends readonly [infer First, ...infer Rest] ? (
   First extends GeneratorRule ? (

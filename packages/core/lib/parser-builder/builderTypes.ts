@@ -4,7 +4,7 @@ import type { ParserRule } from './ruleDefTypes';
 /**
  * Get union-type of names used in list of ruledefs.
  */
-export type ParseNamesFromList<T extends readonly ParserRule[]> = T[number]['name'];
+export type ParseNamesFromList<T extends readonly { name: string }[]> = T[number]['name'];
 
 /**
  * Convert a list of ruledefs to a record that maps each rule name to its definition.

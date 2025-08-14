@@ -1,5 +1,6 @@
 import type * as RDF from '@rdfjs/types';
 import { Transformer } from '@traqula/core';
+import type { IndirDef } from '@traqula/core';
 import type { PathPure, Sparql11Nodes } from '@traqula/rules-sparql-1-1';
 import { Factory as AstFactory } from '@traqula/rules-sparql-1-1';
 import { DataFactory } from 'rdf-data-factory';
@@ -31,6 +32,8 @@ export function createAlgebraContext(factory: Factory): AlgebraContext {
     currentPrefixes: {},
   };
 }
+
+export type AlgebraIndir<Name extends string, Ret, Arg extends any[]> = IndirDef<AlgebraContext, Name, Ret, Arg>;
 
 export interface FlattenedTriple {
   subject: RDF.Term;

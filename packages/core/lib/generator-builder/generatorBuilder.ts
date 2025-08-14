@@ -1,5 +1,6 @@
+import type { ParseNamesFromList } from '../parser-builder/builderTypes';
 import type { CheckOverlap } from '../utils';
-import type { GeneratorFromRules, GenRuleMap, GenRulesToObject, GenNamesFromList } from './builderTypes';
+import type { GeneratorFromRules, GenRuleMap, GenRulesToObject } from './builderTypes';
 import { DynamicGenerator } from './dynamicGenerator';
 import type { GeneratorRule } from './generatorTypes';
 
@@ -25,13 +26,13 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
   public static create<
     Rules extends readonly GeneratorRule[] = readonly GeneratorRule[],
     Context = Rules[0] extends GeneratorRule<infer context> ? context : never,
-    Names extends string = GenNamesFromList<Rules>,
+    Names extends string = ParseNamesFromList<Rules>,
     RuleDefs extends GenRuleMap<Names> = GenRulesToObject<Rules>,
   >(rules: Rules): GeneratorBuilder<Context, Names, RuleDefs>;
   public static create<
     Rules extends readonly GeneratorRule[] = readonly GeneratorRule[],
     Context = Rules[0] extends GeneratorRule<infer context> ? context : never,
-    Names extends string = GenNamesFromList<Rules>,
+    Names extends string = ParseNamesFromList<Rules>,
     RuleDefs extends GenRuleMap<Names> = GenRulesToObject<Rules>,
   >(
     start: Rules | GeneratorBuilder<Context, Names, RuleDefs>,
@@ -112,11 +113,11 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
   }
 
   public addMany<U extends readonly GeneratorRule<Context>[]>(
-    ...rules: CheckOverlap<GenNamesFromList<U>, Names, U>
+    ...rules: CheckOverlap<ParseNamesFromList<U>, Names, U>
   ): GeneratorBuilder<
     Context,
-    Names | GenNamesFromList<U>,
-    {[K in Names | GenNamesFromList<U>]:
+    Names | ParseNamesFromList<U>,
+    {[K in Names | ParseNamesFromList<U>]:
       K extends keyof GenRulesToObject<typeof rules> ? (
         GenRulesToObject<typeof rules>[K] extends GeneratorRule<Context, K> ? GenRulesToObject<typeof rules>[K] : never
       ) : (
@@ -159,8 +160,8 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
   ):
     GeneratorBuilder<
       Context,
-      Names | OtherNames | GenNamesFromList<OW>,
-      {[K in Names | OtherNames | GenNamesFromList<OW>]:
+      Names | OtherNames | ParseNamesFromList<OW>,
+      {[K in Names | OtherNames | ParseNamesFromList<OW>]:
         K extends keyof GenRulesToObject<OW> ? (
           GenRulesToObject<OW>[K] extends GeneratorRule<Context, K> ? GenRulesToObject<OW>[K] : never
         )

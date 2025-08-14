@@ -243,21 +243,13 @@ SparqlGrammarRule<'builtInGroup_concat', ExpressionAggregateDefault | Expression
 
       return ACTION(() => {
         const F = C.factory;
-        return sep ?
-          F.aggregate(
-            operatorToken.image,
-            Boolean(distinctToken),
-            expr,
-            sep.value,
-            F.sourceLocation(operatorToken, closeToken),
-          ) :
-          F.aggregate(
-            operatorToken.image,
-            Boolean(distinctToken),
-            expr,
-            ' ',
-            F.sourceLocation(operatorToken, closeToken),
-          );
+        return F.aggregate(
+          operatorToken.image,
+          Boolean(distinctToken),
+          expr,
+          sep?.value ?? ' ',
+          F.sourceLocation(operatorToken, closeToken),
+        );
       });
     },
 };

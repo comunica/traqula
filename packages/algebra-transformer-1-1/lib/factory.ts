@@ -166,7 +166,7 @@ export default class Factory {
     distinct: boolean,
     separator?: string,
   ): A.AggregateExpression {
-    if (separator) {
+    if (separator !== undefined) {
       return {
         type: A.Types.EXPRESSION,
         expressionType: A.expressionTypes.AGGREGATE,

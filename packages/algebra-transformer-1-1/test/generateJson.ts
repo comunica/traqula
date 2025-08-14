@@ -2,7 +2,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { Parser } from '@traqula/parser-sparql-1-1';
-import translate from '../lib/sparqlAlgebra';
+import { translate } from '../lib';
 import Util from '../lib/util';
 
 // WARNING: use this script with caution!

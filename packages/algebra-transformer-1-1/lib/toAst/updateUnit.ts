@@ -5,7 +5,6 @@ import type {
   GraphRefDefault,
   GraphRefNamed,
   GraphRefSpecific,
-  Pattern,
   Quads,
   TermIri,
   TermVariable,
@@ -28,8 +27,31 @@ import type { Algebra } from '../index';
 import { isVariable, types } from '../toAlgebra/core';
 import type { AstContext } from './core';
 import { translateDatasetClauses, translatePattern, translateTerm } from './general';
-import { translateOperation, wrapInPatternGroup } from './pattern';
+import { translatePatternNew, wrapInPatternGroup } from './pattern';
 import { removeQuadsRecursive } from './quads';
+
+export function translateUpdateOperation(c: AstContext, op: Algebra.Operation): UpdateOperation {
+  switch (op.type) {
+    case types.DELETE_INSERT:
+      return translateDeleteInsert(c, op);
+    case types.LOAD:
+      return translateLoad(c, op);
+    case types.CLEAR:
+      return translateClear(c, op);
+    case types.CREATE:
+      return translateCreate(c, op);
+    case types.DROP:
+      return translateDrop(c, op);
+    case types.ADD:
+      return translateAdd(c, op);
+    case types.MOVE:
+      return translateMove(c, op);
+    case types.COPY:
+      return translateCopy(c, op);
+    default:
+      throw new Error(`Unknown Operation type ${op.type}`);
+  }
+}
 
 export function toUpdate(c: AstContext, ops: UpdateOperation[]): Update {
   const F = c.astFactory;
@@ -69,7 +91,7 @@ ReturnType<typeof cleanUpUpdateOperationModify> {
   // If not an empty where pattern, handle quads
   if (where && (where.type !== types.BGP || where.patterns.length > 0)) {
     const graphs: (RDF.NamedNode | RDF.DefaultGraph)[] = [];
-    const result = <Pattern[]> translateOperation(c, removeQuadsRecursive(c, where, graphs));
+    const result = translatePatternNew(c, removeQuadsRecursive(c, where, graphs));
     update.where = wrapInPatternGroup(c, result);
     // Graph might not be applied yet since there was no project
     // this can only happen if there was a single graph
@@ -233,27 +255,4 @@ function convertUpdatePatterns(c: AstContext, patterns: Algebra.Pattern[]): Quad
     }
     return F.graphQuads(<TermIri | TermVariable> translateTerm(c, graphs[graph][0].graph), patternBgp, F.gen());
   });
-}
-
-export function translateUpdateOperation(c: AstContext, op: Algebra.Operation): UpdateOperation {
-  switch (op.type) {
-    case types.DELETE_INSERT:
-      return translateDeleteInsert(c, op);
-    case types.LOAD:
-      return translateLoad(c, op);
-    case types.CLEAR:
-      return translateClear(c, op);
-    case types.CREATE:
-      return translateCreate(c, op);
-    case types.DROP:
-      return translateDrop(c, op);
-    case types.ADD:
-      return translateAdd(c, op);
-    case types.MOVE:
-      return translateMove(c, op);
-    case types.COPY:
-      return translateCopy(c, op);
-    default:
-      throw new Error(`Unknown Operation type ${op.type}`);
-  }
 }

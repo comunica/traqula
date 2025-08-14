@@ -7,16 +7,14 @@ import type {
   PatternUnion,
   PatternValues,
   QueryBase,
-  Update,
-  UpdateOperation,
   ValuePatternRow,
 } from '@traqula/rules-sparql-1-1';
-import type { Algebra } from '../index';
+import type * as Algebra from '../algebra';
 import { types } from '../toAlgebra/core';
 import Util from '../util';
 import type { AstContext } from './core';
 import { registerProjection } from './core';
-import { translateAnyExpression, translatePureExpression } from './expression';
+import { translatePureExpression } from './expression';
 import {
   translateDatasetClauses,
   translateDistinct,
@@ -26,76 +24,8 @@ import {
   translateReduced,
   translateTerm,
 } from './general';
-import { translatePath } from './path';
+import { translatePathComponent } from './path';
 import { translateConstruct, translateProject } from './queryUnit';
-import { translateCompositeUpdate, translateUpdateOperation } from './updateUnit';
-
-export type TranslationType = Pattern | Pattern[] | Record<never, never> | Update | UpdateOperation;
-
-export function translateOperation(c: AstContext, op: Algebra.Operation):
-TranslationType {
-  registerProjection(c, op);
-  switch (op.type) {
-    case types.EXPRESSION: return translateAnyExpression(c, op);
-    case types.NOP: return {};
-    case types.ORDER_BY:
-    case types.PATH:
-    case types.ASK:
-    case types.BGP:
-    case types.CONSTRUCT:
-    case types.DESCRIBE:
-    case types.DISTINCT:
-    case types.EXTEND:
-    case types.FROM:
-    case types.FILTER:
-    case types.GRAPH:
-    case types.GROUP:
-    case types.JOIN:
-    case types.LEFT_JOIN:
-    case types.MINUS:
-    case types.PROJECT:
-    case types.REDUCED:
-    case types.SERVICE:
-    case types.SLICE:
-    case types.UNION:
-    case types.VALUES: return translatePatternNew(c, op);
-    case types.PATTERN: return translatePattern(c, op);
-    // UPDATE operations
-    case types.COMPOSITE_UPDATE: return translateCompositeUpdate(c, op);
-    case types.DELETE_INSERT:
-    case types.LOAD:
-    case types.CLEAR:
-    case types.CREATE:
-    case types.DROP:
-    case types.ADD:
-    case types.MOVE:
-    case types.COPY: return translateUpdateOperation(c, op);
-    default:
-      throw new Error(`Unknown Operation type ${op.type}`);
-  }
-}
-
-export function translateSinglePattern(c: AstContext, op: Algebra.Operation): Pattern {
-  switch (op.type) {
-    case types.ASK:
-    case types.PROJECT:
-    case types.CONSTRUCT:
-    case types.DESCRIBE:
-    case types.DISTINCT:
-    case types.FROM:
-    case types.FILTER:
-    case types.SLICE:
-    case types.REDUCED: return translatePatternIntoGroup(c, op);
-    case types.PATH: return translatePath(c, op);
-    case types.BGP: return translateBgp(c, op);
-    case types.GRAPH: return translateGraph(c, op);
-    case types.SERVICE: return translateService(c, op);
-    case types.UNION: return translateUnion(c, op);
-    case types.VALUES: return translateValues(c, op);
-    default:
-      throw new Error(`Unknown Operation type ${op.type}`);
-  }
-}
 
 export function translatePatternIntoGroup(c: AstContext, op: Algebra.Operation): PatternGroup {
   switch (op.type) {
@@ -113,24 +43,23 @@ export function translatePatternIntoGroup(c: AstContext, op: Algebra.Operation):
   }
 }
 
+export function translateSinglePattern(c: AstContext, op: Algebra.Operation): Pattern {
+  registerProjection(c, op);
+  switch (op.type) {
+    case types.PATH: return translatePath(c, op);
+    case types.BGP: return translateBgp(c, op);
+    case types.GRAPH: return translateGraph(c, op);
+    case types.SERVICE: return translateService(c, op);
+    case types.UNION: return translateUnion(c, op);
+    case types.VALUES: return translateValues(c, op);
+    default:
+      return translatePatternIntoGroup(c, op);
+  }
+}
+
 export function translatePatternNew(c: AstContext, op: Algebra.Operation): Pattern | Pattern[] {
   registerProjection(c, op);
   switch (op.type) {
-    case types.ASK:
-    case types.PROJECT:
-    case types.CONSTRUCT:
-    case types.DESCRIBE:
-    case types.BGP:
-    case types.DISTINCT:
-    case types.PATH:
-    case types.FROM:
-    case types.FILTER:
-    case types.GRAPH:
-    case types.REDUCED:
-    case types.SERVICE:
-    case types.SLICE:
-    case types.UNION:
-    case types.VALUES: return translateSinglePattern(c, op);
     case types.ORDER_BY: return translateOrderBy(c, op);
     case types.GROUP: return translateGroup(c, op);
     case types.EXTEND: return translateExtend(c, op);
@@ -138,7 +67,7 @@ export function translatePatternNew(c: AstContext, op: Algebra.Operation): Patte
     case types.LEFT_JOIN: return translateLeftJoin(c, op);
     case types.MINUS: return translateMinus(c, op);
     default:
-      throw new Error(`Unknown Operation type ${op.type}`);
+      return translateSinglePattern(c, op);
   }
 }
 
@@ -153,6 +82,17 @@ export function translateBgp(c: AstContext, op: Algebra.Bgp): PatternBgp {
   const F = c.astFactory;
   const patterns = op.patterns.map(triple => translatePattern(c, triple));
   return F.patternBgp(patterns, F.gen());
+}
+
+export function translatePath(c: AstContext, op: Algebra.Path): PatternBgp {
+  const F = c.astFactory;
+  return F.patternBgp([
+    F.triple(
+      translateTerm(c, op.subject),
+      translatePathComponent(c, op.predicate),
+      translateTerm(c, op.object),
+    ),
+  ], F.gen());
 }
 
 /**

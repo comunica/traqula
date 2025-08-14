@@ -1,13 +1,11 @@
-import type {
-  PatternGroup,
-  SparqlQuery,
-} from '@traqula/rules-sparql-1-1';
+import type { Query, SparqlQuery } from '@traqula/rules-sparql-1-1';
 import type * as Algebra from '../algebra';
-import type { AstContext } from './core';
+import { types } from '../toAlgebra/core';
 import { createAstContext, resetContext } from './core';
-import { translateOperation } from './pattern';
+import type { AstContext } from './core';
+import { translatePatternIntoGroup } from './pattern';
 import { removeQuads } from './quads';
-import { toUpdate } from './updateUnit';
+import { toUpdate, translateCompositeUpdate, translateUpdateOperation } from './updateUnit';
 
 export function toSparql(op: Algebra.Operation): SparqlQuery {
   const c = createAstContext();
@@ -15,18 +13,18 @@ export function toSparql(op: Algebra.Operation): SparqlQuery {
 }
 
 export function toSparqlJs(c: AstContext, op: Algebra.Operation): SparqlQuery {
-  const F = c.astFactory;
   resetContext(c);
   op = removeQuads(c, op);
-  const result = <SparqlQuery | PatternGroup> translateOperation(c, op);
-  if (F.isPatternGroup(result)) {
-    return <SparqlQuery> result.patterns[0];
+  if (op.type === types.COMPOSITE_UPDATE) {
+    return translateCompositeUpdate(c, op);
   }
-  if (Object.keys(result).length === 0) {
+  if (op.type === types.NOP) {
     return toUpdate(c, []);
   }
-  if (F.isUpdateOperation(result)) {
-    return toUpdate(c, [ result ]);
-  }
-  return result;
+  try {
+    return toUpdate(c, [ translateUpdateOperation(c, op) ]);
+  } catch { /* That's okay, it's not an update */}
+  // If no Update, must be query.
+  const result = translatePatternIntoGroup(c, op);
+  return <Query> result.patterns[0];
 }

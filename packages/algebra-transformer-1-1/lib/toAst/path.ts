@@ -5,7 +5,6 @@ import type {
   PathModified,
   PathNegatedElt,
   PathPure,
-  PatternBgp,
   PropertyPathChain,
   TermIri,
 } from '@traqula/rules-sparql-1-1';
@@ -15,7 +14,7 @@ import Util from '../util';
 import type { AstContext } from './core';
 import { translateTerm } from './general';
 
-function translatePathComponent(c: AstContext, path: Algebra.Operation): Path {
+export function translatePathComponent(c: AstContext, path: Algebra.Operation): Path {
   switch (path.type) {
     case types.ALT: return translateAlt(c, path);
     case types.INV: return translateInv(c, path);
@@ -104,15 +103,4 @@ function translateZeroOrMorePath(c: AstContext, path: Algebra.ZeroOrMorePath): P
 function translateZeroOrOnePath(c: AstContext, path: Algebra.ZeroOrOnePath): PathModified {
   const F = c.astFactory;
   return F.path('?', [ translatePathComponent(c, path.path) ], F.gen());
-}
-
-export function translatePath(c: AstContext, op: Algebra.Path): PatternBgp {
-  const F = c.astFactory;
-  return F.patternBgp([
-    F.triple(
-      translateTerm(c, op.subject),
-      translatePathComponent(c, op.predicate),
-      translateTerm(c, op.object),
-    ),
-  ], F.gen());
 }

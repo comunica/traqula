@@ -32,30 +32,21 @@ export function translatePureExpression(c: AstContext, expr: Algebra.Expression)
 }
 
 export function translateExpressionOrWild(c: AstContext, expr: Algebra.Expression): Expression | Wildcard {
-  switch (expr.expressionType) {
-    case eTypes.WILDCARD:
-      return translateWildcardExpression(c, expr);
-    default:
-      return translatePureExpression(c, expr);
-  }
+  return expr.expressionType === eTypes.WILDCARD ?
+    translateWildcardExpression(c, expr) :
+    translatePureExpression(c, expr);
 }
 
 export function translateExpressionOrOrdering(c: AstContext, expr: Algebra.Expression): Expression | Ordering {
-  switch (expr.expressionType) {
-    case eTypes.OPERATOR:
-      return translateOperatorExpression(c, expr);
-    default:
-      return translatePureExpression(c, expr);
-  }
+  return expr.expressionType === eTypes.OPERATOR ?
+    translateOperatorExpression(c, expr) :
+    translatePureExpression(c, expr);
 }
 
 export function translateAnyExpression(c: AstContext, expr: Algebra.Expression): Expression | Ordering | Wildcard {
-  switch (expr.expressionType) {
-    case eTypes.OPERATOR:
-      return translateOperatorExpression(c, expr);
-    default:
-      return translateExpressionOrWild(c, expr);
-  }
+  return expr.expressionType === eTypes.OPERATOR ?
+    translateOperatorExpression(c, expr) :
+    translateExpressionOrWild(c, expr);
 }
 
 function translateAggregateExpression(c: AstContext, expr: Algebra.AggregateExpression): ExpressionAggregate {

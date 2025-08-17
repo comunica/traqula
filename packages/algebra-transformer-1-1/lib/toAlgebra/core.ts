@@ -14,7 +14,7 @@ export interface AlgebraContext {
   factory: Factory;
   transformer: Transformer<Sparql11Nodes>;
   astFactory: AstFactory;
-  dataFactory: DataFactory;
+  dataFactory: DataFactory<RDF.BaseQuad>;
   currentBase: string | undefined;
   currentPrefixes: Record<string, string>;
 }

@@ -246,7 +246,6 @@ function annotationImpl<T extends string>(name: T, allowPaths: boolean): SparqlR
             });
             const block = SUBRULE(
               allowPaths ? annotationBlockPath : annotationBlock,
-
               currentReifier!,
             );
             ACTION(() => {

@@ -176,7 +176,7 @@ export type TripleCollection =
 // https://www.w3.org/TR/sparql11-query/#rGraphNode
 export type GraphNode = Term | TripleCollection;
 export type Annotation = TripleCollectionBlankNodeProperties | TermVariable | TermIri | TermBlank;
-// https://www.w3.org/TR/sparql11-query/#rTriplesBlock
+// https://www.w3.org/TR/sparql12-query/#rTriplesBlock
 export type TripleNesting = Node & {
   type: 'triple';
   subject: GraphNode;

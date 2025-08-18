@@ -11,96 +11,114 @@ import type {
 import type * as Algebra from '../algebra';
 import { types } from '../toAlgebra/core';
 import Util from '../util';
-import type { AstContext } from './core';
+import type { AstIndir } from './core';
+import type { RdfTermToAst } from './general';
 import { translateTerm } from './general';
 
-export function translatePathComponent(c: AstContext, path: Algebra.Operation): Path {
-  switch (path.type) {
-    case types.ALT: return translateAlt(c, path);
-    case types.INV: return translateInv(c, path);
-    case types.LINK: return translateLink(c, path);
-    case types.NPS: return translateNps(c, path);
-    case types.ONE_OR_MORE_PATH: return translateOneOrMorePath(c, path);
-    case types.SEQ: return translateSeq(c, path);
-    case types.ZERO_OR_MORE_PATH: return translateZeroOrMorePath(c, path);
-    case types.ZERO_OR_ONE_PATH: return translateZeroOrOnePath(c, path);
-    default:
-      throw new Error(`Unknown Path type ${path.type}`);
-  }
-}
+export const translatePathComponent: AstIndir<'translatePathComponent', Path, [Algebra.Operation]> = {
+  name: 'translatePathComponent',
+  fun: ({ SUBRULE }) => (_, path) => {
+    switch (path.type) {
+      case types.ALT: return SUBRULE(translateAlt, path);
+      case types.INV: return SUBRULE(translateInv, path);
+      case types.LINK: return SUBRULE(translateLink, path);
+      case types.NPS: return SUBRULE(translateNps, path);
+      case types.ONE_OR_MORE_PATH: return SUBRULE(translateOneOrMorePath, path);
+      case types.SEQ: return SUBRULE(translateSeq, path);
+      case types.ZERO_OR_MORE_PATH: return SUBRULE(translateZeroOrMorePath, path);
+      case types.ZERO_OR_ONE_PATH: return SUBRULE(translateZeroOrOnePath, path);
+      default:
+        throw new Error(`Unknown Path type ${path.type}`);
+    }
+  },
+};
 
-function translateAlt(c: AstContext, path: Algebra.Alt): Path {
-  const F = c.astFactory;
-  const mapped = path.input.map(x => translatePathComponent(c, x));
-  if (mapped.every(entry => F.isPathOfType(entry, [ '!' ]))) {
-    return F.path(
-      '!',
-      [ F.path(
-        '|',
-        <(TermIri | PathNegatedElt)[]> Util.flatten(mapped.map(entry => (<PathPure> entry).items)),
-        F.gen(),
-      ) ],
-      F.gen(),
-    );
-  }
-  return F.path('|', mapped, F.gen());
-}
-
-function translateInv(c: AstContext, path: Algebra.Inv): Path {
-  const F = c.astFactory;
-  if (path.path.type === types.NPS) {
-    const inv: Path[] = path.path.iris.map((iri: RDF.NamedNode) => F.path(
-      '^',
-      [ translateTerm(c, iri) ],
-      F.gen(),
-    ));
-
-    if (inv.length <= 1) {
+export const translateAlt: AstIndir<'translateAlt', Path, [Algebra.Alt]> = {
+  name: 'translateAlt',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, path) => {
+    const mapped = path.input.map(x => SUBRULE(translatePathComponent, x));
+    if (mapped.every(entry => F.isPathOfType(entry, [ '!' ]))) {
       return F.path(
         '!',
-        <[TermIri | PathNegatedElt | PathAlternativeLimited]> inv,
+        [ F.path(
+          '|',
+          <(TermIri | PathNegatedElt)[]> Util.flatten(mapped.map(entry => (<PathPure> entry).items)),
+          F.gen(),
+        ) ],
         F.gen(),
       );
     }
+    return F.path('|', mapped, F.gen());
+  },
+};
 
-    return F.path('!', [ <PathAlternativeLimited> F.path('|', inv, F.gen()) ], F.gen());
-  }
+export const translateInv: AstIndir<'translateInv', Path, [Algebra.Inv]> = {
+  name: 'translateInv',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, path) => {
+    if (path.path.type === types.NPS) {
+      const inv: Path[] = path.path.iris.map((iri: RDF.NamedNode) => F.path(
+        '^',
+        [ <RdfTermToAst<typeof iri>>SUBRULE(translateTerm, iri) ],
+        F.gen(),
+      ));
 
-  return F.path('^', [ translatePathComponent(c, path.path) ], F.gen());
-}
+      if (inv.length <= 1) {
+        return F.path(
+          '!',
+          <[TermIri | PathNegatedElt | PathAlternativeLimited]> inv,
+          F.gen(),
+        );
+      }
 
-function translateLink(c: AstContext, path: Algebra.Link): TermIri {
-  return translateTerm(c, path.iri);
-}
+      return F.path('!', [ <PathAlternativeLimited> F.path('|', inv, F.gen()) ], F.gen());
+    }
 
-function translateNps(c: AstContext, path: Algebra.Nps): Path {
-  const F = c.astFactory;
-  if (path.iris.length === 1) {
-    return F.path('!', [ translateTerm(c, path.iris[0]) ], F.gen());
-  }
-  return F.path('!', [ F.path('|', path.iris.map(x => translateTerm(c, x)), F.gen()) ], F.gen());
-}
+    return F.path('^', [ SUBRULE(translatePathComponent, path.path) ], F.gen());
+  },
+};
 
-export function translateOneOrMorePath(c: AstContext, path: Algebra.OneOrMorePath): PathModified {
-  const F = c.astFactory;
-  return F.path('+', [ translatePathComponent(c, path.path) ], F.gen());
-}
+export const translateLink: AstIndir<'translateLink', TermIri, [Algebra.Link]> = {
+  name: 'translateLink',
+  fun: ({ SUBRULE }) => (_, path) =>
+    <RdfTermToAst<typeof path.iri>>SUBRULE(translateTerm, path.iri),
+};
 
-function translateSeq(c: AstContext, path: Algebra.Seq): PropertyPathChain {
-  const F = c.astFactory;
-  return F.path(
-    '/',
-    path.input.map(x => translatePathComponent(c, x)),
-    F.gen(),
-  );
-}
+export const translateNps: AstIndir<'translateNps', Path, [Algebra.Nps]> = {
+  name: 'translateNps',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, path) => {
+    if (path.iris.length === 1) {
+      return F.path('!', [ <RdfTermToAst<typeof path.iris[0]>> SUBRULE(translateTerm, path.iris[0]) ], F.gen());
+    }
+    return F.path('!', [
+      F.path('|', path.iris.map(x => <RdfTermToAst<typeof x>> SUBRULE(translateTerm, x)), F.gen()),
+    ], F.gen());
+  },
+};
 
-function translateZeroOrMorePath(c: AstContext, path: Algebra.ZeroOrMorePath): PathModified {
-  const F = c.astFactory;
-  return F.path('*', [ translatePathComponent(c, path.path) ], F.gen());
-}
+export const translateOneOrMorePath: AstIndir<'translateOneOrMorePath', PathModified, [Algebra.OneOrMorePath]> = {
+  name: 'translateOneOrMorePath',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, path) =>
+    F.path('+', [ SUBRULE(translatePathComponent, path.path) ], F.gen()),
+};
 
-function translateZeroOrOnePath(c: AstContext, path: Algebra.ZeroOrOnePath): PathModified {
-  const F = c.astFactory;
-  return F.path('?', [ translatePathComponent(c, path.path) ], F.gen());
-}
+export const translateSeq: AstIndir<'translateSeq', PropertyPathChain, [Algebra.Seq]> = {
+  name: 'translateSeq',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, path) =>
+    F.path(
+      '/',
+      path.input.map(x => SUBRULE(translatePathComponent, x)),
+      F.gen(),
+    ),
+};
+
+export const translateZeroOrMorePath: AstIndir<'translateZeroOrMorePath', PathModified, [Algebra.ZeroOrMorePath]> = {
+  name: 'translateZeroOrMorePath',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, path) =>
+    F.path('*', [ SUBRULE(translatePathComponent, path.path) ], F.gen()),
+};
+
+export const translateZeroOrOnePath: AstIndir<'translateZeroOrOnePath', PathModified, [Algebra.ZeroOrOnePath]> = {
+  name: 'translateZeroOrOnePath',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, path) =>
+    F.path('?', [ SUBRULE(translatePathComponent, path.path) ], F.gen()),
+};

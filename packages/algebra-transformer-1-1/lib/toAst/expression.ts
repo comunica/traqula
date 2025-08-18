@@ -9,104 +9,118 @@ import type {
 } from '@traqula/rules-sparql-1-1';
 import type { Algebra } from '../index';
 import Util from '../util';
-import type { AstContext } from './core';
+import type { AstIndir } from './core';
 import { eTypes } from './core';
-import { translateTerm } from './general';
+import { type RdfTermToAst, translateTerm } from './general';
 import { translatePatternNew } from './pattern';
 
-export function translatePureExpression(c: AstContext, expr: Algebra.Expression): Expression {
-  switch (expr.expressionType) {
-    case eTypes.AGGREGATE:
-      return translateAggregateExpression(c, expr);
-    case eTypes.EXISTENCE:
-      return translateExistenceExpression(c, expr);
-    case eTypes.NAMED:
-      return translateNamedExpression(c, expr);
-    case eTypes.OPERATOR:
-      return translatePureOperatorExpression(c, expr);
-    case eTypes.TERM:
-      return <Expression>translateTerm(c, expr.term);
-    default:
-      throw new Error(`Unknown Expression Operation type ${expr.expressionType}`);
-  }
-}
+export const translatePureExpression: AstIndir<'translatePureExpression', Expression, [Algebra.Expression]> = {
+  name: 'translatePureExpression',
+  fun: ({ SUBRULE }) => (_, expr) => {
+    switch (expr.expressionType) {
+      case eTypes.AGGREGATE:
+        return SUBRULE(translateAggregateExpression, expr);
+      case eTypes.EXISTENCE:
+        return SUBRULE(translateExistenceExpression, expr);
+      case eTypes.NAMED:
+        return SUBRULE(translateNamedExpression, expr);
+      case eTypes.OPERATOR:
+        return SUBRULE(translatePureOperatorExpression, expr);
+      case eTypes.TERM:
+        return <Expression> SUBRULE(translateTerm, expr.term);
+      default:
+        throw new Error(`Unknown Expression Operation type ${expr.expressionType}`);
+    }
+  },
+};
 
-export function translateExpressionOrWild(c: AstContext, expr: Algebra.Expression): Expression | Wildcard {
-  return expr.expressionType === eTypes.WILDCARD ?
-    translateWildcardExpression(c, expr) :
-    translatePureExpression(c, expr);
-}
+export const translateExpressionOrWild:
+AstIndir<'translateExpressionOrWild', Expression | Wildcard, [Algebra.Expression]> = {
+  name: 'translateExpressionOrWild',
+  fun: ({ SUBRULE }) => (_, expr) => expr.expressionType === eTypes.WILDCARD ?
+    SUBRULE(translateWildcardExpression, expr) :
+    SUBRULE(translatePureExpression, expr),
+};
 
-export function translateExpressionOrOrdering(c: AstContext, expr: Algebra.Expression): Expression | Ordering {
-  return expr.expressionType === eTypes.OPERATOR ?
-    translateOperatorExpression(c, expr) :
-    translatePureExpression(c, expr);
-}
+export const translateExpressionOrOrdering:
+AstIndir<'translateExpressionOrOrdering', Expression | Ordering, [Algebra.Expression]> = {
+  name: 'translateExpressionOrOrdering',
+  fun: ({ SUBRULE }) => (_, expr) =>
+    expr.expressionType === eTypes.OPERATOR ?
+      SUBRULE(translateOperatorExpression, expr) :
+      SUBRULE(translatePureExpression, expr),
+};
 
-export function translateAnyExpression(c: AstContext, expr: Algebra.Expression): Expression | Ordering | Wildcard {
-  return expr.expressionType === eTypes.OPERATOR ?
-    translateOperatorExpression(c, expr) :
-    translateExpressionOrWild(c, expr);
-}
+export const translateAnyExpression:
+AstIndir<'translateAnyExpression', Expression | Ordering | Wildcard, [Algebra.Expression]> = {
+  name: 'translateAnyExpression',
+  fun: ({ SUBRULE }) => (_, expr) => expr.expressionType === eTypes.OPERATOR ?
+    SUBRULE(translateOperatorExpression, expr) :
+    SUBRULE(translateExpressionOrWild, expr),
+};
 
-function translateAggregateExpression(c: AstContext, expr: Algebra.AggregateExpression): ExpressionAggregate {
-  const F = c.astFactory;
-  return F.aggregate(
-    expr.aggregator,
-    expr.distinct,
-    translateExpressionOrWild(c, expr.expression),
-    expr.separator,
-    F.gen(),
-  );
-}
+export const translateAggregateExpression:
+AstIndir<'translateAggregateExpression', ExpressionAggregate, [Algebra.AggregateExpression]> = {
+  name: 'translateAggregateExpression',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, expr) =>
+    F.aggregate(
+      expr.aggregator,
+      expr.distinct,
+      SUBRULE(translateExpressionOrWild, expr.expression),
+      expr.separator,
+      F.gen(),
+    ),
+};
 
-function translateExistenceExpression(
-  c: AstContext,
-  expr: Algebra.ExistenceExpression,
-): ExpressionPatternOperation {
-  const F = c.astFactory;
-  return F.expressionPatternOperation(
-    expr.not ? 'notexists' : 'exists',
-    // TranslateOperation can give an array
-    F.patternGroup(Util.flatten([ translatePatternNew(c, expr.input) ]), F.gen()),
-    F.gen(),
-  );
-}
+export const translateExistenceExpression:
+AstIndir<'translateExistenceExpression', ExpressionPatternOperation, [Algebra.ExistenceExpression]> = {
+  name: 'translateExistenceExpression',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, expr) =>
+    F.expressionPatternOperation(
+      expr.not ? 'notexists' : 'exists',
+      // TranslateOperation can give an array
+      F.patternGroup(Util.flatten([ SUBRULE(translatePatternNew, expr.input) ]), F.gen()),
+      F.gen(),
+    ),
+};
 
-function translateNamedExpression(c: AstContext, expr: Algebra.NamedExpression): ExpressionFunctionCall {
-  const F = c.astFactory;
-  return F.expressionFunctionCall(
-    translateTerm(c, expr.name),
-    expr.args.map(x => translatePureExpression(c, x)),
-    false,
-    F.gen(),
-  );
-}
+export const translateNamedExpression:
+AstIndir<'translateNamedExpression', ExpressionFunctionCall, [Algebra.NamedExpression]> = {
+  name: 'translateNamedExpression',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, expr) =>
+    F.expressionFunctionCall(
+      <RdfTermToAst<typeof expr.name>> SUBRULE(translateTerm, expr.name),
+      expr.args.map(x => SUBRULE(translatePureExpression, x)),
+      false,
+      F.gen(),
+    ),
+};
 
-export function translatePureOperatorExpression(
-  c: AstContext,
-  expr: Algebra.OperatorExpression,
-): ExpressionOperation {
-  const F = c.astFactory;
-  return F.expressionOperation(
-    expr.operator,
-    expr.args.map(x => translatePureExpression(c, x)),
-    F.gen(),
-  );
-}
+export const translatePureOperatorExpression:
+AstIndir<'translatePureOperatorExpression', ExpressionOperation, [Algebra.OperatorExpression]> = {
+  name: 'translatePureOperatorExpression',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, expr) =>
+    F.expressionOperation(
+      expr.operator,
+      expr.args.map(x => SUBRULE(translatePureExpression, x)),
+      F.gen(),
+    ),
+};
 
-export function translateOperatorExpression(
-  c: AstContext,
-  expr: Algebra.OperatorExpression,
-): Ordering | ExpressionOperation {
-  const F = c.astFactory;
-  if (expr.operator === 'desc') {
-    return { expression: translatePureExpression(c, expr.args[0]), descending: true, loc: F.gen() };
-  }
-  return translatePureOperatorExpression(c, expr);
-}
+export const translateOperatorExpression:
+AstIndir<'translateOperatorExpression', Ordering | ExpressionOperation, [Algebra.OperatorExpression]> = {
+  name: 'translateOperatorExpression',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, expr) => {
+    if (expr.operator === 'desc') {
+      return { expression: SUBRULE(translatePureExpression, expr.args[0]), descending: true, loc: F.gen() };
+    }
+    return SUBRULE(translatePureOperatorExpression, expr);
+  },
+};
 
-function translateWildcardExpression(c: AstContext, _expr: Algebra.WildcardExpression): Wildcard {
-  const F = c.astFactory;
-  return F.wildcard(F.gen());
-}
+export const translateWildcardExpression:
+AstIndir<'translateWildcardExpression', Wildcard, [ Algebra.WildcardExpression ]> = {
+  name: 'translateWildcardExpression',
+  fun: () => ({ astFactory: F }, _) =>
+    F.wildcard(F.gen()),
+};

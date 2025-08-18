@@ -15,262 +15,273 @@ import type {
 import type { Algebra } from '../index';
 import { types } from '../toAlgebra/core';
 import Util from '../util';
-import type { AstContext } from './core';
+import type { AstIndir } from './core';
 import { resetContext } from './core';
 import { translateExpressionOrOrdering, translatePureExpression } from './expression';
+import type { RdfTermToAst } from './general';
 import { translatePattern, translateTerm } from './general';
 import { translatePatternNew } from './pattern';
 
-export function translateConstruct(c: AstContext, op: Algebra.Construct): PatternGroup {
-  const F = c.astFactory;
-  const queryConstruct = F.queryConstruct(
-    F.gen(),
-    [],
-    F.patternBgp(<BasicGraphPattern> op.template.map(x => translatePattern(c, x)), F.gen()),
-    F.patternGroup(Util.flatten([ translatePatternNew(c, op.input) ]), F.gen()),
-    {},
-    F.datasetClauses([], F.gen()),
-  );
-  registerOrderBy(c, queryConstruct);
-  c.order.length = 0;
-  // Subqueries need to be in a group! Top level grouping is removed at toAst function
-  //  - for consistency with the other operators, we also wrap here.
-  return F.patternGroup([ <Pattern> <unknown> queryConstruct ], F.gen());
-}
+export const translateConstruct: AstIndir<'translateConstruct', PatternGroup, [Algebra.Construct]> = {
+  name: 'translateConstruct',
+  fun: ({ SUBRULE }) => ({ astFactory: F, order }, op) => {
+    const queryConstruct = F.queryConstruct(
+      F.gen(),
+      [],
+      F.patternBgp(<BasicGraphPattern> op.template.map(x => SUBRULE(translatePattern, x)), F.gen()),
+      F.patternGroup(Util.flatten([ SUBRULE(translatePatternNew, op.input) ]), F.gen()),
+      {},
+      F.datasetClauses([], F.gen()),
+    );
+    SUBRULE(registerOrderBy, queryConstruct);
+    order.length = 0;
+    // Subqueries need to be in a group! Top level grouping is removed at toAst function
+    //  - for consistency with the other operators, we also wrap here.
+    return F.patternGroup([ <Pattern> <unknown> queryConstruct ], F.gen());
+  },
+};
 
 /**
- * DEBUG NOTE: The type is slightly of but works in the general case.
+ * Will mostly return the same type as what you give in second arg.
  */
-function replaceAggregatorVariables<T>(c: AstContext, s: T, map: Record<string, Expression>): T {
-  const F = c.astFactory;
-  const st: Sparql11Nodes = Util.isSimpleTerm(s) ? translateTerm(c, s) : <Sparql11Nodes> s;
+export const replaceAggregatorVariables:
+AstIndir<'replaceAggregatorVariables', unknown, [unknown, Record<string, Expression>]> = {
+  name: 'replaceAggregatorVariables',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, s, map) => {
+    const st: Sparql11Nodes = Util.isSimpleTerm(s) ? SUBRULE(translateTerm, s) : <Sparql11Nodes> s;
 
-  // Look for TermVariable, if we find, replace it by the aggregator.
-  if (F.isTermVariable(st)) {
-    if (map[st.value]) {
-      // Returns the ExpressionAggregate
-      return <T> map[st.value];
+    // Look for TermVariable, if we find, replace it by the aggregator.
+    if (F.isTermVariable(st)) {
+      if (map[st.value]) {
+        // Returns the ExpressionAggregate
+        return map[st.value];
+      }
+    } else if (Array.isArray(s)) {
+      s = s.map(e => SUBRULE(replaceAggregatorVariables, e, map));
+    } else if (typeof s === 'object') {
+      const obj = <Record<string, any>> s;
+      for (const key of Object.keys(obj)) {
+        obj[key] = SUBRULE(replaceAggregatorVariables, obj[key], map);
+      }
     }
-  } else if (Array.isArray(s)) {
-    s = <T> s.map(e => replaceAggregatorVariables(c, e, map));
-  } else if (typeof s === 'object') {
-    const obj = <Record<string, any>> s;
-    for (const key of Object.keys(obj)) {
-      obj[key] = replaceAggregatorVariables(c, obj[key], map);
+    return s;
+  },
+};
+
+export const translateProject:
+AstIndir<'translateProject', PatternGroup, [Algebra.Project | Algebra.Ask | Algebra.Describe, string]> = {
+  name: 'translateProject',
+  fun: ({ SUBRULE }) => (c, op, type) => {
+    const F = c.astFactory;
+    const result: QueryBase = <any> {
+      type: 'query',
+      solutionModifiers: {},
+      loc: F.gen(),
+      datasets: F.datasetClauses([], F.gen()),
+      context: [],
+    } satisfies Partial<QueryBase>;
+
+    // Makes typing easier in some places
+    const select = <QuerySelect> result;
+    let variables: RDF.Variable[] | undefined;
+
+    if (type === types.PROJECT) {
+      result.subType = 'select';
+      variables = op.variables;
+    } else if (type === types.ASK) {
+      result.subType = 'ask';
+    } else if (type === types.DESCRIBE) {
+      result.subType = 'describe';
+      variables = op.terms;
     }
-  }
-  return s;
-}
 
-export function translateProject(
-  c: AstContext,
-  op: Algebra.Project | Algebra.Ask | Algebra.Describe,
-  type: string,
-): PatternGroup {
-  const F = c.astFactory;
-  const result: QueryBase = <any> {
-    type: 'query',
-    solutionModifiers: {},
-    loc: F.gen(),
-    datasets: F.datasetClauses([], F.gen()),
-    context: [],
-  } satisfies Partial<QueryBase>;
+    // Backup values in case of nested queries
+    // everything in extend, group, etc. is irrelevant for this project call
+    const extend = c.extend;
+    const group = c.group;
+    const aggregates = c.aggregates;
+    const order = c.order;
+    SUBRULE(resetContext);
+    c.project = true;
 
-  // Makes typing easier in some places
-  const select = <QuerySelect> result;
-  let variables: RDF.Variable[] | undefined;
+    // TranslateOperation could give an array.
+    let input = Util.flatten([ SUBRULE(translatePatternNew, op.input) ]);
+    if (input.length === 1 && F.isPatternGroup(input[0])) {
+      input = (input[0]).patterns;
+    }
+    result.where = F.patternGroup(input, F.gen());
 
-  if (type === types.PROJECT) {
-    result.subType = 'select';
-    variables = op.variables;
-  } else if (type === types.ASK) {
-    result.subType = 'ask';
-  } else if (type === types.DESCRIBE) {
-    result.subType = 'describe';
-    variables = op.terms;
-  }
+    // Map from variable to what agg it represents
+    const aggregators: Record<string, Expression> = {};
+    // These can not reference each other
+    for (const agg of c.aggregates) {
+      aggregators[(<RdfTermToAst<typeof agg.variable>>SUBRULE(translateTerm, agg.variable)).value] =
+        SUBRULE(translatePureExpression, agg);
+    }
 
-  // Backup values in case of nested queries
-  // everything in extend, group, etc. is irrelevant for this project call
-  const extend = c.extend;
-  const group = c.group;
-  const aggregates = c.aggregates;
-  const order = c.order;
-  resetContext(c);
-  c.project = true;
+    // Do these in reverse order since variables in one extend might apply to an expression in another extend
+    const extensions: Record<string, Expression> = {};
+    for (const e of c.extend.reverse()) {
+      const expr = SUBRULE(translatePureExpression, e.expression);
+      extensions[(<RdfTermToAst<typeof e.variable>>SUBRULE(translateTerm, e.variable)).value] =
+        <typeof expr>SUBRULE(replaceAggregatorVariables, expr, aggregators);
+    }
+    SUBRULE(registerGroupBy, result, extensions);
+    SUBRULE(registerOrderBy, result);
+    SUBRULE(registerVariables, select, variables, extensions);
+    SUBRULE(putExtensionsInGroup, result, extensions);
 
-  // TranslateOperation could give an array.
-  let input = Util.flatten([ translatePatternNew(c, op.input) ]);
-  if (input.length === 1 && F.isPatternGroup(input[0])) {
-    input = (input[0]).patterns;
-  }
-  result.where = F.patternGroup(input, F.gen());
+    // Convert all filters to 'having' if it contains an aggregator variable
+    // could always convert, but is nicer to keep as filter when possible
+    const havings: Expression[] = [];
+    result.where = <PatternGroup> SUBRULE(filterReplace, result.where, aggregators, havings);
+    if (havings.length > 0) {
+      select.solutionModifiers.having = F.solutionModifierHaving(havings, F.gen());
+    }
 
-  // Map from variable to what agg it represents
-  const aggregators: Record<string, Expression> = {};
-  // These can not reference each other
-  for (const agg of c.aggregates) {
-    aggregators[translateTerm(c, agg.variable).value] = translatePureExpression(c, agg);
-  }
+    // Recover state
+    c.extend = extend;
+    c.group = group;
+    c.aggregates = aggregates;
+    c.order = order;
 
-  // Do these in reverse order since variables in one extend might apply to an expression in another extend
-  const extensions: Record<string, Expression> = {};
-  for (const e of c.extend.reverse()) {
-    extensions[translateTerm(c, e.variable).value] =
-      replaceAggregatorVariables(c, translatePureExpression(c, e.expression), aggregators);
-  }
-  registerGroupBy(c, result, extensions);
-  registerOrderBy(c, result);
-  registerVariables(c, select, variables, extensions);
-  putExtensionsInGroup(c, result, extensions);
+    // Subqueries need to be in a group! Top level grouping is removed at toAst function
+    return F.patternGroup([ select ], F.gen());
+  },
+};
 
-  // Convert all filters to 'having' if it contains an aggregator variable
-  // could always convert, but is nicer to keep as filter when possible
-  const havings: Expression[] = [];
-  result.where = filterReplace(c, result.where, aggregators, havings);
-  if (havings.length > 0) {
-    select.solutionModifiers.having = F.solutionModifierHaving(havings, F.gen());
-  }
+export const registerGroupBy: AstIndir<'registerGroupBy', void, [QueryBase, Record<string, Expression>]> = {
+  name: 'registerGroupBy',
+  fun: ({ SUBRULE }) => ({ astFactory: F, group }, result, extensions) => {
+    if (group.length > 0) {
+      result.solutionModifiers.group = F.solutionModifierGroup(
+        group.map((variable) => {
+          const v = <RdfTermToAst<typeof variable>>SUBRULE(translateTerm, variable);
+          if (extensions[v.value]) {
+            const result = extensions[v.value];
+            // Make sure there is only 1 'AS' statement
+            delete extensions[v.value];
+            return {
+              variable: v,
+              value: result,
+              loc: F.gen(),
+            } satisfies SolutionModifierGroupBind;
+          }
+          return v;
+        }),
+        F.gen(),
+      );
+    }
+  },
+};
 
-  // Recover state
-  c.extend = extend;
-  c.group = group;
-  c.aggregates = aggregates;
-  c.order = order;
+export const registerOrderBy: AstIndir<'registerOrderBy', void, [QueryBase]> = {
+  name: 'registerOrderBy',
+  fun: ({ SUBRULE }) => ({ astFactory: F, order }, result) => {
+    if (order.length > 0) {
+      result.solutionModifiers.order = F.solutionModifierOrder(
+        order
+          .map(x => SUBRULE(translateExpressionOrOrdering, x))
+          .map((o: Ordering | Expression) =>
+            F.isExpression(o) ?
+                ({
+                  expression: o,
+                  descending: false,
+                  loc: F.gen(),
+                } satisfies Ordering) :
+              o),
+        F.gen(),
+      );
+    }
+  },
+};
 
-  // Subqueries need to be in a group! Top level grouping is removed at toAst function
-  return F.patternGroup([ select ], F.gen());
-}
-
-function registerGroupBy(c: AstContext, result: QueryBase, extensions: Record<string, Expression>): void {
-  const F = c.astFactory;
-  if (c.group.length > 0) {
-    result.solutionModifiers.group = F.solutionModifierGroup(
-      c.group.map((variable) => {
-        const v = translateTerm(c, variable);
+export const registerVariables:
+AstIndir<'registerVariables', void, [QuerySelect, RDF.Variable[] | undefined, Record<string, Expression>]> = {
+  name: 'registerVariables',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, select, variables, extensions) => {
+    if (variables) {
+      select.variables = variables.map((term): TermVariable | PatternBind => {
+        const v = <RdfTermToAst<typeof term>>SUBRULE(translateTerm, term);
         if (extensions[v.value]) {
-          const result = extensions[v.value];
-          // Make sure there is only 1 'AS' statement
+          const result: Expression = extensions[v.value];
+          // Remove used extensions so only unused ones remain
           delete extensions[v.value];
-          return {
-            variable: v,
-            value: result,
-            loc: F.gen(),
-          } satisfies SolutionModifierGroupBind;
+          return F.patternBind(result, v, F.gen());
         }
         return v;
-      }),
-      F.gen(),
-    );
-  }
-}
-
-function registerOrderBy(c: AstContext, result: QueryBase): void {
-  const F = c.astFactory;
-  if (c.order.length > 0) {
-    result.solutionModifiers.order = F.solutionModifierOrder(
-      c.order
-        .map(x => translateExpressionOrOrdering(c, x))
-        .map((o: Ordering | Expression) =>
-          F.isExpression(o) ?
-              ({
-                expression: o,
-                descending: false,
-                loc: F.gen(),
-              } satisfies Ordering) :
-            o),
-      F.gen(),
-    );
-  }
-}
-
-function registerVariables(
-  c: AstContext,
-  select: QuerySelect,
-  variables: RDF.Variable[] | undefined,
-  extensions: Record<string, Expression>,
-): void {
-  const F = c.astFactory;
-  if (variables) {
-    select.variables = variables.map((term): TermVariable | PatternBind => {
-      const v = translateTerm(c, term);
-      if (extensions[v.value]) {
-        const result: Expression = extensions[v.value];
-        // Remove used extensions so only unused ones remain
-        delete extensions[v.value];
-        return F.patternBind(result, v, F.gen());
+      });
+      // If the * didn't match any variables this would be empty
+      if (select.variables.length === 0) {
+        select.variables = [ F.wildcard(F.gen()) ];
       }
-      return v;
-    });
-    // If the * didn't match any variables this would be empty
-    if (select.variables.length === 0) {
-      select.variables = [ F.wildcard(F.gen()) ];
     }
-  }
-}
+  },
+};
 
 /**
  * It is possible that at this point some extensions have not yet been resolved.
  * These would be bind operations that are not used in a GROUP BY or SELECT body.
  * We still need to add them though, as they could be relevant to the other extensions.
  */
-function putExtensionsInGroup(c: AstContext, result: QueryBase, extensions: Record<string, Expression>): void {
-  const F = c.astFactory;
-  const extensionEntries = Object.entries(extensions);
-  if (extensionEntries.length > 0) {
-    result.where = result.where ?? F.patternGroup([], F.gen());
-    for (const [ key, value ] of extensionEntries) {
-      result.where.patterns.push(
-        F.patternBind(
-          value,
-          F.variable(key, F.gen()),
-          F.gen(),
-        ),
-      );
-    }
-  }
-}
-
-function filterReplace(
-  c: AstContext, group: PatternGroup, aggregators: Record<string, Expression>, havings: Expression[]):
-PatternGroup;
-function filterReplace(
-  c: AstContext, group: PatternGroup | Pattern, aggregators: Record<string, Expression>, havings: Expression[]):
-PatternGroup | Pattern;
-function filterReplace(
-  c: AstContext,
-  group: PatternGroup | Pattern,
-  aggregators: Record<string, Expression>,
-  havings: Expression[],
-):
-PatternGroup | Pattern {
-  const F = c.astFactory;
-  if (!F.isPatternGroup(group)) {
-    return group;
-  }
-  const patterns = group.patterns
-    .map(x => filterReplace(c, x, aggregators, havings))
-    .flatMap((pattern) => {
-      if (F.isPatternFilter(pattern) && objectContainsVariable(c, pattern, Object.keys(aggregators))) {
-        havings.push(replaceAggregatorVariables(c, pattern.expression, aggregators));
-        return [];
+export const putExtensionsInGroup: AstIndir<'putExtensionsInGroup', void, [QueryBase, Record<string, Expression>]> = {
+  name: 'putExtensionsInGroup',
+  fun: () => ({ astFactory: F }, result, extensions) => {
+    const extensionEntries = Object.entries(extensions);
+    if (extensionEntries.length > 0) {
+      result.where = result.where ?? F.patternGroup([], F.gen());
+      for (const [ key, value ] of extensionEntries) {
+        result.where.patterns.push(
+          F.patternBind(
+            value,
+            F.variable(key, F.gen()),
+            F.gen(),
+          ),
+        );
       }
-      return [ pattern ];
-    });
-  return F.patternGroup(patterns, F.gen());
-}
+    }
+  },
+};
 
-function objectContainsVariable(c: AstContext, o: any, vals: string[]): boolean {
-  const F = c.astFactory;
-  const casted = <Sparql11Nodes> o;
-  if (F.isTermVariable(casted)) {
-    return vals.includes(casted.value);
-  }
-  if (Array.isArray(o)) {
-    return o.some(e => objectContainsVariable(c, e, vals));
-  }
-  if (o === Object(o)) {
-    return Object.keys(o).some(key => objectContainsVariable(c, o[key], vals));
-  }
-  return false;
-}
+/**
+ * If second arg is a Group, we will return a group.
+ */
+export const filterReplace: AstIndir<
+  'filterReplace',
+PatternGroup | Pattern,
+[PatternGroup | Pattern, Record<string, Expression>, Expression[]]
+> = {
+  name: 'filterReplace',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, group, aggregators, havings) => {
+    if (!F.isPatternGroup(group)) {
+      return group;
+    }
+    const patterns = group.patterns
+      .map(x => SUBRULE(filterReplace, x, aggregators, havings))
+      .flatMap((pattern) => {
+        if (F.isPatternFilter(pattern) && SUBRULE(objectContainsVariable, pattern, Object.keys(aggregators))) {
+          havings.push(<typeof pattern.expression>SUBRULE(replaceAggregatorVariables, pattern.expression, aggregators));
+          return [];
+        }
+        return [ pattern ];
+      });
+    return F.patternGroup(patterns, F.gen());
+  },
+};
+
+export const objectContainsVariable: AstIndir<'objectContainsVariable', boolean, [any, string[]]> = {
+  name: 'objectContainsVariable',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, o, vals) => {
+    const casted = <Sparql11Nodes> o;
+    if (F.isTermVariable(casted)) {
+      return vals.includes(casted.value);
+    }
+    if (Array.isArray(o)) {
+      return o.some(e => SUBRULE(objectContainsVariable, e, vals));
+    }
+    if (o === Object(o)) {
+      return Object.keys(o).some(key => SUBRULE(objectContainsVariable, o[key], vals));
+    }
+    return false;
+  },
+};

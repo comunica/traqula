@@ -12,9 +12,12 @@ import type {
 import type * as Algebra from '../algebra';
 import { types } from '../toAlgebra/core';
 import Util from '../util';
-import type { AstContext } from './core';
+import type { AstIndir } from './core';
 import { registerProjection } from './core';
 import { translatePureExpression } from './expression';
+import type {
+  RdfTermToAst,
+} from './general';
 import {
   translateDatasetClauses,
   translateDistinct,
@@ -27,241 +30,275 @@ import {
 import { translatePathComponent } from './path';
 import { translateConstruct, translateProject } from './queryUnit';
 
-export function translatePatternIntoGroup(c: AstContext, op: Algebra.Operation): PatternGroup {
-  switch (op.type) {
-    case types.ASK: return translateProject(c, op, types.ASK);
-    case types.PROJECT: return translateProject(c, op, types.PROJECT);
-    case types.CONSTRUCT: return translateConstruct(c, op);
-    case types.DESCRIBE: return translateProject(c, op, types.DESCRIBE);
-    case types.DISTINCT: return translateDistinct(c, op);
-    case types.FROM: return translateFrom(c, op);
-    case types.FILTER: return translateFilter(c, op);
-    case types.REDUCED: return translateReduced(c, op);
-    case types.SLICE: return translateSlice(c, op);
-    default:
-      throw new Error(`Unknown Operation type ${op.type}`);
-  }
-}
+export const translatePatternIntoGroup: AstIndir<'translatePatternIntoGroup', PatternGroup, [Algebra.Operation]> = {
+  name: 'translatePatternIntoGroup',
+  fun: ({ SUBRULE }) => (_, op) => {
+    switch (op.type) {
+      case types.ASK: return SUBRULE(translateProject, op, types.ASK);
+      case types.PROJECT: return SUBRULE(translateProject, op, types.PROJECT);
+      case types.CONSTRUCT: return SUBRULE(translateConstruct, op);
+      case types.DESCRIBE: return SUBRULE(translateProject, op, types.DESCRIBE);
+      case types.DISTINCT: return SUBRULE(translateDistinct, op);
+      case types.FROM: return SUBRULE(translateFrom, op);
+      case types.FILTER: return SUBRULE(translateFilter, op);
+      case types.REDUCED: return SUBRULE(translateReduced, op);
+      case types.SLICE: return SUBRULE(translateSlice, op);
+      default:
+        throw new Error(`Unknown Operation type ${op.type}`);
+    }
+  },
+};
 
-export function translateSinglePattern(c: AstContext, op: Algebra.Operation): Pattern {
-  registerProjection(c, op);
-  switch (op.type) {
-    case types.PATH: return translatePath(c, op);
-    case types.BGP: return translateBgp(c, op);
-    case types.GRAPH: return translateGraph(c, op);
-    case types.SERVICE: return translateService(c, op);
-    case types.UNION: return translateUnion(c, op);
-    case types.VALUES: return translateValues(c, op);
-    default:
-      return translatePatternIntoGroup(c, op);
-  }
-}
+export const translateSinglePattern: AstIndir<'translateSinglePattern', Pattern, [Algebra.Operation]> = {
+  name: 'translateSinglePattern',
+  fun: ({ SUBRULE }) => (_, op) => {
+    SUBRULE(registerProjection, op);
+    switch (op.type) {
+      case types.PATH: return SUBRULE(translatePath, op);
+      case types.BGP: return SUBRULE(translateBgp, op);
+      case types.GRAPH: return SUBRULE(translateGraph, op);
+      case types.SERVICE: return SUBRULE(translateService, op);
+      case types.UNION: return SUBRULE(translateUnion, op);
+      case types.VALUES: return SUBRULE(translateValues, op);
+      default:
+        return SUBRULE(translatePatternIntoGroup, op);
+    }
+  },
+};
 
-export function translatePatternNew(c: AstContext, op: Algebra.Operation): Pattern | Pattern[] {
-  registerProjection(c, op);
-  switch (op.type) {
-    case types.ORDER_BY: return translateOrderBy(c, op);
-    case types.GROUP: return translateGroup(c, op);
-    case types.EXTEND: return translateExtend(c, op);
-    case types.JOIN: return translateJoin(c, op);
-    case types.LEFT_JOIN: return translateLeftJoin(c, op);
-    case types.MINUS: return translateMinus(c, op);
-    default:
-      return translateSinglePattern(c, op);
-  }
-}
+export const translatePatternNew: AstIndir<'translatePatternNew', Pattern | Pattern[], [Algebra.Operation]> = {
+  name: 'translatePatternNew',
+  fun: ({ SUBRULE }) => (_, op) => {
+    SUBRULE(registerProjection, op);
+    switch (op.type) {
+      case types.ORDER_BY: return SUBRULE(translateOrderBy, op);
+      case types.GROUP: return SUBRULE(translateGroup, op);
+      case types.EXTEND: return SUBRULE(translateExtend, op);
+      case types.JOIN: return SUBRULE(translateJoin, op);
+      case types.LEFT_JOIN: return SUBRULE(translateLeftJoin, op);
+      case types.MINUS: return SUBRULE(translateMinus, op);
+      default:
+        return SUBRULE(translateSinglePattern, op);
+    }
+  },
+};
 
 /**
  * These get translated in the project function
  */
-export function translateBoundAggregate(c: AstContext, op: Algebra.BoundAggregate): Algebra.BoundAggregate {
-  return op;
-}
+export const translateBoundAggregate:
+AstIndir<'translateBoundAggregate', Algebra.BoundAggregate, [Algebra.BoundAggregate]> = {
+  name: 'translateBoundAggregate',
+  fun: () => (_, op) => op,
+};
 
-export function translateBgp(c: AstContext, op: Algebra.Bgp): PatternBgp {
-  const F = c.astFactory;
-  const patterns = op.patterns.map(triple => translatePattern(c, triple));
-  return F.patternBgp(patterns, F.gen());
-}
+export const translateBgp: AstIndir<'translateBgp', PatternBgp, [Algebra.Bgp]> = {
+  name: 'translateBgp',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, op) => {
+    const patterns = op.patterns.map(triple => SUBRULE(translatePattern, triple));
+    return F.patternBgp(patterns, F.gen());
+  },
+};
 
-export function translatePath(c: AstContext, op: Algebra.Path): PatternBgp {
-  const F = c.astFactory;
-  return F.patternBgp([
+export const translatePath: AstIndir<'translatePath', PatternBgp, [Algebra.Path]> = {
+  name: 'translatePath',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, op) => F.patternBgp([
     F.triple(
-      translateTerm(c, op.subject),
-      translatePathComponent(c, op.predicate),
-      translateTerm(c, op.object),
+      SUBRULE(translateTerm, op.subject),
+      SUBRULE(translatePathComponent, op.predicate),
+      SUBRULE(translateTerm, op.object),
     ),
-  ], F.gen());
-}
+  ], F.gen()),
+};
 
 /**
  * A from needs to be registered to the solutionModifiers.
  * Similar to {@link translateDistinct}
  */
-export function translateFrom(c: AstContext, op: Algebra.From): PatternGroup {
-  const result = translatePatternIntoGroup(c, op.input);
-  const query = <QueryBase> result.patterns[0];
-  query.datasets = translateDatasetClauses(c, op.default, op.named);
-  return result;
-}
+export const translateFrom: AstIndir<'translateFrom', PatternGroup, [Algebra.From]> = {
+  name: 'translateFrom',
+  fun: ({ SUBRULE }) => (_, op) => {
+    const result = SUBRULE(translatePatternIntoGroup, op.input);
+    const query = <QueryBase> result.patterns[0];
+    query.datasets = SUBRULE(translateDatasetClauses, op.default, op.named);
+    return result;
+  },
+};
 
 /**
  * A patternFilter closes the group
  */
-export function translateFilter(c: AstContext, op: Algebra.Filter): PatternGroup {
-  const F = c.astFactory;
-  return F.patternGroup(
-    Util.flatten([
-      translatePatternNew(c, op.input),
-      F.patternFilter(translatePureExpression(c, op.expression), F.gen()),
-    ]),
-    F.gen(),
-  );
-}
+export const translateFilter: AstIndir<'translateFilter', PatternGroup, [Algebra.Filter]> = {
+  name: 'translateFilter',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, op) =>
+    F.patternGroup(
+      Util.flatten([
+        SUBRULE(translatePatternNew, op.input),
+        F.patternFilter(SUBRULE(translatePureExpression, op.expression), F.gen()),
+      ]),
+      F.gen(),
+    ),
+};
 
-export function translateGraph(c: AstContext, op: Algebra.Graph): PatternGraph {
-  const F = c.astFactory;
-  return F.patternGraph(
-    translateTerm(c, op.name),
-    Util.flatten([ translatePatternNew(c, op.input) ]),
-    F.gen(),
-  );
-}
+export const translateGraph: AstIndir<'translateGraph', PatternGraph, [Algebra.Graph]> = {
+  name: 'translateGraph',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, op) =>
+    F.patternGraph(
+      <RdfTermToAst<typeof op.name>>SUBRULE(translateTerm, op.name),
+      Util.flatten([ SUBRULE(translatePatternNew, op.input) ]),
+      F.gen(),
+    ),
+};
 
 /**
  * A group needs to be handled by {@link translateProject}
  */
-export function translateGroup(c: AstContext, op: Algebra.Group): Pattern | Pattern[] {
-  const input = translatePatternNew(c, op.input);
-  const aggs = op.aggregates.map(x => translateBoundAggregate(c, x));
-  c.aggregates.push(...aggs);
-  // TODO: apply possible extends
-  c.group.push(...op.variables);
-  return input;
-}
+export const translateGroup: AstIndir<'translateGroup', Pattern | Pattern[], [Algebra.Group]> = {
+  name: 'translateGroup',
+  fun: ({ SUBRULE }) => ({ aggregates, group }, op) => {
+    const input = SUBRULE(translatePatternNew, op.input);
+    const aggs = op.aggregates.map(x => SUBRULE(translateBoundAggregate, x));
+    aggregates.push(...aggs);
+    // TODO: apply possible extends
+    group.push(...op.variables);
+    return input;
+  },
+};
 
-export function translateJoin(c: AstContext, op: Algebra.Join): Pattern[] {
-  const F = c.astFactory;
-  const arr = Util.flatten(op.input.map(x => translatePatternNew(c, x)));
+export const translateJoin: AstIndir<'translateJoin', Pattern[], [Algebra.Join]> = {
+  name: 'translateJoin',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, op) => {
+    const arr = Util.flatten(op.input.map(x => SUBRULE(translatePatternNew, x)));
 
-  // Merge bgps
-  // This is possible if one side was a path and the other a bgp for example
-  const result: Pattern[] = [];
-  for (const val of arr) {
-    const lastResult = result.at(-1);
-    if (!F.isPatternBgp(val) || result.length === 0 || !F.isPatternBgp(lastResult!)) {
-      result.push(val);
-    } else {
-      lastResult.triples.push(...val.triples);
+    // Merge bgps
+    // This is possible if one side was a path and the other a bgp for example
+    const result: Pattern[] = [];
+    for (const val of arr) {
+      const lastResult = result.at(-1);
+      if (!F.isPatternBgp(val) || result.length === 0 || !F.isPatternBgp(lastResult!)) {
+        result.push(val);
+      } else {
+        lastResult.triples.push(...val.triples);
+      }
     }
-  }
-  return result;
-}
+    return result;
+  },
+};
 
-export function translateLeftJoin(c: AstContext, op: Algebra.LeftJoin): Pattern[] {
-  const F = c.astFactory;
-  const leftJoin = F.patternOptional(
-    operationInputAsPatternList(c, op.input[1]),
-    F.gen(),
-  );
-
-  if (op.expression) {
-    leftJoin.patterns.push(
-      F.patternFilter(translatePureExpression(c, op.expression), F.gen()),
+export const translateLeftJoin: AstIndir<'translateLeftJoin', Pattern[], [Algebra.LeftJoin]> = {
+  name: 'translateLeftJoin',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, op) => {
+    const leftJoin = F.patternOptional(
+      SUBRULE(operationInputAsPatternList, op.input[1]),
+      F.gen(),
     );
-  }
-  leftJoin.patterns = leftJoin.patterns.filter(Boolean);
 
-  return Util.flatten([
-    translatePatternNew(c, op.input[0]),
-    leftJoin,
-  ]);
-}
+    if (op.expression) {
+      leftJoin.patterns.push(
+        F.patternFilter(SUBRULE(translatePureExpression, op.expression), F.gen()),
+      );
+    }
+    leftJoin.patterns = leftJoin.patterns.filter(Boolean);
 
-export function translateMinus(c: AstContext, op: Algebra.Minus): Pattern[] {
-  const F = c.astFactory;
-  return Util.flatten([
-    translatePatternNew(c, op.input[0]),
-    F.patternMinus(operationInputAsPatternList(c, op.input[1]), F.gen()),
-  ]);
-}
+    return Util.flatten([
+      SUBRULE(translatePatternNew, op.input[0]),
+      leftJoin,
+    ]);
+  },
+};
 
-export function translateService(c: AstContext, op: Algebra.Service): PatternService {
-  const F = c.astFactory;
-  return F.patternService(
-    translateTerm(c, op.name),
-    operationInputAsPatternList(c, op.input),
-    op.silent,
-    F.gen(),
-  );
-}
+export const translateMinus: AstIndir<'translateMinus', Pattern[], [Algebra.Minus]> = {
+  name: 'translateMinus',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, op) =>
+    Util.flatten([
+      SUBRULE(translatePatternNew, op.input[0]),
+      F.patternMinus(SUBRULE(operationInputAsPatternList, op.input[1]), F.gen()),
+    ]),
+};
+
+export const translateService: AstIndir<'translateService', PatternService, [Algebra.Service]> = {
+  name: 'translateService',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, op) =>
+    F.patternService(
+      <RdfTermToAst<typeof op.name>> SUBRULE(translateTerm, op.name),
+      SUBRULE(operationInputAsPatternList, op.input),
+      op.silent,
+      F.gen(),
+    ),
+};
 
 /**
  * Unwrap single group patterns, create array if it was not yet.
  */
-function operationInputAsPatternList(c: AstContext, input: Algebra.Operation): Pattern[] {
-  const result = translatePatternNew(c, input);
-  // If (result && F.isPatternGroup(result)) {
-  //   return result.patterns;
-  // }
-  return result ? (Array.isArray(result) ? result : [ result ]) : [];
-}
+export const operationInputAsPatternList: AstIndir<'operationInputAsPatternList', Pattern[], [Algebra.Operation]> = {
+  name: 'operationInputAsPatternList',
+  fun: ({ SUBRULE }) => (_, input) => {
+    const result = SUBRULE(translatePatternNew, input);
+    // If (result && F.isPatternGroup(result)) {
+    //   return result.patterns;
+    // }
+    return result ? (Array.isArray(result) ? result : [ result ]) : [];
+  },
+};
 
 /**
  * A limit offset needs to be registered to the solutionModifiers.
  * Similar to {@link translateDistinct}
  */
-export function translateSlice(c: AstContext, op: Algebra.Slice): PatternGroup {
-  const F = c.astFactory;
-  const result = translatePatternIntoGroup(c, op.input);
-  const query = <QueryBase>result.patterns[0];
-  if (op.start !== 0) {
-    query.solutionModifiers.limitOffset = query.solutionModifiers.limitOffset ??
-      F.solutionModifierLimitOffset(undefined, op.start, F.gen());
-    query.solutionModifiers.limitOffset.offset = op.start;
-  }
-  if (op.length !== undefined) {
-    query.solutionModifiers.limitOffset = query.solutionModifiers.limitOffset ??
-      F.solutionModifierLimitOffset(op.length, undefined, F.gen());
-    query.solutionModifiers.limitOffset.limit = op.length;
-  }
-  return result;
-}
+export const translateSlice: AstIndir<'translateSlice', PatternGroup, [Algebra.Slice]> = {
+  name: 'translateSlice',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, op) => {
+    const result = SUBRULE(translatePatternIntoGroup, op.input);
+    const query = <QueryBase>result.patterns[0];
+    if (op.start !== 0) {
+      query.solutionModifiers.limitOffset = query.solutionModifiers.limitOffset ??
+        F.solutionModifierLimitOffset(undefined, op.start, F.gen());
+      query.solutionModifiers.limitOffset.offset = op.start;
+    }
+    if (op.length !== undefined) {
+      query.solutionModifiers.limitOffset = query.solutionModifiers.limitOffset ??
+        F.solutionModifierLimitOffset(op.length, undefined, F.gen());
+      query.solutionModifiers.limitOffset.limit = op.length;
+    }
+    return result;
+  },
+};
 
-export function wrapInPatternGroup(c: AstContext, input: Pattern[] | Pattern): PatternGroup {
-  const F = c.astFactory;
-  if (!Array.isArray(input)) {
-    return F.patternGroup([ input ], F.gen());
-  }
-  return F.patternGroup(input, F.gen());
-}
+export const wrapInPatternGroup: AstIndir<'wrapInPatternGroup', PatternGroup, [Pattern[] | Pattern]> = {
+  name: 'wrapInPatternGroup',
+  fun: () => ({ astFactory: F }, input) => {
+    if (!Array.isArray(input)) {
+      return F.patternGroup([ input ], F.gen());
+    }
+    return F.patternGroup(input, F.gen());
+  },
+};
 
-export function translateUnion(c: AstContext, op: Algebra.Union): PatternUnion {
-  const F = c.astFactory;
-  return F.patternUnion(
-    op.input.map(operation => wrapInPatternGroup(c, operationInputAsPatternList(c, operation))),
-    F.gen(),
-  );
-}
+export const translateUnion: AstIndir<'translateUnion', PatternUnion, [Algebra.Union]> = {
+  name: 'translateUnion',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, op) =>
+    F.patternUnion(
+      op.input.map(operation => SUBRULE(wrapInPatternGroup, SUBRULE(operationInputAsPatternList, operation))),
+      F.gen(),
+    ),
+};
 
-export function translateValues(c: AstContext, op: Algebra.Values): PatternValues {
-  // TODO: check if handled correctly when outside of select block - the answer is no
-  //  - we always bring it within the group, but does it matter?
-  const F = c.astFactory;
-  return F.patternValues(
-    op.bindings.map((binding) => {
-      const result: ValuePatternRow = {};
-      for (const v of op.variables) {
-        const s = v.value;
-        if (binding[s]) {
-          result[s] = translateTerm(c, binding[s]);
-        } else {
-          result[s] = undefined;
+export const translateValues: AstIndir<'translateValues', PatternValues, [Algebra.Values]> = {
+  name: 'translateValues',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, op) =>
+    F.patternValues(
+      op.bindings.map((binding) => {
+        const result: ValuePatternRow = {};
+        for (const v of op.variables) {
+          const s = v.value;
+          if (binding[s]) {
+            result[s] = <RdfTermToAst<typeof binding[typeof s]>> SUBRULE(translateTerm, binding[s]);
+          } else {
+            result[s] = undefined;
+          }
         }
-      }
-      return result;
-    }),
-    F.gen(),
-  );
-}
+        return result;
+      }),
+      F.gen(),
+    ),
+};

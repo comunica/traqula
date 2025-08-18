@@ -4,6 +4,7 @@ import type {
   Pattern,
   PatternGroup,
   QuerySelect,
+  Term,
   TermBlank,
   TermIri,
   TermLiteral,
@@ -13,46 +14,48 @@ import type {
 import type { TermTriple } from '@traqula/rules-sparql-1-2';
 import type { Algebra } from '../index';
 import Util from '../util';
-import type { AstContext } from './core';
+import type { AstIndir } from './core';
 import { translatePureExpression } from './expression';
 import { translatePatternIntoGroup, translatePatternNew } from './pattern';
 
-type RdfTermToAst<T extends RDF.Term> = T extends RDF.Variable ? TermVariable :
+export type RdfTermToAst<T extends RDF.Term> = T extends RDF.Variable ? TermVariable :
   T extends RDF.BlankNode ? TermBlank :
     T extends RDF.Literal ? TermLiteral :
       T extends RDF.NamedNode ? TermIri : never;
 
-export function translateTerm<T extends RDF.Term>(c: AstContext, term: T): RdfTermToAst<T> {
-  const F = c.astFactory;
-  if (term.termType === 'NamedNode') {
-    return <RdfTermToAst<T>> F.namedNode(F.gen(), term.value);
-  }
-  if (term.termType === 'BlankNode') {
-    return <RdfTermToAst<T>> F.blankNode(term.value, F.gen());
-  }
-  if (term.termType === 'Variable') {
-    return <RdfTermToAst<T>> F.variable(term.value, F.gen());
-  }
-  if (term.termType === 'Literal') {
-    return <RdfTermToAst<T>> F.literalTerm(
-      F.gen(),
-      term.value,
-      term.language ? term.language : translateTerm(c, term.datatype),
-    );
-  }
-  // TODO: migrate to use function indirection
-  if (term.termType === 'Quad') {
-    return <any> {
-      type: 'term',
-      subType: 'triple',
-      subject: translateTerm(c, term.subject),
-      predicate: <TermIri | TermVariable> translateTerm(c, term.predicate),
-      object: translateTerm(c, term.object),
-      loc: F.gen(),
-    } satisfies TermTriple;
-  }
-  throw new Error(`invalid term type: ${term.termType}`);
-}
+export const translateTerm: AstIndir<'translateTerm', Term, [RDF.Term]> = {
+  name: 'translateTerm',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, term) => {
+    if (term.termType === 'NamedNode') {
+      return F.namedNode(F.gen(), term.value);
+    }
+    if (term.termType === 'BlankNode') {
+      return F.blankNode(term.value, F.gen());
+    }
+    if (term.termType === 'Variable') {
+      return F.variable(term.value, F.gen());
+    }
+    if (term.termType === 'Literal') {
+      return F.literalTerm(
+        F.gen(),
+        term.value,
+        term.language ? term.language : <RdfTermToAst<typeof term.datatype>>SUBRULE(translateTerm, term.datatype),
+      );
+    }
+    // TODO: migrate to use function indirection
+    if (term.termType === 'Quad') {
+      return <any> {
+        type: 'term',
+        subType: 'triple',
+        subject: SUBRULE(translateTerm, term.subject),
+        predicate: <TermIri | TermVariable> SUBRULE(translateTerm, term.predicate),
+        object: SUBRULE(translateTerm, term.object),
+        loc: F.gen(),
+      } satisfies TermTriple;
+    }
+    throw new Error(`invalid term type: ${term.termType}`);
+  },
+};
 
 /**
  * Extend is for example a bind, or an aggregator.
@@ -60,67 +63,83 @@ export function translateTerm<T extends RDF.Term>(c: AstContext, term: T): RdfTe
  *  or if we are not in project scope, we give it as a patternBind
  *  - of course, the pattern bind is scoped with the other operations at this level
  */
-export function translateExtend(c: AstContext, op: Algebra.Extend): Pattern | Pattern[] {
-  const F = c.astFactory;
-  if (c.project) {
-    c.extend.push(op);
-    return translatePatternNew(c, op.input);
-  }
-  return Util.flatten([
-    translatePatternNew(c, op.input),
-    F.patternBind(
-      translatePureExpression(c, op.expression),
-      translateTerm(c, op.variable),
-      F.gen(),
-    ),
-  ]);
-}
+export const translateExtend: AstIndir<'translateExtend', Pattern | Pattern[], [Algebra.Extend]> = {
+  name: 'translateExtend',
+  fun: ({ SUBRULE }) => ({ astFactory: F, project, extend }, op) => {
+    if (project) {
+      extend.push(op);
+      return SUBRULE(translatePatternNew, op.input);
+    }
+    return Util.flatten([
+      SUBRULE(translatePatternNew, op.input),
+      F.patternBind(
+        SUBRULE(translatePureExpression, op.expression),
+        <RdfTermToAst<typeof op.variable>> SUBRULE(translateTerm, op.variable),
+        F.gen(),
+      ),
+    ]);
+  },
+};
 
-export function translateDatasetClauses(
-  c: AstContext,
-  _default: RDF.NamedNode[],
-  named: RDF.NamedNode[],
-): DatasetClauses {
-  const F = c.astFactory;
-  return F.datasetClauses([
-    ..._default.map(x => (<const>{ clauseType: 'default', value: translateTerm(c, x) })),
-    ...named.map(x => (<const>{ clauseType: 'named', value: translateTerm(c, x) })),
-  ], F.gen());
-}
+export const translateDatasetClauses:
+AstIndir<'translateDatasetClauses', DatasetClauses, [RDF.NamedNode[], RDF.NamedNode[]]> = {
+  name: 'translateDatasetClauses',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, _default, named) =>
+    F.datasetClauses([
+      ..._default.map(x => (<const>{
+        clauseType: 'default',
+        value: <RdfTermToAst<typeof x>> SUBRULE(translateTerm, x),
+      })),
+      ...named.map(x => (<const>{
+        clauseType: 'named',
+        value: <RdfTermToAst<typeof x>>SUBRULE(translateTerm, x),
+      })),
+    ], F.gen()),
+};
 
 /**
  * An order by is just registered to be handled in the creation of your QueryBase
  */
-export function translateOrderBy(c: AstContext, op: Algebra.OrderBy): Pattern | Pattern[] {
-  c.order.push(...op.expressions);
-  return translatePatternNew(c, op.input);
-}
+export const translateOrderBy: AstIndir<'translateOrderBy', Pattern | Pattern[], [Algebra.OrderBy]> = {
+  name: 'translateOrderBy',
+  fun: ({ SUBRULE }) => ({ order }, op) => {
+    order.push(...op.expressions);
+    return SUBRULE(translatePatternNew, op.input);
+  },
+};
 
-export function translatePattern(c: AstContext, op: Algebra.Pattern): TripleNesting {
-  const F = c.astFactory;
-  return F.triple(
-    translateTerm(c, op.subject),
-    <TripleNesting['predicate']> translateTerm(c, op.predicate),
-    translateTerm(c, op.object),
-  );
-}
+export const translatePattern: AstIndir<'translatePattern', TripleNesting, [Algebra.Pattern]> = {
+  name: 'translatePattern',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, op) =>
+    F.triple(
+      SUBRULE(translateTerm, op.subject),
+      <TripleNesting['predicate']> SUBRULE(translateTerm, op.predicate),
+      SUBRULE(translateTerm, op.object),
+    ),
+};
 
 /**
  * Reduced is wrapped around a project, set the query contained to be distinct
  */
-export function translateReduced(c: AstContext, op: Algebra.Reduced): PatternGroup {
-  const result = translatePatternIntoGroup(c, op.input);
-  const select = <QuerySelect>result.patterns[0];
-  select.reduced = true;
-  return result;
-}
+export const translateReduced: AstIndir<'translateReduced', PatternGroup, [Algebra.Reduced]> = {
+  name: 'translateReduced',
+  fun: ({ SUBRULE }) => (_, op) => {
+    const result = SUBRULE(translatePatternIntoGroup, op.input);
+    const select = <QuerySelect>result.patterns[0];
+    select.reduced = true;
+    return result;
+  },
+};
 
 /**
  * District is wrapped around a project, set the query contained to be distinct
  */
-export function translateDistinct(c: AstContext, op: Algebra.Distinct): PatternGroup {
-  const result = translatePatternIntoGroup(c, op.input);
-  const select = <QuerySelect>result.patterns[0];
-  select.distinct = true;
-  return result;
-}
+export const translateDistinct: AstIndir<'translateDistinct', PatternGroup, [Algebra.Distinct]> = {
+  name: 'translateDistinct',
+  fun: ({ SUBRULE }) => (_, op) => {
+    const result = SUBRULE(translatePatternIntoGroup, op.input);
+    const select = <QuerySelect>result.patterns[0];
+    select.distinct = true;
+    return result;
+  },
+};

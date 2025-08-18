@@ -7,6 +7,7 @@ import { describe, it } from 'vitest';
 import type { Algebra } from '../lib/index';
 import { translate, toSparql } from '../lib/index';
 import translate12 from '../lib/toAlgebra12/toAlgebra12';
+import { toSparql12 } from '../lib/toAst12/toAst12';
 import LibUtil from '../lib/util';
 import { sparqlAlgebraTests } from './generator';
 import Util from './util';
@@ -72,7 +73,7 @@ describe('sparql output', () => {
         const { name, json, quads } = test;
         const expected = <Algebra.Operation> json;
         it (name, ({ expect }) => {
-          const genAst = toSparql(expected);
+          const genAst = toSparql12(expected);
           // Console.log(JSON.stringify(genAst, null, 2));
           const genQuery = generator.generate(genAst);
           // Console.log(genQuery);
@@ -89,7 +90,7 @@ describe('sparql output', () => {
         // Console.log(JSON.stringify(path, null, 2));
         const algebra = LibUtil.objectify(translate12(path, { quads: true }));
         // Console.log(JSON.stringify(algebra, null, 2));
-        const pathFromAlg = toSparql(algebra);
+        const pathFromAlg = toSparql12(algebra);
         // Console.log(JSON.stringify(pathFromAlg, null, 2));
         const queryGen = generator.generate(pathFromAlg);
         // Console.log(queryGen);

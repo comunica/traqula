@@ -10,6 +10,7 @@ import type {
   TermVariable,
   TripleNesting,
 } from '@traqula/rules-sparql-1-1';
+import type { TermTriple } from '@traqula/rules-sparql-1-2';
 import type { Algebra } from '../index';
 import Util from '../util';
 import type { AstContext } from './core';
@@ -38,6 +39,17 @@ export function translateTerm<T extends RDF.Term>(c: AstContext, term: T): RdfTe
       term.value,
       term.language ? term.language : translateTerm(c, term.datatype),
     );
+  }
+  // TODO: migrate to use function indirection
+  if (term.termType === 'Quad') {
+    return <any> {
+      type: 'term',
+      subType: 'triple',
+      subject: translateTerm(c, term.subject),
+      predicate: <TermIri | TermVariable> translateTerm(c, term.predicate),
+      object: translateTerm(c, term.object),
+      loc: F.gen(),
+    } satisfies TermTriple;
   }
   throw new Error(`invalid term type: ${term.termType}`);
 }

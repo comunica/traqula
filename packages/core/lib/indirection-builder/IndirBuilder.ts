@@ -40,7 +40,7 @@ export class IndirBuilder<Context, Names extends string, RuleDefs extends Indire
 
   public typePatch<Patch extends {[Key in Names]?: any }>():
   IndirBuilder<Context, Names, {[Key in Names]: Key extends keyof Patch ? (
-    RuleDefs[Key] extends IndirDef<Context, Key, any, infer Par> ? IndirDef<Context, Key, Patch[Key], Par> : never
+    IndirDef<Context, Key, Patch[Key][0], Patch[Key][1]>
   ) : (RuleDefs[Key] extends IndirDef<Context, Key> ? RuleDefs[Key] : never) }> {
     return <IndirBuilder<Context, Names, {[Key in Names]: Key extends keyof Patch ? (
       RuleDefs[Key] extends IndirDef<Context, Key, any, infer Par> ? IndirDef<Context, Key, Patch[Key], Par> : never

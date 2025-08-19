@@ -15,8 +15,11 @@
   },
   "sideEffects": false,
   "exports": {
-    "import": "./lib/index.js",
-    "require": "./lib/index.cjs"
+    "./package.json": "./package.json",
+    ".": {
+      "import": "./lib/index.js",
+      "require": "./lib/index.cjs"
+    }
   },
   "main": "lib/index.js",
   "publishConfig": {

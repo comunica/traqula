@@ -15,8 +15,11 @@
   },
   "sideEffects": false,
   "exports": {
-    "import": "./lib/index.js",
-    "require": "./lib/index.cjs"
+    "./package.json": "./package.json",
+    ".": {
+      "import": "./lib/index.js",
+      "require": "./lib/index.cjs"
+    }
   },
   "main": "lib/index.js",
   "publishConfig": {
@@ -45,7 +48,7 @@
   },
   "devDependencies": {
     "@traqula/parser-sparql-1-2": "^0.0.1",
-    "@traqula/rules-sparql-1-2": "^0.0.0",
+    "@traqula/rules-sparql-1-2": "^0.0.1",
     "@traqula/test-utils": "^0.0.1"
   }
 }

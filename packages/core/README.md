@@ -1,7 +1,5 @@
 # Traqula core package
 
-**WARNING:** V2 will come shortly and will have lots of breaking changes.
-
 Traqula core contains core components of Traqula.
 Most importantly, its [lexer builder](./lib/lexer-builder/LexerBuilder.ts), [parser builder](./lib/parser-builder/parserBuilder.ts), and [generator builder](./lib/generator-builder/generatorBuilder.ts).
 This library heavily relies on the amazing [Chevrotain package](https://chevrotain.io/docs/).

@@ -6,8 +6,6 @@
   <strong>A query language transpiler framework for JavaScript</strong>
 </p>
 
-**WARNING:** V2 will come shortly and will have lots of breaking changes.
-
 # Traqula SPARQL 1.1 generator
 
 Traqula Generator Sparql 1.1 is a [SPARQL 1.1](https://www.w3.org/TR/sparql11-query/#grammar) query generator for TypeScript.

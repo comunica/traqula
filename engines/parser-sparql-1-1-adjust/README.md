@@ -6,8 +6,6 @@
   <strong>A query language transpiler framework for JavaScript</strong>
 </p>
 
-**WARNING:** V2 will come shortly and will have lots of breaking changes.
-
 # Traqula parser engine for SPARQL 1.1 + Adjust
 
 Traqula Sparql 1.1 Adjust is a [SPARQL 1.1](https://www.w3.org/TR/sparql11-query/#grammar) query parser that also parses the [builtin function ADJUST](https://github.com/w3c/sparql-dev/blob/main/SEP/SEP-0002/sep-0002.md) for TypeScript.

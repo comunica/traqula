@@ -6,8 +6,6 @@
   <strong>A query language transpiler framework for JavaScript</strong>
 </p>
 
-**WARNING:** V2 will come shortly and will have lots of breaking changes.
-
 # Traqula parser engine for SPARQL 1.1
 
 Traqula Sparql 1.1 is a [SPARQL 1.1](https://www.w3.org/TR/sparql11-query/#grammar) query parser for TypeScript.

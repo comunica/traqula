@@ -6,6 +6,7 @@ out
 .rdf-test-suite-cache
 .eslintcache
 documentation
+tsconfig.tsbuildinfo
 
 engines/*/lib/**/*.cjs
 engines/*/lib/**/*.js

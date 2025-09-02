@@ -236,15 +236,15 @@ export const sparql12ParserBuilder = ParserBuilder.create(sparql11ParserBuilder)
     S12.versionSpecifier,
   )
   .addMany(
-    S12.builtinLangDir,
-    S12.builtinLangStrDir,
-    S12.builtinHasLang,
-    S12.builtinHasLangDir,
-    S12.builtinIsTriple,
-    S12.builtinTriple,
-    S12.builtinSubject,
-    S12.builtinPredicate,
-    S12.builtinObject,
+    S12.buildInLangDir,
+    S12.buildInLangStrDir,
+    S12.buildInHasLang,
+    S12.buildInHasLangDir,
+    S12.buildInIsTriple,
+    S12.buildInTriple,
+    S12.buildInSubject,
+    S12.buildInPredicate,
+    S12.buildInObject,
   )
   .patchRule(S12.dataBlockValue)
   .patchRule(S12.triplesSameSubject)

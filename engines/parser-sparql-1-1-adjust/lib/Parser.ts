@@ -8,13 +8,13 @@ const builtInPatch: typeof g11.builtInCall = {
   name: 'builtInCall',
   impl: ({ SUBRULE, OR }) => () => OR<Expression>([
     { ALT: () => SUBRULE(gram.builtInAdjust) },
-    { ALT: () => SUBRULE(gram.existingBuildInCall) },
+    { ALT: () => SUBRULE(gram.existingBuiltInCall) },
   ]),
 };
 
 export const adjustBuilder = ParserBuilder.create(sparql11ParserBuilder)
   .addRule(gram.builtInAdjust)
-  .addRule(gram.existingBuildInCall)
+  .addRule(gram.existingBuiltInCall)
   .patchRule(builtInPatch);
 
 export const lexerBuilder = LexerBuilder.create(l11.sparql11Tokens).addBefore(l11.a, lex.BuiltInAdjust);

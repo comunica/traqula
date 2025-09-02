@@ -1,4 +1,5 @@
 {
+  "composite": true,
   "compileOnSave": true,
   "compilerOptions": {
     "target": "es2021",
@@ -19,7 +20,6 @@
     "preserveConstEnums": true,
     "removeComments": false,
     "sourceMap": true,
-    "composite": true,
 
     "esModuleInterop": true
   },

@@ -594,15 +594,15 @@ SparqlGrammarRule<'exprTripleTermObject', RuleDefReturn<typeof exprTripleTermSub
   impl: exprTripleTermSubject.impl,
 };
 
-export const builtinLangDir = funcExpr1(l12.builtinLangDir);
-export const builtinLangStrDir = funcExpr3(l12.builtinStrLangDir);
-export const builtinHasLang = funcExpr1(l12.builtinHasLang);
-export const builtinHasLangDir = funcExpr1(l12.builtinHasLangDir);
-export const builtinIsTriple = funcExpr1(l12.builtinIsTRIPLE);
-export const builtinTriple = funcExpr3(l12.builtinTRIPLE);
-export const builtinSubject = funcExpr1(l12.builtinSUBJECT);
-export const builtinPredicate = funcExpr1(l12.builtinPREDICATE);
-export const builtinObject = funcExpr1(l12.builtinOBJECT);
+export const buildInLangDir = funcExpr1(l12.buildInLangDir);
+export const buildInLangStrDir = funcExpr3(l12.buildInStrLangDir);
+export const buildInHasLang = funcExpr1(l12.buildInHasLang);
+export const buildInHasLangDir = funcExpr1(l12.buildInHasLangDir);
+export const buildInIsTriple = funcExpr1(l12.buildInIsTRIPLE);
+export const buildInTriple = funcExpr3(l12.buildInTRIPLE);
+export const buildInSubject = funcExpr1(l12.buildInSUBJECT);
+export const buildInPredicate = funcExpr1(l12.buildInPREDICATE);
+export const buildInObject = funcExpr1(l12.buildInOBJECT);
 
 /**
  * OVERRIDING RULE: {@link S11.builtInCall}.
@@ -612,15 +612,15 @@ export const builtInCall: typeof S11.builtInCall = <const> {
   name: 'builtInCall',
   impl: $ => C => $.OR2<T11.Expression>([
     { ALT: () => S11.builtInCall.impl($)(C) },
-    { ALT: () => $.SUBRULE(builtinLangDir) },
-    { ALT: () => $.SUBRULE(builtinLangStrDir) },
-    { ALT: () => $.SUBRULE(builtinHasLang) },
-    { ALT: () => $.SUBRULE(builtinHasLangDir) },
-    { ALT: () => $.SUBRULE(builtinIsTriple) },
-    { ALT: () => $.SUBRULE(builtinTriple) },
-    { ALT: () => $.SUBRULE(builtinSubject) },
-    { ALT: () => $.SUBRULE(builtinPredicate) },
-    { ALT: () => $.SUBRULE(builtinObject) },
+    { ALT: () => $.SUBRULE(buildInLangDir) },
+    { ALT: () => $.SUBRULE(buildInLangStrDir) },
+    { ALT: () => $.SUBRULE(buildInHasLang) },
+    { ALT: () => $.SUBRULE(buildInHasLangDir) },
+    { ALT: () => $.SUBRULE(buildInIsTriple) },
+    { ALT: () => $.SUBRULE(buildInTriple) },
+    { ALT: () => $.SUBRULE(buildInSubject) },
+    { ALT: () => $.SUBRULE(buildInPredicate) },
+    { ALT: () => $.SUBRULE(buildInObject) },
   ]),
 };
 

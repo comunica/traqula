@@ -4,7 +4,7 @@ import { BuiltInAdjust } from './lexer';
 
 export const builtInAdjust = funcExpr2(BuiltInAdjust);
 
-export const existingBuildInCall: SparqlGrammarRule<'existingBuildInCall', Expression> = <const> {
-  name: 'existingBuildInCall',
+export const existingBuiltInCall: SparqlGrammarRule<'existingBuiltInCall', Expression> = <const> {
+  name: 'existingBuiltInCall',
   impl: gram.builtInCall.impl,
 };

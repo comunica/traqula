@@ -11,23 +11,23 @@ export const reificationClose = createToken({ name: 'ReificationClose', pattern:
 export const tripleTermOpen = createToken({ name: 'TripleTermOpen', pattern: '<<(', label: 'Triple Term Open <<(' });
 export const tripleTermClose = createToken({ name: 'TripleTermClose', pattern: ')>>', label: 'Triple Term Close )>>' });
 
-export const builtinLangDir = createToken({ name: 'BuiltInLangdir', pattern: /langdir/i, label: 'LANGDIR' });
-export const builtinStrLangDir = createToken({
+export const buildInLangDir = createToken({ name: 'BuiltInLangdir', pattern: /langdir/i, label: 'LANGDIR' });
+export const buildInStrLangDir = createToken({
   name: 'BuiltInStrLangdir',
   pattern: /strlangdir/i,
   label: 'STRLANGDIR',
 });
-export const builtinHasLang = createToken({ name: 'BuiltInHasLang', pattern: /haslang/i, label: 'hasLANG' });
-export const builtinHasLangDir = createToken({
+export const buildInHasLang = createToken({ name: 'BuiltInHasLang', pattern: /haslang/i, label: 'hasLANG' });
+export const buildInHasLangDir = createToken({
   name: 'BuiltInHasLangdir',
   pattern: /haslangdir/i,
   label: 'hasLANGDIR',
 });
-export const builtinIsTRIPLE = createToken({ name: 'BuiltInIsTriple', pattern: /istriple/i, label: 'isTRIPLE' });
-export const builtinTRIPLE = createToken({ name: 'BuiltInTriple', pattern: /triple/i, label: 'TRIPLE' });
-export const builtinSUBJECT = createToken({ name: 'BuiltInSubject', pattern: /subject/i, label: 'SUBJECT' });
-export const builtinPREDICATE = createToken({ name: 'BuiltInPredicate', pattern: /predicate/i, label: 'PREDICATE' });
-export const builtinOBJECT = createToken({ name: 'BuiltInObject', pattern: /object/i, label: 'OBJECT' });
+export const buildInIsTRIPLE = createToken({ name: 'BuiltInIsTriple', pattern: /istriple/i, label: 'isTRIPLE' });
+export const buildInTRIPLE = createToken({ name: 'BuiltInTriple', pattern: /triple/i, label: 'TRIPLE' });
+export const buildInSUBJECT = createToken({ name: 'BuiltInSubject', pattern: /subject/i, label: 'SUBJECT' });
+export const buildInPREDICATE = createToken({ name: 'BuiltInPredicate', pattern: /predicate/i, label: 'PREDICATE' });
+export const buildInOBJECT = createToken({ name: 'BuiltInObject', pattern: /object/i, label: 'OBJECT' });
 
 export const LANG_DIR = createToken({
   name: 'LANG_DIR',
@@ -50,15 +50,15 @@ export const sparql12Tokens = LexerBuilder
   )
   .addBefore(
     l11.builtIn.langmatches,
-    builtinLangDir,
-    builtinStrLangDir,
-    builtinHasLangDir,
-    builtinHasLang,
-    builtinIsTRIPLE,
-    builtinTRIPLE,
-    builtinSUBJECT,
-    builtinPREDICATE,
-    builtinOBJECT,
+    buildInLangDir,
+    buildInStrLangDir,
+    buildInHasLangDir,
+    buildInHasLang,
+    buildInIsTRIPLE,
+    buildInTRIPLE,
+    buildInSUBJECT,
+    buildInPREDICATE,
+    buildInOBJECT,
   )
   .addBefore(l11.terminals.langTag, LANG_DIR)
   .delete(l11.terminals.langTag);

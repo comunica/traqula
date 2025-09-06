@@ -21,7 +21,7 @@ export function completeParseContext(
   };
 }
 
-export class SparqlParser<ParseRet> {
+export class MinimalSparqlParser<ParseRet> {
   public constructor(private readonly parser: Parser<ParseRet>) {}
   private readonly F = new Factory();
 

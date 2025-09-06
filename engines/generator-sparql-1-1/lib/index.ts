@@ -96,8 +96,11 @@ export const sparql11GeneratorBuilder = GeneratorBuilder.create(<const> [
   )
   .addRule(queryOrUpdate);
 
+// TODO: document that each object can handle one parallel function call
+export type SparqlGenerator = ReturnType<typeof sparql11GeneratorBuilder.build>;
+
 export class Generator {
-  private readonly generator = sparql11GeneratorBuilder.build();
+  private readonly generator: SparqlGenerator = sparql11GeneratorBuilder.build();
   private readonly factory = new Factory();
 
   public generate(ast: T11.Query | T11.Update, origSource = ''): string {

@@ -235,9 +235,9 @@ ${errorLine}`);
     const lexer = LexerBuilder.create().add(...tokenVocabulary).build({
       positionTracking: 'full',
       recoveryEnabled: false,
-      // SafeMode: true,
-      // SkipValidations: true,
-      // ensureOptimizations: true,
+      ensureOptimizations: true,
+      safeMode: false,
+      skipValidations: true,
       ...lexerConfig,
     });
     // Get the chevrotain parser

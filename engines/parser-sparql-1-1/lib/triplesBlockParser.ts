@@ -1,6 +1,6 @@
 import { ParserBuilder } from '@traqula/core';
 import { gram } from '@traqula/rules-sparql-1-1';
-import { objectListBuilder } from './objectListParser';
+import { objectListParserBuilder } from './objectListParser';
 
 export const triplesBlockParserBuilder = ParserBuilder.create(<const> [
   gram.triplesBlock,
@@ -14,7 +14,7 @@ export const triplesBlockParserBuilder = ParserBuilder.create(<const> [
   gram.verbSimple,
   gram.objectListPath,
 ])
-  .merge(objectListBuilder, <const> [])
+  .merge(objectListParserBuilder, <const> [])
   // Verb path
   .addMany(
     gram.path,
@@ -32,3 +32,5 @@ export const triplesBlockParserBuilder = ParserBuilder.create(<const> [
     gram.collectionPath,
     gram.blankNodePropertyListPath,
   );
+
+export type triplesBlockParser = ReturnType<typeof triplesBlockParserBuilder.build>;

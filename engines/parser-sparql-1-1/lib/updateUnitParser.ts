@@ -1,6 +1,6 @@
 import { ParserBuilder } from '@traqula/core';
 import { gram } from '@traqula/rules-sparql-1-1';
-import { objectListBuilder } from './objectListParser';
+import { objectListParserBuilder } from './objectListParser';
 import { subSelectParserBuilder } from './subSelectParser';
 import { updateNoModifyParserBuilder } from './updateNoModifyParser';
 
@@ -18,5 +18,7 @@ export const updateParserBuilder = ParserBuilder.create(updateNoModifyParserBuil
     gram.groupGraphPattern,
   )
   // This substitutes all of propertyListNotEmpty
-  .merge(objectListBuilder, <const> [])
+  .merge(objectListParserBuilder, <const> [])
   .merge(subSelectParserBuilder, <const> []);
+
+export type UpdateUnitParser = ReturnType<typeof updateParserBuilder.build>;

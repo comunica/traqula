@@ -1,6 +1,8 @@
 /**
  * We use mixins as explained by the official TypeScript documentation:
  * https://www.typescriptlang.org/docs/handbook/mixins.html
+ * Mixins are used so we can split into many files.
+ * Additionally, it allows type guards and generics, which the is not possible using the indirection builder.
  */
 
 export type Constructor<T = object> = new (...args: any[]) => T;

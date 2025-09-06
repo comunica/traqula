@@ -98,3 +98,5 @@ export const expressionParserBuilder = ParserBuilder.create(rulesNoBuiltIn)
     gram.string,
   )
   .addRule(builtInPatch);
+
+export type ExpressionParser = ReturnType<typeof expressionParserBuilder.build>;

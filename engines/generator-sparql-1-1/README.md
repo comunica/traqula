@@ -11,6 +11,8 @@
 Traqula Generator Sparql 1.1 is a [SPARQL 1.1](https://www.w3.org/TR/sparql11-query/#grammar) query generator for TypeScript.
 It can generate SPARQL given the AST created by [Traqula parser SPARQL 1-1](https://github.com/comunica/traqula/tree/main/engines/parser-sparql-1-1).
 
+TODO: explain API
+
 ## Installation
 
 ```bash

@@ -56,3 +56,5 @@ export const updateNoModifyParserBuilder = ParserBuilder
   .merge(triplesTemplateParserBuilder, <const> [])
   .addRule(gram.quadPattern)
   .addRule(gram.quadsNotTriples);
+
+export type updateNoModifyParser = ReturnType<typeof updateNoModifyParserBuilder.build>;

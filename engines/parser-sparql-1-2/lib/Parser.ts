@@ -6,7 +6,7 @@ import {
   type TermIri,
   sparqlCodepointEscape,
 } from '@traqula/rules-sparql-1-1';
-import { completeParseContext, Factory, gram as S12, lex as l12, SparqlContext } from '@traqula/rules-sparql-1-2';
+import { completeParseContext, Factory, gram as S12, lex as l12 } from '@traqula/rules-sparql-1-2';
 import type * as T12 from '@traqula/rules-sparql-1-2';
 
 export const sparql12ParserBuilder = ParserBuilder.create(sparql11ParserBuilder)
@@ -254,18 +254,16 @@ export const sparql12ParserBuilder = ParserBuilder.create(sparql11ParserBuilder)
   .patchRule(S12.graphNode)
   .patchRule(S12.graphNodePath)
   .patchRule(S12.varOrTerm)
-  // TODO: Does it really go?
   .deleteRule(g11.graphTerm.name)
   .patchRule(S12.primaryExpression)
   .patchRule(S12.builtInCall)
   .patchRule(S12.rdfLiteral)
   .patchRule(S12.prologue);
 
+export type SparqlParser = ReturnType<typeof sparql12ParserBuilder.build>;
+
 export class Parser {
-  private readonly parser: {
-    queryOrUpdate: (input: string, context: T12.SparqlContext, arg: undefined) => T12.SparqlQuery;
-    path: (input: string, context: T12.SparqlContext, arg: undefined) => T12.Path;
-  };
+  private readonly parser: SparqlParser;
 
   private readonly F = new Factory();
 
@@ -277,14 +275,14 @@ export class Parser {
   }
 
   public parse(query: string, context: Partial<T12.SparqlContext> = {}): T12.SparqlQuery {
-    return this.parser.queryOrUpdate(query, completeParseContext(context), undefined);
+    return this.parser.queryOrUpdate(query, completeParseContext(context));
   }
 
   public parsePath(
     query: string,
 context: Partial<T12.SparqlContext> = {},
   ): (T12.Path & { prefixes: object }) | TermIri {
-    const res = this.parser.path(query, completeParseContext(context), undefined);
+    const res = this.parser.path(query, completeParseContext(context));
     if (this.F.isPathPure(res)) {
       return {
         ...res,

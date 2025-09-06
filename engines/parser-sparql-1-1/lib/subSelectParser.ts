@@ -48,3 +48,5 @@ export const subSelectParserBuilder = ParserBuilder.create(rules)
     gram.limitClause,
     gram.offsetClause,
   );
+
+export type SubSelectParser = ReturnType<typeof subSelectParserBuilder.build>;

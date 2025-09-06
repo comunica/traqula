@@ -1,90 +1,19 @@
 import { ParserBuilder } from '@traqula/core';
-import {
-  gram,
-  lex as l,
-  sparqlCodepointEscape,
-  SparqlParser,
-  updateNoReuseBlankNodeLabels,
-} from '@traqula/rules-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
+import { gram, lex as l, MinimalSparqlParser, sparqlCodepointEscape } from '@traqula/rules-sparql-1-1';
 import { queryUnitParserBuilder } from './queryUnitParser';
 import { updateParserBuilder } from './updateUnitParser';
 
-/**
- * Query or update, optimized for the Query case.
- * One could implement a new rule that does not use BACKTRACK.
- */
-export const queryOrUpdate: T11.SparqlGrammarRule<'queryOrUpdate', T11.SparqlQuery> = {
-  name: 'queryOrUpdate',
-  impl: ({ ACTION, SUBRULE, OR1, OR2, MANY, OPTION1, CONSUME, SUBRULE2 }) => (C) => {
-    const prologueValues = SUBRULE(gram.prologue);
-    return OR1<T11.Query | T11.Update>([
-      { ALT: () => {
-        const subType = OR2<Omit<T11.Query, T11.gram.HandledByBase>>([
-          { ALT: () => SUBRULE(gram.selectQuery) },
-          { ALT: () => SUBRULE(gram.constructQuery) },
-          { ALT: () => SUBRULE(gram.describeQuery) },
-          { ALT: () => SUBRULE(gram.askQuery) },
-        ]);
-        const values = SUBRULE(gram.valuesClause);
-        return ACTION(() => (<T11.Query>{
-          context: prologueValues,
-          ...subType,
-          type: 'query',
-          ...(values && { values }),
-          loc: C.factory.sourceLocation(
-            prologueValues.at(0),
-            subType,
-            values,
-          ),
-        }));
-      } },
-      { ALT: () => {
-        const updates: T11.Update['updates'] = [];
-        updates.push({ context: prologueValues });
-        let parsedSemi = true;
-        MANY({
-          GATE: () => parsedSemi,
-          DEF: () => {
-            parsedSemi = false;
-            updates.at(-1)!.operation = SUBRULE(gram.update1);
-
-            OPTION1(() => {
-              CONSUME(l.symbols.semi);
-
-              parsedSemi = true;
-              const innerPrologue = SUBRULE2(gram.prologue);
-              updates.push({ context: innerPrologue });
-            });
-          },
-        });
-        return ACTION(() => {
-          const update = {
-            type: 'update',
-            updates,
-            loc: C.factory.sourceLocation(
-              ...updates[0].context,
-              updates[0].operation,
-              ...updates.at(-1)!.context,
-              updates.at(-1)?.operation,
-            ),
-          } satisfies T11.Update;
-          updateNoReuseBlankNodeLabels(update);
-          return update;
-        });
-      } },
-    ]);
-  },
-};
-
 export const sparql11ParserBuilder = ParserBuilder.create(queryUnitParserBuilder)
   .merge(updateParserBuilder, <const> [])
-  .addRule(queryOrUpdate);
+  .addRule(gram.queryOrUpdate);
 
-export class Parser extends SparqlParser<T11.SparqlQuery> {
+export type SparqlParser = ReturnType<typeof sparql11ParserBuilder.build>;
+
+export class Parser extends MinimalSparqlParser<T11.SparqlQuery> {
   public constructor() {
-    const parser = sparql11ParserBuilder.build({
-      tokenVocabulary: l.sparql11Tokens.tokenVocabulary,
+    const parser: SparqlParser = sparql11ParserBuilder.build({
+      tokenVocabulary: l.sparqlLexerBuilder.tokenVocabulary,
       queryPreProcessor: sparqlCodepointEscape,
     });
     super(parser);

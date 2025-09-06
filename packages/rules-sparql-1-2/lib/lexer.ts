@@ -36,7 +36,7 @@ export const LANG_DIR = createToken({
 });
 
 export const sparql12Tokens = LexerBuilder
-  .create(l11.sparql11Tokens)
+  .create(l11.sparqlLexerBuilder)
   .addBefore(
     l11.symbols.logicAnd,
     tilde,

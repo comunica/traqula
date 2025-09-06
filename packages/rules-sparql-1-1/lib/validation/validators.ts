@@ -211,6 +211,7 @@ export function checkNote13(patterns: Pattern[]): void {
       const bgp = <PatternBgp> patterns[index - 1];
       // Find variables used.
       const variables: TermVariable[] = [];
+      // TODO: this is slow! 2.6% self execution
       transformer.visitNodeSpecific(bgp, 'term', 'variable', var_ => variables.push(var_));
       if (variables.some(var_ => var_.value === pattern.variable.value)) {
         throw new Error(`Variable used to bind is already bound (?${pattern.variable.value})`);

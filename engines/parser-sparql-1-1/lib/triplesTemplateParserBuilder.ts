@@ -32,3 +32,5 @@ const rules = <const> [
 ];
 
 export const triplesTemplateParserBuilder = ParserBuilder.create(rules);
+
+export type TriplesTemplateParser = ReturnType<typeof triplesTemplateParserBuilder.build>;

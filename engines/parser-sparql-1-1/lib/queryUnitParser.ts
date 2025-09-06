@@ -28,3 +28,5 @@ export const queryUnitParserBuilder = ParserBuilder.create(rules)
   .addRule(gram.constructTemplate)
   .merge(triplesTemplateParserBuilder, <const> [])
   .addRule(gram.constructTriples);
+
+export type QueryUnitParser = ReturnType<typeof queryUnitParserBuilder.build>;

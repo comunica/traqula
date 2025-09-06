@@ -109,7 +109,7 @@ export const allBaseTokens = LexerBuilder.create().add(
 /**
  * [!!!ORDER MATTERS!!!](https://chevrotain.io/docs/tutorial/step1_lexing.html#creating-the-lexer)
  */
-export const sparql11Tokens = LexerBuilder
+export const sparqlLexerBuilder = LexerBuilder
   .create(allTerminals)
   .merge(allBaseTokens)
   .merge(allBuiltInCalls)

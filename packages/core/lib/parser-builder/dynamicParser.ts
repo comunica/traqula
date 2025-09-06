@@ -15,7 +15,7 @@ export class DynamicParser<Context, Names extends string, RuleDefs extends Parse
     super(tokenVocabulary, {
       // RecoveryEnabled: true,
       maxLookahead: 2,
-      // SkipValidations: true,
+      skipValidations: true,
       ...config,
     });
     this.context = undefined;

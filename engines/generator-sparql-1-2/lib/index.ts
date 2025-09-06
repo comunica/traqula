@@ -109,10 +109,11 @@ const sparql12GeneratorBuilder =
     .patchRule(queryOrUpdate)
     .patchRule(g12.generateTriplesBlock)
     .patchRule(g12.generateGraphTerm);
-// .patchRule(g12.dataBlock);
+
+export type SparqlGenerator = ReturnType<typeof sparql12GeneratorBuilder.build>;
 
 export class Generator {
-  private readonly generator = sparql12GeneratorBuilder.build();
+  private readonly generator: SparqlGenerator = sparql12GeneratorBuilder.build();
   private readonly F = new Factory();
 
   public generate(ast: T12.Query | T12.Update, origSource = ''): string {

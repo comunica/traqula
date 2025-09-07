@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v0.0.6"></a>
+## [v0.0.6](https://github.com/comunica/traqula/compare/v0.0.5...v0.0.6) - 2025-09-07
+
+* [fix typePatch issues](https://github.com/comunica/traqula/commit/bde39017d1f0d1a99c17d0b61584768266a6c65a)
+
 <a name="v0.0.5"></a>
 ## [v0.0.5](https://github.com/comunica/traqula/compare/v0.0.4...v0.0.5) - 2025-09-07
 

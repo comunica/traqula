@@ -8,6 +8,7 @@ out
 documentation
 tsconfig.tsbuildinfo
 *.log
+/.*
 
 engines/*/lib/**/*.cjs
 engines/*/lib/**/*.js

@@ -2,12 +2,12 @@
   "composite": true,
   "compileOnSave": true,
   "compilerOptions": {
-    "target": "es2021",
+    "target": "es2022",
     "lib": [
-      "es2021",
+      "es2022",
       "dom"
     ],
-    "module": "ES2020",
+    "module": "ES2022",
     "moduleResolution": "Bundler",
     "types": ["vitest/globals"],
     "strict": true,

@@ -15,8 +15,8 @@ import {
   translateAlgUpdateOperation,
 } from './updateUnit';
 
-export const algToSparql: AstIndir<'toSparqlJs', SparqlQuery, [Algebra.Operation]> = {
-  name: 'toSparqlJs',
+export const algToSparql: AstIndir<'algToSparql', SparqlQuery, [Algebra.Operation]> = {
+  name: 'algToSparql',
   fun: ({ SUBRULE }) => (_, op) => {
     SUBRULE(resetContext);
     op = SUBRULE(removeAlgQuads, op);

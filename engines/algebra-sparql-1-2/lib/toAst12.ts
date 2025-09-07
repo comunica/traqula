@@ -16,5 +16,5 @@ export const toAst12Builder = IndirBuilder
 export function toAst(op: Algebra.Operation): SparqlQuery {
   const c = createAstContext();
   const transformer = toAst12Builder.build();
-  return transformer.toSparqlJs(c, op);
+  return transformer.algToSparql(c, op);
 }

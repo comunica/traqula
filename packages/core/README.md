@@ -113,6 +113,9 @@ const myBuilder = Builder
 When `selectOrDescribe` calls what it thinks to be `selectRule`,
 it will instead call `selectRuleAlternative` since it overwrote the function `selectRule` with the same name.
 
+When you are creating a new parser,
+it might be good to test your parser by setting `skipValidations: false` in the context of the `.build` function.
+
 ### Generator Builder
 
 The generator builder function in much the same as the [parser builder](#parser-builder).

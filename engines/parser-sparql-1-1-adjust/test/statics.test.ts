@@ -2,11 +2,24 @@ import type { BaseQuad } from '@rdfjs/types';
 import { positiveTest, importSparql11NoteTests } from '@traqula/test-utils';
 import { DataFactory } from 'rdf-data-factory';
 import { describe, it } from 'vitest';
-import { Parser } from '../lib';
+import { adjustParserBuilder, adjustLexerBuilder, Parser } from '../lib';
 
 describe('a SPARQL 1.1 + adjust parser', () => {
   const parser = new Parser();
   const context = { prefixes: { ex: 'http://example.org/' }};
+
+  it('passes chevrotain validation', () => {
+    adjustParserBuilder.build({
+      tokenVocabulary: adjustLexerBuilder.tokenVocabulary,
+      lexerConfig: {
+        skipValidations: false,
+        ensureOptimizations: true,
+      },
+      parserConfig: {
+        skipValidations: false,
+      },
+    });
+  });
 
   describe('positive paths', () => {
     for (const { name, statics } of positiveTest('paths')) {

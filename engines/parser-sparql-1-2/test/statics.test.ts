@@ -1,11 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { BaseQuad } from '@rdfjs/types';
-import { Factory } from '@traqula/rules-sparql-1-2';
+import { Factory, lex as l12 } from '@traqula/rules-sparql-1-2';
 import { positiveTest, importSparql11NoteTests, negativeTest } from '@traqula/test-utils';
 import { DataFactory } from 'rdf-data-factory';
 import { describe, it } from 'vitest';
-import { Parser } from '../lib';
+import { Parser, sparql12ParserBuilder } from '../lib';
 
 describe('a SPARQL 1.2 parser', () => {
   const parser = new Parser();
@@ -13,11 +13,24 @@ describe('a SPARQL 1.2 parser', () => {
   const context = { prefixes: { ex: 'http://example.org/' }};
 
   function _sinkAst(suite: string, test: string, response: object): void {
-    const dir = '/home/jitsedesmet/Documents/PhD/code/traqula/packages/test-utils/lib/statics/';
+    const dir = path.join(__dirname, '..', '..', '..', 'packages', 'test-utils', 'lib', 'statics');
     const fileLoc = path.join(dir, suite, `${test}.json`);
     // eslint-disable-next-line no-sync
     fs.writeFileSync(fileLoc, JSON.stringify(response, null, 2));
   }
+
+  it('passes chevrotain validation', () => {
+    sparql12ParserBuilder.build({
+      tokenVocabulary: l12.sparql12LexerBuilder.tokenVocabulary,
+      lexerConfig: {
+        skipValidations: false,
+        ensureOptimizations: true,
+      },
+      parserConfig: {
+        skipValidations: false,
+      },
+    });
+  });
 
   describe('positive paths', () => {
     for (const { name, statics } of positiveTest('paths')) {

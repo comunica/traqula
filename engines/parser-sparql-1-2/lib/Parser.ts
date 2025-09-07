@@ -270,7 +270,7 @@ export class Parser {
   public constructor() {
     this.parser = sparql12ParserBuilder.build({
       queryPreProcessor: sparqlCodepointEscape,
-      tokenVocabulary: l12.sparql12Tokens.tokenVocabulary,
+      tokenVocabulary: l12.sparql12LexerBuilder.tokenVocabulary,
     });
   }
 

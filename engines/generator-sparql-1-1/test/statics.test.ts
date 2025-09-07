@@ -11,7 +11,7 @@ describe('a SPARQL 1.1 generator', () => {
   const F = new Factory();
 
   function _sinkGenerated(suite: string, test: string, response: string): void {
-    const dir = '/home/jitsedesmet/Documents/PhD/code/traqula/packages/test-utils/lib/statics/';
+    const dir = path.join(__dirname, '..', '..', '..', 'packages', 'test-utils', 'lib', 'statics');
     const fileLoc = path.join(dir, suite, `${test}-generated.sparql`);
     // eslint-disable-next-line no-sync
     fs.writeFileSync(fileLoc, response);

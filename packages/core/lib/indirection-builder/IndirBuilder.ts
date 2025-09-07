@@ -38,9 +38,9 @@ export class IndirBuilder<Context, Names extends string, RuleDefs extends Indire
     return <IndirBuilder<NewContext, Names, RuleDefs>> <unknown> this;
   }
 
-  public typePatch<Patch extends {[Key in Names]?: [any] | [any, any]}>():
+  public typePatch<Patch extends {[Key in Names]?: [any] | [any, any[]]}>():
   IndirBuilder<Context, Names, {[Key in Names]: Key extends keyof Patch ? (
-    Patch[Key] extends [any, any] ? IndirDef<Context, Key, Patch[Key][0], Patch[Key][1]> : (
+    Patch[Key] extends [any, any[]] ? IndirDef<Context, Key, Patch[Key][0], Patch[Key][1]> : (
       // Only  one - infer arg yourself
       Patch[Key] extends [ any ] ? (
         RuleDefs[Key] extends IndirDef<any, any, any, infer Par> ? IndirDef<Context, Key, Patch[Key][0], Par> : never

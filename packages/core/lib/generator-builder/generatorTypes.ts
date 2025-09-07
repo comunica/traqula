@@ -18,7 +18,7 @@ export type GeneratorRule<
    * Generation happens on a per AST node basis.
    * The core will implement the generation as such. If this ever changes, we will cross that bridge when we get there.
    */
-  ReturnType = any,
+  AstType = any,
   /**
    * Function arguments that can be given to convey the state of the current parse operation.
    */
@@ -26,7 +26,7 @@ export type GeneratorRule<
 > = {
   name: NameType;
   gImpl: (def: RuleDefArg) =>
-  (ast: ReturnType, context: Context, ...params: ParamType) => void;
+  (ast: AstType, context: Context, ...params: ParamType) => void;
 };
 
 export interface RuleDefArg {

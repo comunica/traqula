@@ -53,15 +53,15 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
     return <GeneratorBuilder<NewContext, Names, RuleDefs>> <unknown> this;
   }
 
-  public typePatch<Patch extends {[Key in Names]?: any }>():
+  public typePatch<Patch extends {[Key in Names]?: [any] | [any, any[]]}>():
   GeneratorBuilder<Context, Names, {[Key in Names]: Key extends keyof Patch ? (
-    RuleDefs[Key] extends GeneratorRule<Context, Key, any, infer Args> ?
-      GeneratorRule<Context, Key, Patch[Key], Args> : never
-  ) : (RuleDefs[Key] extends GeneratorRule<Context, Key> ? RuleDefs[Key] : never) }> {
-    return <GeneratorBuilder<Context, Names, {[Key in Names]: Key extends keyof Patch ? (
-      RuleDefs[Key] extends GeneratorRule<Context, Key, any, infer Args> ?
-        GeneratorRule<Context, Key, Patch[Key], Args> : never
-    ) : (RuleDefs[Key] extends GeneratorRule<Context, Key> ? RuleDefs[Key] : never) }>> <unknown> this;
+    Patch[Key] extends [any, any[]] ? GeneratorRule<Context, Key, Patch[Key][0], Patch[Key][1]> : (
+    // Only  one - infer arg yourself
+      Patch[Key] extends GeneratorRule<Context, Key, any, infer args> ?
+        GeneratorRule<Context, Key, Patch[Key][0], args> : never
+    )) : never
+  }> {
+    return <any> this;
   }
 
   /**

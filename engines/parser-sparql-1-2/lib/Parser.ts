@@ -177,10 +177,10 @@ export const sparql12ParserBuilder = ParserBuilder.create(sparql11ParserBuilder)
     [g11.propertyListPathNotEmpty.name]: [T12.TripleNesting[]];
     [g11.verbPath.name]: [T12.Path];
     [g11.verbSimple.name]: [T12.TermVariable];
-    [g11.objectList.name]: [T12.TripleNesting[], Pick<T12.TripleNesting, 'subject' | 'predicate'>];
-    [g11.objectListPath.name]: [T12.TripleNesting, Pick<T12.TripleNesting, 'subject' | 'predicate'>];
-    [g11.object.name]: [T12.TripleNesting, Pick<T12.TripleNesting, 'subject' | 'predicate'>];
-    [g11.objectPath.name]: [T12.TripleNesting[], Pick<T12.TripleNesting, 'subject' | 'predicate'>];
+    [g11.objectList.name]: [T12.TripleNesting[], [ T12.TripleNesting['subject'], T12.TripleNesting['predicate'] ]];
+    [g11.objectListPath.name]: [T12.TripleNesting, [ T12.TripleNesting['subject'], T12.TripleNesting['predicate'] ]];
+    [g11.object.name]: [T12.TripleNesting, [ T12.TripleNesting['subject'], T12.TripleNesting['predicate'] ]];
+    [g11.objectPath.name]: [T12.TripleNesting[], [ T12.TripleNesting['subject'], T12.TripleNesting['predicate'] ]];
     [g11.collection.name]: [T12.TripleCollectionList];
     [g11.collectionPath.name]: [T12.TripleCollectionList];
     [g11.triplesNode.name]: [T12.TripleCollection];

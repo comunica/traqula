@@ -59,9 +59,9 @@ export class ParserBuilder<Context, Names extends string, RuleDefs extends Parse
     return <ParserBuilder<NewContext, Names, RuleDefs>> <unknown> this;
   }
 
-  public typePatch<Patch extends {[Key in Names]?: [any] | [any, any]}>():
+  public typePatch<Patch extends {[Key in Names]?: [any] | [any, any[]]}>():
   ParserBuilder<Context, Names, {[Key in Names]: Key extends keyof Patch ? (
-    Patch[Key] extends [any, any] ? ParserRule<Context, Key, Patch[Key][0], Patch[Key][1]> : (
+    Patch[Key] extends [any, any[]] ? ParserRule<Context, Key, Patch[Key][0], Patch[Key][1]> : (
       // Only one - infer yourself
       Patch[Key] extends [any] ? (
         RuleDefs[Key] extends ParserRule<any, any, any, infer Par> ?

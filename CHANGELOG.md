@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v0.0.8"></a>
+## [v0.0.8](https://github.com/comunica/traqula/compare/v0.0.7...v0.0.8) - 2025-09-07
+
+* [more consistent algebra API](https://github.com/comunica/traqula/commit/7a3aa210220f5d2426f13219ba31406879c47db9)
+
 <a name="v0.0.7"></a>
 ## [v0.0.7](https://github.com/comunica/traqula/compare/v0.0.6...v0.0.7) - 2025-09-07
 

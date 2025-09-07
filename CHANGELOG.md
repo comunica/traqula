@@ -1,6 +1,17 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v0.0.5"></a>
+## [v0.0.5](https://github.com/comunica/traqula/compare/v0.0.4...v0.0.5) - 2025-09-07
+
+* [Update actions/checkout action to v5](https://github.com/comunica/traqula/commit/bbaff40288a67ca33e282e96331dd7175e0e9230)
+* [update engines and dependencies](https://github.com/comunica/traqula/commit/ed863fce770a2747182914c452d3bdaf37f2419d)
+* [use relative paths for test result generators](https://github.com/comunica/traqula/commit/3cacfbf7d6e84caf17379a0bf73e16f0ee077252)
+* [add migration docs](https://github.com/comunica/traqula/commit/6f87486253493657e198b50991a3119f50b031c9)
+* [highlight requirements for release](https://github.com/comunica/traqula/commit/6e0f226103ec6648b3fd0943e2c3097df3032a2c)
+* [fix typo on builtin lexer rules](https://github.com/comunica/traqula/commit/8b9e55ed6c6fdb2d347405d77c87255d2e145e89)
+* [use composite TS building](https://github.com/comunica/traqula/commit/7e7a54fc71b3109f13325d417b574bb0e337274f)
+
 <a name="v0.0.4"></a>
 ## [v0.0.4](https://github.com/comunica/traqula/compare/v0.0.3...v0.0.4) - 2025-09-02
 

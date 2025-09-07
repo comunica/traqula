@@ -1,7 +1,7 @@
 {
   "name": "@traqula/rules-sparql-1-1",
   "type": "module",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "TRAQULA Lexer and Grammar Rules for sparql 1.1",
   "lsd:module": true,
   "license": "MIT",
@@ -41,7 +41,7 @@
     "build:transpile": " node \"../../node_modules/esbuild/bin/esbuild\" --format=cjs --bundle --log-level=error --outfile=lib/index.cjs lib/index.ts"
   },
   "dependencies": {
-    "@traqula/core": "^0.0.4",
+    "@traqula/core": "^0.0.5",
     "chevrotain": "^11.0.3"
   },
   "devDependencies": {

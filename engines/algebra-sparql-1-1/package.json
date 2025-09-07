@@ -1,6 +1,6 @@
 {
   "name": "@traqula/algebra-sparql-1-1",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Convert SPARQL to SPARQL algebra",
   "author": "Jitse De Smet",
   "lsd:module": true,
@@ -37,13 +37,13 @@
     "build:transpile": "node \"../../node_modules/esbuild/bin/esbuild\" --format=cjs --bundle --log-level=error --outfile=lib/index.cjs lib/index.ts"
   },
   "dependencies": {
-    "@traqula/algebra-transformations-1-1": "^0.0.6",
-    "@traqula/core": "^0.0.6",
-    "@traqula/rules-sparql-1-1": "^0.0.6"
+    "@traqula/algebra-transformations-1-1": "^0.0.7",
+    "@traqula/core": "^0.0.7",
+    "@traqula/rules-sparql-1-1": "^0.0.7"
   },
   "devDependencies": {
-    "@traqula/generator-sparql-1-1": "^0.0.6",
-    "@traqula/parser-sparql-1-1": "^0.0.6",
-    "@traqula/test-utils": "^0.0.6"
+    "@traqula/generator-sparql-1-1": "^0.0.7",
+    "@traqula/parser-sparql-1-1": "^0.0.7",
+    "@traqula/test-utils": "^0.0.7"
   }
 }

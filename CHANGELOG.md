@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v0.0.7"></a>
+## [v0.0.7](https://github.com/comunica/traqula/compare/v0.0.6...v0.0.7) - 2025-09-07
+
+* [fix langDir and algebra API](https://github.com/comunica/traqula/commit/ff081d1bc0e76ec07661a7093adf352f0df1a4ab)
+
 <a name="v0.0.6"></a>
 ## [v0.0.6](https://github.com/comunica/traqula/compare/v0.0.5...v0.0.6) - 2025-09-07
 

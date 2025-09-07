@@ -5,7 +5,7 @@ import type * as T11 from '@traqula/rules-sparql-1-1';
 import {
   gram as g11,
 } from '@traqula/rules-sparql-1-1';
-import { Factory, gram as g12 } from '@traqula/rules-sparql-1-2';
+import { completeParseContext, Factory, gram as g12 } from '@traqula/rules-sparql-1-2';
 import type * as T12 from '@traqula/rules-sparql-1-2';
 
 const queryOrUpdate: T12.SparqlGeneratorRule<'queryOrUpdate', T12.Query | T12.Update> = {
@@ -116,19 +116,14 @@ export class Generator {
   private readonly generator: SparqlGenerator = sparql12GeneratorBuilder.build();
   private readonly F = new Factory();
 
-  public generate(ast: T12.Query | T12.Update, origSource = ''): string {
-    return this.generator.queryOrUpdate(ast, {
-      factory: this.F,
-      offset: 0,
-      origSource,
-    });
+  public generate(
+    ast: T12.Query | T12.Update,
+context: Partial<T12.SparqlContext & { origSource: string }> = {},
+  ): string {
+    return this.generator.queryOrUpdate(ast, completeParseContext(context));
   }
 
-  public generatePath(ast: T12.Path, origSource = ''): string {
-    return this.generator.path(ast, {
-      factory: this.F,
-      offset: 0,
-      origSource,
-    }, undefined);
+  public generatePath(ast: T12.Path, context: Partial<T12.SparqlContext & { origSource: string }> = {}): string {
+    return this.generator.path(ast, completeParseContext(context), undefined);
   }
 }

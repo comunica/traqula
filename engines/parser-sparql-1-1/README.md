@@ -45,6 +45,8 @@ const parser = new Parser();
 const abstractSyntaxTree = parser.parse('SELECT * { ?s ?p ?o }');
 ```
 
+Note that a single parser cannot parse multiple queries in parallel.
+
 The package also contains multiple parserBuilders.
 These builders can be used either to consume to a parser,
 or to usage as a starting point for your own grammar.

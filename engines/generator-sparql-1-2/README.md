@@ -45,3 +45,5 @@ This package contains a `Generator` that is able to generate SPARQL 1.2 queries:
 const generator = new Generator();
 const abstractSyntaxTree = generator.generate(abstractSyntaxTree);
 ```
+
+Note that a single generator cannot generate multiple queries in parallel.

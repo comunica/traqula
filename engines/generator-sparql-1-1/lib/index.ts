@@ -1,6 +1,6 @@
 import { GeneratorBuilder } from '@traqula/core';
 import type * as T11 from '@traqula/rules-sparql-1-1';
-import { Factory, gram } from '@traqula/rules-sparql-1-1';
+import { completeParseContext, Factory, gram } from '@traqula/rules-sparql-1-1';
 
 const queryOrUpdate: T11.SparqlGeneratorRule<'queryOrUpdate', T11.Query | T11.Update> = {
   name: 'queryOrUpdate',
@@ -96,26 +96,20 @@ export const sparql11GeneratorBuilder = GeneratorBuilder.create(<const> [
   )
   .addRule(queryOrUpdate);
 
-// TODO: document that each object can handle one parallel function call
 export type SparqlGenerator = ReturnType<typeof sparql11GeneratorBuilder.build>;
 
 export class Generator {
   private readonly generator: SparqlGenerator = sparql11GeneratorBuilder.build();
   private readonly factory = new Factory();
 
-  public generate(ast: T11.Query | T11.Update, origSource = ''): string {
-    return this.generator.queryOrUpdate(ast, {
-      factory: this.factory,
-      offset: 0,
-      origSource,
-    });
+  public generate(
+    ast: T11.Query | T11.Update,
+context: Partial<T11.SparqlContext & { origSource: string }> = {},
+  ): string {
+    return this.generator.queryOrUpdate(ast, completeParseContext(context));
   }
 
-  public generatePath(ast: T11.Path, origSource = ''): string {
-    return this.generator.path(ast, {
-      factory: this.factory,
-      offset: 0,
-      origSource,
-    }, undefined);
+  public generatePath(ast: T11.Path, context: Partial<T11.SparqlContext & { origSource: string }> = {}): string {
+    return this.generator.path(ast, completeParseContext(context), undefined);
   }
 }

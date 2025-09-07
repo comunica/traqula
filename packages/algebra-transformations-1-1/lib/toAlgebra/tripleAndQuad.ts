@@ -156,7 +156,6 @@ export const translateQuad: AlgebraIndir<'translateQuad', Algebra.Pattern, [Flat
       throw new Error('Trying to translate property path to quad.');
     }
     // Graphs are needed here
-    // TODO: investigate if typings are wrong or if we internally add graphs to these
     return factory.createPattern(quad.subject, quad.predicate, quad.object, (<any>quad).graph);
   },
 };

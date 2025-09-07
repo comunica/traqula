@@ -153,7 +153,6 @@ export const translateGraphPattern: AlgebraIndir<'translateGraphPattern', Algebr
  * 18.2.2.3: Translate Property Path Expressions
  * 18.2.2.4: Translate Property Path Patterns
  * 18.2.2.5: Translate Basic Graph Patterns
- * TODO: In the ast, a group with a single BGP in it is a single object. (TODO: not anymore)
  */
 export const translateBgp: AlgebraIndir<'translateBgp', Algebra.Operation, [PatternBgp]> = {
   name: 'translateBgp',

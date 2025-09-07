@@ -169,7 +169,7 @@ export class Factory {
     if (separator !== undefined) {
       return {
         type: A.Types.EXPRESSION,
-        expressionType: A.expressionTypes.AGGREGATE,
+        expressionType: A.ExpressionTypes.AGGREGATE,
         aggregator: <any> aggregator,
         expression,
         separator,
@@ -178,7 +178,7 @@ export class Factory {
     }
     return {
       type: A.Types.EXPRESSION,
-      expressionType: A.expressionTypes.AGGREGATE,
+      expressionType: A.ExpressionTypes.AGGREGATE,
       aggregator: <any> aggregator,
       expression,
       distinct,
@@ -186,23 +186,23 @@ export class Factory {
   }
 
   public createExistenceExpression(not: boolean, input: A.Operation): A.ExistenceExpression {
-    return { type: A.Types.EXPRESSION, expressionType: A.expressionTypes.EXISTENCE, not, input };
+    return { type: A.Types.EXPRESSION, expressionType: A.ExpressionTypes.EXISTENCE, not, input };
   }
 
   public createNamedExpression(name: RDF.NamedNode, args: A.Expression[]): A.NamedExpression {
-    return { type: A.Types.EXPRESSION, expressionType: A.expressionTypes.NAMED, name, args };
+    return { type: A.Types.EXPRESSION, expressionType: A.ExpressionTypes.NAMED, name, args };
   }
 
   public createOperatorExpression(operator: string, args: A.Expression[]): A.OperatorExpression {
-    return { type: A.Types.EXPRESSION, expressionType: A.expressionTypes.OPERATOR, operator, args };
+    return { type: A.Types.EXPRESSION, expressionType: A.ExpressionTypes.OPERATOR, operator, args };
   }
 
   public createTermExpression(term: RDF.Term): A.TermExpression {
-    return { type: A.Types.EXPRESSION, expressionType: A.expressionTypes.TERM, term };
+    return { type: A.Types.EXPRESSION, expressionType: A.ExpressionTypes.TERM, term };
   }
 
   public createWildcardExpression(): A.WildcardExpression {
-    return { type: A.Types.EXPRESSION, expressionType: A.expressionTypes.WILDCARD, wildcard: { type: 'wildcard' }};
+    return { type: A.Types.EXPRESSION, expressionType: A.ExpressionTypes.WILDCARD, wildcard: { type: 'wildcard' }};
   }
 
   public createTerm(str: string): RDF.Term {

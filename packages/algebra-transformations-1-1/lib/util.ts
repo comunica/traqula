@@ -1,7 +1,7 @@
 import type * as RDF from '@rdfjs/types';
 import { someTermsNested } from 'rdf-terms';
 import type * as A from './algebra';
-import { expressionTypes, Types } from './algebra';
+import { ExpressionTypes, Types } from './algebra';
 import { Factory } from './factory';
 
 /**
@@ -131,7 +131,7 @@ export function inScopeVariables(op: A.Operation): RDF.Variable[] {
   // https://www.w3.org/TR/sparql11-query/#variableScope
   recurseOperation(op, {
     [Types.EXPRESSION]: (op) => {
-      if (op.expressionType === expressionTypes.AGGREGATE && op.variable) {
+      if (op.expressionType === ExpressionTypes.AGGREGATE && op.variable) {
         addVariable(op.variable);
       }
       return true;
@@ -250,7 +250,7 @@ export function recurseOperation(
       recurseOp(result.input);
       break;
     case Types.EXPRESSION:
-      if (result.expressionType === expressionTypes.EXISTENCE) {
+      if (result.expressionType === ExpressionTypes.EXISTENCE) {
         recurseOp(result.input);
       }
       break;
@@ -383,7 +383,7 @@ export function recurseOperation(
 export function mapOperation(
   op: A.Operation,
   callbacks: {[T in A.Types]?: (op: A.TypedOperation<T>, factory: Factory) => RecurseResult }
-        & {[T in A.expressionTypes]?: (expr: A.TypedExpression<T>, factory: Factory) => ExpressionRecurseResult },
+        & {[T in A.ExpressionTypes]?: (expr: A.TypedExpression<T>, factory: Factory) => ExpressionRecurseResult },
   factory?: Factory,
 ): A.Operation {
   let result: A.Operation = op;
@@ -583,7 +583,7 @@ result.graph,
 export function mapExpression(
   expr: A.Expression,
   callbacks: {[T in A.Types]?: (op: A.TypedOperation<T>, factory: Factory) => RecurseResult }
-        & {[T in A.expressionTypes]?: (expr: A.TypedExpression<T>, factory: Factory) => ExpressionRecurseResult },
+        & {[T in A.ExpressionTypes]?: (expr: A.TypedExpression<T>, factory: Factory) => ExpressionRecurseResult },
   factory?: Factory,
 ): A.Expression {
   let result: A.Expression = expr;
@@ -603,7 +603,7 @@ export function mapExpression(
   const mapOp = (op: A.Operation): A.Operation => mapOperation(op, callbacks, factory);
 
   switch (expr.expressionType) {
-    case expressionTypes.AGGREGATE:
+    case ExpressionTypes.AGGREGATE:
       if (expr.variable) {
         return factory.createBoundAggregate(
           expr.variable,
@@ -619,15 +619,15 @@ expr.separator,
 expr.distinct,
 expr.separator,
       );
-    case expressionTypes.EXISTENCE:
+    case ExpressionTypes.EXISTENCE:
       return factory.createExistenceExpression(expr.not, mapOp(expr.input));
-    case expressionTypes.NAMED:
+    case ExpressionTypes.NAMED:
       return factory.createNamedExpression(expr.name, <A.Expression[]> expr.args.map(mapOp));
-    case expressionTypes.OPERATOR:
+    case ExpressionTypes.OPERATOR:
       return factory.createOperatorExpression(expr.operator, <A.Expression[]> expr.args.map(mapOp));
-    case expressionTypes.TERM:
+    case ExpressionTypes.TERM:
       return factory.createTermExpression(expr.term);
-    case expressionTypes.WILDCARD:
+    case ExpressionTypes.WILDCARD:
       return factory.createWildcardExpression();
     default: throw new Error(`Unknown Expression type ${(<any> expr).expressionType}`);
   }

@@ -1,7 +1,7 @@
 {
-  "composite": true,
   "compileOnSave": true,
   "compilerOptions": {
+    "composite": true,
     "target": "es2022",
     "lib": [
       "es2022",

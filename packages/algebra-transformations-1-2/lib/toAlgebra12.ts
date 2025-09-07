@@ -1,5 +1,6 @@
 import type * as RDF from '@rdfjs/types';
 import {
+  translateNamed,
   translateTerm,
   translateTripleCollection,
   translateTripleNesting,
@@ -14,15 +15,32 @@ const reificationIri = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies';
 
 export const translateTerm12: AlgebraIndir<(typeof translateTerm)['name'], RDF.Term, [Term]> = {
   name: 'translateTerm',
-  fun: s => (c, term) => {
-    if (term.subType === 'triple') {
-      return c.dataFactory.quad(
-        s.SUBRULE(translateTerm12, term.subject),
-        s.SUBRULE(translateTerm12, term.predicate),
-        s.SUBRULE(translateTerm12, term.object),
+  fun: $ => (C, term) => {
+    if (C.astFactory.isTermTriple(term)) {
+      return C.dataFactory.quad(
+        $.SUBRULE(translateTerm12, term.subject),
+        $.SUBRULE(translateTerm12, term.predicate),
+        $.SUBRULE(translateTerm12, term.object),
       );
     }
-    return translateTerm.fun(s)(c, term);
+    if (C.astFactory.isTermLiteral(term)) {
+      if (!term.langOrIri) {
+        return C.dataFactory.literal(term.value);
+      }
+      if (typeof term.langOrIri === 'object') {
+        const iri = $.SUBRULE(translateNamed, term.langOrIri);
+        return C.dataFactory.literal(term.value, iri);
+      }
+      const [ lang, langDir ] = term.langOrIri.split('--');
+      if (langDir && (langDir === '' || langDir === 'ltr' || langDir === 'rtl')) {
+        return C.dataFactory.literal(term.value, {
+          language: lang,
+          direction: langDir,
+        });
+      }
+      return C.dataFactory.literal(term.value, term.langOrIri);
+    }
+    return translateTerm.fun($)(C, term);
   },
 };
 

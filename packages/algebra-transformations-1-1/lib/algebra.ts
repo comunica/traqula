@@ -45,7 +45,7 @@ export enum Types {
   COPY = 'copy',
 }
 
-export enum expressionTypes {
+export enum ExpressionTypes {
   AGGREGATE = 'aggregate',
   EXISTENCE = 'existence',
   NAMED = 'named',
@@ -69,7 +69,7 @@ export type Update = CompositeUpdate | DeleteInsert | Load | Clear | Create | Dr
 
 // Returns the correct type based on the type enum
 export type TypedOperation<T extends Types> = Extract<Operation, { type: T }>;
-export type TypedExpression<T extends expressionTypes> = Extract<Expression, { expressionType: T }>;
+export type TypedExpression<T extends ExpressionTypes> = Extract<Expression, { expressionType: T }>;
 // ----------------------- ABSTRACTS -----------------------
 
 export interface BaseOperation {
@@ -92,11 +92,11 @@ export interface Double extends Multi {
 
 export interface BaseExpression extends BaseOperation {
   type: Types.EXPRESSION;
-  expressionType: expressionTypes;
+  expressionType: ExpressionTypes;
 }
 
 export interface AggregateExpression extends BaseExpression {
-  expressionType: expressionTypes.AGGREGATE;
+  expressionType: ExpressionTypes.AGGREGATE;
   aggregator: 'avg' | 'count' | 'group_concat' | 'max' | 'min' | 'sample' | 'sum';
   distinct: boolean;
   expression: Expression;
@@ -108,30 +108,30 @@ export interface GroupConcatExpression extends AggregateExpression {
 }
 
 export interface ExistenceExpression extends BaseExpression {
-  expressionType: expressionTypes.EXISTENCE;
+  expressionType: ExpressionTypes.EXISTENCE;
   not: boolean;
   input: Operation;
 }
 
 export interface NamedExpression extends BaseExpression {
-  expressionType: expressionTypes.NAMED;
+  expressionType: ExpressionTypes.NAMED;
   name: rdfjs.NamedNode;
   args: Expression[];
 }
 
 export interface OperatorExpression extends BaseExpression {
-  expressionType: expressionTypes.OPERATOR;
+  expressionType: ExpressionTypes.OPERATOR;
   operator: string;
   args: Expression[];
 }
 
 export interface TermExpression extends BaseExpression {
-  expressionType: expressionTypes.TERM;
+  expressionType: ExpressionTypes.TERM;
   term: rdfjs.Term;
 }
 
 export interface WildcardExpression extends BaseExpression {
-  expressionType: expressionTypes.WILDCARD;
+  expressionType: ExpressionTypes.WILDCARD;
   wildcard: {
     type: 'wildcard';
   };

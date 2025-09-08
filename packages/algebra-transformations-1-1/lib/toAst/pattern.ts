@@ -51,7 +51,7 @@ export const translateAlgPatternIntoGroup: AstIndir<'translatePatternIntoGroup',
 
 export const translateAlgSinglePattern: AstIndir<'translateSinglePattern', Pattern, [Algebra.Operation]> = {
   name: 'translateSinglePattern',
-  fun: ({ SUBRULE }) => (_, op) => {
+  fun: ({ SUBRULE }) => ({ astFactory: F }, op) => {
     SUBRULE(registerProjection, op);
     switch (op.type) {
       case types.PATH: return SUBRULE(translateAlgPath, op);
@@ -60,6 +60,7 @@ export const translateAlgSinglePattern: AstIndir<'translateSinglePattern', Patte
       case types.SERVICE: return SUBRULE(translateAlgService, op);
       case types.UNION: return SUBRULE(translateAlgUnion, op);
       case types.VALUES: return SUBRULE(translateAlgValues, op);
+      case types.PATTERN: return F.patternBgp([ SUBRULE(translateAlgPattern, op) ], F.gen());
       default:
         return SUBRULE(translateAlgPatternIntoGroup, op);
     }

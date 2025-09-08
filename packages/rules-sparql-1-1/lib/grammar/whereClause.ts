@@ -273,7 +273,7 @@ export const inlineData: SparqlRule<'inlineData', PatternValues> = <const> {
     return ACTION(() => C.factory.patternValues(datablock.val, C.factory.sourceLocation(values, datablock)));
   },
   gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
-    const variables = Object.keys(ast.values[0]);
+    const variables = Object.keys(ast.values.at(0) ?? {});
     F.printFilter(ast, () => {
       PRINT_WORD('VALUES', '(');
       for (const variable of variables) {

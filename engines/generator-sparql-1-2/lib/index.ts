@@ -1,28 +1,17 @@
 import { GeneratorBuilder } from '@traqula/core';
 import type { Wrap, Patch } from '@traqula/core';
 import { sparql11GeneratorBuilder } from '@traqula/generator-sparql-1-1';
-import type * as T11 from '@traqula/rules-sparql-1-1';
-import {
+import type {
   gram as g11,
 } from '@traqula/rules-sparql-1-1';
 import { completeParseContext, Factory, gram as g12 } from '@traqula/rules-sparql-1-2';
 import type * as T12 from '@traqula/rules-sparql-1-2';
 
-const queryOrUpdate: T12.SparqlGeneratorRule<'queryOrUpdate', T12.Query | T12.Update> = {
-  name: 'queryOrUpdate',
-  gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
-    if (F.isQuery(ast)) {
-      SUBRULE(g11.query, <T11.Query> ast);
-    } else {
-      SUBRULE(g11.update, <T11.Update> ast);
-    }
-  },
-};
-
 const sparql12GeneratorBuilder =
   GeneratorBuilder.create(sparql11GeneratorBuilder)
     .widenContext<{ factory: Factory }>()
     .typePatch<{
+      [g11.queryOrUpdate.name]: [T12.SparqlQuery];
       [g11.query.name]: [T12.Query];
       [g11.selectQuery.name]: [Omit<T12.QuerySelect, g11.HandledByBase>];
       [g11.constructQuery.name]: [ Omit<T12.QueryConstruct, g11.HandledByBase>];
@@ -106,7 +95,6 @@ const sparql12GeneratorBuilder =
     .addRule(g12.annotationPath)
     .addRule(g12.versionDecl)
     .patchRule(g12.prologue)
-    .patchRule(queryOrUpdate)
     .patchRule(g12.generateTriplesBlock)
     .patchRule(g12.generateGraphTerm);
 

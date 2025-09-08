@@ -2,18 +2,8 @@ import { GeneratorBuilder } from '@traqula/core';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import { completeParseContext, Factory, gram } from '@traqula/rules-sparql-1-1';
 
-const queryOrUpdate: T11.SparqlGeneratorRule<'queryOrUpdate', T11.Query | T11.Update> = {
-  name: 'queryOrUpdate',
-  gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
-    if (F.isQuery(ast)) {
-      SUBRULE(gram.query, ast);
-    } else {
-      SUBRULE(gram.update, ast);
-    }
-  },
-};
-
 export const sparql11GeneratorBuilder = GeneratorBuilder.create(<const> [
+  gram.queryOrUpdate,
   gram.query,
   gram.selectQuery,
   gram.constructQuery,
@@ -93,8 +83,7 @@ export const sparql11GeneratorBuilder = GeneratorBuilder.create(<const> [
     gram.minusGraphPattern,
     gram.groupOrUnionGraphPattern,
     gram.filter,
-  )
-  .addRule(queryOrUpdate);
+  );
 
 export type SparqlGenerator = ReturnType<typeof sparql11GeneratorBuilder.build>;
 

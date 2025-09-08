@@ -1,11 +1,11 @@
 import { symbols } from '../lexer';
-import type { SparqlGrammarRule } from '../sparql11HelperTypes';
+import type { SparqlRule } from '../sparql11HelperTypes';
 import type { Query, SparqlQuery, Update } from '../Sparql11types';
 import { updateNoReuseBlankNodeLabels } from '../validation/validators';
 import { prologue } from './general';
 import type { HandledByBase } from './queryUnit';
-import { askQuery, constructQuery, describeQuery, selectQuery, valuesClause } from './queryUnit';
-import { update1 } from './updateUnit';
+import { query, askQuery, constructQuery, describeQuery, selectQuery, valuesClause } from './queryUnit';
+import { update, update1 } from './updateUnit';
 
 export * from './queryUnit';
 export * from './updateUnit';
@@ -24,7 +24,7 @@ export * from './whereClause';
  * Query or update, optimized for the Query case.
  * One could implement a new rule that does not use BACKTRACK.
  */
-export const queryOrUpdate: SparqlGrammarRule<'queryOrUpdate', SparqlQuery> = {
+export const queryOrUpdate: SparqlRule<'queryOrUpdate', SparqlQuery> = {
   name: 'queryOrUpdate',
   impl: ({ ACTION, SUBRULE, OR1, OR2, MANY, OPTION1, CONSUME, SUBRULE2 }) => (C) => {
     const prologueValues = SUBRULE(prologue);
@@ -84,5 +84,12 @@ export const queryOrUpdate: SparqlGrammarRule<'queryOrUpdate', SparqlQuery> = {
         });
       } },
     ]);
+  },
+  gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
+    if (F.isQuery(ast)) {
+      SUBRULE(query, ast);
+    } else {
+      SUBRULE(update, ast);
+    }
   },
 };

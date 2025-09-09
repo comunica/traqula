@@ -94,6 +94,7 @@ export function objectify(algebra: any): any {
  * @param {Operation} op - Input algebra tree.
  * @returns {Variable[]} - List of unique in-scope variables.
  */
+// TODO: this heavily used in Comunica! Make sure it still works!
 export function inScopeVariables(op: A.Operation): RDF.Variable[] {
   const variables: Record<string, RDF.Variable> = {};
 
@@ -208,6 +209,7 @@ export function inScopeVariables(op: A.Operation): RDF.Variable[] {
  * @param {Operation} op - The Operation to recurse on.
  * @param { [type: string]: (op: Operation) => boolean } callbacks - A map of required callback Operations.
  */
+// TODO: this heavily used in Comunica! Make sure it still works!
 export function recurseOperation(
   op: A.Operation,
   callbacks: {[T in A.Types]?: (op: A.TypedOperation<T>,) => boolean },

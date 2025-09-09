@@ -81,11 +81,18 @@ export const update: SparqlRule<'update', Update> = <const> {
     });
   },
   gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
-    for (const update of ast.updates) {
+    const [ head, ...tail ] = ast.updates;
+    if (head) {
+      SUBRULE(prologue, head.context);
+      if (head.operation) {
+        SUBRULE(update1, head.operation);
+      }
+    }
+    for (const update of tail) {
+      F.printFilter(ast, () => PRINT_WORD(' ;\n'));
       SUBRULE(prologue, update.context);
       if (update.operation) {
         SUBRULE(update1, update.operation);
-        F.printFilter(ast, () => PRINT_WORD(' ;\n'));
       }
     }
   },

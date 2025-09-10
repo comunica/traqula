@@ -288,7 +288,7 @@ export const aggregate: SparqlRule<'aggregate', ExpressionAggregate> = <const>{
   },
   gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
     F.printFilter(ast, () => {
-      PRINT_WORD(ast.aggregation, '(');
+      PRINT_WORD(ast.aggregation.toUpperCase(), '(');
       if (ast.distinct) {
         PRINT_WORD('DISTINCT');
       }

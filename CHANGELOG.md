@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v0.0.9"></a>
+## [v0.0.9](https://github.com/comunica/traqula/compare/v0.0.8...v0.0.9) - 2025-09-10
+
+* [Query generation should generate capitalized versions of operators](https://github.com/comunica/traqula/commit/fb8403077049ad37f7835604263fc10ac26cfcb3)
+* [sparql generation of updates should not contain query separators if it is not needed](https://github.com/comunica/traqula/commit/1e79a1747ada180fdd903f4490bc5ff01fad131b)
+* [support generation of empty values clause](https://github.com/comunica/traqula/commit/b381f10266200d7d326cd68f1dac8f7093d7f8fa)
+
 <a name="v0.0.8"></a>
 ## [v0.0.8](https://github.com/comunica/traqula/compare/v0.0.7...v0.0.8) - 2025-09-07
 

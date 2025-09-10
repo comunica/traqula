@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v0.0.10"></a>
+## [v0.0.10](https://github.com/comunica/traqula/compare/v0.0.9...v0.0.10) - 2025-09-10
+
+* [generate aggregators in uppercase](https://github.com/comunica/traqula/commit/1d457b0e884dfd06170144c7c631438587b50407)
+
 <a name="v0.0.9"></a>
 ## [v0.0.9](https://github.com/comunica/traqula/compare/v0.0.8...v0.0.9) - 2025-09-10
 

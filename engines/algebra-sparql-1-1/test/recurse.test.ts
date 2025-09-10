@@ -15,10 +15,11 @@ describe('util functions', () => {
     it (name, ({ expect }) => {
       const clone: Algebra.Operation = utils.mapOperation(<Algebra.Operation>expected, {});
       if (clone.type === 'project') {
-        // Const scope = Util.inScopeVariables(clone.input);
+        const scope = utils.inScopeVariables(clone.input);
+        // Console.log(scope);
         const project = <Algebra.Project> toAlgebra(toAst(factory.createProject(clone.input, [])));
-        for (const _v of project.variables.map(v => v.value)) {
-          // Expect(scope.map(v => v.value)).toContain(v);
+        for (const v of project.variables.map(v => v.value)) {
+          expect(scope.map(v => v.value)).toContain(v);
         }
       }
       expect(utils.objectify(clone)).toEqual(expected);

@@ -89,7 +89,7 @@ export const update: SparqlRule<'update', Update> = <const> {
       }
     }
     for (const update of tail) {
-      F.printFilter(ast, () => PRINT_WORD(' ;\n'));
+      F.printFilter(ast, () => PRINT_WORD(';\n'));
       SUBRULE(prologue, update.context);
       if (update.operation) {
         SUBRULE(update1, update.operation);

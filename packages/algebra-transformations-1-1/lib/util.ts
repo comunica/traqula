@@ -94,7 +94,6 @@ export function objectify(algebra: any): any {
  * @param {Operation} op - Input algebra tree.
  * @returns {Variable[]} - List of unique in-scope variables.
  */
-// TODO: this heavily used in Comunica! Make sure it still works!
 export function inScopeVariables(op: A.Operation): RDF.Variable[] {
   const variables: Record<string, RDF.Variable> = {};
 
@@ -209,7 +208,6 @@ export function inScopeVariables(op: A.Operation): RDF.Variable[] {
  * @param {Operation} op - The Operation to recurse on.
  * @param { [type: string]: (op: Operation) => boolean } callbacks - A map of required callback Operations.
  */
-// TODO: this heavily used in Comunica! Make sure it still works!
 export function recurseOperation(
   op: A.Operation,
   callbacks: {[T in A.Types]?: (op: A.TypedOperation<T>,) => boolean },
@@ -670,7 +668,8 @@ export function createUniqueVariable(
 
 // Separate terms from wildcard since we handle them differently
 export function isSimpleTerm(term: any): term is RDF.Term {
-  return term.termType !== undefined && term.termType !== 'Quad' && term.termType !== 'Wildcard';
+  return term.termType !== undefined && term.termType !== 'Quad' && term.termType !== 'wildcard' &&
+    term.termType !== 'Wildcard';
 }
 
 export function isQuad(term: any): term is RDF.Quad {

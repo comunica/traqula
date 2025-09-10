@@ -1,1 +1,1 @@
-SELECT ?str ( strlen( ?str ) AS ?strlen ) WHERE { _:g_0 ?p ?str . }
+SELECT ?str ( STRLEN( ?str ) AS ?strlen ) WHERE { _:g_0 ?p ?str . }

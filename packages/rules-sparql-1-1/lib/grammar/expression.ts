@@ -63,7 +63,7 @@ export const argList: SparqlRule<'argList', Wrap<IArgList>> = <const> {
     F.printFilter(ast, () => {
       PRINT_WORD('(');
       if (ast.val.distinct) {
-        PRINT_WORD('distinct');
+        PRINT_WORD('DISTINCT');
       }
     });
     const [ head, ...tail ] = ast.val.args;
@@ -126,7 +126,7 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
           } else if (ast.operator === 'in') {
             PRINT_WORD('IN');
           } else {
-            PRINT_WORD(ast.operator);
+            PRINT_WORD(ast.operator.toUpperCase());
           }
         });
         if (right.length === 1) {
@@ -137,10 +137,10 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
         F.printFilter(ast, () => PRINT_WORD(')'));
       } else if (prefixOperator.has(ast.operator)) {
         const [ expr ] = <[Expression]>ast.args;
-        F.printFilter(ast, () => PRINT_WORD(ast.operator));
+        F.printFilter(ast, () => PRINT_WORD(ast.operator.toUpperCase()));
         SUBRULE(expression, expr);
       } else {
-        F.printFilter(ast, () => PRINT_WORD(ast.operator, '('));
+        F.printFilter(ast, () => PRINT_WORD(ast.operator.toUpperCase(), '('));
         const [ head, ...tail ] = ast.args;
         if (head) {
           SUBRULE(expression, head);

@@ -17,30 +17,34 @@ const rootJsonBlankToVariable = path.join(rootDir, 'algebra-blank-to-var');
 const suites: AlgebraTestSuite[] = [ 'sparql12' ];
 
 describe.skip('algebra test generate', () => {
-  for (const { query, name } of sparqlQueries(suites)) {
-    for (const blankToVariable of [ false, true ]) {
-      it(`${name} - blankToVar: ${blankToVariable}`, ({ expect }) => {
-        expect(() => {
-          const ast = parser.parse(query);
-          const algebra = utils.objectify(toAlgebra(ast, {
-            quads: name.endsWith('-quads'),
-            blankToVariable,
-          }));
-          const algebraFileName = `${name}.json`;
-          let newPath = blankToVariable ? rootJsonBlankToVariable : rootJson;
-          for (const piece of name.split(path.sep).slice(0, -1)) {
-            newPath = path.join(newPath, piece);
-            if (!fs.existsSync(newPath)) {
-              fs.mkdirSync(newPath);
-            }
-          }
+  for (const suite of suites) {
+    describe(suite, () => {
+      for (const { query, name } of sparqlQueries(suite)) {
+        for (const blankToVariable of [ false, true ]) {
+          it(`${name} - blankToVar: ${blankToVariable}`, ({ expect }) => {
+            expect(() => {
+              const ast = parser.parse(query);
+              const algebra = utils.objectify(toAlgebra(ast, {
+                quads: name.endsWith('-quads'),
+                blankToVariable,
+              }));
+              const algebraFileName = `${name}.json`;
+              let newPath = blankToVariable ? rootJsonBlankToVariable : rootJson;
+              for (const piece of name.split(path.sep).slice(0, -1)) {
+                newPath = path.join(newPath, piece);
+                if (!fs.existsSync(newPath)) {
+                  fs.mkdirSync(newPath);
+                }
+              }
 
-          fs.writeFileSync(
-            path.join(blankToVariable ? rootJsonBlankToVariable : rootJson, algebraFileName),
-            JSON.stringify(algebra, null, 2),
-          );
-        }).not.toThrow();
-      });
-    }
+              fs.writeFileSync(
+                path.join(blankToVariable ? rootJsonBlankToVariable : rootJson, algebraFileName),
+                JSON.stringify(algebra, null, 2),
+              );
+            }).not.toThrow();
+          });
+        }
+      }
+    });
   }
 });

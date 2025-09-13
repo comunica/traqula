@@ -17,11 +17,11 @@ export interface algebraTestGen {
 
 export type AlgebraTestSuite = 'dawg-syntax' | 'sparql-1.1' | 'sparql11-query' | 'sparql12';
 
-export function sparqlAlgebraTests(suites: AlgebraTestSuite[], blankToVariable: boolean, getSPARQL: true):
+export function sparqlAlgebraTests(suites: AlgebraTestSuite, blankToVariable: boolean, getSPARQL: true):
 Generator<algebraTestGen & { sparql: string }>;
-export function sparqlAlgebraTests(suites: AlgebraTestSuite[], blankToVariable: boolean, getSPARQL: boolean):
+export function sparqlAlgebraTests(suites: AlgebraTestSuite, blankToVariable: boolean, getSPARQL: boolean):
 Generator<algebraTestGen>;
-export function* sparqlAlgebraTests(suites: AlgebraTestSuite[], blankToVariable: boolean, getSPARQL: boolean):
+export function* sparqlAlgebraTests(suite: AlgebraTestSuite, blankToVariable: boolean, getSPARQL: boolean):
 Generator<algebraTestGen> {
   // Relative path starting from roots declared above.
   function* subGen(relativePath: string): Generator<algebraTestGen> {
@@ -44,15 +44,13 @@ Generator<algebraTestGen> {
   }
 
   const subfolders = fs.readdirSync(blankToVariable ? rootJsonBlankToVariable : rootJson);
-  for (const subfolder of subfolders) {
-    if ((<string[]> suites).includes(subfolder)) {
-      yield* subGen(subfolder);
-    }
+  if (subfolders.includes(suite)) {
+    yield* subGen(suite);
   }
 }
 
 type GenQuery = { query: string; name: string };
-export function* sparqlQueries(suites: AlgebraTestSuite[]): Generator<GenQuery> {
+export function* sparqlQueries(suite: AlgebraTestSuite): Generator<GenQuery> {
   function* subGen(relativePath: string): Generator<GenQuery> {
     const absolutePath = path.join(rootSparql, relativePath);
     if (fs.lstatSync(absolutePath).isDirectory()) {
@@ -71,9 +69,7 @@ export function* sparqlQueries(suites: AlgebraTestSuite[]): Generator<GenQuery> 
   }
 
   const subfolders = fs.readdirSync(rootSparql);
-  for (const subfolder of subfolders) {
-    if ((<string[]> suites).includes(subfolder)) {
-      yield* subGen(subfolder);
-    }
+  if (subfolders.includes(suite)) {
+    yield* subGen(suite);
   }
 }

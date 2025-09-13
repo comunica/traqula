@@ -1,11 +1,11 @@
-import type { Algebra } from '@traqula/algebra-transformations-1-1';
 import { Canonicalizer, utils } from '@traqula/algebra-transformations-1-1';
-import { Parser } from '@traqula/parser-sparql-1-1';
+import type { Algebra } from '@traqula/algebra-transformations-1-2';
+import { Parser } from '@traqula/parser-sparql-1-2';
 import { type AlgebraTestSuite, sparqlAlgebraTests } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
 import { toAlgebra } from '../lib';
 
-const suites: AlgebraTestSuite[] = [ 'dawg-syntax', 'sparql11-query', 'sparql-1.1' ];
+const suites: AlgebraTestSuite[] = [ 'dawg-syntax', 'sparql11-query', 'sparql-1.1', 'sparql12' ];
 
 // https://www.w3.org/2001/sw/DataAccess/tests/r2#syntax-basic-01
 // https://www.w3.org/2009/sparql/implementations/

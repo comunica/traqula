@@ -89,9 +89,9 @@ void,
       const registered = new Set<string>();
       for (const annotation of triple.annotations) {
         let subject: RDF.Term;
-        if (F.isTripleCollection(annotation)) {
+        const tripleCollection = F.isTripleCollection(annotation);
+        if (tripleCollection) {
           subject = SUBRULE(translateTerm12, annotation.identifier);
-          // SUBRULE(translateTripleCollection12, annotation, result);
           if (registered.has(termToString(subject))) {
             continue;
           }
@@ -104,6 +104,9 @@ void,
           predicate: dataFactory.namedNode(reificationIri),
           object: asTerm,
         });
+        if (tripleCollection) {
+          // SUBRULE(translateTripleCollection12, annotation, result);
+        }
       }
     }
   },

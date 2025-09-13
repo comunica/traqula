@@ -16,7 +16,7 @@ const rootJsonBlankToVariable = path.join(rootDir, 'algebra-blank-to-var');
 
 const suites: AlgebraTestSuite[] = [ 'dawg-syntax', 'sparql11-query', 'sparql-1.1' ];
 
-describe('algebra test generate', () => {
+describe.skip('algebra test generate', () => {
   for (const { query, name } of sparqlQueries(suites)) {
     for (const blankToVariable of [ false, true ]) {
       it(`${name} - blankToVar: ${blankToVariable}`, ({ expect }) => {

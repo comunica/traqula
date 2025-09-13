@@ -91,6 +91,7 @@ void,
         let subject: RDF.Term;
         if (F.isTripleCollection(annotation)) {
           subject = SUBRULE(translateTerm12, annotation.identifier);
+          // SUBRULE(translateTripleCollection12, annotation, result);
           if (registered.has(termToString(subject))) {
             continue;
           }

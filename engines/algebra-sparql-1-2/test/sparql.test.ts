@@ -2,9 +2,11 @@ import type { Algebra } from '@traqula/algebra-transformations-1-1';
 import { Canonicalizer, utils } from '@traqula/algebra-transformations-1-1';
 import { Generator as Generator12 } from '@traqula/generator-sparql-1-2';
 import { Parser as Parser12 } from '@traqula/parser-sparql-1-2';
-import { positiveTest, sparqlAlgebraTests } from '@traqula/test-utils';
+import { type AlgebraTestSuite, positiveTest, sparqlAlgebraTests } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
 import { toAst, toAlgebra } from '../lib';
+
+const suites: AlgebraTestSuite[] = [ 'dawg-syntax', 'sparql11-query', 'sparql-1.1' ];
 
 // https://www.w3.org/2001/sw/DataAccess/tests/r2#syntax-basic-01
 // https://www.w3.org/2009/sparql/implementations/
@@ -15,7 +17,7 @@ describe('sparql output', () => {
   const generator = new Generator12();
 
   describe('sparqlAlgebraTests', () => {
-    for (const test of sparqlAlgebraTests(false, false)) {
+    for (const test of sparqlAlgebraTests(suites, false, false)) {
       const { name, json, quads } = test;
       const expected = <Algebra.Operation> json;
       it (name, ({ expect }) => {

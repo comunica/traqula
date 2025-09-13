@@ -1,8 +1,10 @@
 import type { Algebra } from '@traqula/algebra-transformations-1-1';
 import { Factory, utils } from '@traqula/algebra-transformations-1-1';
-import { sparqlAlgebraTests } from '@traqula/test-utils';
+import { type AlgebraTestSuite, sparqlAlgebraTests } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
 import { toAlgebra, toAst } from '../lib';
+
+const suites: AlgebraTestSuite[] = [ 'dawg-syntax', 'sparql11-query', 'sparql-1.1' ];
 
 // https://www.w3.org/2001/sw/DataAccess/tests/r2#syntax-basic-01
 // https://www.w3.org/2009/sparql/implementations/
@@ -10,7 +12,7 @@ import { toAlgebra, toAst } from '../lib';
 describe('util functions', () => {
   const factory = new Factory();
 
-  for (const test of sparqlAlgebraTests(false, true)) {
+  for (const test of sparqlAlgebraTests(suites, false, true)) {
     const { name, json: expected } = test;
     it (name, ({ expect }) => {
       const clone: Algebra.Operation = utils.mapOperation(<Algebra.Operation>expected, {});

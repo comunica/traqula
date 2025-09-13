@@ -1,0 +1,6 @@
+PREFIX : <http://example.com/ns#>
+VERsion '1.2'
+
+SELECT * {
+  ?s ?p ?o {| :r ?Z |} .
+}

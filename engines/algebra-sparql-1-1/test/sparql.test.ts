@@ -2,11 +2,10 @@ import type { Algebra } from '@traqula/algebra-transformations-1-1';
 import { Canonicalizer, utils } from '@traqula/algebra-transformations-1-1';
 import { Generator as Generator11 } from '@traqula/generator-sparql-1-1';
 import { Parser as Parser11 } from '@traqula/parser-sparql-1-1';
-import { type AlgebraTestSuite, positiveTest, sparqlAlgebraTests } from '@traqula/test-utils';
+import { positiveTest, sparqlAlgebraTests } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
 import { toAlgebra, toAst } from '../lib';
-
-const suites: AlgebraTestSuite[] = [ 'dawg-syntax', 'sparql11-query', 'sparql-1.1' ];
+import { suites } from './algebra.test';
 
 // https://www.w3.org/2001/sw/DataAccess/tests/r2#syntax-basic-01
 // https://www.w3.org/2009/sparql/implementations/
@@ -17,17 +16,21 @@ describe('sparql output', () => {
   const generator = new Generator11();
 
   describe('sparqlAlgebraTests', () => {
-    for (const test of sparqlAlgebraTests(suites, false, false)) {
-      const { name, json, quads } = test;
-      const expected = <Algebra.Operation> json;
-      it (name, ({ expect }) => {
-        const genAst = toAst(expected);
-        // Console.log(JSON.stringify(genAst, null, 2));
-        const genQuery = generator.generate(genAst);
-        // Console.log(genQuery);
-        const ast = parser.parse(genQuery);
-        const algebra = utils.objectify(toAlgebra(ast, { quads }));
-        expect(canon.canonicalizeQuery(algebra, false)).toEqual(canon.canonicalizeQuery(expected, false));
+    for (const suite of suites) {
+      describe(suite, () => {
+        for (const test of sparqlAlgebraTests(suite, false, false)) {
+          const { name, json, quads } = test;
+          const expected = <Algebra.Operation> json;
+          it (name, ({ expect }) => {
+            const genAst = toAst(expected);
+            // Console.log(JSON.stringify(genAst, null, 2));
+            const genQuery = generator.generate(genAst);
+            // Console.log(genQuery);
+            const ast = parser.parse(genQuery);
+            const algebra = utils.objectify(toAlgebra(ast, { quads }));
+            expect(canon.canonicalizeQuery(algebra, false)).toEqual(canon.canonicalizeQuery(expected, false));
+          });
+        }
       });
     }
   });

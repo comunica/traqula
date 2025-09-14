@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v0.0.11"></a>
+## [v0.0.11](https://github.com/comunica/traqula/compare/v0.0.10...v0.0.11) - 2025-09-14
+
+* [Algebra 1.2 support - tested](https://github.com/comunica/traqula/commit/fb5b94094c8372789275c3eda410243d8f5fd155)
+
 <a name="v0.0.10"></a>
 ## [v0.0.10](https://github.com/comunica/traqula/compare/v0.0.9...v0.0.10) - 2025-09-10
 

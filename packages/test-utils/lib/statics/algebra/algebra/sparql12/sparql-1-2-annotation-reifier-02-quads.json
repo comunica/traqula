@@ -61,5 +61,10 @@
       }
     ]
   },
-  "variables": []
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "source"
+    }
+  ]
 }

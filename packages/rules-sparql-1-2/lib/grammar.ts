@@ -27,7 +27,7 @@ import type {
   TripleCollectionReifiedTriple,
   TripleNesting,
 } from './sparql12Types';
-import { langTagHasCorrectRange } from './validator';
+import { langTagHasCorrectRange } from './validators';
 
 /**
  *[[7]](https://www.w3.org/TR/sparql12-query/#rVersionDecl)

@@ -56,6 +56,30 @@
         "termType": "DefaultGraph",
         "value": ""
       }
+    },
+    {
+      "type": "pattern",
+      "termType": "Quad",
+      "subject": {
+        "termType": "BlankNode",
+        "value": "g_0"
+      },
+      "predicate": {
+        "termType": "NamedNode",
+        "value": "http://example.com/ns#added"
+      },
+      "object": {
+        "termType": "Literal",
+        "value": "Property :r",
+        "datatype": {
+          "termType": "NamedNode",
+          "value": "http://www.w3.org/2001/XMLSchema#string"
+        }
+      },
+      "graph": {
+        "termType": "DefaultGraph",
+        "value": ""
+      }
     }
   ],
   "where": {

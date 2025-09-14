@@ -105,6 +105,14 @@
     {
       "termType": "Variable",
       "value": "s"
+    },
+    {
+      "termType": "Variable",
+      "value": "Z1"
+    },
+    {
+      "termType": "Variable",
+      "value": "Z2"
     }
   ]
 }

@@ -73,6 +73,10 @@
     {
       "termType": "Variable",
       "value": "s"
+    },
+    {
+      "termType": "Variable",
+      "value": "Z"
     }
   ]
 }

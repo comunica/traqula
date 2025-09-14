@@ -199,11 +199,15 @@ export const findAllVariables: AlgebraIndir<'findAllVariables', void, [object]> 
 /**
  * 18.2.1
  */
-export function inScopeVariables(thingy: SparqlQuery | TripleNesting | TripleCollection | Path | Term): Set<string> {
-  const vars = new Set<string>();
-  findPatternBoundedVars(thingy, vars);
-  return vars;
-}
+export const inScopeVariables:
+AlgebraIndir<'inScopeVariables', Set<string>, [SparqlQuery | TripleNesting | TripleCollection | Path | Term]> = {
+  name: 'inScopeVariables',
+  fun: () => (_, thingy) => {
+    const vars = new Set<string>();
+    findPatternBoundedVars(thingy, vars);
+    return vars;
+  },
+};
 
 export const generateFreshVar: AlgebraIndir<'generateFreshVar', RDF.Variable, []> = {
   name: 'generateFreshVar',

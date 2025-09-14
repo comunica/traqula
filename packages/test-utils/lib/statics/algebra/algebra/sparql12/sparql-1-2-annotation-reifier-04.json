@@ -97,5 +97,14 @@
       }
     ]
   },
-  "variables": []
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "q"
+    },
+    {
+      "termType": "Variable",
+      "value": "z"
+    }
+  ]
 }

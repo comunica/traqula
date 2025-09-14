@@ -33,6 +33,7 @@ import {
   translateBoundAggregate,
   translateQuery,
   createAlgebraContext,
+  inScopeVariables,
 } from '@traqula/algebra-transformations-1-1';
 import type { Algebra, ContextConfigs } from '@traqula/algebra-transformations-1-1';
 import { IndirBuilder } from '@traqula/core';
@@ -54,6 +55,7 @@ export const toAlgebra11Builder = IndirBuilder
     translateDatasetClause,
     translateBlankNodesToVariables,
     findAllVariables,
+    inScopeVariables,
     generateFreshVar,
     // Path
     translatePath,

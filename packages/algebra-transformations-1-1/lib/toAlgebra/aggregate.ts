@@ -91,7 +91,7 @@ export const translateAggregates: AlgebraIndir<'translateAggregates', Algebra.Op
     if (variables) {
       // Sort variables for consistent output
       if (variables.some(wild => F.isWildcard(wild))) {
-        PatternValues = [ ...inScopeVariables(query).values() ].map(x => c.dataFactory.variable(x))
+        PatternValues = [ ...SUBRULE(inScopeVariables, query).values() ].map(x => c.dataFactory.variable(x))
           .sort((left, right) => left.value.localeCompare(right.value));
       } else {
         // Wildcard has been filtered out above

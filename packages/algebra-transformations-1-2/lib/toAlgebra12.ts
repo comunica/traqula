@@ -7,7 +7,16 @@ import {
 } from '@traqula/algebra-transformations-1-1';
 import type { FlattenedTriple } from '@traqula/algebra-transformations-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
-import type { Term, TripleCollection, TripleNesting } from '@traqula/rules-sparql-1-2';
+import type {
+  Path,
+  SparqlQuery,
+  Term,
+  TripleCollection,
+  TripleNesting,
+} from '@traqula/rules-sparql-1-2';
+import {
+  findPatternBoundedVars,
+} from '@traqula/rules-sparql-1-2';
 import { termToString } from 'rdf-string';
 import type { AlgebraIndir } from './types';
 
@@ -105,9 +114,22 @@ void,
           object: asTerm,
         });
         if (tripleCollection) {
-          // SUBRULE(translateTripleCollection12, annotation, result);
+          SUBRULE(translateTripleCollection12, annotation, result);
         }
       }
     }
+  },
+};
+
+/**
+ * 18.2.1
+ */
+export const inScopeVariables:
+AlgebraIndir<'inScopeVariables', Set<string>, [SparqlQuery | TripleNesting | TripleCollection | Path | Term]> = {
+  name: 'inScopeVariables',
+  fun: () => (_, thingy) => {
+    const vars = new Set<string>();
+    findPatternBoundedVars(thingy, vars);
+    return vars;
   },
 };

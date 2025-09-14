@@ -1,7 +1,6 @@
 import type * as RDF from '@rdfjs/types';
-import { type IndirDef, Transformer } from '@traqula/core';
-import { Factory as AstFactory } from '@traqula/rules-sparql-1-1';
-import type { Sparql11Nodes } from '@traqula/rules-sparql-1-1';
+import type { IndirDef } from '@traqula/core';
+import { Factory as AstFactory, TransformerSparql11 } from '@traqula/rules-sparql-1-1';
 import * as Algebra from '../algebra';
 import { Factory } from '../factory';
 import { types } from '../toAlgebra';
@@ -30,7 +29,7 @@ export interface AstContext {
   order: Algebra.Expression[];
   factory: Factory;
   astFactory: AstFactory;
-  transformer: Transformer<Sparql11Nodes>;
+  transformer: TransformerSparql11;
 }
 
 export function createAstContext(): AstContext {
@@ -42,7 +41,7 @@ export function createAstContext(): AstContext {
     order: [],
     factory: new Factory(),
     astFactory: new AstFactory(),
-    transformer: new Transformer<Sparql11Nodes>(),
+    transformer: new TransformerSparql11(),
   };
 }
 

@@ -1,6 +1,6 @@
-import { Transformer } from '@traqula/core';
 import { Parser } from '@traqula/parser-sparql-1-2';
 import type * as T11 from '@traqula/rules-sparql-1-1';
+import { TransformerSparql11 } from '@traqula/rules-sparql-1-1';
 import type * as T12 from '@traqula/rules-sparql-1-2';
 import { Factory } from '@traqula/rules-sparql-1-2';
 import { describe, it } from 'vitest';
@@ -10,7 +10,7 @@ describe('a SPARQL 1.2 generator', () => {
   const generator = new Generator();
   const parser = new Parser();
   const F = new Factory();
-  const transformer = new Transformer<T12.Sparql12Nodes>();
+  const transformer = new TransformerSparql11();
 
   it ('generates simple round tripped', ({ expect }) => {
     const query = 'SELECT * WHERE { ?s ?p ?o }';

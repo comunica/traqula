@@ -1,3 +1,6 @@
+import { TransformerSubType } from '@traqula/core';
+import type { Sparql11Nodes } from './Sparql11types';
+
 /**
  * Transform input in accordance to [19.2](https://www.w3.org/TR/sparql11-query/#codepointEscape)
  * and validate unicode codepoints.
@@ -38,3 +41,5 @@ export enum CommonIRIs {
   NIL = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#nil',
   TYPE = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
 }
+
+export class TransformerSparql11 extends TransformerSubType<Sparql11Nodes> {}

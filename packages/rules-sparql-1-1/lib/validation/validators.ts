@@ -1,4 +1,3 @@
-import { Transformer } from '@traqula/core';
 import { Factory } from '../factory';
 import type {
   Wildcard,
@@ -9,7 +8,6 @@ import type {
   TermVariable,
   SolutionModifierGroupBind,
   PatternBgp,
-  Sparql11Nodes,
   Update,
   PatternBind,
   TripleCollection,
@@ -18,9 +16,10 @@ import type {
   Term,
   SparqlQuery,
 } from '../Sparql11types';
+import { TransformerSparql11 } from '../utils';
 
 const F = new Factory();
-const transformer = new Transformer<Sparql11Nodes>();
+const transformer = new TransformerSparql11();
 
 /**
  * Get all 'aggregate' rules from an expression

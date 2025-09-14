@@ -1,5 +1,5 @@
 import type * as RDF from '@rdfjs/types';
-import { Transformer } from '@traqula/core';
+import { TransformerType } from '@traqula/core';
 import { someTermsNested } from 'rdf-terms';
 import type * as A from './algebra';
 import { ExpressionTypes, Types } from './algebra';
@@ -202,7 +202,7 @@ export function inScopeVariables(op: A.Operation): RDF.Variable[] {
 }
 
 // TODO: can this replace recurseOperation?
-export class AlgebraTransformer extends Transformer<A.Operation> {}
+export class AlgebraTransformer extends TransformerType<A.Operation> {}
 
 /**
  * Recurses through the given algebra tree

@@ -3,7 +3,18 @@ import type { Node } from './nodeTypings';
 type Safeness = 'safe' | 'unsafe';
 type SafeWrap<Safe extends Safeness, obj extends object> = Safe extends 'safe' ? {[key in keyof obj]: unknown } : obj;
 
-export class Transformer<Nodes extends Pick<Node, 'type' | 'subType'>> {
+export class TransformerType<Nodes extends Pick<Node, 'type'>> {
+  protected safeObjectVisit(value: unknown, mapper: (some: object) => any): unknown {
+    if (value && typeof value === 'object') {
+      // If you wonder why this is all so hard, this is the reason. We cannot lose the methods of our Array objects
+      if (Array.isArray(value)) {
+        return value.map(x => this.safeObjectVisit(x, mapper));
+      }
+      return mapper(value);
+    }
+    return value;
+  }
+
   public transformNode<Safe extends 'safe' | 'unsafe' = 'safe'>(
     curObject: object,
     nodeCallBacks: {[T in Nodes['type']]?: {
@@ -36,6 +47,28 @@ export class Transformer<Nodes extends Pick<Node, 'type' | 'subType'>> {
     return copy;
   }
 
+  public visitNode(
+    curObject: object,
+    nodeCallBacks: {[T in Nodes['type']]?: (op: Extract<Nodes, { type: T }>) => boolean },
+  ): void {
+    let callback: ((node: any) => boolean) | undefined;
+    const casted = <{ type?: Nodes['type'] }>curObject;
+    if (casted.type) {
+      callback = nodeCallBacks[casted.type];
+    }
+    let shouldIterate = true;
+    if (callback) {
+      shouldIterate = callback(curObject);
+    }
+    if (shouldIterate) {
+      for (const value of Object.values(curObject)) {
+        this.safeObjectVisit(value, obj => this.visitNode(obj, nodeCallBacks));
+      }
+    }
+  }
+}
+
+export class TransformerSubType<Nodes extends Pick<Node, 'type' | 'subType'>> extends TransformerType<Nodes> {
   // Public visitObjects(curObject: object, visitor: (current: object) => void): void {
   //   for (const value of Object.values(curObject)) {
   //     this.safeObjectVisit(value, obj => this.visitObjects(obj, visitor));
@@ -82,26 +115,6 @@ export class Transformer<Nodes extends Pick<Node, 'type' | 'subType'>> {
     return copy;
   }
 
-  public visitNode(
-    curObject: object,
-    nodeCallBacks: {[T in Nodes['type']]?: (op: Extract<Nodes, { type: T }>) => boolean },
-  ): void {
-    let callback: ((node: any) => boolean) | undefined;
-    const casted = <{ type?: Nodes['type'] }>curObject;
-    if (casted.type) {
-      callback = nodeCallBacks[casted.type];
-    }
-    let shouldIterate = true;
-    if (callback) {
-      shouldIterate = callback(curObject);
-    }
-    if (shouldIterate) {
-      for (const value of Object.values(curObject)) {
-        this.safeObjectVisit(value, obj => this.visitNode(obj, nodeCallBacks));
-      }
-    }
-  }
-
   /**
    * When both nodeCallBack and NodeSpecific callBack are matched, will only look at nodeSpecifCallback
    */
@@ -132,16 +145,5 @@ export class Transformer<Nodes extends Pick<Node, 'type' | 'subType'>> {
         this.safeObjectVisit(value, obj => this.visitNodeSpecific(obj, nodeCallBacks, nodeSpecificCallBacks));
       }
     }
-  }
-
-  private safeObjectVisit(value: unknown, mapper: (some: object) => any): unknown {
-    if (value && typeof value === 'object') {
-      // If you wonder why this is all so hard, this is the reason. We cannot lose the methods of our Array objects
-      if (Array.isArray(value)) {
-        return value.map(x => this.safeObjectVisit(x, mapper));
-      }
-      return mapper(value);
-    }
-    return value;
   }
 }

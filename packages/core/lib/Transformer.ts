@@ -1,103 +1,140 @@
-import type { SubTyped } from './CoreFactory';
 import type { Node } from './nodeTypings';
 
-type MapNodeTypeToImpls<Nodes extends Node> = {[Node in Nodes as Node['type']]: Node };
-type MapNodeSubTypeToImpls<Nodes extends Node & { subType: string }> = {[Node in Nodes as Node['subType']]: Node };
+type Safeness = 'safe' | 'unsafe';
+type SafeWrap<Safe extends Safeness, obj extends object> = Safe extends 'safe' ? {[key in keyof obj]: unknown } : obj;
 
-export type AlterNodeOutput<RecursiveObject extends object, Input, Out>
-  = {
-    [Key in keyof RecursiveObject]: RecursiveObject[Key] extends object ?
-        (AlterNodeOutput<RecursiveObject[Key], Input, Out> extends Input ?
-          Out : AlterNodeOutput<RecursiveObject[Key], Input, Out>) :
-      RecursiveObject[Key]
-  };
-
-export class Transformer<
-  Nodes extends Node,
-NodeMapping extends MapNodeTypeToImpls<Nodes> & Record<string, unknown> = MapNodeTypeToImpls<Nodes>,
-> {
-  public transformNode<Input extends object, TypeFilter extends keyof NodeMapping, Out>(
-    curObject: Input,
-    searchType: TypeFilter,
-    patch: (current: NodeMapping[TypeFilter]) => Out,
-  ): AlterNodeOutput<Input, NodeMapping[TypeFilter], Out> {
+export class Transformer<Nodes extends Pick<Node, 'type' | 'subType'>> {
+  public transformNode<Safe extends 'safe' | 'unsafe' = 'safe'>(
+    curObject: object,
+    nodeCallBacks: {[T in Nodes['type']]?: {
+      transform?: (op: SafeWrap<Safe, Extract<Nodes, { type: T }>>) => any;
+      continue?: (op: Extract<Nodes, { type: T }>) => boolean;
+    }},
+  ): any {
+    let continueCheck: ((node: any) => boolean) | undefined;
+    let transformation: ((node: any) => unknown) | undefined;
+    const casted = <{ type?: Nodes['type'] }>curObject;
+    if (casted.type) {
+      continueCheck = nodeCallBacks[casted.type]?.continue;
+      transformation = nodeCallBacks[casted.type]?.transform;
+    }
+    let shouldContinue = true;
+    if (continueCheck) {
+      shouldContinue = continueCheck(curObject);
+    }
+    if (!shouldContinue) {
+      return curObject;
+    }
     const copy: { type?: unknown } = { ...curObject };
     for (const [ key, value ] of Object.entries(copy)) {
       (<Record<string, unknown>> copy)[key] =
-        this.safeObjectVisit(value, obj => this.transformNode(obj, searchType, patch));
+        this.safeObjectVisit(value, obj => this.transformNode(obj, nodeCallBacks));
     }
-    if (copy.type === searchType) {
-      return <any> patch(<NodeMapping[TypeFilter]> copy);
+    if (transformation) {
+      return transformation(copy);
     }
-    return <any> copy;
+    return copy;
   }
 
-  public transformNodeSpecific<
-    Input extends object,
-TypeFilter extends keyof NodeMapping,
-SpecificType extends keyof SpecificNodes,
-Out,
-SpecificNodes = NodeMapping[TypeFilter] extends Node & { subType: string } ?
-  MapNodeSubTypeToImpls<NodeMapping[TypeFilter]> : never,
->(
-    curObject: Input,
-    searchType: TypeFilter,
-    searchSubType: SpecificType,
-    patch: (current: SpecificNodes[SpecificType]) => Out,
-  ): AlterNodeOutput<Input, SubTyped<TypeFilter, SpecificType>, Out> {
-    const copy: { type?: unknown; subType?: unknown } = { ...curObject };
+  // Public visitObjects(curObject: object, visitor: (current: object) => void): void {
+  //   for (const value of Object.values(curObject)) {
+  //     this.safeObjectVisit(value, obj => this.visitObjects(obj, visitor));
+  //   }
+  // }
+
+  public transformNodeSpecific<Safe extends 'safe' | 'unsafe' = 'safe'>(
+    curObject: object,
+    nodeCallBacks: {[T in Nodes['type']]?: {
+      transform?: (op: SafeWrap<Safe, Extract<Nodes, { type: T }>>) => any;
+      continue?: (op: Extract<Nodes, { type: T }>) => boolean;
+    }},
+    nodeSpecificCallBacks: {[Type in Nodes['type']]?: {
+      [SubType in Extract<Nodes, { type: Type; subType: string }>['subType']]?: {
+        transform?: (op: SafeWrap<Safe, Extract<Nodes, { type: Type; subType: SubType }>>) => any;
+        continue?: (op: Extract<Nodes, { type: Type; subType: SubType }>) => boolean;
+      }}} = {},
+  ): any {
+    let continueCheck: ((node: any) => boolean) | undefined;
+    let transformation: ((node: any) => unknown) | undefined;
+    const casted = <{ type?: Nodes['type']; subType?: string }>curObject;
+    if (casted.type && casted.subType) {
+      const specific = nodeSpecificCallBacks[casted.type];
+      if (specific) {
+        continueCheck = specific[<keyof typeof specific> casted.subType]?.continue;
+        transformation = specific[<keyof typeof specific> casted.subType]?.transform;
+      }
+    }
+    let shouldContinue = true;
+    if (continueCheck) {
+      shouldContinue = continueCheck(curObject);
+    }
+    if (!shouldContinue) {
+      return curObject;
+    }
+    const copy: { type?: unknown } = { ...curObject };
     for (const [ key, value ] of Object.entries(copy)) {
       (<Record<string, unknown>> copy)[key] =
-        this.safeObjectVisit(value, obj => this.transformNodeSpecific(obj, searchType, searchSubType, patch));
+        this.safeObjectVisit(value, obj => this.transformNodeSpecific(obj, nodeCallBacks, nodeSpecificCallBacks));
     }
-    if (copy.type === searchType && copy.subType === searchSubType) {
-      return <any> patch(<SpecificNodes[SpecificType]> copy);
+    if (transformation) {
+      return transformation(copy);
     }
-    return <any> copy;
+    return copy;
   }
 
-  public visitObjects(curObject: object, visitor: (current: object) => void): void {
-    visitor(curObject);
-    for (const value of Object.values(curObject)) {
-      this.safeObjectVisit(value, obj => this.visitObjects(obj, visitor));
-    }
-  }
-
-  public visitNode<Input extends object, TypeFilter extends keyof NodeMapping>(
-    curObject: Input,
-    searchType: TypeFilter,
-    visitor: (current: Readonly<NodeMapping[TypeFilter]>) => void,
+  public visitNode(
+    curObject: object,
+    nodeCallBacks: {[T in Nodes['type']]?: (op: Extract<Nodes, { type: T }>) => boolean },
   ): void {
-    for (const value of Object.values(curObject)) {
-      this.safeObjectVisit(value, obj => this.visitNode(obj, searchType, visitor));
+    let callback: ((node: any) => boolean) | undefined;
+    const casted = <{ type?: Nodes['type'] }>curObject;
+    if (casted.type) {
+      callback = nodeCallBacks[casted.type];
     }
-    if ((<{ type?: unknown }>curObject).type === searchType) {
-      visitor(<NodeMapping[TypeFilter]> curObject);
+    let shouldIterate = true;
+    if (callback) {
+      shouldIterate = callback(curObject);
+    }
+    if (shouldIterate) {
+      for (const value of Object.values(curObject)) {
+        this.safeObjectVisit(value, obj => this.visitNode(obj, nodeCallBacks));
+      }
     }
   }
 
-  public visitNodeSpecific<
-    Input extends object,
-TypeFilter extends keyof NodeMapping,
-SpecificType extends keyof SpecificNodes,
-SpecificNodes = NodeMapping[TypeFilter] extends Node & { subType: string } ?
-  MapNodeSubTypeToImpls<NodeMapping[TypeFilter]> : never,
- >(
-    curObject: Input,
-    searchType: TypeFilter,
-    searchSubType: SpecificType,
-    visitor: (current: Readonly<SpecificNodes[SpecificType]>) => void,
+  /**
+   * When both nodeCallBack and NodeSpecific callBack are matched, will only look at nodeSpecifCallback
+   */
+  public visitNodeSpecific(
+    curObject: object,
+    nodeCallBacks: {[T in Nodes['type']]?: (op: Extract<Nodes, { type: T }>) => boolean | void },
+    nodeSpecificCallBacks: {[Type in Nodes['type']]?:
+      {[Subtype in Extract<Nodes, { type: Type; subType: string }>['subType']]?:
+        (op: Extract<Nodes, { type: Type; subType: Subtype }>) => boolean | void }} = {},
   ): void {
-    for (const value of Object.values(curObject)) {
-      this.safeObjectVisit(value, obj => this.visitNodeSpecific(obj, searchType, searchSubType, visitor));
+    let callback: ((node: any) => boolean | void) | undefined;
+    const casted = <{ type?: Nodes['type']; subType?: string }> curObject;
+    if (casted.type && casted.subType) {
+      const specific = nodeSpecificCallBacks[casted.type];
+      if (specific) {
+        callback = specific[<keyof typeof specific>casted.subType];
+      }
     }
-    const cast = <{ type?: unknown; subType?: unknown }>curObject;
-    if (cast.type === searchType && cast.subType === searchSubType) {
-      visitor(<SpecificNodes[SpecificType]> curObject);
+    if (!callback && casted.type) {
+      callback = nodeCallBacks[(<{ type: Nodes['type'] }> curObject).type];
+    }
+    let shouldIterate = true;
+    if (callback) {
+      shouldIterate = callback(curObject) ?? true;
+    }
+    if (shouldIterate) {
+      for (const value of Object.values(curObject)) {
+        this.safeObjectVisit(value, obj => this.visitNodeSpecific(obj, nodeCallBacks, nodeSpecificCallBacks));
+      }
     }
   }
 
-  private safeObjectVisit(value: unknown, mapper: (some: object) => any): any {
+  private safeObjectVisit(value: unknown, mapper: (some: object) => any): unknown {
     if (value && typeof value === 'object') {
       // If you wonder why this is all so hard, this is the reason. We cannot lose the methods of our Array objects
       if (Array.isArray(value)) {

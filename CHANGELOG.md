@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v0.0.12"></a>
+## [v0.0.12](https://github.com/comunica/traqula/compare/v0.0.11...v0.0.12) - 2025-09-14
+
+* [Better implementation of our transformer. (#55)](https://github.com/comunica/traqula/commit/baf4aacadd8ef4922dafe2ecc1dcf11c95ce431c)
+* [Update actions/upload-pages-artifact action to v4 (#54)](https://github.com/comunica/traqula/commit/24c7e503d14ebc005c50cadd40996428c7983c95)
+* [Update actions/setup-node action to v5 (#53)](https://github.com/comunica/traqula/commit/743f96b80aa87299d727c8991d9c475e562122f7)
+
 <a name="v0.0.11"></a>
 ## [v0.0.11](https://github.com/comunica/traqula/compare/v0.0.10...v0.0.11) - 2025-09-14
 

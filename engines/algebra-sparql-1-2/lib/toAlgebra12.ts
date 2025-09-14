@@ -2,6 +2,7 @@ import { toAlgebra11Builder } from '@traqula/algebra-sparql-1-1';
 import type { Algebra, ContextConfigs, translateQuery } from '@traqula/algebra-transformations-1-1';
 import {
   createAlgebraContext,
+  inScopeVariables,
   translateTerm12,
   translateTripleCollection12,
   translateTripleNesting12,
@@ -16,6 +17,7 @@ export const toAlgebra12Builder = IndirBuilder
   .patchRule(translateTerm12)
   .patchRule(translateTripleCollection12)
   .patchRule(translateTripleNesting12)
+  .patchRule(inScopeVariables)
   .typePatch<{
     [translateQuery.name]: [Algebra.Operation, [SparqlQuery, boolean | undefined, boolean | undefined]];
   }>();

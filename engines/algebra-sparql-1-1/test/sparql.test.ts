@@ -5,6 +5,7 @@ import { Parser as Parser11 } from '@traqula/parser-sparql-1-1';
 import { positiveTest, sparqlAlgebraTests } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
 import { toAlgebra, toAst } from '../lib';
+import { suites } from './algebra.test';
 
 // https://www.w3.org/2001/sw/DataAccess/tests/r2#syntax-basic-01
 // https://www.w3.org/2009/sparql/implementations/
@@ -15,17 +16,21 @@ describe('sparql output', () => {
   const generator = new Generator11();
 
   describe('sparqlAlgebraTests', () => {
-    for (const test of sparqlAlgebraTests(false, false)) {
-      const { name, json, quads } = test;
-      const expected = <Algebra.Operation> json;
-      it (name, ({ expect }) => {
-        const genAst = toAst(expected);
-        // Console.log(JSON.stringify(genAst, null, 2));
-        const genQuery = generator.generate(genAst);
-        // Console.log(genQuery);
-        const ast = parser.parse(genQuery);
-        const algebra = utils.objectify(toAlgebra(ast, { quads }));
-        expect(canon.canonicalizeQuery(algebra, false)).toEqual(canon.canonicalizeQuery(expected, false));
+    for (const suite of suites) {
+      describe(suite, () => {
+        for (const test of sparqlAlgebraTests(suite, false, false)) {
+          const { name, json, quads } = test;
+          const expected = <Algebra.Operation> json;
+          it (name, ({ expect }) => {
+            const genAst = toAst(expected);
+            // Console.log(JSON.stringify(genAst, null, 2));
+            const genQuery = generator.generate(genAst);
+            // Console.log(genQuery);
+            const ast = parser.parse(genQuery);
+            const algebra = utils.objectify(toAlgebra(ast, { quads }));
+            expect(canon.canonicalizeQuery(algebra, false)).toEqual(canon.canonicalizeQuery(expected, false));
+          });
+        }
       });
     }
   });

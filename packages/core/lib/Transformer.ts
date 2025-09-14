@@ -57,6 +57,7 @@ SpecificNodes = NodeMapping[TypeFilter] extends Node & { subType: string } ?
   }
 
   public visitObjects(curObject: object, visitor: (current: object) => void): void {
+    visitor(curObject);
     for (const value of Object.values(curObject)) {
       this.safeObjectVisit(value, obj => this.visitObjects(obj, visitor));
     }

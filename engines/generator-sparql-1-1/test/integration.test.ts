@@ -1,7 +1,6 @@
-import { Transformer } from '@traqula/core';
 import { Parser } from '@traqula/parser-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
-import { Factory } from '@traqula/rules-sparql-1-1';
+import { Factory, TransformerSparql11 } from '@traqula/rules-sparql-1-1';
 import { describe, it } from 'vitest';
 import { Generator } from '../lib';
 
@@ -9,7 +8,7 @@ describe('a SPARQL 1.1 generator', () => {
   const generator = new Generator();
   const parser = new Parser();
   const F = new Factory();
-  const transformer = new Transformer<T11.Sparql11Nodes>();
+  const transformer = new TransformerSparql11();
 
   it ('generates simple round tripped', ({ expect }) => {
     const query = 'SELECT * WHERE { ?s ?p ?o }';
@@ -23,16 +22,14 @@ describe('a SPARQL 1.1 generator', () => {
       const query = 'SELECT * WHERE { ?s ?p ?o }';
       const ast = <T11.Query> parser.parse(query);
 
-      const altered = transformer.transformNodeSpecific(
+      const altered = transformer.transformNodeSpecific<'unsafe'>(
         ast,
-        'term',
-        'variable',
-        (current) => {
-          if (current.value === 's') {
-            return F.variable('subject', F.sourceLocationNodeReplaceUnsafe(current.loc));
-          }
-          return current;
-        },
+        {},
+        { term: { variable: {
+          transform: variable => variable.value === 's' ?
+            F.variable('subject', F.sourceLocationNodeReplaceUnsafe(variable.loc)) :
+            variable,
+        }}},
       );
 
       const result = generator.generate(altered, { origSource: query });
@@ -77,37 +74,39 @@ WHERE {
         }
         return result;
       }
-      const flattenCollections = transformer.transformNodeSpecific(
+
+      const flattenCollections = transformer.transformNodeSpecific<'unsafe'>(
         ast,
-        'pattern',
-        'bgp',
-        (current) => {
-          const bgpCopy = F.forcedAutoGenTree(current);
-          const newTriples: T11.TripleNesting[] = [];
-          for (const entry of bgpCopy.triples) {
-            if (F.isTriple(entry)) {
-              const subject = entry.subject;
-              const pred = entry.predicate;
-              if (F.isTripleCollection(entry.object)) {
-                const object = entry.object;
-                const identifier = { ...F.graphNodeIdentifier(object) };
-                newTriples.push(F.triple(subject, pred, identifier));
-                newTriples.push(...extractCollection(object));
+        {},
+        { pattern: { bgp: {
+          transform: (current) => {
+            const bgpCopy = F.forcedAutoGenTree(current);
+            const newTriples: T11.TripleNesting[] = [];
+            for (const entry of bgpCopy.triples) {
+              if (F.isTriple(entry)) {
+                const subject = entry.subject;
+                const pred = entry.predicate;
+                if (F.isTripleCollection(entry.object)) {
+                  const object = entry.object;
+                  const identifier = { ...F.graphNodeIdentifier(object) };
+                  newTriples.push(F.triple(subject, pred, identifier));
+                  newTriples.push(...extractCollection(object));
+                } else {
+                  newTriples.push(F.triple(
+                    subject,
+                    pred,
+                    entry.object,
+                    F.gen(),
+                  ));
+                }
               } else {
-                newTriples.push(F.triple(
-                  subject,
-                  pred,
-                  entry.object,
-                  F.gen(),
-                ));
+                const genTriples = extractCollection(entry);
+                newTriples.push(...genTriples);
               }
-            } else {
-              const genTriples = extractCollection(entry);
-              newTriples.push(...genTriples);
             }
-          }
-          return F.patternBgp(newTriples, F.sourceLocationNodeReplaceUnsafe(current.loc));
-        },
+            return F.patternBgp(newTriples, F.sourceLocationNodeReplaceUnsafe(current.loc));
+          },
+        }}},
       );
 
       const result = generator.generate(flattenCollections, { origSource: query });

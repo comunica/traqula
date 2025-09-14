@@ -181,18 +181,21 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
  */
 export const findAllVariables: AlgebraIndir<'findAllVariables', void, [object]> = {
   name: 'findAllVariables',
-  fun: () => ({ transformer, astFactory: F, variables }, thingy) => {
-    transformer.visitObjects(thingy, (current) => {
-      if (F.alwaysSparql11(current)) {
-        if (F.isTermVariable(current)) {
-          variables.add(current.value);
-        } else if (F.isPatternValues(current)) {
-          for (const key in current.values.at(0) ?? {}) {
+  fun: () => ({ transformer, variables }, thingy) => {
+    transformer.visitNodeSpecific(
+      thingy,
+      {},
+      {
+        term: { variable: (_var) => {
+          variables.add(_var.value);
+        } },
+        pattern: { values: (values) => {
+          for (const key in values.values.at(0) ?? {}) {
             variables.add(key);
           }
-        }
-      }
-    });
+        } },
+      },
+    );
   },
 };
 

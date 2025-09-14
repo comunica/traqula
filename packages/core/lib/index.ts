@@ -15,4 +15,4 @@ export * from './parser-builder/ruleDefTypes';
 export * from './utils';
 export * from './CoreFactory';
 export * from './nodeTypings';
-export * from './Transformer';
+export * from './Transformers';

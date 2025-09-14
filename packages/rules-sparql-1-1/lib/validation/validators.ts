@@ -1,4 +1,3 @@
-import { Transformer } from '@traqula/core';
 import { Factory } from '../factory';
 import type {
   Wildcard,
@@ -9,7 +8,6 @@ import type {
   TermVariable,
   SolutionModifierGroupBind,
   PatternBgp,
-  Sparql11Nodes,
   Update,
   PatternBind,
   TripleCollection,
@@ -18,9 +16,10 @@ import type {
   Term,
   SparqlQuery,
 } from '../Sparql11types';
+import { TransformerSparql11 } from '../utils';
 
 const F = new Factory();
-const transformer = new Transformer<Sparql11Nodes>();
+const transformer = new TransformerSparql11();
 
 /**
  * Get all 'aggregate' rules from an expression
@@ -212,7 +211,9 @@ export function checkNote13(patterns: Pattern[]): void {
       // Find variables used.
       const variables: TermVariable[] = [];
       // TODO: this is slow! 2.6% self execution
-      transformer.visitNodeSpecific(bgp, 'term', 'variable', var_ => variables.push(var_));
+      transformer.visitNodeSpecific(bgp, {}, { term: { variable: (var_) => {
+        variables.push(var_);
+      } }});
       if (variables.some(var_ => var_.value === pattern.variable.value)) {
         throw new Error(`Variable used to bind is already bound (?${pattern.variable.value})`);
       }
@@ -245,12 +246,12 @@ export function updateNoReuseBlankNodeLabels(updateQuery: Update): void {
     const operation = update.operation;
     if (operation.subType === 'insertdata') {
       const blankNodesHere = new Set<string>();
-      transformer.visitNodeSpecific(operation, 'term', 'blankNode', (blankNode) => {
+      transformer.visitNodeSpecific(operation, {}, { term: { blankNode: (blankNode) => {
         blankNodesHere.add(blankNode.label);
         if (blankLabelsUsedInInsertData.has(blankNode.label)) {
           throw new Error('Detected reuse blank node across different INSERT DATA clauses');
         }
-      });
+      } }});
       for (const blankNode of blankNodesHere) {
         blankLabelsUsedInInsertData.add(blankNode);
       }

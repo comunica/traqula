@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "lib",
+    "declaration": true
+  },
+  "include": ["lib", "test"]
+}

@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "lib",
+    "declaration": true
+  },
+  "references": [
+    { "path": "../../packages/core" },
+    { "path": "../../packages/rules-sparql-1-1" },
+    { "path": "../../packages/test-utils" }
+  ],
+  "include": ["lib", "test", "spec"]
+}

@@ -9,7 +9,7 @@ import type {
   TermVariable,
   Wildcard,
 } from '@traqula/rules-sparql-1-1';
-import equal from 'fast-deep-equal/es6';
+import equal from 'fast-deep-equal';
 import type { Algebra } from '../index.js';
 import type { AlgebraIndir, FlattenedTriple } from './core.js';
 import {
@@ -37,10 +37,10 @@ export const translateAggregates: AlgebraIndir<'translateAggregates', Algebra.Op
       query.variables.map(x => SUBRULE(mapAggregate, x, varAggrMap)) :
       undefined;
     const having = query.solutionModifiers.having ?
-      query.solutionModifiers.having.having.map(x => <typeof x>SUBRULE(mapAggregate, x, varAggrMap)) :
+      query.solutionModifiers.having.having.map(x => SUBRULE(mapAggregate, x, varAggrMap)) :
       undefined;
     const order = query.solutionModifiers.order ?
-      query.solutionModifiers.order.orderDefs.map(x => <typeof x>SUBRULE(mapAggregate, x, varAggrMap)) :
+      query.solutionModifiers.order.orderDefs.map(x => SUBRULE(mapAggregate, x, varAggrMap)) :
       undefined;
 
     // Step: GROUP BY - If we found an aggregate, in group by or implicitly, do Group function.
@@ -204,11 +204,11 @@ AlgebraIndir<'mapAggregate', MapAggregateType, [MapAggregateType, Record<string,
     }
 
     if (F.isExpressionPure(thingy) && !F.isExpressionPatternOperation(thingy)) {
-      return { ...thingy, args: thingy.args.map(x => <typeof x>SUBRULE(mapAggregate, x, aggregates)) };
+      return { ...thingy, args: thingy.args.map(x => SUBRULE(mapAggregate, x, aggregates)) };
     }
     // Non-aggregate expression
     if ('expression' in thingy && thingy.expression) {
-      return { ...thingy, expression: <typeof thingy.expression>SUBRULE(mapAggregate, thingy.expression, aggregates) };
+      return { ...thingy, expression: SUBRULE(mapAggregate, thingy.expression, aggregates) };
     }
     return thingy;
   },

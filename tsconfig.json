@@ -1,35 +1,20 @@
 {
-  "compileOnSave": true,
-  "compilerOptions": {
-    "composite": true,
-    "target": "es2022",
-    "lib": [
-      "es2022",
-      "dom"
-    ],
-    "module": "ES2022",
-    "moduleResolution": "node",
-    "types": ["vitest/globals"],
-    "strict": true,
-    "strictFunctionTypes": true,
-    "strictPropertyInitialization": false,
-    "noImplicitOverride": true,
-    "declaration": true,
-    "downlevelIteration": true,
-    "inlineSources": true,
-    "preserveConstEnums": true,
-    "removeComments": false,
-    "sourceMap": true,
+  "references": [
+    { "path": "packages/algebra-transformations-1-1" },
+    { "path": "packages/algebra-transformations-1-2" },
+    { "path": "packages/core" },
+    { "path": "packages/rules-sparql-1-1" },
+    { "path": "packages/rules-sparql-1-1-adjust" },
+    { "path": "packages/rules-sparql-1-2" },
+    { "path": "packages/test-utils" },
 
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true
-  },
-  "include": [
-    "engines/*/lib/**/*.ts",
-    "engines/*/spec/**/*.ts",
-    "engines/*/test/**/*.ts",
-    "packages/*/lib/**/*.ts",
-    "packages/*/test/**/*.ts"
+    { "path": "engines/algebra-sparql-1-1" },
+    { "path": "engines/algebra-sparql-1-2" },
+    { "path": "engines/generator-sparql-1-1" },
+    { "path": "engines/generator-sparql-1-2" },
+    { "path": "engines/parser-sparql-1-1" },
+    { "path": "engines/parser-sparql-1-1-adjust" },
+    { "path": "engines/parser-sparql-1-2" }
   ],
   "exclude": [
     "node_modules"

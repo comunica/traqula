@@ -46,7 +46,6 @@
   },
   "devDependencies": {
     "@traqula/parser-sparql-1-1": "^0.0.13",
-    "@traqula/rules-sparql-1-1": "^0.0.1",
     "@traqula/test-utils": "^0.0.13"
   }
 }

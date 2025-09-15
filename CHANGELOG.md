@@ -1,6 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v0.0.13"></a>
+## [v0.0.13](https://github.com/comunica/traqula/compare/v0.0.12...v0.0.13) - 2025-09-15
+
+* [reified triples correct when nested](https://github.com/comunica/traqula/commit/d84e09757920408992bc933515839b068516e5f7)
+* [reifier triple collection should be used for sparql 1.2](https://github.com/comunica/traqula/commit/1b4fd79adc40949bf1a95cf6d4a42230cd97460b)
+* [SPARQL 1.2 allows not-not parsing](https://github.com/comunica/traqula/commit/8f1bcfbc4a5cedde7914bc98acb2063015e2623a)
+* [Fix: generate triple block also for explicit reifier in triple annotation](https://github.com/comunica/traqula/commit/6f43d0f1182a5073b57f216d07937ca20c0c0aed)
+
 <a name="v0.0.12"></a>
 ## [v0.0.12](https://github.com/comunica/traqula/compare/v0.0.11...v0.0.12) - 2025-09-15
 

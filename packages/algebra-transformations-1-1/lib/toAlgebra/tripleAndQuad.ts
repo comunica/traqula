@@ -22,7 +22,7 @@ AlgebraIndir<'translateBasicGraphPattern', void, [BasicGraphPattern, FlattenedTr
   fun: ({ SUBRULE }) => ({ astFactory: F }, triples, result) => {
     for (const triple of triples) {
       if (F.isTripleCollection(triple)) {
-        SUBRULE(translateBasicGraphPattern, triple.triples, result);
+        SUBRULE(translateTripleCollection, triple, result);
       } else {
         SUBRULE(translateTripleNesting, triple, result);
       }

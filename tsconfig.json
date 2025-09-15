@@ -21,8 +21,8 @@
     "removeComments": false,
     "sourceMap": true,
 
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
   },
   "include": [
     "engines/*/lib/**/*.ts",

@@ -258,6 +258,7 @@ export const sparql12ParserBuilder = ParserBuilder.create(sparql11ParserBuilder)
   .patchRule(S12.primaryExpression)
   .patchRule(S12.builtInCall)
   .patchRule(S12.rdfLiteral)
+  .patchRule(S12.unaryExpression)
   .patchRule(S12.prologue);
 
 export type SparqlParser = ReturnType<typeof sparql12ParserBuilder.build>;

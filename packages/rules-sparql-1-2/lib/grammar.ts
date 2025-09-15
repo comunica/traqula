@@ -659,6 +659,34 @@ export const rdfLiteral: SparqlGrammarRule<'rdfLiteral', RuleDefReturn<typeof S1
   },
 };
 
+export const unaryExpression: SparqlGrammarRule<(typeof S11.unaryExpression)['name'], Expression> = {
+  name: 'unaryExpression',
+  impl: ({ ACTION, CONSUME, SUBRULE1, SUBRULE2, OR1, OR2 }) => C => OR1<Expression>([
+    { ALT: () => SUBRULE1(primaryExpression) },
+    { ALT: () => {
+      const operator = CONSUME(l11.symbols.exclamation);
+      const expr = SUBRULE1(unaryExpression);
+      return ACTION(() => C.factory.expressionOperation(
+        '!',
+        [ <T11.Expression> expr ],
+        C.factory.sourceLocation(operator, expr),
+      ));
+    } },
+    { ALT: () => {
+      const operator = OR2([
+        { ALT: () => CONSUME(l11.symbols.opPlus) },
+        { ALT: () => CONSUME(l11.symbols.opMinus) },
+      ]);
+      const expr = SUBRULE2(primaryExpression);
+      return ACTION(() => C.factory.expressionOperation(
+        operator.image === '!' ? '!' : (operator.image === '+' ? 'UPLUS' : 'UMINUS'),
+        [ <T11.Expression> expr ],
+        C.factory.sourceLocation(operator, expr),
+      ));
+    } },
+  ]),
+};
+
 /**
  * OVERRIDING RULE: {@link S11.triplesBlock}.
  */

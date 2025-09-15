@@ -393,13 +393,11 @@ export const unaryExpression: SparqlGrammarRule<'unaryExpression', Expression> =
         { ALT: () => CONSUME(l.symbols.opMinus) },
       ]);
       const expr = SUBRULE2(primaryExpression);
-      return ACTION(() => ({
-        type: 'expression',
-        subType: 'operation',
-        operator: operator.image === '!' ? '!' : (operator.image === '+' ? 'UPLUS' : 'UMINUS'),
-        args: [ expr ],
-        loc: C.factory.sourceLocation(operator, expr),
-      }));
+      return ACTION(() => C.factory.expressionOperation(
+        operator.image === '!' ? '!' : (operator.image === '+' ? 'UPLUS' : 'UMINUS'),
+        [ expr ],
+        C.factory.sourceLocation(operator, expr),
+      ));
     } },
   ]),
 };

@@ -58,6 +58,26 @@
           "termType": "DefaultGraph",
           "value": ""
         }
+      },
+      {
+        "type": "pattern",
+        "termType": "Quad",
+        "subject": {
+          "termType": "NamedNode",
+          "value": "http://example.com/ns#iri"
+        },
+        "predicate": {
+          "termType": "NamedNode",
+          "value": "http://example.com/ns#r"
+        },
+        "object": {
+          "termType": "Variable",
+          "value": "Z"
+        },
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        }
       }
     ]
   },

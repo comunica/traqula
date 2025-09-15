@@ -58,6 +58,26 @@
           "termType": "DefaultGraph",
           "value": ""
         }
+      },
+      {
+        "type": "pattern",
+        "termType": "Quad",
+        "subject": {
+          "termType": "Variable",
+          "value": "e_bnode"
+        },
+        "predicate": {
+          "termType": "NamedNode",
+          "value": "http://example.com/ns#q1"
+        },
+        "object": {
+          "termType": "Variable",
+          "value": "z"
+        },
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        }
       }
     ]
   },
@@ -112,6 +132,26 @@
           "termType": "DefaultGraph",
           "value": ""
         }
+      },
+      "graph": {
+        "termType": "DefaultGraph",
+        "value": ""
+      }
+    },
+    {
+      "type": "pattern",
+      "termType": "Quad",
+      "subject": {
+        "termType": "BlankNode",
+        "value": "e_bnode"
+      },
+      "predicate": {
+        "termType": "NamedNode",
+        "value": "http://example.com/ns#q1"
+      },
+      "object": {
+        "termType": "Variable",
+        "value": "z"
       },
       "graph": {
         "termType": "DefaultGraph",

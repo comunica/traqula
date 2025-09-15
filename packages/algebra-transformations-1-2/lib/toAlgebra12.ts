@@ -101,18 +101,17 @@ void,
         const tripleCollection = F.isTripleCollection(annotation);
         if (tripleCollection) {
           subject = SUBRULE(translateTerm12, annotation.identifier);
-          if (registered.has(termToString(subject))) {
-            continue;
-          }
         } else {
           subject = SUBRULE(translateTerm12, annotation.val);
         }
+        if (!registered.has(termToString(subject))) {
+          result.push({
+            subject,
+            predicate: dataFactory.namedNode(reificationIri),
+            object: asTerm,
+          });
+        }
         registered.add(termToString(subject));
-        result.push({
-          subject,
-          predicate: dataFactory.namedNode(reificationIri),
-          object: asTerm,
-        });
         if (tripleCollection) {
           SUBRULE(translateTripleCollection12, annotation, result);
         }

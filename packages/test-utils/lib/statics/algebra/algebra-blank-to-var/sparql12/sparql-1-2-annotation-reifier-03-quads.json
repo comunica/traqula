@@ -94,6 +94,26 @@
           "termType": "DefaultGraph",
           "value": ""
         }
+      },
+      {
+        "type": "pattern",
+        "termType": "Quad",
+        "subject": {
+          "termType": "Variable",
+          "value": "e_bnode"
+        },
+        "predicate": {
+          "termType": "Variable",
+          "value": "q"
+        },
+        "object": {
+          "termType": "Variable",
+          "value": "z"
+        },
+        "graph": {
+          "termType": "DefaultGraph",
+          "value": ""
+        }
       }
     ]
   },

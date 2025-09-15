@@ -59,6 +59,30 @@
             "termType": "DefaultGraph",
             "value": ""
           }
+        },
+        {
+          "type": "pattern",
+          "termType": "Quad",
+          "subject": {
+            "termType": "NamedNode",
+            "value": "http://example.com/ns#iri"
+          },
+          "predicate": {
+            "termType": "NamedNode",
+            "value": "http://example.com/ns#added"
+          },
+          "object": {
+            "termType": "Literal",
+            "value": "Test",
+            "datatype": {
+              "termType": "NamedNode",
+              "value": "http://www.w3.org/2001/XMLSchema#string"
+            }
+          },
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
+          }
         }
       ]
     },
@@ -114,6 +138,30 @@
             "graph": {
               "termType": "DefaultGraph",
               "value": ""
+            }
+          },
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
+          }
+        },
+        {
+          "type": "pattern",
+          "termType": "Quad",
+          "subject": {
+            "termType": "NamedNode",
+            "value": "http://example.com/ns#iri"
+          },
+          "predicate": {
+            "termType": "NamedNode",
+            "value": "http://example.com/ns#added"
+          },
+          "object": {
+            "termType": "Literal",
+            "value": "Test",
+            "datatype": {
+              "termType": "NamedNode",
+              "value": "http://www.w3.org/2001/XMLSchema#string"
             }
           },
           "graph": {

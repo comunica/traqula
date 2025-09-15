@@ -242,16 +242,32 @@
           "type": "pattern",
           "termType": "Quad",
           "subject": {
-            "termType": "NamedNode",
-            "value": "http://example.com/ns#x"
+            "termType": "Variable",
+            "value": "g_1"
           },
           "predicate": {
-            "termType": "Variable",
-            "value": "R"
+            "termType": "NamedNode",
+            "value": "http://example.com/ns#p"
           },
           "object": {
-            "termType": "NamedNode",
-            "value": "http://example.com/ns#z"
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": {
+              "termType": "NamedNode",
+              "value": "http://example.com/ns#a"
+            },
+            "predicate": {
+              "termType": "NamedNode",
+              "value": "http://example.com/ns#b"
+            },
+            "object": {
+              "termType": "Variable",
+              "value": "g_2"
+            },
+            "graph": {
+              "termType": "DefaultGraph",
+              "value": ""
+            }
           },
           "graph": {
             "termType": "DefaultGraph",
@@ -410,16 +426,16 @@
           "type": "pattern",
           "termType": "Quad",
           "subject": {
-            "termType": "Variable",
-            "value": "g_3"
+            "termType": "NamedNode",
+            "value": "http://example.com/ns#iri"
           },
           "predicate": {
-            "termType": "Variable",
-            "value": "R"
+            "termType": "NamedNode",
+            "value": "http://example.com/ns#p"
           },
           "object": {
-            "termType": "NamedNode",
-            "value": "http://example.com/ns#z"
+            "termType": "Variable",
+            "value": "g_5"
           },
           "graph": {
             "termType": "DefaultGraph",

@@ -171,15 +171,15 @@
           "termType": "Quad",
           "subject": {
             "termType": "NamedNode",
-            "value": "http://example.com/ns#s"
+            "value": "http://example.com/ns#a"
           },
           "predicate": {
             "termType": "NamedNode",
-            "value": "http://example.com/ns#p"
+            "value": "http://example.com/ns#q"
           },
           "object": {
-            "termType": "Variable",
-            "value": "O"
+            "termType": "BlankNode",
+            "value": "g_1"
           },
           "graph": {
             "termType": "DefaultGraph",

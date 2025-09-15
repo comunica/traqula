@@ -30,6 +30,9 @@ AlgebraIndir<'translateBasicGraphPattern', void, [BasicGraphPattern, FlattenedTr
   },
 };
 
+/**
+ * Generates: everything for the subject collection + everything for the object collection + itself
+ */
 export const translateTripleNesting:
 AlgebraIndir<'translateTripleNesting', void, [TripleNesting, FlattenedTriple[]]> = {
   name: 'translateTripleNesting',

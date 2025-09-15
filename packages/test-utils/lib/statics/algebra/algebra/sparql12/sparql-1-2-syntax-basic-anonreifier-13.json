@@ -94,16 +94,16 @@
           "type": "pattern",
           "termType": "Quad",
           "subject": {
-            "termType": "Variable",
-            "value": "s"
+            "termType": "NamedNode",
+            "value": "http://example.com/ns#s"
           },
           "predicate": {
             "termType": "NamedNode",
-            "value": "http://example.com/ns#p2"
+            "value": "http://example.com/ns#p"
           },
           "object": {
-            "termType": "NamedNode",
-            "value": "http://example.com/ns#o2"
+            "termType": "BlankNode",
+            "value": "g_0"
           },
           "graph": {
             "termType": "DefaultGraph",
@@ -209,16 +209,16 @@
         "type": "pattern",
         "termType": "Quad",
         "subject": {
-          "termType": "Variable",
-          "value": "s"
+          "termType": "NamedNode",
+          "value": "http://example.com/ns#s"
         },
         "predicate": {
           "termType": "NamedNode",
-          "value": "http://example.com/ns#p2"
+          "value": "http://example.com/ns#p"
         },
         "object": {
-          "termType": "NamedNode",
-          "value": "http://example.com/ns#o2"
+          "termType": "BlankNode",
+          "value": "g_0"
         },
         "graph": {
           "termType": "DefaultGraph",

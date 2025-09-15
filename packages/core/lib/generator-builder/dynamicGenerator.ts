@@ -1,6 +1,6 @@
-import { CoreFactory } from '../CoreFactory';
-import type { GenRuleMap } from './builderTypes';
-import type { GeneratorRule, RuleDefArg } from './generatorTypes';
+import { CoreFactory } from '../CoreFactory.js';
+import type { GenRuleMap } from './builderTypes.js';
+import type { GeneratorRule, RuleDefArg } from './generatorTypes.js';
 
 export class DynamicGenerator<Context, Names extends string, RuleDefs extends GenRuleMap<Names>> {
   protected readonly factory = new CoreFactory();

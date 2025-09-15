@@ -1,7 +1,7 @@
 import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
-import type { Factory } from '.';
-import { Algebra, utils } from '.';
+import type { Factory } from './index.js';
+import { Algebra, utils } from './index.js';
 
 export class Canonicalizer {
   public constructor() {

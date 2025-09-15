@@ -15,9 +15,9 @@ import {
   funcGroupGraphPattern,
   funcNil1,
   funcVar1,
-} from '../expressionHelpers';
-import * as l from '../lexer';
-import type { SparqlGrammarRule, SparqlRule } from '../sparql11HelperTypes';
+} from '../expressionHelpers.js';
+import * as l from '../lexer/index.js';
+import type { SparqlGrammarRule, SparqlRule } from '../sparql11HelperTypes.js';
 import type {
   Expression,
   ExpressionAggregate,
@@ -25,9 +25,9 @@ import type {
   ExpressionAggregateOnWildcard,
   ExpressionAggregateSeparator,
   Wildcard,
-} from '../Sparql11types';
-import { expression } from './expression';
-import { string, stringEscapedLexical } from './literals';
+} from '../Sparql11types.js';
+import { expression } from './expression.js';
+import { string, stringEscapedLexical } from './literals.js';
 
 export const builtInStr = funcExpr1(l.builtIn.str);
 export const builtInLang = funcExpr1(l.builtIn.lang);

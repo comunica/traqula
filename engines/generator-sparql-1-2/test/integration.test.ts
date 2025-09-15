@@ -4,7 +4,7 @@ import { TransformerSparql11 } from '@traqula/rules-sparql-1-1';
 import type * as T12 from '@traqula/rules-sparql-1-2';
 import { Factory } from '@traqula/rules-sparql-1-2';
 import { describe, it } from 'vitest';
-import { Generator } from '../lib';
+import { Generator } from '../lib/index.js';
 
 describe('a SPARQL 1.2 generator', () => {
   const generator = new Generator();

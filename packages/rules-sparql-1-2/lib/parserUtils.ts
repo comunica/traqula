@@ -1,5 +1,5 @@
-import { Factory } from './Factory';
-import type { SparqlContext } from './sparql12HelperTypes';
+import { Factory } from './Factory.js';
+import type { SparqlContext } from './sparql12HelperTypes.js';
 
 export function completeParseContext(
   context: Partial<SparqlContext & { origSource: string; offset?: number }>,

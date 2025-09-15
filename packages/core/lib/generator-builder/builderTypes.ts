@@ -1,5 +1,5 @@
-import type { ParseNamesFromList } from '../parser-builder/builderTypes';
-import type { GeneratorRule } from './generatorTypes';
+import type { ParseNamesFromList } from '../parser-builder/builderTypes.js';
+import type { GeneratorRule } from './generatorTypes.js';
 
 /**
  * Convert a list of ruledefs to a record that maps each rule name to its definition.

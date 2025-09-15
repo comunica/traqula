@@ -1,5 +1,5 @@
 import type { ParserMethod } from 'chevrotain';
-import type { ParserRule } from './ruleDefTypes';
+import type { ParserRule } from './ruleDefTypes.js';
 
 /**
  * Get union-type of names used in list of ruledefs.

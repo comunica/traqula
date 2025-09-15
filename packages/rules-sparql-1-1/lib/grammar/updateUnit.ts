@@ -1,8 +1,8 @@
 import type { Localized, RuleDefReturn, Wrap } from '@traqula/core';
 import { unCapitalize } from '@traqula/core';
 import type { IToken, TokenType } from 'chevrotain';
-import * as l from '../lexer/index';
-import type { SparqlGrammarRule, SparqlRule } from '../sparql11HelperTypes';
+import * as l from '../lexer/index.js';
+import type { SparqlGrammarRule, SparqlRule } from '../sparql11HelperTypes.js';
 import type {
   GraphQuads,
   GraphRef,
@@ -22,13 +22,13 @@ import type {
   UpdateOperationLoad,
   UpdateOperationModify,
   UpdateOperationMove,
-} from '../Sparql11types';
-import { updateNoReuseBlankNodeLabels } from '../validation/validators';
-import { usingClauseStar } from './dataSetClause';
-import { prologue, varOrIri, varOrTerm } from './general';
-import { iri } from './literals';
-import { triplesBlock, triplesTemplate } from './tripleBlock';
-import { groupGraphPattern } from './whereClause';
+} from '../Sparql11types.js';
+import { updateNoReuseBlankNodeLabels } from '../validation/validators.js';
+import { usingClauseStar } from './dataSetClause.js';
+import { prologue, varOrIri, varOrTerm } from './general.js';
+import { iri } from './literals.js';
+import { triplesBlock, triplesTemplate } from './tripleBlock.js';
+import { groupGraphPattern } from './whereClause.js';
 
 /**
  * [[3]](https://www.w3.org/TR/sparql11-query/#rUpdateUnit)

@@ -1,7 +1,7 @@
 import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
 import { stringToTerm } from 'rdf-string';
-import * as A from './algebra';
+import * as A from './algebra.js';
 
 export class Factory {
   public dataFactory: RDF.DataFactory<RDF.BaseQuad, RDF.BaseQuad>;

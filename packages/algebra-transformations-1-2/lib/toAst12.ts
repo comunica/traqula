@@ -2,7 +2,7 @@ import type * as RDF from '@rdfjs/types';
 import { translateAlgTerm } from '@traqula/algebra-transformations-1-1';
 import type { TermIri, TermVariable } from '@traqula/rules-sparql-1-1';
 import type { Term } from '@traqula/rules-sparql-1-2';
-import type { AstIndir } from './types';
+import type { AstIndir } from './types.js';
 
 export const translateAlgTerm12: AstIndir<(typeof translateAlgTerm)['name'], Term, [RDF.Term]> = {
   name: 'translateTerm',

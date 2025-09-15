@@ -1,4 +1,4 @@
-import { Parser } from '../lib/';
+import { Parser } from '../lib/index.js';
 
 export const queryLargeObjectList = `
 BASE <http://foo.com/>

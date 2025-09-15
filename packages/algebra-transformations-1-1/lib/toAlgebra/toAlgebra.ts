@@ -1,18 +1,18 @@
 import type { PatternGroup, SparqlQuery } from '@traqula/rules-sparql-1-1';
-import type { Algebra } from '../index';
-import { translateAggregates } from './aggregate';
-import type { AlgebraIndir } from './core';
+import type { Algebra } from '../index.js';
+import { translateAggregates } from './aggregate.js';
+import type { AlgebraIndir } from './core.js';
 import {
   findAllVariables,
   registerContextDefinitions,
   translateBlankNodesToVariables,
-} from './general';
+} from './general.js';
 import {
   translateGraphPattern,
-} from './patterns';
+} from './patterns.js';
 import {
   translateUpdate,
-} from './updates';
+} from './updates.js';
 
 export const translateQuery:
 AlgebraIndir<'translateQuery', Algebra.Operation, [SparqlQuery, boolean | undefined, boolean | undefined]> = {

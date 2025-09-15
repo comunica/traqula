@@ -1,5 +1,5 @@
 import type { GeneratorRule, ParserRule } from '@traqula/core';
-import type { Factory } from './factory';
+import type { Factory } from './factory.js';
 
 export interface SparqlContext {
   /**

@@ -1,4 +1,4 @@
-import type { ParseNamesFromList } from '../parser-builder/builderTypes';
+import type { ParseNamesFromList } from '../parser-builder/builderTypes.js';
 
 export type IndirDef<
   Context = any,

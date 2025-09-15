@@ -4,8 +4,8 @@ import { Generator as Generator11 } from '@traqula/generator-sparql-1-1';
 import { Parser as Parser11 } from '@traqula/parser-sparql-1-1';
 import { positiveTest, sparqlAlgebraTests } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
-import { toAlgebra, toAst } from '../lib';
-import { suites } from './algebra.test';
+import { toAlgebra, toAst } from '../lib/index.js';
+import { suites } from './algebra.test.js';
 
 // https://www.w3.org/2001/sw/DataAccess/tests/r2#syntax-basic-01
 // https://www.w3.org/2009/sparql/implementations/

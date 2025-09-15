@@ -8,7 +8,7 @@
       "dom"
     ],
     "module": "ES2022",
-    "moduleResolution": "Bundler",
+    "moduleResolution": "node",
     "types": ["vitest/globals"],
     "strict": true,
     "strictFunctionTypes": true,
@@ -21,7 +21,8 @@
     "removeComments": false,
     "sourceMap": true,
 
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
   },
   "include": [
     "engines/*/lib/**/*.ts",

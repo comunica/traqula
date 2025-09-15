@@ -1,7 +1,7 @@
 import type * as RDF from '@rdfjs/types';
-import type { Algebra } from '../index';
-import { types } from '../toAlgebra';
-import type { AstIndir } from './core';
+import type { Algebra } from '../index.js';
+import { types } from '../toAlgebra/index.js';
+import type { AstIndir } from './core.js';
 
 /**
  * Removes quad component of triple and ...

@@ -1,15 +1,15 @@
 import { unCapitalize } from '@traqula/core';
 import type { TokenType } from 'chevrotain';
-import { var_, expression, expressionList, groupGraphPattern } from './grammar';
-import * as l from './lexer';
-import type { SparqlGrammarRule } from './sparql11HelperTypes';
+import { var_, expression, expressionList, groupGraphPattern } from './grammar/index.js';
+import * as l from './lexer/index.js';
+import type { SparqlGrammarRule } from './sparql11HelperTypes.js';
 import type {
   Expression,
   ExpressionAggregateDefault,
   ExpressionOperation,
   ExpressionPatternOperation,
   TermVariable,
-} from './Sparql11types';
+} from './Sparql11types.js';
 
 export type ExpressionFunctionX<U extends Expression[]> = ExpressionOperation & {
   args: U;

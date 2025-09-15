@@ -1,7 +1,7 @@
-export * from './toAlgebra';
-export * from './toAst';
-export { Types, ExpressionTypes } from './algebra';
-export * as Algebra from './algebra';
-export * from './factory';
-export * as utils from './util';
-export * from './canonicalizer';
+export * from './toAlgebra/index.js';
+export * from './toAst/index.js';
+export { Types, ExpressionTypes } from './algebra.js';
+export * as Algebra from './algebra.js';
+export * from './factory.js';
+export * as utils from './util.js';
+export * from './canonicalizer.js';

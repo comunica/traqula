@@ -11,7 +11,7 @@ import type {
   TripleCollectionBlankNodeProperties,
   TripleCollectionReifiedTriple,
   TripleNesting,
-} from './sparql12Types';
+} from './sparql12Types.js';
 
 export class Factory extends Sparql11Factory {
   public termTriple(

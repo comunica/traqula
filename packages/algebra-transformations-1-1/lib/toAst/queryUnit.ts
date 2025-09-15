@@ -12,15 +12,15 @@ import type {
   Sparql11Nodes,
   TermVariable,
 } from '@traqula/rules-sparql-1-1';
-import type { Algebra } from '../index';
-import { types } from '../toAlgebra';
-import * as util from '../util';
-import type { AstIndir } from './core';
-import { resetContext } from './core';
-import { translateAlgExpressionOrOrdering, translateAlgPureExpression } from './expression';
-import type { RdfTermToAst } from './general';
-import { translateAlgPattern, translateAlgTerm } from './general';
-import { translateAlgPatternNew } from './pattern';
+import type { Algebra } from '../index.js';
+import { types } from '../toAlgebra/index.js';
+import * as util from '../util.js';
+import type { AstIndir } from './core.js';
+import { resetContext } from './core.js';
+import { translateAlgExpressionOrOrdering, translateAlgPureExpression } from './expression.js';
+import type { RdfTermToAst } from './general.js';
+import { translateAlgPattern, translateAlgTerm } from './general.js';
+import { translateAlgPatternNew } from './pattern.js';
 
 export const translateAlgConstruct: AstIndir<'translateConstruct', PatternGroup, [Algebra.Construct]> = {
   name: 'translateConstruct',

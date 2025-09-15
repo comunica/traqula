@@ -1,2 +1,2 @@
-export * from './toAst12';
-export * from './toAlgebra12';
+export * from './toAst12.js';
+export * from './toAlgebra12.js';

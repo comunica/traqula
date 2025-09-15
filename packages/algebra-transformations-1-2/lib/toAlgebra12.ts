@@ -18,7 +18,7 @@ import {
   findPatternBoundedVars,
 } from '@traqula/rules-sparql-1-2';
 import { termToString } from 'rdf-string';
-import type { AlgebraIndir } from './types';
+import type { AlgebraIndir } from './types.js';
 
 const reificationIri = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies';
 

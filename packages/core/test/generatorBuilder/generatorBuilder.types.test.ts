@@ -1,6 +1,6 @@
 import { describe, it, expectTypeOf } from 'vitest';
-import type { GeneratorRule, Node } from '../../lib';
-import { GeneratorBuilder } from '../../lib';
+import type { GeneratorRule, Node } from '../../lib/index.js';
+import { GeneratorBuilder } from '../../lib/index.js';
 
 interface Context {
   world: 'hello';

@@ -1,15 +1,15 @@
 import type { SourceLocation, SubTyped, Typed } from '@traqula/core';
 import { CoreFactory } from '@traqula/core';
-import { ContextFactoryMixin } from './factoryMixins/ContextFactory';
-import { ExpressionFactoryMixin } from './factoryMixins/ExpressionFactory';
-import { GraphRefFactoryMixin } from './factoryMixins/GraphRefFactory';
-import { asArg } from './factoryMixins/mixins';
-import { PathFactoryMixin } from './factoryMixins/PathFactory';
-import { PatternFactoryMixin } from './factoryMixins/Patternfactory';
-import { QueryFactoryMixin } from './factoryMixins/QueryFactory';
-import { SolutionModifiersFactoryMixin } from './factoryMixins/SolutionModifiersFactory';
-import { TermFactoryMixin } from './factoryMixins/TermFactory';
-import { UpdateOperationFactoryMixin } from './factoryMixins/UpdateOperationFactory';
+import { ContextFactoryMixin } from './factoryMixins/ContextFactory.js';
+import { ExpressionFactoryMixin } from './factoryMixins/ExpressionFactory.js';
+import { GraphRefFactoryMixin } from './factoryMixins/GraphRefFactory.js';
+import { asArg } from './factoryMixins/mixins.js';
+import { PathFactoryMixin } from './factoryMixins/PathFactory.js';
+import { PatternFactoryMixin } from './factoryMixins/Patternfactory.js';
+import { QueryFactoryMixin } from './factoryMixins/QueryFactory.js';
+import { SolutionModifiersFactoryMixin } from './factoryMixins/SolutionModifiersFactory.js';
+import { TermFactoryMixin } from './factoryMixins/TermFactory.js';
+import { UpdateOperationFactoryMixin } from './factoryMixins/UpdateOperationFactory.js';
 import type {
   DatasetClauses,
   GraphNode,
@@ -25,7 +25,7 @@ import type {
   TripleNesting,
   Update,
   Wildcard,
-} from './Sparql11types';
+} from './Sparql11types.js';
 
 export class Factory extends asArg(CoreFactory)
   .call(ContextFactoryMixin)

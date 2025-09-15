@@ -1,9 +1,9 @@
 import type * as RDF from '@rdfjs/types';
 import type { IndirDef } from '@traqula/core';
 import { Factory as AstFactory, TransformerSparql11 } from '@traqula/rules-sparql-1-1';
-import * as Algebra from '../algebra';
-import { Factory } from '../factory';
-import { types } from '../toAlgebra';
+import * as Algebra from '../algebra.js';
+import { Factory } from '../factory.js';
+import { types } from '../toAlgebra/index.js';
 
 export interface AstContext {
   /**

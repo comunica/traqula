@@ -1,24 +1,24 @@
-import { symbols } from '../lexer';
-import type { SparqlRule } from '../sparql11HelperTypes';
-import type { Query, SparqlQuery, Update } from '../Sparql11types';
-import { updateNoReuseBlankNodeLabels } from '../validation/validators';
-import { prologue } from './general';
-import type { HandledByBase } from './queryUnit';
-import { query, askQuery, constructQuery, describeQuery, selectQuery, valuesClause } from './queryUnit';
-import { update, update1 } from './updateUnit';
+import { symbols } from '../lexer/index.js';
+import type { SparqlRule } from '../sparql11HelperTypes.js';
+import type { Query, SparqlQuery, Update } from '../Sparql11types.js';
+import { updateNoReuseBlankNodeLabels } from '../validation/validators.js';
+import { prologue } from './general.js';
+import type { HandledByBase } from './queryUnit.js';
+import { query, askQuery, constructQuery, describeQuery, selectQuery, valuesClause } from './queryUnit.js';
+import { update, update1 } from './updateUnit.js';
 
-export * from './queryUnit';
-export * from './updateUnit';
-export * from './builtIn';
-export * from './dataSetClause';
-export * from './expression';
-export * from '../expressionHelpers';
-export * from './general';
-export * from './literals';
-export * from './propertyPaths';
-export * from './solutionModifier';
-export * from './tripleBlock';
-export * from './whereClause';
+export * from './queryUnit.js';
+export * from './updateUnit.js';
+export * from './builtIn.js';
+export * from './dataSetClause.js';
+export * from './expression.js';
+export * from '../expressionHelpers.js';
+export * from './general.js';
+export * from './literals.js';
+export * from './propertyPaths.js';
+export * from './solutionModifier.js';
+export * from './tripleBlock.js';
+export * from './whereClause.js';
 
 /**
  * Query or update, optimized for the Query case.

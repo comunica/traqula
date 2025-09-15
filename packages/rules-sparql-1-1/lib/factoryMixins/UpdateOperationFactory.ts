@@ -18,8 +18,8 @@ import type {
   UpdateOperationLoad,
   UpdateOperationModify,
   UpdateOperationMove,
-} from '../Sparql11types';
-import type { Constructor } from './mixins';
+} from '../Sparql11types.js';
+import type { Constructor } from './mixins.js';
 
 type NodeType = 'updateOperation';
 const nodeType: NodeType = 'updateOperation';

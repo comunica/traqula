@@ -5,7 +5,7 @@ import { Factory, lex as l12 } from '@traqula/rules-sparql-1-2';
 import { positiveTest, importSparql11NoteTests, negativeTest } from '@traqula/test-utils';
 import { DataFactory } from 'rdf-data-factory';
 import { describe, it } from 'vitest';
-import { Parser, sparql12ParserBuilder } from '../lib';
+import { Parser, sparql12ParserBuilder } from '../lib/index.js';
 
 describe('a SPARQL 1.2 parser', () => {
   const parser = new Parser();

@@ -1,2 +1,2 @@
-export * as gram from './grammar';
-export * as lex from './lexer';
+export * as gram from './grammar.js';
+export * as lex from './lexer.js';

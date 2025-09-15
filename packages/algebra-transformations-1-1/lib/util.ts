@@ -1,9 +1,9 @@
 import type * as RDF from '@rdfjs/types';
 import { TransformerType } from '@traqula/core';
 import { someTermsNested } from 'rdf-terms';
-import type * as A from './algebra';
-import { ExpressionTypes, Types } from './algebra';
-import { Factory } from './factory';
+import type * as A from './algebra.js';
+import { ExpressionTypes, Types } from './algebra.js';
+import { Factory } from './factory.js';
 
 /**
  * Flattens an array of arrays to an array.

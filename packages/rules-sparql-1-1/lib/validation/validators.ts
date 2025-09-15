@@ -1,4 +1,4 @@
-import { Factory } from '../factory';
+import { Factory } from '../factory.js';
 import type {
   Wildcard,
   Expression,
@@ -7,7 +7,6 @@ import type {
   QuerySelect,
   TermVariable,
   SolutionModifierGroupBind,
-  PatternBgp,
   Update,
   PatternBind,
   TripleCollection,
@@ -15,8 +14,8 @@ import type {
   TripleNesting,
   Term,
   SparqlQuery,
-} from '../Sparql11types';
-import { TransformerSparql11 } from '../utils';
+} from '../Sparql11types.js';
+import { TransformerSparql11 } from '../utils.js';
 
 const F = new Factory();
 const transformer = new TransformerSparql11();
@@ -207,7 +206,7 @@ export function findPatternBoundedVars(
 export function checkNote13(patterns: Pattern[]): void {
   for (const [ index, pattern ] of patterns.entries()) {
     if (F.isPatternBind(pattern) && index > 0 && F.isPatternBgp(patterns[index - 1])) {
-      const bgp = <PatternBgp> patterns[index - 1];
+      const bgp = patterns[index - 1];
       // Find variables used.
       const variables: TermVariable[] = [];
       // TODO: this is slow! 2.6% self execution

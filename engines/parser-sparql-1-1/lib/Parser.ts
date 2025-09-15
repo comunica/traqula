@@ -1,8 +1,8 @@
 import { ParserBuilder } from '@traqula/core';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import { gram, lex as l, MinimalSparqlParser, sparqlCodepointEscape } from '@traqula/rules-sparql-1-1';
-import { queryUnitParserBuilder } from './queryUnitParser';
-import { updateParserBuilder } from './updateUnitParser';
+import { queryUnitParserBuilder } from './queryUnitParser.js';
+import { updateParserBuilder } from './updateUnitParser.js';
 
 export const sparql11ParserBuilder = ParserBuilder.create(queryUnitParserBuilder)
   .merge(updateParserBuilder, <const> [])

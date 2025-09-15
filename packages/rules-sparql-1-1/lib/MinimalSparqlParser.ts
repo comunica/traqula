@@ -1,6 +1,6 @@
-import { Factory } from './factory';
-import type { SparqlContext } from './sparql11HelperTypes';
-import type { Path, TermIri } from './Sparql11types';
+import { Factory } from './factory.js';
+import type { SparqlContext } from './sparql11HelperTypes.js';
+import type { Path, TermIri } from './Sparql11types.js';
 
 interface Parser<ParseRet> {
   queryOrUpdate: (input: string, context: SparqlContext) => ParseRet;

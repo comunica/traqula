@@ -7,8 +7,8 @@ import type {
   PathNegatedElt,
   PropertyPathChain,
   TermIri,
-} from '../Sparql11types';
-import type { Constructor } from './mixins';
+} from '../Sparql11types.js';
+import type { Constructor } from './mixins.js';
 
 type NodeType = 'path';
 const nodeType: NodeType = 'path';

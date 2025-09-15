@@ -1,19 +1,19 @@
 import type { Query, SparqlQuery } from '@traqula/rules-sparql-1-1';
-import type * as Algebra from '../algebra';
-import { types } from '../toAlgebra/core';
-import type { AstIndir } from './core';
-import { resetContext } from './core';
+import type * as Algebra from '../algebra.js';
+import { types } from '../toAlgebra/core.js';
+import type { AstIndir } from './core.js';
+import { resetContext } from './core.js';
 
 import {
   translateAlgPatternIntoGroup,
-} from './pattern';
-import { removeAlgQuads } from './quads';
+} from './pattern.js';
+import { removeAlgQuads } from './quads.js';
 
 import {
   toUpdate,
   translateAlgCompositeUpdate,
   translateAlgUpdateOperation,
-} from './updateUnit';
+} from './updateUnit.js';
 
 export const algToSparql: AstIndir<'algToSparql', SparqlQuery, [Algebra.Operation]> = {
   name: 'algToSparql',

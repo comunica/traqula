@@ -5,8 +5,8 @@ import type {
   GraphRefNamed,
   GraphRefSpecific,
   TermIri,
-} from '../Sparql11types';
-import type { Constructor } from './mixins';
+} from '../Sparql11types.js';
+import type { Constructor } from './mixins.js';
 
 type NodeType = 'graphRef';
 const nodeType: NodeType = 'graphRef';

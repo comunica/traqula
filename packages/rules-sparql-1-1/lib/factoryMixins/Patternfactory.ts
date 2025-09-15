@@ -16,8 +16,8 @@ import type {
   TermIri,
   TermVariable,
   ValuePatternRow,
-} from '../Sparql11types';
-import type { Constructor } from './mixins';
+} from '../Sparql11types.js';
+import type { Constructor } from './mixins.js';
 
 type NodeType = 'pattern';
 const nodeType: NodeType = 'pattern';

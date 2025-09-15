@@ -2,8 +2,8 @@ import type { Algebra } from '@traqula/algebra-transformations-1-1';
 import { Factory, utils } from '@traqula/algebra-transformations-1-1';
 import { sparqlAlgebraTests } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
-import { toAlgebra, toAst } from '../lib';
-import { suites } from './algebra.test';
+import { toAlgebra, toAst } from '../lib/index.js';
+import { suites } from './algebra.test.js';
 
 // https://www.w3.org/2001/sw/DataAccess/tests/r2#syntax-basic-01
 // https://www.w3.org/2009/sparql/implementations/

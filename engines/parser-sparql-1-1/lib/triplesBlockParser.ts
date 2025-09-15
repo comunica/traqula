@@ -1,6 +1,6 @@
 import { ParserBuilder } from '@traqula/core';
 import { gram } from '@traqula/rules-sparql-1-1';
-import { objectListParserBuilder } from './objectListParser';
+import { objectListParserBuilder } from './objectListParser.js';
 
 export const triplesBlockParserBuilder = ParserBuilder.create(<const> [
   gram.triplesBlock,

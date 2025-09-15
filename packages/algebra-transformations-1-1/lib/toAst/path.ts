@@ -8,12 +8,12 @@ import type {
   PropertyPathChain,
   TermIri,
 } from '@traqula/rules-sparql-1-1';
-import type * as Algebra from '../algebra';
-import { types } from '../toAlgebra/core';
-import * as util from '../util';
-import type { AstIndir } from './core';
-import type { RdfTermToAst } from './general';
-import { translateAlgTerm } from './general';
+import type * as Algebra from '../algebra.js';
+import { types } from '../toAlgebra/core.js';
+import * as util from '../util.js';
+import type { AstIndir } from './core.js';
+import type { RdfTermToAst } from './general.js';
+import { translateAlgTerm } from './general.js';
 
 export const translateAlgPathComponent: AstIndir<'translatePathComponent', Path, [Algebra.Operation]> = {
   name: 'translatePathComponent',

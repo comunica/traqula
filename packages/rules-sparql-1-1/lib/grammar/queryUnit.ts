@@ -1,7 +1,7 @@
 import type { Localized, RuleDefReturn, Wrap } from '@traqula/core';
 import type { IToken } from 'chevrotain';
-import * as l from '../lexer/index';
-import type { SparqlGrammarRule, SparqlRule } from '../sparql11HelperTypes';
+import * as l from '../lexer/index.js';
+import type { SparqlGrammarRule, SparqlRule } from '../sparql11HelperTypes.js';
 import type {
   PatternBgp,
   PatternBind,
@@ -15,14 +15,14 @@ import type {
   TermIri,
   TermVariable,
   Wildcard,
-} from '../Sparql11types';
-import { queryIsGood } from '../validation/validators';
-import { datasetClauseStar } from './dataSetClause';
-import { expression } from './expression';
-import { prologue, var_, varOrIri, varOrTerm } from './general';
-import { solutionModifier } from './solutionModifier';
-import { triplesBlock, triplesTemplate } from './tripleBlock';
-import { inlineData, whereClause } from './whereClause';
+} from '../Sparql11types.js';
+import { queryIsGood } from '../validation/validators.js';
+import { datasetClauseStar } from './dataSetClause.js';
+import { expression } from './expression.js';
+import { prologue, var_, varOrIri, varOrTerm } from './general.js';
+import { solutionModifier } from './solutionModifier.js';
+import { triplesBlock, triplesTemplate } from './tripleBlock.js';
+import { inlineData, whereClause } from './whereClause.js';
 
 /**
  * [[1]](https://www.w3.org/TR/sparql11-query/#rQueryUnit)

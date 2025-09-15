@@ -1,6 +1,6 @@
 import type { RuleDefReturn, Wrap } from '@traqula/core';
-import * as l from '../lexer';
-import type { SparqlGeneratorRule, SparqlGrammarRule, SparqlRule } from '../sparql11HelperTypes';
+import * as l from '../lexer/index.js';
+import type { SparqlGeneratorRule, SparqlGrammarRule, SparqlRule } from '../sparql11HelperTypes.js';
 import type {
   Expression,
   ExpressionFunctionCall,
@@ -20,14 +20,14 @@ import type {
   TermVariable,
   SubSelect,
   PatternBgp,
-} from '../Sparql11types';
-import { checkNote13 } from '../validation/validators';
-import { builtInCall } from './builtIn';
-import { argList, brackettedExpression, expression } from './expression';
-import { var_, varOrIri, varOrTerm } from './general';
-import { booleanLiteral, iri, numericLiteral, rdfLiteral } from './literals';
-import { query, subSelect } from './queryUnit';
-import { graphNodePath, triplesBlock } from './tripleBlock';
+} from '../Sparql11types.js';
+import { checkNote13 } from '../validation/validators.js';
+import { builtInCall } from './builtIn.js';
+import { argList, brackettedExpression, expression } from './expression.js';
+import { var_, varOrIri, varOrTerm } from './general.js';
+import { booleanLiteral, iri, numericLiteral, rdfLiteral } from './literals.js';
+import { query, subSelect } from './queryUnit.js';
+import { graphNodePath, triplesBlock } from './tripleBlock.js';
 
 /**
  * [[17]](https://www.w3.org/TR/sparql11-query/#rWhereClause)

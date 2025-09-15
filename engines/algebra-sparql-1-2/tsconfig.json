@@ -2,7 +2,6 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
-    "rootDir": "lib",
     "declaration": true
   },
   "references": [
@@ -15,5 +14,6 @@
     { "path": "../parser-sparql-1-2" },
     { "path": "../generator-sparql-1-2" }
   ],
-  "include": ["lib", "test"]
+  "include": ["lib/**/*.ts", "test/**/*.ts"],
+  "exclude": ["lib/**/*.d.ts"]
 }

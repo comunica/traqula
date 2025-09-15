@@ -24,7 +24,7 @@ unknown,
   name: 'removeQuadsRecursive',
   fun: ({ SUBRULE }) => ({ factory }, op, graphs) => {
     if (Array.isArray(op)) {
-      return op.map(sub => <typeof sub> SUBRULE(removeAlgQuadsRecursive, sub, graphs));
+      return op.map(sub => SUBRULE(removeAlgQuadsRecursive, sub, graphs));
     }
 
     if (!op.type) {

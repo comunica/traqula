@@ -2,7 +2,6 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
-    "rootDir": "lib",
     "declaration": true
   },
   "references": [
@@ -10,5 +9,6 @@
     { "path": "../../packages/rules-sparql-1-1" },
     { "path": "../../packages/test-utils" }
   ],
-  "include": ["lib", "test", "spec"]
+  "include": ["lib/**/*.ts", "test/**/*.ts", "spec/**/*.ts"],
+  "exclude": ["lib/**/*.d.ts"]
 }

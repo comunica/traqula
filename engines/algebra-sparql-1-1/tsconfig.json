@@ -2,7 +2,6 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
-    "rootDir": "lib",
     "declaration": true
   },
   "references": [
@@ -10,8 +9,9 @@
     { "path": "../../packages/algebra-transformations-1-1" },
     { "path": "../../packages/rules-sparql-1-1" },
     { "path": "../../packages/test-utils" },
-    { "path": "../algebra-sparql-1-1" },
-    { "path": "../generator-sparql-1-2" }
+    { "path": "../generator-sparql-1-1" },
+    { "path": "../parser-sparql-1-1" }
   ],
-  "include": ["lib", "test"]
+  "include": ["lib/**/*.ts", "test/**/*.ts"],
+  "exclude": ["lib/**/*.d.ts"]
 }

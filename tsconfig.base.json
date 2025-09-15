@@ -7,6 +7,7 @@
       "es2022",
       "dom"
     ],
+    "rootDir": ".",
     "module": "NodeNext",
     "moduleResolution": "nodenext",
     "types": ["vitest/globals"],
@@ -20,7 +21,6 @@
     "preserveConstEnums": true,
     "removeComments": false,
     "sourceMap": true,
-    "rootDir": ".",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true
   }

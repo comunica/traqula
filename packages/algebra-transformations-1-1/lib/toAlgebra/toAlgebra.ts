@@ -42,6 +42,6 @@ AlgebraIndir<'translateQuery', Algebra.Operation, [SparqlQuery, boolean | undefi
       result = SUBRULE(translateBlankNodesToVariables, result);
     }
 
-    return result!;
+    return result;
   },
 };

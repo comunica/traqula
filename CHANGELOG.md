@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v0.0.14"></a>
+## [v0.0.14](https://github.com/comunica/traqula/compare/v0.0.13...v0.0.14) - 2025-09-16
+
+* [Refactor/esm support (#57)](https://github.com/comunica/traqula/commit/567121cb166c1059e758eecd4dead4882b9408ca)
+
 <a name="v0.0.13"></a>
 ## [v0.0.13](https://github.com/comunica/traqula/compare/v0.0.12...v0.0.13) - 2025-09-15
 

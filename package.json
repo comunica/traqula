@@ -11,7 +11,7 @@
   "scripts": {
     "bench": "vitest bench --run",
     "build": "yarn build:ts && yarn build:transpile && yarn build:transpile-spec",
-    "build:ts": "tsc",
+    "build:ts": "tsc --build",
     "build:transpile": "lerna run build:transpile",
     "build:transpile-spec": "lerna run build:transpile-spec",
     "clean": "git clean -dfx",

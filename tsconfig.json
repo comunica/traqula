@@ -7,8 +7,8 @@
       "es2022",
       "dom"
     ],
-    "module": "ES2022",
-    "moduleResolution": "node",
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
     "types": ["vitest/globals"],
     "strict": true,
     "strictFunctionTypes": true,
@@ -32,6 +32,11 @@
     "packages/*/test/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "engines/*/lib/**/*.d.ts",
+    "engines/*/spec/**/*.d.ts",
+    "engines/*/test/**/*.d.ts",
+    "packages/*/lib/**/*.d.ts",
+    "packages/*/test/**/*.d.ts"
   ]
 }

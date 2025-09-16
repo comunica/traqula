@@ -1,5 +1,6 @@
 {
   "name": "@traqula/algebra-sparql-1-1",
+  "type": "module",
   "version": "0.0.13",
   "description": "Convert SPARQL to SPARQL algebra",
   "author": "Jitse De Smet",
@@ -17,6 +18,7 @@
   "exports": {
     "./package.json": "./package.json",
     ".": {
+      "types": "./lib/index.d.ts",
       "import": "./lib/index.js",
       "require": "./lib/index.cjs"
     }

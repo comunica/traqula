@@ -9,7 +9,7 @@ import type {
   TermVariable,
   Wildcard,
 } from '@traqula/rules-sparql-1-1';
-import equal from 'fast-deep-equal/es6';
+import equal from 'fast-deep-equal';
 import type { Algebra } from '../index.js';
 import type { AlgebraIndir, FlattenedTriple } from './core.js';
 import {

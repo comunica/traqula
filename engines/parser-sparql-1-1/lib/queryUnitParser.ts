@@ -1,7 +1,7 @@
 import { ParserBuilder } from '@traqula/core';
 import { gram } from '@traqula/rules-sparql-1-1';
-import { subSelectParserBuilder } from './subSelectParser';
-import { triplesTemplateParserBuilder } from './triplesTemplateParserBuilder';
+import { subSelectParserBuilder } from './subSelectParser.js';
+import { triplesTemplateParserBuilder } from './triplesTemplateParserBuilder.js';
 
 const rules = <const> [
   gram.queryUnit,

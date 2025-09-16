@@ -7,12 +7,12 @@ import type {
   Ordering,
   Wildcard,
 } from '@traqula/rules-sparql-1-1';
-import type { Algebra } from '../index';
-import * as util from '../util';
-import type { AstIndir } from './core';
-import { eTypes } from './core';
-import { type RdfTermToAst, translateAlgTerm } from './general';
-import { translateAlgPatternNew } from './pattern';
+import type { Algebra } from '../index.js';
+import * as util from '../util.js';
+import type { AstIndir } from './core.js';
+import { eTypes } from './core.js';
+import { type RdfTermToAst, translateAlgTerm } from './general.js';
+import { translateAlgPatternNew } from './pattern.js';
 
 export const translateAlgPureExpression: AstIndir<'translatePureExpression', Expression, [Algebra.Expression]> = {
   name: 'translatePureExpression',

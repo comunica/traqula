@@ -1,6 +1,6 @@
 import type { GeneratorRule, ParserRule } from '@traqula/core';
 import type * as T11 from '@traqula/rules-sparql-1-1';
-import type { Factory } from './Factory';
+import type { Factory } from './Factory.js';
 
 export type SparqlRule<
   /**

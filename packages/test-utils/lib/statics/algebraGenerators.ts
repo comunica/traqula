@@ -1,7 +1,7 @@
 /* eslint-disable import/no-nodejs-modules,no-sync */
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { readFileSync } from '../fileUtils';
+import { readFileSync } from '../fileUtils.js';
 
 const rootDir = path.join(__dirname, 'algebra');
 const rootSparql = path.join(rootDir, 'sparql');

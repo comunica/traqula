@@ -1,4 +1,4 @@
-import type { Node } from './nodeTypings';
+import type { Node } from './nodeTypings.js';
 
 type Safeness = 'safe' | 'unsafe';
 type SafeWrap<Safe extends Safeness, obj extends object> = Safe extends 'safe' ? {[key in keyof obj]: unknown } : obj;

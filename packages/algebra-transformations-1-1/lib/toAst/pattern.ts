@@ -9,15 +9,15 @@ import type {
   QueryBase,
   ValuePatternRow,
 } from '@traqula/rules-sparql-1-1';
-import type * as Algebra from '../algebra';
-import { types } from '../toAlgebra';
-import * as util from '../util';
-import type { AstIndir } from './core';
-import { registerProjection } from './core';
-import { translateAlgPureExpression } from './expression';
+import type * as Algebra from '../algebra.js';
+import { types } from '../toAlgebra/index.js';
+import * as util from '../util.js';
+import type { AstIndir } from './core.js';
+import { registerProjection } from './core.js';
+import { translateAlgPureExpression } from './expression.js';
 import type {
   RdfTermToAst,
-} from './general';
+} from './general.js';
 import {
   translateAlgDatasetClauses,
   translateAlgDistinct,
@@ -26,9 +26,9 @@ import {
   translateAlgPattern,
   translateAlgReduced,
   translateAlgTerm,
-} from './general';
-import { translateAlgPathComponent } from './path';
-import { translateAlgConstruct, translateAlgProject } from './queryUnit';
+} from './general.js';
+import { translateAlgPathComponent } from './path.js';
+import { translateAlgConstruct, translateAlgProject } from './queryUnit.js';
 
 export const translateAlgPatternIntoGroup: AstIndir<'translatePatternIntoGroup', PatternGroup, [Algebra.Operation]> = {
   name: 'translatePatternIntoGroup',

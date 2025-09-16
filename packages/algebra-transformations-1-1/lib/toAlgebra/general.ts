@@ -16,10 +16,10 @@ import type {
   TermLiteral,
   TermVariable,
 } from '@traqula/rules-sparql-1-1';
-import * as Algebra from '../algebra';
-import type { Factory } from '../factory';
-import * as util from '../util';
-import type { AlgebraIndir } from './core';
+import * as Algebra from '../algebra.js';
+import type { Factory } from '../factory.js';
+import * as util from '../util.js';
+import type { AlgebraIndir } from './core.js';
 
 export const translateNamed: AlgebraIndir<'translateNamed', RDF.NamedNode, [TermIri]> = {
   name: 'translateNamed',

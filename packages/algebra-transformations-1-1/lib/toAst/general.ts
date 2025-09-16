@@ -11,11 +11,11 @@ import type {
   TermVariable,
   TripleNesting,
 } from '@traqula/rules-sparql-1-1';
-import type { Algebra } from '../index';
-import * as util from '../util';
-import type { AstIndir } from './core';
-import { translateAlgPureExpression } from './expression';
-import { translateAlgPatternIntoGroup, translateAlgPatternNew } from './pattern';
+import type { Algebra } from '../index.js';
+import * as util from '../util.js';
+import type { AstIndir } from './core.js';
+import { translateAlgPureExpression } from './expression.js';
+import { translateAlgPatternIntoGroup, translateAlgPatternNew } from './pattern.js';
 
 export type RdfTermToAst<T extends RDF.Term> = T extends RDF.Variable ? TermVariable :
   T extends RDF.BlankNode ? TermBlank :

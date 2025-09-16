@@ -3,8 +3,8 @@ import type {
   ContextDefinitionBase,
   ContextDefinitionPrefix,
   TermIriFull,
-} from '../Sparql11types';
-import type { Constructor } from './mixins';
+} from '../Sparql11types.js';
+import type { Constructor } from './mixins.js';
 
 type NodeType = 'contextDef';
 const nodeType: NodeType = 'contextDef';

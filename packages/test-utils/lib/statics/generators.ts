@@ -1,7 +1,7 @@
 /* eslint-disable import/no-nodejs-modules,no-sync */
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { readFile } from '../fileUtils';
+import { readFile } from '../fileUtils.js';
 
 interface PositiveTest {
   name: string;

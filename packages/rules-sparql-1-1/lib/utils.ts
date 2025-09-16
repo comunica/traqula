@@ -1,5 +1,5 @@
 import { TransformerSubType } from '@traqula/core';
-import type { Sparql11Nodes } from './Sparql11types';
+import type { Sparql11Nodes } from './Sparql11types.js';
 
 /**
  * Transform input in accordance to [19.2](https://www.w3.org/TR/sparql11-query/#codepointEscape)

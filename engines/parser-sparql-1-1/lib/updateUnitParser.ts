@@ -1,8 +1,8 @@
 import { ParserBuilder } from '@traqula/core';
 import { gram } from '@traqula/rules-sparql-1-1';
-import { objectListParserBuilder } from './objectListParser';
-import { subSelectParserBuilder } from './subSelectParser';
-import { updateNoModifyParserBuilder } from './updateNoModifyParser';
+import { objectListParserBuilder } from './objectListParser.js';
+import { subSelectParserBuilder } from './subSelectParser.js';
+import { updateNoModifyParserBuilder } from './updateNoModifyParser.js';
 
 export const updateParserBuilder = ParserBuilder.create(updateNoModifyParserBuilder)
   .patchRule(gram.update1)

@@ -1,5 +1,5 @@
-import * as l from '../lexer';
-import type { SparqlGrammarRule, SparqlRule } from '../sparql11HelperTypes';
+import * as l from '../lexer/index.js';
+import type { SparqlGrammarRule, SparqlRule } from '../sparql11HelperTypes.js';
 import type {
   ContextDefinition,
   ContextDefinitionBase,
@@ -8,9 +8,9 @@ import type {
   Term,
   TermIri,
   TermVariable,
-} from '../Sparql11types';
-import { CommonIRIs } from '../utils';
-import { blankNode, booleanLiteral, iri, iriFull, numericLiteral, rdfLiteral, verbA } from './literals';
+} from '../Sparql11types.js';
+import { CommonIRIs } from '../utils.js';
+import { blankNode, booleanLiteral, iri, iriFull, numericLiteral, rdfLiteral, verbA } from './literals.js';
 
 /**
  * [[4]](https://www.w3.org/TR/sparql11-query/#rPrologue)

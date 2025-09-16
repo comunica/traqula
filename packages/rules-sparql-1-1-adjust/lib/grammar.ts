@@ -1,6 +1,6 @@
 import type { Expression } from '@traqula/rules-sparql-1-1';
 import { funcExpr2, gram as g11 } from '@traqula/rules-sparql-1-1';
-import { BuiltInAdjust } from './lexer';
+import { BuiltInAdjust } from './lexer.js';
 
 export const builtInAdjust = funcExpr2(BuiltInAdjust);
 

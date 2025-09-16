@@ -5,8 +5,8 @@ import { utils } from '@traqula/algebra-transformations-1-1';
 import { Parser } from '@traqula/parser-sparql-1-1';
 import { sparqlQueries } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
-import { toAlgebra } from '../lib';
-import { suites } from './algebra.test';
+import { toAlgebra } from '../lib/index.js';
+import { suites } from './algebra.test.js';
 
 // WARNING: use this script with caution!
 // After running this script, manual inspection of the output is needed to make sure that conversion happened correctly.

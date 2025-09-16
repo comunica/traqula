@@ -1,7 +1,7 @@
 import type { ILexerConfig } from '@chevrotain/types';
 import type { TokenType } from 'chevrotain';
 import { Lexer } from 'chevrotain';
-import type { CheckOverlap, NamedToken } from '../utils';
+import type { CheckOverlap, NamedToken } from '../utils.js';
 
 export class LexerBuilder<NAMES extends string = string> {
   private readonly tokens: TokenType[];

@@ -1,7 +1,7 @@
 import { Parser as SparqlJSparser } from 'sparqljs';
 import { describe, bench } from 'vitest';
-import { Parser as TraqulaParqer } from '../lib/';
-import { queryLargeObjectList } from './heatmap';
+import { Parser as TraqulaParqer } from '../lib/index.js';
+import { queryLargeObjectList } from './heatmap.js';
 
 describe('query, exclude construction', () => {
   const traqulaParqer = new TraqulaParqer();

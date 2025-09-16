@@ -7,8 +7,8 @@
 import type { RuleDefReturn, Wrap } from '@traqula/core';
 import { CommonIRIs, funcExpr1, funcExpr3, gram as S11, lex as l11 } from '@traqula/rules-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
-import * as l12 from './lexer';
-import type { SparqlGeneratorRule, SparqlGrammarRule, SparqlRule } from './sparql12HelperTypes';
+import * as l12 from './lexer.js';
+import type { SparqlGeneratorRule, SparqlGrammarRule, SparqlRule } from './sparql12HelperTypes.js';
 import type {
   Annotation,
   ContextDefinition,
@@ -26,8 +26,8 @@ import type {
   TripleCollectionBlankNodeProperties,
   TripleCollectionReifiedTriple,
   TripleNesting,
-} from './sparql12Types';
-import { langTagHasCorrectRange } from './validators';
+} from './sparql12Types.js';
+import { langTagHasCorrectRange } from './validators.js';
 
 /**
  *[[7]](https://www.w3.org/TR/sparql12-query/#rVersionDecl)

@@ -3,8 +3,8 @@ import type { IndirDef } from '@traqula/core';
 import type { PathPure } from '@traqula/rules-sparql-1-1';
 import { Factory as AstFactory, TransformerSparql11 } from '@traqula/rules-sparql-1-1';
 import { DataFactory } from 'rdf-data-factory';
-import * as Algebra from '../algebra';
-import { Factory } from '../factory';
+import * as Algebra from '../algebra.js';
+import { Factory } from '../factory.js';
 
 export interface AlgebraContext {
   variables: Set<string>;

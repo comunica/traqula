@@ -1,7 +1,7 @@
-export * as gram from './grammar';
-export * as lex from './lexer';
-export * from './sparql12Types';
-export * from './sparql12HelperTypes';
-export * from './parserUtils';
-export * from './Factory';
-export * from './validators';
+export * as gram from './grammar.js';
+export * as lex from './lexer.js';
+export * from './sparql12Types.js';
+export * from './sparql12HelperTypes.js';
+export * from './parserUtils.js';
+export * from './Factory.js';
+export * from './validators.js';

@@ -9,9 +9,9 @@ import type {
   TermVariable,
   Wildcard,
 } from '@traqula/rules-sparql-1-1';
-import equal from 'fast-deep-equal/es6';
-import type { Algebra } from '../index';
-import type { AlgebraIndir, FlattenedTriple } from './core';
+import equal from 'fast-deep-equal';
+import type { Algebra } from '../index.js';
+import type { AlgebraIndir, FlattenedTriple } from './core.js';
 import {
   type AstToRdfTerm,
   generateFreshVar,
@@ -19,9 +19,9 @@ import {
   translateDatasetClause,
   translateInlineData,
   translateTerm,
-} from './general';
-import { translateExpression } from './patterns';
-import { translateBasicGraphPattern, translateQuad } from './tripleAndQuad';
+} from './general.js';
+import { translateExpression } from './patterns.js';
+import { translateBasicGraphPattern, translateQuad } from './tripleAndQuad.js';
 
 /**
  * 18.2.4

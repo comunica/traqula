@@ -1,7 +1,7 @@
 import type { IToken } from '@chevrotain/types';
 import type { Wrap } from '@traqula/core';
-import * as l from '../lexer';
-import type { SparqlGrammarRule, SparqlRule } from '../sparql11HelperTypes';
+import * as l from '../lexer/index.js';
+import type { SparqlGrammarRule, SparqlRule } from '../sparql11HelperTypes.js';
 import type {
   Expression,
   SolutionModifierGroup,
@@ -11,11 +11,11 @@ import type {
   Ordering,
   SolutionModifierLimitOffset,
   SolutionModifiers,
-} from '../Sparql11types';
-import { builtInCall } from './builtIn';
-import { brackettedExpression, expression } from './expression';
-import { var_ } from './general';
-import { constraint, functionCall } from './whereClause';
+} from '../Sparql11types.js';
+import { builtInCall } from './builtIn.js';
+import { brackettedExpression, expression } from './expression.js';
+import { var_ } from './general.js';
+import { constraint, functionCall } from './whereClause.js';
 
 /**
  * [[18]](https://www.w3.org/TR/sparql11-query/#rSolutionModifier)

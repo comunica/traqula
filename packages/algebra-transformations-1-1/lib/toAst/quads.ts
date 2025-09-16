@@ -1,7 +1,7 @@
 import type * as RDF from '@rdfjs/types';
-import type { Algebra } from '../index';
-import { types } from '../toAlgebra';
-import type { AstIndir } from './core';
+import type { Algebra } from '../index.js';
+import { types } from '../toAlgebra/index.js';
+import type { AstIndir } from './core.js';
 
 /**
  * Removes quad component of triple and ...
@@ -24,7 +24,7 @@ unknown,
   name: 'removeQuadsRecursive',
   fun: ({ SUBRULE }) => ({ factory }, op, graphs) => {
     if (Array.isArray(op)) {
-      return op.map(sub => <typeof sub> SUBRULE(removeAlgQuadsRecursive, sub, graphs));
+      return op.map(sub => SUBRULE(removeAlgQuadsRecursive, sub, graphs));
     }
 
     if (!op.type) {

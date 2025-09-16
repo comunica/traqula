@@ -1,4 +1,4 @@
-import type { IndirDef, IndirDefArg, IndirectionMap } from './helpers';
+import type { IndirDef, IndirDefArg, IndirectionMap } from './helpers.js';
 
 export class DynamicIndirect<Context, Names extends string, RuleDefs extends IndirectionMap<Names>> {
   protected __context: Context | undefined = undefined;

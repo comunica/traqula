@@ -1,6 +1,6 @@
 import type { IToken } from 'chevrotain';
-import * as l from '../lexer';
-import type { SparqlGrammarRule, SparqlRule } from '../sparql11HelperTypes';
+import * as l from '../lexer/index.js';
+import type { SparqlGrammarRule, SparqlRule } from '../sparql11HelperTypes.js';
 import type {
   BasicGraphPattern,
   GraphNode,
@@ -12,10 +12,10 @@ import type {
   TripleCollectionBlankNodeProperties,
   TripleCollectionList,
   TripleNesting,
-} from '../Sparql11types';
-import { CommonIRIs } from '../utils';
-import { var_, varOrTerm, verb } from './general';
-import { path, pathGenerator } from './propertyPaths';
+} from '../Sparql11types.js';
+import { CommonIRIs } from '../utils.js';
+import { var_, varOrTerm, verb } from './general.js';
+import { path, pathGenerator } from './propertyPaths.js';
 
 function triplesDotSeperated(triplesSameSubjectSubrule: SparqlGrammarRule<string, BasicGraphPattern>):
 SparqlGrammarRule<string, PatternBgp>['impl'] {

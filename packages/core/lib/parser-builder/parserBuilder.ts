@@ -1,16 +1,16 @@
 import type { ILexerConfig, IParserConfig, IRecognitionException } from '@chevrotain/types';
 import type { TokenType, TokenVocabulary, EmbeddedActionsParser } from 'chevrotain';
-import { LexerBuilder } from '../lexer-builder/LexerBuilder';
-import type { CheckOverlap } from '../utils';
+import { LexerBuilder } from '../lexer-builder/LexerBuilder.js';
+import type { CheckOverlap } from '../utils.js';
 import type {
   ParseMethodsFromRules,
   ParserFromRules,
   ParseRuleMap,
   ParseRulesToObject,
   ParseNamesFromList,
-} from './builderTypes';
-import { DynamicParser } from './dynamicParser';
-import type { ParserRule } from './ruleDefTypes';
+} from './builderTypes.js';
+import { DynamicParser } from './dynamicParser.js';
+import type { ParserRule } from './ruleDefTypes.js';
 
 /**
  * Converts a list of ruledefs to a record mapping a name to the corresponding ruledef.

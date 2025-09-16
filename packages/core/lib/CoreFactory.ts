@@ -10,7 +10,7 @@ import type {
   Node,
   Localized,
   Wrap,
-} from './nodeTypings';
+} from './nodeTypings.js';
 
 export type Typed<Type extends PropertyKey> = { type: Type };
 export type SubTyped<Type extends PropertyKey, Subtype extends PropertyKey> = { type: Type; subType: Subtype };

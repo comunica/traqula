@@ -1,5 +1,6 @@
 {
   "name": "@traqula/parser-sparql-1-1-adjust",
+  "type": "module",
   "version": "0.0.13",
   "description": "SPARQL 1.1 + ADJUST parser",
   "lsd:module": true,
@@ -16,6 +17,7 @@
   "exports": {
     "./package.json": "./package.json",
     ".": {
+      "types": "./lib/index.d.ts",
       "import": "./lib/index.js",
       "require": "./lib/index.cjs"
     }

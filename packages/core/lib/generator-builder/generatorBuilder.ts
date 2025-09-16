@@ -1,8 +1,8 @@
-import type { ParseNamesFromList } from '../parser-builder/builderTypes';
-import type { CheckOverlap } from '../utils';
-import type { GeneratorFromRules, GenRuleMap, GenRulesToObject } from './builderTypes';
-import { DynamicGenerator } from './dynamicGenerator';
-import type { GeneratorRule } from './generatorTypes';
+import type { ParseNamesFromList } from '../parser-builder/builderTypes.js';
+import type { CheckOverlap } from '../utils.js';
+import type { GeneratorFromRules, GenRuleMap, GenRulesToObject } from './builderTypes.js';
+import { DynamicGenerator } from './dynamicGenerator.js';
+import type { GeneratorRule } from './generatorTypes.js';
 
 /**
  * Converts a list of ruledefs to a record mapping a name to the corresponding ruledef.

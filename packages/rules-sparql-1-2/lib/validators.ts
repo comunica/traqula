@@ -8,7 +8,7 @@ import type {
   TripleCollection,
   TripleNesting,
   Wildcard,
-} from './sparql12Types';
+} from './sparql12Types.js';
 
 const F = new Factory();
 

@@ -1,9 +1,9 @@
 import type * as RDF from '@rdfjs/types';
 import type { Path, PathNegatedElt, PathPure, TermIri } from '@traqula/rules-sparql-1-1';
-import type { Algebra } from '../index';
-import type { AlgebraIndir, FlattenedTriple } from './core';
-import { isTerm, types } from './core';
-import { generateFreshVar, translateNamed } from './general';
+import type { Algebra } from '../index.js';
+import type { AlgebraIndir, FlattenedTriple } from './core.js';
+import { isTerm, types } from './core.js';
+import { generateFreshVar, translateNamed } from './general.js';
 
 /**
  * 18.2.2.3 Translate Property Path Expressions
@@ -39,7 +39,7 @@ AlgebraIndir<'translatePathPredicate', Algebra.PropertyPathSymbol, [RDF.NamedNod
 
     // ^path -> inv(path)
     if (predicate.subType === '^') {
-      return c.factory.createInv(SUBRULE(translatePathPredicate, <RDF.NamedNode | PathPure> predicate.items[0]));
+      return c.factory.createInv(SUBRULE(translatePathPredicate, predicate.items[0]));
     }
 
     if (predicate.subType === '!') {

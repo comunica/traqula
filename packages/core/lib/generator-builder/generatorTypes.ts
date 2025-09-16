@@ -1,4 +1,4 @@
-import type { Localized } from '../nodeTypings';
+import type { Localized } from '../nodeTypings.js';
 
 /**
  * Type used to declare generator rules.

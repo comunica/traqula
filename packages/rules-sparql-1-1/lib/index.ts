@@ -1,9 +1,9 @@
-export * as gram from './grammar';
-export * as lex from './lexer';
-export * from './expressionHelpers';
-export * from './Sparql11types';
-export * from './MinimalSparqlParser';
-export * from './sparql11HelperTypes';
-export * from './factory';
-export * from './validation/validators';
-export * from './utils';
+export * as gram from './grammar/index.js';
+export * as lex from './lexer/index.js';
+export * from './expressionHelpers.js';
+export * from './Sparql11types.js';
+export * from './MinimalSparqlParser.js';
+export * from './sparql11HelperTypes.js';
+export * from './factory.js';
+export * from './validation/validators.js';
+export * from './utils.js';

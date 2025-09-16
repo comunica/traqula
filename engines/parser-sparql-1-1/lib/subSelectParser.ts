@@ -1,7 +1,7 @@
 import { ParserBuilder } from '@traqula/core';
 import { gram } from '@traqula/rules-sparql-1-1';
-import { expressionParserBuilder } from './expressionParser';
-import { triplesBlockParserBuilder } from './triplesBlockParser';
+import { expressionParserBuilder } from './expressionParser.js';
+import { triplesBlockParserBuilder } from './triplesBlockParser.js';
 
 const rules = <const> [
   gram.subSelect,

@@ -8,14 +8,14 @@ import type {
   PatternGroup,
   Wildcard,
 } from '@traqula/rules-sparql-1-1';
-import type { Algebra } from '../index';
-import type { AlgebraIndir, FlattenedTriple } from './core';
-import { types } from './core';
-import type { AstToRdfTerm } from './general';
-import { translateInlineData, translateNamed, translateTerm } from './general';
-import { translatePath } from './path';
-import { translateQuery } from './toAlgebra';
-import { recurseGraph, translateBasicGraphPattern, translateQuad } from './tripleAndQuad';
+import type { Algebra } from '../index.js';
+import type { AlgebraIndir, FlattenedTriple } from './core.js';
+import { types } from './core.js';
+import type { AstToRdfTerm } from './general.js';
+import { translateInlineData, translateNamed, translateTerm } from './general.js';
+import { translatePath } from './path.js';
+import { translateQuery } from './toAlgebra.js';
+import { recurseGraph, translateBasicGraphPattern, translateQuad } from './tripleAndQuad.js';
 
 /**
  * Handles part of: 18.2.2.2 Collect FILTER Elements

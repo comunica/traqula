@@ -24,13 +24,13 @@ import type {
   UpdateOperationMove,
 } from '@traqula/rules-sparql-1-1';
 import { isomorphic } from 'rdf-isomorphic';
-import type { Algebra } from '../index';
-import { isVariable, types } from '../toAlgebra';
-import type { AstIndir } from './core';
-import type { RdfTermToAst } from './general';
-import { translateAlgDatasetClauses, translateAlgPattern, translateAlgTerm } from './general';
-import { translateAlgPatternNew, algWrapInPatternGroup } from './pattern';
-import { removeAlgQuadsRecursive } from './quads';
+import type * as Algebra from '../algebra.js';
+import { isVariable, types } from '../toAlgebra/index.js';
+import type { AstIndir } from './core.js';
+import type { RdfTermToAst } from './general.js';
+import { translateAlgDatasetClauses, translateAlgPattern, translateAlgTerm } from './general.js';
+import { translateAlgPatternNew, algWrapInPatternGroup } from './pattern.js';
+import { removeAlgQuadsRecursive } from './quads.js';
 
 export const translateAlgUpdateOperation: AstIndir<'translateUpdateOperation', UpdateOperation, [Algebra.Operation]> = {
   name: 'translateUpdateOperation',

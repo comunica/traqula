@@ -1,7 +1,7 @@
 import { ParserBuilder } from '@traqula/core';
 import type { UpdateOperation } from '@traqula/rules-sparql-1-1';
 import { gram } from '@traqula/rules-sparql-1-1';
-import { triplesTemplateParserBuilder } from './triplesTemplateParserBuilder';
+import { triplesTemplateParserBuilder } from './triplesTemplateParserBuilder.js';
 
 const update1Patch: typeof gram.update1 = {
   name: 'update1',

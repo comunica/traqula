@@ -1,9 +1,9 @@
 /* eslint-disable require-unicode-regexp */
 import { LexerBuilder, createToken } from '@traqula/core';
-import { allBuiltInCalls, avg, datatype, groupConcat } from './BuiltInCalls';
-import { allGraphTokens, graphAll } from './graph';
-import { allSymbols } from './symbols';
-import { allTerminals } from './terminals';
+import { allBuiltInCalls, avg, datatype, groupConcat } from './BuiltInCalls.js';
+import { allGraphTokens, graphAll } from './graph.js';
+import { allSymbols } from './symbols.js';
+import { allTerminals } from './terminals.js';
 
 export const baseDecl = createToken({ name: 'BaseDecl', pattern: /base/i, label: 'BASE' });
 export const prefixDecl = createToken({ name: 'PrefixDecl', pattern: /prefix/i, label: 'PREFIX' });

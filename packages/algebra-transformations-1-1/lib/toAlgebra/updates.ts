@@ -13,11 +13,11 @@ import type {
   UpdateOperationLoad,
   UpdateOperationModify,
 } from '@traqula/rules-sparql-1-1';
-import type { Algebra } from '../index';
-import type { AlgebraIndir, FlattenedTriple } from './core';
-import { registerContextDefinitions, translateDatasetClause, translateNamed, translateTerm } from './general';
-import { translateGraphPattern } from './patterns';
-import { recurseGraph, translateBasicGraphPattern, translateQuad } from './tripleAndQuad';
+import type { Algebra } from '../index.js';
+import type { AlgebraIndir, FlattenedTriple } from './core.js';
+import { registerContextDefinitions, translateDatasetClause, translateNamed, translateTerm } from './general.js';
+import { translateGraphPattern } from './patterns.js';
+import { recurseGraph, translateBasicGraphPattern, translateQuad } from './tripleAndQuad.js';
 
 export const translateUpdate: AlgebraIndir<'translateUpdate', Algebra.Operation, [Update]> = {
   name: 'translateUpdate',

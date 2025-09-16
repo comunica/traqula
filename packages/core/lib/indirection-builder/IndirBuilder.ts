@@ -1,8 +1,8 @@
-import type { ParseNamesFromList } from '../parser-builder/builderTypes';
-import type { CheckOverlap } from '../utils';
-import { DynamicIndirect } from './dynamicIndirected';
-import type { IndirDef, IndirectionMap, IndirectObjFromIndirDefs, ParseIndirsToObject } from './helpers';
-import { listToIndirectionMap } from './helpers';
+import type { ParseNamesFromList } from '../parser-builder/builderTypes.js';
+import type { CheckOverlap } from '../utils.js';
+import { DynamicIndirect } from './dynamicIndirected.js';
+import type { IndirDef, IndirectionMap, IndirectObjFromIndirDefs, ParseIndirsToObject } from './helpers.js';
+import { listToIndirectionMap } from './helpers.js';
 
 export class IndirBuilder<Context, Names extends string, RuleDefs extends IndirectionMap<Names>> {
   public static create<Context, Names extends string, RuleDefs extends IndirectionMap<Names>>(

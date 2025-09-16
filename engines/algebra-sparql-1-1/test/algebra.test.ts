@@ -4,7 +4,7 @@ import { Parser } from '@traqula/parser-sparql-1-1';
 import type { AlgebraTestSuite } from '@traqula/test-utils';
 import { sparqlAlgebraTests } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
-import { toAlgebra } from '../lib';
+import { toAlgebra } from '../lib/index.js';
 
 export const suites: AlgebraTestSuite[] = [ 'dawg-syntax', 'sparql11-query', 'sparql-1.1' ];
 

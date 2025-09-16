@@ -25,6 +25,7 @@ export default config([
         { checkArguments: false },
       ],
       'test/consistent-test-it': 'off',
+      'import/extensions': 'off',
 
       // Default
       'unicorn/consistent-destructuring': 'off',
@@ -84,6 +85,7 @@ export default config([
   {
     ignores: [
       'documentation',
+      '**/*.mjs',
     ],
   },
 ], { disableJest: true });

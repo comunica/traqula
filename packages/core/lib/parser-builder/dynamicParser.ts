@@ -1,7 +1,7 @@
 import type { IParserConfig } from '@chevrotain/types';
 import { EmbeddedActionsParser, type TokenVocabulary } from 'chevrotain';
-import type { ParseRuleMap } from './builderTypes';
-import type { CstDef, ImplArgs, ParserRule } from './ruleDefTypes';
+import type { ParseRuleMap } from './builderTypes.js';
+import type { CstDef, ImplArgs, ParserRule } from './ruleDefTypes.js';
 
 export class DynamicParser<Context, Names extends string, RuleDefs extends ParseRuleMap<Names>>
   extends EmbeddedActionsParser {

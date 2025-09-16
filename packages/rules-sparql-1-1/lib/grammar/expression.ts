@@ -1,18 +1,18 @@
 import type { ImplArgs, RuleDefReturn, Wrap } from '@traqula/core';
-import * as l from '../lexer';
-import type { SparqlGrammarRule, SparqlRule } from '../sparql11HelperTypes';
+import * as l from '../lexer/index.js';
+import type { SparqlGrammarRule, SparqlRule } from '../sparql11HelperTypes.js';
 import type {
   Expression,
   ExpressionFunctionCall,
   ExpressionOperation,
   TermIri,
   TermLiteral,
-} from '../Sparql11types';
-import { aggregate, builtInCall } from './builtIn';
+} from '../Sparql11types.js';
+import { aggregate, builtInCall } from './builtIn.js';
 import {
   var_,
   varOrTerm,
-} from './general';
+} from './general.js';
 import {
   booleanLiteral,
   iri,
@@ -20,8 +20,8 @@ import {
   numericLiteralNegative,
   numericLiteralPositive,
   rdfLiteral,
-} from './literals';
-import { groupGraphPattern } from './whereClause';
+} from './literals.js';
+import { groupGraphPattern } from './whereClause.js';
 
 /**
  * [[71]](https://www.w3.org/TR/sparql11-query/#rArgList)

@@ -1,6 +1,6 @@
 import { describe, it, expectTypeOf } from 'vitest';
-import type { ParserRule } from '../../lib';
-import { ParserBuilder } from '../../lib';
+import type { ParserRule } from '../../lib/index.js';
+import { ParserBuilder } from '../../lib/index.js';
 
 interface Context {
   world: 'hello';

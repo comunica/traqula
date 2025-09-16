@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "declaration": true
+  },
+  "references": [
+    { "path": "../core" }
+  ],
+  "include": ["lib/**/*.ts", "test/**/*.ts"],
+  "exclude": ["lib/**/*.d.ts"]
+}

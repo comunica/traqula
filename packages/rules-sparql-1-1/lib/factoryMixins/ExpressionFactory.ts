@@ -11,8 +11,8 @@ import type {
   PatternGroup,
   TermIri,
   Wildcard,
-} from '../Sparql11types';
-import type { Constructor } from './mixins';
+} from '../Sparql11types.js';
+import type { Constructor } from './mixins.js';
 
 type NodeType = 'expression';
 const nodeType: NodeType = 'expression';

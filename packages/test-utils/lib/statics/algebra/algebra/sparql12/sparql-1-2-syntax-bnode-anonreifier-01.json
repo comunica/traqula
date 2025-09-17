@@ -8,26 +8,6 @@
         "termType": "Quad",
         "subject": {
           "termType": "BlankNode",
-          "value": "e_a"
-        },
-        "predicate": {
-          "termType": "NamedNode",
-          "value": "http://example.com/ns#p"
-        },
-        "object": {
-          "termType": "NamedNode",
-          "value": "http://example.com/ns#o"
-        },
-        "graph": {
-          "termType": "DefaultGraph",
-          "value": ""
-        }
-      },
-      {
-        "type": "pattern",
-        "termType": "Quad",
-        "subject": {
-          "termType": "BlankNode",
           "value": "g_0"
         },
         "predicate": {

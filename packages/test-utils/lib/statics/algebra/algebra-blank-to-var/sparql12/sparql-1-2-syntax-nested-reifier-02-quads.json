@@ -8,26 +8,6 @@
         "termType": "Quad",
         "subject": {
           "termType": "NamedNode",
-          "value": "http://example.com/ns#s"
-        },
-        "predicate": {
-          "termType": "NamedNode",
-          "value": "http://example.com/ns#p"
-        },
-        "object": {
-          "termType": "Variable",
-          "value": "O"
-        },
-        "graph": {
-          "termType": "DefaultGraph",
-          "value": ""
-        }
-      },
-      {
-        "type": "pattern",
-        "termType": "Quad",
-        "subject": {
-          "termType": "NamedNode",
           "value": "http://example.com/ns#iri"
         },
         "predicate": {
@@ -84,26 +64,6 @@
         "termType": "Quad",
         "subject": {
           "termType": "NamedNode",
-          "value": "http://example.com/ns#s"
-        },
-        "predicate": {
-          "termType": "NamedNode",
-          "value": "http://example.com/ns#p"
-        },
-        "object": {
-          "termType": "Variable",
-          "value": "O"
-        },
-        "graph": {
-          "termType": "DefaultGraph",
-          "value": ""
-        }
-      },
-      {
-        "type": "pattern",
-        "termType": "Quad",
-        "subject": {
-          "termType": "NamedNode",
           "value": "http://example.com/ns#iri"
         },
         "predicate": {
@@ -129,26 +89,6 @@
             "termType": "DefaultGraph",
             "value": ""
           }
-        },
-        "graph": {
-          "termType": "DefaultGraph",
-          "value": ""
-        }
-      },
-      {
-        "type": "pattern",
-        "termType": "Quad",
-        "subject": {
-          "termType": "NamedNode",
-          "value": "http://example.com/ns#a"
-        },
-        "predicate": {
-          "termType": "NamedNode",
-          "value": "http://example.com/ns#q"
-        },
-        "object": {
-          "termType": "NamedNode",
-          "value": "http://example.com/ns#iri"
         },
         "graph": {
           "termType": "DefaultGraph",

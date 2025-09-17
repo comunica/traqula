@@ -8,26 +8,6 @@
         "termType": "Quad",
         "subject": {
           "termType": "NamedNode",
-          "value": "http://example.com/ns#s"
-        },
-        "predicate": {
-          "termType": "Variable",
-          "value": "P"
-        },
-        "object": {
-          "termType": "NamedNode",
-          "value": "http://example.com/ns#o"
-        },
-        "graph": {
-          "termType": "DefaultGraph",
-          "value": ""
-        }
-      },
-      {
-        "type": "pattern",
-        "termType": "Quad",
-        "subject": {
-          "termType": "NamedNode",
           "value": "http://example.com/ns#iri"
         },
         "predicate": {

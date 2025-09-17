@@ -7,26 +7,6 @@
         "type": "pattern",
         "termType": "Quad",
         "subject": {
-          "termType": "Variable",
-          "value": "s"
-        },
-        "predicate": {
-          "termType": "NamedNode",
-          "value": "http://example.com/ns#p2"
-        },
-        "object": {
-          "termType": "NamedNode",
-          "value": "http://example.com/ns#o2"
-        },
-        "graph": {
-          "termType": "DefaultGraph",
-          "value": ""
-        }
-      },
-      {
-        "type": "pattern",
-        "termType": "Quad",
-        "subject": {
           "termType": "NamedNode",
           "value": "http://example.com/ns#iri2"
         },
@@ -53,26 +33,6 @@
             "termType": "DefaultGraph",
             "value": ""
           }
-        },
-        "graph": {
-          "termType": "DefaultGraph",
-          "value": ""
-        }
-      },
-      {
-        "type": "pattern",
-        "termType": "Quad",
-        "subject": {
-          "termType": "NamedNode",
-          "value": "http://example.com/ns#s"
-        },
-        "predicate": {
-          "termType": "NamedNode",
-          "value": "http://example.com/ns#p"
-        },
-        "object": {
-          "termType": "NamedNode",
-          "value": "http://example.com/ns#iri2"
         },
         "graph": {
           "termType": "DefaultGraph",
@@ -122,26 +82,6 @@
       "type": "pattern",
       "termType": "Quad",
       "subject": {
-        "termType": "Variable",
-        "value": "s"
-      },
-      "predicate": {
-        "termType": "NamedNode",
-        "value": "http://example.com/ns#p2"
-      },
-      "object": {
-        "termType": "NamedNode",
-        "value": "http://example.com/ns#o2"
-      },
-      "graph": {
-        "termType": "DefaultGraph",
-        "value": ""
-      }
-    },
-    {
-      "type": "pattern",
-      "termType": "Quad",
-      "subject": {
         "termType": "NamedNode",
         "value": "http://example.com/ns#iri2"
       },
@@ -168,26 +108,6 @@
           "termType": "DefaultGraph",
           "value": ""
         }
-      },
-      "graph": {
-        "termType": "DefaultGraph",
-        "value": ""
-      }
-    },
-    {
-      "type": "pattern",
-      "termType": "Quad",
-      "subject": {
-        "termType": "NamedNode",
-        "value": "http://example.com/ns#s"
-      },
-      "predicate": {
-        "termType": "NamedNode",
-        "value": "http://example.com/ns#p"
-      },
-      "object": {
-        "termType": "NamedNode",
-        "value": "http://example.com/ns#iri2"
       },
       "graph": {
         "termType": "DefaultGraph",

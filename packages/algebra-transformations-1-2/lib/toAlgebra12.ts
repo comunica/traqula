@@ -67,7 +67,7 @@ void,
       SUBRULE(translateTripleNesting12, collection.triples[0], result);
       // Given the rule for triple nesting, the triple itself is always generated last
       // (followed by annotations, but they are not allowed within reified triples
-      const { subject, predicate, object } = result.at(-1)!;
+      const { subject, predicate, object } = result.pop()!;
       const asTerm = dataFactory.quad(subject, <Exclude<typeof predicate, T11.PathPure>> predicate, object);
       result.push({
         subject: identifier,

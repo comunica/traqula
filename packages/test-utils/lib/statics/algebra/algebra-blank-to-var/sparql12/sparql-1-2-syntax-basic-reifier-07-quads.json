@@ -7,26 +7,6 @@
         "type": "pattern",
         "termType": "Quad",
         "subject": {
-          "termType": "Variable",
-          "value": "s"
-        },
-        "predicate": {
-          "termType": "Variable",
-          "value": "p"
-        },
-        "object": {
-          "termType": "Variable",
-          "value": "o"
-        },
-        "graph": {
-          "termType": "DefaultGraph",
-          "value": ""
-        }
-      },
-      {
-        "type": "pattern",
-        "termType": "Quad",
-        "subject": {
           "termType": "NamedNode",
           "value": "http://example.com/ns#iri"
         },
@@ -73,26 +53,6 @@
         "object": {
           "termType": "Variable",
           "value": "z"
-        },
-        "graph": {
-          "termType": "DefaultGraph",
-          "value": ""
-        }
-      },
-      {
-        "type": "pattern",
-        "termType": "Quad",
-        "subject": {
-          "termType": "Variable",
-          "value": "s"
-        },
-        "predicate": {
-          "termType": "Variable",
-          "value": "p"
-        },
-        "object": {
-          "termType": "Variable",
-          "value": "o"
         },
         "graph": {
           "termType": "DefaultGraph",
@@ -162,26 +122,6 @@
       "type": "pattern",
       "termType": "Quad",
       "subject": {
-        "termType": "Variable",
-        "value": "s"
-      },
-      "predicate": {
-        "termType": "Variable",
-        "value": "p"
-      },
-      "object": {
-        "termType": "Variable",
-        "value": "o"
-      },
-      "graph": {
-        "termType": "DefaultGraph",
-        "value": ""
-      }
-    },
-    {
-      "type": "pattern",
-      "termType": "Quad",
-      "subject": {
         "termType": "NamedNode",
         "value": "http://example.com/ns#iri"
       },
@@ -228,26 +168,6 @@
       "object": {
         "termType": "Variable",
         "value": "z"
-      },
-      "graph": {
-        "termType": "DefaultGraph",
-        "value": ""
-      }
-    },
-    {
-      "type": "pattern",
-      "termType": "Quad",
-      "subject": {
-        "termType": "Variable",
-        "value": "s"
-      },
-      "predicate": {
-        "termType": "Variable",
-        "value": "p"
-      },
-      "object": {
-        "termType": "Variable",
-        "value": "o"
       },
       "graph": {
         "termType": "DefaultGraph",

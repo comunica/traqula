@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v0.0.15"></a>
+## [v0.0.15](https://github.com/comunica/traqula/compare/v0.0.14...v0.0.15) - 2025-09-17
+
+* [reified triples are not asserted 🤦🏼](https://github.com/comunica/traqula/commit/01e44da5515864c8f12adf2aec2f7ee96fb5aae6)
+* [Update dependency lerna to v8.2.4](https://github.com/comunica/traqula/commit/efba0d975d829fac6327181d6f29724bacc02989)
+
 <a name="v0.0.14"></a>
 ## [v0.0.14](https://github.com/comunica/traqula/compare/v0.0.13...v0.0.14) - 2025-09-16
 

@@ -239,8 +239,8 @@ export const iriFull: SparqlRule<'iriFull', TermIriFull> = <const> {
     const iriToken = CONSUME(l.terminals.iriRef);
     return ACTION(() => C.factory.namedNode(C.factory.sourceLocation(iriToken), iriToken.image.slice(1, -1)));
   },
-  gImpl: ({ PRINT }) => (ast, { factory }) => {
-    factory.printFilter(ast, () => PRINT('<', ast.value, '>'));
+  gImpl: ({ PRINT_WORD }) => (ast, { factory }) => {
+    factory.printFilter(ast, () => PRINT_WORD('<', ast.value, '>'));
   },
 };
 

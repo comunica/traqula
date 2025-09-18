@@ -1,4 +1,5 @@
 import type { Localized, RuleDefReturn, Wrap } from '@traqula/core';
+import { traqulaIndentation } from '@traqula/core';
 import type { IToken } from 'chevrotain';
 import * as l from '../lexer/index.js';
 import type { SparqlGrammarRule, SparqlRule } from '../sparql11HelperTypes.js';
@@ -313,13 +314,16 @@ export const constructQuery: SparqlRule<'constructQuery', Omit<QueryConstruct, H
       } },
     ]);
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD, PRINT_ON_EMPTY }) => (ast, C) => {
+    const { factory: F, indentInc } = C;
     F.printFilter(ast, () => PRINT_WORD('CONSTRUCT'));
     if (!F.isSourceLocationNoMaterialize(ast.where.loc)) {
       // You are NOT in second case construct
-      F.printFilter(ast, () => PRINT_WORD('{'));
+      C[traqulaIndentation] += indentInc;
+      F.printFilter(ast, () => PRINT_WORD('{\n'));
       SUBRULE(triplesBlock, ast.template);
-      F.printFilter(ast, () => PRINT_WORD('}'));
+      C[traqulaIndentation] -= indentInc;
+      F.printFilter(ast, () => PRINT_ON_EMPTY('}\n'));
     }
     SUBRULE(datasetClauseStar, ast.datasets);
     if (F.isSourceLocationNoMaterialize(ast.where.loc)) {

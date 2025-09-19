@@ -141,5 +141,14 @@
       }
     ]
   },
-  "variables": []
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "S1"
+    },
+    {
+      "termType": "Variable",
+      "value": "S2"
+    }
+  ]
 }

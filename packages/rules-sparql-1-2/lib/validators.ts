@@ -1,4 +1,4 @@
-import { AstFactory } from '@traqula/rules-sparql-1-1';
+import { AstFactory } from './AstFactory.js';
 import type {
   Path,
   Pattern,
@@ -59,6 +59,11 @@ export function findPatternBoundedVars(
   } else if (F.isTerm(iter)) {
     if (F.isTermVariable(iter)) {
       boundedVars.add(iter.value);
+    }
+    if (F.isTermTriple(iter)) {
+      findPatternBoundedVars(iter.subject, boundedVars);
+      findPatternBoundedVars(iter.predicate, boundedVars);
+      findPatternBoundedVars(iter.object, boundedVars);
     }
   } else if (F.isTriple(iter)) {
     findPatternBoundedVars(iter.subject, boundedVars);

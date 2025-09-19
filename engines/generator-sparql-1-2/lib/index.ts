@@ -9,7 +9,7 @@ import type * as T12 from '@traqula/rules-sparql-1-2';
 
 const sparql12GeneratorBuilder =
   GeneratorBuilder.create(sparql11GeneratorBuilder)
-    .widenContext<{ factory: Factory }>()
+    .widenContext<T12.SparqlGeneratorContext>()
     .typePatch<{
       [g11.queryOrUpdate.name]: [T12.SparqlQuery];
       [g11.query.name]: [T12.Query];

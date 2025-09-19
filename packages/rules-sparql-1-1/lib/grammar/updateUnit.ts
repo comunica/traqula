@@ -1,5 +1,5 @@
 import type { Localized, RuleDefReturn, Wrap } from '@traqula/core';
-import { unCapitalize } from '@traqula/core';
+import { traqulaIndentation, unCapitalize } from '@traqula/core';
 import type { IToken, TokenType } from 'chevrotain';
 import * as l from '../lexer/index.js';
 import type { SparqlGrammarRule, SparqlRule } from '../sparql11HelperTypes.js';
@@ -357,15 +357,18 @@ function insertDeleteDelWhere<T extends string>(
       return ACTION(() =>
         C.factory.updateOperationInsDelDataWhere(subType, data.val, C.factory.sourceLocation(insDelToken, data)));
     },
-    gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+    gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, C) => {
+      const { factory: F, indentInc } = C;
+      C[traqulaIndentation] += indentInc;
       F.printFilter(ast, () => PRINT_WORD(
         subType === 'insertdata' ?
           'INSERT DATA' :
             (subType === 'deletedata' ? 'DELETE DATA' : 'DELETE WHERE'),
-        '{',
+        '{\n',
       ));
       SUBRULE(quads, F.wrap(ast.data, ast.loc));
-      F.printFilter(ast, () => PRINT_WORD('}'));
+      C[traqulaIndentation] -= indentInc;
+      F.printFilter(ast, () => PRINT_WORD('}\n'));
     },
   };
 }
@@ -423,20 +426,25 @@ export const modify: SparqlRule<'modify', UpdateOperationModify> = <const> {
       graph?.graph,
     ));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD, PRINT_ON_EMPTY }) => (ast, C) => {
+    const { factory: F, indentInc } = C;
     if (ast.graph) {
       F.printFilter(ast, () => PRINT_WORD('WITH'));
       SUBRULE(iri, ast.graph);
     }
     if (ast.delete.length > 0) {
-      F.printFilter(ast, () => PRINT_WORD('DELETE', '{'));
+      C[traqulaIndentation] += indentInc;
+      F.printFilter(ast, () => PRINT_WORD('DELETE', '{\n'));
       SUBRULE(quads, F.wrap(ast.delete, ast.loc));
-      F.printFilter(ast, () => PRINT_WORD('}'));
+      C[traqulaIndentation] -= indentInc;
+      F.printFilter(ast, () => PRINT_ON_EMPTY('}\n'));
     }
     if (ast.insert.length > 0) {
-      F.printFilter(ast, () => PRINT_WORD('INSERT', '{'));
+      C[traqulaIndentation] += indentInc;
+      F.printFilter(ast, () => PRINT_WORD('INSERT', '{\n'));
       SUBRULE(quads, F.wrap(ast.insert, ast.loc));
-      F.printFilter(ast, () => PRINT_WORD('}'));
+      C[traqulaIndentation] -= indentInc;
+      F.printFilter(ast, () => PRINT_ON_EMPTY('}\n'));
     }
     SUBRULE(usingClauseStar, ast.from);
     F.printFilter(ast, () => PRINT_WORD('WHERE'));
@@ -602,11 +610,14 @@ export const quadsNotTriples: SparqlRule<'quadsNotTriples', GraphQuads> = <const
       C.factory.sourceLocation(graph, close),
     ));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD, PRINT_ON_EMPTY }) => (ast, C) => {
+    const { factory: F, indentInc } = C;
     F.printFilter(ast, () => PRINT_WORD('GRAPH'));
     SUBRULE(varOrTerm, ast.graph);
-    F.printFilter(ast, () => PRINT_WORD('{'));
+    C[traqulaIndentation] += indentInc;
+    F.printFilter(ast, () => PRINT_WORD('{\n'));
     SUBRULE(triplesBlock, ast.triples);
-    F.printFilter(ast, () => PRINT_WORD('}'));
+    C[traqulaIndentation] -= indentInc;
+    F.printFilter(ast, () => PRINT_ON_EMPTY('}\n'));
   },
 };

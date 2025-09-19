@@ -54,8 +54,8 @@ export const triplesBlock: SparqlRule<'triplesBlock', PatternBgp> = <const>{
         const nextTriple = ast.triples.at(index);
         if (F.isTripleCollection(triple)) {
           SUBRULE(graphNodePath, triple);
-          // A top level tripleCollection block means that it is not used in a triple. So you end with DOT.
-          F.printFilter(triple, () => PRINT_WORD('.'));
+          // A top level tripleCollection block means that it is not used in a triple. So you endf with DOT.
+          F.printFilter(triple, () => PRINT_WORD('.\n'));
         } else {
           // Subject
           SUBRULE(graphNodePath, triple.subject);
@@ -71,11 +71,11 @@ export const triplesBlock: SparqlRule<'triplesBlock', PatternBgp> = <const>{
           // If no more things, or a top level collection (only possible if new block was part), or new subject: add DOT
           if (nextTriple === undefined || F.isTripleCollection(nextTriple) ||
             !F.isSourceLocationNoMaterialize(nextTriple.subject.loc)) {
-            F.printFilter(ast, () => PRINT_WORD('.'));
+            F.printFilter(ast, () => PRINT_WORD('.\n'));
           } else if (F.isSourceLocationNoMaterialize(nextTriple.predicate.loc)) {
             F.printFilter(ast, () => PRINT_WORD(','));
           } else {
-            F.printFilter(ast, () => PRINT_WORD(';'));
+            F.printFilter(ast, () => PRINT_WORD(';\n'));
           }
         }
       });
@@ -374,7 +374,7 @@ SparqlRule<T, TripleCollectionBlankNodeProperties> {
       ));
     },
     gImpl: ({ SUBRULE, PRINT, PRINT_WORD, HANDLE_LOC }) => (ast, { factory: F }) => {
-      F.printFilter(ast, () => PRINT('['));
+      F.printFilter(ast, () => PRINT('[\n'));
       for (const triple of ast.triples) {
         HANDLE_LOC(triple, () => {
           if (F.isTerm(triple.predicate) && F.isTermVariable(triple.predicate)) {
@@ -384,10 +384,10 @@ SparqlRule<T, TripleCollectionBlankNodeProperties> {
           }
           SUBRULE(graphNodePath, triple.object);
 
-          F.printFilter(ast, () => PRINT_WORD(';'));
+          F.printFilter(ast, () => PRINT_WORD(';\n'));
         });
       }
-      F.printFilter(ast, () => PRINT(']'));
+      F.printFilter(ast, () => PRINT(']\n'));
     },
   };
 }

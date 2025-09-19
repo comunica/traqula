@@ -18,3 +18,6 @@ export function createToken<Name extends string>(config: ITokenConfig & { name: 
 
 export type Patch<T extends object, Patch extends {[Key in keyof T ]?: unknown }> =
   {[Key in keyof T]: Key extends keyof Patch ? Patch[Key] : T[Key] };
+
+export const traqulaIndentation =
+  'When you use this string, you expect traqula to handle indentation after every newline';

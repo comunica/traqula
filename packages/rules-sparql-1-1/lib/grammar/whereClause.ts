@@ -1,25 +1,26 @@
 import type { RuleDefReturn, Wrap } from '@traqula/core';
+import { traqulaIndentation } from '@traqula/core';
 import * as l from '../lexer/index.js';
 import type { SparqlGeneratorRule, SparqlGrammarRule, SparqlRule } from '../sparql11HelperTypes.js';
 import type {
   Expression,
   ExpressionFunctionCall,
-  PatternFilter,
   Pattern,
+  PatternBgp,
+  PatternBind,
+  PatternFilter,
+  PatternGraph,
   PatternGroup,
-  PatternUnion,
   PatternMinus,
+  PatternOptional,
+  PatternService,
+  PatternUnion,
+  PatternValues,
+  SubSelect,
   TermIri,
   TermLiteral,
-  PatternBind,
-  PatternService,
-  PatternOptional,
-  PatternGraph,
-  PatternValues,
-  ValuePatternRow,
   TermVariable,
-  SubSelect,
-  PatternBgp,
+  ValuePatternRow,
 } from '../Sparql11types.js';
 import { checkNote13 } from '../validation/validators.js';
 import { builtInCall } from './builtIn.js';
@@ -60,14 +61,17 @@ export const groupGraphPattern: SparqlRule<'groupGraphPattern', PatternGroup> = 
 
     return ACTION(() => C.factory.patternGroup(patterns, C.factory.sourceLocation(open, close)));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
-    F.printFilter(ast, () => PRINT_WORD('{'));
+  gImpl: ({ SUBRULE, PRINT_WORD, PRINT_ON_EMPTY }) => (ast, C) => {
+    const { factory: F, indentInc } = C;
+    C[traqulaIndentation] += indentInc;
+    F.printFilter(ast, () => PRINT_WORD('{\n'));
 
     for (const pattern of ast.patterns) {
       SUBRULE(generatePattern, pattern);
     }
 
-    F.printFilter(ast, () => PRINT_WORD('}'));
+    C[traqulaIndentation] -= indentInc;
+    F.printFilter(ast, () => PRINT_ON_EMPTY('}\n'));
   },
 };
 
@@ -257,7 +261,7 @@ export const bind: SparqlRule<'bind', PatternBind> = <const> {
     SUBRULE(expression, ast.expression);
     F.printFilter(ast, () => PRINT_WORD('AS'));
     SUBRULE(var_, ast.variable);
-    F.printFilter(ast, () => PRINT_WORD(')'));
+    F.printFilter(ast, () => PRINT_WORD(')\n'));
   },
 };
 
@@ -272,14 +276,16 @@ export const inlineData: SparqlRule<'inlineData', PatternValues> = <const> {
 
     return ACTION(() => C.factory.patternValues(datablock.val, C.factory.sourceLocation(values, datablock)));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD, PRINT_ON_EMPTY }) => (ast, C) => {
+    const { factory: F, indentInc } = C;
     const variables = Object.keys(ast.values.at(0) ?? {});
     F.printFilter(ast, () => {
       PRINT_WORD('VALUES', '(');
       for (const variable of variables) {
         PRINT_WORD(`?${variable}`);
       }
-      PRINT_WORD(')', '{');
+      C[traqulaIndentation] += indentInc;
+      PRINT_WORD(')', '{\n');
     });
 
     for (const mapping of ast.values) {
@@ -291,9 +297,10 @@ export const inlineData: SparqlRule<'inlineData', PatternValues> = <const> {
           SUBRULE(graphNodePath, mapping[variable]);
         }
       }
-      F.printFilter(ast, () => PRINT_WORD(')'));
+      F.printFilter(ast, () => PRINT_WORD(')\n'));
     }
-    F.printFilter(ast, () => PRINT_WORD('}'));
+    C[traqulaIndentation] -= indentInc;
+    F.printFilter(ast, () => PRINT_ON_EMPTY('}\n'));
   },
 };
 
@@ -483,7 +490,7 @@ export const filter: SparqlRule<'filter', PatternFilter> = <const> {
   gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
     F.printFilter(ast, () => PRINT_WORD('FILTER ('));
     SUBRULE(expression, ast.expression);
-    F.printFilter(ast, () => PRINT_WORD(')'));
+    F.printFilter(ast, () => PRINT_WORD(')\n'));
   },
 };
 

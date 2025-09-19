@@ -5,6 +5,7 @@
  * It is therefore essential that the parser retypes the rules from the core grammar.
  */
 import type { RuleDefReturn, Wrap } from '@traqula/core';
+import { traqulaIndentation } from '@traqula/core';
 import { CommonIRIs, funcExpr1, funcExpr3, gram as S11, lex as l11 } from '@traqula/rules-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import * as l12 from './lexer.js';
@@ -42,7 +43,7 @@ export const versionDecl: SparqlRule<'versionDecl', ContextDefinitionVersion> = 
   },
   gImpl: ({ PRINT_WORDS }) => (ast, { factory: F }) => {
     F.printFilter(ast, () => {
-      PRINT_WORDS('VERSION', `${S11.stringEscapedLexical(ast.version)}`);
+      PRINT_WORDS('VERSION', `${S11.stringEscapedLexical(ast.version)}`, '\n');
     });
   },
 };
@@ -292,9 +293,17 @@ function annotationBlockImpl<T extends string>(name: T, allowPaths: boolean):
         C.factory.sourceLocation(open, close),
       ));
     },
-    gImpl: ({ SUBRULE, PRINT_WORD, HANDLE_LOC }) => (ast, { factory: F }) => {
-      F.printFilter(ast, () => PRINT_WORD('{|'));
-      for (const triple of ast.triples) {
+    gImpl: ({ SUBRULE, PRINT_WORD, HANDLE_LOC, PRINT_ON_EMPTY }) => (ast, C) => {
+      const { factory: F, indentInc } = C;
+      F.printFilter(ast, () => {
+        PRINT_WORD('{|');
+        if (ast.triples.length > 1) {
+          C[traqulaIndentation] += indentInc;
+          PRINT_WORD('\n');
+        }
+      });
+
+      function printTriple(triple: TripleNesting): void {
         HANDLE_LOC(triple, () => {
           if (F.isTerm(triple.predicate)) {
             SUBRULE(graphNodePath, triple.predicate);
@@ -302,11 +311,23 @@ function annotationBlockImpl<T extends string>(name: T, allowPaths: boolean):
             SUBRULE(S11.pathGenerator, triple.predicate, undefined);
           }
           SUBRULE(graphNodePath, triple.object);
-
-          F.printFilter(ast, () => PRINT_WORD(';'));
         });
       }
-      F.printFilter(ast, () => PRINT_WORD('|}'));
+
+      const [ head, ...tail ] = ast.triples;
+      printTriple(head);
+      for (const triple of tail) {
+        F.printFilter(ast, () => PRINT_WORD(';\n'));
+        printTriple(triple);
+      }
+
+      F.printFilter(ast, () => {
+        if (ast.triples.length > 1) {
+          PRINT_ON_EMPTY('|}\n');
+        } else {
+          PRINT_WORD('|}');
+        }
+      });
     },
   };
 }
@@ -699,7 +720,7 @@ export const generateTriplesBlock: SparqlGeneratorRule<'triplesBlock', PatternBg
         if (F.isTripleCollection(triple)) {
           SUBRULE(graphNodePath, triple);
           // A top level tripleCollection block means that it is not used in a triple. So you end with DOT.
-          F.printFilter(triple, () => PRINT_WORD('.'));
+          F.printFilter(triple, () => PRINT_WORD('.\n'));
         } else {
           // Subject
           SUBRULE(graphNodePath, triple.subject);
@@ -716,11 +737,11 @@ export const generateTriplesBlock: SparqlGeneratorRule<'triplesBlock', PatternBg
           // If no more things, or a top level collection (only possible if new block was part), or new subject: add DOT
           if (nextTriple === undefined || F.isTripleCollection(nextTriple) ||
             !F.isSourceLocationNoMaterialize(nextTriple.subject.loc)) {
-            F.printFilter(ast, () => PRINT_WORD('.'));
+            F.printFilter(ast, () => PRINT_WORD('.\n'));
           } else if (F.isSourceLocationNoMaterialize(nextTriple.predicate.loc)) {
             F.printFilter(ast, () => PRINT_WORD(','));
           } else {
-            F.printFilter(ast, () => PRINT_WORD(';'));
+            F.printFilter(ast, () => PRINT_WORD(';\n'));
           }
         }
       });

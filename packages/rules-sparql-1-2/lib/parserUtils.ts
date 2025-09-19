@@ -1,9 +1,10 @@
+import { traqulaIndentation } from '@traqula/core';
 import { Factory } from './Factory.js';
-import type { SparqlContext } from './sparql12HelperTypes.js';
+import type { SparqlContext, SparqlGeneratorContext } from './sparql12HelperTypes.js';
 
 export function completeParseContext(
-  context: Partial<SparqlContext & { origSource: string; offset?: number }>,
-): SparqlContext & { origSource: string; offset?: number } {
+  context: Partial<SparqlContext & SparqlGeneratorContext & { origSource: string; offset?: number }>,
+): SparqlContext & SparqlGeneratorContext & { origSource: string; offset?: number } {
   return {
     factory: context.factory ?? new Factory(),
     baseIRI: context.baseIRI,
@@ -12,5 +13,7 @@ export function completeParseContext(
     offset: context.offset,
     parseMode: context.parseMode ? new Set(context.parseMode) : new Set([ 'canParseVars', 'canCreateBlankNodes' ]),
     skipValidation: context.skipValidation ?? false,
+    indentInc: context.indentInc ?? 2,
+    [traqulaIndentation]: context[traqulaIndentation] ?? 0,
   };
 }

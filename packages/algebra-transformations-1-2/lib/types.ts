@@ -1,6 +1,6 @@
 import * as Trans11 from '@traqula/algebra-transformations-1-1';
 import type { IndirDef, Patch } from '@traqula/core';
-import { Factory as AstFactory } from '@traqula/rules-sparql-1-2';
+import { AstFactory } from '@traqula/rules-sparql-1-2';
 
 export type AlgebraContext = Patch<Trans11.AlgebraContext, {
   astFactory: AstFactory;

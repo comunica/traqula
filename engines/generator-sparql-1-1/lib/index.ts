@@ -1,6 +1,6 @@
 import { GeneratorBuilder } from '@traqula/core';
 import type * as T11 from '@traqula/rules-sparql-1-1';
-import { completeParseContext, Factory, gram } from '@traqula/rules-sparql-1-1';
+import { completeParseContext, AstFactory, gram } from '@traqula/rules-sparql-1-1';
 
 export const sparql11GeneratorBuilder = GeneratorBuilder.create(<const> [
   gram.queryOrUpdate,
@@ -89,7 +89,7 @@ export type SparqlGenerator = ReturnType<typeof sparql11GeneratorBuilder.build>;
 
 export class Generator {
   private readonly generator: SparqlGenerator = sparql11GeneratorBuilder.build();
-  private readonly factory = new Factory();
+  private readonly factory = new AstFactory();
 
   public generate(
     ast: T11.Query | T11.Update,

@@ -1,4 +1,4 @@
-import type { CoreFactory, SourceLocation, Typed, SubTyped } from '@traqula/core';
+import type { AstCoreFactory, SourceLocation, Typed, SubTyped } from '@traqula/core';
 import type {
   Path,
   PathAlternativeLimited,
@@ -16,7 +16,7 @@ const nodeType: NodeType = 'path';
 type RawNegatedElt = SubTyped<NodeType, '^'> & { items: [SubTyped<'term', 'namedNode'>]};
 
 // eslint-disable-next-line ts/explicit-function-return-type
-export function PathFactoryMixin<TBase extends Constructor<CoreFactory>>(Base: TBase) {
+export function PathFactoryMixin<TBase extends Constructor<AstCoreFactory>>(Base: TBase) {
   return class PathFactory extends Base {
     public isPathPure(obj: object): obj is Typed<NodeType> {
       return this.isOfType(obj, nodeType);

@@ -1,4 +1,4 @@
-import { Factory } from '@traqula/rules-sparql-1-1';
+import { AstFactory } from '@traqula/rules-sparql-1-1';
 import type {
   Path,
   Pattern,
@@ -10,7 +10,7 @@ import type {
   Wildcard,
 } from './sparql12Types.js';
 
-const F = new Factory();
+const F = new AstFactory();
 
 function isLangDir(dir: string): dir is 'ltr' | 'rtl' {
   return dir === 'ltr' || dir === 'rtl';

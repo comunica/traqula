@@ -1,9 +1,9 @@
-import { CoreFactory } from '../CoreFactory.js';
+import { AstCoreFactory } from '../AstCoreFactory.js';
 import type { GenRuleMap } from './builderTypes.js';
 import type { GeneratorRule, RuleDefArg } from './generatorTypes.js';
 
 export class DynamicGenerator<Context, Names extends string, RuleDefs extends GenRuleMap<Names>> {
-  protected readonly factory = new CoreFactory();
+  protected readonly factory = new AstCoreFactory();
   protected __context: Context | undefined = undefined;
   protected origSource = '';
   protected generatedUntil = 0;

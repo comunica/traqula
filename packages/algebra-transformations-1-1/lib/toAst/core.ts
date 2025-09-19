@@ -1,8 +1,8 @@
 import type * as RDF from '@rdfjs/types';
 import type { IndirDef } from '@traqula/core';
-import { Factory as AstFactory, TransformerSparql11 } from '@traqula/rules-sparql-1-1';
+import { AstFactory, TransformerSparql11 } from '@traqula/rules-sparql-1-1';
 import * as Algebra from '../algebra.js';
-import { Factory } from '../factory.js';
+import { AlgebraFactory } from '../algebraFactory.js';
 import { types } from '../toAlgebra/index.js';
 
 export interface AstContext {
@@ -27,7 +27,7 @@ export interface AstContext {
    * All orderings found in our suboperations
    */
   order: Algebra.Expression[];
-  factory: Factory;
+  factory: AlgebraFactory;
   astFactory: AstFactory;
   transformer: TransformerSparql11;
 }
@@ -39,7 +39,7 @@ export function createAstContext(): AstContext {
     group: [],
     aggregates: [],
     order: [],
-    factory: new Factory(),
+    factory: new AlgebraFactory(),
     astFactory: new AstFactory(),
     transformer: new TransformerSparql11(),
   };

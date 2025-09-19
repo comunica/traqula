@@ -1,4 +1,4 @@
-import { Canonicalizer, utils } from '@traqula/algebra-transformations-1-1';
+import { Canonicalizer, algebraUtils } from '@traqula/algebra-transformations-1-1';
 import type { Algebra } from '@traqula/algebra-transformations-1-2';
 import { Generator as Generator12 } from '@traqula/generator-sparql-1-2';
 import { Parser as Parser12 } from '@traqula/parser-sparql-1-2';
@@ -27,7 +27,7 @@ describe('sparql output', () => {
             const genQuery = generator.generate(genAst);
             // Console.log(genQuery);
             const ast = parser.parse(genQuery);
-            const algebra = utils.objectify(toAlgebra(ast, { quads }));
+            const algebra = algebraUtils.objectify(toAlgebra(ast, { quads }));
             expect(canon.canonicalizeQuery(algebra, false)).toEqual(canon.canonicalizeQuery(expected, false));
           });
         }
@@ -39,14 +39,14 @@ describe('sparql output', () => {
     it(`can algebra circle ${name}`, async({ expect }) => {
       const ast = parser.parse(await query);
       // Console.log(JSON.stringify(path, null, 2));
-      const algebra = utils.objectify(toAlgebra(ast, { quads: true }));
+      const algebra = algebraUtils.objectify(toAlgebra(ast, { quads: true }));
       // Console.log(JSON.stringify(algebra, null, 2));
       const astFromAlg = toAst(algebra);
       // Console.log(JSON.stringify(pathFromAlg, null, 2));
       const queryGen = generator.generate(astFromAlg);
       // Console.log(queryGen);
       const astFromGen = parser.parse(queryGen);
-      const algebraFromGen = utils.objectify(toAlgebra(astFromGen, { quads: true }));
+      const algebraFromGen = algebraUtils.objectify(toAlgebra(astFromGen, { quads: true }));
       expect(canon.canonicalizeQuery(algebraFromGen, false)).toEqual(canon.canonicalizeQuery(algebra, false));
     });
   }

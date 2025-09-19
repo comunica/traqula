@@ -6,7 +6,7 @@ import {
   type TermIri,
   sparqlCodepointEscape,
 } from '@traqula/rules-sparql-1-1';
-import { completeParseContext, Factory, gram as S12, lex as l12 } from '@traqula/rules-sparql-1-2';
+import { completeParseContext, AstFactory, gram as S12, lex as l12 } from '@traqula/rules-sparql-1-2';
 import type * as T12 from '@traqula/rules-sparql-1-2';
 
 export const sparql12ParserBuilder = ParserBuilder.create(sparql11ParserBuilder)
@@ -266,7 +266,7 @@ export type SparqlParser = ReturnType<typeof sparql12ParserBuilder.build>;
 export class Parser {
   private readonly parser: SparqlParser;
 
-  private readonly F = new Factory();
+  private readonly F = new AstFactory();
 
   public constructor() {
     this.parser = sparql12ParserBuilder.build({

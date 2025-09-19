@@ -1,4 +1,4 @@
-import { Factory } from '../factory.js';
+import { AstFactory } from '../astFactory.js';
 import type {
   Wildcard,
   Expression,
@@ -17,7 +17,7 @@ import type {
 } from '../Sparql11types.js';
 import { TransformerSparql11 } from '../utils.js';
 
-const F = new Factory();
+const F = new AstFactory();
 const transformer = new TransformerSparql11();
 
 /**

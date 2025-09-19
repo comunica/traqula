@@ -1,4 +1,4 @@
-import { Factory } from './factory.js';
+import { AstFactory } from './astFactory.js';
 import type { SparqlContext } from './sparql11HelperTypes.js';
 import type { Path, TermIri } from './Sparql11types.js';
 
@@ -11,7 +11,7 @@ export function completeParseContext(
   context: Partial<SparqlContext & { origSource: string; offset?: number }>,
 ): SparqlContext & { origSource: string; offset?: number } {
   return {
-    factory: context.factory ?? new Factory(),
+    factory: context.factory ?? new AstFactory(),
     baseIRI: context.baseIRI,
     prefixes: { ...context.prefixes },
     origSource: context.origSource ?? '',
@@ -23,7 +23,7 @@ export function completeParseContext(
 
 export class MinimalSparqlParser<ParseRet> {
   public constructor(private readonly parser: Parser<ParseRet>) {}
-  private readonly F = new Factory();
+  private readonly F = new AstFactory();
 
   public parse(query: string, context: Partial<SparqlContext> = {}): ParseRet {
     return this.parser.queryOrUpdate(query, completeParseContext(context));

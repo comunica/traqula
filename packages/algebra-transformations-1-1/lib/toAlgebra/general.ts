@@ -17,7 +17,7 @@ import type {
   TermVariable,
 } from '@traqula/rules-sparql-1-1';
 import * as Algebra from '../algebra.js';
-import type { Factory } from '../factory.js';
+import type { AlgebraFactory } from '../algebraFactory.js';
 import * as util from '../util.js';
 import type { AlgebraIndir } from './core.js';
 
@@ -126,7 +126,7 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
           ),
           recurse: false,
         }),
-      [Algebra.Types.PATH]: (op: Algebra.Path, factory: Factory) => ({
+      [Algebra.Types.PATH]: (op: Algebra.Path, factory: AlgebraFactory) => ({
         result: factory.createPath(
           blankToVariable(op.subject),
           op.predicate,
@@ -135,7 +135,7 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
         ),
         recurse: false,
       }),
-      [Algebra.Types.PATTERN]: (op: Algebra.Pattern, factory: Factory) => ({
+      [Algebra.Types.PATTERN]: (op: Algebra.Pattern, factory: AlgebraFactory) => ({
         result: factory.createPattern(
           blankToVariable(op.subject),
           blankToVariable(op.predicate),

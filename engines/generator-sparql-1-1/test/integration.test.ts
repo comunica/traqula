@@ -1,13 +1,13 @@
 import { Parser } from '@traqula/parser-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
-import { Factory, TransformerSparql11 } from '@traqula/rules-sparql-1-1';
+import { AstFactory, TransformerSparql11 } from '@traqula/rules-sparql-1-1';
 import { describe, it } from 'vitest';
 import { Generator } from '../lib/index.js';
 
 describe('a SPARQL 1.1 generator', () => {
   const generator = new Generator();
   const parser = new Parser();
-  const F = new Factory();
+  const F = new AstFactory();
   const transformer = new TransformerSparql11();
 
   it ('generates simple round tripped', ({ expect }) => {

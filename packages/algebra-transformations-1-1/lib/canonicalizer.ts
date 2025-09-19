@@ -1,7 +1,8 @@
 import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
-import type { Factory } from './index.js';
-import { Algebra, utils } from './index.js';
+import * as Algebra from './algebra.js';
+import * as utils from './util.js';
+import type { AlgebraFactory } from './index.js';
 
 export class Canonicalizer {
   public constructor() {
@@ -22,7 +23,7 @@ export class Canonicalizer {
     this.blankId = 0;
     const nameMapping: Record<string, string> = {};
     return utils.mapOperation(res, {
-      [Algebra.Types.PATH]: (op: Algebra.Path, factory: Factory) => ({
+      [Algebra.Types.PATH]: (op: Algebra.Path, factory: AlgebraFactory) => ({
         result: factory.createPath(
           this.replaceValue(op.subject, nameMapping, replaceVariables, factory),
           op.predicate,
@@ -31,7 +32,7 @@ export class Canonicalizer {
         ),
         recurse: true,
       }),
-      [Algebra.Types.PATTERN]: (op: Algebra.Pattern, factory: Factory) => ({
+      [Algebra.Types.PATTERN]: (op: Algebra.Pattern, factory: AlgebraFactory) => ({
         result: factory.createPattern(
           this.replaceValue(op.subject, nameMapping, replaceVariables, factory),
           this.replaceValue(op.predicate, nameMapping, replaceVariables, factory),
@@ -40,7 +41,7 @@ export class Canonicalizer {
         ),
         recurse: true,
       }),
-      [Algebra.Types.CONSTRUCT]: (op: Algebra.Construct, factory: Factory) =>
+      [Algebra.Types.CONSTRUCT]: (op: Algebra.Construct, factory: AlgebraFactory) =>
         // Blank nodes in CONSTRUCT templates must be maintained
         ({
           result: factory.createConstruct(op.input, op.template),
@@ -54,7 +55,7 @@ export class Canonicalizer {
     term: RDF.Term,
     nameMapping: Record<string, string>,
     replaceVars: boolean,
-    factory: Factory,
+    factory: AlgebraFactory,
   ): RDF.Term {
     if (term.termType === 'Quad') {
       return factory.createPattern(

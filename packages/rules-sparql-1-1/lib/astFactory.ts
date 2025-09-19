@@ -1,5 +1,5 @@
 import type { SourceLocation, SubTyped, Typed } from '@traqula/core';
-import { CoreFactory } from '@traqula/core';
+import { AstCoreFactory } from '@traqula/core';
 import { ContextFactoryMixin } from './factoryMixins/ContextFactory.js';
 import { ExpressionFactoryMixin } from './factoryMixins/ExpressionFactory.js';
 import { GraphRefFactoryMixin } from './factoryMixins/GraphRefFactory.js';
@@ -27,7 +27,7 @@ import type {
   Wildcard,
 } from './Sparql11types.js';
 
-export class Factory extends asArg(CoreFactory)
+export class AstFactory extends asArg(AstCoreFactory)
   .call(ContextFactoryMixin)
   .call(ExpressionFactoryMixin)
   .call(GraphRefFactoryMixin)

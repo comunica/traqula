@@ -3,7 +3,7 @@ import { TransformerType } from '@traqula/core';
 import { someTermsNested } from 'rdf-terms';
 import type * as A from './algebra.js';
 import { ExpressionTypes, Types } from './algebra.js';
-import { Factory } from './factory.js';
+import { AlgebraFactory } from './algebraFactory.js';
 
 /**
  * Flattens an array of arrays to an array.
@@ -381,20 +381,22 @@ export function recurseOperation(
  *   be applied to this returned object or not.
  * @param {Operation} op - The Operation to recurse on.
  * @param callbacks - A map of required callback Operations.
- * @param {Factory} factory - Factory used to create new Operations. Will use default factory if none is provided.
+ * @param {AlgebraFactory} factory - Factory used to create new Operations.
+ *   Will use default factory if none is provided.
  * @returns {Operation} - The copied result.
  */
 export function mapOperation(
   op: A.Operation,
-  callbacks: {[T in A.Types]?: (op: A.TypedOperation<T>, factory: Factory) => RecurseResult }
-        & {[T in A.ExpressionTypes]?: (expr: A.TypedExpression<T>, factory: Factory) => ExpressionRecurseResult },
-  factory?: Factory,
+  callbacks: {[T in A.Types]?: (op: A.TypedOperation<T>, factory: AlgebraFactory) => RecurseResult }
+        & {[T in A.ExpressionTypes]?: (expr: A.TypedExpression<T>, factory: AlgebraFactory) =>
+        ExpressionRecurseResult },
+  factory?: AlgebraFactory,
 ): A.Operation {
   let result: A.Operation = op;
   let doRecursion = true;
   let copyMetadata = true;
 
-  factory = factory ?? new Factory();
+  factory = factory ?? new AlgebraFactory();
 
   const callback = callbacks[op.type];
   if (callback) {
@@ -581,19 +583,21 @@ result.graph,
  * Should not be called directly since it does not execute the callbacks, these happen in {@link mapOperation}.
  * @param {Expression} expr - The Operation to recurse on.
  * @param callbacks - A map of required callback Operations.
- * @param {Factory} factory - Factory used to create new Operations. Will use default factory if none is provided.
+ * @param {AlgebraFactory} factory -
+ *   Factory used to create new Operations. Will use default factory if none is provided.
  * @returns {Operation} - The copied result.
  */
 export function mapExpression(
   expr: A.Expression,
-  callbacks: {[T in A.Types]?: (op: A.TypedOperation<T>, factory: Factory) => RecurseResult }
-        & {[T in A.ExpressionTypes]?: (expr: A.TypedExpression<T>, factory: Factory) => ExpressionRecurseResult },
-  factory?: Factory,
+  callbacks: {[T in A.Types]?: (op: A.TypedOperation<T>, factory: AlgebraFactory) => RecurseResult }
+        & {[T in A.ExpressionTypes]?: (expr: A.TypedExpression<T>, factory: AlgebraFactory) =>
+        ExpressionRecurseResult },
+  factory?: AlgebraFactory,
 ): A.Expression {
   let result: A.Expression = expr;
   let doRecursion = true;
 
-  factory = factory ?? new Factory();
+  factory = factory ?? new AlgebraFactory();
 
   const callback = callbacks[expr.expressionType];
   if (callback) {
@@ -643,8 +647,8 @@ expr.separator,
  * @param {Operation} op - The operation to copy.
  * @returns {Operation} - The deep copy.
  */
-export function cloneOperation(op: A.Operation): A.Operation {
-  return mapOperation(op, {});
+export function cloneOperation<T extends A.Operation>(op: T): T {
+  return <T> mapOperation(op, {});
 }
 
 /**
@@ -653,8 +657,8 @@ export function cloneOperation(op: A.Operation): A.Operation {
  * @param {Expression} expr - The operation to copy.
  * @returns {Expression} - The deep copy.
  */
-export function cloneExpression(expr: A.Expression): A.Expression {
-  return mapExpression(expr, {});
+export function cloneExpression<T extends A.Expression>(expr: T): T {
+  return <T> mapExpression(expr, {});
 }
 
 export function createUniqueVariable(

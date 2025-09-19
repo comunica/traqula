@@ -3,7 +3,7 @@ import { DataFactory } from 'rdf-data-factory';
 import { stringToTerm } from 'rdf-string';
 import * as A from './algebra.js';
 
-export class Factory {
+export class AlgebraFactory {
   public dataFactory: RDF.DataFactory<RDF.BaseQuad, RDF.BaseQuad>;
   public stringType: RDF.NamedNode;
 

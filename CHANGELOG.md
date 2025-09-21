@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v0.0.16"></a>
+## [v0.0.16](https://github.com/comunica/traqula/compare/v0.0.15...v0.0.16) - 2025-09-21
+
+* [FEATURE: SPARQL pretty print (#59)](https://github.com/comunica/traqula/commit/d5a6fabf4cb27987c7abd34d9d3c8b7ee2115d3e)
+* [BUGFIX: findPatternBoundedVars should traverse triple terms](https://github.com/comunica/traqula/commit/301a7a7241588bbd7bf7ed216e0389e8582ef84d)
+* [REFACTOR: change factory names](https://github.com/comunica/traqula/commit/981a0449896095c5344cd6d455b6cff067060964)
+
 <a name="v0.0.15"></a>
 ## [v0.0.15](https://github.com/comunica/traqula/compare/v0.0.14...v0.0.15) - 2025-09-17
 

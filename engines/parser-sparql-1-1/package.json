@@ -1,7 +1,7 @@
 {
   "name": "@traqula/parser-sparql-1-1",
   "type": "module",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "SPARQL 1.1 parser",
   "lsd:module": true,
   "license": "MIT",
@@ -50,12 +50,12 @@
     "spec:earl": "yarn spec:earl:query && yarn spec:earl:update"
   },
   "dependencies": {
-    "@traqula/core": "^0.0.15",
-    "@traqula/rules-sparql-1-1": "^0.0.15"
+    "@traqula/core": "^0.0.16",
+    "@traqula/rules-sparql-1-1": "^0.0.16"
   },
   "devDependencies": {
     "@rdfjs/types": "^2.0.0",
-    "@traqula/test-utils": "^0.0.15",
+    "@traqula/test-utils": "^0.0.16",
     "@types/sparqljs": "^3.1.12",
     "rdf-data-factory": "^2.0.1",
     "rdf-test-suite": "^2.0.0",

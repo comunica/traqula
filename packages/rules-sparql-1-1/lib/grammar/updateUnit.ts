@@ -69,7 +69,7 @@ export const update: SparqlRule<'update', Update> = <const> {
       const update = {
         type: 'update',
         updates,
-        loc: C.factory.sourceLocation(
+        loc: C.astFactory.sourceLocation(
           ...updates[0].context,
           updates[0].operation,
           ...updates.at(-1)!.context,
@@ -80,7 +80,7 @@ export const update: SparqlRule<'update', Update> = <const> {
       return update;
     });
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
     const [ head, ...tail ] = ast.updates;
     if (head) {
       SUBRULE(prologue, head.context);
@@ -168,14 +168,14 @@ export const load: SparqlRule<'load', UpdateOperationLoad> = <const> {
       CONSUME(l.loadInto);
       return SUBRULE1(graphRef);
     });
-    return ACTION(() => C.factory.updateOperationLoad(
-      C.factory.sourceLocation(loadToken, source, destination),
+    return ACTION(() => C.astFactory.updateOperationLoad(
+      C.astFactory.sourceLocation(loadToken, source, destination),
       source,
       Boolean(silent),
       destination,
     ));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => {
       PRINT_WORD('LOAD');
       if (ast.silent) {
@@ -198,14 +198,14 @@ SparqlRule<Uncapitalize<T>, UpdateOperationClear | UpdateOperationDrop> {
       const opToken = CONSUME(operation);
       const silent = OPTION(() => CONSUME(l.silent));
       const destination = SUBRULE1(graphRefAll);
-      return ACTION(() => C.factory.updateOperationClearDrop(
+      return ACTION(() => C.astFactory.updateOperationClearDrop(
         unCapitalize(operation.name),
         Boolean(silent),
         destination,
-        C.factory.sourceLocation(opToken, destination),
+        C.astFactory.sourceLocation(opToken, destination),
       ));
     },
-    gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+    gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
       F.printFilter(ast, () => {
         PRINT_WORD(operation.name.toUpperCase());
         if (ast.silent) {
@@ -237,13 +237,13 @@ export const create: SparqlRule<'create', UpdateOperationCreate> = <const> {
     const silent = OPTION(() => CONSUME(l.silent));
     const destination = SUBRULE1(graphRef);
 
-    return ACTION(() => C.factory.updateOperationCreate(
+    return ACTION(() => C.astFactory.updateOperationCreate(
       destination,
       Boolean(silent),
-      C.factory.sourceLocation(createToken, destination),
+      C.astFactory.sourceLocation(createToken, destination),
     ));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => {
       PRINT_WORD('CREATE');
       if (ast.silent) {
@@ -265,15 +265,15 @@ SparqlRule<Uncapitalize<T>, UpdateOperationAdd | UpdateOperationMove | UpdateOpe
       CONSUME(l.to);
       const destination = SUBRULE2(graphOrDefault);
 
-      return ACTION(() => C.factory.updateOperationAddMoveCopy(
+      return ACTION(() => C.astFactory.updateOperationAddMoveCopy(
         unCapitalize(operation.name),
         source,
         destination,
         Boolean(silent),
-        C.factory.sourceLocation(op, destination),
+        C.astFactory.sourceLocation(op, destination),
       ));
     },
-    gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+    gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
       F.printFilter(ast, () => {
         PRINT_WORD(operation.name.toUpperCase());
         if (ast.silent) {
@@ -311,7 +311,7 @@ export const quadPattern: SparqlGrammarRule<'quadPattern', Wrap<Quads[]>> = <con
     const open = CONSUME(l.symbols.LCurly);
     const val = SUBRULE1(quads);
     const close = CONSUME(l.symbols.RCurly);
-    return ACTION(() => C.factory.wrap(val.val, C.factory.sourceLocation(open, close)));
+    return ACTION(() => C.astFactory.wrap(val.val, C.astFactory.sourceLocation(open, close)));
   },
 };
 
@@ -328,7 +328,7 @@ export const quadData: SparqlGrammarRule<'quadData', Wrap<Quads[]>> = <const> {
     ACTION(() => couldParseVars && C.parseMode.add('canParseVars'));
 
     const close = CONSUME(l.symbols.RCurly);
-    return ACTION(() => C.factory.wrap(val.val, C.factory.sourceLocation(open, close)));
+    return ACTION(() => C.astFactory.wrap(val.val, C.astFactory.sourceLocation(open, close)));
   },
 };
 
@@ -355,20 +355,26 @@ function insertDeleteDelWhere<T extends string>(
       }
 
       return ACTION(() =>
-        C.factory.updateOperationInsDelDataWhere(subType, data.val, C.factory.sourceLocation(insDelToken, data)));
+        C.astFactory.updateOperationInsDelDataWhere(subType, data.val, C.astFactory.sourceLocation(insDelToken, data)));
     },
-    gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, C) => {
-      const { factory: F, indentInc } = C;
-      C[traqulaIndentation] += indentInc;
-      F.printFilter(ast, () => PRINT_WORD(
-        subType === 'insertdata' ?
-          'INSERT DATA' :
-            (subType === 'deletedata' ? 'DELETE DATA' : 'DELETE WHERE'),
-        '{\n',
-      ));
+    gImpl: ({ SUBRULE, PRINT_WORD, PRINT_ON_EMPTY }) => (ast, C) => {
+      const { astFactory: F, indentInc } = C;
+      F.printFilter(ast, () => {
+        C[traqulaIndentation] += indentInc;
+        if (subType === 'insertdata') {
+          PRINT_WORD('INSERT DATA');
+        } else if (subType === 'deletedata') {
+          PRINT_WORD('DELETE DATA');
+        } else if (subType === 'deletewhere') {
+          PRINT_WORD('DELETE WHERE');
+        }
+        PRINT_WORD('{\n');
+      });
       SUBRULE(quads, F.wrap(ast.data, ast.loc));
-      C[traqulaIndentation] -= indentInc;
-      F.printFilter(ast, () => PRINT_WORD('}\n'));
+      F.printFilter(ast, () => {
+        C[traqulaIndentation] -= indentInc;
+        PRINT_ON_EMPTY('}\n');
+      });
     },
   };
 }
@@ -417,8 +423,8 @@ export const modify: SparqlRule<'modify', UpdateOperationModify> = <const> {
     CONSUME(l.where);
     const where = SUBRULE1(groupGraphPattern);
 
-    return ACTION(() => C.factory.updateOperationModify(
-      C.factory.sourceLocation(graph?.withToken, del, insert, where),
+    return ACTION(() => C.astFactory.updateOperationModify(
+      C.astFactory.sourceLocation(graph?.withToken, del, insert, where),
       insert?.val ?? [],
       del?.val ?? [],
       where,
@@ -427,24 +433,32 @@ export const modify: SparqlRule<'modify', UpdateOperationModify> = <const> {
     ));
   },
   gImpl: ({ SUBRULE, PRINT_WORD, PRINT_ON_EMPTY }) => (ast, C) => {
-    const { factory: F, indentInc } = C;
+    const { astFactory: F, indentInc } = C;
     if (ast.graph) {
       F.printFilter(ast, () => PRINT_WORD('WITH'));
       SUBRULE(iri, ast.graph);
     }
     if (ast.delete.length > 0) {
-      C[traqulaIndentation] += indentInc;
-      F.printFilter(ast, () => PRINT_WORD('DELETE', '{\n'));
+      F.printFilter(ast, () => {
+        C[traqulaIndentation] += indentInc;
+        PRINT_WORD('DELETE', '{\n');
+      });
       SUBRULE(quads, F.wrap(ast.delete, ast.loc));
-      C[traqulaIndentation] -= indentInc;
-      F.printFilter(ast, () => PRINT_ON_EMPTY('}\n'));
+      F.printFilter(ast, () => {
+        C[traqulaIndentation] -= indentInc;
+        PRINT_ON_EMPTY('}\n');
+      });
     }
     if (ast.insert.length > 0) {
-      C[traqulaIndentation] += indentInc;
-      F.printFilter(ast, () => PRINT_WORD('INSERT', '{\n'));
+      F.printFilter(ast, () => {
+        C[traqulaIndentation] += indentInc;
+        PRINT_WORD('INSERT', '{\n');
+      });
       SUBRULE(quads, F.wrap(ast.insert, ast.loc));
-      C[traqulaIndentation] -= indentInc;
-      F.printFilter(ast, () => PRINT_ON_EMPTY('}\n'));
+      F.printFilter(ast, () => {
+        C[traqulaIndentation] -= indentInc;
+        PRINT_ON_EMPTY('}\n');
+      });
     }
     SUBRULE(usingClauseStar, ast.from);
     F.printFilter(ast, () => PRINT_WORD('WHERE'));
@@ -463,7 +477,7 @@ export const deleteClause: SparqlGrammarRule<'deleteClause', Wrap<Quads[]>> = <c
     const del = SUBRULE(quadPattern);
     ACTION(() => couldCreateBlankNodes && C.parseMode.add('canCreateBlankNodes'));
 
-    return ACTION(() => C.factory.wrap(del.val, C.factory.sourceLocation(delToken, del)));
+    return ACTION(() => C.astFactory.wrap(del.val, C.astFactory.sourceLocation(delToken, del)));
   },
 };
 
@@ -476,7 +490,7 @@ export const insertClause: SparqlGrammarRule<'insertClause', Wrap<Quads[]>> = <c
     const insertToken = CONSUME(l.insertClause);
     const insert = SUBRULE(quadPattern);
 
-    return ACTION(() => C.factory.wrap(insert.val, C.factory.sourceLocation(insertToken, insert)));
+    return ACTION(() => C.astFactory.wrap(insert.val, C.astFactory.sourceLocation(insertToken, insert)));
   },
 };
 
@@ -488,13 +502,13 @@ export const graphOrDefault: SparqlGrammarRule<'graphOrDefault', GraphRefDefault
   impl: ({ ACTION, SUBRULE1, CONSUME, OPTION, OR }) => C => OR<GraphRefDefault | GraphRefSpecific>([
     { ALT: () => {
       const def = CONSUME(l.graph.default_);
-      return ACTION(() => C.factory.graphRefDefault(C.factory.sourceLocation(def)));
+      return ACTION(() => C.astFactory.graphRefDefault(C.astFactory.sourceLocation(def)));
     } },
     { ALT: () => {
       const graph = OPTION(() => CONSUME(l.graph.graph));
       const name = SUBRULE1(iri);
       return ACTION(() =>
-        C.factory.graphRefSpecific(name, C.factory.sourceLocation(graph, name)));
+        C.astFactory.graphRefSpecific(name, C.astFactory.sourceLocation(graph, name)));
     } },
   ]),
 };
@@ -507,9 +521,9 @@ export const graphRef: SparqlRule<'graphRef', GraphRefSpecific> = <const> {
   impl: ({ ACTION, SUBRULE, CONSUME }) => (C) => {
     const graph = CONSUME(l.graph.graph);
     const val = SUBRULE(iri);
-    return ACTION(() => C.factory.graphRefSpecific(val, C.factory.sourceLocation(graph, val)));
+    return ACTION(() => C.astFactory.graphRefSpecific(val, C.astFactory.sourceLocation(graph, val)));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => PRINT_WORD('GRAPH'));
     SUBRULE(iri, ast.graph);
   },
@@ -524,18 +538,18 @@ export const graphRefAll: SparqlRule<'graphRefAll', GraphRef> = <const> {
     { ALT: () => SUBRULE(graphRef) },
     { ALT: () => {
       const def = CONSUME(l.graph.default_);
-      return ACTION(() => C.factory.graphRefDefault(C.factory.sourceLocation(def)));
+      return ACTION(() => C.astFactory.graphRefDefault(C.astFactory.sourceLocation(def)));
     } },
     { ALT: () => {
       const named = CONSUME(l.graph.named);
-      return ACTION(() => C.factory.graphRefNamed(C.factory.sourceLocation(named)));
+      return ACTION(() => C.astFactory.graphRefNamed(C.astFactory.sourceLocation(named)));
     } },
     { ALT: () => {
       const graphAll = CONSUME(l.graph.graphAll);
-      return ACTION(() => C.factory.graphRefAll(C.factory.sourceLocation(graphAll)));
+      return ACTION(() => C.astFactory.graphRefAll(C.astFactory.sourceLocation(graphAll)));
     } },
   ]),
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
     if (F.isGraphRefSpecific(ast)) {
       SUBRULE(graphRef, ast);
     } else if (F.isGraphRefDefault(ast)) {
@@ -579,9 +593,9 @@ export const quads: SparqlRule<'quads', Wrap<Quads[]>> = <const> {
       });
     });
 
-    return ACTION(() => C.factory.wrap(quads, C.factory.sourceLocation(quads.at(0), last)));
+    return ACTION(() => C.astFactory.wrap(quads, C.astFactory.sourceLocation(quads.at(0), last)));
   },
-  gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE }) => (ast, { astFactory: F }) => {
     for (const quad of ast.val) {
       if (F.isPattern(quad)) {
         SUBRULE(triplesBlock, quad);
@@ -604,20 +618,24 @@ export const quadsNotTriples: SparqlRule<'quadsNotTriples', GraphQuads> = <const
     const triples = OPTION(() => SUBRULE1(triplesTemplate));
     const close = CONSUME(l.symbols.RCurly);
 
-    return ACTION(() => C.factory.graphQuads(
+    return ACTION(() => C.astFactory.graphQuads(
       name,
-      triples ?? C.factory.patternBgp([], C.factory.sourceLocationNoMaterialize()),
-      C.factory.sourceLocation(graph, close),
+      triples ?? C.astFactory.patternBgp([], C.astFactory.sourceLocationNoMaterialize()),
+      C.astFactory.sourceLocation(graph, close),
     ));
   },
   gImpl: ({ SUBRULE, PRINT_WORD, PRINT_ON_EMPTY }) => (ast, C) => {
-    const { factory: F, indentInc } = C;
+    const { astFactory: F, indentInc } = C;
     F.printFilter(ast, () => PRINT_WORD('GRAPH'));
     SUBRULE(varOrTerm, ast.graph);
-    C[traqulaIndentation] += indentInc;
-    F.printFilter(ast, () => PRINT_WORD('{\n'));
+    F.printFilter(ast, () => {
+      C[traqulaIndentation] += indentInc;
+      PRINT_WORD('{\n');
+    });
     SUBRULE(triplesBlock, ast.triples);
-    C[traqulaIndentation] -= indentInc;
-    F.printFilter(ast, () => PRINT_ON_EMPTY('}\n'));
+    F.printFilter(ast, () => {
+      C[traqulaIndentation] -= indentInc;
+      PRINT_ON_EMPTY('}\n');
+    });
   },
 };

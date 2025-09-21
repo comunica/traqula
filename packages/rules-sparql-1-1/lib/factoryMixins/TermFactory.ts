@@ -1,4 +1,4 @@
-import type { CoreFactory, SourceLocation, Typed, SubTyped } from '@traqula/core';
+import type { AstCoreFactory, SourceLocation, Typed, SubTyped } from '@traqula/core';
 import type {
   TermBlank,
   TermIri,
@@ -16,7 +16,7 @@ type NodeType = 'term';
 const nodeType: NodeType = 'term';
 
 // eslint-disable-next-line ts/explicit-function-return-type
-export function TermFactoryMixin<TBase extends Constructor<CoreFactory>>(Base: TBase) {
+export function TermFactoryMixin<TBase extends Constructor<AstCoreFactory>>(Base: TBase) {
   return class TermFactory extends Base {
     public __blankNodeCounter = 0;
 

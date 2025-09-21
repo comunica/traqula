@@ -1,10 +1,10 @@
-import { CoreFactory } from '../CoreFactory.js';
+import { AstCoreFactory } from '../AstCoreFactory.js';
 import { traqulaIndentation } from '../utils.js';
 import type { GenRuleMap } from './builderTypes.js';
 import type { GeneratorRule, RuleDefArg } from './generatorTypes.js';
 
 export class DynamicGenerator<Context, Names extends string, RuleDefs extends GenRuleMap<Names>> {
-  protected readonly factory = new CoreFactory();
+  protected readonly factory = new AstCoreFactory();
   protected __context: Context | undefined = undefined;
   protected origSource = '';
   protected generatedUntil = 0;
@@ -118,7 +118,10 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
           const [ noNl, ...postNl ] = str.split('\n');
           this.stringBuilder.push(noNl);
           for (const subStr of postNl.map(line => line.trimStart())) {
-            this.stringBuilder.push('\n', ' '.repeat(indent), subStr);
+            this.stringBuilder.push('\n', ' '.repeat(indent));
+            if (subStr.length > 0) {
+              this.stringBuilder.push(subStr);
+            }
           }
         }
       } else {

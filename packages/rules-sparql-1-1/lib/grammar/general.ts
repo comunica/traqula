@@ -27,7 +27,7 @@ export const prologue: SparqlRule<'prologue', ContextDefinition[]> = <const> {
     ]));
     return result;
   },
-  gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE }) => (ast, { astFactory: F }) => {
     for (const context of ast) {
       if (F.isContextDefinitionBase(context)) {
         SUBRULE(baseDecl, context);
@@ -47,9 +47,9 @@ export const baseDecl: SparqlRule<'baseDecl', ContextDefinitionBase> = <const> {
   impl: ({ ACTION, CONSUME, SUBRULE }) => (C) => {
     const base = CONSUME(l.baseDecl);
     const val = SUBRULE(iriFull);
-    return ACTION(() => C.factory.contextDefinitionBase(C.factory.sourceLocation(base, val), val));
+    return ACTION(() => C.astFactory.contextDefinitionBase(C.astFactory.sourceLocation(base, val), val));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => PRINT_WORD('BASE'));
     SUBRULE(iri, ast.value);
     F.printFilter(ast, () => PRINT_WORD('\n'));
@@ -67,9 +67,9 @@ export const prefixDecl: SparqlRule<'prefixDecl', ContextDefinitionPrefix> = <co
     const name = CONSUME(l.terminals.pNameNs).image.slice(0, -1);
     const value = SUBRULE(iriFull);
 
-    return ACTION(() => C.factory.contextDefinitionPrefix(C.factory.sourceLocation(prefix, value), name, value));
+    return ACTION(() => C.astFactory.contextDefinitionPrefix(C.astFactory.sourceLocation(prefix, value), name, value));
   },
-  gImpl: ({ SUBRULE, PRINT_WORDS }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORDS }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => {
       PRINT_WORDS('PREFIX', `${ast.key}:`);
     });
@@ -98,7 +98,7 @@ export const varOrTerm: SparqlRule<'varOrTerm', Term> = <const> {
     { GATE: () => C.parseMode.has('canParseVars'), ALT: () => SUBRULE(var_) },
     { ALT: () => SUBRULE(graphTerm) },
   ]),
-  gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE }) => (ast, { astFactory: F }) => {
     if (F.isTermVariable(ast)) {
       return SUBRULE(var_, ast);
     }
@@ -127,9 +127,9 @@ export const var_: SparqlRule<'var', TermVariable> = <const> {
       { ALT: () => CONSUME(l.terminals.var1) },
       { ALT: () => CONSUME(l.terminals.var2) },
     ]);
-    return ACTION(() => C.factory.variable(varToken.image.slice(1), C.factory.sourceLocation(varToken)));
+    return ACTION(() => C.astFactory.variable(varToken.image.slice(1), C.astFactory.sourceLocation(varToken)));
   },
-  gImpl: ({ PRINT_WORD }) => (ast, { factory: F }) => {
+  gImpl: ({ PRINT_WORD }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => PRINT_WORD(`?${ast.value}`));
   },
 };
@@ -148,10 +148,10 @@ export const graphTerm: SparqlRule<'graphTerm', GraphTerm> = <const> {
     { ALT: () => {
       const tokenNil = CONSUME(l.terminals.nil);
       return ACTION(() =>
-        C.factory.namedNode(C.factory.sourceLocation(tokenNil), CommonIRIs.NIL));
+        C.astFactory.namedNode(C.astFactory.sourceLocation(tokenNil), CommonIRIs.NIL));
     } },
   ]),
-  gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE }) => (ast, { astFactory: F }) => {
     if (F.isTermNamed(ast)) {
       SUBRULE(iri, ast);
     } else if (F.isTermLiteral(ast)) {

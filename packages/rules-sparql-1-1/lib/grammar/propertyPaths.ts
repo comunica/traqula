@@ -15,7 +15,7 @@ export const path: SparqlGrammarRule<'path', Path> = <const> {
 
 export const pathGenerator: SparqlGeneratorRule<'path', Path, [boolean | undefined]> = {
   name: 'path',
-  gImpl: ({ PRINT, SUBRULE }) => (ast, { factory: F }, braces = true) => {
+  gImpl: ({ PRINT, SUBRULE }) => (ast, { astFactory: F }, braces = true) => {
     if (F.isTerm(ast) && F.isTermNamed(ast)) {
       SUBRULE(iri, ast);
     } else {
@@ -74,7 +74,7 @@ export function pathChainHelper<T extends string>(
 
       return ACTION(() => tail.length === 0 ?
         head :
-        C.factory.path(subType, [ head, ...tail ], C.factory.sourceLocation(head, tailEnd)));
+        C.astFactory.path(subType, [ head, ...tail ], C.astFactory.sourceLocation(head, tailEnd)));
     },
   };
 }
@@ -89,7 +89,7 @@ export const pathEltOrInverse: SparqlGrammarRule<'pathEltOrInverse', PathModifie
     { ALT: () => {
       const hat = CONSUME(l.symbols.hat);
       const item = SUBRULE2(pathElt);
-      return ACTION(() => C.factory.path('^', [ item ], C.factory.sourceLocation(hat, item)));
+      return ACTION(() => C.astFactory.path('^', [ item ], C.astFactory.sourceLocation(hat, item)));
     } },
   ]),
 };
@@ -114,7 +114,7 @@ export const pathElt: SparqlGrammarRule<'pathElt', PathModified | Path> = <const
     const modification = OPTION(() => SUBRULE(pathMod));
     return ACTION(() => modification === undefined ?
       item :
-      C.factory.path(modification.image, [ item ], C.factory.sourceLocation(item, modification)));
+      C.astFactory.path(modification.image, [ item ], C.astFactory.sourceLocation(item, modification)));
   },
 };
 
@@ -159,7 +159,7 @@ export const pathNegatedPropertySet: SparqlGrammarRule<'pathNegatedPropertySet',
       { ALT: () => {
         const noAlternative = SUBRULE1(pathOneInPropertySet);
         return ACTION(() =>
-          C.factory.path('!', [ noAlternative ], C.factory.sourceLocation(exclamation, noAlternative)));
+          C.astFactory.path('!', [ noAlternative ], C.astFactory.sourceLocation(exclamation, noAlternative)));
       } },
       { ALT: () => {
         const open = CONSUME(l.symbols.LParen);
@@ -175,7 +175,7 @@ export const pathNegatedPropertySet: SparqlGrammarRule<'pathNegatedPropertySet',
         const close = CONSUME(l.symbols.RParen);
 
         return ACTION(() => {
-          const F = C.factory;
+          const F = C.astFactory;
           if (tail.length === 0) {
             return F.path('!', [ head ], F.sourceLocation(exclamation, close));
           }
@@ -206,7 +206,7 @@ export const pathOneInPropertySet: SparqlGrammarRule<'pathOneInPropertySet', Ter
           { ALT: () => SUBRULE2(verbA) },
         ]);
         return ACTION(() =>
-          C.factory.path('^', [ item ], C.factory.sourceLocation(hat, item)));
+          C.astFactory.path('^', [ item ], C.astFactory.sourceLocation(hat, item)));
       } },
     ]),
 };

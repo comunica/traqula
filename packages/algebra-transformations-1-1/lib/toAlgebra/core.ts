@@ -1,16 +1,16 @@
 import type * as RDF from '@rdfjs/types';
 import type { IndirDef } from '@traqula/core';
 import type { PathPure } from '@traqula/rules-sparql-1-1';
-import { Factory as AstFactory, TransformerSparql11 } from '@traqula/rules-sparql-1-1';
+import { AstFactory, TransformerSparql11 } from '@traqula/rules-sparql-1-1';
 import { DataFactory } from 'rdf-data-factory';
 import * as Algebra from '../algebra.js';
-import { Factory } from '../factory.js';
+import { AlgebraFactory } from '../algebraFactory.js';
 
 export interface AlgebraContext {
   variables: Set<string>;
   varCount: number;
   useQuads: boolean;
-  factory: Factory;
+  algebraFactory: AlgebraFactory;
   transformer: TransformerSparql11;
   astFactory: AstFactory;
   dataFactory: RDF.DataFactory<RDF.BaseQuad> & { variable: Function };
@@ -34,7 +34,7 @@ export function createAlgebraContext(config: ContextConfigs): AlgebraContext {
     transformer: new TransformerSparql11(),
     astFactory: new AstFactory(),
     dataFactory,
-    factory: new Factory(dataFactory),
+    algebraFactory: new AlgebraFactory(dataFactory),
     currentBase: config.baseIRI,
     currentPrefixes: config.prefixes ? { ...config.prefixes } : {},
   };

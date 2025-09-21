@@ -13,6 +13,6 @@ export * from './parser-builder/parserBuilder.js';
 export * from './parser-builder/ruleDefTypes.js';
 // Export general types
 export * from './utils.js';
-export * from './CoreFactory.js';
+export * from './AstCoreFactory.js';
 export * from './nodeTypings.js';
 export * from './Transformers.js';

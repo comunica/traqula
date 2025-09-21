@@ -1,4 +1,4 @@
-import type { CoreFactory, SourceLocation, SubTyped, Typed } from '@traqula/core';
+import type { AstCoreFactory, SourceLocation, SubTyped, Typed } from '@traqula/core';
 import type {
   DatasetClauses,
   GraphRef,
@@ -25,7 +25,7 @@ type NodeType = 'updateOperation';
 const nodeType: NodeType = 'updateOperation';
 
 // eslint-disable-next-line ts/explicit-function-return-type
-export function UpdateOperationFactoryMixin<TBase extends Constructor<CoreFactory>>(Base: TBase) {
+export function UpdateOperationFactoryMixin<TBase extends Constructor<AstCoreFactory>>(Base: TBase) {
   return class UpdateOperationFactory extends Base {
     public isUpdateOperation(obj: object): obj is Typed<NodeType> {
       return this.isOfType(obj, nodeType);

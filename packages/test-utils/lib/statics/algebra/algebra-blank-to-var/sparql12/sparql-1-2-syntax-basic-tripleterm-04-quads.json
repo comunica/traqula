@@ -44,6 +44,18 @@
   "variables": [
     {
       "termType": "Variable",
+      "value": "a"
+    },
+    {
+      "termType": "Variable",
+      "value": "b"
+    },
+    {
+      "termType": "Variable",
+      "value": "c"
+    },
+    {
+      "termType": "Variable",
       "value": "P"
     },
     {

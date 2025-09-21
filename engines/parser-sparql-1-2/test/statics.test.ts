@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { BaseQuad } from '@rdfjs/types';
-import { Factory, lex as l12 } from '@traqula/rules-sparql-1-2';
+import { AstFactory, lex as l12 } from '@traqula/rules-sparql-1-2';
 import { positiveTest, importSparql11NoteTests, negativeTest } from '@traqula/test-utils';
 import { DataFactory } from 'rdf-data-factory';
 import { describe, it } from 'vitest';
@@ -9,7 +9,7 @@ import { Parser, sparql12ParserBuilder } from '../lib/index.js';
 
 describe('a SPARQL 1.2 parser', () => {
   const parser = new Parser();
-  const F = new Factory();
+  const F = new AstFactory();
   const context = { prefixes: { ex: 'http://example.org/' }};
 
   function _sinkAst(suite: string, test: string, response: object): void {

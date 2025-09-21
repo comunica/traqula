@@ -1,7 +1,7 @@
 /* eslint-disable no-sync */
 import * as fs from 'node:fs';
 import * as path from 'node:path';
-import { utils } from '@traqula/algebra-transformations-1-1';
+import { algebraUtils } from '@traqula/algebra-transformations-1-1';
 import { Parser } from '@traqula/parser-sparql-1-1';
 import { sparqlQueries } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
@@ -23,7 +23,7 @@ describe.skip('algebra test generate', () => {
           it(`${name} - blankToVar: ${blankToVariable}`, ({ expect }) => {
             expect(() => {
               const ast = parser.parse(query);
-              const algebra = utils.objectify(toAlgebra(ast, {
+              const algebra = algebraUtils.objectify(toAlgebra(ast, {
                 quads: name.endsWith('-quads'),
                 blankToVariable,
               }));

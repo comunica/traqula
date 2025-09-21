@@ -1,4 +1,4 @@
-import type { CoreFactory, SubTyped, SourceLocation } from '@traqula/core';
+import type { AstCoreFactory, SubTyped, SourceLocation } from '@traqula/core';
 import type {
   ContextDefinitionBase,
   ContextDefinitionPrefix,
@@ -10,7 +10,7 @@ type NodeType = 'contextDef';
 const nodeType: NodeType = 'contextDef';
 
 // eslint-disable-next-line ts/explicit-function-return-type
-export function ContextFactoryMixin<TBase extends Constructor<CoreFactory>>(Base: TBase) {
+export function ContextFactoryMixin<TBase extends Constructor<AstCoreFactory>>(Base: TBase) {
   return class ContextFactory extends Base {
     public contextDefinitionPrefix(loc: SourceLocation, key: string, value: TermIriFull): ContextDefinitionPrefix {
       return {

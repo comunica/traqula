@@ -1,6 +1,6 @@
 import type { GeneratorRule, ParserRule } from '@traqula/core';
 import type * as T11 from '@traqula/rules-sparql-1-1';
-import type { Factory } from './Factory.js';
+import type { AstFactory } from './AstFactory.js';
 
 export type SparqlRule<
   /**
@@ -52,5 +52,5 @@ export type SparqlGrammarRule<
   ParamType extends any[] = [],
 > = ParserRule<SparqlContext, NameType, ReturnType, ParamType>;
 
-export type SparqlContext = T11.SparqlContext & { factory: Factory };
-export type SparqlGeneratorContext = T11.SparqlGeneratorContext & { factory: Factory };
+export type SparqlContext = T11.SparqlContext & { astFactory: AstFactory };
+export type SparqlGeneratorContext = T11.SparqlGeneratorContext & { astFactory: AstFactory };

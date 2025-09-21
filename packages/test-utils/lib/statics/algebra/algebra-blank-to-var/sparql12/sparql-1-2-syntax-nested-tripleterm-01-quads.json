@@ -93,5 +93,10 @@
       }
     ]
   },
-  "variables": []
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "S"
+    }
+  ]
 }

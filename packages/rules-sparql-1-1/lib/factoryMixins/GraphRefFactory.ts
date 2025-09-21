@@ -1,4 +1,4 @@
-import type { CoreFactory, SubTyped, SourceLocation, Typed } from '@traqula/core';
+import type { AstCoreFactory, SubTyped, SourceLocation, Typed } from '@traqula/core';
 import type {
   GraphRefAll,
   GraphRefDefault,
@@ -12,7 +12,7 @@ type NodeType = 'graphRef';
 const nodeType: NodeType = 'graphRef';
 
 // eslint-disable-next-line ts/explicit-function-return-type
-export function GraphRefFactoryMixin<TBase extends Constructor<CoreFactory>>(Base: TBase) {
+export function GraphRefFactoryMixin<TBase extends Constructor<AstCoreFactory>>(Base: TBase) {
   return class GraphRefFactory extends Base {
     public isGraphRef(obj: object): obj is Typed<NodeType> {
       return this.isOfType(obj, nodeType);

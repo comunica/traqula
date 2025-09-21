@@ -1,4 +1,4 @@
-import type { CoreFactory, SourceLocation, Typed, SubTyped } from '@traqula/core';
+import type { AstCoreFactory, SourceLocation, Typed, SubTyped } from '@traqula/core';
 import type {
   Expression,
   ExpressionAggregate,
@@ -18,7 +18,7 @@ type NodeType = 'expression';
 const nodeType: NodeType = 'expression';
 
 // eslint-disable-next-line ts/explicit-function-return-type
-export function ExpressionFactoryMixin<TBase extends Constructor<CoreFactory>>(Base: TBase) {
+export function ExpressionFactoryMixin<TBase extends Constructor<AstCoreFactory>>(Base: TBase) {
   return class ExpressionFactory extends Base {
     public isExpressionPure(obj: object): obj is Typed<NodeType> {
       return this.isOfType(obj, nodeType);

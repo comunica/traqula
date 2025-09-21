@@ -1,5 +1,5 @@
 import type { SourceLocation, SubTyped } from '@traqula/core';
-import { Factory as Sparql11Factory } from '@traqula/rules-sparql-1-1';
+import { AstFactory as Sparql11Factory } from '@traqula/rules-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import type {
   Annotation,
@@ -13,7 +13,7 @@ import type {
   TripleNesting,
 } from './sparql12Types.js';
 
-export class Factory extends Sparql11Factory {
+export class AstFactory extends Sparql11Factory {
   public termTriple(
     subject: TermTriple['subject'],
     predicate: TermTriple['predicate'],

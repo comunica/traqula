@@ -1,12 +1,12 @@
 import { traqulaIndentation } from '@traqula/core';
-import { Factory } from './Factory.js';
+import { AstFactory } from './AstFactory.js';
 import type { SparqlContext, SparqlGeneratorContext } from './sparql12HelperTypes.js';
 
 export function completeParseContext(
   context: Partial<SparqlContext & SparqlGeneratorContext & { origSource: string; offset?: number }>,
 ): SparqlContext & SparqlGeneratorContext & { origSource: string; offset?: number } {
   return {
-    factory: context.factory ?? new Factory(),
+    astFactory: context.astFactory ?? new AstFactory(),
     baseIRI: context.baseIRI,
     prefixes: { ...context.prefixes },
     origSource: context.origSource ?? '',

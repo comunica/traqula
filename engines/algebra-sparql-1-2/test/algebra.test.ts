@@ -1,4 +1,4 @@
-import { Canonicalizer, utils } from '@traqula/algebra-transformations-1-1';
+import { Canonicalizer, algebraUtils } from '@traqula/algebra-transformations-1-1';
 import type { Algebra } from '@traqula/algebra-transformations-1-2';
 import { Parser } from '@traqula/parser-sparql-1-2';
 import { type AlgebraTestSuite, sparqlAlgebraTests } from '@traqula/test-utils';
@@ -25,7 +25,7 @@ describe('algebra output', () => {
           // }
           it(`${name}${blankToVariable ? ' (no blanks)' : ''}`, ({ expect }) => {
             const ast = parser.parse(query);
-            const algebra = utils.objectify(
+            const algebra = algebraUtils.objectify(
               toAlgebra(ast, {
                 quads: name.endsWith('-quads'),
                 blankToVariable,

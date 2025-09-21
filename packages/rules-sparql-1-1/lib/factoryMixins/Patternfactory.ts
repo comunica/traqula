@@ -1,4 +1,4 @@
-import type { CoreFactory, SourceLocation, Typed, SubTyped } from '@traqula/core';
+import type { AstCoreFactory, SourceLocation, Typed, SubTyped } from '@traqula/core';
 import type {
   BasicGraphPattern,
   Expression,
@@ -23,7 +23,7 @@ type NodeType = 'pattern';
 const nodeType: NodeType = 'pattern';
 
 // eslint-disable-next-line ts/explicit-function-return-type
-export function PatternFactoryMixin<TBase extends Constructor<CoreFactory>>(Base: TBase) {
+export function PatternFactoryMixin<TBase extends Constructor<AstCoreFactory>>(Base: TBase) {
   return class PatternFactory extends Base {
     public isPattern(obj: object): obj is Typed<NodeType> {
       return this.isOfType(obj, nodeType);

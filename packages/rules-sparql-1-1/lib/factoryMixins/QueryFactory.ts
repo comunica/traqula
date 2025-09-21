@@ -1,4 +1,4 @@
-import type { CoreFactory, SourceLocation, Typed, SubTyped } from '@traqula/core';
+import type { AstCoreFactory, SourceLocation, Typed, SubTyped } from '@traqula/core';
 import type {
   ContextDefinition,
   DatasetClauses,
@@ -15,7 +15,7 @@ type NodeType = 'query';
 const nodeType: NodeType = 'query';
 
 // eslint-disable-next-line ts/explicit-function-return-type
-export function QueryFactoryMixin<TBase extends Constructor<CoreFactory>>(Base: TBase) {
+export function QueryFactoryMixin<TBase extends Constructor<AstCoreFactory>>(Base: TBase) {
   return class QueryFactory extends Base {
     public isQuery(obj: object): obj is Typed<NodeType> {
       return this.isOfType(obj, nodeType);

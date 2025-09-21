@@ -1,11 +1,11 @@
 import type { GeneratorRule, ParserRule, traqulaIndentation } from '@traqula/core';
-import type { Factory } from './factory.js';
+import type { AstFactory } from './astFactory.js';
 
 export interface SparqlContext {
   /**
    * Data-factoryMixins to be used when constructing rdf primitives.
    */
-  factory: Factory;
+  astFactory: AstFactory;
   /**
    * Current scoped prefixes. Used for resolving prefixed names.
    */
@@ -25,7 +25,7 @@ export interface SparqlContext {
 }
 
 export interface SparqlGeneratorContext {
-  factory: Factory;
+  astFactory: AstFactory;
   indentInc: number;
   [traqulaIndentation]: number;
 }

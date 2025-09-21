@@ -1,3 +1,4 @@
+import { traqulaIndentation } from '@traqula/core';
 import type { IToken } from 'chevrotain';
 import * as l from '../lexer/index.js';
 import type { SparqlGrammarRule, SparqlRule } from '../sparql11HelperTypes.js';
@@ -38,7 +39,7 @@ SparqlGrammarRule<string, PatternBgp>['impl'] {
         });
       },
     });
-    return ACTION(() => C.factory.patternBgp(triples, C.factory.sourceLocation(...triples, dotToken)));
+    return ACTION(() => C.astFactory.patternBgp(triples, C.astFactory.sourceLocation(...triples, dotToken)));
   };
 }
 
@@ -48,7 +49,7 @@ SparqlGrammarRule<string, PatternBgp>['impl'] {
 export const triplesBlock: SparqlRule<'triplesBlock', PatternBgp> = <const>{
   name: 'triplesBlock',
   impl: implArgs => C => triplesDotSeperated(triplesSameSubjectPath)(implArgs)(C),
-  gImpl: ({ SUBRULE, PRINT_WORD, HANDLE_LOC }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD, HANDLE_LOC }) => (ast, { astFactory: F }) => {
     for (const [ index, triple ] of ast.triples.entries()) {
       HANDLE_LOC(triple, () => {
         const nextTriple = ast.triples.at(index);
@@ -59,12 +60,14 @@ export const triplesBlock: SparqlRule<'triplesBlock', PatternBgp> = <const>{
         } else {
           // Subject
           SUBRULE(graphNodePath, triple.subject);
+          F.printFilter(triple, () => PRINT_WORD(''));
           // Predicate
           if (F.isTerm(triple.predicate) && F.isTermVariable(triple.predicate)) {
             SUBRULE(varOrTerm, triple.predicate);
           } else {
             SUBRULE(pathGenerator, triple.predicate, undefined);
           }
+          F.printFilter(triple, () => PRINT_WORD(''));
           // Object
           SUBRULE(graphNodePath, triple.object);
 
@@ -98,13 +101,13 @@ SparqlGrammarRule<T, BasicGraphPattern> {
         const subject = SUBRULE(varOrTerm);
         const res = SUBRULE(
           allowPaths ? propertyListPathNotEmpty : propertyListNotEmpty,
-          ACTION(() => C.factory.dematerialized(subject)),
+          ACTION(() => C.astFactory.dematerialized(subject)),
         );
         // Only the first occurrence of a subject is actually materialized.
         return ACTION(() => {
           if (res.length > 0) {
             res[0].subject = subject;
-            res[0].loc = C.factory.sourceLocation(subject, res[0]);
+            res[0].loc = C.astFactory.sourceLocation(subject, res[0]);
           }
           return res;
         });
@@ -113,14 +116,14 @@ SparqlGrammarRule<T, BasicGraphPattern> {
         const subjectNode = SUBRULE(allowPaths ? triplesNodePath : triplesNode);
         const restNode = SUBRULE(
           allowPaths ? propertyListPath : propertyList,
-          ACTION(() => C.factory.graphNodeIdentifier(subjectNode)),
+          ACTION(() => C.astFactory.graphNodeIdentifier(subjectNode)),
         );
         return ACTION(() => {
           if (restNode.length === 0) {
             return [ subjectNode ];
           }
           restNode[0].subject = subjectNode;
-          restNode[0].loc = C.factory.sourceLocation(subjectNode, restNode[0]);
+          restNode[0].loc = C.astFactory.sourceLocation(subjectNode, restNode[0]);
           return restNode;
         });
       } },
@@ -255,7 +258,7 @@ SparqlGrammarRule<T, TripleNesting, [TripleNesting['subject'], TripleNesting['pr
     impl: ({ ACTION, SUBRULE }) => (C, subject, predicate) => {
       const node = SUBRULE(allowPaths ? graphNodePath : graphNode);
       return ACTION(() =>
-        C.factory.triple(subject, predicate, node));
+        C.astFactory.triple(subject, predicate, node));
     },
   };
 }
@@ -282,7 +285,7 @@ function collectionImpl<T extends string>(name: T, allowPaths: boolean): SparqlR
       const endToken = CONSUME(l.symbols.RParen);
 
       return ACTION(() => {
-        const F = C.factory;
+        const F = C.astFactory;
         const triples: TripleNesting[] = [];
         // The triples created in your recursion
         const predFirst = F.namedNode(F.sourceLocationNoMaterialize(), CommonIRIs.FIRST, undefined);
@@ -315,7 +318,7 @@ function collectionImpl<T extends string>(name: T, allowPaths: boolean): SparqlR
         return F.tripleCollectionList(listHead, triples, F.sourceLocation(startToken, endToken));
       });
     },
-    gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+    gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
       F.printFilter(ast, () => PRINT_WORD('('));
       // Only every 2 triple is relevant. The odd triples are linking triples.
       for (const [ idx, triple ] of ast.triples.entries()) {
@@ -362,32 +365,42 @@ SparqlRule<T, TripleCollectionBlankNodeProperties> {
       const startToken = CONSUME(l.symbols.LSquare);
 
       const blankNode = ACTION(() =>
-        C.factory.blankNode(undefined, C.factory.sourceLocationNoMaterialize()));
+        C.astFactory.blankNode(undefined, C.astFactory.sourceLocationNoMaterialize()));
 
       const propList = SUBRULE(propertyPathNotEmptyImpl, blankNode);
       const endToken = CONSUME(l.symbols.RSquare);
 
-      return ACTION(() => C.factory.tripleCollectionBlankNodeProperties(
+      return ACTION(() => C.astFactory.tripleCollectionBlankNodeProperties(
         blankNode,
         propList,
-        C.factory.sourceLocation(startToken, endToken),
+        C.astFactory.sourceLocation(startToken, endToken),
       ));
     },
-    gImpl: ({ SUBRULE, PRINT, PRINT_WORD, HANDLE_LOC }) => (ast, { factory: F }) => {
-      F.printFilter(ast, () => PRINT('[\n'));
+    gImpl: ({ SUBRULE, PRINT, PRINT_WORD, HANDLE_LOC, PRINT_ON_EMPTY }) => (ast, c) => {
+      const { astFactory: F, indentInc } = c;
+      F.printFilter(ast, () => {
+        c[traqulaIndentation] += indentInc;
+        PRINT('[\n');
+      });
       for (const triple of ast.triples) {
         HANDLE_LOC(triple, () => {
+          // Predicate
           if (F.isTerm(triple.predicate) && F.isTermVariable(triple.predicate)) {
             SUBRULE(varOrTerm, triple.predicate);
           } else {
             SUBRULE(pathGenerator, triple.predicate, undefined);
           }
+          F.printFilter(triple, () => PRINT_WORD(''));
+          // Object
           SUBRULE(graphNodePath, triple.object);
 
           F.printFilter(ast, () => PRINT_WORD(';\n'));
         });
       }
-      F.printFilter(ast, () => PRINT(']\n'));
+      F.printFilter(ast, () => {
+        c[traqulaIndentation] -= indentInc;
+        PRINT_ON_EMPTY(']');
+      });
     },
   };
 }
@@ -409,7 +422,7 @@ function graphNodeImpl<T extends string>(name: T, allowPaths: boolean): SparqlRu
         ALT: () => SUBRULE(triplesNodeRule),
       },
     ]),
-    gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
+    gImpl: ({ SUBRULE }) => (ast, { astFactory: F }) => {
       if (F.isTerm(ast)) {
         SUBRULE(varOrTerm, ast);
       } else {

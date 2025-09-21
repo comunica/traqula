@@ -17,7 +17,7 @@ import type {
   TermVariable,
 } from '@traqula/rules-sparql-1-1';
 import * as Algebra from '../algebra.js';
-import type { Factory } from '../factory.js';
+import type { AlgebraFactory } from '../algebraFactory.js';
 import * as util from '../util.js';
 import type { AlgebraIndir } from './core.js';
 
@@ -80,10 +80,10 @@ export const registerContextDefinitions: AlgebraIndir<'registerContextDefinition
 
 export const translateInlineData: AlgebraIndir<'translateInlineData', Algebra.Values, [PatternValues]> = {
   name: 'translateInlineData',
-  fun: ({ SUBRULE }) => ({ factory, dataFactory }, values) => {
+  fun: ({ SUBRULE }) => ({ algebraFactory: AF, dataFactory: DF }, values) => {
     const variables = values.values.length === 0 ?
         [] :
-      Object.keys(values.values[0]).map(key => dataFactory.variable(key));
+      Object.keys(values.values[0]).map(key => DF.variable(key));
     const bindings = values.values.map((binding) => {
       const map: Record<string, RDF.NamedNode | RDF.Literal> = {};
       for (const [ key, value ] of Object.entries(binding)) {
@@ -93,7 +93,7 @@ export const translateInlineData: AlgebraIndir<'translateInlineData', Algebra.Va
       }
       return map;
     });
-    return factory.createValues(variables, bindings);
+    return AF.createValues(variables, bindings);
   },
 };
 
@@ -111,7 +111,7 @@ AlgebraIndir<'translateDatasetClause', { default: RDF.NamedNode[]; named: RDF.Na
 export const translateBlankNodesToVariables:
 AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Operation]> = {
   name: 'translateBlankNodesToVariables',
-  fun: ({ SUBRULE }) => ({ factory, variables }, res) => {
+  fun: ({ SUBRULE }) => ({ algebraFactory: AF, variables }, res) => {
     const blankToVariableMapping: Record<string, RDF.Variable> = {};
     const variablesRaw: Set<string> = new Set(variables);
 
@@ -119,14 +119,14 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
       [Algebra.Types.DELETE_INSERT]: (op: Algebra.DeleteInsert) =>
         // Make sure blank nodes remain in the INSERT block, but do update the WHERE block
         ({
-          result: factory.createDeleteInsert(
+          result: AF.createDeleteInsert(
             op.delete,
             op.insert,
             op.where && SUBRULE(translateBlankNodesToVariables, op.where),
           ),
           recurse: false,
         }),
-      [Algebra.Types.PATH]: (op: Algebra.Path, factory: Factory) => ({
+      [Algebra.Types.PATH]: (op: Algebra.Path, factory: AlgebraFactory) => ({
         result: factory.createPath(
           blankToVariable(op.subject),
           op.predicate,
@@ -135,7 +135,7 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
         ),
         recurse: false,
       }),
-      [Algebra.Types.PATTERN]: (op: Algebra.Pattern, factory: Factory) => ({
+      [Algebra.Types.PATTERN]: (op: Algebra.Pattern, factory: AlgebraFactory) => ({
         result: factory.createPattern(
           blankToVariable(op.subject),
           blankToVariable(op.predicate),
@@ -147,7 +147,7 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
       [Algebra.Types.CONSTRUCT]: (op: Algebra.Construct) =>
         // Blank nodes in CONSTRUCT templates must be maintained
         ({
-          result: factory.createConstruct(SUBRULE(translateBlankNodesToVariables, op.input), op.template),
+          result: AF.createConstruct(SUBRULE(translateBlankNodesToVariables, op.input), op.template),
           recurse: false,
         })
       ,
@@ -157,14 +157,14 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
       if (term.termType === 'BlankNode') {
         let variable = blankToVariableMapping[term.value];
         if (!variable) {
-          variable = util.createUniqueVariable(term.value, variablesRaw, factory.dataFactory);
+          variable = util.createUniqueVariable(term.value, variablesRaw, AF.dataFactory);
           variablesRaw.add(variable.value);
           blankToVariableMapping[term.value] = variable;
         }
         return variable;
       }
       if (term.termType === 'Quad') {
-        return factory.dataFactory.quad(
+        return AF.dataFactory.quad(
           blankToVariable(term.subject),
           blankToVariable(term.predicate),
           blankToVariable(term.object),

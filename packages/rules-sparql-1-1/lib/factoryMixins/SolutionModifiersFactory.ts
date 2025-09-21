@@ -1,4 +1,4 @@
-import type { CoreFactory, SourceLocation, Typed, SubTyped } from '@traqula/core';
+import type { AstCoreFactory, SourceLocation, Typed, SubTyped } from '@traqula/core';
 import type {
   Expression,
   Ordering,
@@ -14,7 +14,7 @@ type NodeType = 'solutionModifier';
 const nodeType: NodeType = 'solutionModifier';
 
 // eslint-disable-next-line ts/explicit-function-return-type
-export function SolutionModifiersFactoryMixin<TBase extends Constructor<CoreFactory>>(Base: TBase) {
+export function SolutionModifiersFactoryMixin<TBase extends Constructor<AstCoreFactory>>(Base: TBase) {
   return class SolutionModifiersFactory extends Base {
     public isSolutionModifier(obj: object): obj is Typed<NodeType> {
       return this.isOfType(obj, nodeType);

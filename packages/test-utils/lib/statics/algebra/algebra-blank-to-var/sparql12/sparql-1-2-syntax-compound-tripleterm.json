@@ -96,7 +96,15 @@
   "variables": [
     {
       "termType": "Variable",
+      "value": "C"
+    },
+    {
+      "termType": "Variable",
       "value": "s"
+    },
+    {
+      "termType": "Variable",
+      "value": "s1"
     }
   ]
 }

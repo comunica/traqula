@@ -15,7 +15,7 @@ import type {
 export type Typed<Type extends PropertyKey> = { type: Type };
 export type SubTyped<Type extends PropertyKey, Subtype extends PropertyKey> = { type: Type; subType: Subtype };
 
-export class CoreFactory {
+export class AstCoreFactory {
   public wrap<T>(val: T, loc: SourceLocation): Wrap<T> {
     return { val, loc };
   }

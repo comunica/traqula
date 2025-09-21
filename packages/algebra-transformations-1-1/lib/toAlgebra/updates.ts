@@ -21,52 +21,52 @@ import { recurseGraph, translateBasicGraphPattern, translateQuad } from './tripl
 
 export const translateUpdate: AlgebraIndir<'translateUpdate', Algebra.Operation, [Update]> = {
   name: 'translateUpdate',
-  fun: ({ SUBRULE }) => ({ factory }, thingy) => {
+  fun: ({ SUBRULE }) => ({ algebraFactory: AF }, thingy) => {
     const updates: Algebra.Update[] = thingy.updates.flatMap((update) => {
       SUBRULE(registerContextDefinitions, update.context);
       return update.operation ? [ SUBRULE(translateSingleUpdate, update.operation) ] : [];
     });
     if (updates.length === 0) {
-      return factory.createNop();
+      return AF.createNop();
     }
     if (updates.length === 1) {
       return updates[0];
     }
-    return factory.createCompositeUpdate(updates);
+    return AF.createCompositeUpdate(updates);
   },
 };
 
 export const translateSingleUpdate: AlgebraIndir<'translateSingleUpdate', Algebra.Update, [UpdateOperation]> = {
   name: 'translateSingleUpdate',
-  fun: ({ SUBRULE }) => ({ astFactory: F, factory }, op) => {
+  fun: ({ SUBRULE }) => ({ astFactory: F, algebraFactory: AF }, op) => {
     if (F.isUpdateOperationLoad(op)) {
       return SUBRULE(translateUpdateGraphLoad, op);
     }
     if (F.isUpdateOperationClear(op)) {
-      return factory.createClear(SUBRULE(translateGraphRef, op.destination), op.silent);
+      return AF.createClear(SUBRULE(translateGraphRef, op.destination), op.silent);
     }
     if (F.isUpdateOperationCreate(op)) {
-      return factory.createCreate(<RDF.NamedNode> SUBRULE(translateGraphRef, op.destination), op.silent);
+      return AF.createCreate(<RDF.NamedNode> SUBRULE(translateGraphRef, op.destination), op.silent);
     }
     if (F.isUpdateOperationDrop(op)) {
-      return factory.createDrop(SUBRULE(translateGraphRef, op.destination), op.silent);
+      return AF.createDrop(SUBRULE(translateGraphRef, op.destination), op.silent);
     }
     if (F.isUpdateOperationAdd(op)) {
-      return factory.createAdd(
+      return AF.createAdd(
         SUBRULE(translateGraphRefDefSpec, op.source),
         SUBRULE(translateGraphRefDefSpec, op.destination),
         op.silent,
       );
     }
     if (F.isUpdateOperationCopy(op)) {
-      return factory.createCopy(
+      return AF.createCopy(
         SUBRULE(translateGraphRefDefSpec, op.source),
         SUBRULE(translateGraphRefDefSpec, op.destination),
         op.silent,
       );
     }
     if (F.isUpdateOperationMove(op)) {
-      return factory.createMove(
+      return AF.createMove(
         SUBRULE(translateGraphRefDefSpec, op.source),
         SUBRULE(translateGraphRefDefSpec, op.destination),
         op.silent,
@@ -88,7 +88,7 @@ Algebra.Update,
 [UpdateOperationInsertData | UpdateOperationDeleteData | UpdateOperationDeleteWhere | UpdateOperationModify]
 > = {
   name: 'translateInsertDelete',
-  fun: ({ SUBRULE }) => ({ useQuads, factory, astFactory: F }, op) => {
+  fun: ({ SUBRULE }) => ({ useQuads, algebraFactory: AF, astFactory: F }, op) => {
     if (!useQuads) {
       throw new Error('INSERT/DELETE operations are only supported with quads option enabled');
     }
@@ -99,7 +99,7 @@ Algebra.Update,
     if (F.isUpdateOperationDeleteData(op) || F.isUpdateOperationDeleteWhere(op)) {
       deleteTriples.push(...op.data.flatMap(quad => SUBRULE(translateUpdateTriplesBlock, quad, undefined)));
       if (F.isUpdateOperationDeleteWhere(op)) {
-        where = factory.createBgp(deleteTriples);
+        where = AF.createBgp(deleteTriples);
       }
     } else if (F.isUpdateOperationInsertData(op)) {
       insertTriples.push(...op.data.flatMap(quad => SUBRULE(translateUpdateTriplesBlock, quad, undefined)));
@@ -112,7 +112,7 @@ Algebra.Update,
         where = SUBRULE(translateGraphPattern, op.where);
         const use: { default: RDF.NamedNode[]; named: RDF.NamedNode[] } = SUBRULE(translateDatasetClause, op.from);
         if (use.default.length > 0 || use.named.length > 0) {
-          where = factory.createFrom(where, use.default, use.named);
+          where = AF.createFrom(where, use.default, use.named);
         } else if (F.isUpdateOperationModify(op) && op.graph) {
           // This is equivalent
           where = SUBRULE(recurseGraph, where, SUBRULE(translateNamed, op.graph), undefined);
@@ -120,7 +120,7 @@ Algebra.Update,
       }
     }
 
-    return factory.createDeleteInsert(
+    return AF.createDeleteInsert(
       deleteTriples.length > 0 ? deleteTriples : undefined,
       insertTriples.length > 0 ? insertTriples : undefined,
       where,
@@ -180,7 +180,7 @@ AlgebraIndir<'translateGraphRef', 'DEFAULT' | 'NAMED' | 'ALL' | RDF.NamedNode, [
 
 export const translateUpdateGraphLoad: AlgebraIndir<'translateUpdateGraphLoad', Algebra.Load, [UpdateOperationLoad]> = {
   name: 'translateUpdateGraphLoad',
-  fun: ({ SUBRULE }) => ({ factory }, op) => factory.createLoad(
+  fun: ({ SUBRULE }) => ({ algebraFactory: AF }, op) => AF.createLoad(
     SUBRULE(translateNamed, op.source),
     op.destination ? SUBRULE(translateNamed, op.destination.graph) : undefined,
     op.silent,

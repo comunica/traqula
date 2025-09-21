@@ -27,19 +27,18 @@ AlgebraIndir<'translatePath', (Algebra.Path | Algebra.Pattern)[], [FlattenedTrip
 export const translatePathPredicate:
 AlgebraIndir<'translatePathPredicate', Algebra.PropertyPathSymbol, [RDF.NamedNode | Path]> = {
   name: 'translatePathPredicate',
-  fun: ({ SUBRULE }) => (c, predicate) => {
-    const F = c.astFactory;
+  fun: ({ SUBRULE }) => ({ astFactory: F, algebraFactory: AF }, predicate) => {
     if (F.isTerm(predicate)) {
       return SUBRULE(translatePathPredicate, SUBRULE(translateNamed, predicate));
     }
     // Iri -> link(iri)
     if (isTerm(predicate)) {
-      return c.factory.createLink(predicate);
+      return AF.createLink(predicate);
     }
 
     // ^path -> inv(path)
     if (predicate.subType === '^') {
-      return c.factory.createInv(SUBRULE(translatePathPredicate, predicate.items[0]));
+      return AF.createInv(SUBRULE(translatePathPredicate, predicate.items[0]));
     }
 
     if (predicate.subType === '!') {
@@ -66,8 +65,8 @@ AlgebraIndir<'translatePathPredicate', Algebra.PropertyPathSymbol, [RDF.NamedNod
       }
 
       // NPS elements do not have the LINK function
-      const normalElement = c.factory.createNps(normals.map(x => SUBRULE(translateNamed, x)));
-      const invertedElement = c.factory.createInv(c.factory.createNps(inverted.map(x => SUBRULE(translateNamed, x))));
+      const normalElement = AF.createNps(normals.map(x => SUBRULE(translateNamed, x)));
+      const invertedElement = AF.createInv(AF.createNps(inverted.map(x => SUBRULE(translateNamed, x))));
 
       // !(:iri1|...|:irin) -> NPS({:iri1 ... :irin})
       if (inverted.length === 0) {
@@ -78,28 +77,28 @@ AlgebraIndir<'translatePathPredicate', Algebra.PropertyPathSymbol, [RDF.NamedNod
         return invertedElement;
       }
       // !(:iri1|...|:irii|^:irii+1|...|^:irim -> alt(NPS({:iri1 ...:irii}), inv(NPS({:irii+1, ..., :irim})) )
-      return c.factory.createAlt([ normalElement, invertedElement ]);
+      return AF.createAlt([ normalElement, invertedElement ]);
     }
 
     // Path1 / path -> seq(path1, path2)
     if (predicate.subType === '/') {
-      return c.factory.createSeq(predicate.items.map(item => SUBRULE(translatePathPredicate, <PathPure> item)));
+      return AF.createSeq(predicate.items.map(item => SUBRULE(translatePathPredicate, <PathPure> item)));
     }
     // Path1 | path2 -> alt(path1, path2)
     if (predicate.subType === '|') {
-      return c.factory.createAlt(predicate.items.map(item => SUBRULE(translatePathPredicate, <PathPure> item)));
+      return AF.createAlt(predicate.items.map(item => SUBRULE(translatePathPredicate, <PathPure> item)));
     }
     // Path* -> ZeroOrMorePath(path)
     if (predicate.subType === '*') {
-      return c.factory.createZeroOrMorePath(SUBRULE(translatePathPredicate, <PathPure> predicate.items[0]));
+      return AF.createZeroOrMorePath(SUBRULE(translatePathPredicate, <PathPure> predicate.items[0]));
     }
     // Path+ -> OneOrMorePath(path)
     if (predicate.subType === '+') {
-      return c.factory.createOneOrMorePath(SUBRULE(translatePathPredicate, <PathPure> predicate.items[0]));
+      return AF.createOneOrMorePath(SUBRULE(translatePathPredicate, <PathPure> predicate.items[0]));
     }
     // Path? -> ZeroOrOnePath(path)
     if (predicate.subType === '?') {
-      return c.factory.createZeroOrOnePath(SUBRULE(translatePathPredicate, <PathPure> predicate.items[0]));
+      return AF.createZeroOrOnePath(SUBRULE(translatePathPredicate, <PathPure> predicate.items[0]));
     }
 
     throw new Error(`Unable to translate path expression ${JSON.stringify(predicate)}`);
@@ -112,10 +111,10 @@ AlgebraIndir<'translatePathPredicate', Algebra.PropertyPathSymbol, [RDF.NamedNod
 export const simplifyPath:
 AlgebraIndir<'simplifyPath', (Algebra.Pattern | Algebra.Path)[], [RDF.Term, Algebra.PropertyPathSymbol, RDF.Term]> = {
   name: 'simplifyPath',
-  fun: ({ SUBRULE }) => (c, subject, predicate, object) => {
+  fun: ({ SUBRULE }) => ({ algebraFactory: AF }, subject, predicate, object) => {
     // X link(iri) Y -> X iri Y
     if (predicate.type === types.LINK) {
-      return [ c.factory.createPattern(subject, predicate.iri, object) ];
+      return [ AF.createPattern(subject, predicate.iri, object) ];
     }
 
     // X inv(iri) Y -> Y iri X
@@ -137,6 +136,6 @@ AlgebraIndir<'simplifyPath', (Algebra.Pattern | Algebra.Path)[], [RDF.Term, Alge
     }
 
     // X P Y -> Path(X, P, Y)
-    return [ c.factory.createPath(subject, predicate, object) ];
+    return [ AF.createPath(subject, predicate, object) ];
   },
 };

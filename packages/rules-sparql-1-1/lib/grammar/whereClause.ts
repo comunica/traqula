@@ -1,25 +1,26 @@
 import type { RuleDefReturn, Wrap } from '@traqula/core';
+import { traqulaIndentation } from '@traqula/core';
 import * as l from '../lexer/index.js';
 import type { SparqlGeneratorRule, SparqlGrammarRule, SparqlRule } from '../sparql11HelperTypes.js';
 import type {
   Expression,
   ExpressionFunctionCall,
-  PatternFilter,
   Pattern,
+  PatternBgp,
+  PatternBind,
+  PatternFilter,
+  PatternGraph,
   PatternGroup,
-  PatternUnion,
   PatternMinus,
+  PatternOptional,
+  PatternService,
+  PatternUnion,
+  PatternValues,
+  SubSelect,
   TermIri,
   TermLiteral,
-  PatternBind,
-  PatternService,
-  PatternOptional,
-  PatternGraph,
-  PatternValues,
-  ValuePatternRow,
   TermVariable,
-  SubSelect,
-  PatternBgp,
+  ValuePatternRow,
 } from '../Sparql11types.js';
 import { checkNote13 } from '../validation/validators.js';
 import { builtInCall } from './builtIn.js';
@@ -37,9 +38,9 @@ export const whereClause: SparqlRule<'whereClause', Wrap<PatternGroup>> = <const
   impl: ({ ACTION, SUBRULE, CONSUME, OPTION }) => (C) => {
     const where = OPTION(() => CONSUME(l.where));
     const group = SUBRULE(groupGraphPattern);
-    return ACTION(() => C.factory.wrap(group, C.factory.sourceLocation(where, group)));
+    return ACTION(() => C.astFactory.wrap(group, C.astFactory.sourceLocation(where, group)));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => PRINT_WORD('WHERE'));
     SUBRULE(groupGraphPattern, ast.val);
   },
@@ -58,22 +59,29 @@ export const groupGraphPattern: SparqlRule<'groupGraphPattern', PatternGroup> = 
     ]);
     const close = CONSUME(l.symbols.RCurly);
 
-    return ACTION(() => C.factory.patternGroup(patterns, C.factory.sourceLocation(open, close)));
+    return ACTION(() => C.astFactory.patternGroup(patterns, C.astFactory.sourceLocation(open, close)));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
-    F.printFilter(ast, () => PRINT_WORD('{'));
+  gImpl: ({ SUBRULE, PRINT_WORD, PRINT_ON_EMPTY }) => (ast, C) => {
+    const { astFactory: F, indentInc } = C;
+    F.printFilter(ast, () => {
+      C[traqulaIndentation] += indentInc;
+      PRINT_WORD('{\n');
+    });
 
     for (const pattern of ast.patterns) {
       SUBRULE(generatePattern, pattern);
     }
 
-    F.printFilter(ast, () => PRINT_WORD('}'));
+    F.printFilter(ast, () => {
+      C[traqulaIndentation] -= indentInc;
+      PRINT_ON_EMPTY('}\n');
+    });
   },
 };
 
 export const generatePattern: SparqlGeneratorRule<'generatePattern', Pattern> = {
   name: 'generatePattern',
-  gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE }) => (ast, { astFactory: F }) => {
     if (ast.type === 'query') {
       SUBRULE(query, F.querySelect({
         context: [],
@@ -181,9 +189,9 @@ export const optionalGraphPattern: SparqlRule<'optionalGraphPattern', PatternOpt
     const optional = CONSUME(l.optional);
     const group = SUBRULE(groupGraphPattern);
 
-    return ACTION(() => C.factory.patternOptional(group.patterns, C.factory.sourceLocation(optional, group)));
+    return ACTION(() => C.astFactory.patternOptional(group.patterns, C.astFactory.sourceLocation(optional, group)));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => PRINT_WORD('OPTIONAL'));
     SUBRULE(groupGraphPattern, F.patternGroup(ast.patterns, ast.loc));
   },
@@ -199,9 +207,9 @@ export const graphGraphPattern: SparqlRule<'graphGraphPattern', PatternGraph> = 
     const name = SUBRULE(varOrIri);
     const group = SUBRULE(groupGraphPattern);
 
-    return ACTION(() => C.factory.patternGraph(name, group.patterns, C.factory.sourceLocation(graph, group)));
+    return ACTION(() => C.astFactory.patternGraph(name, group.patterns, C.astFactory.sourceLocation(graph, group)));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => PRINT_WORD('GRAPH'));
     SUBRULE(varOrTerm, ast.name);
     SUBRULE(groupGraphPattern, F.patternGroup(ast.patterns, ast.loc));
@@ -223,9 +231,9 @@ export const serviceGraphPattern: SparqlRule<'serviceGraphPattern', PatternServi
     const group = SUBRULE1(groupGraphPattern);
 
     return ACTION(() =>
-      C.factory.patternService(name, group.patterns, silent, C.factory.sourceLocation(service, group)));
+      C.astFactory.patternService(name, group.patterns, silent, C.astFactory.sourceLocation(service, group)));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => {
       PRINT_WORD('SERVICE');
       if (ast.silent) {
@@ -250,14 +258,14 @@ export const bind: SparqlRule<'bind', PatternBind> = <const> {
     const variable = SUBRULE(var_);
     const close = CONSUME(l.symbols.RParen);
 
-    return ACTION(() => C.factory.patternBind(expressionVal, variable, C.factory.sourceLocation(bind, close)));
+    return ACTION(() => C.astFactory.patternBind(expressionVal, variable, C.astFactory.sourceLocation(bind, close)));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => PRINT_WORD('BIND', '('));
     SUBRULE(expression, ast.expression);
     F.printFilter(ast, () => PRINT_WORD('AS'));
     SUBRULE(var_, ast.variable);
-    F.printFilter(ast, () => PRINT_WORD(')'));
+    F.printFilter(ast, () => PRINT_WORD(')\n'));
   },
 };
 
@@ -270,16 +278,19 @@ export const inlineData: SparqlRule<'inlineData', PatternValues> = <const> {
     const values = CONSUME(l.values);
     const datablock = SUBRULE(dataBlock);
 
-    return ACTION(() => C.factory.patternValues(datablock.val, C.factory.sourceLocation(values, datablock)));
+    return ACTION(() => C.astFactory.patternValues(datablock.val, C.astFactory.sourceLocation(values, datablock)));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD, PRINT_ON_EMPTY }) => (ast, C) => {
+    const { astFactory: F, indentInc } = C;
     const variables = Object.keys(ast.values.at(0) ?? {});
     F.printFilter(ast, () => {
+      PRINT_ON_EMPTY('');
       PRINT_WORD('VALUES', '(');
       for (const variable of variables) {
         PRINT_WORD(`?${variable}`);
       }
-      PRINT_WORD(')', '{');
+      C[traqulaIndentation] += indentInc;
+      PRINT_WORD(')', '{\n');
     });
 
     for (const mapping of ast.values) {
@@ -291,9 +302,12 @@ export const inlineData: SparqlRule<'inlineData', PatternValues> = <const> {
           SUBRULE(graphNodePath, mapping[variable]);
         }
       }
-      F.printFilter(ast, () => PRINT_WORD(')'));
+      F.printFilter(ast, () => PRINT_WORD(')\n'));
     }
-    F.printFilter(ast, () => PRINT_WORD('}'));
+    F.printFilter(ast, () => {
+      C[traqulaIndentation] -= indentInc;
+      PRINT_ON_EMPTY('}\n');
+    });
   },
 };
 
@@ -325,7 +339,7 @@ export const inlineDataOneVar: SparqlGrammarRule<'inlineDataOneVar', Wrap<ValueP
     });
     const close = CONSUME(l.symbols.RCurly);
 
-    return ACTION(() => C.factory.wrap(res, C.factory.sourceLocation(varVal, close)));
+    return ACTION(() => C.astFactory.wrap(res, C.astFactory.sourceLocation(varVal, close)));
   },
 };
 
@@ -358,7 +372,7 @@ export const inlineDataFull: SparqlGrammarRule<'inlineDataFull', Wrap<ValuePatte
         });
         const close = CONSUME1(l.symbols.RCurly);
 
-        return ACTION(() => C.factory.wrap(res, C.factory.sourceLocation(nil, close)));
+        return ACTION(() => C.astFactory.wrap(res, C.astFactory.sourceLocation(nil, close)));
       } },
       { ALT: () => {
         const open = CONSUME1(l.symbols.LParen);
@@ -390,7 +404,7 @@ export const inlineDataFull: SparqlGrammarRule<'inlineDataFull', Wrap<ValuePatte
           });
         });
         const close = CONSUME2(l.symbols.RCurly);
-        return ACTION(() => C.factory.wrap(res, C.factory.sourceLocation(open, close)));
+        return ACTION(() => C.astFactory.wrap(res, C.astFactory.sourceLocation(open, close)));
       } },
     ]);
   },
@@ -423,9 +437,9 @@ export const minusGraphPattern: SparqlRule<'minusGraphPattern', PatternMinus> = 
     const minus = CONSUME(l.minus);
     const group = SUBRULE(groupGraphPattern);
 
-    return ACTION(() => C.factory.patternMinus(group.patterns, C.factory.sourceLocation(minus, group)));
+    return ACTION(() => C.astFactory.patternMinus(group.patterns, C.astFactory.sourceLocation(minus, group)));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => PRINT_WORD('MINUS'));
     SUBRULE(groupGraphPattern, F.patternGroup(ast.patterns, ast.loc));
   },
@@ -450,12 +464,12 @@ export const groupOrUnionGraphPattern: SparqlRule<'groupOrUnionGraphPattern', Pa
 
       return ACTION(() => groups.length === 1 ?
         groups[0] :
-        C.factory.patternUnion(
+        C.astFactory.patternUnion(
           groups,
-          C.factory.sourceLocation(group, groups.at(-1)),
+          C.astFactory.sourceLocation(group, groups.at(-1)),
         ));
     },
-    gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+    gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
       if (F.isPatternUnion(ast)) {
         const [ head, ...tail ] = ast.patterns;
         SUBRULE(groupGraphPattern, head);
@@ -478,12 +492,12 @@ export const filter: SparqlRule<'filter', PatternFilter> = <const> {
     const filterToken = CONSUME(l.filter);
     const expression = SUBRULE(constraint);
 
-    return ACTION(() => C.factory.patternFilter(expression, C.factory.sourceLocation(filterToken, expression)));
+    return ACTION(() => C.astFactory.patternFilter(expression, C.astFactory.sourceLocation(filterToken, expression)));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => PRINT_WORD('FILTER ('));
     SUBRULE(expression, ast.expression);
-    F.printFilter(ast, () => PRINT_WORD(')'));
+    F.printFilter(ast, () => PRINT_WORD(')\n'));
   },
 };
 
@@ -507,11 +521,11 @@ export const functionCall: SparqlGrammarRule<'functionCall', ExpressionFunctionC
   impl: ({ ACTION, SUBRULE }) => (C) => {
     const func = SUBRULE(iri);
     const args = SUBRULE(argList);
-    return ACTION(() => C.factory.expressionFunctionCall(
+    return ACTION(() => C.astFactory.expressionFunctionCall(
       func,
       args.val.args,
       args.val.distinct,
-      C.factory.sourceLocation(func, args),
+      C.astFactory.sourceLocation(func, args),
     ));
   },
 };

@@ -22,7 +22,7 @@ unknown,
 [Algebra.Operation | Algebra.Operation[], (RDF.NamedNode | RDF.DefaultGraph)[]]
 > = {
   name: 'removeQuadsRecursive',
-  fun: ({ SUBRULE }) => ({ factory }, op, graphs) => {
+  fun: ({ SUBRULE }) => ({ algebraFactory: AF }, op, graphs) => {
     if (Array.isArray(op)) {
       return op.map(sub => SUBRULE(removeAlgQuadsRecursive, sub, graphs));
     }
@@ -44,8 +44,8 @@ unknown,
       // Remove non-default graphs
       if (graph.value !== '') {
         return op.type === types.PATTERN ?
-          factory.createPattern(op.subject, op.predicate, op.object) :
-          factory.createPath(op.subject, op.predicate, op.object);
+          AF.createPattern(op.subject, op.predicate, op.object) :
+          AF.createPath(op.subject, op.predicate, op.object);
       }
       return op;
     }
@@ -88,9 +88,9 @@ unknown,
               // If DefaultGraph, do nothing, else wrap in plainly in Graph
               keyGraphs[key][idx].termType === 'DefaultGraph' ?
                 child :
-                factory.createGraph(child, keyGraphs[key][idx]));
+                AF.createGraph(child, keyGraphs[key][idx]));
           } else if (keyGraphs[key][0].termType !== 'DefaultGraph') {
-            result[key] = factory.createGraph(value, keyGraphs[key][0]);
+            result[key] = AF.createGraph(value, keyGraphs[key][0]);
           }
         }
       }
@@ -112,7 +112,7 @@ Algebra.Join | Algebra.Graph | Algebra.Bgp,
 [Algebra.Bgp, (RDF.NamedNode | RDF.DefaultGraph)[]]
 > = {
   name: 'splitBgpToGraphs',
-  fun: () => ({ factory }, op, graphs) => {
+  fun: () => ({ algebraFactory: AF }, op, graphs) => {
     // Split patterns per graph
     const graphPatterns: Record<string, { patterns: Algebra.Pattern[]; graph: RDF.NamedNode }> = {};
     for (const [ index, pattern ] of op.patterns.entries()) {
@@ -124,15 +124,15 @@ Algebra.Join | Algebra.Graph | Algebra.Bgp,
     // Create graph objects for every cluster
     const children: (Algebra.Graph | Algebra.Bgp)[] = [];
     for (const [ graphName, { patterns, graph }] of Object.entries(graphPatterns)) {
-      const bgp = factory.createBgp(patterns);
+      const bgp = AF.createBgp(patterns);
       // No name means DefaultGraph, otherwise wrap in graph
-      children.push(graphName === '' ? bgp : factory.createGraph(bgp, graph));
+      children.push(graphName === '' ? bgp : AF.createGraph(bgp, graph));
     }
 
     // Join the graph objects
     let join: Algebra.Join | Algebra.Graph | Algebra.Bgp = children[0];
     for (const child of children.slice(1)) {
-      join = factory.createJoin([ join, child ]);
+      join = AF.createJoin([ join, child ]);
     }
 
     return join;

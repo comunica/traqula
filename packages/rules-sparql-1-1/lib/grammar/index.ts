@@ -42,7 +42,7 @@ export const queryOrUpdate: SparqlRule<'queryOrUpdate', SparqlQuery> = {
           ...subType,
           type: 'query',
           ...(values && { values }),
-          loc: C.factory.sourceLocation(
+          loc: C.astFactory.sourceLocation(
             prologueValues.at(0),
             subType,
             values,
@@ -72,7 +72,7 @@ export const queryOrUpdate: SparqlRule<'queryOrUpdate', SparqlQuery> = {
           const update = {
             type: 'update',
             updates,
-            loc: C.factory.sourceLocation(
+            loc: C.astFactory.sourceLocation(
               ...updates[0].context,
               updates[0].operation,
               ...updates.at(-1)!.context,
@@ -85,7 +85,7 @@ export const queryOrUpdate: SparqlRule<'queryOrUpdate', SparqlQuery> = {
       } },
     ]);
   },
-  gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE }) => (ast, { astFactory: F }) => {
     if (F.isQuery(ast)) {
       SUBRULE(query, ast);
     } else {

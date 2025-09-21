@@ -40,10 +40,18 @@ describe('a SPARQL 1.2 generator', () => {
 
     it('translates blanknodes -> variables', ({ expect }) => {
       const query = `
+
 BASE <ex:>
 CONSTRUCT { 
-  ?s0 ?p0 [ <a0> [ <b0> <c0> ] ].
-  [ <a0> [ <b0> <c0> ] ] ?p0 ?o0.
+  ?s0 ?p0 _:g_0 .
+_:g_0 <a0> _:g_1 .
+_:g_1 <b0><c0> .
+[
+  <a0> [
+    <b0> <c0> ;    
+  ] ;  
+] ?p0 ?o0 .
+
 }
 WHERE {
   ?s1 ?p1 [], <a1>; ?q1 <b1>, <c1>.
@@ -114,18 +122,53 @@ WHERE {
 
       const result = generator.generate(flattenCollections, { origSource: query });
       expect(result).toBe(`
+
 BASE <ex:>
 CONSTRUCT { 
-  ?s0 ?p0 _:g_0 . _:g_0 <a0> _:g_1 . _:g_1 <b0><c0> . [<a0>[<b0><c0> ; ] ; ] ?p0 ?o0 .
+  ?s0 ?p0 _:g_0 .
+_:g_0 <a0> _:g_1 .
+_:g_1 <b0> <c0> .
+[
+  <a0> [
+    <b0> <c0> ;    
+  ] ;  
+] ?p0 ?o0 .
+
+
 }
 WHERE {
-  ?s1 ?p1 _:g_4 . ?s1 ?p1 <a1> . ?s1 ?q1 <b1> . ?s1 ?q1 <c1> . _:g_5 ?p2 ?o2 . ?s3 ?p3 _:g_6 . _:g_6 <a3><b3> . ?s4 ?p4 _:g_7 . _:g_7 <a4><b4> . _:g_7 <c4><d4> . _:g_7 <c4><e4> . ?s5 ?p5 _:g_8 . _:g_8 <a5> _:g_9 . _:g_9 <b5><c5> . [<a6>[<b6><c6> ; ] ; ] ?p6 ?o6 . _:g_12 <a7><b7> . _:g_12 <c7><d7> . _:g_12 <c7><e7> .
+  ?s1 ?p1 _:g_2 .
+?s1 ?p1 <a1> .
+?s1 ?q1 <b1> .
+?s1 ?q1 <c1> .
+_:g_3 ?p2 ?o2 .
+?s3 ?p3 _:g_4 .
+_:g_4 <a3> <b3> .
+?s4 ?p4 _:g_5 .
+_:g_5 <a4> <b4> .
+_:g_5 <c4> <d4> .
+_:g_5 <c4> <e4> .
+?s5 ?p5 _:g_6 .
+_:g_6 <a5> _:g_7 .
+_:g_7 <b5> <c5> .
+[
+  <a6> [
+    <b6> <c6> ;    
+  ] ;  
+] ?p6 ?o6 .
+_:g_10 <a7> <b7> .
+_:g_10 <c7> <d7> .
+_:g_10 <c7> <e7> .
+
 }`);
     });
   });
 
   it ('generates hand constructed query', ({ expect }) => {
-    const query = 'SELECT * WHERE { ?s ?p ?o . }';
+    const query = `
+SELECT * WHERE {
+  ?s ?p ?o .  
+}`;
     const ast = F.querySelect({
       variables: [ F.wildcard(F.gen()) ],
       datasets: F.datasetClauses([], F.sourceLocation()),
@@ -138,6 +181,6 @@ WHERE {
       solutionModifiers: {},
     }, F.gen());
     const result = generator.generate(ast);
-    expect(result).toBe(query);
+    expect(result.trim()).toBe(query.trim());
   });
 });

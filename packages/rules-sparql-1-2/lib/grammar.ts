@@ -5,6 +5,7 @@
  * It is therefore essential that the parser retypes the rules from the core grammar.
  */
 import type { RuleDefReturn, Wrap } from '@traqula/core';
+import { traqulaIndentation } from '@traqula/core';
 import { CommonIRIs, funcExpr1, funcExpr3, gram as S11, lex as l11 } from '@traqula/rules-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import * as l12 from './lexer.js';
@@ -38,11 +39,11 @@ export const versionDecl: SparqlRule<'versionDecl', ContextDefinitionVersion> = 
     const versionToken = CONSUME(l12.version);
     const identifier = SUBRULE(versionSpecifier);
     return ACTION(() =>
-      C.factory.contextDefinitionVersion(identifier.val, C.factory.sourceLocation(versionToken, identifier)));
+      C.astFactory.contextDefinitionVersion(identifier.val, C.astFactory.sourceLocation(versionToken, identifier)));
   },
-  gImpl: ({ PRINT_WORDS }) => (ast, { factory: F }) => {
+  gImpl: ({ PRINT_WORDS }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => {
-      PRINT_WORDS('VERSION', `${S11.stringEscapedLexical(ast.version)}`);
+      PRINT_WORDS('VERSION', `${S11.stringEscapedLexical(ast.version)}`, '\n');
     });
   },
 };
@@ -57,7 +58,7 @@ export const versionSpecifier: SparqlGrammarRule<'versionSpecifier', Wrap<string
       { ALT: () => CONSUME(l11.terminals.stringLiteral1) },
       { ALT: () => CONSUME(l11.terminals.stringLiteral2) },
     ]);
-    return ACTION(() => C.factory.wrap(token.image.slice(1, -1), C.factory.sourceLocation(token)));
+    return ACTION(() => C.astFactory.wrap(token.image.slice(1, -1), C.astFactory.sourceLocation(token)));
   },
 };
 
@@ -78,7 +79,7 @@ export const prologue: SparqlRule<'prologue', ContextDefinition[]> = {
     ]));
     return result;
   },
-  gImpl: ({ SUBRULE }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE }) => (ast, { astFactory: F }) => {
     for (const context of ast) {
       if (F.isContextDefinitionBase(context)) {
         SUBRULE(S11.baseDecl, context);
@@ -99,7 +100,7 @@ SparqlGrammarRule<T, T11.BasicGraphPattern> {
       const triple = SUBRULE(reifiedTriple);
       const properties = SUBRULE(
         allowPath ? S11.propertyListPath : S11.propertyList,
-        ACTION(() => C.factory.dematerialized(triple.identifier)),
+        ACTION(() => C.astFactory.dematerialized(triple.identifier)),
       );
 
       return ACTION(() => <T11.BasicGraphPattern> [ triple, ...properties ]);
@@ -140,9 +141,9 @@ export const reifier: SparqlGrammarRule<'reifier', Wrap<RuleDefReturn<typeof var
       if (reifier === undefined && !C.parseMode.has('canCreateBlankNodes')) {
         throw new Error('Cannot create blanknodes in current parse mode');
       }
-      return C.factory.wrap(
-        reifier ?? C.factory.blankNode(undefined, C.factory.sourceLocation()),
-        C.factory.sourceLocation(tildeToken, reifier),
+      return C.astFactory.wrap(
+        reifier ?? C.astFactory.blankNode(undefined, C.astFactory.sourceLocation()),
+        C.astFactory.sourceLocation(tildeToken, reifier),
       );
     });
   },
@@ -193,7 +194,7 @@ SparqlGrammarRule<T, TripleNesting, [TripleNesting['subject'], TripleNesting['pr
       const annotationVal = SUBRULE(allowPaths ? annotationPath : annotation);
 
       return ACTION(() => {
-        const F = C.factory;
+        const F = C.astFactory;
         if (F.isPathPure(predicate) && annotationVal.length > 0) {
           throw new Error('Note 17 violation');
         }
@@ -237,7 +238,7 @@ function annotationImpl<T extends string>(name: T, allowPaths: boolean): SparqlR
               if (!currentReifier && !C.parseMode.has('canCreateBlankNodes')) {
                 throw new Error('Cannot create blanknodes in current parse mode');
               }
-              currentReifier = currentReifier ?? C.factory.blankNode(undefined, C.factory.sourceLocation());
+              currentReifier = currentReifier ?? C.astFactory.blankNode(undefined, C.astFactory.sourceLocation());
             });
             const block = SUBRULE(
               allowPaths ? annotationBlockPath : annotationBlock,
@@ -252,7 +253,7 @@ function annotationImpl<T extends string>(name: T, allowPaths: boolean): SparqlR
       });
       return annotations;
     },
-    gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+    gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
       for (const annotation of ast) {
         if (F.isTripleCollectionBlankNodeProperties(annotation)) {
           SUBRULE(annotationBlockPath, annotation);
@@ -286,15 +287,23 @@ function annotationBlockImpl<T extends string>(name: T, allowPaths: boolean):
       );
       const close = CONSUME(l12.annotationClose);
 
-      return ACTION(() => C.factory.tripleCollectionBlankNodeProperties(
+      return ACTION(() => C.astFactory.tripleCollectionBlankNodeProperties(
         arg,
         res,
-        C.factory.sourceLocation(open, close),
+        C.astFactory.sourceLocation(open, close),
       ));
     },
-    gImpl: ({ SUBRULE, PRINT_WORD, HANDLE_LOC }) => (ast, { factory: F }) => {
-      F.printFilter(ast, () => PRINT_WORD('{|'));
-      for (const triple of ast.triples) {
+    gImpl: ({ SUBRULE, PRINT_WORD, HANDLE_LOC, PRINT_ON_EMPTY }) => (ast, C) => {
+      const { astFactory: F, indentInc } = C;
+      F.printFilter(ast, () => {
+        PRINT_WORD('{|');
+        if (ast.triples.length > 1) {
+          C[traqulaIndentation] += indentInc;
+          PRINT_WORD('\n');
+        }
+      });
+
+      function printTriple(triple: TripleNesting): void {
         HANDLE_LOC(triple, () => {
           if (F.isTerm(triple.predicate)) {
             SUBRULE(graphNodePath, triple.predicate);
@@ -302,11 +311,23 @@ function annotationBlockImpl<T extends string>(name: T, allowPaths: boolean):
             SUBRULE(S11.pathGenerator, triple.predicate, undefined);
           }
           SUBRULE(graphNodePath, triple.object);
-
-          F.printFilter(ast, () => PRINT_WORD(';'));
         });
       }
-      F.printFilter(ast, () => PRINT_WORD('|}'));
+
+      const [ head, ...tail ] = ast.triples;
+      printTriple(head);
+      for (const triple of tail) {
+        F.printFilter(ast, () => PRINT_WORD(';\n'));
+        printTriple(triple);
+      }
+
+      F.printFilter(ast, () => {
+        if (ast.triples.length > 1) {
+          PRINT_ON_EMPTY('|}\n');
+        } else {
+          PRINT_WORD('|}');
+        }
+      });
     },
   };
 }
@@ -341,7 +362,7 @@ export const graphNodePath: SparqlRule<'graphNodePath', GraphNode> = <const> {
     { ALT: () => $.SUBRULE(reifiedTriple) },
   ]),
   gImpl: $ => (ast, C) => {
-    if (C.factory.isTripleCollectionReifiedTriple(ast)) {
+    if (C.astFactory.isTripleCollectionReifiedTriple(ast)) {
       $.SUBRULE(reifiedTriple, ast);
     } else {
       S11.graphNodePath.gImpl($)(<T11.Term | T11.TripleCollection> ast, C);
@@ -364,7 +385,7 @@ export const varOrTerm: SparqlGrammarRule<'varOrTerm', Term> = <const> {
     { ALT: () => SUBRULE(S11.blankNode) },
     { ALT: () => {
       const token = CONSUME(l11.terminals.nil);
-      return ACTION(() => C.factory.namedNode(C.factory.sourceLocation(token), CommonIRIs.NIL));
+      return ACTION(() => C.astFactory.namedNode(C.astFactory.sourceLocation(token), CommonIRIs.NIL));
     } },
     { ALT: () => SUBRULE(tripleTerm) },
   ]),
@@ -389,8 +410,8 @@ export const reifiedTriple: SparqlRule<'reifiedTriple', TripleCollectionReifiedT
       if (reifierVal === undefined && !C.parseMode.has('canCreateBlankNodes')) {
         throw new Error('Cannot create blanknodes in current parse mode');
       }
-      return C.factory.tripleCollectionReifiedTriple(
-        C.factory.sourceLocation(open, close),
+      return C.astFactory.tripleCollectionReifiedTriple(
+        C.astFactory.sourceLocation(open, close),
         subject,
         predicate,
         object,
@@ -398,7 +419,7 @@ export const reifiedTriple: SparqlRule<'reifiedTriple', TripleCollectionReifiedT
       );
     });
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => PRINT_WORD('<<'));
     const triple = ast.triples[0];
     SUBRULE(graphNodePath, triple.subject);
@@ -452,9 +473,9 @@ export const tripleTerm: SparqlRule<'tripleTerm', TermTriple> = <const> {
     const predicate = SUBRULE(S11.verb);
     const object = SUBRULE(tripleTermObject);
     const close = CONSUME(l12.tripleTermClose);
-    return ACTION(() => C.factory.termTriple(subject, predicate, object, C.factory.sourceLocation(open, close)));
+    return ACTION(() => C.astFactory.termTriple(subject, predicate, object, C.astFactory.sourceLocation(open, close)));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => PRINT_WORD('<<('));
     SUBRULE(graphNodePath, ast.subject);
     SUBRULE(graphNodePath, ast.predicate);
@@ -501,13 +522,13 @@ export const tripleTermData: SparqlGrammarRule<'tripleTermData', TermTriple> = <
       { ALT: () => SUBRULE(S11.iri) },
       { ALT: () => {
         const token = CONSUME(l11.a);
-        return ACTION(() => C.factory.namedNode(C.factory.sourceLocation(token), CommonIRIs.TYPE));
+        return ACTION(() => C.astFactory.namedNode(C.astFactory.sourceLocation(token), CommonIRIs.TYPE));
       } },
     ]);
     const object = SUBRULE(tripleTermDataObject);
     const close = CONSUME(l12.tripleTermClose);
 
-    return ACTION(() => C.factory.termTriple(subject, predicate, object, C.factory.sourceLocation(open, close)));
+    return ACTION(() => C.astFactory.termTriple(subject, predicate, object, C.astFactory.sourceLocation(open, close)));
   },
 };
 
@@ -559,11 +580,11 @@ export const exprTripleTerm: SparqlGrammarRule<'exprTripleTerm', TermTriple> = <
     const object = SUBRULE(exprTripleTermObject);
     const close = CONSUME(l12.tripleTermClose);
 
-    return ACTION(() => C.factory.termTriple(
+    return ACTION(() => C.astFactory.termTriple(
       subject,
       predicate,
       object,
-      C.factory.sourceLocation(open, close),
+      C.astFactory.sourceLocation(open, close),
     ));
   },
 };
@@ -637,8 +658,8 @@ export const rdfLiteral: SparqlGrammarRule<'rdfLiteral', RuleDefReturn<typeof S1
       { ALT: () => {
         const langTag = CONSUME(l12.LANG_DIR);
         return ACTION(() => {
-          const literal = C.factory.literalTerm(
-            C.factory.sourceLocation(value, langTag),
+          const literal = C.astFactory.literalTerm(
+            C.astFactory.sourceLocation(value, langTag),
             value.value,
             langTag.image.slice(1).toLowerCase(),
           );
@@ -649,8 +670,8 @@ export const rdfLiteral: SparqlGrammarRule<'rdfLiteral', RuleDefReturn<typeof S1
       { ALT: () => {
         CONSUME(l11.symbols.hathat);
         const iriVal = SUBRULE(S11.iri);
-        return ACTION(() => C.factory.literalTerm(
-          C.factory.sourceLocation(value, iriVal),
+        return ACTION(() => C.astFactory.literalTerm(
+          C.astFactory.sourceLocation(value, iriVal),
           value.value,
           iriVal,
         ));
@@ -666,10 +687,10 @@ export const unaryExpression: SparqlGrammarRule<(typeof S11.unaryExpression)['na
     { ALT: () => {
       const operator = CONSUME(l11.symbols.exclamation);
       const expr = SUBRULE1(unaryExpression);
-      return ACTION(() => C.factory.expressionOperation(
+      return ACTION(() => C.astFactory.expressionOperation(
         '!',
         [ <T11.Expression> expr ],
-        C.factory.sourceLocation(operator, expr),
+        C.astFactory.sourceLocation(operator, expr),
       ));
     } },
     { ALT: () => {
@@ -678,10 +699,10 @@ export const unaryExpression: SparqlGrammarRule<(typeof S11.unaryExpression)['na
         { ALT: () => CONSUME(l11.symbols.opMinus) },
       ]);
       const expr = SUBRULE2(primaryExpression);
-      return ACTION(() => C.factory.expressionOperation(
+      return ACTION(() => C.astFactory.expressionOperation(
         operator.image === '!' ? '!' : (operator.image === '+' ? 'UPLUS' : 'UMINUS'),
         [ <T11.Expression> expr ],
-        C.factory.sourceLocation(operator, expr),
+        C.astFactory.sourceLocation(operator, expr),
       ));
     } },
   ]),
@@ -692,23 +713,25 @@ export const unaryExpression: SparqlGrammarRule<(typeof S11.unaryExpression)['na
  */
 export const generateTriplesBlock: SparqlGeneratorRule<'triplesBlock', PatternBgp> = {
   name: 'triplesBlock',
-  gImpl: ({ SUBRULE, PRINT_WORD, HANDLE_LOC }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD, HANDLE_LOC }) => (ast, { astFactory: F }) => {
     for (const [ index, triple ] of ast.triples.entries()) {
       HANDLE_LOC(triple, () => {
         const nextTriple = ast.triples.at(index);
         if (F.isTripleCollection(triple)) {
           SUBRULE(graphNodePath, triple);
           // A top level tripleCollection block means that it is not used in a triple. So you end with DOT.
-          F.printFilter(triple, () => PRINT_WORD('.'));
+          F.printFilter(triple, () => PRINT_WORD('.\n'));
         } else {
           // Subject
           SUBRULE(graphNodePath, triple.subject);
+          F.printFilter(ast, () => PRINT_WORD(''));
           // Predicate
           if (F.isPathPure(triple.predicate)) {
             SUBRULE(S11.pathGenerator, triple.predicate, undefined);
           } else {
             SUBRULE(graphNodePath, triple.predicate);
           }
+          F.printFilter(ast, () => PRINT_WORD(''));
           // Object
           SUBRULE(graphNodePath, triple.object);
           SUBRULE(annotationPath, triple.annotations ?? []);
@@ -716,11 +739,11 @@ export const generateTriplesBlock: SparqlGeneratorRule<'triplesBlock', PatternBg
           // If no more things, or a top level collection (only possible if new block was part), or new subject: add DOT
           if (nextTriple === undefined || F.isTripleCollection(nextTriple) ||
             !F.isSourceLocationNoMaterialize(nextTriple.subject.loc)) {
-            F.printFilter(ast, () => PRINT_WORD('.'));
+            F.printFilter(ast, () => PRINT_WORD('.\n'));
           } else if (F.isSourceLocationNoMaterialize(nextTriple.predicate.loc)) {
             F.printFilter(ast, () => PRINT_WORD(','));
           } else {
-            F.printFilter(ast, () => PRINT_WORD(';'));
+            F.printFilter(ast, () => PRINT_WORD(';\n'));
           }
         }
       });
@@ -736,7 +759,7 @@ export const generateTriplesBlock: SparqlGeneratorRule<'triplesBlock', PatternBg
 export const generateGraphTerm: SparqlGeneratorRule<'graphTerm', GraphTerm> = {
   name: 'graphTerm',
   gImpl: $ => (ast, C) => {
-    if (C.factory.isTermTriple(ast)) {
+    if (C.astFactory.isTermTriple(ast)) {
       $.SUBRULE(tripleTerm, ast);
     } else {
       S11.graphTerm.gImpl($)(ast, C);

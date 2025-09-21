@@ -34,7 +34,7 @@ export type SparqlGeneratorRule<
    * Function arguments that can be given to convey the state of the current parse operation.
    */
   ParamType extends any [] = [],
-> = GeneratorRule<{ factory: AstFactory }, NameType, ReturnType, ParamType>;
+> = GeneratorRule<SparqlGeneratorContext, NameType, ReturnType, ParamType>;
 
 export type SparqlGrammarRule<
   /**
@@ -52,4 +52,5 @@ export type SparqlGrammarRule<
   ParamType extends any[] = [],
 > = ParserRule<SparqlContext, NameType, ReturnType, ParamType>;
 
-export type SparqlContext = T11.SparqlContext & { factory: AstFactory };
+export type SparqlContext = T11.SparqlContext & { astFactory: AstFactory };
+export type SparqlGeneratorContext = T11.SparqlGeneratorContext & { astFactory: AstFactory };

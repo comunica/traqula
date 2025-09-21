@@ -27,7 +27,7 @@ export interface AstContext {
    * All orderings found in our suboperations
    */
   order: Algebra.Expression[];
-  factory: AlgebraFactory;
+  algebraFactory: AlgebraFactory;
   astFactory: AstFactory;
   transformer: TransformerSparql11;
 }
@@ -39,7 +39,7 @@ export function createAstContext(): AstContext {
     group: [],
     aggregates: [],
     order: [],
-    factory: new AlgebraFactory(),
+    algebraFactory: new AlgebraFactory(),
     astFactory: new AstFactory(),
     transformer: new TransformerSparql11(),
   };

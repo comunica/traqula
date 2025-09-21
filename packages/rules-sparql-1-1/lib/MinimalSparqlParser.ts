@@ -1,5 +1,6 @@
+import { traqulaIndentation } from '@traqula/core';
 import { AstFactory } from './astFactory.js';
-import type { SparqlContext } from './sparql11HelperTypes.js';
+import type { SparqlContext, SparqlGeneratorContext } from './sparql11HelperTypes.js';
 import type { Path, TermIri } from './Sparql11types.js';
 
 interface Parser<ParseRet> {
@@ -8,16 +9,18 @@ interface Parser<ParseRet> {
 }
 
 export function completeParseContext(
-  context: Partial<SparqlContext & { origSource: string; offset?: number }>,
-): SparqlContext & { origSource: string; offset?: number } {
+  context: Partial<SparqlContext & SparqlGeneratorContext & { origSource: string; offset?: number }>,
+): SparqlContext & SparqlGeneratorContext & { origSource: string; offset?: number } {
   return {
-    factory: context.factory ?? new AstFactory(),
+    astFactory: context.astFactory ?? new AstFactory(),
     baseIRI: context.baseIRI,
     prefixes: { ...context.prefixes },
     origSource: context.origSource ?? '',
     offset: context.offset,
     parseMode: context.parseMode ? new Set(context.parseMode) : new Set([ 'canParseVars', 'canCreateBlankNodes' ]),
     skipValidation: context.skipValidation ?? false,
+    [traqulaIndentation]: context[traqulaIndentation] ?? 0,
+    indentInc: context.indentInc ?? 2,
   };
 }
 

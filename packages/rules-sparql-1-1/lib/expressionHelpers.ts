@@ -28,7 +28,7 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, [Expression]> {
       const arg = SUBRULE(expression);
       const close = CONSUME(l.symbols.RParen);
       return ACTION(() =>
-        C.factory.expressionOperation(operator.image, [ arg ], C.factory.sourceLocation(operator, close)));
+        C.astFactory.expressionOperation(operator.image, [ arg ], C.astFactory.sourceLocation(operator, close)));
     },
   };
 }
@@ -45,7 +45,7 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, [Expression, Expression]> {
       const arg2 = SUBRULE2(expression);
       const close = CONSUME(l.symbols.RParen);
       return ACTION(() =>
-        C.factory.expressionOperation(operator.image, [ arg1, arg2 ], C.factory.sourceLocation(operator, close)));
+        C.astFactory.expressionOperation(operator.image, [ arg1, arg2 ], C.astFactory.sourceLocation(operator, close)));
     },
   };
 }
@@ -65,7 +65,11 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, [Expression, Expression, Expression]
       const close = CONSUME(l.symbols.RParen);
 
       return ACTION(() =>
-        C.factory.expressionOperation(operator.image, [ arg1, arg2, arg3 ], C.factory.sourceLocation(operator, close)));
+        C.astFactory.expressionOperation(
+          operator.image,
+          [ arg1, arg2, arg3 ],
+          C.astFactory.sourceLocation(operator, close),
+        ));
     },
   };
 }
@@ -80,7 +84,7 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, [TermVariable]> {
       const arg = SUBRULE(var_);
       const close = CONSUME(l.symbols.RParen);
       return ACTION(() =>
-        C.factory.expressionOperation(operator.image, [ arg ], C.factory.sourceLocation(operator, close)));
+        C.astFactory.expressionOperation(operator.image, [ arg ], C.astFactory.sourceLocation(operator, close)));
     },
   };
 }
@@ -97,12 +101,12 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, [] | [Expression]> {
           const arg = SUBRULE(expression);
           const close = CONSUME(l.symbols.RParen);
           return ACTION(() =>
-            C.factory.expressionOperation(operator.image, [ arg ], C.factory.sourceLocation(operator, close)));
+            C.astFactory.expressionOperation(operator.image, [ arg ], C.astFactory.sourceLocation(operator, close)));
         } },
         { ALT: () => {
           const nil = CONSUME(l.terminals.nil);
           return ACTION(() =>
-            C.factory.expressionOperation(operator.image, [], C.factory.sourceLocation(operator, nil)));
+            C.astFactory.expressionOperation(operator.image, [], C.astFactory.sourceLocation(operator, nil)));
         } },
       ]);
     },
@@ -117,7 +121,7 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, []> {
       const operator = CONSUME(func);
       const nil = CONSUME(l.terminals.nil);
       return ACTION(() =>
-        C.factory.expressionOperation(operator.image, [], C.factory.sourceLocation(operator, nil)));
+        C.astFactory.expressionOperation(operator.image, [], C.astFactory.sourceLocation(operator, nil)));
     },
   };
 }
@@ -130,7 +134,7 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, Expression[]> {
       const operator = CONSUME(func);
       const args = SUBRULE(expressionList);
       return ACTION(() =>
-        C.factory.expressionOperation(operator.image, args.val, C.factory.sourceLocation(operator, args)));
+        C.astFactory.expressionOperation(operator.image, args.val, C.astFactory.sourceLocation(operator, args)));
     },
   };
 }
@@ -151,10 +155,10 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, [Expression, Expression] | [Expressi
           return SUBRULE3(expression);
         });
         const close = CONSUME(l.symbols.RParen);
-        return ACTION(() => C.factory.expressionOperation(
+        return ACTION(() => C.astFactory.expressionOperation(
           operator.image,
           arg3 ? <const> [ arg1, arg2, arg3 ] : <const> [ arg1, arg2 ],
-          C.factory.sourceLocation(operator, close),
+          C.astFactory.sourceLocation(operator, close),
         ));
       },
   };
@@ -192,10 +196,10 @@ RuleDefExpressionFunctionX<
           return SUBRULE4(expression);
         });
         const close = CONSUME(l.symbols.RParen);
-        return ACTION(() => C.factory.expressionOperation(
+        return ACTION(() => C.astFactory.expressionOperation(
           operator.image,
           arg4 ? <const> [ arg1, arg2, arg3, arg4 ] : <const> [ arg1, arg2, arg3 ],
-          C.factory.sourceLocation(operator, close),
+          C.astFactory.sourceLocation(operator, close),
         ));
       },
   };
@@ -208,10 +212,10 @@ SparqlGrammarRule<Uncapitalize<T>, ExpressionPatternOperation> {
     impl: ({ ACTION, SUBRULE, CONSUME }) => (C) => {
       const operator = CONSUME(func);
       const group = SUBRULE(groupGraphPattern);
-      return ACTION(() => C.factory.expressionPatternOperation(
+      return ACTION(() => C.astFactory.expressionPatternOperation(
         operator.image,
         group,
-        C.factory.sourceLocation(operator, group),
+        C.astFactory.sourceLocation(operator, group),
       ));
     },
   };
@@ -230,12 +234,12 @@ RuleDefExpressionAggregatorX<Uncapitalize<T>> {
       const expr1 = SUBRULE(expression);
       const close = CONSUME(l.symbols.RParen);
 
-      return ACTION(() => C.factory.aggregate(
+      return ACTION(() => C.astFactory.aggregate(
         operator.image,
         distinct !== undefined,
         expr1,
         undefined,
-        C.factory.sourceLocation(operator, close),
+        C.astFactory.sourceLocation(operator, close),
       ));
     },
   };

@@ -1,4 +1,5 @@
 import { AstCoreFactory } from '../AstCoreFactory.js';
+import { traqulaIndentation } from '../utils.js';
 import type { GenRuleMap } from './builderTypes.js';
 import type { GeneratorRule, RuleDefArg } from './generatorTypes.js';
 
@@ -35,8 +36,8 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
     this.__context = context;
   }
 
-  protected getSafeContext(): Context {
-    return <Context> this.__context;
+  protected getSafeContext(): Context & { [traqulaIndentation]?: unknown } {
+    return <Context & { [traqulaIndentation]?: unknown }> this.__context;
   }
 
   protected readonly subrule: RuleDefArg['SUBRULE'] = (cstDef, ast, ...arg) => {
@@ -51,6 +52,7 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
       PRINT_SPACE_LEFT: this.printSpaceLeft,
       PRINT_WORD: this.printWord,
       PRINT_WORDS: this.printWords,
+      PRINT_ON_EMPTY: this.printOnEmpty,
       CATCHUP: this.catchup,
       HANDLE_LOC: this.handleLoc,
     })(ast, this.getSafeContext(), ...arg);
@@ -100,7 +102,7 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
   protected readonly print: RuleDefArg['PRINT'] = (...args) => {
     const pureArgs = args.filter(x => x.length > 0);
     if (pureArgs.length > 0) {
-      const [ head, ...tail ] = pureArgs;
+      const head = pureArgs[0];
       if (this.expectsSpace) {
         this.expectsSpace = false;
         const blanks = new Set([ '\n', ' ', '\t' ]);
@@ -109,8 +111,22 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
           this.stringBuilder.push(' ');
         }
       }
-      this.stringBuilder.push(head);
-      this.stringBuilder.push(...tail);
+      const context = this.getSafeContext();
+      if (context[traqulaIndentation] && typeof context[traqulaIndentation] === 'number') {
+        const indent = context[traqulaIndentation];
+        for (const str of pureArgs) {
+          const [ noNl, ...postNl ] = str.split('\n');
+          this.stringBuilder.push(noNl);
+          for (const subStr of postNl.map(line => line.trimStart())) {
+            this.stringBuilder.push('\n', ' '.repeat(indent));
+            if (subStr.length > 0) {
+              this.stringBuilder.push(subStr);
+            }
+          }
+        }
+      } else {
+        this.stringBuilder.push(...pureArgs);
+      }
     }
   };
 
@@ -129,5 +145,33 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
     for (const arg of args) {
       this.printWord(arg);
     }
+  };
+
+  private readonly printOnEmpty: RuleDefArg['PRINT_ON_EMPTY'] = (...args) => {
+    // Check if pointer already on empty line
+    let counter = this.stringBuilder.length - 1;
+    let onEmpty = true;
+    const isEmptyTest = /^[ \t\n]*$/u;
+    while (counter >= 0 && onEmpty) {
+      const cur = this.stringBuilder[counter];
+      const indexOfNl = cur.lastIndexOf('\n');
+      if (indexOfNl >= 0) {
+        // This is the last newline that is printed
+        onEmpty = isEmptyTest.test(cur.slice(indexOfNl));
+        if (onEmpty) {
+          // We still want to have the current indent printed
+          const newVal = cur.slice(0, indexOfNl);
+          if (newVal) {
+            this.stringBuilder[counter] = cur.slice(0, indexOfNl);
+          } else {
+            this.stringBuilder.splice(counter, 1);
+          }
+        }
+        break;
+      }
+      onEmpty = isEmptyTest.test(cur);
+      counter--;
+    }
+    this.print('\n', ...args);
   };
 }

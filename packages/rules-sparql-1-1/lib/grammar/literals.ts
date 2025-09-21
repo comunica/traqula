@@ -46,8 +46,8 @@ export const rdfLiteral: SparqlRule<'rdfLiteral', TermLiteral> = <const> {
     return OPTION(() => OR<TermLiteral>([
       { ALT: () => {
         const lang = CONSUME(l.terminals.langTag);
-        return ACTION(() => C.factory.literalTerm(
-          C.factory.sourceLocation(value, lang),
+        return ACTION(() => C.astFactory.literalTerm(
+          C.astFactory.sourceLocation(value, lang),
           value.value,
           lang.image.slice(1).toLowerCase(),
         ));
@@ -55,22 +55,22 @@ export const rdfLiteral: SparqlRule<'rdfLiteral', TermLiteral> = <const> {
       { ALT: () => {
         CONSUME(l.symbols.hathat);
         const iriVal = SUBRULE1(iri);
-        return ACTION(() => C.factory.literalTerm(
-          C.factory.sourceLocation(value, iriVal),
+        return ACTION(() => C.astFactory.literalTerm(
+          C.astFactory.sourceLocation(value, iriVal),
           value.value,
           iriVal,
         ));
       } },
     ])) ?? value;
   },
-  gImpl: ({ SUBRULE, PRINT, PRINT_SPACE_LEFT }) => (ast, { factory }) => {
-    factory.printFilter(ast, () => PRINT_SPACE_LEFT(stringEscapedLexical(ast.value)));
+  gImpl: ({ SUBRULE, PRINT, PRINT_SPACE_LEFT }) => (ast, { astFactory }) => {
+    astFactory.printFilter(ast, () => PRINT_SPACE_LEFT(stringEscapedLexical(ast.value)));
 
     if (ast.langOrIri) {
       if (typeof ast.langOrIri === 'string') {
-        factory.printFilter(ast, () => PRINT('@', ast.langOrIri));
+        astFactory.printFilter(ast, () => PRINT('@', ast.langOrIri));
       } else {
-        factory.printFilter(ast, () => PRINT('^^'));
+        astFactory.printFilter(ast, () => PRINT('^^'));
         SUBRULE(iri, ast.langOrIri);
       }
     }
@@ -102,10 +102,10 @@ export const numericLiteralUnsigned: SparqlGrammarRule<'numericLiteralUnsigned',
       { ALT: () => <const> [ CONSUME(l.terminals.decimal), CommonIRIs.DECIMAL ]},
       { ALT: () => <const> [ CONSUME(l.terminals.double), CommonIRIs.DOUBLE ]},
     ]);
-    return ACTION(() => C.factory.literalTerm(
-      C.factory.sourceLocation(parsed[0]),
+    return ACTION(() => C.astFactory.literalTerm(
+      C.astFactory.sourceLocation(parsed[0]),
       parsed[0].image,
-      C.factory.namedNode(C.factory.sourceLocationNoMaterialize(), parsed[1]),
+      C.astFactory.namedNode(C.astFactory.sourceLocationNoMaterialize(), parsed[1]),
     ));
   },
 };
@@ -122,10 +122,10 @@ export const numericLiteralPositive: SparqlGrammarRule<'numericLiteralPositive',
       { ALT: () => <const> [ CONSUME(l.terminals.decimalPositive), CommonIRIs.DECIMAL ]},
       { ALT: () => <const> [ CONSUME(l.terminals.doublePositive), CommonIRIs.DOUBLE ]},
     ]);
-    return ACTION(() => C.factory.literalTerm(
-      C.factory.sourceLocation(parsed[0]),
+    return ACTION(() => C.astFactory.literalTerm(
+      C.astFactory.sourceLocation(parsed[0]),
       parsed[0].image,
-      C.factory.namedNode(C.factory.sourceLocationNoMaterialize(), parsed[1]),
+      C.astFactory.namedNode(C.astFactory.sourceLocationNoMaterialize(), parsed[1]),
     ));
   },
 };
@@ -142,10 +142,10 @@ export const numericLiteralNegative: SparqlGrammarRule<'numericLiteralNegative',
       { ALT: () => <const> [ CONSUME(l.terminals.decimalNegative), CommonIRIs.DECIMAL ]},
       { ALT: () => <const> [ CONSUME(l.terminals.doubleNegative), CommonIRIs.DOUBLE ]},
     ]);
-    return ACTION(() => C.factory.literalTerm(
-      C.factory.sourceLocation(parsed[0]),
+    return ACTION(() => C.astFactory.literalTerm(
+      C.astFactory.sourceLocation(parsed[0]),
       parsed[0].image,
-      C.factory.namedNode(C.factory.sourceLocationNoMaterialize(), parsed[1]),
+      C.astFactory.namedNode(C.astFactory.sourceLocationNoMaterialize(), parsed[1]),
     ));
   },
 };
@@ -162,10 +162,10 @@ export const booleanLiteral: SparqlGrammarRule<'booleanLiteral', TermLiteralType
       { ALT: () => CONSUME(l.false_) },
     ]);
 
-    return ACTION(() => C.factory.literalTerm(
-      C.factory.sourceLocation(token),
+    return ACTION(() => C.astFactory.literalTerm(
+      C.astFactory.sourceLocation(token),
       token.image.toLowerCase(),
-      C.factory.namedNode(C.factory.sourceLocationNoMaterialize(), CommonIRIs.BOOLEAN),
+      C.astFactory.namedNode(C.astFactory.sourceLocationNoMaterialize(), CommonIRIs.BOOLEAN),
     ));
   },
 };
@@ -197,7 +197,7 @@ export const string: SparqlGrammarRule<'string', TermLiteralStr> = <const> {
     ]);
     // Handle string escapes (19.7). (19.2 is handled at input level.)
     return ACTION(() => {
-      const F = C.factory;
+      const F = C.astFactory;
       const value = x[1].replaceAll(/\\([tnrbf"'\\])/gu, (_, char: string) => {
         switch (char) {
           case 't':
@@ -229,7 +229,7 @@ export const iri: SparqlRule<'iri', TermIri> = <const> {
     { ALT: () => SUBRULE(iriFull) },
     { ALT: () => SUBRULE(prefixedName) },
   ]),
-  gImpl: ({ SUBRULE }) => (ast, { factory: F }) =>
+  gImpl: ({ SUBRULE }) => (ast, { astFactory: F }) =>
     F.isTermNamedPrefixed(ast) ? SUBRULE(prefixedName, ast) : SUBRULE(iriFull, ast),
 };
 
@@ -237,10 +237,10 @@ export const iriFull: SparqlRule<'iriFull', TermIriFull> = <const> {
   name: 'iriFull',
   impl: ({ ACTION, CONSUME }) => (C) => {
     const iriToken = CONSUME(l.terminals.iriRef);
-    return ACTION(() => C.factory.namedNode(C.factory.sourceLocation(iriToken), iriToken.image.slice(1, -1)));
+    return ACTION(() => C.astFactory.namedNode(C.astFactory.sourceLocation(iriToken), iriToken.image.slice(1, -1)));
   },
-  gImpl: ({ PRINT }) => (ast, { factory }) => {
-    factory.printFilter(ast, () => PRINT('<', ast.value, '>'));
+  gImpl: ({ PRINT }) => (ast, { astFactory: F }) => {
+    F.printFilter(ast, () => PRINT('<', ast.value, '>'));
   },
 };
 
@@ -255,16 +255,20 @@ export const prefixedName: SparqlRule<'prefixedName', TermIriPrefixed> = <const>
       const longName = CONSUME(l.terminals.pNameLn);
       return ACTION(() => {
         const [ prefix, localName ] = longName.image.split(':');
-        return C.factory.namedNode(C.factory.sourceLocation(longName), localName, prefix);
+        return C.astFactory.namedNode(C.astFactory.sourceLocation(longName), localName, prefix);
       });
     } },
     { ALT: () => {
       const shortName = CONSUME(l.terminals.pNameNs);
-      return ACTION(() => C.factory.namedNode(C.factory.sourceLocation(shortName), '', shortName.image.slice(0, -1)));
+      return ACTION(() => C.astFactory.namedNode(
+        C.astFactory.sourceLocation(shortName),
+        '',
+        shortName.image.slice(0, -1),
+      ));
     } },
   ]),
-  gImpl: ({ PRINT_WORD }) => (ast, { factory }) => {
-    factory.printFilter(ast, () => PRINT_WORD(ast.prefix, ':', ast.value));
+  gImpl: ({ PRINT_WORD }) => (ast, { astFactory: F }) => {
+    F.printFilter(ast, () => PRINT_WORD(ast.prefix, ':', ast.value));
   },
 };
 
@@ -281,11 +285,11 @@ export const blankNode: SparqlRule<'blankNode', TermBlank> = <const> {
       { ALT: () => {
         const labelToken = CONSUME(l.terminals.blankNodeLabel);
         return ACTION(() =>
-          C.factory.blankNode(labelToken.image.slice(2), C.factory.sourceLocation(labelToken)));
+          C.astFactory.blankNode(labelToken.image.slice(2), C.astFactory.sourceLocation(labelToken)));
       } },
       { ALT: () => {
         const anonToken = CONSUME(l.terminals.anon);
-        return ACTION(() => C.factory.blankNode(undefined, C.factory.sourceLocation(anonToken)));
+        return ACTION(() => C.astFactory.blankNode(undefined, C.astFactory.sourceLocation(anonToken)));
       } },
     ]);
     ACTION(() => {
@@ -295,8 +299,8 @@ export const blankNode: SparqlRule<'blankNode', TermBlank> = <const> {
     });
     return result;
   },
-  gImpl: ({ PRINT_WORD }) => (ast, { factory }) => {
-    factory.printFilter(ast, () => PRINT_WORD('_:', ast.label.replace(/^e_/u, '')));
+  gImpl: ({ PRINT_WORD }) => (ast, { astFactory }) => {
+    astFactory.printFilter(ast, () => PRINT_WORD('_:', ast.label.replace(/^e_/u, '')));
   },
 };
 
@@ -304,6 +308,6 @@ export const verbA: SparqlGrammarRule<'VerbA', TermIriFull> = <const> {
   name: 'VerbA',
   impl: ({ ACTION, CONSUME }) => (C) => {
     const token = CONSUME(l.a);
-    return ACTION(() => C.factory.namedNode(C.factory.sourceLocation(token), CommonIRIs.TYPE, undefined));
+    return ACTION(() => C.astFactory.namedNode(C.astFactory.sourceLocation(token), CommonIRIs.TYPE, undefined));
   },
 };

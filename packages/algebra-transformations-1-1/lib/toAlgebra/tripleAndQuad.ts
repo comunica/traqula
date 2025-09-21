@@ -154,11 +154,11 @@ AlgebraIndir<'recurseGraph', Algebra.Operation, [Algebra.Operation, RDF.Term, RD
 
 export const translateQuad: AlgebraIndir<'translateQuad', Algebra.Pattern, [FlattenedTriple]> = {
   name: 'translateQuad',
-  fun: () => ({ astFactory: F, factory }, quad) => {
+  fun: () => ({ astFactory: F, algebraFactory: AF }, quad) => {
     if (F.isPathPure(quad.predicate)) {
       throw new Error('Trying to translate property path to quad.');
     }
     // Graphs are needed here
-    return factory.createPattern(quad.subject, quad.predicate, quad.object, (<any>quad).graph);
+    return AF.createPattern(quad.subject, quad.predicate, quad.object, (<any>quad).graph);
   },
 };

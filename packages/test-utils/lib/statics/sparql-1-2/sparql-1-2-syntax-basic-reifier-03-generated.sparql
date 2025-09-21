@@ -1,1 +1,5 @@
-PREFIX : <http://example.com/ns#> SELECT * WHERE { << ?s ?p ?o ~ _:bnode >> . _:bnode ?Y ?Z . }
+PREFIX : <http://example.com/ns#>
+SELECT * WHERE {
+  << ?s ?p ?o ~ _:bnode >> .
+  _:bnode ?Y ?Z .  
+}

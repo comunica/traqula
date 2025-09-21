@@ -191,21 +191,21 @@ SparqlGrammarRule<'builtInCount', ExpressionAggregateOnWildcard | ExpressionAggr
     const expressionVal = OR<Expression | Wildcard>([
       { ALT: () => {
         const starToken = CONSUME(l.symbols.star);
-        return ACTION(() => C.factory.wildcard(C.factory.sourceLocation(starToken)));
+        return ACTION(() => C.astFactory.wildcard(C.astFactory.sourceLocation(starToken)));
       } },
       { ALT: () => SUBRULE(expression) },
     ]);
     const closeToken = CONSUME(l.symbols.RParen);
 
     return ACTION(() => {
-      const F = C.factory;
-      if (C.factory.isWildcard(expressionVal)) {
+      const F = C.astFactory;
+      if (C.astFactory.isWildcard(expressionVal)) {
         return F.aggregate(
           operatorToken.image,
           Boolean(distinctToken),
           expressionVal,
           undefined,
-          C.factory.sourceLocation(operatorToken, closeToken),
+          C.astFactory.sourceLocation(operatorToken, closeToken),
         );
       }
       return F.aggregate(
@@ -213,7 +213,7 @@ SparqlGrammarRule<'builtInCount', ExpressionAggregateOnWildcard | ExpressionAggr
         Boolean(distinctToken),
         expressionVal,
         undefined,
-        C.factory.sourceLocation(operatorToken, closeToken),
+        C.astFactory.sourceLocation(operatorToken, closeToken),
       );
     });
   },
@@ -242,7 +242,7 @@ SparqlGrammarRule<'builtInGroup_concat', ExpressionAggregateDefault | Expression
       const closeToken = CONSUME(l.symbols.RParen);
 
       return ACTION(() => {
-        const F = C.factory;
+        const F = C.astFactory;
         return F.aggregate(
           operatorToken.image,
           Boolean(distinctToken),
@@ -286,7 +286,7 @@ export const aggregate: SparqlRule<'aggregate', ExpressionAggregate> = <const>{
 
     return result;
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => {
       PRINT_WORD(ast.aggregation.toUpperCase(), '(');
       if (ast.distinct) {

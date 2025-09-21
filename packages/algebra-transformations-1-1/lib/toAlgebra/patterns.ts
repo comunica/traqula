@@ -22,17 +22,17 @@ import { recurseGraph, translateBasicGraphPattern, translateQuad } from './tripl
  */
 export const translateExpression: AlgebraIndir<'translateExpression', Algebra.Expression, [Expression | Wildcard]> = {
   name: 'translateExpression',
-  fun: ({ SUBRULE }) => ({ astFactory: F, factory }, expr) => {
+  fun: ({ SUBRULE }) => ({ astFactory: F, algebraFactory: AF }, expr) => {
     if (F.isTerm(expr)) {
-      return factory.createTermExpression(SUBRULE(translateTerm, expr));
+      return AF.createTermExpression(SUBRULE(translateTerm, expr));
     }
 
     if (F.isWildcard(expr)) {
-      return factory.createWildcardExpression();
+      return AF.createWildcardExpression();
     }
 
     if (F.isExpressionAggregate(expr)) {
-      return factory.createAggregateExpression(
+      return AF.createAggregateExpression(
         expr.aggregation,
         SUBRULE(translateExpression, expr.expression[0]),
         expr.distinct,
@@ -42,21 +42,21 @@ export const translateExpression: AlgebraIndir<'translateExpression', Algebra.Ex
 
     if (F.isExpressionFunctionCall(expr)) {
       // Outdated typings
-      return factory.createNamedExpression(
+      return AF.createNamedExpression(
         SUBRULE(translateNamed, expr.function),
         expr.args.map(subExpr => SUBRULE(translateExpression, subExpr)),
       );
     }
 
     if (F.isExpressionOperator(expr)) {
-      return factory.createOperatorExpression(
+      return AF.createOperatorExpression(
         expr.operator,
         expr.args.map(subExpr => SUBRULE(translateExpression, subExpr)),
       );
     }
 
     if (F.isExpressionPatternOperation(expr)) {
-      return factory.createExistenceExpression(
+      return AF.createExistenceExpression(
         expr.operator === 'notexists',
         SUBRULE(translateGraphPattern, expr.args),
       );
@@ -68,7 +68,7 @@ export const translateExpression: AlgebraIndir<'translateExpression', Algebra.Ex
 
 export const translateGraphPattern: AlgebraIndir<'translateGraphPattern', Algebra.Operation, [Pattern]> = {
   name: 'translateGraphPattern',
-  fun: ({ SUBRULE }) => ({ astFactory: F, factory, useQuads }, pattern) => {
+  fun: ({ SUBRULE }) => ({ astFactory: F, algebraFactory: AF, useQuads }, pattern) => {
     // 18.2.2.1: Expand Syntax Forms -
     //    partly done by sparql parser, partly in this.translateTerm, and partly in BGP
     // https://www.w3.org/TR/sparql11-query/#sparqlExpandForms
@@ -79,7 +79,7 @@ export const translateGraphPattern: AlgebraIndir<'translateGraphPattern', Algebr
 
     // 18.2.2.6: Translate Graph Patterns - GroupOrUnionGraphPattern
     if (F.isPatternUnion(pattern)) {
-      return factory.createUnion(
+      return AF.createUnion(
         pattern.patterns.map((group: PatternGroup) => SUBRULE(translateGraphPattern, group)),
       );
     }
@@ -95,7 +95,7 @@ export const translateGraphPattern: AlgebraIndir<'translateGraphPattern', Algebr
       if (useQuads) {
         result = SUBRULE(recurseGraph, result, SUBRULE(translateTerm, pattern.name), undefined);
       } else {
-        result = factory.createGraph(result, <RDF.NamedNode | RDF.Variable> SUBRULE(translateTerm, pattern.name));
+        result = AF.createGraph(result, <RDF.NamedNode | RDF.Variable> SUBRULE(translateTerm, pattern.name));
       }
 
       return result;
@@ -125,7 +125,7 @@ export const translateGraphPattern: AlgebraIndir<'translateGraphPattern', Algebr
       }
 
       // 18.2.2.6 - GroupGraphPattern
-      let result: Algebra.Operation = factory.createBgp([]);
+      let result: Algebra.Operation = AF.createBgp([]);
       for (const pattern of nonfilters) {
         result = SUBRULE(accumulateGroupGraphPattern, result, pattern);
       }
@@ -135,10 +135,10 @@ export const translateGraphPattern: AlgebraIndir<'translateGraphPattern', Algebr
       if (expressions.length > 0) {
         let conjunction = expressions[0];
         for (const expression of expressions.slice(1)) {
-          conjunction = factory.createOperatorExpression('&&', [ conjunction, expression ]);
+          conjunction = AF.createOperatorExpression('&&', [ conjunction, expression ]);
         }
         // One big filter applied on the group
-        result = factory.createFilter(result, conjunction);
+        result = AF.createFilter(result, conjunction);
       }
 
       return result;
@@ -156,8 +156,7 @@ export const translateGraphPattern: AlgebraIndir<'translateGraphPattern', Algebr
  */
 export const translateBgp: AlgebraIndir<'translateBgp', Algebra.Operation, [PatternBgp]> = {
   name: 'translateBgp',
-  fun: ({ SUBRULE }) => (c, bgp) => {
-    const F = c.astFactory;
+  fun: ({ SUBRULE }) => ({ astFactory: F, algebraFactory: AF }, bgp) => {
     let patterns: Algebra.Pattern[] = [];
     const joins: Algebra.Operation[] = [];
     const flattenedTriples: FlattenedTriple[] = [];
@@ -170,7 +169,7 @@ export const translateBgp: AlgebraIndir<'translateBgp', Algebra.Operation, [Patt
         for (const p of path) {
           if (p.type === types.PATH) {
             if (patterns.length > 0) {
-              joins.push(c.factory.createBgp(patterns));
+              joins.push(AF.createBgp(patterns));
             }
             patterns = [];
             joins.push(p);
@@ -183,12 +182,12 @@ export const translateBgp: AlgebraIndir<'translateBgp', Algebra.Operation, [Patt
       }
     }
     if (patterns.length > 0) {
-      joins.push(c.factory.createBgp(patterns));
+      joins.push(AF.createBgp(patterns));
     }
     if (joins.length === 1) {
       return joins[0];
     }
-    return c.factory.createJoin(joins);
+    return AF.createJoin(joins);
   },
 };
 
@@ -198,24 +197,24 @@ export const translateBgp: AlgebraIndir<'translateBgp', Algebra.Operation, [Patt
 export const accumulateGroupGraphPattern:
 AlgebraIndir<'accumulateGroupGraphPattern', Algebra.Operation, [Algebra.Operation, Pattern]> = {
   name: 'accumulateGroupGraphPattern',
-  fun: ({ SUBRULE }) => ({ astFactory: F, factory }, algebraOp, pattern) => {
+  fun: ({ SUBRULE }) => ({ astFactory: F, algebraFactory: AF }, algebraOp, pattern) => {
     if (F.isPatternOptional(pattern)) {
       // Optional input needs to be interpreted as a group
       const groupAsAlgebra = SUBRULE(translateGraphPattern, F.patternGroup(pattern.patterns, pattern.loc));
       if (groupAsAlgebra.type === types.FILTER) {
-        return factory.createLeftJoin(algebraOp, groupAsAlgebra.input, groupAsAlgebra.expression);
+        return AF.createLeftJoin(algebraOp, groupAsAlgebra.input, groupAsAlgebra.expression);
       }
-      return factory.createLeftJoin(algebraOp, groupAsAlgebra);
+      return AF.createLeftJoin(algebraOp, groupAsAlgebra);
     }
 
     if (F.isPatternMinus(pattern)) {
       // Minus input needs to be interpreted as a group
       const groupAsAlgebra = SUBRULE(translateGraphPattern, F.patternGroup(pattern.patterns, pattern.loc));
-      return factory.createMinus(algebraOp, groupAsAlgebra);
+      return AF.createMinus(algebraOp, groupAsAlgebra);
     }
 
     if (F.isPatternBind(pattern)) {
-      return factory.createExtend(
+      return AF.createExtend(
         algebraOp,
         <AstToRdfTerm<typeof pattern.variable>> SUBRULE(translateTerm, pattern.variable),
         SUBRULE(translateExpression, pattern.expression),
@@ -225,7 +224,7 @@ AlgebraIndir<'accumulateGroupGraphPattern', Algebra.Operation, [Algebra.Operatio
     if (F.isPatternService(pattern)) {
       // Transform to group so child-nodes get parsed correctly
       const group = F.patternGroup(pattern.patterns, pattern.loc);
-      const A = factory.createService(
+      const A = AF.createService(
         SUBRULE(translateGraphPattern, group),
         <AstToRdfTerm<typeof pattern.name>> SUBRULE(translateTerm, pattern.name),
         pattern.silent,
@@ -241,17 +240,17 @@ AlgebraIndir<'accumulateGroupGraphPattern', Algebra.Operation, [Algebra.Operatio
 export const simplifiedJoin:
 AlgebraIndir<'simplifiedJoin', Algebra.Operation, [Algebra.Operation, Algebra.Operation]> = {
   name: 'simplifiedJoin',
-  fun: () => (c, G, A) => {
+  fun: () => ({ algebraFactory: AF }, G, A) => {
     // Note: this is more simplification than requested in 18.2.2.8, but no reason not to do it.
     if (G.type === types.BGP && A.type === types.BGP) {
-      G = c.factory.createBgp([ ...G.patterns, ...A.patterns ]);
+      G = AF.createBgp([ ...G.patterns, ...A.patterns ]);
     } else if (G.type === types.BGP && G.patterns.length === 0) {
       // 18.2.2.8 (simplification)
       G = A;
     } else if (A.type === types.BGP && A.patterns.length === 0) {
       // Do nothing
     } else {
-      G = c.factory.createJoin([ G, A ]);
+      G = AF.createJoin([ G, A ]);
     }
     return G;
   },

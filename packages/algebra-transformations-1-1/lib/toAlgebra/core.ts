@@ -10,7 +10,7 @@ export interface AlgebraContext {
   variables: Set<string>;
   varCount: number;
   useQuads: boolean;
-  factory: AlgebraFactory;
+  algebraFactory: AlgebraFactory;
   transformer: TransformerSparql11;
   astFactory: AstFactory;
   dataFactory: RDF.DataFactory<RDF.BaseQuad> & { variable: Function };
@@ -34,7 +34,7 @@ export function createAlgebraContext(config: ContextConfigs): AlgebraContext {
     transformer: new TransformerSparql11(),
     astFactory: new AstFactory(),
     dataFactory,
-    factory: new AlgebraFactory(dataFactory),
+    algebraFactory: new AlgebraFactory(dataFactory),
     currentBase: config.baseIRI,
     currentPrefixes: config.prefixes ? { ...config.prefixes } : {},
   };

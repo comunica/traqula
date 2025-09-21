@@ -28,8 +28,7 @@ import { translateBasicGraphPattern, translateQuad } from './tripleAndQuad.js';
  */
 export const translateAggregates: AlgebraIndir<'translateAggregates', Algebra.Operation, [Query, Algebra.Operation]> = {
   name: 'translateAggregates',
-  fun: ({ SUBRULE }) => (c, query, res) => {
-    const F = c.astFactory;
+  fun: ({ SUBRULE }) => ({ astFactory: F, algebraFactory: AF, dataFactory: DF }, query, res) => {
     const bindPatterns: PatternBind[] = [];
 
     const varAggrMap: Record<string, ExpressionAggregate> = {};
@@ -47,7 +46,7 @@ export const translateAggregates: AlgebraIndir<'translateAggregates', Algebra.Op
     // 18.2.4.1 Grouping and Aggregation
     if (query.solutionModifiers.group ?? Object.keys(varAggrMap).length > 0) {
       const aggregates = Object.keys(varAggrMap).map(var_ =>
-        SUBRULE(translateBoundAggregate, varAggrMap[var_], c.dataFactory.variable(var_)));
+        SUBRULE(translateBoundAggregate, varAggrMap[var_], DF.variable(var_)));
       const vars: RDF.Variable[] = [];
       if (query.solutionModifiers.group) {
         for (const expression of query.solutionModifiers.group.groupings) {
@@ -65,24 +64,24 @@ export const translateAggregates: AlgebraIndir<'translateAggregates', Algebra.Op
               var_ = SUBRULE(generateFreshVar);
               expr = expression;
             }
-            res = c.factory.createExtend(res, var_, SUBRULE(translateExpression, expr));
+            res = AF.createExtend(res, var_, SUBRULE(translateExpression, expr));
             vars.push(var_);
           }
         }
       }
-      res = c.factory.createGroup(res, vars, aggregates);
+      res = AF.createGroup(res, vars, aggregates);
     }
 
     // 18.2.4.2
     if (having) {
       for (const filter of having) {
-        res = c.factory.createFilter(res, SUBRULE(translateExpression, filter));
+        res = AF.createFilter(res, SUBRULE(translateExpression, filter));
       }
     }
 
     // 18.2.4.3
     if (query.values) {
-      res = c.factory.createJoin([ res, SUBRULE(translateInlineData, query.values) ]);
+      res = AF.createJoin([ res, SUBRULE(translateInlineData, query.values) ]);
     }
 
     // 18.2.4.4
@@ -91,7 +90,7 @@ export const translateAggregates: AlgebraIndir<'translateAggregates', Algebra.Op
     if (variables) {
       // Sort variables for consistent output
       if (variables.some(wild => F.isWildcard(wild))) {
-        PatternValues = [ ...SUBRULE(inScopeVariables, query).values() ].map(x => c.dataFactory.variable(x))
+        PatternValues = [ ...SUBRULE(inScopeVariables, query).values() ].map(x => DF.variable(x))
           .sort((left, right) => left.value.localeCompare(right.value));
       } else {
         // Wildcard has been filtered out above
@@ -110,7 +109,7 @@ export const translateAggregates: AlgebraIndir<'translateAggregates', Algebra.Op
 
     // TODO: Jena simplifies by having a list of extends
     for (const bind of bindPatterns) {
-      res = c.factory.createExtend(
+      res = AF.createExtend(
         res,
         <AstToRdfTerm<typeof bind.variable>>SUBRULE(translateTerm, bind.variable),
         SUBRULE(translateExpression, bind.expression),
@@ -122,10 +121,10 @@ export const translateAggregates: AlgebraIndir<'translateAggregates', Algebra.Op
 
     // 18.2.5.1
     if (order) {
-      res = c.factory.createOrderBy(res, order.map((expr) => {
+      res = AF.createOrderBy(res, order.map((expr) => {
         let result = SUBRULE(translateExpression, expr.expression);
         if (expr.descending) {
-          result = c.factory.createOperatorExpression('desc', [ result ]);
+          result = AF.createOperatorExpression('desc', [ result ]);
         }
         return result;
       }));
@@ -135,39 +134,39 @@ export const translateAggregates: AlgebraIndir<'translateAggregates', Algebra.Op
     // construct does not need a project (select, ask and describe do)
     if (F.isQuerySelect(query)) {
       // Named nodes are only possible in a DESCRIBE so this cast is safe
-      res = c.factory.createProject(res, <RDF.Variable[]> PatternValues);
+      res = AF.createProject(res, <RDF.Variable[]> PatternValues);
     }
 
     // 18.2.5.3
     if ((<{ distinct?: unknown }>query).distinct) {
-      res = c.factory.createDistinct(res);
+      res = AF.createDistinct(res);
     }
 
     // 18.2.5.4
     if ((<{ reduced?: unknown }>query).reduced) {
-      res = c.factory.createReduced(res);
+      res = AF.createReduced(res);
     }
 
     if (F.isQueryConstruct(query)) {
       const triples: FlattenedTriple[] = [];
       SUBRULE(translateBasicGraphPattern, query.template.triples, triples);
-      res = c.factory.createConstruct(res, triples.map(quad => SUBRULE(translateQuad, quad)));
+      res = AF.createConstruct(res, triples.map(quad => SUBRULE(translateQuad, quad)));
     } else if (F.isQueryAsk(query)) {
-      res = c.factory.createAsk(res);
+      res = AF.createAsk(res);
     } else if (F.isQueryDescribe(query)) {
-      res = c.factory.createDescribe(res, PatternValues);
+      res = AF.createDescribe(res, PatternValues);
     }
 
     // Slicing needs to happen after construct/describe
     // 18.2.5.5
     const limitOffset = query.solutionModifiers.limitOffset;
     if (limitOffset?.limit ?? limitOffset?.offset) {
-      res = c.factory.createSlice(res, limitOffset.offset ?? 0, limitOffset.limit);
+      res = AF.createSlice(res, limitOffset.offset ?? 0, limitOffset.limit);
     }
 
     if (query.datasets.clauses.length > 0) {
       const clauses = SUBRULE(translateDatasetClause, query.datasets);
-      res = c.factory.createFrom(res, clauses.default, clauses.named);
+      res = AF.createFrom(res, clauses.default, clauses.named);
     }
 
     return res;

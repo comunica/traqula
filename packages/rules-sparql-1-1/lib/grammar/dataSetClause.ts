@@ -17,14 +17,14 @@ export function datasetClauseUsing<RuleName extends 'usingClause' | 'datasetClau
         { ALT: () => {
           const iri = SUBRULE(defaultGraphClause);
           return ACTION(() =>
-            C.factory.wrap({ clauseType: 'default', value: iri }, C.factory.sourceLocation(start, iri)));
+            C.astFactory.wrap({ clauseType: 'default', value: iri }, C.astFactory.sourceLocation(start, iri)));
         } },
         { ALT: () => {
           const namedClause = SUBRULE(namedGraphClause);
-          return ACTION(() => C.factory.wrap({
+          return ACTION(() => C.astFactory.wrap({
             clauseType: 'named',
             value: namedClause.val,
-          }, C.factory.sourceLocation(start, namedClause)));
+          }, C.astFactory.sourceLocation(start, namedClause)));
         } },
       ]);
     },
@@ -63,12 +63,12 @@ export function datasetClauseUsingStar<RuleName extends string>(
         clauses.push(clause);
       });
 
-      return ACTION(() => C.factory.datasetClauses(
+      return ACTION(() => C.astFactory.datasetClauses(
         clauses.map(clause => clause.val),
-        C.factory.sourceLocation(...clauses),
+        C.astFactory.sourceLocation(...clauses),
       ));
     },
-    gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { factory: F }) => {
+    gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
       for (const clause of ast.clauses) {
         F.printFilter(ast, () => PRINT_WORD(fromUsing));
         if (clause.clauseType === 'named') {
@@ -91,7 +91,7 @@ export const namedGraphClause: SparqlGrammarRule<'namedGraphClause', Wrap<TermIr
   impl: ({ ACTION, SUBRULE, CONSUME }) => (C) => {
     const named = CONSUME(l.graph.named);
     const iri = SUBRULE(sourceSelector);
-    return ACTION(() => C.factory.wrap(iri, C.factory.sourceLocation(named, iri)));
+    return ACTION(() => C.astFactory.wrap(iri, C.astFactory.sourceLocation(named, iri)));
   },
 };
 

@@ -1,1 +1,4 @@
-PREFIX : <http://example.com/ns#> SELECT * WHERE { ?s ?p ?o {| ( :r / :q ) "ABC" ; |} . }
+PREFIX : <http://example.com/ns#>
+SELECT * WHERE {
+  ?s ?p ?o {| ( :r / :q ) "ABC" |} .  
+}

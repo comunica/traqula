@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v0.0.17"></a>
+## [v0.0.17](https://github.com/comunica/traqula/compare/v0.0.16...v0.0.17) - 2025-09-23
+
+* [REFACTOR: remove any when wrongly indexing Algebra objects](https://github.com/comunica/traqula/commit/e9cc81b194a7359ee212a4b1b751dba79a2913ef)
+* [REFACTOR: Different implementation style for rewrites](https://github.com/comunica/traqula/commit/5539391619e2456f573919d8407c2b08fae8b4d3)
+
 <a name="v0.0.16"></a>
 ## [v0.0.16](https://github.com/comunica/traqula/compare/v0.0.15...v0.0.16) - 2025-09-21
 

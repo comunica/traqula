@@ -2,6 +2,7 @@ import type { Localized, Node } from '@traqula/core';
 
 export type Sparql11Nodes =
   | GraphRef
+  | GraphQuads
   | UpdateOperation
   | Update
   | Query

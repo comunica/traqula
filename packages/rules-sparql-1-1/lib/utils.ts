@@ -42,4 +42,4 @@ export enum CommonIRIs {
   TYPE = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
 }
 
-export class TransformerSparql11 extends TransformerSubType<Sparql11Nodes> {}
+export class AstTransformer extends TransformerSubType<Sparql11Nodes> {}

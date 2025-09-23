@@ -1,3 +1,4 @@
+import type { SelectiveTraversalContext } from '@traqula/core';
 import { AstFactory } from '../astFactory.js';
 import type {
   Wildcard,
@@ -14,11 +15,12 @@ import type {
   TripleNesting,
   Term,
   SparqlQuery,
+  Sparql11Nodes,
 } from '../Sparql11types.js';
-import { TransformerSparql11 } from '../utils.js';
+import { AstTransformer } from '../utils.js';
 
 const F = new AstFactory();
-const transformer = new TransformerSparql11();
+const transformer = new AstTransformer();
 
 /**
  * Get all 'aggregate' rules from an expression
@@ -130,72 +132,64 @@ export function queryIsGood(query: Pick<QuerySelect, 'variables' | 'solutionModi
   }
 }
 
+function notUndefined<T>(some: T): some is Exclude<T, undefined> {
+  return some !== undefined;
+}
+
 export function findPatternBoundedVars(
   iter: SparqlQuery | Pattern | TripleNesting | TripleCollection | Path | Term | Wildcard,
   boundedVars: Set<string>,
 ): void {
-  if (F.isQuery(iter) || F.isUpdate(iter)) {
-    if (F.isQuerySelect(iter) || F.isQueryDescribe(iter)) {
-      if (iter.where && iter.variables.some(x => F.isWildcard(x))) {
-        findPatternBoundedVars(iter.where, boundedVars);
-      } else {
-        for (const v of iter.variables) {
-          findPatternBoundedVars(v, boundedVars);
-        }
-      }
-      if (iter.solutionModifiers.group) {
-        const grouping = iter.solutionModifiers.group;
-        for (const g of grouping.groupings) {
-          if ('variable' in g) {
-            findPatternBoundedVars(g.variable, boundedVars);
-          }
-        }
-      }
-      if (iter.values?.values && iter.values.values.length > 0) {
-        const values = iter.values.values;
-        for (const v of Object.keys(values[0])) {
+  transformer.traverseSubNodes(iter, {
+    query: op => ({ next: [
+      op.solutionModifiers.group,
+    ].filter(notUndefined) }),
+    triple: op => ({ next: [ op.subject, op.predicate, op.object ]}),
+    path: op => ({ next: op.items }),
+    tripleCollection: op => ({ next: [ op.identifier, ...op.triples ]}),
+  }, {
+    query: {
+      select: op => ({ next: [
+        ...(op.variables.some(x => F.isWildcard(x)) ? [ op.where ] : op.variables),
+        op.solutionModifiers.group,
+        op.values,
+      ].filter(notUndefined) } satisfies SelectiveTraversalContext<Sparql11Nodes>),
+      describe: op => ({ next: [
+        ...(op.variables.some(x => F.isWildcard(x)) ? [ op.where ] : op.variables),
+        op.solutionModifiers.group,
+        op.values,
+      ].filter(notUndefined) }),
+    },
+    solutionModifier: {
+      group: op => ({ next:
+          op.groupings.filter(g => 'variable' in g).map(x => x.variable),
+      }),
+      having: op => ({ next: op.having }),
+      order: op => ({ next: op.orderDefs.map(x => x.expression) }),
+    },
+    pattern: {
+      values: (op) => {
+        for (const v of Object.keys(op.values.at(0) ?? {})) {
           boundedVars.add(v);
         }
-      }
-    }
-  } else if (F.isTerm(iter)) {
-    if (F.isTermVariable(iter)) {
-      boundedVars.add(iter.value);
-    }
-  } else if (F.isTriple(iter)) {
-    findPatternBoundedVars(iter.subject, boundedVars);
-    findPatternBoundedVars(iter.predicate, boundedVars);
-    findPatternBoundedVars(iter.object, boundedVars);
-  } else if (F.isPath(iter)) {
-    if (!F.isTerm(iter)) {
-      for (const item of iter.items) {
-        findPatternBoundedVars(item, boundedVars);
-      }
-    }
-  } else if (F.isTripleCollection(iter) || F.isPatternBgp(iter)) {
-    for (const triple of iter.triples) {
-      findPatternBoundedVars(triple, boundedVars);
-    }
-  } else if (
-    F.isPatternGroup(iter) || F.isPatternUnion(iter) || F.isPatternOptional(iter) || F.isPatternService(iter)) {
-    for (const pattern of iter.patterns) {
-      findPatternBoundedVars(pattern, boundedVars);
-    }
-    if (F.isPatternService(iter)) {
-      findPatternBoundedVars(iter.name, boundedVars);
-    }
-  } else if (F.isPatternBind(iter)) {
-    findPatternBoundedVars(iter.variable, boundedVars);
-  } else if (F.isPatternValues(iter)) {
-    for (const variable of Object.keys(iter.values.at(0) ?? {})) {
-      boundedVars.add(variable);
-    }
-  } else if (F.isPatternGraph(iter)) {
-    findPatternBoundedVars(iter.name, boundedVars);
-    for (const pattern of iter.patterns) {
-      findPatternBoundedVars(pattern, boundedVars);
-    }
-  }
+        return {};
+      },
+      bgp: op => ({ next: op.triples }),
+      group: op => ({ next: op.patterns }),
+      union: op => ({ next: op.patterns }),
+      optional: op => ({ next: op.patterns }),
+      service: op => ({ next: [ op.name, ...op.patterns ]}),
+      bind: op => ({ next: [ op.variable ]}),
+      graph: op => ({ next: [ op.name, ...op.patterns ]}),
+      minus: op => ({ next: op.patterns.slice(0, 1) }),
+    },
+    term: {
+      variable: (op) => {
+        boundedVars.add(op.value);
+        return {};
+      },
+    },
+  });
 }
 
 /**
@@ -210,9 +204,9 @@ export function checkNote13(patterns: Pattern[]): void {
       // Find variables used.
       const variables: TermVariable[] = [];
       // TODO: this is slow! 2.6% self execution
-      transformer.visitNodeSpecific(bgp, {}, { term: { variable: (var_) => {
+      transformer.visitNodeSpecific(bgp, {}, { term: { variable: { visitor: (var_) => {
         variables.push(var_);
-      } }});
+      } }}});
       if (variables.some(var_ => var_.value === pattern.variable.value)) {
         throw new Error(`Variable used to bind is already bound (?${pattern.variable.value})`);
       }
@@ -245,12 +239,12 @@ export function updateNoReuseBlankNodeLabels(updateQuery: Update): void {
     const operation = update.operation;
     if (operation.subType === 'insertdata') {
       const blankNodesHere = new Set<string>();
-      transformer.visitNodeSpecific(operation, {}, { term: { blankNode: (blankNode) => {
+      transformer.visitNodeSpecific(operation, {}, { term: { blankNode: { visitor: (blankNode) => {
         blankNodesHere.add(blankNode.label);
         if (blankLabelsUsedInInsertData.has(blankNode.label)) {
           throw new Error('Detected reuse blank node across different INSERT DATA clauses');
         }
-      } }});
+      } }}});
       for (const blankNode of blankNodesHere) {
         blankLabelsUsedInInsertData.add(blankNode);
       }

@@ -1,6 +1,7 @@
-import { traqulaIndentation } from '@traqula/core';
+import { TransformerSubType, traqulaIndentation } from '@traqula/core';
 import { AstFactory } from './AstFactory.js';
 import type { SparqlContext, SparqlGeneratorContext } from './sparql12HelperTypes.js';
+import type { Sparql12Nodes } from './sparql12Types.js';
 
 export function completeParseContext(
   context: Partial<SparqlContext & SparqlGeneratorContext & { origSource: string; offset?: number }>,
@@ -17,3 +18,5 @@ export function completeParseContext(
     [traqulaIndentation]: context[traqulaIndentation] ?? 0,
   };
 }
+
+export class AstTransformer extends TransformerSubType<Sparql12Nodes> {}

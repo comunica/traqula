@@ -186,14 +186,14 @@ export const findAllVariables: AlgebraIndir<'findAllVariables', void, [object]> 
       thingy,
       {},
       {
-        term: { variable: (_var) => {
+        term: { variable: { visitor: (_var) => {
           variables.add(_var.value);
-        } },
-        pattern: { values: (values) => {
+        } }},
+        pattern: { values: { visitor: (values) => {
           for (const key in values.values.at(0) ?? {}) {
             variables.add(key);
           }
-        } },
+        } }},
       },
     );
   },

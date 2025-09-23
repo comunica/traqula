@@ -1,6 +1,6 @@
 import type * as RDF from '@rdfjs/types';
 import type { IndirDef } from '@traqula/core';
-import { AstFactory, TransformerSparql11 } from '@traqula/rules-sparql-1-1';
+import { AstFactory, AstTransformer } from '@traqula/rules-sparql-1-1';
 import * as Algebra from '../algebra.js';
 import { AlgebraFactory } from '../algebraFactory.js';
 import { types } from '../toAlgebra/index.js';
@@ -29,7 +29,7 @@ export interface AstContext {
   order: Algebra.Expression[];
   algebraFactory: AlgebraFactory;
   astFactory: AstFactory;
-  transformer: TransformerSparql11;
+  transformer: AstTransformer;
 }
 
 export function createAstContext(): AstContext {
@@ -41,7 +41,7 @@ export function createAstContext(): AstContext {
     order: [],
     algebraFactory: new AlgebraFactory(),
     astFactory: new AstFactory(),
-    transformer: new TransformerSparql11(),
+    transformer: new AstTransformer(),
   };
 }
 

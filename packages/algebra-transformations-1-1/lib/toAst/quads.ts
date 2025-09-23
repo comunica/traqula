@@ -56,9 +56,9 @@ unknown,
     const keyGraphs: Record<string, (RDF.NamedNode | RDF.DefaultGraph)[]> = {};
     // Track all the unique graph names for the entire Operation
     const operationGraphNames: Record<string, RDF.NamedNode | RDF.DefaultGraph> = {};
-    for (const key of Object.keys(op)) {
+    for (const [ key, value ] of Object.entries(op)) {
       const newGraphs: (RDF.NamedNode | RDF.DefaultGraph)[] = [];
-      result[key] = SUBRULE(removeAlgQuadsRecursive, op[key], newGraphs);
+      result[key] = SUBRULE(removeAlgQuadsRecursive, value, newGraphs);
 
       // If a graph was registered, we register the discovery we did at this key of the object
       //  and create graph identifier map

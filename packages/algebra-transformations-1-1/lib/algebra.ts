@@ -1,4 +1,4 @@
-import type * as rdfjs from '@rdfjs/types';
+import type * as RDF from '@rdfjs/types';
 
 export enum Types {
   ALT = 'alt',
@@ -73,7 +73,6 @@ export type TypedExpression<T extends ExpressionTypes> = Extract<Expression, { e
 // ----------------------- ABSTRACTS -----------------------
 
 export interface BaseOperation {
-  [key: string]: any;
   metadata?: Record<string, unknown>;
   type: Types;
 }
@@ -100,6 +99,7 @@ export interface AggregateExpression extends BaseExpression {
   aggregator: 'avg' | 'count' | 'group_concat' | 'max' | 'min' | 'sample' | 'sum';
   distinct: boolean;
   expression: Expression;
+  separator?: string;
 }
 
 export interface GroupConcatExpression extends AggregateExpression {
@@ -115,7 +115,7 @@ export interface ExistenceExpression extends BaseExpression {
 
 export interface NamedExpression extends BaseExpression {
   expressionType: ExpressionTypes.NAMED;
-  name: rdfjs.NamedNode;
+  name: RDF.NamedNode;
   args: Expression[];
 }
 
@@ -127,7 +127,7 @@ export interface OperatorExpression extends BaseExpression {
 
 export interface TermExpression extends BaseExpression {
   expressionType: ExpressionTypes.TERM;
-  term: rdfjs.Term;
+  term: RDF.Term;
 }
 
 export interface WildcardExpression extends BaseExpression {
@@ -152,7 +152,7 @@ export interface Ask extends Single {
 
 // Also an expression
 export interface BoundAggregate extends AggregateExpression {
-  variable: rdfjs.Variable;
+  variable: RDF.Variable;
 }
 
 export interface Bgp extends BaseOperation {
@@ -167,7 +167,7 @@ export interface Construct extends Single {
 
 export interface Describe extends Single {
   type: Types.DESCRIBE;
-  terms: (rdfjs.Variable | rdfjs.NamedNode)[];
+  terms: (RDF.Variable | RDF.NamedNode)[];
 }
 
 export interface Distinct extends Single {
@@ -176,14 +176,14 @@ export interface Distinct extends Single {
 
 export interface Extend extends Single {
   type: Types.EXTEND;
-  variable: rdfjs.Variable;
+  variable: RDF.Variable;
   expression: Expression;
 }
 
 export interface From extends Single {
   type: Types.FROM;
-  default: rdfjs.NamedNode[];
-  named: rdfjs.NamedNode[];
+  default: RDF.NamedNode[];
+  named: RDF.NamedNode[];
 }
 
 export interface Filter extends Single {
@@ -193,12 +193,12 @@ export interface Filter extends Single {
 
 export interface Graph extends Single {
   type: Types.GRAPH;
-  name: rdfjs.Variable | rdfjs.NamedNode;
+  name: RDF.Variable | RDF.NamedNode;
 }
 
 export interface Group extends Single {
   type: Types.GROUP;
-  variables: rdfjs.Variable[];
+  variables: RDF.Variable[];
   aggregates: BoundAggregate[];
 }
 
@@ -218,7 +218,7 @@ export interface LeftJoin extends Double {
 
 export interface Link extends BaseOperation {
   type: Types.LINK;
-  iri: rdfjs.NamedNode;
+  iri: RDF.NamedNode;
 }
 
 export interface Minus extends Double {
@@ -231,7 +231,7 @@ export interface Nop extends BaseOperation {
 
 export interface Nps extends BaseOperation {
   type: Types.NPS;
-  iris: rdfjs.NamedNode[];
+  iris: RDF.NamedNode[];
 }
 
 export interface OneOrMorePath extends BaseOperation {
@@ -246,22 +246,22 @@ export interface OrderBy extends Single {
 
 export interface Path extends BaseOperation {
   type: Types.PATH;
-  subject: rdfjs.Term;
+  subject: RDF.Term;
   predicate: PropertyPathSymbol;
-  object: rdfjs.Term;
-  graph: rdfjs.Term;
+  object: RDF.Term;
+  graph: RDF.Term;
 }
 
 /**
  * Simple BGP entry (triple)
  */
-export interface Pattern extends BaseOperation, rdfjs.BaseQuad {
+export interface Pattern extends BaseOperation, RDF.BaseQuad {
   type: Types.PATTERN;
 }
 
 export interface Project extends Single {
   type: Types.PROJECT;
-  variables: rdfjs.Variable[];
+  variables: RDF.Variable[];
 }
 
 export interface Reduced extends Single {
@@ -275,7 +275,7 @@ export interface Seq extends Multi {
 
 export interface Service extends Single {
   type: Types.SERVICE;
-  name: rdfjs.Variable | rdfjs.NamedNode;
+  name: RDF.Variable | RDF.NamedNode;
   silent: boolean;
 }
 
@@ -291,8 +291,8 @@ export interface Union extends Multi {
 
 export interface Values extends BaseOperation {
   type: Types.VALUES;
-  variables: rdfjs.Variable[];
-  bindings: Record<string, rdfjs.Literal | rdfjs.NamedNode>[];
+  variables: RDF.Variable[];
+  bindings: Record<string, RDF.Literal | RDF.NamedNode>[];
 }
 
 export interface ZeroOrMorePath extends BaseOperation {
@@ -324,28 +324,28 @@ export interface UpdateGraph extends BaseOperation {
 
 export interface Load extends UpdateGraph {
   type: Types.LOAD;
-  source: rdfjs.NamedNode;
-  destination?: rdfjs.NamedNode;
+  source: RDF.NamedNode;
+  destination?: RDF.NamedNode;
 }
 
 export interface Clear extends UpdateGraph {
   type: Types.CLEAR;
-  source: 'DEFAULT' | 'NAMED' | 'ALL' | rdfjs.NamedNode;
+  source: 'DEFAULT' | 'NAMED' | 'ALL' | RDF.NamedNode;
 }
 
 export interface Create extends UpdateGraph {
   type: Types.CREATE;
-  source: rdfjs.NamedNode;
+  source: RDF.NamedNode;
 }
 
 export interface Drop extends UpdateGraph {
   type: Types.DROP;
-  source: 'DEFAULT' | 'NAMED' | 'ALL' | rdfjs.NamedNode;
+  source: 'DEFAULT' | 'NAMED' | 'ALL' | RDF.NamedNode;
 }
 
 export interface UpdateGraphShortcut extends UpdateGraph {
-  source: 'DEFAULT' | rdfjs.NamedNode;
-  destination: 'DEFAULT' | rdfjs.NamedNode;
+  source: 'DEFAULT' | RDF.NamedNode;
+  destination: 'DEFAULT' | RDF.NamedNode;
 }
 
 export interface Add extends UpdateGraphShortcut {

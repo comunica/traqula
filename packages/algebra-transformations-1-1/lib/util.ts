@@ -132,8 +132,8 @@ export function inScopeVariables(op: A.Operation): RDF.Variable[] {
   // https://www.w3.org/TR/sparql11-query/#variableScope
   recurseOperation(op, {
     [Types.EXPRESSION]: (op) => {
-      if (op.expressionType === ExpressionTypes.AGGREGATE && op.variable) {
-        addVariable(op.variable);
+      if (op.expressionType === ExpressionTypes.AGGREGATE && (<any> op).variable) {
+        addVariable((<any> op).variable);
       }
       return true;
     },
@@ -612,9 +612,9 @@ export function mapExpression(
 
   switch (expr.expressionType) {
     case ExpressionTypes.AGGREGATE:
-      if (expr.variable) {
+      if ((<any> expr).variable) {
         return factory.createBoundAggregate(
-          expr.variable,
+          (<any> expr).variable,
           expr.aggregator,
 <A.Expression> mapOp(expr.expression),
 expr.distinct,

@@ -87,12 +87,12 @@ AstIndir<'translateProject', PatternGroup, [Algebra.Project | Algebra.Ask | Alge
 
     if (type === types.PROJECT) {
       result.subType = 'select';
-      variables = op.variables;
+      variables = (<Algebra.Project>op).variables;
     } else if (type === types.ASK) {
       result.subType = 'ask';
     } else if (type === types.DESCRIBE) {
       result.subType = 'describe';
-      variables = op.terms;
+      variables = <RDF.Variable[]>(<Algebra.Describe>op).terms;
     }
 
     // Backup values in case of nested queries

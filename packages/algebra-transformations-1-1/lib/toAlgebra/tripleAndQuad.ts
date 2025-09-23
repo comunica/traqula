@@ -136,14 +136,15 @@ AlgebraIndir<'recurseGraph', Algebra.Operation, [Algebra.Operation, RDF.Term, RD
       }
       algOp.input = SUBRULE(recurseGraph, algOp.input, graph, replacement);
     } else {
-      for (const key of Object.keys(algOp)) {
-        if (Array.isArray(algOp[key])) {
-          algOp[key] = algOp[key].map((x: any) => SUBRULE(recurseGraph, x, graph, replacement));
-        } else if (typeVals.includes(algOp[key].type)) {
+      for (const [ key, value ] of Object.entries(algOp)) {
+        const castedKey = <keyof typeof algOp> key;
+        if (Array.isArray(value)) {
+          algOp[castedKey] = <any> value.map((x: any) => SUBRULE(recurseGraph, x, graph, replacement));
+        } else if (typeVals.includes(value.type)) {
           // Can't do instanceof on an interface
-          algOp[key] = SUBRULE(recurseGraph, algOp[key], graph, replacement);
-        } else if (replacement && isVariable(algOp[key]) && algOp[key].equals(graph)) {
-          algOp[key] = replacement;
+          algOp[castedKey] = <any> SUBRULE(recurseGraph, value, graph, replacement);
+        } else if (replacement && isVariable(value) && value.equals(graph)) {
+          algOp[castedKey] = <any> replacement;
         }
       }
     }

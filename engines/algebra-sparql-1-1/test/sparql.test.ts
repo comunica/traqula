@@ -10,7 +10,7 @@ import { suites } from './algebra.test.js';
 // https://www.w3.org/2001/sw/DataAccess/tests/r2#syntax-basic-01
 // https://www.w3.org/2009/sparql/implementations/
 // https://www.w3.org/2009/sparql/docs/tests/
-describe('sparql output', () => {
+describe('sparql algebra 1.1 output', () => {
   const canon = new Canonicalizer();
   const parser = new Parser11();
   const generator = new Generator11();
@@ -42,6 +42,8 @@ describe('sparql output', () => {
       'sparql-9-3c',
       // Values is pushed from being solution modifier to being in patternGroup
       'sparql-values-clause',
+      // Same reason
+      'no-space-select',
     ].includes(x))) {
       it(`can algebra circle ${name}`, async({ expect }) => {
         const { query } = await statics();

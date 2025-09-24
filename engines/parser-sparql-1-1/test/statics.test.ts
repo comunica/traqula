@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { BaseQuad } from '@rdfjs/types';
 import { lex } from '@traqula/rules-sparql-1-1';
-import { positiveTest, importSparql11NoteTests } from '@traqula/test-utils';
+import { importSparql11NoteTests, negativeTest, positiveTest } from '@traqula/test-utils';
 import { DataFactory } from 'rdf-data-factory';
 import { describe, it } from 'vitest';
 import { Parser, sparql11ParserBuilder } from '../lib/index.js';
@@ -49,6 +49,15 @@ describe('a SPARQL 1.1 parser', () => {
         const res: unknown = parser.parse(query, context);
         // SinkAst('sparql-1-1', name, <object> res);
         expect(res).toEqualParsedQuery(ast);
+      });
+    }
+  });
+
+  describe('negative SPARQL 1.1', () => {
+    for (const { name, statics } of negativeTest('sparql-1-1-invalid')) {
+      it(`should NOT parse ${name}`, async({ expect }) => {
+        const { query } = await statics();
+        expect(() => parser.parse(query, context)).toThrow();
       });
     }
   });

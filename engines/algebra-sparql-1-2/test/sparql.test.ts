@@ -10,7 +10,7 @@ import { suites } from './algebra.test.js';
 // https://www.w3.org/2001/sw/DataAccess/tests/r2#syntax-basic-01
 // https://www.w3.org/2009/sparql/implementations/
 // https://www.w3.org/2009/sparql/docs/tests/
-describe('sparql output', () => {
+describe('sparql 1.2 algebra transformer', () => {
   const canon = new Canonicalizer();
   const parser = new Parser12();
   const generator = new Generator12();
@@ -58,6 +58,8 @@ describe('sparql output', () => {
       'sparql-9-3c',
       // Values is pushed from being solution modifier to being in patternGroup
       'sparql-values-clause',
+      // Same reason
+      'no-space-select',
     ].includes(x))) {
       testLoopQuery(name, statics().then(x => x.query));
     }

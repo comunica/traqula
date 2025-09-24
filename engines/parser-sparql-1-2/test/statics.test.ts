@@ -52,6 +52,15 @@ describe('a SPARQL 1.2 parser', () => {
     }
   });
 
+  describe('negative SPARQL 1.1', () => {
+    for (const { name, statics } of negativeTest('sparql-1-1-invalid')) {
+      it(`should NOT parse ${name}`, async({ expect }) => {
+        const { query } = await statics();
+        expect(() => parser.parse(query, context)).toThrow();
+      });
+    }
+  });
+
   describe('positive sparql 1.2', () => {
     for (const { name, statics } of positiveTest('sparql-1-2')) {
       it(`can parse ${name}`, async({ expect }) => {

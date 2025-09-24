@@ -260,6 +260,7 @@ ${errorLine}`);
         parser.setContext(context);
         const result = parser[rule.name](context, ...args);
         if (parser.errors.length > 0) {
+          // Console.log(lexResult);
           if (errorHandler) {
             errorHandler(parser.errors);
           } else {

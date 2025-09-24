@@ -1,5 +1,5 @@
 import type { BaseQuad } from '@rdfjs/types';
-import { positiveTest, importSparql11NoteTests } from '@traqula/test-utils';
+import { positiveTest, importSparql11NoteTests, negativeTest } from '@traqula/test-utils';
 import { DataFactory } from 'rdf-data-factory';
 import { describe, it } from 'vitest';
 import { adjustParserBuilder, adjustLexerBuilder, Parser } from '../lib/index.js';
@@ -37,6 +37,15 @@ describe('a SPARQL 1.1 + adjust parser', () => {
         const { query, ast } = await statics();
         const res: unknown = parser.parse(query, context);
         expect(res).toEqualParsedQuery(ast);
+      });
+    }
+  });
+
+  describe('negative SPARQL 1.1', () => {
+    for (const { name, statics } of negativeTest('sparql-1-1-invalid')) {
+      it(`should NOT parse ${name}`, async({ expect }) => {
+        const { query } = await statics();
+        expect(() => parser.parse(query, context)).toThrow();
       });
     }
   });

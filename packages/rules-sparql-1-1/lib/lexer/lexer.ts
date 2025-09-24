@@ -1,7 +1,8 @@
 /* eslint-disable require-unicode-regexp */
 import { LexerBuilder, createToken } from '@traqula/core';
-import { allBuiltInCalls, avg, datatype, groupConcat } from './BuiltInCalls.js';
+import { allBuiltInCalls, avg, groupConcat } from './BuiltInCalls.js';
 import { allGraphTokens, graphAll } from './graph.js';
+import { atLeastOneBlankPattern } from './lexerPatterns.js';
 import { allSymbols } from './symbols.js';
 import { allTerminals } from './terminals.js';
 
@@ -36,9 +37,23 @@ export const to = createToken({ name: 'To', pattern: /to/i, label: 'TO' });
 export const move = createToken({ name: 'Move', pattern: /move/i, label: 'MOVE' });
 export const copy = createToken({ name: 'Copy', pattern: /copy/i, label: 'COPY' });
 export const modifyWith = createToken({ name: 'ModifyWith', pattern: /with/i, label: 'WITH' });
+export const deleteDataClause = createToken({
+  name: 'DeleteDataClause',
+  pattern: new RegExp(`delete(${atLeastOneBlankPattern.source})data`, 'i'),
+  label: 'DELETE DATA',
+});
+export const deleteWhereClause = createToken({
+  name: 'DeleteWhereClause',
+  pattern: new RegExp(`delete(${atLeastOneBlankPattern.source})where`, 'i'),
+  label: 'DELETE WHERE',
+});
 export const deleteClause = createToken({ name: 'DeleteClause', pattern: /delete/i, label: 'DELETE' });
-export const insertClause = createToken({ name: 'InsertClause', pattern: /insert/i, label: 'INSERT' });
-export const dataClause = createToken({ name: 'DataClause', pattern: /data/i, label: 'DATA', longer_alt: datatype });
+export const insertDataClause = createToken({
+  name: 'InsertDataClause',
+  pattern: new RegExp(`insert(${atLeastOneBlankPattern.source})data`, 'i'),
+  label: 'INSERT DATA',
+});
+export const insertClause = createToken({ name: 'InsertClause', pattern: /insert/i, label: 'insert' });
 export const usingClause = createToken({ name: 'UsingClause', pattern: /using/i, label: 'USING' });
 export const optional = createToken({ name: 'Optional', pattern: /optional/i, label: 'OPTIONAL' });
 export const service = createToken({ name: 'Service', pattern: /service/i, label: 'SERVICE' });
@@ -86,9 +101,11 @@ export const allBaseTokens = LexerBuilder.create().add(
   move,
   copy,
   modifyWith,
+  deleteWhereClause,
+  deleteDataClause,
   deleteClause,
+  insertDataClause,
   insertClause,
-  dataClause,
   usingClause,
   optional,
   service,
@@ -115,7 +132,6 @@ export const sparql11LexerBuilder = LexerBuilder
   .merge(allBuiltInCalls)
   .merge(allGraphTokens)
   .merge(allSymbols)
-  .moveBefore(datatype, dataClause)
   .moveAfter(avg, a)
   .moveBefore(a, graphAll)
   .moveAfter(groupConcat, groupByGroup);

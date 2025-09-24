@@ -54,6 +54,11 @@ export function importSparql11NoteTests(parser: Parser, dataFactory: DataFactory
     'Target id of \'AS\' (?X) already used in subquery',
   ));
 
+  it('should parse when not ending in newline', ({ expect }) => {
+    const query = 'select?s{?s?p?o}#wow, what a query';
+    expect(parser.parse(query)).toMatchObject({});
+  });
+
   it('should preserve BGP and filter pattern order', ({ expect }) => {
     const query = 'SELECT * { ?s ?p "1" . FILTER(true) . ?s ?p "2"  }';
     expect(parser.parse(query)).toMatchObject({

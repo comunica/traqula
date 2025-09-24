@@ -336,14 +336,12 @@ function insertDeleteDelWhere<T extends string>(
   name: T,
   subType: 'insertdata' | 'deletedata' | 'deletewhere',
   cons1: TokenType,
-  cons2: TokenType,
   dataRule: SparqlGrammarRule<any, Wrap<Quads[]>>,
 ): SparqlRule<T, UpdateOperationInsertData | UpdateOperationDeleteData | UpdateOperationDeleteWhere> {
   return {
     name,
     impl: ({ ACTION, SUBRULE1, CONSUME }) => (C) => {
       const insDelToken = CONSUME(cons1);
-      CONSUME(cons2);
 
       let couldCreateBlankNodes = true;
       if (name !== 'insertData') {
@@ -382,17 +380,17 @@ function insertDeleteDelWhere<T extends string>(
 /**
  * [[38]](https://www.w3.org/TR/sparql11-query/#rInsertData)
  */
-export const insertData = insertDeleteDelWhere('insertData', 'insertdata', l.insertClause, l.dataClause, quadData);
+export const insertData = insertDeleteDelWhere('insertData', 'insertdata', l.insertDataClause, quadData);
 
 /**
  * [[39]](https://www.w3.org/TR/sparql11-query/#rDeleteData)
  */
-export const deleteData = insertDeleteDelWhere('deleteData', 'deletedata', l.deleteClause, l.dataClause, quadData);
+export const deleteData = insertDeleteDelWhere('deleteData', 'deletedata', l.deleteDataClause, quadData);
 
 /**
  * [[40]](https://www.w3.org/TR/sparql11-query/#rDeleteWhere)
  */
-export const deleteWhere = insertDeleteDelWhere('deleteWhere', 'deletewhere', l.deleteClause, l.where, quadPattern);
+export const deleteWhere = insertDeleteDelWhere('deleteWhere', 'deletewhere', l.deleteWhereClause, quadPattern);
 
 /**
  * [[41]](https://www.w3.org/TR/sparql11-query/#rModify)

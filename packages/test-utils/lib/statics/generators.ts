@@ -54,7 +54,7 @@ interface NegativeTest {
 }
 
 export function* negativeTest(
-  type: 'sparql-1-2-invalid',
+  type: 'sparql-1-1-invalid' | 'sparql-1-2-invalid',
   filter?: (name: string) => boolean,
 ): Generator<NegativeTest> {
   const dir = path.join(__dirname, type);

@@ -1,6 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v0.0.18"></a>
+## [v0.0.18](https://github.com/comunica/traqula/compare/v0.0.17...v0.0.18) - 2025-09-25
+
+* [FEATURE: LL-1 is sufficient](https://github.com/comunica/traqula/commit/6a59005bf1f3c705d02fc886d229187e71714341)
+* [DOCS: Add docs on CORE package and dedicated docs to create your own parser](https://github.com/comunica/traqula/commit/1fa8b447dc80c1f59e87d1b8267a7678ec509a48)
+* [Update dependency lerna to v9](https://github.com/comunica/traqula/commit/79d1c0832f332e6e86be03ab6d2f1bfd1496f40c)
+* [BUGFIX: disallow queries with no space between delete/insert data/where](https://github.com/comunica/traqula/commit/3c85629403a366e392970f5c11fa7499f8dd0b85)
+
 <a name="v0.0.17"></a>
 ## [v0.0.17](https://github.com/comunica/traqula/compare/v0.0.16...v0.0.17) - 2025-09-23
 

@@ -11,7 +11,13 @@ export type IndirDef<
 };
 
 export type IndirDefArg = {
-  SUBRULE: <T, U extends any[]>(cstDef: IndirDef<any, any, T, U>, ...arg: U) => T;
+  /**
+   * Calls another rule using the provided arguments.
+   * @param rule
+   * @param arg
+   * @constructor
+   */
+  SUBRULE: <T, U extends any[]>(rule: IndirDef<any, any, T, U>, ...arg: U) => T;
 };
 
 export type IndirectionMap<RuleNames extends string> = {[Key in RuleNames]: IndirDef<any, Key> };

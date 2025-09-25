@@ -411,6 +411,12 @@ export interface CstDef {
   AT_LEAST_ONE_SEP7: (options: AtLeastOneSepMethodOpts<any>) => void;
   AT_LEAST_ONE_SEP8: (options: AtLeastOneSepMethodOpts<any>) => void;
   AT_LEAST_ONE_SEP9: (options: AtLeastOneSepMethodOpts<any>) => void;
+  /**
+   * Perform an action that is only executed during actual parsing and not during parser initialization.
+   * (When a lot of this secretly return null)
+   * @param impl
+   * @constructor
+   */
   ACTION: <T>(impl: () => T) => T;
   BACKTRACK: BacktrackFunc;
   SUBRULE: SubRuleFunc;

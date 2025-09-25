@@ -169,9 +169,9 @@ Both are ignored in the AST, but if you want to generate the same string out of 
 Traqula helps you store this information using it's `Node` `Localization`.
 
 Localization basically allows you to remember what _portion of the original string_ a node represents.
-Take for example the `SENTANCE`: `I Love      Traqula`, If we ignore spaces and caps in the ast, a valid representation would be:
+Take for example the `SENTENCE`: `I Love      Traqula`, If we ignore spaces and caps in the ast, a valid representation would be:
 ```
-SENTANCE-node{ words: [ WORD-node{ value: "i" }, WORD-node{ value: "love" }, WORD-node{ value: "traqula" } ]
+SENTENCE-node{ words: [ WORD-node{ value: "i" }, WORD-node{ value: "love" }, WORD-node{ value: "traqula" } ] }
 ```
 If we generated we would loe the capitalisation and get: `i love traqula` for example.
 Round tripping will add a `source localization` for each node,

@@ -7,7 +7,7 @@ import type {
 import { completeParseContext, AstFactory, gram as g12 } from '@traqula/rules-sparql-1-2';
 import type * as T12 from '@traqula/rules-sparql-1-2';
 
-const sparql12GeneratorBuilder =
+export const sparql12GeneratorBuilder =
   GeneratorBuilder.create(sparql11GeneratorBuilder)
     .widenContext<T12.SparqlGeneratorContext>()
     .typePatch<{

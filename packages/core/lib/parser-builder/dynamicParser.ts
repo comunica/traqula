@@ -14,7 +14,7 @@ export class DynamicParser<Context, Names extends string, RuleDefs extends Parse
   public constructor(rules: RuleDefs, tokenVocabulary: TokenVocabulary, config: IParserConfig = {}) {
     super(tokenVocabulary, {
       // RecoveryEnabled: true,
-      maxLookahead: 2,
+      maxLookahead: 1,
       skipValidations: true,
       ...config,
     });

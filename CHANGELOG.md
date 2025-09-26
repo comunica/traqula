@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v0.0.19"></a>
+## [v0.0.19](https://github.com/comunica/traqula/compare/v0.0.18...v0.0.19) - 2025-09-26
+
+* [REFACTOR: do not use instanceof since it can break uner double packaging](https://github.com/comunica/traqula/commit/56d9e9616e9a40d9a52762b8b92c058d8385e72c)
+* [TESTS: add more benchmarks](https://github.com/comunica/traqula/commit/8910ef724e09ed740aacc32131ff5fbbdc0a7f85)
+
 <a name="v0.0.18"></a>
 ## [v0.0.18](https://github.com/comunica/traqula/compare/v0.0.17...v0.0.18) - 2025-09-25
 

@@ -22,10 +22,10 @@ export class IndirBuilder<Context, Names extends string, RuleDefs extends Indire
   >(
     start: Rules | IndirBuilder<Context, Names, RuleDefs>,
   ): IndirBuilder<Context, Names, RuleDefs> {
-    if (start instanceof IndirBuilder) {
-      return new IndirBuilder({ ...start.rules });
+    if (Array.isArray(start)) {
+      return <IndirBuilder<Context, Names, RuleDefs>> <unknown> new IndirBuilder(listToIndirectionMap(start));
     }
-    return <IndirBuilder<Context, Names, RuleDefs>> <unknown> new IndirBuilder(listToIndirectionMap(start));
+    return new IndirBuilder({ ...(<IndirBuilder<any, any, any>>start).rules });
   }
 
   private rules: RuleDefs;

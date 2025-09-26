@@ -37,10 +37,10 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
   >(
     start: Rules | GeneratorBuilder<Context, Names, RuleDefs>,
   ): GeneratorBuilder<Context, Names, RuleDefs> {
-    if (start instanceof GeneratorBuilder) {
-      return new GeneratorBuilder({ ...start.rules });
+    if (Array.isArray(start)) {
+      return <GeneratorBuilder<Context, Names, RuleDefs>> <unknown> new GeneratorBuilder(listToRuleDefMap(start));
     }
-    return <GeneratorBuilder<Context, Names, RuleDefs>> <unknown> new GeneratorBuilder(listToRuleDefMap(start));
+    return new GeneratorBuilder({ ...(<GeneratorBuilder<any, any, any>>start).rules });
   }
 
   private rules: RuleDefs;

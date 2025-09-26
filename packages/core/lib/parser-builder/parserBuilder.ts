@@ -43,10 +43,10 @@ export class ParserBuilder<Context, Names extends string, RuleDefs extends Parse
   >(
     start: Rules | ParserBuilder<Context, Names, RuleDefs>,
   ): ParserBuilder<Context, Names, RuleDefs> {
-    if (start instanceof ParserBuilder) {
-      return new ParserBuilder({ ...start.rules });
+    if (Array.isArray(start)) {
+      return <ParserBuilder<Context, Names, RuleDefs>> <unknown> new ParserBuilder(listToRuleDefMap(start));
     }
-    return <ParserBuilder<Context, Names, RuleDefs>> <unknown> new ParserBuilder(listToRuleDefMap(start));
+    return new ParserBuilder({ ...(<ParserBuilder<any, any, any>>start).rules });
   }
 
   private rules: RuleDefs;

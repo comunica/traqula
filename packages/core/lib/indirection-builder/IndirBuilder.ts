@@ -34,8 +34,14 @@ export class IndirBuilder<Context, Names extends string, RuleDefs extends Indire
     this.rules = startRules;
   }
 
-  public widenContext<NewContext extends Context>(): IndirBuilder<NewContext, Names, RuleDefs> {
-    return <IndirBuilder<NewContext, Names, RuleDefs>> <unknown> this;
+  public widenContext<NewContext extends Context>(): IndirBuilder<
+    NewContext,
+    Names,
+    {[Key in keyof RuleDefs]: Key extends Names ?
+        (RuleDefs[Key] extends IndirDef<any, any, infer RT, infer PT> ? IndirDef<NewContext, Key, RT, PT> : never)
+      : never }
+  > {
+    return <any> this;
   }
 
   public typePatch<Patch extends {[Key in Names]?: [any] | [any, any[]]}>():
@@ -123,6 +129,11 @@ export class IndirBuilder<Context, Names extends string, RuleDefs extends Indire
     return <IndirBuilder<Context, Exclude<Names, U>, {[K in Exclude<Names, U>]:
       RuleDefs[K] extends IndirDef<Context, K> ? RuleDefs[K] : never }>>
       <unknown> this;
+  }
+
+  public getRule<U extends Names>(ruleName: U): RuleDefs[U] extends IndirDef<any, U, infer RT, infer PT> ?
+    IndirDef<Context, U, RT, PT> : never {
+    return <any> this.rules[ruleName];
   }
 
   public build(): IndirectObjFromIndirDefs<Context, Names, RuleDefs> {

@@ -55,8 +55,14 @@ export class ParserBuilder<Context, Names extends string, RuleDefs extends Parse
     this.rules = startRules;
   }
 
-  public widenContext<NewContext extends Context>(): ParserBuilder<NewContext, Names, RuleDefs> {
-    return <ParserBuilder<NewContext, Names, RuleDefs>> <unknown> this;
+  public widenContext<NewContext extends Context>(): ParserBuilder<
+    NewContext,
+Names,
+{[Key in keyof RuleDefs]: Key extends Names ?
+    (RuleDefs[Key] extends ParserRule<any, any, infer RT, infer PT> ? ParserRule<NewContext, Key, RT, PT> : never)
+  : never }
+> {
+    return <any> this;
   }
 
   public typePatch<Patch extends {[Key in Names]?: [any] | [any, any[]]}>():
@@ -145,6 +151,11 @@ export class ParserBuilder<Context, Names extends string, RuleDefs extends Parse
     return <ParserBuilder<Context, Exclude<Names, U>, {[K in Exclude<Names, U>]:
       RuleDefs[K] extends ParserRule<Context, K> ? RuleDefs[K] : never }>>
       <unknown> this;
+  }
+
+  public getRule<U extends Names>(ruleName: U): RuleDefs[U] extends ParserRule<any, U, infer RT, infer PT> ?
+    ParserRule<Context, U, RT, PT> : never {
+    return <any> this.rules[ruleName];
   }
 
   /**

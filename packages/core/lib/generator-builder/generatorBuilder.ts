@@ -49,17 +49,26 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
     this.rules = startRules;
   }
 
-  public widenContext<NewContext extends Context>(): GeneratorBuilder<NewContext, Names, RuleDefs> {
-    return <GeneratorBuilder<NewContext, Names, RuleDefs>> <unknown> this;
+  public widenContext<NewContext extends Context>(): GeneratorBuilder<
+    NewContext,
+    Names,
+    {[Key in keyof RuleDefs]: Key extends Names ?
+        (RuleDefs[Key] extends GeneratorRule<any, any, infer RT, infer PT> ?
+          GeneratorRule<NewContext, Key, RT, PT> : never)
+      : never }
+  > {
+    return <any> this;
   }
 
   public typePatch<Patch extends {[Key in Names]?: [any] | [any, any[]]}>():
   GeneratorBuilder<Context, Names, {[Key in Names]: Key extends keyof Patch ? (
     Patch[Key] extends [any, any[]] ? GeneratorRule<Context, Key, Patch[Key][0], Patch[Key][1]> : (
-    // Only  one - infer arg yourself
-      Patch[Key] extends GeneratorRule<Context, Key, any, infer args> ?
-        GeneratorRule<Context, Key, Patch[Key][0], args> : never
-    )) : never
+      // Only  one - infer arg yourself
+      Patch[Key] extends [ any ] ?
+        RuleDefs[Key] extends GeneratorRule<any, any, any, infer Par> ?
+          GeneratorRule<Context, Key, Patch[Key][0], Par> : never
+        : never
+    )) : RuleDefs[Key] extends GeneratorRule<any, Key> ? RuleDefs[Key] : never
   }> {
     return <any> this;
   }
@@ -139,6 +148,11 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
     return <GeneratorBuilder<Context, Exclude<Names, U>, {[K in Exclude<Names, U>]:
       RuleDefs[K] extends GeneratorRule<Context, K> ? RuleDefs[K] : never }>>
       <unknown> this;
+  }
+
+  public getRule<U extends Names>(ruleName: U): RuleDefs[U] extends GeneratorRule<any, U, infer RT, infer PT> ?
+    GeneratorRule<Context, U, RT, PT> : never {
+    return <any> this.rules[ruleName];
   }
 
   /**

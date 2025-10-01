@@ -11,7 +11,7 @@ import type {
   TermVariable,
   TripleNesting,
 } from '@traqula/rules-sparql-1-1';
-import type { Algebra } from '../index.js';
+import { Algebra } from '../index.js';
 import * as util from '../util.js';
 import type { AstIndir } from './core.js';
 import { translateAlgPureExpression } from './expression.js';
@@ -58,14 +58,24 @@ export const translateAlgExtend: AstIndir<'translateExtend', Pattern | Pattern[]
       extend.push(op);
       return SUBRULE(translateAlgPatternNew, op.input);
     }
-    return util.flatten([
-      SUBRULE(translateAlgPatternNew, op.input),
-      F.patternBind(
-        SUBRULE(translateAlgPureExpression, op.expression),
-        <RdfTermToAst<typeof op.variable>> SUBRULE(translateAlgTerm, op.variable),
+    // Many extends can be put in a single group
+    const extendsOperations: Algebra.Extend[] = [];
+    function collectExtends(op: Algebra.Operation): Algebra.Operation {
+      if (op.type === Algebra.Types.EXTEND) {
+        extendsOperations.push(op);
+        return collectExtends(op.input);
+      }
+      return op;
+    }
+    const input = collectExtends(op);
+    return F.patternGroup(util.flatten([
+      SUBRULE(translateAlgPatternNew, input),
+      ...extendsOperations.reverse().map(extend => F.patternBind(
+        SUBRULE(translateAlgPureExpression, extend.expression),
+        <RdfTermToAst<typeof extend.variable>> SUBRULE(translateAlgTerm, extend.variable),
         F.gen(),
-      ),
-    ]);
+      )),
+    ]), F.gen());
   },
 };
 

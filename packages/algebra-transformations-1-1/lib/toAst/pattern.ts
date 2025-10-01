@@ -268,10 +268,13 @@ export const translateAlgSlice: AstIndir<'translateSlice', PatternGroup, [Algebr
 export const algWrapInPatternGroup: AstIndir<'wrapInPatternGroup', PatternGroup, [Pattern[] | Pattern]> = {
   name: 'wrapInPatternGroup',
   fun: () => ({ astFactory: F }, input) => {
-    if (!Array.isArray(input)) {
-      return F.patternGroup([ input ], F.gen());
+    if (Array.isArray(input)) {
+      return F.patternGroup(input, F.gen());
     }
-    return F.patternGroup(input, F.gen());
+    if (F.isPatternGroup(input)) {
+      return input;
+    }
+    return F.patternGroup([ input ], F.gen());
   },
 };
 
@@ -279,7 +282,7 @@ export const translateAlgUnion: AstIndir<'translateUnion', PatternUnion, [Algebr
   name: 'translateUnion',
   fun: ({ SUBRULE }) => ({ astFactory: F }, op) =>
     F.patternUnion(
-      op.input.map(operation => SUBRULE(algWrapInPatternGroup, SUBRULE(operationAlgInputAsPatternList, operation))),
+      op.input.map(operation => SUBRULE(algWrapInPatternGroup, SUBRULE(translateAlgPatternNew, operation))),
       F.gen(),
     ),
 };

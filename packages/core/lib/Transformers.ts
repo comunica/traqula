@@ -4,16 +4,33 @@ type Safeness = 'safe' | 'unsafe';
 type SafeWrap<Safe extends Safeness, obj extends object> = Safe extends 'safe' ? {[key in keyof obj]: unknown } : obj;
 
 export interface VisitContext {
+  /**
+   * Whether you should stop iterating after this object. Default false.
+   */
   shortcut?: boolean;
+  /**
+   * Whether you should continue iterating deeper with this object. Default true.
+   */
   continue?: boolean;
 }
 
 export interface SelectiveTraversalContext<Nodes> {
+  /**
+   * Nodes you should visit next. Defaults to empty list
+   */
   next?: Nodes[];
+  /**
+   * Whether you should stop visiting after visiting this object. Default false.
+   */
   shortcut?: boolean;
 }
 
 export class TransformerType<Nodes extends Pick<Node, 'type'>> {
+  /**
+   * Function to shallow clone an object.
+   * @param obj
+   * @protected
+   */
   protected clone<T>(obj: T): T {
     const newObj = Object.create(Object.getPrototypeOf(obj));
     Object.defineProperties(
@@ -23,6 +40,13 @@ export class TransformerType<Nodes extends Pick<Node, 'type'>> {
     return newObj;
   }
 
+  /**
+   * Function that will call the visitor callback only on true objects.
+   * If the provided value is an array object, it will callback on all members
+   * @param value
+   * @param mapper
+   * @protected
+   */
   protected safeObjectVisit(value: unknown, mapper: (some: object) => any): unknown {
     if (value && typeof value === 'object') {
       if (Array.isArray(value)) {
@@ -95,6 +119,16 @@ export class TransformerType<Nodes extends Pick<Node, 'type'>> {
     recurse(startObject);
   }
 
+  /**
+   * Transform a single node.
+   * The transformation calls the preVisitor from starting from the startObject.
+   * The preVisitor can dictate whether transformation should be stopped.
+   * Note that stopping the transformation also prevets further copying.
+   * The transformer itself transforms object starting with the deepest one that can be visited.
+   * The transformer callback is performed on a copy of the original.
+   * @param startObject
+   * @param nodeCallBacks
+   */
   public transformNode<Safe extends 'safe' | 'unsafe' = 'safe'>(
     startObject: object,
     nodeCallBacks: {[T in Nodes['type']]?: {
@@ -125,6 +159,12 @@ export class TransformerType<Nodes extends Pick<Node, 'type'>> {
     return this.transformObject(startObject, transformWrapper, preTransformWrapper);
   }
 
+  /**
+   * Similar to {@link this.transformNode}, but without copying the startObject.
+   * The pre-visitor visits starting from the root, going deeper, while the actual visitor goes in reverse.
+   * @param startObject
+   * @param nodeCallBacks
+   */
   public visitNode(
     startObject: object,
     nodeCallBacks: {[T in Nodes['type']]?: {
@@ -154,6 +194,11 @@ export class TransformerType<Nodes extends Pick<Node, 'type'>> {
     this.visitObject(startObject, visitWrapper, preVisitWrapper);
   }
 
+  /**
+   * Traverses only selected nodes as returned by the function.
+   * @param currentNode
+   * @param traverse
+   */
   public traverseNodes(
     currentNode: Nodes,
     traverse: {[T in Nodes['type']]?: (op: Extract<Nodes, { type: T }>) => SelectiveTraversalContext<Nodes> },
@@ -181,6 +226,14 @@ export class TransformerType<Nodes extends Pick<Node, 'type'>> {
 }
 
 export class TransformerSubType<Nodes extends Pick<Node, 'type' | 'subType'>> extends TransformerType<Nodes> {
+  /**
+   * Shares the functionality and first two arguments with {@link this.transformNode}.
+   * The third argument allows you to also transform based on the subType of objects.
+   * Note that when a callback for the subtype is provided, the callback for the general type is **NOT** executed.
+   * @param startObject
+   * @param nodeCallBacks
+   * @param nodeSpecificCallBacks
+   */
   public transformNodeSpecific<Safe extends 'safe' | 'unsafe' = 'safe'>(
     startObject: object,
     nodeCallBacks: {[T in Nodes['type']]?: {
@@ -225,7 +278,8 @@ export class TransformerSubType<Nodes extends Pick<Node, 'type' | 'subType'>> ex
   }
 
   /**
-   * When both nodeCallBack and NodeSpecific callBack are matched, will only look at nodeSpecifCallback
+   * Similar to {@link this.visitNode} but also allows you to match based on the subtype of objects.
+   * When both nodeCallBack and NodeSpecific callBack are matched, will only visit nodeSpecifCallback
    */
   public visitNodeSpecific(
     startObject: object,
@@ -272,6 +326,12 @@ export class TransformerSubType<Nodes extends Pick<Node, 'type' | 'subType'>> ex
     this.visitObject(startObject, visitWrapper, preVisitWrapper);
   }
 
+  /**
+   * Similar to {@link this.traverseNodes} but also allows you to match based on the subtype of objects.
+   * @param currentNode
+   * @param traverseNode
+   * @param traverseSubNode
+   */
   public traverseSubNodes(
     currentNode: Nodes,
     traverseNode: {[Type in Nodes['type']]?:

@@ -5,7 +5,7 @@ SELECT ?book ?title ?price WHERE {
   ?book dc:title ?title .
   ?book ns:price ?price .  
 }
-VALUES( ?title ){
-  ( "SPARQL Tutorial" )
-  ( UNDEF )  
+VALUES ?title {
+  "SPARQL Tutorial"
+  UNDEF  
 }

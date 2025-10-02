@@ -7,6 +7,6 @@ SELECT ( SUM( ?lprice ) AS ?totalPrice ) WHERE {
 GROUP BY ?org
 HAVING ( SUM( ?lprice ) > "10"^^<http://www.w3.org/2001/XMLSchema#integer> )
 ORDER BY ASC ( ?totalPrice )
-VALUES( ?book ){
-  ( :book2 )  
+VALUES ?book {
+  :book2  
 }

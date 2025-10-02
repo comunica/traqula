@@ -3,7 +3,7 @@ PREFIX : <http://example.org/>
 SELECT * WHERE {
   ?s foaf:knows ?o .  
 }
-VALUES( ?s ){
-  ( :a )
-  ( :b )  
+VALUES ?s {
+  :a
+  :b  
 }

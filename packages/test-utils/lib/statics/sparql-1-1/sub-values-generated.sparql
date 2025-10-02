@@ -4,8 +4,8 @@ SELECT ?s ?o WHERE {
     SELECT * WHERE {
       ?s ?p ?o .      
     }    
-    VALUES( ?o ){
-      ( :b )      
+    VALUES ?o {
+      :b      
     }    
   }  
 }

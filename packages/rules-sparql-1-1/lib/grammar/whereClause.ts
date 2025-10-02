@@ -283,18 +283,19 @@ export const inlineData: SparqlRule<'inlineData', PatternValues> = <const> {
   gImpl: ({ SUBRULE, PRINT_WORD, PRINT_ON_EMPTY }) => (ast, C) => {
     const { astFactory: F, indentInc } = C;
     const variables = Object.keys(ast.values.at(0) ?? {});
+    const singleVar = variables.length === 1;
     F.printFilter(ast, () => {
       PRINT_ON_EMPTY('');
-      PRINT_WORD('VALUES', '(');
+      PRINT_WORD('VALUES', singleVar ? '' : '(');
       for (const variable of variables) {
         PRINT_WORD(`?${variable}`);
       }
       C[traqulaIndentation] += indentInc;
-      PRINT_WORD(')', '{\n');
+      PRINT_WORD(singleVar ? '' : ')', '{\n');
     });
 
     for (const mapping of ast.values) {
-      F.printFilter(ast, () => PRINT_WORD('('));
+      F.printFilter(ast, () => !singleVar && PRINT_WORD('('));
       for (const variable of variables) {
         if (mapping[variable] === undefined) {
           F.printFilter(ast, () => PRINT_WORD('UNDEF'));
@@ -302,7 +303,7 @@ export const inlineData: SparqlRule<'inlineData', PatternValues> = <const> {
           SUBRULE(graphNodePath, mapping[variable]);
         }
       }
-      F.printFilter(ast, () => PRINT_WORD(')\n'));
+      F.printFilter(ast, () => PRINT_WORD(singleVar ? '' : ')', '\n'));
     }
     F.printFilter(ast, () => {
       C[traqulaIndentation] -= indentInc;

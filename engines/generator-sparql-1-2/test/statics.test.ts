@@ -67,7 +67,7 @@ describe('a SPARQL 1.2 generator', () => {
         const autoGenAst = F.forcedAutoGenTree(queryUpdate);
         autoGenAst.loc = replaceLoc;
         const selfGenerated = generator.generate(autoGenAst);
-        // SinkGenerated('sparql-1-2', name, selfGenerated);
+        // _sinkGenerated('sparql-1-2', name, selfGenerated);
         expect(selfGenerated).toEqual(autoGen);
       });
     }

@@ -116,17 +116,21 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
     const variablesRaw: Set<string> = new Set(variables);
 
     return util.mapOperation(res, {
-      [Algebra.KnownTypes.DELETE_INSERT]: (op: Algebra.DeleteInsert) =>
+      [Algebra.Types.UPDATE]: (op: Algebra.Update) => {
         // Make sure blank nodes remain in the INSERT block, but do update the WHERE block
-        ({
-          result: AF.createDeleteInsert(
-            op.delete,
-            op.insert,
-            op.where && SUBRULE(translateBlankNodesToVariables, op.where),
-          ),
-          recurse: false,
-        }),
-      [Algebra.KnownTypes.PATH]: (op: Algebra.Path, factory: AlgebraFactory) => ({
+        if (op.subType === Algebra.UpdateTypes.DELETE_INSERT) {
+          return {
+            result: AF.createDeleteInsert(
+              op.delete,
+              op.insert,
+              op.where && SUBRULE(translateBlankNodesToVariables, op.where),
+            ),
+            recurse: false,
+          };
+        }
+        return { recurse: false, result: op };
+      },
+      [Algebra.Types.PATH]: (op: Algebra.Path, factory: AlgebraFactory) => ({
         result: factory.createPath(
           blankToVariable(op.subject),
           op.predicate,
@@ -135,7 +139,7 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
         ),
         recurse: false,
       }),
-      [Algebra.KnownTypes.PATTERN]: (op: Algebra.Pattern, factory: AlgebraFactory) => ({
+      [Algebra.Types.PATTERN]: (op: Algebra.Pattern, factory: AlgebraFactory) => ({
         result: factory.createPattern(
           blankToVariable(op.subject),
           blankToVariable(op.predicate),
@@ -144,7 +148,7 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
         ),
         recurse: false,
       }),
-      [Algebra.KnownTypes.CONSTRUCT]: (op: Algebra.Construct) =>
+      [Algebra.Types.CONSTRUCT]: (op: Algebra.Construct) =>
         // Blank nodes in CONSTRUCT templates must be maintained
         ({
           result: AF.createConstruct(SUBRULE(translateBlankNodesToVariables, op.input), op.template),

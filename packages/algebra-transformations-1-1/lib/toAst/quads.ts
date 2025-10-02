@@ -32,7 +32,7 @@ unknown,
     }
 
     // UPDATE operations with Patterns handle graphs a bit differently - do not traverse
-    if (op.type === types.DELETE_INSERT) {
+    if (op.type === types.UPDATE) {
       return op;
     }
 

@@ -1,5 +1,6 @@
 {
-  "type": "deleteinsert",
+  "type": "update",
+  "subType": "deleteinsert",
   "delete": [
     {
       "type": "pattern",
@@ -153,9 +154,11 @@
           "value": "http://example.com/ns#iri"
         },
         "predicate": {
-          "type": "OneOrMorePath",
+          "type": "propertypathsymbol",
+          "subType": "OneOrMorePath",
           "path": {
-            "type": "link",
+            "type": "propertypathsymbol",
+            "subType": "link",
             "iri": {
               "termType": "NamedNode",
               "value": "http://example.com/ns#q1"

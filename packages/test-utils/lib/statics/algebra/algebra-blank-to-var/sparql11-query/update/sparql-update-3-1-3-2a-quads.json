@@ -1,5 +1,6 @@
 {
-  "type": "deleteinsert",
+  "type": "update",
+  "subType": "deleteinsert",
   "insert": [
     {
       "type": "pattern",
@@ -71,12 +72,12 @@
     },
     "expression": {
       "type": "expression",
-      "expressionType": "operator",
+      "subType": "operator",
       "operator": ">",
       "args": [
         {
           "type": "expression",
-          "expressionType": "term",
+          "subType": "term",
           "term": {
             "termType": "Variable",
             "value": "date"
@@ -84,7 +85,7 @@
         },
         {
           "type": "expression",
-          "expressionType": "term",
+          "subType": "term",
           "term": {
             "termType": "Literal",
             "value": "1970-01-01T00:00:00-02:00",

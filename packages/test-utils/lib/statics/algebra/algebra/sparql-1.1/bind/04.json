@@ -33,7 +33,7 @@
     },
     "expression": {
       "type": "expression",
-      "expressionType": "term",
+      "subType": "term",
       "term": {
         "termType": "Variable",
         "value": "nova"

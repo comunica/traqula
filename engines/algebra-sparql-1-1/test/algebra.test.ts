@@ -20,7 +20,7 @@ describe('algebra output', () => {
       for (const blankToVariable of [ true, false ]) {
         for (const test of sparqlAlgebraTests(suite, blankToVariable, true)) {
           const { name, json, sparql: query } = test;
-          it(`${name}${blankToVariable ? ' (no blanks)' : ''}`, ({ expect }) => {
+          it(`${name}${blankToVariable ? ' ](no blanks)' : ''}`, ({ expect }) => {
             const ast = parser.parse(query);
             const algebra = algebraUtils.objectify(
               toAlgebra(ast, {

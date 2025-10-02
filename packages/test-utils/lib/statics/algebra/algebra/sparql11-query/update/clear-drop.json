@@ -2,7 +2,8 @@
   "type": "compositeupdate",
   "updates": [
     {
-      "type": "create",
+      "type": "update",
+      "subType": "create",
       "source": {
         "termType": "NamedNode",
         "value": "ex:graph"
@@ -10,14 +11,16 @@
       "silent": true
     },
     {
-      "type": "create",
+      "type": "update",
+      "subType": "create",
       "source": {
         "termType": "NamedNode",
         "value": "ex:graph"
       }
     },
     {
-      "type": "clear",
+      "type": "update",
+      "subType": "clear",
       "source": {
         "termType": "NamedNode",
         "value": "ex:graph"
@@ -25,26 +28,31 @@
       "silent": true
     },
     {
-      "type": "clear",
+      "type": "update",
+      "subType": "clear",
       "source": {
         "termType": "NamedNode",
         "value": "ex:graph"
       }
     },
     {
-      "type": "clear",
+      "type": "update",
+      "subType": "clear",
       "source": "DEFAULT"
     },
     {
-      "type": "clear",
+      "type": "update",
+      "subType": "clear",
       "source": "NAMED"
     },
     {
-      "type": "clear",
+      "type": "update",
+      "subType": "clear",
       "source": "ALL"
     },
     {
-      "type": "drop",
+      "type": "update",
+      "subType": "drop",
       "source": {
         "termType": "NamedNode",
         "value": "ex:graph"
@@ -52,22 +60,26 @@
       "silent": true
     },
     {
-      "type": "drop",
+      "type": "update",
+      "subType": "drop",
       "source": {
         "termType": "NamedNode",
         "value": "ex:graph"
       }
     },
     {
-      "type": "drop",
+      "type": "update",
+      "subType": "drop",
       "source": "DEFAULT"
     },
     {
-      "type": "drop",
+      "type": "update",
+      "subType": "drop",
       "source": "NAMED"
     },
     {
-      "type": "drop",
+      "type": "update",
+      "subType": "drop",
       "source": "ALL"
     }
   ]

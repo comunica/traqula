@@ -9,7 +9,8 @@
         "value": "http://dbpedia.org/resource/12_Monkeys"
       },
       "predicate": {
-        "type": "nps",
+        "type": "propertypathsymbol",
+        "subType": "nps",
         "iris": [
           {
             "termType": "NamedNode",

@@ -46,7 +46,7 @@ export function createAstContext(): AstContext {
 }
 
 export type AstIndir<Name extends string, Ret, Arg extends any[]> = IndirDef<AstContext, Name, Ret, Arg>;
-export const eTypes = Algebra.KnownExpressionTypes;
+export const eTypes = Algebra.ExpressionTypes;
 
 export const resetContext: AstIndir<'resetContext', void, []> = {
   name: 'resetContext',

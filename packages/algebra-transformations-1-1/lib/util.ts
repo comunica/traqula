@@ -2,7 +2,7 @@ import type * as RDF from '@rdfjs/types';
 import { TransformerType } from '@traqula/core';
 import { someTermsNested } from 'rdf-terms';
 import type * as A from './algebra.js';
-import { KnownExpressionTypes, KnownTypes } from './algebra.js';
+import { ExpressionTypes, PropertyPathTypes, Types, UpdateTypes } from './algebra.js';
 import { AlgebraFactory } from './algebraFactory.js';
 
 /**
@@ -131,29 +131,29 @@ export function inScopeVariables(op: A.Operation): RDF.Variable[] {
 
   // https://www.w3.org/TR/sparql11-query/#variableScope
   recurseOperation(op, {
-    [KnownTypes.EXPRESSION]: (op) => {
-      if (op.expressionType === KnownExpressionTypes.AGGREGATE && (<any> op).variable) {
+    [Types.EXPRESSION]: (op) => {
+      if (op.subType === ExpressionTypes.AGGREGATE && (<any> op).variable) {
         addVariable((<any> op).variable);
       }
       return true;
     },
-    [KnownTypes.EXTEND]: (op) => {
+    [Types.EXTEND]: (op) => {
       addVariable(op.variable);
       return true;
     },
-    [KnownTypes.GRAPH]: (op) => {
+    [Types.GRAPH]: (op) => {
       if (op.name.termType === 'Variable') {
         addVariable(op.name);
       }
       return true;
     },
-    [KnownTypes.GROUP]: (op) => {
+    [Types.GROUP]: (op) => {
       for (const v of op.variables) {
         addVariable(v);
       }
       return true;
     },
-    [KnownTypes.PATH]: (op) => {
+    [Types.PATH]: (op) => {
       if (op.subject.termType === 'Variable') {
         addVariable(op.subject);
       }
@@ -174,23 +174,23 @@ export function inScopeVariables(op: A.Operation): RDF.Variable[] {
       }
       return true;
     },
-    [KnownTypes.PATTERN]: (op) => {
+    [Types.PATTERN]: (op) => {
       recurseTerm(op);
       return true;
     },
-    [KnownTypes.PROJECT]: (op) => {
+    [Types.PROJECT]: (op) => {
       for (const v of op.variables) {
         addVariable(v);
       }
       return false;
     },
-    [KnownTypes.SERVICE]: (op) => {
+    [Types.SERVICE]: (op) => {
       if (op.name.termType === 'Variable') {
         addVariable(op.name);
       }
       return true;
     },
-    [KnownTypes.VALUES]: (op) => {
+    [Types.VALUES]: (op) => {
       for (const v of op.variables) {
         addVariable(v);
       }
@@ -214,7 +214,7 @@ export class AlgebraTransformer extends TransformerType<A.Operation> {}
  */
 export function recurseOperation(
   op: A.Operation,
-  callbacks: {[T in A.KnownTypes]?: (op: A.KnownTypedOperation<T>,) => boolean },
+  callbacks: {[T in A.Types]?: (op: A.TypedOperation<T>,) => boolean },
 ): void {
   const result: A.Operation = op;
   let doRecursion = true;
@@ -232,142 +232,152 @@ export function recurseOperation(
   const recurseOp = (op: A.Operation): void => recurseOperation(op, callbacks);
 
   switch (result.type) {
-    case KnownTypes.ALT:
-      result.input.map(recurseOp);
-      break;
-    case KnownTypes.ASK:
+    case Types.ASK:
       recurseOp(result.input);
       break;
-    case KnownTypes.BGP:
+    case Types.BGP:
       for (const op1 of result.patterns) {
         recurseOp(op1);
       }
       break;
-    case KnownTypes.CONSTRUCT:
+    case Types.CONSTRUCT:
       recurseOp(result.input);
       result.template.map(recurseOp);
       break;
-    case KnownTypes.DESCRIBE:
+    case Types.DESCRIBE:
       recurseOp(result.input);
       break;
-    case KnownTypes.DISTINCT:
+    case Types.DISTINCT:
       recurseOp(result.input);
       break;
-    case KnownTypes.EXPRESSION:
-      if (result.expressionType === KnownExpressionTypes.EXISTENCE) {
+    case Types.EXPRESSION:
+      if (result.subType === ExpressionTypes.EXISTENCE) {
         recurseOp(result.input);
       }
       break;
-    case KnownTypes.EXTEND:
+    case Types.EXTEND:
       recurseOp(result.input);
       recurseOp(result.expression);
       break;
-    case KnownTypes.FILTER:
+    case Types.FILTER:
       recurseOp(result.input);
       recurseOp(result.expression);
       break;
-    case KnownTypes.FROM:
+    case Types.FROM:
       recurseOp(result.input);
       break;
-    case KnownTypes.GRAPH:
+    case Types.GRAPH:
       recurseOp(result.input);
       break;
-    case KnownTypes.GROUP:
+    case Types.GROUP:
       recurseOp(result.input);
       for (const op1 of result.aggregates) {
         recurseOp(op1);
       }
       break;
-    case KnownTypes.INV:
-      recurseOp(result.path);
+    case Types.PROPERTY_PATH_SYMBOL: {
+      switch (result.subType) {
+        case PropertyPathTypes.ALT:
+          result.input.map(recurseOp);
+          break;
+        case PropertyPathTypes.INV:
+          recurseOp(result.path);
+          break;
+        case PropertyPathTypes.LINK:
+          break;
+        case PropertyPathTypes.NPS:
+          break;
+        case PropertyPathTypes.ONE_OR_MORE_PATH:
+          recurseOp(result.path);
+          break;
+        case PropertyPathTypes.SEQ:
+          result.input.map(recurseOp);
+          break;
+        case PropertyPathTypes.ZERO_OR_MORE_PATH:
+          recurseOp(result.path);
+          break;
+        case PropertyPathTypes.ZERO_OR_ONE_PATH:
+          recurseOp(result.path);
+          break;
+      }
       break;
-    case KnownTypes.JOIN:
+    }
+    case Types.JOIN:
       result.input.map(recurseOp);
       break;
-    case KnownTypes.LEFT_JOIN:
+    case Types.LEFT_JOIN:
       result.input.map(recurseOp);
       if (result.expression) {
         recurseOp(result.expression);
       }
       break;
-    case KnownTypes.LINK:
-      break;
-    case KnownTypes.MINUS:
+    case Types.MINUS:
       result.input.map(recurseOp);
       break;
-    case KnownTypes.NOP:
+    case Types.NOP:
       break;
-    case KnownTypes.NPS:
-      break;
-    case KnownTypes.ONE_OR_MORE_PATH:
-      recurseOp(result.path);
-      break;
-    case KnownTypes.ORDER_BY:
+    case Types.ORDER_BY:
       recurseOp(result.input);
       for (const op1 of result.expressions) {
         recurseOp(op1);
       }
       break;
-    case KnownTypes.PATH:
+    case Types.PATH:
       recurseOp(result.predicate);
       break;
-    case KnownTypes.PATTERN:
+    case Types.PATTERN:
       break;
-    case KnownTypes.PROJECT:
+    case Types.PROJECT:
       recurseOp(result.input);
       break;
-    case KnownTypes.REDUCED:
+    case Types.REDUCED:
       recurseOp(result.input);
       break;
-    case KnownTypes.SEQ:
+    case Types.SERVICE:
+      recurseOp(result.input);
+      break;
+    case Types.SLICE:
+      recurseOp(result.input);
+      break;
+    case Types.UNION:
       result.input.map(recurseOp);
       break;
-    case KnownTypes.SERVICE:
-      recurseOp(result.input);
-      break;
-    case KnownTypes.SLICE:
-      recurseOp(result.input);
-      break;
-    case KnownTypes.UNION:
-      result.input.map(recurseOp);
-      break;
-    case KnownTypes.VALUES:
-      break;
-    case KnownTypes.ZERO_OR_MORE_PATH:
-      recurseOp(result.path);
-      break;
-    case KnownTypes.ZERO_OR_ONE_PATH:
-      recurseOp(result.path);
+    case Types.VALUES:
       break;
       // UPDATE operations
-    case KnownTypes.COMPOSITE_UPDATE:
+    case Types.COMPOSITE_UPDATE:
       for (const update of result.updates) {
         recurseOp(update);
       }
       break;
-    case KnownTypes.DELETE_INSERT:
-      if (result.delete) {
-        for (const pattern of result.delete) {
-          recurseOp(pattern);
-        }
-      }
-      if (result.insert) {
-        for (const pattern of result.insert) {
-          recurseOp(pattern);
-        }
-      }
-      if (result.where) {
-        recurseOp(result.where);
+    case Types.UPDATE: {
+      switch (result.subType) {
+        case UpdateTypes.DELETE_INSERT:
+          if (result.delete) {
+            for (const pattern of result.delete) {
+              recurseOp(pattern);
+            }
+          }
+          if (result.insert) {
+            for (const pattern of result.insert) {
+              recurseOp(pattern);
+            }
+          }
+          if (result.where) {
+            recurseOp(result.where);
+          }
+          break;
+        // All of these only have graph IDs as values
+        case UpdateTypes.LOAD: break;
+        case UpdateTypes.CLEAR: break;
+        case UpdateTypes.CREATE: break;
+        case UpdateTypes.DROP: break;
+        case UpdateTypes.ADD: break;
+        case UpdateTypes.MOVE: break;
+        case UpdateTypes.COPY: break;
       }
       break;
-      // All of these only have graph IDs as values
-    case KnownTypes.LOAD: break;
-    case KnownTypes.CLEAR: break;
-    case KnownTypes.CREATE: break;
-    case KnownTypes.DROP: break;
-    case KnownTypes.ADD: break;
-    case KnownTypes.MOVE: break;
-    case KnownTypes.COPY: break;
+    }
     default: throw new Error(`Unknown Operation type ${(<any> result).type}`);
   }
 }
@@ -387,8 +397,8 @@ export function recurseOperation(
  */
 export function mapOperation(
   op: A.Operation,
-  callbacks: {[T in A.KnownTypes]?: (op: A.KnownTypedOperation<T>, factory: AlgebraFactory) => RecurseResult }
-        & {[T in A.KnownExpressionTypes]?: (expr: A.KnownTypedExpression<T>, factory: AlgebraFactory) =>
+  callbacks: {[T in A.Types]?: (op: A.TypedOperation<T>, factory: AlgebraFactory) => RecurseResult }
+        & {[T in A.ExpressionTypes]?: (expr: A.TypedExpression<T>, factory: AlgebraFactory) =>
         ExpressionRecurseResult },
   factory?: AlgebraFactory,
 ): A.Operation {
@@ -425,78 +435,95 @@ export function mapOperation(
 
   // Several casts here might be wrong though depending on the callbacks output
   switch (result.type) {
-    case KnownTypes.ALT:
-      result = factory.createAlt(<A.PropertyPathSymbol[]> result.input.map(mapOp));
-      break;
-    case KnownTypes.ASK:
+    case Types.ASK:
       result = factory.createAsk(mapOp(result.input));
       break;
-    case KnownTypes.BGP:
+    case Types.BGP:
       result = factory.createBgp(<A.Pattern[]> result.patterns.map(mapOp));
       break;
-    case KnownTypes.CONSTRUCT:
+    case Types.CONSTRUCT:
       result = factory.createConstruct(mapOp(result.input), <A.Pattern[]> result.template.map(mapOp));
       break;
-    case KnownTypes.DESCRIBE:
+    case Types.DESCRIBE:
       result = factory.createDescribe(mapOp(result.input), result.terms);
       break;
-    case KnownTypes.DISTINCT:
+    case Types.DISTINCT:
       result = factory.createDistinct(mapOp(result.input));
       break;
-    case KnownTypes.EXPRESSION:
+    case Types.EXPRESSION:
       result = mapExpression(result, callbacks, factory);
       break;
-    case KnownTypes.EXTEND:
+    case Types.EXTEND:
       result = factory.createExtend(mapOp(result.input), result.variable, <A.Expression> mapOp(result.expression));
       break;
-    case KnownTypes.FILTER:
+    case Types.FILTER:
       result = factory.createFilter(mapOp(result.input), <A.Expression> mapOp(result.expression));
       break;
-    case KnownTypes.FROM:
+    case Types.FROM:
       result = factory.createFrom(mapOp(result.input), [ ...result.default ], [ ...result.named ]);
       break;
-    case KnownTypes.GRAPH:
+    case Types.GRAPH:
       result = factory.createGraph(mapOp(result.input), result.name);
       break;
-    case KnownTypes.GROUP:
+    case Types.GROUP:
       result = factory.createGroup(
         mapOp(result.input),
         [ ...result.variables ],
           <A.BoundAggregate[]> result.aggregates.map(mapOp),
       );
       break;
-    case KnownTypes.INV:
-      result = factory.createInv(<A.PropertyPathSymbol> mapOp(result.path));
+    case Types.PROPERTY_PATH_SYMBOL: {
+      switch (result.subType) {
+        case PropertyPathTypes.ALT:
+          result = factory.createAlt(<A.PropertyPathSymbol[]> result.input.map(mapOp));
+          break;
+        case PropertyPathTypes.INV:
+          result = factory.createInv(<A.PropertyPathSymbol> mapOp(result.path));
+          break;
+        case PropertyPathTypes.LINK:
+          result = factory.createLink(result.iri);
+          break;
+        case PropertyPathTypes.NPS:
+          result = factory.createNps([ ...result.iris ]);
+          break;
+        case PropertyPathTypes.ONE_OR_MORE_PATH:
+          result = factory.createOneOrMorePath(<A.PropertyPathSymbol> mapOp(result.path));
+          break;
+        case PropertyPathTypes.SEQ:
+          result = factory.createSeq(<A.PropertyPathSymbol[]> result.input.map(mapOp));
+          break;
+        case PropertyPathTypes.ZERO_OR_MORE_PATH:
+          result = factory.createZeroOrMorePath(<A.PropertyPathSymbol> mapOp(result.path));
+          break;
+        case PropertyPathTypes.ZERO_OR_ONE_PATH:
+          result = factory.createZeroOrOnePath(<A.PropertyPathSymbol> mapOp(result.path));
+          break;
+      }
       break;
-    case KnownTypes.JOIN:
+    }
+
+    case Types.JOIN:
       result = factory.createJoin(result.input.map(mapOp));
       break;
-    case KnownTypes.LEFT_JOIN:
+    case Types.LEFT_JOIN:
       result = factory.createLeftJoin(
         mapOp(result.input[0]),
         mapOp(result.input[1]),
         result.expression ? <A.Expression> mapOp(result.expression) : undefined,
       );
       break;
-    case KnownTypes.LINK:
-      result = factory.createLink(result.iri);
-      break;
-    case KnownTypes.MINUS:
+
+    case Types.MINUS:
       result = factory.createMinus(mapOp(result.input[0]), mapOp(result.input[1]));
       break;
-    case KnownTypes.NOP:
+    case Types.NOP:
       result = factory.createNop();
       break;
-    case KnownTypes.NPS:
-      result = factory.createNps([ ...result.iris ]);
-      break;
-    case KnownTypes.ONE_OR_MORE_PATH:
-      result = factory.createOneOrMorePath(<A.PropertyPathSymbol> mapOp(result.path));
-      break;
-    case KnownTypes.ORDER_BY:
+
+    case Types.ORDER_BY:
       result = factory.createOrderBy(mapOp(result.input), <A.Expression[]> result.expressions.map(mapOp));
       break;
-    case KnownTypes.PATH:
+    case Types.PATH:
       result = factory.createPath(
         result.subject,
 <A.PropertyPathSymbol> mapOp(result.predicate),
@@ -504,68 +531,64 @@ result.object,
 result.graph,
       );
       break;
-    case KnownTypes.PATTERN:
+    case Types.PATTERN:
       result = factory.createPattern(result.subject, result.predicate, result.object, result.graph);
       break;
-    case KnownTypes.PROJECT:
+    case Types.PROJECT:
       result = factory.createProject(mapOp(result.input), [ ...result.variables ]);
       break;
-    case KnownTypes.REDUCED:
+    case Types.REDUCED:
       result = factory.createReduced(mapOp(result.input));
       break;
-    case KnownTypes.SEQ:
-      result = factory.createSeq(<A.PropertyPathSymbol[]> result.input.map(mapOp));
-      break;
-    case KnownTypes.SERVICE:
+    case Types.SERVICE:
       result = factory.createService(mapOp(result.input), result.name, result.silent);
       break;
-    case KnownTypes.SLICE:
+    case Types.SLICE:
       result = factory.createSlice(mapOp(result.input), result.start, result.length);
       break;
-    case KnownTypes.UNION:
+    case Types.UNION:
       result = factory.createUnion(result.input.map(mapOp));
       break;
-    case KnownTypes.VALUES:
+    case Types.VALUES:
       result = factory.createValues([ ...result.variables ], result.bindings.map(b => ({ ...b })));
       break;
-    case KnownTypes.ZERO_OR_MORE_PATH:
-      result = factory.createZeroOrMorePath(<A.PropertyPathSymbol> mapOp(result.path));
-      break;
-    case KnownTypes.ZERO_OR_ONE_PATH:
-      result = factory.createZeroOrOnePath(<A.PropertyPathSymbol> mapOp(result.path));
-      break;
-      // UPDATE operations
-    case KnownTypes.COMPOSITE_UPDATE:
+    // UPDATE operations
+    case Types.COMPOSITE_UPDATE:
       result = factory.createCompositeUpdate(<A.Update[]> result.updates.map(mapOp));
       break;
-    case KnownTypes.DELETE_INSERT:
-      result = factory.createDeleteInsert(
-        result.delete ? <A.Pattern[]> result.delete.map(mapOp) : undefined,
-        result.insert ? <A.Pattern[]> result.insert.map(mapOp) : undefined,
-        result.where ? mapOp(result.where) : undefined,
-      );
+    case Types.UPDATE: {
+      switch (result.subType) {
+        case UpdateTypes.DELETE_INSERT:
+          result = factory.createDeleteInsert(
+            result.delete ? <A.Pattern[]> result.delete.map(mapOp) : undefined,
+            result.insert ? <A.Pattern[]> result.insert.map(mapOp) : undefined,
+            result.where ? mapOp(result.where) : undefined,
+          );
+          break;
+        case UpdateTypes.LOAD:
+          result = factory.createLoad(result.source, result.destination, result.silent);
+          break;
+        case UpdateTypes.CLEAR:
+          result = factory.createClear(result.source, result.silent);
+          break;
+        case UpdateTypes.CREATE:
+          result = factory.createCreate(result.source, result.silent);
+          break;
+        case UpdateTypes.DROP:
+          result = factory.createDrop(result.source, result.silent);
+          break;
+        case UpdateTypes.ADD:
+          result = factory.createAdd(result.source, result.destination);
+          break;
+        case UpdateTypes.MOVE:
+          result = factory.createMove(result.source, result.destination);
+          break;
+        case UpdateTypes.COPY:
+          result = factory.createCopy(result.source, result.destination);
+          break;
+      }
       break;
-    case KnownTypes.LOAD:
-      result = factory.createLoad(result.source, result.destination, result.silent);
-      break;
-    case KnownTypes.CLEAR:
-      result = factory.createClear(result.source, result.silent);
-      break;
-    case KnownTypes.CREATE:
-      result = factory.createCreate(result.source, result.silent);
-      break;
-    case KnownTypes.DROP:
-      result = factory.createDrop(result.source, result.silent);
-      break;
-    case KnownTypes.ADD:
-      result = factory.createAdd(result.source, result.destination);
-      break;
-    case KnownTypes.MOVE:
-      result = factory.createMove(result.source, result.destination);
-      break;
-    case KnownTypes.COPY:
-      result = factory.createCopy(result.source, result.destination);
-      break;
+    }
     default: throw new Error(`Unknown Operation type ${(<any> result).type}`);
   }
 
@@ -589,8 +612,8 @@ result.graph,
  */
 export function mapExpression(
   expr: A.Expression,
-  callbacks: {[T in A.KnownTypes]?: (op: A.KnownTypedOperation<T>, factory: AlgebraFactory) => RecurseResult }
-        & {[T in A.KnownExpressionTypes]?: (expr: A.KnownTypedExpression<T>, factory: AlgebraFactory) =>
+  callbacks: {[T in A.Types]?: (op: A.TypedOperation<T>, factory: AlgebraFactory) => RecurseResult }
+        & {[T in A.ExpressionTypes]?: (expr: A.TypedExpression<T>, factory: AlgebraFactory) =>
         ExpressionRecurseResult },
   factory?: AlgebraFactory,
 ): A.Expression {
@@ -599,7 +622,7 @@ export function mapExpression(
 
   factory = factory ?? new AlgebraFactory();
 
-  const callback = callbacks[expr.expressionType];
+  const callback = callbacks[expr.subType];
   if (callback) {
     ({ result, recurse: doRecursion } = callback(<any> expr, factory));
   }
@@ -610,8 +633,8 @@ export function mapExpression(
 
   const mapOp = (op: A.Operation): A.Operation => mapOperation(op, callbacks, factory);
 
-  switch (expr.expressionType) {
-    case KnownExpressionTypes.AGGREGATE:
+  switch (expr.subType) {
+    case ExpressionTypes.AGGREGATE:
       if ((<any> expr).variable) {
         return factory.createBoundAggregate(
           (<any> expr).variable,
@@ -627,15 +650,15 @@ expr.separator,
 expr.distinct,
 expr.separator,
       );
-    case KnownExpressionTypes.EXISTENCE:
+    case ExpressionTypes.EXISTENCE:
       return factory.createExistenceExpression(expr.not, mapOp(expr.input));
-    case KnownExpressionTypes.NAMED:
+    case ExpressionTypes.NAMED:
       return factory.createNamedExpression(expr.name, <A.Expression[]> expr.args.map(mapOp));
-    case KnownExpressionTypes.OPERATOR:
+    case ExpressionTypes.OPERATOR:
       return factory.createOperatorExpression(expr.operator, <A.Expression[]> expr.args.map(mapOp));
-    case KnownExpressionTypes.TERM:
+    case ExpressionTypes.TERM:
       return factory.createTermExpression(expr.term);
-    case KnownExpressionTypes.WILDCARD:
+    case ExpressionTypes.WILDCARD:
       return factory.createWildcardExpression();
     default: throw new Error(`Unknown Expression type ${(<any> expr).expressionType}`);
   }

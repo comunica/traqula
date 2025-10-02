@@ -8,11 +8,15 @@ import {
 import type { FlattenedTriple } from '@traqula/algebra-transformations-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import type {
+  Expression,
+  Ordering,
   Path,
+  PatternBind,
   SparqlQuery,
   Term,
   TripleCollection,
   TripleNesting,
+  Wildcard,
 } from '@traqula/rules-sparql-1-2';
 import {
   findPatternBoundedVars,
@@ -21,6 +25,8 @@ import { termToString } from 'rdf-string';
 import type { AlgebraIndir } from './types.js';
 
 const reificationIri = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies';
+
+export type MapAggregateType = Wildcard | Expression | Ordering | PatternBind;
 
 export const translateTerm12: AlgebraIndir<(typeof translateTerm)['name'], RDF.Term, [Term]> = {
   name: 'translateTerm',

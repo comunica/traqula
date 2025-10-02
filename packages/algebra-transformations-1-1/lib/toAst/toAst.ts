@@ -27,7 +27,7 @@ export const algToSparql: AstIndir<'algToSparql', SparqlQuery, [Algebra.Operatio
       return SUBRULE(toUpdate, []);
     }
     try {
-      return SUBRULE(toUpdate, [ SUBRULE(translateAlgUpdateOperation, op) ]);
+      return SUBRULE(toUpdate, [ SUBRULE(translateAlgUpdateOperation, <Algebra.Update> op) ]);
     } catch { /* That's okay, it's not an update */}
     // If no Update, must be query.
     const result = SUBRULE(translateAlgPatternIntoGroup, op);

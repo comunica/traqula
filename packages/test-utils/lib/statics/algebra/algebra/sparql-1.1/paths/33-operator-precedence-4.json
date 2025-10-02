@@ -7,25 +7,31 @@
       "value": "http://www.example.org/a"
     },
     "predicate": {
-      "type": "alt",
+      "type": "propertypathsymbol",
+      "subType": "alt",
       "input": [
         {
-          "type": "seq",
+          "type": "propertypathsymbol",
+          "subType": "seq",
           "input": [
             {
-              "type": "alt",
+              "type": "propertypathsymbol",
+              "subType": "alt",
               "input": [
                 {
-                  "type": "link",
+                  "type": "propertypathsymbol",
+                  "subType": "link",
                   "iri": {
                     "termType": "NamedNode",
                     "value": "http://www.example.org/p0"
                   }
                 },
                 {
-                  "type": "inv",
+                  "type": "propertypathsymbol",
+                  "subType": "inv",
                   "path": {
-                    "type": "link",
+                    "type": "propertypathsymbol",
+                    "subType": "link",
                     "iri": {
                       "termType": "NamedNode",
                       "value": "http://www.example.org/p1"
@@ -35,7 +41,8 @@
               ]
             },
             {
-              "type": "link",
+              "type": "propertypathsymbol",
+              "subType": "link",
               "iri": {
                 "termType": "NamedNode",
                 "value": "http://www.example.org/p2"
@@ -44,7 +51,8 @@
           ]
         },
         {
-          "type": "link",
+          "type": "propertypathsymbol",
+          "subType": "link",
           "iri": {
             "termType": "NamedNode",
             "value": "http://www.example.org/p3"

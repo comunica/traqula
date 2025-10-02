@@ -9,11 +9,14 @@
         "value": "http://example.org/A0"
       },
       "predicate": {
-        "type": "ZeroOrMorePath",
+        "type": "propertypathsymbol",
+        "subType": "ZeroOrMorePath",
         "path": {
-          "type": "ZeroOrMorePath",
+          "type": "propertypathsymbol",
+          "subType": "ZeroOrMorePath",
           "path": {
-            "type": "link",
+            "type": "propertypathsymbol",
+            "subType": "link",
             "iri": {
               "termType": "NamedNode",
               "value": "http://example.org/P"
@@ -33,7 +36,7 @@
     "expressions": [
       {
         "type": "expression",
-        "expressionType": "term",
+        "subType": "term",
         "term": {
           "termType": "Variable",
           "value": "X"

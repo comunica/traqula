@@ -23,7 +23,7 @@ export class Canonicalizer {
     this.blankId = 0;
     const nameMapping: Record<string, string> = {};
     return utils.mapOperation(res, {
-      [Algebra.KnownTypes.PATH]: (op: Algebra.Path, factory: AlgebraFactory) => ({
+      [Algebra.Types.PATH]: (op: Algebra.Path, factory: AlgebraFactory) => ({
         result: factory.createPath(
           this.replaceValue(op.subject, nameMapping, replaceVariables, factory),
           op.predicate,
@@ -32,7 +32,7 @@ export class Canonicalizer {
         ),
         recurse: true,
       }),
-      [Algebra.KnownTypes.PATTERN]: (op: Algebra.Pattern, factory: AlgebraFactory) => ({
+      [Algebra.Types.PATTERN]: (op: Algebra.Pattern, factory: AlgebraFactory) => ({
         result: factory.createPattern(
           this.replaceValue(op.subject, nameMapping, replaceVariables, factory),
           this.replaceValue(op.predicate, nameMapping, replaceVariables, factory),
@@ -41,7 +41,7 @@ export class Canonicalizer {
         ),
         recurse: true,
       }),
-      [Algebra.KnownTypes.CONSTRUCT]: (op: Algebra.Construct, factory: AlgebraFactory) =>
+      [Algebra.Types.CONSTRUCT]: (op: Algebra.Construct, factory: AlgebraFactory) =>
         // Blank nodes in CONSTRUCT templates must be maintained
         ({
           result: factory.createConstruct(op.input, op.template),

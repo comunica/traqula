@@ -35,19 +35,23 @@
           "value": "http://example/a"
         },
         "predicate": {
-          "type": "ZeroOrOnePath",
+          "type": "propertypathsymbol",
+          "subType": "ZeroOrOnePath",
           "path": {
-            "type": "seq",
+            "type": "propertypathsymbol",
+            "subType": "seq",
             "input": [
               {
-                "type": "link",
+                "type": "propertypathsymbol",
+                "subType": "link",
                 "iri": {
                   "termType": "NamedNode",
                   "value": "http://example/p"
                 }
               },
               {
-                "type": "link",
+                "type": "propertypathsymbol",
+                "subType": "link",
                 "iri": {
                   "termType": "NamedNode",
                   "value": "http://example/p"

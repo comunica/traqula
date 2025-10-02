@@ -71,17 +71,20 @@
           "value": "g_0"
         },
         "predicate": {
-          "type": "alt",
+          "type": "propertypathsymbol",
+          "subType": "alt",
           "input": [
             {
-              "type": "link",
+              "type": "propertypathsymbol",
+              "subType": "link",
               "iri": {
                 "termType": "NamedNode",
                 "value": "http://example.com/ns#p1"
               }
             },
             {
-              "type": "link",
+              "type": "propertypathsymbol",
+              "subType": "link",
               "iri": {
                 "termType": "NamedNode",
                 "value": "http://example.com/ns#p2"

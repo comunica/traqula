@@ -1,11 +1,14 @@
+import type * as RDF from '@rdfjs/types';
 import * as Trans11 from '@traqula/algebra-transformations-1-1';
 import type { IndirDef, Patch } from '@traqula/core';
 import { AstFactory } from '@traqula/rules-sparql-1-2';
+import type * as T12 from '@traqula/rules-sparql-1-2';
 
 export type AlgebraContext = Patch<Trans11.AlgebraContext, {
   astFactory: AstFactory;
 }>;
 
+export type FlattenedTriple = Patch<Trans11.FlattenedTriple, { predicate: RDF.Term | T12.PathPure }>;
 export type ContextConfigs = Trans11.ContextConfigs;
 export function createAlgebraContext(config: ContextConfigs): AlgebraContext {
   const context11 = Trans11.createAlgebraContext(config);

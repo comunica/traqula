@@ -7,10 +7,12 @@
       "value": "http://www.example.org/instance#a"
     },
     "predicate": {
-      "type": "alt",
+      "type": "propertypathsymbol",
+      "subType": "alt",
       "input": [
         {
-          "type": "nps",
+          "type": "propertypathsymbol",
+          "subType": "nps",
           "iris": [
             {
               "termType": "NamedNode",
@@ -19,9 +21,11 @@
           ]
         },
         {
-          "type": "inv",
+          "type": "propertypathsymbol",
+          "subType": "inv",
           "path": {
-            "type": "nps",
+            "type": "propertypathsymbol",
+            "subType": "nps",
             "iris": [
               {
                 "termType": "NamedNode",

@@ -1,6 +1,6 @@
 import type * as RDF from '@rdfjs/types';
 
-export enum KnownTypes {
+export enum Types {
   ASK = 'ask',
   BGP = 'bgp',
   CONSTRUCT = 'construct',
@@ -30,7 +30,7 @@ export enum KnownTypes {
   COMPOSITE_UPDATE = 'compositeupdate',
 }
 
-export enum KnownExpressionTypes {
+export enum ExpressionTypes {
   AGGREGATE = 'aggregate',
   EXISTENCE = 'existence',
   NAMED = 'named',
@@ -39,7 +39,7 @@ export enum KnownExpressionTypes {
   WILDCARD = 'wildcard',
 }
 
-export enum KnownPropertyPathTypes {
+export enum PropertyPathTypes {
   ALT = 'alt',
   INV = 'inv',
   LINK = 'link',
@@ -50,7 +50,7 @@ export enum KnownPropertyPathTypes {
   ZERO_OR_ONE_PATH = 'ZeroOrOnePath',
 }
 
-export enum KnownUpdateTypes {
+export enum UpdateTypes {
   DELETE_INSERT = 'deleteinsert',
   LOAD = 'load',
   CLEAR = 'clear',
@@ -61,32 +61,48 @@ export enum KnownUpdateTypes {
   COPY = 'copy',
 }
 
+export type Operation = Ask | Expression | Bgp | Construct | Describe | Distinct | Extend | From | Filter
+  | Graph | Group | Join | LeftJoin | Minus | Nop | OrderBy | Path | Pattern | Project | PropertyPathSymbol
+  | Reduced | Service | Slice | Union | Values | Update | CompositeUpdate;
+
+export type Expression = AggregateExpression | GroupConcatExpression | ExistenceExpression | NamedExpression |
+  OperatorExpression | TermExpression | WildcardExpression | BoundAggregate;
+
+export type PropertyPathSymbol = Alt | Inv | Link | Nps | OneOrMorePath | Seq | ZeroOrMorePath | ZeroOrOnePath;
+
+export type Update = DeleteInsert | Load | Clear | Create | Drop | Add | Move | Copy;
+
+// Returns the correct type based on the type enum
+export type TypedOperation<T extends Types> = Extract<Operation, { type: T }>;
+export type TypedExpression<T extends ExpressionTypes> = Extract<Expression, { subType: T }>;
+
 // ----------------------- OPERATIONS -----------------------
 /**
  * Open interface describing an operation. This type will often be used to reference to 'input operations'.
  * A closed form of this type is KnownOperation.
  * We provide a version of the algebra that refers to the KnownOperation instead of the open interface.
  */
-export interface Operation {
+export interface BaseOperation {
   metadata?: Record<string, unknown>;
   type: string;
+  subType?: string;
 }
 
 /**
  * Open interface describing an expression
  */
-export interface Expression extends Operation {
-  type: KnownTypes.EXPRESSION;
+export interface BaseExpression extends BaseOperation {
+  type: Types.EXPRESSION;
   subType: string;
 }
 
-export interface PropertyPathSymbol extends Operation {
-  type: KnownTypes.PROPERTY_PATH_SYMBOL;
+export interface BasePropertyPathSymbol extends BaseOperation {
+  type: Types.PROPERTY_PATH_SYMBOL;
   subType: string;
 }
 
-export interface Update extends Operation {
-  type: KnownTypes.UPDATE;
+export interface BaseUpdate extends BaseOperation {
+  type: Types.UPDATE;
   subType: string;
 }
 
@@ -95,14 +111,14 @@ export interface Update extends Operation {
 /**
  * Algebra operation taking a single operation as input.
  */
-export interface Single extends Operation {
+export interface Single extends BaseOperation {
   input: Operation;
 }
 
 /**
  * Algebra operation taking multiple operations as input.
  */
-export interface Multi extends Operation {
+export interface Multi extends BaseOperation {
   input: Operation[];
 }
 
@@ -113,8 +129,8 @@ export interface Double extends Multi {
   input: [Operation, Operation];
 }
 
-export interface AggregateExpression extends Expression {
-  subType: KnownExpressionTypes.AGGREGATE;
+export interface AggregateExpression extends BaseExpression {
+  subType: ExpressionTypes.AGGREGATE;
   aggregator: 'avg' | 'count' | 'group_concat' | 'max' | 'min' | 'sample' | 'sum';
   distinct: boolean;
   expression: Expression;
@@ -126,31 +142,31 @@ export interface GroupConcatExpression extends AggregateExpression {
   separator?: string;
 }
 
-export interface ExistenceExpression extends Expression {
-  subType: KnownExpressionTypes.EXISTENCE;
+export interface ExistenceExpression extends BaseExpression {
+  subType: ExpressionTypes.EXISTENCE;
   not: boolean;
   input: Operation;
 }
 
-export interface NamedExpression extends Expression {
-  subType: KnownExpressionTypes.NAMED;
+export interface NamedExpression extends BaseExpression {
+  subType: ExpressionTypes.NAMED;
   name: RDF.NamedNode;
   args: Expression[];
 }
 
-export interface OperatorExpression extends Expression {
-  subType: KnownExpressionTypes.OPERATOR;
+export interface OperatorExpression extends BaseExpression {
+  subType: ExpressionTypes.OPERATOR;
   operator: string;
   args: Expression[];
 }
 
-export interface TermExpression extends Expression {
-  subType: KnownExpressionTypes.TERM;
+export interface TermExpression extends BaseExpression {
+  subType: ExpressionTypes.TERM;
   term: RDF.Term;
 }
 
-export interface WildcardExpression extends Expression {
-  subType: KnownExpressionTypes.WILDCARD;
+export interface WildcardExpression extends BaseExpression {
+  subType: ExpressionTypes.WILDCARD;
   wildcard: {
     type: 'wildcard';
   };
@@ -164,54 +180,54 @@ export interface WildcardExpression extends Expression {
  * Algebra operation representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) alternative (`|`).
  * Property paths have a specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
  */
-export interface Alt extends Multi, PropertyPathSymbol {
-  type: KnownTypes.PROPERTY_PATH_SYMBOL;
-  subType: KnownPropertyPathTypes.ALT;
+export interface Alt extends Multi, BasePropertyPathSymbol {
+  type: Types.PROPERTY_PATH_SYMBOL;
+  subType: PropertyPathTypes.ALT;
   input: PropertyPathSymbol[];
 }
 
 export interface Ask extends Single {
-  type: KnownTypes.ASK;
+  type: Types.ASK;
 }
 
-export interface Bgp extends Operation {
-  type: KnownTypes.BGP;
+export interface Bgp extends BaseOperation {
+  type: Types.BGP;
   patterns: Pattern[];
 }
 
 export interface Construct extends Single {
-  type: KnownTypes.CONSTRUCT;
+  type: Types.CONSTRUCT;
   template: Pattern[];
 }
 
 export interface Describe extends Single {
-  type: KnownTypes.DESCRIBE;
+  type: Types.DESCRIBE;
   terms: (RDF.Variable | RDF.NamedNode)[];
 }
 
 export interface Distinct extends Single {
-  type: KnownTypes.DISTINCT;
+  type: Types.DISTINCT;
 }
 
 export interface Extend extends Single {
-  type: KnownTypes.EXTEND;
+  type: Types.EXTEND;
   variable: RDF.Variable;
   expression: Expression;
 }
 
 export interface From extends Single {
-  type: KnownTypes.FROM;
+  type: Types.FROM;
   default: RDF.NamedNode[];
   named: RDF.NamedNode[];
 }
 
 export interface Filter extends Single {
-  type: KnownTypes.FILTER;
+  type: Types.FILTER;
   expression: Expression;
 }
 
 export interface Graph extends Single {
-  type: KnownTypes.GRAPH;
+  type: Types.GRAPH;
   name: RDF.Variable | RDF.NamedNode;
 }
 
@@ -221,7 +237,7 @@ export interface BoundAggregate extends AggregateExpression {
 }
 
 export interface Group extends Single {
-  type: KnownTypes.GROUP;
+  type: Types.GROUP;
   variables: RDF.Variable[];
   aggregates: BoundAggregate[];
 }
@@ -231,18 +247,18 @@ export interface Group extends Single {
  * Having a specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
  * This operation, besides basic mode is the reason SPARQL can contain literals in the subject position.
  */
-export interface Inv extends Operation, PropertyPathSymbol {
-  type: KnownTypes.PROPERTY_PATH_SYMBOL;
-  subType: KnownPropertyPathTypes.INV;
+export interface Inv extends BaseOperation, BasePropertyPathSymbol {
+  type: Types.PROPERTY_PATH_SYMBOL;
+  subType: PropertyPathTypes.INV;
   path: PropertyPathSymbol;
 }
 
 export interface Join extends Multi {
-  type: KnownTypes.JOIN;
+  type: Types.JOIN;
 }
 
 export interface LeftJoin extends Double {
-  type: KnownTypes.LEFT_JOIN;
+  type: Types.LEFT_JOIN;
   expression?: Expression;
 }
 
@@ -252,31 +268,31 @@ export interface LeftJoin extends Double {
  * This operation, is just a way of saying to a Propery Path operation that nothing fancy is going on,
  * and it should just match this property.
  */
-export interface Link extends Operation {
-  type: KnownTypes.PROPERTY_PATH_SYMBOL;
-  subType: KnownPropertyPathTypes.LINK;
+export interface Link extends BaseOperation {
+  type: Types.PROPERTY_PATH_SYMBOL;
+  subType: PropertyPathTypes.LINK;
   iri: RDF.NamedNode;
 }
 
 export interface Minus extends Double {
-  type: KnownTypes.MINUS;
+  type: Types.MINUS;
 }
 
 /**
  * An empty operation.
  * For example used for the algebra representation of a query string that does not contain any operation.
  */
-export interface Nop extends Operation {
-  type: KnownTypes.NOP;
+export interface Nop extends BaseOperation {
+  type: Types.NOP;
 }
 
 /**
  * Algebra operation representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) negated property set (`!`).
  * Property paths have a specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
  */
-export interface Nps extends Operation, PropertyPathSymbol {
-  type: KnownTypes.PROPERTY_PATH_SYMBOL;
-  subType: KnownPropertyPathTypes.NPS;
+export interface Nps extends BaseOperation, BasePropertyPathSymbol {
+  type: Types.PROPERTY_PATH_SYMBOL;
+  subType: PropertyPathTypes.NPS;
   iris: RDF.NamedNode[];
 }
 
@@ -284,19 +300,19 @@ export interface Nps extends Operation, PropertyPathSymbol {
  * Algebra operation representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) one or more (`+`).
  * Property paths have a specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
  */
-export interface OneOrMorePath extends Operation, PropertyPathSymbol {
-  type: KnownTypes.PROPERTY_PATH_SYMBOL;
-  subType: KnownPropertyPathTypes.ONE_OR_MORE_PATH;
+export interface OneOrMorePath extends BaseOperation, BasePropertyPathSymbol {
+  type: Types.PROPERTY_PATH_SYMBOL;
+  subType: PropertyPathTypes.ONE_OR_MORE_PATH;
   path: PropertyPathSymbol;
 }
 
 export interface OrderBy extends Single {
-  type: KnownTypes.ORDER_BY;
+  type: Types.ORDER_BY;
   expressions: Expression[];
 }
 
-export interface Path extends Operation {
-  type: KnownTypes.PATH;
+export interface Path extends BaseOperation {
+  type: Types.PATH;
   subject: RDF.Term;
   predicate: PropertyPathSymbol;
   object: RDF.Term;
@@ -306,43 +322,43 @@ export interface Path extends Operation {
 /**
  * Simple BGP entry (triple)
  */
-export interface Pattern extends Operation, RDF.BaseQuad {
-  type: KnownTypes.PATTERN;
+export interface Pattern extends BaseOperation, RDF.BaseQuad {
+  type: Types.PATTERN;
 }
 
 export interface Project extends Single {
-  type: KnownTypes.PROJECT;
+  type: Types.PROJECT;
   variables: RDF.Variable[];
 }
 
 export interface Reduced extends Single {
-  type: KnownTypes.REDUCED;
+  type: Types.REDUCED;
 }
 
 /**
  * Algebra operation representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) sequence (`/`).
  * Property paths have a specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
  */
-export interface Seq extends Multi, PropertyPathSymbol {
-  type: KnownTypes.PROPERTY_PATH_SYMBOL;
-  subType: KnownPropertyPathTypes.SEQ;
+export interface Seq extends Multi, BasePropertyPathSymbol {
+  type: Types.PROPERTY_PATH_SYMBOL;
+  subType: PropertyPathTypes.SEQ;
   input: PropertyPathSymbol[];
 }
 
 export interface Service extends Single {
-  type: KnownTypes.SERVICE;
+  type: Types.SERVICE;
   name: RDF.Variable | RDF.NamedNode;
   silent: boolean;
 }
 
 export interface Slice extends Single {
-  type: KnownTypes.SLICE;
+  type: Types.SLICE;
   start: number;
   length?: number;
 }
 
 export interface Union extends Multi {
-  type: KnownTypes.UNION;
+  type: Types.UNION;
 }
 
 /**
@@ -352,8 +368,8 @@ export interface Union extends Multi {
  * Each binging links the variable value to the appropriate Term for this binding.
  * Does not take any input.
  */
-export interface Values extends Operation {
-  type: KnownTypes.VALUES;
+export interface Values extends BaseOperation {
+  type: Types.VALUES;
   variables: RDF.Variable[];
   bindings: Record<string, RDF.Literal | RDF.NamedNode>[];
 }
@@ -362,9 +378,9 @@ export interface Values extends Operation {
  * Algebra operation representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) zero or more (`*`).
  * The having specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
  */
-export interface ZeroOrMorePath extends Operation, PropertyPathSymbol {
-  type: KnownTypes.PROPERTY_PATH_SYMBOL;
-  subType: KnownPropertyPathTypes.ZERO_OR_MORE_PATH;
+export interface ZeroOrMorePath extends BaseOperation, BasePropertyPathSymbol {
+  type: Types.PROPERTY_PATH_SYMBOL;
+  subType: PropertyPathTypes.ZERO_OR_MORE_PATH;
   path: PropertyPathSymbol;
 }
 
@@ -372,49 +388,49 @@ export interface ZeroOrMorePath extends Operation, PropertyPathSymbol {
  * Algebra operation representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) zero or one (`?`).
  * The having specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
  */
-export interface ZeroOrOnePath extends Operation, PropertyPathSymbol {
-  type: KnownTypes.PROPERTY_PATH_SYMBOL;
-  subType: KnownPropertyPathTypes.ZERO_OR_ONE_PATH;
+export interface ZeroOrOnePath extends BaseOperation, BasePropertyPathSymbol {
+  type: Types.PROPERTY_PATH_SYMBOL;
+  subType: PropertyPathTypes.ZERO_OR_ONE_PATH;
   path: PropertyPathSymbol;
 }
 
 // ----------------------- UPDATE FUNCTIONS -----------------------
-export interface CompositeUpdate extends Operation {
-  type: KnownTypes.COMPOSITE_UPDATE;
-  updates: Update[];
+export interface CompositeUpdate extends BaseOperation {
+  type: Types.COMPOSITE_UPDATE;
+  updates: (Update | Nop)[];
 }
 
-export interface DeleteInsert extends Operation, Update {
-  type: KnownTypes.UPDATE;
-  subType: KnownUpdateTypes.DELETE_INSERT;
+export interface DeleteInsert extends BaseOperation, BaseUpdate {
+  type: Types.UPDATE;
+  subType: UpdateTypes.DELETE_INSERT;
   delete?: Pattern[];
   insert?: Pattern[];
   where?: Operation;
 }
 
-export interface UpdateGraph extends Operation, Update {
-  type: KnownTypes.UPDATE;
+export interface UpdateGraph extends BaseUpdate {
+  type: Types.UPDATE;
   silent?: boolean;
 }
 
 export interface Load extends UpdateGraph {
-  subType: KnownUpdateTypes.LOAD;
+  subType: UpdateTypes.LOAD;
   source: RDF.NamedNode;
   destination?: RDF.NamedNode;
 }
 
 export interface Clear extends UpdateGraph {
-  subType: KnownUpdateTypes.CLEAR;
+  subType: UpdateTypes.CLEAR;
   source: 'DEFAULT' | 'NAMED' | 'ALL' | RDF.NamedNode;
 }
 
 export interface Create extends UpdateGraph {
-  subType: KnownUpdateTypes.CREATE;
+  subType: UpdateTypes.CREATE;
   source: RDF.NamedNode;
 }
 
 export interface Drop extends UpdateGraph {
-  subType: KnownUpdateTypes.DROP;
+  subType: UpdateTypes.DROP;
   source: 'DEFAULT' | 'NAMED' | 'ALL' | RDF.NamedNode;
 }
 
@@ -424,13 +440,13 @@ export interface UpdateGraphShortcut extends UpdateGraph {
 }
 
 export interface Add extends UpdateGraphShortcut {
-  subType: KnownUpdateTypes.ADD;
+  subType: UpdateTypes.ADD;
 }
 
 export interface Move extends UpdateGraphShortcut {
-  subType: KnownUpdateTypes.MOVE;
+  subType: UpdateTypes.MOVE;
 }
 
 export interface Copy extends UpdateGraphShortcut {
-  subType: KnownUpdateTypes.COPY;
+  subType: UpdateTypes.COPY;
 }

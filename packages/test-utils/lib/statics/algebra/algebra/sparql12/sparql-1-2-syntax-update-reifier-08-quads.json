@@ -2,7 +2,8 @@
   "type": "compositeupdate",
   "updates": [
     {
-      "type": "deleteinsert",
+      "type": "update",
+      "subType": "deleteinsert",
       "delete": [
         {
           "type": "pattern",
@@ -87,7 +88,8 @@
       ]
     },
     {
-      "type": "deleteinsert",
+      "type": "update",
+      "subType": "deleteinsert",
       "insert": [
         {
           "type": "pattern",

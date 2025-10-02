@@ -1,42 +1,44 @@
+import type * as RDF from '@rdfjs/types';
 import { toAlgebra11Builder } from '@traqula/algebra-sparql-1-1';
 import type {
-  // AccumulateGroupGraphPattern,
+  accumulateGroupGraphPattern,
   Algebra,
+  Algebra as A,
   ContextConfigs,
-  // FindAllVariables,
-  // generateFreshVar,
-  // mapAggregate,
-  // recurseGraph,
-  // registerContextDefinitions,
-  // simplifiedJoin,
-  // simplifyPath,
-  // translateAggregates,
-  // translateBasicGraphPattern,
-  // translateBgp,
-  // translateBlankNodesToVariables,
-  // translateBoundAggregate,
-  // translateDatasetClause,
-  // translateExpression,
-  // translateGraphPattern,
-  // translateGraphRef,
-  // translateGraphRefDefSpec,
-  // translateGraphRefSpecific,
-  // translateInlineData,
-  // translateInsertDelete,
-  // translateNamed,
-  // translatePath,
-  // translatePathPredicate,
-  // translateQuad,
+  findAllVariables,
+  generateFreshVar,
+  mapAggregate,
+  recurseGraph,
+  registerContextDefinitions,
+  simplifiedJoin,
+  simplifyPath,
+  translateAggregates,
+  translateBasicGraphPattern,
+  translateBgp,
+  translateBlankNodesToVariables,
+  translateBoundAggregate,
+  translateDatasetClause,
+  translateExpression,
+  translateGraphPattern,
+  translateGraphRef,
+  translateGraphRefDefSpec,
+  translateGraphRefSpecific,
+  translateInlineData,
+  translateInsertDelete,
+  translateNamed,
+  translatePath,
+  translatePathPredicate,
+  translateQuad,
   translateQuery,
-  // TranslateSingleUpdate,
-  // translateTerm,
-  // translateTripleCollection,
-  // translateTripleNesting,
-  // translateUpdate,
-  // translateUpdateGraphLoad,
-  // translateUpdateTriplesBlock,
+  translateSingleUpdate,
+  translateTerm,
+  translateTripleCollection,
+  translateTripleNesting,
+  translateUpdate,
+  translateUpdateGraphLoad,
+  translateUpdateTriplesBlock,
 } from '@traqula/algebra-transformations-1-1';
-import type { AlgebraContext } from '@traqula/algebra-transformations-1-2';
+import type { AlgebraContext, FlattenedTriple, MapAggregateType } from '@traqula/algebra-transformations-1-2';
 import {
   createAlgebraContext,
   inScopeVariables,
@@ -45,7 +47,8 @@ import {
   translateTripleNesting12,
 } from '@traqula/algebra-transformations-1-2';
 import { IndirBuilder } from '@traqula/core';
-import type { SparqlQuery } from '@traqula/rules-sparql-1-2';
+
+import type * as T12 from '@traqula/rules-sparql-1-2';
 
 export const toAlgebra12Builder = IndirBuilder
   .create(toAlgebra11Builder)
@@ -55,51 +58,58 @@ export const toAlgebra12Builder = IndirBuilder
   .patchRule(translateTripleNesting12)
   .patchRule(inScopeVariables)
   .typePatch<{
-    // // Aggregate
-    // [translateAggregates.name]: [any, [any]];
-    // [mapAggregate.name]: [any, [any]];
-    // [translateBoundAggregate.name]: [any, [any]];
-    // // General
-    // [translateNamed.name]: [any, [any]];
-    // [translateTerm.name]: [any, [any]];
-    // [registerContextDefinitions.name]: [any, [any]];
-    // [translateInlineData.name]: [any, [any]];
-    // [translateDatasetClause.name]: [any, [any]];
-    // [translateBlankNodesToVariables.name]: [any, [any]];
-    // [findAllVariables.name]: [any, [any]];
-    // [inScopeVariables.name]: [any, [any]];
-    // [generateFreshVar.name]: [any, [any]];
-    // // Path
-    // [translatePath.name]: [any, [any]];
-    // [translatePathPredicate.name]: [any, [any]];
-    // [simplifyPath.name]: [any, [any]];
-    // // Patterns
-    // [translateExpression.name]: [any, [any]];
-    // [translateGraphPattern.name]: [any, [any]];
-    // [translateBgp.name]: [any, [any]];
-    // [accumulateGroupGraphPattern.name]: [any, [any]];
-    // [simplifiedJoin.name]: [any, [any]];
-    // // TripleAndQuad
-    // [translateTripleCollection.name]: [any, [any]];
-    // [translateBasicGraphPattern.name]: [any, [any]];
-    // [translateTripleNesting.name]: [any, [any]];
-    // [recurseGraph.name]: [any, [any]];
-    // [translateQuad.name]: [any, [any]];
-    // // Updates
-    // [translateUpdate.name]: [any, [any]];
-    // [translateSingleUpdate.name]: [any, [any]];
-    // [translateInsertDelete.name]: [any, [any]];
-    // [translateUpdateTriplesBlock.name]: [any, [any]];
-    // [translateGraphRefSpecific.name]: [any, [any]];
-    // [translateGraphRefDefSpec.name]: [any, [any]];
-    // [translateGraphRef.name]: [any, [any]];
-    // [translateUpdateGraphLoad.name]: [any, [any]];
+    // Aggregate
+    [translateAggregates.name]: [A.Operation, [T12.Query, A.Operation]];
+    [mapAggregate.name]: [MapAggregateType, [MapAggregateType, Record<string, T12.ExpressionAggregate>]];
+    [translateBoundAggregate.name]: [A.BoundAggregate, [T12.ExpressionAggregate, RDF.Variable]];
+    // General
+    [translateNamed.name]: [RDF.NamedNode, [T12.TermIri]];
+    [translateTerm.name]: [RDF.Term, [T12.Term]];
+    [registerContextDefinitions.name]: [void, [T12.ContextDefinition[]]];
+    [translateInlineData.name]: [A.Values, [T12.PatternValues]];
+    [translateDatasetClause.name]: [{ default: RDF.NamedNode[]; named: RDF.NamedNode[] }, [T12.DatasetClauses]];
+    [translateBlankNodesToVariables.name]: [A.Operation, [A.Operation]];
+    [findAllVariables.name]: [void, [object]];
+    [inScopeVariables.name]: [
+      Set<string>,
+      [T12.SparqlQuery | T12.TripleNesting | T12.TripleCollection | T12.Path | T12.Term],
+    ];
+    [generateFreshVar.name]: [RDF.Variable, []];
+    // Path
+    [translatePath.name]: [(A.Path | A.Pattern)[], [FlattenedTriple & { predicate: T12.PathPure }]];
+    [translatePathPredicate.name]: [A.PropertyPathSymbol, [RDF.NamedNode | T12.Path]];
+    [simplifyPath.name]: [(Algebra.Pattern | Algebra.Path)[], [RDF.Term, A.PropertyPathSymbol, RDF.Term]];
+    // Patterns
+    [translateExpression.name]: [A.Expression, [T12.Expression | T12.Wildcard]];
+    [translateGraphPattern.name]: [A.Operation, [T12.Pattern]];
+    [translateBgp.name]: [A.PropertyPathTypes, [T12.PatternBgp]];
+    [accumulateGroupGraphPattern.name]: [A.Operation, [A.Operation, T12.Pattern]];
+    [simplifiedJoin.name]: [A.Operation, [A.Operation, A.Operation]];
+    // TripleAndQuad
+    [translateTripleCollection.name]: [void, [T12.TripleCollection, FlattenedTriple[]]];
+    [translateBasicGraphPattern.name]: [void, [T12.BasicGraphPattern, FlattenedTriple[]]];
+    [translateTripleNesting.name]: [void, [T12.TripleNesting, FlattenedTriple[]]];
+    [recurseGraph.name]: [A.Operation, [A.Operation, RDF.Term, RDF.Variable | undefined]];
+    [translateQuad.name]: [A.Pattern, [FlattenedTriple]];
+    // Updates
+    [translateUpdate.name]: [A.Operation, [T12.Update]];
+    [translateSingleUpdate.name]: [A.Update, [T12.UpdateOperation]];
+    [translateInsertDelete.name]: [
+      A.Operation,
+      [T12.UpdateOperationInsertData | T12.UpdateOperationDeleteData
+        | T12.UpdateOperationDeleteWhere | T12.UpdateOperationModify],
+    ];
+    [translateUpdateTriplesBlock.name]: [A.Pattern, [T12.PatternBgp | T12.GraphQuads, RDF.NamedNode | undefined]];
+    [translateGraphRefSpecific.name]: [RDF.NamedNode, [T12.GraphRefSpecific]];
+    [translateGraphRefDefSpec.name]: [RDF.NamedNode | 'DEFAULT', [T12.GraphRefSpecific | T12.GraphRefDefault]];
+    [translateGraphRef.name]: ['DEFAULT' | 'NAMED' | 'ALL' | RDF.NamedNode, [T12.GraphRef]];
+    [translateUpdateGraphLoad.name]: [A.Load, [T12.UpdateOperationLoad]];
     // ToAlgebra
-    [translateQuery.name]: [Algebra.Operation, [SparqlQuery, boolean | undefined, boolean | undefined]];
+    [translateQuery.name]: [A.Operation, [T12.SparqlQuery, boolean | undefined, boolean | undefined]];
   }>();
 
 /**
- * Translates the given SPARQL query to SPARQL Algebra.
+ * Translates the given SPARQL query to SPARQL A.
  * @param query - sparql AST generated by Traqula
  * @param options - Optional options object. Current options:
  * @param options.dataFactory - The Datafactory used to generate terms. Default @rdfjs/data-model.
@@ -111,7 +121,7 @@ export const toAlgebra12Builder = IndirBuilder
  * @param options.blankToVariable - translate all blank nodes into variables
  * @returns Operation
  */
-export function toAlgebra(query: SparqlQuery, options: ContextConfigs = {}): Algebra.Operation {
+export function toAlgebra(query: T12.SparqlQuery, options: ContextConfigs = {}): A.Operation {
   const c = createAlgebraContext(options);
   const transformer = toAlgebra12Builder.build();
   return transformer.translateQuery(c, query, options.quads, options.blankToVariable);

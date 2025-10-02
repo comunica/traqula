@@ -9,9 +9,11 @@
         "value": "X"
       },
       "predicate": {
-        "type": "ZeroOrMorePath",
+        "type": "propertypathsymbol",
+        "subType": "ZeroOrMorePath",
         "path": {
-          "type": "link",
+          "type": "propertypathsymbol",
+          "subType": "link",
           "iri": {
             "termType": "NamedNode",
             "value": "http://xmlns.com/foaf/0.1/knows"
@@ -30,7 +32,7 @@
     "expressions": [
       {
         "type": "expression",
-        "expressionType": "term",
+        "subType": "term",
         "term": {
           "termType": "Variable",
           "value": "X"
@@ -38,7 +40,7 @@
       },
       {
         "type": "expression",
-        "expressionType": "term",
+        "subType": "term",
         "term": {
           "termType": "Variable",
           "value": "Y"

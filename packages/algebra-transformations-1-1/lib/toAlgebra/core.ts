@@ -48,7 +48,7 @@ export interface FlattenedTriple {
   object: RDF.Term;
 }
 
-export const types = Algebra.Types;
+export const types = Algebra.KnownTypes;
 export const typeVals = Object.values(types);
 
 export function isTerm(term: any): term is RDF.Term {

@@ -13,11 +13,11 @@ export class AlgebraFactory {
   }
 
   public createAlt(input: A.PropertyPathSymbol[], flatten = true): A.Alt {
-    return this.flattenMulti({ type: A.Types.ALT, input }, flatten);
+    return this.flattenMulti({ type: A.KnownTypes.ALT, input }, flatten);
   }
 
   public createAsk(input: A.Operation): A.Ask {
-    return { type: A.Types.ASK, input };
+    return { type: A.KnownTypes.ASK, input };
   }
 
   public createBoundAggregate(
@@ -33,131 +33,131 @@ export class AlgebraFactory {
   }
 
   public createBgp(patterns: A.Pattern[]): A.Bgp {
-    return { type: A.Types.BGP, patterns };
+    return { type: A.KnownTypes.BGP, patterns };
   }
 
   public createConstruct(input: A.Operation, template: A.Pattern[]): A.Construct {
-    return { type: A.Types.CONSTRUCT, input, template };
+    return { type: A.KnownTypes.CONSTRUCT, input, template };
   }
 
   public createDescribe(input: A.Operation, terms: (RDF.Variable | RDF.NamedNode)[]): A.Describe {
-    return { type: A.Types.DESCRIBE, input, terms };
+    return { type: A.KnownTypes.DESCRIBE, input, terms };
   }
 
   public createDistinct(input: A.Operation): A.Distinct {
-    return { type: A.Types.DISTINCT, input };
+    return { type: A.KnownTypes.DISTINCT, input };
   }
 
   public createExtend(input: A.Operation, variable: RDF.Variable, expression: A.Expression): A.Extend {
-    return { type: A.Types.EXTEND, input, variable, expression };
+    return { type: A.KnownTypes.EXTEND, input, variable, expression };
   }
 
   public createFrom(input: A.Operation, def: RDF.NamedNode[], named: RDF.NamedNode[]): A.From {
-    return { type: A.Types.FROM, input, default: def, named };
+    return { type: A.KnownTypes.FROM, input, default: def, named };
   }
 
   public createFilter(input: A.Operation, expression: A.Expression): A.Filter {
-    return { type: A.Types.FILTER, input, expression };
+    return { type: A.KnownTypes.FILTER, input, expression };
   }
 
   public createGraph(input: A.Operation, name: RDF.Variable | RDF.NamedNode): A.Graph {
-    return { type: A.Types.GRAPH, input, name };
+    return { type: A.KnownTypes.GRAPH, input, name };
   }
 
   public createGroup(input: A.Operation, variables: RDF.Variable[], aggregates: A.BoundAggregate[]): A.Group {
-    return { type: A.Types.GROUP, input, variables, aggregates };
+    return { type: A.KnownTypes.GROUP, input, variables, aggregates };
   }
 
   public createInv(path: A.PropertyPathSymbol): A.Inv {
-    return { type: A.Types.INV, path };
+    return { type: A.KnownTypes.INV, path };
   }
 
   public createJoin(input: A.Operation[], flatten = true): A.Join {
-    return this.flattenMulti({ type: A.Types.JOIN, input }, flatten);
+    return this.flattenMulti({ type: A.KnownTypes.JOIN, input }, flatten);
   }
 
   public createLeftJoin(left: A.Operation, right: A.Operation, expression?: A.Expression): A.LeftJoin {
     if (expression) {
-      return { type: A.Types.LEFT_JOIN, input: [ left, right ], expression };
+      return { type: A.KnownTypes.LEFT_JOIN, input: [ left, right ], expression };
     }
-    return { type: A.Types.LEFT_JOIN, input: [ left, right ]};
+    return { type: A.KnownTypes.LEFT_JOIN, input: [ left, right ]};
   }
 
   public createLink(iri: RDF.NamedNode): A.Link {
-    return { type: A.Types.LINK, iri };
+    return { type: A.KnownTypes.LINK, iri };
   }
 
   public createMinus(left: A.Operation, right: A.Operation): A.Minus {
-    return { type: A.Types.MINUS, input: [ left, right ]};
+    return { type: A.KnownTypes.MINUS, input: [ left, right ]};
   }
 
   public createNop(): A.Nop {
-    return { type: A.Types.NOP };
+    return { type: A.KnownTypes.NOP };
   }
 
   public createNps(iris: RDF.NamedNode[]): A.Nps {
-    return { type: A.Types.NPS, iris };
+    return { type: A.KnownTypes.NPS, iris };
   }
 
   public createOneOrMorePath(path: A.PropertyPathSymbol): A.OneOrMorePath {
-    return { type: A.Types.ONE_OR_MORE_PATH, path };
+    return { type: A.KnownTypes.ONE_OR_MORE_PATH, path };
   }
 
   public createOrderBy(input: A.Operation, expressions: A.Expression[]): A.OrderBy {
-    return { type: A.Types.ORDER_BY, input, expressions };
+    return { type: A.KnownTypes.ORDER_BY, input, expressions };
   }
 
   public createPath(subject: RDF.Term, predicate: A.PropertyPathSymbol, object: RDF.Term, graph?: RDF.Term): A.Path {
     if (graph) {
-      return { type: A.Types.PATH, subject, predicate, object, graph };
+      return { type: A.KnownTypes.PATH, subject, predicate, object, graph };
     }
-    return { type: A.Types.PATH, subject, predicate, object, graph: this.dataFactory.defaultGraph() };
+    return { type: A.KnownTypes.PATH, subject, predicate, object, graph: this.dataFactory.defaultGraph() };
   }
 
   public createPattern(subject: RDF.Term, predicate: RDF.Term, object: RDF.Term, graph?: RDF.Term): A.Pattern {
     const pattern = <A.Pattern> this.dataFactory.quad(subject, predicate, object, graph);
-    pattern.type = A.Types.PATTERN;
+    pattern.type = A.KnownTypes.PATTERN;
     return pattern;
   }
 
   public createProject(input: A.Operation, variables: RDF.Variable[]): A.Project {
-    return { type: A.Types.PROJECT, input, variables };
+    return { type: A.KnownTypes.PROJECT, input, variables };
   }
 
   public createReduced(input: A.Operation): A.Reduced {
-    return { type: A.Types.REDUCED, input };
+    return { type: A.KnownTypes.REDUCED, input };
   }
 
   public createSeq(input: A.PropertyPathSymbol[], flatten = true): A.Seq {
-    return this.flattenMulti({ type: A.Types.SEQ, input }, flatten);
+    return this.flattenMulti({ type: A.KnownTypes.SEQ, input }, flatten);
   }
 
   public createService(input: A.Operation, name: RDF.NamedNode | RDF.Variable, silent?: boolean): A.Service {
-    return { type: A.Types.SERVICE, input, name, silent: Boolean(silent) };
+    return { type: A.KnownTypes.SERVICE, input, name, silent: Boolean(silent) };
   }
 
   public createSlice(input: A.Operation, start: number, length?: number): A.Slice {
     start = start || 0;
     if (length !== undefined) {
-      return { type: A.Types.SLICE, input, start, length };
+      return { type: A.KnownTypes.SLICE, input, start, length };
     }
-    return { type: A.Types.SLICE, input, start };
+    return { type: A.KnownTypes.SLICE, input, start };
   }
 
   public createUnion(input: A.Operation[], flatten = true): A.Union {
-    return this.flattenMulti({ type: A.Types.UNION, input }, flatten);
+    return this.flattenMulti({ type: A.KnownTypes.UNION, input }, flatten);
   }
 
   public createValues(variables: RDF.Variable[], bindings: Record<string, RDF.Literal | RDF.NamedNode>[]): A.Values {
-    return { type: A.Types.VALUES, variables, bindings };
+    return { type: A.KnownTypes.VALUES, variables, bindings };
   }
 
   public createZeroOrMorePath(path: A.PropertyPathSymbol): A.ZeroOrMorePath {
-    return { type: A.Types.ZERO_OR_MORE_PATH, path };
+    return { type: A.KnownTypes.ZERO_OR_MORE_PATH, path };
   }
 
   public createZeroOrOnePath(path: A.PropertyPathSymbol): A.ZeroOrOnePath {
-    return { type: A.Types.ZERO_OR_ONE_PATH, path };
+    return { type: A.KnownTypes.ZERO_OR_ONE_PATH, path };
   }
 
   public createAggregateExpression(
@@ -168,8 +168,8 @@ export class AlgebraFactory {
   ): A.AggregateExpression {
     if (separator !== undefined) {
       return {
-        type: A.Types.EXPRESSION,
-        expressionType: A.ExpressionTypes.AGGREGATE,
+        type: A.KnownTypes.EXPRESSION,
+        expressionType: A.KnownExpressionTypes.AGGREGATE,
         aggregator: <any> aggregator,
         expression,
         separator,
@@ -177,8 +177,8 @@ export class AlgebraFactory {
       };
     }
     return {
-      type: A.Types.EXPRESSION,
-      expressionType: A.ExpressionTypes.AGGREGATE,
+      type: A.KnownTypes.EXPRESSION,
+      expressionType: A.KnownExpressionTypes.AGGREGATE,
       aggregator: <any> aggregator,
       expression,
       distinct,
@@ -186,23 +186,23 @@ export class AlgebraFactory {
   }
 
   public createExistenceExpression(not: boolean, input: A.Operation): A.ExistenceExpression {
-    return { type: A.Types.EXPRESSION, expressionType: A.ExpressionTypes.EXISTENCE, not, input };
+    return { type: A.KnownTypes.EXPRESSION, expressionType: A.KnownExpressionTypes.EXISTENCE, not, input };
   }
 
   public createNamedExpression(name: RDF.NamedNode, args: A.Expression[]): A.NamedExpression {
-    return { type: A.Types.EXPRESSION, expressionType: A.ExpressionTypes.NAMED, name, args };
+    return { type: A.KnownTypes.EXPRESSION, expressionType: A.KnownExpressionTypes.NAMED, name, args };
   }
 
   public createOperatorExpression(operator: string, args: A.Expression[]): A.OperatorExpression {
-    return { type: A.Types.EXPRESSION, expressionType: A.ExpressionTypes.OPERATOR, operator, args };
+    return { type: A.KnownTypes.EXPRESSION, expressionType: A.KnownExpressionTypes.OPERATOR, operator, args };
   }
 
   public createTermExpression(term: RDF.Term): A.TermExpression {
-    return { type: A.Types.EXPRESSION, expressionType: A.ExpressionTypes.TERM, term };
+    return { type: A.KnownTypes.EXPRESSION, expressionType: A.KnownExpressionTypes.TERM, term };
   }
 
   public createWildcardExpression(): A.WildcardExpression {
-    return { type: A.Types.EXPRESSION, expressionType: A.ExpressionTypes.WILDCARD, wildcard: { type: 'wildcard' }};
+    return { type: A.KnownTypes.EXPRESSION, expressionType: A.KnownExpressionTypes.WILDCARD, wildcard: { type: 'wildcard' }};
   }
 
   public createTerm(str: string): RDF.Term {
@@ -214,11 +214,11 @@ export class AlgebraFactory {
 
   // Update functions
   public createCompositeUpdate(updates: A.Update[]): A.CompositeUpdate {
-    return { type: A.Types.COMPOSITE_UPDATE, updates };
+    return { type: A.KnownTypes.COMPOSITE_UPDATE, updates };
   }
 
   public createDeleteInsert(deleteQuads?: A.Pattern[], insertQuads?: A.Pattern[], where?: A.Operation): A.DeleteInsert {
-    const result: A.DeleteInsert = { type: A.Types.DELETE_INSERT };
+    const result: A.DeleteInsert = { type: A.KnownTypes.DELETE_INSERT };
     if (deleteQuads) {
       result.delete = deleteQuads;
     }
@@ -232,7 +232,7 @@ export class AlgebraFactory {
   }
 
   public createLoad(source: RDF.NamedNode, destination?: RDF.NamedNode, silent?: boolean): A.Load {
-    const result: A.Load = { type: A.Types.LOAD, source };
+    const result: A.Load = { type: A.KnownTypes.LOAD, source };
     if (destination) {
       result.destination = destination;
     }
@@ -240,19 +240,19 @@ export class AlgebraFactory {
   }
 
   public createClear(source: 'DEFAULT' | 'NAMED' | 'ALL' | RDF.NamedNode, silent?: boolean): A.Clear {
-    return this.addSilent({ type: A.Types.CLEAR, source }, Boolean(silent));
+    return this.addSilent({ type: A.KnownTypes.CLEAR, source }, Boolean(silent));
   }
 
   public createCreate(source: RDF.NamedNode, silent?: boolean): A.Create {
-    return this.addSilent({ type: A.Types.CREATE, source }, Boolean(silent));
+    return this.addSilent({ type: A.KnownTypes.CREATE, source }, Boolean(silent));
   }
 
   public createDrop(source: 'DEFAULT' | 'NAMED' | 'ALL' | RDF.NamedNode, silent?: boolean): A.Drop {
-    return this.addSilent({ type: A.Types.DROP, source }, Boolean(silent));
+    return this.addSilent({ type: A.KnownTypes.DROP, source }, Boolean(silent));
   }
 
   public createAdd(source: 'DEFAULT' | RDF.NamedNode, destination: 'DEFAULT' | RDF.NamedNode, silent?: boolean): A.Add {
-    return this.addSilent({ type: A.Types.ADD, source, destination }, Boolean(silent));
+    return this.addSilent({ type: A.KnownTypes.ADD, source, destination }, Boolean(silent));
   }
 
   public createMove(
@@ -261,7 +261,7 @@ export class AlgebraFactory {
     silent?: boolean,
   ): A.Move {
     return this.addSilent({
-      type: A.Types.MOVE,
+      type: A.KnownTypes.MOVE,
       source,
       destination,
     }, Boolean(silent));
@@ -273,7 +273,7 @@ export class AlgebraFactory {
     silent?: boolean,
   ): A.Copy {
     return this.addSilent({
-      type: A.Types.COPY,
+      type: A.KnownTypes.COPY,
       source,
       destination,
     }, Boolean(silent));

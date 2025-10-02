@@ -116,7 +116,7 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
     const variablesRaw: Set<string> = new Set(variables);
 
     return util.mapOperation(res, {
-      [Algebra.Types.DELETE_INSERT]: (op: Algebra.DeleteInsert) =>
+      [Algebra.KnownTypes.DELETE_INSERT]: (op: Algebra.DeleteInsert) =>
         // Make sure blank nodes remain in the INSERT block, but do update the WHERE block
         ({
           result: AF.createDeleteInsert(
@@ -126,7 +126,7 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
           ),
           recurse: false,
         }),
-      [Algebra.Types.PATH]: (op: Algebra.Path, factory: AlgebraFactory) => ({
+      [Algebra.KnownTypes.PATH]: (op: Algebra.Path, factory: AlgebraFactory) => ({
         result: factory.createPath(
           blankToVariable(op.subject),
           op.predicate,
@@ -135,7 +135,7 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
         ),
         recurse: false,
       }),
-      [Algebra.Types.PATTERN]: (op: Algebra.Pattern, factory: AlgebraFactory) => ({
+      [Algebra.KnownTypes.PATTERN]: (op: Algebra.Pattern, factory: AlgebraFactory) => ({
         result: factory.createPattern(
           blankToVariable(op.subject),
           blankToVariable(op.predicate),
@@ -144,7 +144,7 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
         ),
         recurse: false,
       }),
-      [Algebra.Types.CONSTRUCT]: (op: Algebra.Construct) =>
+      [Algebra.KnownTypes.CONSTRUCT]: (op: Algebra.Construct) =>
         // Blank nodes in CONSTRUCT templates must be maintained
         ({
           result: AF.createConstruct(SUBRULE(translateBlankNodesToVariables, op.input), op.template),

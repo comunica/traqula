@@ -141,6 +141,10 @@ export interface WildcardExpression extends BaseExpression {
 
 // ----------------------- ACTUAL FUNCTIONS -----------------------
 
+/**
+ * Algebra operation representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) alternative (`|`).
+ * Property paths have a specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
+ */
 export interface Alt extends Multi {
   type: Types.ALT;
   input: PropertyPathSymbol[];
@@ -202,6 +206,11 @@ export interface Group extends Single {
   aggregates: BoundAggregate[];
 }
 
+/**
+ * Algebra operation representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) inverse (`^`).
+ * Having a specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
+ * This operation, besides basic mode is the reason SPARQL can contain literals in the subject position.
+ */
 export interface Inv extends BaseOperation {
   type: Types.INV;
   path: PropertyPathSymbol;
@@ -216,6 +225,12 @@ export interface LeftJoin extends Double {
   expression?: Expression;
 }
 
+/**
+ * Algebra operation representing the property of a [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths).
+ * Property paths have a specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
+ * This operation, is just a way of saying to a Propery Path operation that nothing fancy is going on,
+ * and it should just match this property.
+ */
 export interface Link extends BaseOperation {
   type: Types.LINK;
   iri: RDF.NamedNode;
@@ -229,11 +244,19 @@ export interface Nop extends BaseOperation {
   type: Types.NOP;
 }
 
+/**
+ * Algebra operation representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) negated property set (`!`).
+ * Property paths have a specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
+ */
 export interface Nps extends BaseOperation {
   type: Types.NPS;
   iris: RDF.NamedNode[];
 }
 
+/**
+ * Algebra operation representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) one or more (`+`).
+ * Property paths have a specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
+ */
 export interface OneOrMorePath extends BaseOperation {
   type: Types.ONE_OR_MORE_PATH;
   path: PropertyPathSymbol;
@@ -268,6 +291,10 @@ export interface Reduced extends Single {
   type: Types.REDUCED;
 }
 
+/**
+ * Algebra operation representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) sequence (`/`).
+ * Property paths have a specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
+ */
 export interface Seq extends Multi {
   type: Types.SEQ;
   input: PropertyPathSymbol[];
@@ -289,17 +316,32 @@ export interface Union extends Multi {
   type: Types.UNION;
 }
 
+/**
+ * Algebra operation representing the [VALUES pattern](https://www.w3.org/TR/sparql11-query/#inline-data)
+ * Has a list of variables that will be assigned.
+ * The assignments are represented as a list of object containing bindings.
+ * Each binging links the variable value to the appropriate Term for this binding.
+ * Does not take any input.
+ */
 export interface Values extends BaseOperation {
   type: Types.VALUES;
   variables: RDF.Variable[];
   bindings: Record<string, RDF.Literal | RDF.NamedNode>[];
 }
 
+/**
+ * Algebra operation representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) zero or more (`*`).
+ * The having specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
+ */
 export interface ZeroOrMorePath extends BaseOperation {
   type: Types.ZERO_OR_MORE_PATH;
   path: PropertyPathSymbol;
 }
 
+/**
+ * Algebra operation representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) zero or one (`?`).
+ * The having specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
+ */
 export interface ZeroOrOnePath extends BaseOperation {
   type: Types.ZERO_OR_ONE_PATH;
   path: PropertyPathSymbol;

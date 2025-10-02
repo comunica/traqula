@@ -1,5 +1,42 @@
 import { toAlgebra11Builder } from '@traqula/algebra-sparql-1-1';
-import type { Algebra, ContextConfigs, translateQuery } from '@traqula/algebra-transformations-1-1';
+import type {
+  // AccumulateGroupGraphPattern,
+  Algebra,
+  ContextConfigs,
+  // FindAllVariables,
+  // generateFreshVar,
+  // mapAggregate,
+  // recurseGraph,
+  // registerContextDefinitions,
+  // simplifiedJoin,
+  // simplifyPath,
+  // translateAggregates,
+  // translateBasicGraphPattern,
+  // translateBgp,
+  // translateBlankNodesToVariables,
+  // translateBoundAggregate,
+  // translateDatasetClause,
+  // translateExpression,
+  // translateGraphPattern,
+  // translateGraphRef,
+  // translateGraphRefDefSpec,
+  // translateGraphRefSpecific,
+  // translateInlineData,
+  // translateInsertDelete,
+  // translateNamed,
+  // translatePath,
+  // translatePathPredicate,
+  // translateQuad,
+  translateQuery,
+  // TranslateSingleUpdate,
+  // translateTerm,
+  // translateTripleCollection,
+  // translateTripleNesting,
+  // translateUpdate,
+  // translateUpdateGraphLoad,
+  // translateUpdateTriplesBlock,
+} from '@traqula/algebra-transformations-1-1';
+import type { AlgebraContext } from '@traqula/algebra-transformations-1-2';
 import {
   createAlgebraContext,
   inScopeVariables,
@@ -7,7 +44,6 @@ import {
   translateTripleCollection12,
   translateTripleNesting12,
 } from '@traqula/algebra-transformations-1-2';
-import type { AlgebraContext } from '@traqula/algebra-transformations-1-2';
 import { IndirBuilder } from '@traqula/core';
 import type { SparqlQuery } from '@traqula/rules-sparql-1-2';
 
@@ -19,6 +55,46 @@ export const toAlgebra12Builder = IndirBuilder
   .patchRule(translateTripleNesting12)
   .patchRule(inScopeVariables)
   .typePatch<{
+    // // Aggregate
+    // [translateAggregates.name]: [any, [any]];
+    // [mapAggregate.name]: [any, [any]];
+    // [translateBoundAggregate.name]: [any, [any]];
+    // // General
+    // [translateNamed.name]: [any, [any]];
+    // [translateTerm.name]: [any, [any]];
+    // [registerContextDefinitions.name]: [any, [any]];
+    // [translateInlineData.name]: [any, [any]];
+    // [translateDatasetClause.name]: [any, [any]];
+    // [translateBlankNodesToVariables.name]: [any, [any]];
+    // [findAllVariables.name]: [any, [any]];
+    // [inScopeVariables.name]: [any, [any]];
+    // [generateFreshVar.name]: [any, [any]];
+    // // Path
+    // [translatePath.name]: [any, [any]];
+    // [translatePathPredicate.name]: [any, [any]];
+    // [simplifyPath.name]: [any, [any]];
+    // // Patterns
+    // [translateExpression.name]: [any, [any]];
+    // [translateGraphPattern.name]: [any, [any]];
+    // [translateBgp.name]: [any, [any]];
+    // [accumulateGroupGraphPattern.name]: [any, [any]];
+    // [simplifiedJoin.name]: [any, [any]];
+    // // TripleAndQuad
+    // [translateTripleCollection.name]: [any, [any]];
+    // [translateBasicGraphPattern.name]: [any, [any]];
+    // [translateTripleNesting.name]: [any, [any]];
+    // [recurseGraph.name]: [any, [any]];
+    // [translateQuad.name]: [any, [any]];
+    // // Updates
+    // [translateUpdate.name]: [any, [any]];
+    // [translateSingleUpdate.name]: [any, [any]];
+    // [translateInsertDelete.name]: [any, [any]];
+    // [translateUpdateTriplesBlock.name]: [any, [any]];
+    // [translateGraphRefSpecific.name]: [any, [any]];
+    // [translateGraphRefDefSpec.name]: [any, [any]];
+    // [translateGraphRef.name]: [any, [any]];
+    // [translateUpdateGraphLoad.name]: [any, [any]];
+    // ToAlgebra
     [translateQuery.name]: [Algebra.Operation, [SparqlQuery, boolean | undefined, boolean | undefined]];
   }>();
 

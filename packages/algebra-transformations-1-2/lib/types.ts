@@ -6,7 +6,8 @@ export type AlgebraContext = Patch<Trans11.AlgebraContext, {
   astFactory: AstFactory;
 }>;
 
-export function createAlgebraContext(config: Trans11.ContextConfigs): AlgebraContext {
+export type ContextConfigs = Trans11.ContextConfigs;
+export function createAlgebraContext(config: ContextConfigs): AlgebraContext {
   const context11 = Trans11.createAlgebraContext(config);
   return {
     ...context11,

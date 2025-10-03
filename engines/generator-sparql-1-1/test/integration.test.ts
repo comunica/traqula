@@ -22,7 +22,7 @@ describe('a SPARQL 1.1 generator', () => {
       const query = 'SELECT * WHERE { ?s ?p ?o }';
       const ast = <T11.Query> parser.parse(query);
 
-      const altered = transformer.transformNodeSpecific<'unsafe'>(
+      const altered = transformer.transformNodeSpecific<'unsafe', T11.Query>(
         ast,
         {},
         { term: { variable: {
@@ -99,7 +99,7 @@ _:g_12 <c7> <e7> .
         return result;
       }
 
-      const flattenCollections = transformer.transformNodeSpecific<'unsafe'>(
+      const flattenCollections = transformer.transformNodeSpecific<'unsafe', T11.Query>(
         ast,
         {},
         { pattern: { bgp: {

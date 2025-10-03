@@ -47,7 +47,7 @@ export class TransformerType<Nodes extends Pick<Node, 'type'>> {
    * @param mapper
    * @protected
    */
-  protected safeObjectVisit(value: unknown, mapper: (some: object) => any): unknown {
+  protected safeObjectVisit(value: unknown, mapper: (some: object) => unknown): unknown {
     if (value && typeof value === 'object') {
       if (Array.isArray(value)) {
         return value.map(x => this.safeObjectVisit(x, mapper));
@@ -68,7 +68,7 @@ export class TransformerType<Nodes extends Pick<Node, 'type'>> {
    */
   public transformObject(
     startObject: object,
-    mapper: (some: object) => any,
+    mapper: (some: object) => unknown,
     preVisitor: (some: object) => VisitContext = () => ({}),
   ): unknown {
     let didShortCut = false;
@@ -129,13 +129,13 @@ export class TransformerType<Nodes extends Pick<Node, 'type'>> {
    * @param startObject
    * @param nodeCallBacks
    */
-  public transformNode<Safe extends 'safe' | 'unsafe' = 'safe'>(
+  public transformNode<Safe extends 'safe' | 'unsafe' = 'safe', OutType = unknown>(
     startObject: object,
     nodeCallBacks: {[T in Nodes['type']]?: {
-      transform?: (op: SafeWrap<Safe, Extract<Nodes, { type: T }>>) => any;
+      transform?: (op: SafeWrap<Safe, Extract<Nodes, { type: T }>>) => unknown;
       preVisitor?: (op: Extract<Nodes, { type: T }>) => VisitContext;
     }},
-  ): any {
+  ): Safe extends 'unsafe' ? OutType : unknown {
     const transformWrapper = (curObject: object): unknown => {
       const casted = <{ type?: Nodes['type'] }>curObject;
       if (casted.type) {
@@ -156,7 +156,7 @@ export class TransformerType<Nodes extends Pick<Node, 'type'>> {
       }
       return {};
     };
-    return this.transformObject(startObject, transformWrapper, preTransformWrapper);
+    return <any> this.transformObject(startObject, transformWrapper, preTransformWrapper);
   }
 
   /**
@@ -234,18 +234,18 @@ export class TransformerSubType<Nodes extends Pick<Node, 'type' | 'subType'>> ex
    * @param nodeCallBacks
    * @param nodeSpecificCallBacks
    */
-  public transformNodeSpecific<Safe extends 'safe' | 'unsafe' = 'safe'>(
+  public transformNodeSpecific<Safe extends 'safe' | 'unsafe' = 'safe', OutType = unknown>(
     startObject: object,
     nodeCallBacks: {[T in Nodes['type']]?: {
-      transform?: (op: SafeWrap<Safe, Extract<Nodes, { type: T }>>) => any;
+      transform?: (op: SafeWrap<Safe, Extract<Nodes, { type: T }>>) => unknown;
       preVisitor?: (op: Extract<Nodes, { type: T }>) => VisitContext;
     }},
     nodeSpecificCallBacks: {[Type in Nodes['type']]?: {
       [SubType in Extract<Nodes, { type: Type; subType: string }>['subType']]?: {
-        transform?: (op: SafeWrap<Safe, Extract<Nodes, { type: Type; subType: SubType }>>) => any;
+        transform?: (op: SafeWrap<Safe, Extract<Nodes, { type: Type; subType: SubType }>>) => unknown;
         preVisitor?: (op: Extract<Nodes, { type: Type; subType: SubType }>) => VisitContext;
       }}},
-  ): any {
+  ): Safe extends 'unsafe' ? OutType : unknown {
     const transformWrapper = (curObject: object): unknown => {
       let ogTransform: ((node: any) => unknown) | undefined;
       const casted = <{ type?: Nodes['type']; subType?: string }>curObject;
@@ -274,7 +274,7 @@ export class TransformerSubType<Nodes extends Pick<Node, 'type' | 'subType'>> ex
       }
       return ogPreVisit ? ogPreVisit(casted) : curObject;
     };
-    return this.transformObject(startObject, transformWrapper, preVisitWrapper);
+    return <any> this.transformObject(startObject, transformWrapper, preVisitWrapper);
   }
 
   /**

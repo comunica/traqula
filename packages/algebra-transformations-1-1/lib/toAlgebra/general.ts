@@ -17,7 +17,7 @@ import type {
   TermVariable,
 } from '@traqula/rules-sparql-1-1';
 import * as Algebra from '../algebra.js';
-import type { AlgebraFactory } from '../algebraFactory.js';
+import { asKnown } from '../openAlgebra.js';
 import * as util from '../util.js';
 import type { AlgebraIndir } from './core.js';
 
@@ -115,7 +115,7 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
     const blankToVariableMapping: Record<string, RDF.Variable> = {};
     const variablesRaw: Set<string> = new Set(variables);
 
-    return util.mapOperation(res, {
+    return <Algebra.Operation> util.mapOperation(res, {
       [Algebra.Types.UPDATE]: (op: Algebra.Update) => {
         // Make sure blank nodes remain in the INSERT block, but do update the WHERE block
         if (op.subType === Algebra.UpdateTypes.DELETE_INSERT) {
@@ -130,7 +130,7 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
         }
         return { recurse: false, result: op };
       },
-      [Algebra.Types.PATH]: (op: Algebra.Path, factory: AlgebraFactory) => ({
+      [Algebra.Types.PATH]: (op, factory) => ({
         result: factory.createPath(
           blankToVariable(op.subject),
           op.predicate,
@@ -139,7 +139,7 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
         ),
         recurse: false,
       }),
-      [Algebra.Types.PATTERN]: (op: Algebra.Pattern, factory: AlgebraFactory) => ({
+      [Algebra.Types.PATTERN]: (op, factory) => ({
         result: factory.createPattern(
           blankToVariable(op.subject),
           blankToVariable(op.predicate),
@@ -148,10 +148,10 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
         ),
         recurse: false,
       }),
-      [Algebra.Types.CONSTRUCT]: (op: Algebra.Construct) =>
+      [Algebra.Types.CONSTRUCT]: op =>
         // Blank nodes in CONSTRUCT templates must be maintained
         ({
-          result: AF.createConstruct(SUBRULE(translateBlankNodesToVariables, op.input), op.template),
+          result: AF.createConstruct(SUBRULE(translateBlankNodesToVariables, asKnown(op.input)), op.template),
           recurse: false,
         })
       ,

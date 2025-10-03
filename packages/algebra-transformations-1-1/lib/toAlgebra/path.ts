@@ -1,6 +1,6 @@
 import type * as RDF from '@rdfjs/types';
 import type { Path, PathNegatedElt, PathPure, TermIri } from '@traqula/rules-sparql-1-1';
-import { PropertyPathTypes } from '../algebra.js';
+import { PropertyPathSymbolTypes } from '../algebra.js';
 import type { Algebra } from '../index.js';
 import type { AlgebraIndir, FlattenedTriple } from './core.js';
 import { isTerm } from './core.js';
@@ -114,17 +114,17 @@ AlgebraIndir<'simplifyPath', (Algebra.Pattern | Algebra.Path)[], [RDF.Term, Alge
   name: 'simplifyPath',
   fun: ({ SUBRULE }) => ({ algebraFactory: AF }, subject, predicate, object) => {
     // X link(iri) Y -> X iri Y
-    if (predicate.subType === PropertyPathTypes.LINK) {
+    if (predicate.subType === PropertyPathSymbolTypes.LINK) {
       return [ AF.createPattern(subject, predicate.iri, object) ];
     }
 
     // X inv(iri) Y -> Y iri X
-    if (predicate.subType === PropertyPathTypes.INV) {
+    if (predicate.subType === PropertyPathSymbolTypes.INV) {
       return SUBRULE(simplifyPath, <RDF.Quad_Subject> object, predicate.path, subject);
     }
 
     // X seq(P, Q) Y -> X P ?V . ?V Q P
-    if (predicate.subType === PropertyPathTypes.SEQ) {
+    if (predicate.subType === PropertyPathSymbolTypes.SEQ) {
       let iter = subject;
       const result: (Algebra.Pattern | Algebra.Path)[] = [];
       for (const pathOfSeq of predicate.input.slice(0, -1)) {

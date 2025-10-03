@@ -36,7 +36,7 @@ export class AstCoreFactory {
     if (filtered.length === 0) {
       return this.gen();
     }
-    const first = filtered[0];
+    const first = filtered.at(0)!;
     const last = filtered.at(-1)!;
     return {
       sourceLocationType: 'source',

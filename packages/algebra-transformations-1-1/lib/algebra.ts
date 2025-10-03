@@ -39,7 +39,7 @@ export enum ExpressionTypes {
   WILDCARD = 'wildcard',
 }
 
-export enum PropertyPathTypes {
+export enum PropertyPathSymbolTypes {
   ALT = 'alt',
   INV = 'inv',
   LINK = 'link',
@@ -86,6 +86,7 @@ export interface BaseOperation {
   metadata?: Record<string, unknown>;
   type: string;
   subType?: string;
+  input?: BaseOperation | BaseOperation[];
 }
 
 /**
@@ -182,7 +183,7 @@ export interface WildcardExpression extends BaseExpression {
  */
 export interface Alt extends Multi, BasePropertyPathSymbol {
   type: Types.PROPERTY_PATH_SYMBOL;
-  subType: PropertyPathTypes.ALT;
+  subType: PropertyPathSymbolTypes.ALT;
   input: PropertyPathSymbol[];
 }
 
@@ -249,7 +250,7 @@ export interface Group extends Single {
  */
 export interface Inv extends BaseOperation, BasePropertyPathSymbol {
   type: Types.PROPERTY_PATH_SYMBOL;
-  subType: PropertyPathTypes.INV;
+  subType: PropertyPathSymbolTypes.INV;
   path: PropertyPathSymbol;
 }
 
@@ -270,7 +271,7 @@ export interface LeftJoin extends Double {
  */
 export interface Link extends BaseOperation {
   type: Types.PROPERTY_PATH_SYMBOL;
-  subType: PropertyPathTypes.LINK;
+  subType: PropertyPathSymbolTypes.LINK;
   iri: RDF.NamedNode;
 }
 
@@ -292,7 +293,7 @@ export interface Nop extends BaseOperation {
  */
 export interface Nps extends BaseOperation, BasePropertyPathSymbol {
   type: Types.PROPERTY_PATH_SYMBOL;
-  subType: PropertyPathTypes.NPS;
+  subType: PropertyPathSymbolTypes.NPS;
   iris: RDF.NamedNode[];
 }
 
@@ -302,7 +303,7 @@ export interface Nps extends BaseOperation, BasePropertyPathSymbol {
  */
 export interface OneOrMorePath extends BaseOperation, BasePropertyPathSymbol {
   type: Types.PROPERTY_PATH_SYMBOL;
-  subType: PropertyPathTypes.ONE_OR_MORE_PATH;
+  subType: PropertyPathSymbolTypes.ONE_OR_MORE_PATH;
   path: PropertyPathSymbol;
 }
 
@@ -341,7 +342,7 @@ export interface Reduced extends Single {
  */
 export interface Seq extends Multi, BasePropertyPathSymbol {
   type: Types.PROPERTY_PATH_SYMBOL;
-  subType: PropertyPathTypes.SEQ;
+  subType: PropertyPathSymbolTypes.SEQ;
   input: PropertyPathSymbol[];
 }
 
@@ -380,7 +381,7 @@ export interface Values extends BaseOperation {
  */
 export interface ZeroOrMorePath extends BaseOperation, BasePropertyPathSymbol {
   type: Types.PROPERTY_PATH_SYMBOL;
-  subType: PropertyPathTypes.ZERO_OR_MORE_PATH;
+  subType: PropertyPathSymbolTypes.ZERO_OR_MORE_PATH;
   path: PropertyPathSymbol;
 }
 
@@ -390,7 +391,7 @@ export interface ZeroOrMorePath extends BaseOperation, BasePropertyPathSymbol {
  */
 export interface ZeroOrOnePath extends BaseOperation, BasePropertyPathSymbol {
   type: Types.PROPERTY_PATH_SYMBOL;
-  subType: PropertyPathTypes.ZERO_OR_ONE_PATH;
+  subType: PropertyPathSymbolTypes.ZERO_OR_ONE_PATH;
   path: PropertyPathSymbol;
 }
 

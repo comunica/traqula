@@ -129,7 +129,7 @@ export class TransformerType<Nodes extends Pick<Node, 'type'>> {
    * @param startObject
    * @param nodeCallBacks
    */
-  public transformNode<Safe extends 'safe' | 'unsafe' = 'safe', OutType = unknown>(
+  public transformNode<Safe extends Safeness = 'safe', OutType = unknown>(
     startObject: object,
     nodeCallBacks: {[T in Nodes['type']]?: {
       transform?: (op: SafeWrap<Safe, Extract<Nodes, { type: T }>>) => unknown;
@@ -234,7 +234,7 @@ export class TransformerSubType<Nodes extends Pick<Node, 'type' | 'subType'>> ex
    * @param nodeCallBacks
    * @param nodeSpecificCallBacks
    */
-  public transformNodeSpecific<Safe extends 'safe' | 'unsafe' = 'safe', OutType = unknown>(
+  public transformNodeSpecific<Safe extends Safeness = 'safe', OutType = unknown>(
     startObject: object,
     nodeCallBacks: {[T in Nodes['type']]?: {
       transform?: (op: SafeWrap<Safe, Extract<Nodes, { type: T }>>) => unknown;

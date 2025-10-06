@@ -1,8 +1,7 @@
 import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
 import * as Algebra from './algebra.js';
-import * as utils from './util.js';
-import type { AlgebraFactory } from './index.js';
+import { AlgebraFactory } from './index.js';
 
 export class Canonicalizer {
   public constructor() {
@@ -22,32 +21,33 @@ export class Canonicalizer {
   public canonicalizeQuery(res: Algebra.Operation, replaceVariables: boolean): Algebra.Operation {
     this.blankId = 0;
     const nameMapping: Record<string, string> = {};
-    return <Algebra.Operation> utils.mapOperation(res, {
-      [Algebra.Types.PATH]: (op, factory) => ({
+    const factory = new AlgebraFactory();
+
+    return Algebra.mapOperationReplace<'unsafe', typeof res>(res, {
+      [Algebra.Types.PATH]: { transform: pathOp => ({
         result: factory.createPath(
-          this.replaceValue(op.subject, nameMapping, replaceVariables, factory),
-          op.predicate,
-          this.replaceValue(op.object, nameMapping, replaceVariables, factory),
-          this.replaceValue(op.graph, nameMapping, replaceVariables, factory),
+          this.replaceValue(pathOp.subject, nameMapping, replaceVariables, factory),
+          pathOp.predicate,
+          this.replaceValue(pathOp.object, nameMapping, replaceVariables, factory),
+          this.replaceValue(pathOp.graph, nameMapping, replaceVariables, factory),
         ),
         recurse: true,
-      }),
-      [Algebra.Types.PATTERN]: (op, factory) => ({
+      }) },
+      [Algebra.Types.PATTERN]: { transform: patternOp => ({
         result: factory.createPattern(
-          this.replaceValue(op.subject, nameMapping, replaceVariables, factory),
-          this.replaceValue(op.predicate, nameMapping, replaceVariables, factory),
-          this.replaceValue(op.object, nameMapping, replaceVariables, factory),
-          this.replaceValue(op.graph, nameMapping, replaceVariables, factory),
+          this.replaceValue(patternOp.subject, nameMapping, replaceVariables, factory),
+          this.replaceValue(patternOp.predicate, nameMapping, replaceVariables, factory),
+          this.replaceValue(patternOp.object, nameMapping, replaceVariables, factory),
+          this.replaceValue(patternOp.graph, nameMapping, replaceVariables, factory),
         ),
         recurse: true,
-      }),
-      [Algebra.Types.CONSTRUCT]: (op, factory) =>
+      }) },
+      [Algebra.Types.CONSTRUCT]: { transform: constructOp =>
         // Blank nodes in CONSTRUCT templates must be maintained
         ({
-          result: factory.createConstruct(op.input, op.template),
+          result: factory.createConstruct(constructOp.input, constructOp.template),
           recurse: true,
-        })
-      ,
+        }) },
     });
   }
 

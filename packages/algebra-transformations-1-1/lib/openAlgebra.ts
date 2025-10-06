@@ -1,4 +1,5 @@
 import type { Patch } from '@traqula/core';
+import { TransformerSubType } from '@traqula/core';
 import type * as Algebra from './algebra.js';
 
 export {
@@ -45,6 +46,16 @@ export function isKnownOperationSub<Type extends string, SubType extends string>
     Extract<SemiOperation, { type: Type; subType: SubType }> : { type: Type; subType: SubType } {
   return val.type === type && val.subType === subType;
 }
+
+// ----------------------- manipulators --------------------
+
+const transformer = new TransformerSubType<SemiOperation>();
+export const mapOperationReplace = transformer.transformNode.bind(transformer);
+export const mapOperationSubReplace = transformer.transformNodeSpecific.bind(transformer);
+export const recurseOperationReplace = transformer.visitNode.bind(transformer);
+export const recurseOperationSubReplace = transformer.visitNodeSpecific.bind(transformer);
+export const traverseOperation = transformer.traverseNodes.bind(transformer);
+export const traverseOperationSubReplace = transformer.traverseSubNodes.bind(transformer);
 
 // https://www.typescriptlang.org/docs/handbook/2/conditional-types.html#distributive-conditional-types
 export type OpenSingle<T> = [T] extends [any[]] ? OpenSingle<T[number]>[] :

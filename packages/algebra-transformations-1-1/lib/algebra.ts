@@ -1,4 +1,5 @@
 import type * as RDF from '@rdfjs/types';
+import { TransformerSubType } from '@traqula/core';
 
 export enum Types {
   ASK = 'ask',
@@ -75,6 +76,16 @@ export type Update = DeleteInsert | Load | Clear | Create | Drop | Add | Move | 
 // Returns the correct type based on the type enum
 export type TypedOperation<T extends Types> = Extract<Operation, { type: T }>;
 export type TypedExpression<T extends ExpressionTypes> = Extract<Expression, { subType: T }>;
+
+// ----------------------- manipulators --------------------
+
+const transformer = new TransformerSubType<Operation>();
+export const mapOperationReplace = transformer.transformNode.bind(transformer);
+export const mapOperationSubReplace = transformer.transformNodeSpecific.bind(transformer);
+export const recurseOperationReplace = transformer.visitNode.bind(transformer);
+export const recurseOperationSubReplace = transformer.visitNodeSpecific.bind(transformer);
+export const traverseOperation = transformer.traverseNodes.bind(transformer);
+export const traverseOperationSubReplace = transformer.traverseSubNodes.bind(transformer);
 
 // ----------------------- OPERATIONS -----------------------
 /**

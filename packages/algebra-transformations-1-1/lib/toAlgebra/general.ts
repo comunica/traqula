@@ -17,6 +17,7 @@ import type {
   TermVariable,
 } from '@traqula/rules-sparql-1-1';
 import * as Algebra from '../algebra.js';
+import { AlgebraFactory } from '../algebraFactory.js';
 import { asKnown } from '../openAlgebra.js';
 import * as util from '../util.js';
 import type { AlgebraIndir } from './core.js';
@@ -114,47 +115,46 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
   fun: ({ SUBRULE }) => ({ algebraFactory: AF, variables }, res) => {
     const blankToVariableMapping: Record<string, RDF.Variable> = {};
     const variablesRaw: Set<string> = new Set(variables);
+    const factory = new AlgebraFactory();
 
-    return <Algebra.Operation> util.mapOperation(res, {
-      [Algebra.Types.UPDATE]: (op: Algebra.Update) => {
-        // Make sure blank nodes remain in the INSERT block, but do update the WHERE block
-        if (op.subType === Algebra.UpdateTypes.DELETE_INSERT) {
-          return {
-            result: AF.createDeleteInsert(
-              op.delete,
-              op.insert,
-              op.where && SUBRULE(translateBlankNodesToVariables, op.where),
-            ),
-            recurse: false,
-          };
-        }
-        return { recurse: false, result: op };
-      },
-      [Algebra.Types.PATH]: (op, factory) => ({
-        result: factory.createPath(
+    return Algebra.mapOperationReplace<'unsafe', typeof res>(res, {
+      [Algebra.Types.PATH]: {
+        preVisitor: () => ({ continue: false }),
+        transform: op => factory.createPath(
           blankToVariable(op.subject),
           op.predicate,
           blankToVariable(op.object),
           blankToVariable(op.graph),
         ),
-        recurse: false,
-      }),
-      [Algebra.Types.PATTERN]: (op, factory) => ({
-        result: factory.createPattern(
+      },
+      [Algebra.Types.PATTERN]: {
+        preVisitor: () => ({ continue: false }),
+        transform: op => factory.createPattern(
           blankToVariable(op.subject),
           blankToVariable(op.predicate),
           blankToVariable(op.object),
           blankToVariable(op.graph),
         ),
-        recurse: false,
-      }),
-      [Algebra.Types.CONSTRUCT]: op =>
+      },
+      [Algebra.Types.CONSTRUCT]: {
+        preVisitor: () => ({ continue: false }),
         // Blank nodes in CONSTRUCT templates must be maintained
-        ({
-          result: AF.createConstruct(SUBRULE(translateBlankNodesToVariables, asKnown(op.input)), op.template),
-          recurse: false,
-        })
-      ,
+        transform: op => AF.createConstruct(SUBRULE(translateBlankNodesToVariables, asKnown(op.input)), op.template),
+      },
+      [Algebra.Types.UPDATE]: {
+        preVisitor: () => ({ continue: false }),
+        transform: (op: Algebra.Update) => {
+          // Make sure blank nodes remain in the INSERT block, but do update the WHERE block
+          if (op.subType === Algebra.UpdateTypes.DELETE_INSERT) {
+            return AF.createDeleteInsert(
+              op.delete,
+              op.insert,
+              op.where && SUBRULE(translateBlankNodesToVariables, op.where),
+            );
+          }
+          return op;
+        },
+      },
     });
 
     function blankToVariable(term: RDF.Term): RDF.Term {

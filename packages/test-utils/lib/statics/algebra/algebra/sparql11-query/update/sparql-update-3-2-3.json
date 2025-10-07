@@ -1,6 +1,5 @@
 {
-  "type": "update",
-  "subType": "copy",
+  "type": "copy",
   "source": "DEFAULT",
   "destination": {
     "termType": "NamedNode",

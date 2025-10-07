@@ -1,6 +1,5 @@
 {
-  "type": "update",
-  "subType": "add",
+  "type": "add",
   "source": "DEFAULT",
   "destination": {
     "termType": "NamedNode",

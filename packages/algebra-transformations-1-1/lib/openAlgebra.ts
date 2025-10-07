@@ -3,14 +3,10 @@ import { TransformerSubType } from '@traqula/core';
 import type * as Algebra from './algebra.js';
 
 export {
-  BaseUpdate,
   BaseOperation,
   BaseExpression,
-  BasePropertyPathSymbol,
   Types,
   ExpressionTypes,
-  UpdateTypes,
-  PropertyPathSymbolTypes,
 } from './algebra.js';
 
 export function asKnown<T extends object>(arg: T): CloseSingle<T> {
@@ -49,36 +45,28 @@ export function isKnownOperationSub<Type extends string, SubType extends string>
 
 // ----------------------- manipulators --------------------
 
-const transformer = new TransformerSubType<SemiOperation>();
+const transformer = new TransformerSubType<SemiOperation>({ shallowKeys: [ 'metadata' ], ignoreKeys: [ 'metadata' ]});
 export const mapOperationReplace = transformer.transformNode.bind(transformer);
 export const mapOperationSubReplace = transformer.transformNodeSpecific.bind(transformer);
 export const recurseOperationReplace = transformer.visitNode.bind(transformer);
 export const recurseOperationSubReplace = transformer.visitNodeSpecific.bind(transformer);
-export const traverseOperation = transformer.traverseNodes.bind(transformer);
-export const traverseOperationSubReplace = transformer.traverseSubNodes.bind(transformer);
 
 // https://www.typescriptlang.org/docs/handbook/2/conditional-types.html#distributive-conditional-types
 export type OpenSingle<T> = [T] extends [any[]] ? OpenSingle<T[number]>[] :
     [T] extends [Algebra.Pattern] ? Algebra.Pattern :
         [T] extends [Algebra.Expression] ? Algebra.BaseExpression :
-            [T] extends [Algebra.Update] ? Algebra.BaseUpdate :
-                [T] extends [Algebra.PropertyPathSymbol] ? Algebra.BasePropertyPathSymbol :
-                    [T] extends [Algebra.Operation] ? Algebra.BaseOperation : T;
+            [T] extends [Algebra.Operation] ? Algebra.BaseOperation : T;
 
 export type CloseSingle<T> = T extends any[] ? CloseSingle<T[number]>[] :
   T extends BoundAggregate ? Algebra.BoundAggregate :
     T extends Algebra.BaseExpression ? Algebra.Expression :
-      T extends Algebra.BaseUpdate ? Algebra.Update :
-        T extends Algebra.BasePropertyPathSymbol ? Algebra.PropertyPathSymbol :
-          T extends Algebra.BaseOperation ? Algebra.Operation : T;
+      T extends Algebra.BaseOperation ? Algebra.Operation : T;
 
 export type Opened<T extends object> = {[K in keyof T]: OpenSingle<T[K]> };
 export type Closed<T extends object > = {[K in keyof T]: CloseSingle<T[K]> };
 
 export type Operation = Algebra.BaseOperation;
 export type Expression = Algebra.BaseExpression;
-export type Update = Algebra.BaseUpdate;
-export type PropertyPathSymbol = Algebra.BasePropertyPathSymbol;
 
 export type SemiOperation = Ask | SemiExpression | Bgp | Construct | Describe | Distinct | Extend | From | Filter
   | Graph | Group | Join | LeftJoin | Minus | Nop | OrderBy | Path | Pattern | Project | SemiPropertyPathSymbol

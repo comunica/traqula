@@ -9,14 +9,11 @@
         "value": "http://example.org/A0"
       },
       "predicate": {
-        "type": "propertypathsymbol",
-        "subType": "ZeroOrMorePath",
+        "type": "ZeroOrMorePath",
         "path": {
-          "type": "propertypathsymbol",
-          "subType": "ZeroOrMorePath",
+          "type": "ZeroOrMorePath",
           "path": {
-            "type": "propertypathsymbol",
-            "subType": "link",
+            "type": "link",
             "iri": {
               "termType": "NamedNode",
               "value": "http://example.org/P"

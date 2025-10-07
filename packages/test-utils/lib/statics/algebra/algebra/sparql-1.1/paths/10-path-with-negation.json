@@ -7,8 +7,7 @@
       "value": "http://www.example.org/instance#a"
     },
     "predicate": {
-      "type": "propertypathsymbol",
-      "subType": "nps",
+      "type": "nps",
       "iris": [
         {
           "termType": "NamedNode",

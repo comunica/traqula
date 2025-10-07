@@ -7,31 +7,26 @@
       "value": "http://www.example.org/instance#a"
     },
     "predicate": {
-      "type": "propertypathsymbol",
-      "subType": "ZeroOrMorePath",
+      "type": "ZeroOrMorePath",
       "path": {
-        "type": "propertypathsymbol",
-        "subType": "seq",
+        "type": "seq",
         "input": [
           {
-            "type": "propertypathsymbol",
-            "subType": "link",
+            "type": "link",
             "iri": {
               "termType": "NamedNode",
               "value": "http://www.example.org/schema#p1"
             }
           },
           {
-            "type": "propertypathsymbol",
-            "subType": "link",
+            "type": "link",
             "iri": {
               "termType": "NamedNode",
               "value": "http://www.example.org/schema#p2"
             }
           },
           {
-            "type": "propertypathsymbol",
-            "subType": "link",
+            "type": "link",
             "iri": {
               "termType": "NamedNode",
               "value": "http://www.example.org/schema#p3"

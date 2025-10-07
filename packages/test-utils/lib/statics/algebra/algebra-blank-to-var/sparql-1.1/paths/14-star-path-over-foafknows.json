@@ -9,11 +9,9 @@
         "value": "X"
       },
       "predicate": {
-        "type": "propertypathsymbol",
-        "subType": "ZeroOrMorePath",
+        "type": "ZeroOrMorePath",
         "path": {
-          "type": "propertypathsymbol",
-          "subType": "link",
+          "type": "link",
           "iri": {
             "termType": "NamedNode",
             "value": "http://xmlns.com/foaf/0.1/knows"

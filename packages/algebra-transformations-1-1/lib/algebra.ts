@@ -1,6 +1,32 @@
 import type * as RDF from '@rdfjs/types';
 import { TransformerSubType } from '@traqula/core';
 
+export function asKnown<T extends object>(arg: T): Operation {
+  return <any> arg;
+}
+
+export function isKnownOperation<T extends string>(val: { type: unknown }, type: T):
+  val is Extract<Operation, { type: T }> extends object ?
+    Extract<Operation, { type: T }> : { type: T } {
+  return val.type === type;
+}
+
+export function isKnownSub<T extends string, Obj extends { type: string; subType: unknown }>(val: Obj, type: T):
+  val is Extract<Operation, { type: Obj['type']; subType: T }> extends object ?
+    Obj & Extract<Operation, { type: Obj['type']; subType: T }> : Obj & { subType: T } {
+  return val.subType === type;
+}
+
+export function isKnownOperationSub<Type extends string, SubType extends string>(
+  val: { type: unknown; subType?: unknown },
+  type: Type,
+  subType: SubType,
+):
+  val is Extract<Operation, { type: Type; subType: SubType }> extends object ?
+    Extract<Operation, { type: Type; subType: SubType }> : { type: Type; subType: SubType } {
+  return val.type === type && val.subType === subType;
+}
+
 export enum Types {
   ASK = 'ask',
   BGP = 'bgp',
@@ -8,7 +34,6 @@ export enum Types {
   DESCRIBE = 'describe',
   DISTINCT = 'distinct',
   EXPRESSION = 'expression',
-  PROPERTY_PATH_SYMBOL = 'propertypathsymbol',
   EXTEND = 'extend',
   FILTER = 'filter',
   FROM = 'from',
@@ -19,7 +44,6 @@ export enum Types {
   MINUS = 'minus',
   NOP = 'nop',
   ORDER_BY = 'orderby',
-  PATH = 'path',
   PATTERN = 'pattern',
   PROJECT = 'project',
   REDUCED = 'reduced',
@@ -27,20 +51,20 @@ export enum Types {
   SLICE = 'slice',
   UNION = 'union',
   VALUES = 'values',
-  UPDATE = 'update',
+
+  // Update
   COMPOSITE_UPDATE = 'compositeupdate',
-}
+  DELETE_INSERT = 'deleteinsert',
+  LOAD = 'load',
+  CLEAR = 'clear',
+  CREATE = 'create',
+  DROP = 'drop',
+  ADD = 'add',
+  MOVE = 'move',
+  COPY = 'copy',
 
-export enum ExpressionTypes {
-  AGGREGATE = 'aggregate',
-  EXISTENCE = 'existence',
-  NAMED = 'named',
-  OPERATOR = 'operator',
-  TERM = 'term',
-  WILDCARD = 'wildcard',
-}
-
-export enum PropertyPathSymbolTypes {
+  // Paths
+  PATH = 'path',
   ALT = 'alt',
   INV = 'inv',
   LINK = 'link',
@@ -51,15 +75,13 @@ export enum PropertyPathSymbolTypes {
   ZERO_OR_ONE_PATH = 'ZeroOrOnePath',
 }
 
-export enum UpdateTypes {
-  DELETE_INSERT = 'deleteinsert',
-  LOAD = 'load',
-  CLEAR = 'clear',
-  CREATE = 'create',
-  DROP = 'drop',
-  ADD = 'add',
-  MOVE = 'move',
-  COPY = 'copy',
+export enum ExpressionTypes {
+  AGGREGATE = 'aggregate',
+  EXISTENCE = 'existence',
+  NAMED = 'named',
+  OPERATOR = 'operator',
+  TERM = 'term',
+  WILDCARD = 'wildcard',
 }
 
 export type Operation = Ask | Expression | Bgp | Construct | Describe | Distinct | Extend | From | Filter
@@ -79,13 +101,11 @@ export type TypedExpression<T extends ExpressionTypes> = Extract<Expression, { s
 
 // ----------------------- manipulators --------------------
 
-const transformer = new TransformerSubType<Operation>();
+const transformer = new TransformerSubType<Operation>({ shallowKeys: [ 'metadata' ], ignoreKeys: [ 'metadata' ]});
 export const mapOperationReplace = transformer.transformNode.bind(transformer);
 export const mapOperationSubReplace = transformer.transformNodeSpecific.bind(transformer);
 export const recurseOperationReplace = transformer.visitNode.bind(transformer);
 export const recurseOperationSubReplace = transformer.visitNodeSpecific.bind(transformer);
-export const traverseOperation = transformer.traverseNodes.bind(transformer);
-export const traverseOperationSubReplace = transformer.traverseSubNodes.bind(transformer);
 
 // ----------------------- OPERATIONS -----------------------
 /**
@@ -97,7 +117,6 @@ export interface BaseOperation {
   metadata?: Record<string, unknown>;
   type: string;
   subType?: string;
-  input?: BaseOperation | BaseOperation[];
 }
 
 /**
@@ -105,16 +124,6 @@ export interface BaseOperation {
  */
 export interface BaseExpression extends BaseOperation {
   type: Types.EXPRESSION;
-  subType: string;
-}
-
-export interface BasePropertyPathSymbol extends BaseOperation {
-  type: Types.PROPERTY_PATH_SYMBOL;
-  subType: string;
-}
-
-export interface BaseUpdate extends BaseOperation {
-  type: Types.UPDATE;
   subType: string;
 }
 
@@ -192,9 +201,8 @@ export interface WildcardExpression extends BaseExpression {
  * Algebra operation representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) alternative (`|`).
  * Property paths have a specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
  */
-export interface Alt extends Multi, BasePropertyPathSymbol {
-  type: Types.PROPERTY_PATH_SYMBOL;
-  subType: PropertyPathSymbolTypes.ALT;
+export interface Alt extends Multi {
+  type: Types.ALT;
   input: PropertyPathSymbol[];
 }
 
@@ -259,9 +267,8 @@ export interface Group extends Single {
  * Having a specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
  * This operation, besides basic mode is the reason SPARQL can contain literals in the subject position.
  */
-export interface Inv extends BaseOperation, BasePropertyPathSymbol {
-  type: Types.PROPERTY_PATH_SYMBOL;
-  subType: PropertyPathSymbolTypes.INV;
+export interface Inv extends BaseOperation {
+  type: Types.INV;
   path: PropertyPathSymbol;
 }
 
@@ -281,8 +288,7 @@ export interface LeftJoin extends Double {
  * and it should just match this property.
  */
 export interface Link extends BaseOperation {
-  type: Types.PROPERTY_PATH_SYMBOL;
-  subType: PropertyPathSymbolTypes.LINK;
+  type: Types.LINK;
   iri: RDF.NamedNode;
 }
 
@@ -302,9 +308,8 @@ export interface Nop extends BaseOperation {
  * Algebra operation representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) negated property set (`!`).
  * Property paths have a specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
  */
-export interface Nps extends BaseOperation, BasePropertyPathSymbol {
-  type: Types.PROPERTY_PATH_SYMBOL;
-  subType: PropertyPathSymbolTypes.NPS;
+export interface Nps extends BaseOperation {
+  type: Types.NPS;
   iris: RDF.NamedNode[];
 }
 
@@ -312,9 +317,8 @@ export interface Nps extends BaseOperation, BasePropertyPathSymbol {
  * Algebra operation representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) one or more (`+`).
  * Property paths have a specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
  */
-export interface OneOrMorePath extends BaseOperation, BasePropertyPathSymbol {
-  type: Types.PROPERTY_PATH_SYMBOL;
-  subType: PropertyPathSymbolTypes.ONE_OR_MORE_PATH;
+export interface OneOrMorePath extends BaseOperation {
+  type: Types.ONE_OR_MORE_PATH;
   path: PropertyPathSymbol;
 }
 
@@ -351,9 +355,8 @@ export interface Reduced extends Single {
  * Algebra operation representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) sequence (`/`).
  * Property paths have a specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
  */
-export interface Seq extends Multi, BasePropertyPathSymbol {
-  type: Types.PROPERTY_PATH_SYMBOL;
-  subType: PropertyPathSymbolTypes.SEQ;
+export interface Seq extends Multi {
+  type: Types.SEQ;
   input: PropertyPathSymbol[];
 }
 
@@ -390,9 +393,8 @@ export interface Values extends BaseOperation {
  * Algebra operation representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) zero or more (`*`).
  * The having specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
  */
-export interface ZeroOrMorePath extends BaseOperation, BasePropertyPathSymbol {
-  type: Types.PROPERTY_PATH_SYMBOL;
-  subType: PropertyPathSymbolTypes.ZERO_OR_MORE_PATH;
+export interface ZeroOrMorePath extends BaseOperation {
+  type: Types.ZERO_OR_MORE_PATH;
   path: PropertyPathSymbol;
 }
 
@@ -400,9 +402,8 @@ export interface ZeroOrMorePath extends BaseOperation, BasePropertyPathSymbol {
  * Algebra operation representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) zero or one (`?`).
  * The having specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
  */
-export interface ZeroOrOnePath extends BaseOperation, BasePropertyPathSymbol {
-  type: Types.PROPERTY_PATH_SYMBOL;
-  subType: PropertyPathSymbolTypes.ZERO_OR_ONE_PATH;
+export interface ZeroOrOnePath extends BaseOperation {
+  type: Types.ZERO_OR_ONE_PATH;
   path: PropertyPathSymbol;
 }
 
@@ -412,37 +413,35 @@ export interface CompositeUpdate extends BaseOperation {
   updates: (Update | Nop)[];
 }
 
-export interface DeleteInsert extends BaseOperation, BaseUpdate {
-  type: Types.UPDATE;
-  subType: UpdateTypes.DELETE_INSERT;
+export interface DeleteInsert extends BaseOperation {
+  type: Types.DELETE_INSERT;
   delete?: Pattern[];
   insert?: Pattern[];
   where?: Operation;
 }
 
-export interface UpdateGraph extends BaseUpdate {
-  type: Types.UPDATE;
+export interface UpdateGraph extends BaseOperation {
   silent?: boolean;
 }
 
 export interface Load extends UpdateGraph {
-  subType: UpdateTypes.LOAD;
+  type: Types.LOAD;
   source: RDF.NamedNode;
   destination?: RDF.NamedNode;
 }
 
 export interface Clear extends UpdateGraph {
-  subType: UpdateTypes.CLEAR;
+  type: Types.CLEAR;
   source: 'DEFAULT' | 'NAMED' | 'ALL' | RDF.NamedNode;
 }
 
 export interface Create extends UpdateGraph {
-  subType: UpdateTypes.CREATE;
+  type: Types.CREATE;
   source: RDF.NamedNode;
 }
 
 export interface Drop extends UpdateGraph {
-  subType: UpdateTypes.DROP;
+  type: Types.DROP;
   source: 'DEFAULT' | 'NAMED' | 'ALL' | RDF.NamedNode;
 }
 
@@ -452,13 +451,13 @@ export interface UpdateGraphShortcut extends UpdateGraph {
 }
 
 export interface Add extends UpdateGraphShortcut {
-  subType: UpdateTypes.ADD;
+  type: Types.ADD;
 }
 
 export interface Move extends UpdateGraphShortcut {
-  subType: UpdateTypes.MOVE;
+  type: Types.MOVE;
 }
 
 export interface Copy extends UpdateGraphShortcut {
-  subType: UpdateTypes.COPY;
+  type: Types.COPY;
 }

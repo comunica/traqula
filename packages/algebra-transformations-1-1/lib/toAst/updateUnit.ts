@@ -25,7 +25,7 @@ import type {
 } from '@traqula/rules-sparql-1-1';
 import { isomorphic } from 'rdf-isomorphic';
 import type * as Algebra from '../algebra.js';
-import { Types, UpdateTypes } from '../algebra.js';
+import { Types } from '../algebra.js';
 import { isVariable, types } from '../toAlgebra/index.js';
 import type { AstIndir } from './core.js';
 import type { RdfTermToAst } from './general.js';
@@ -36,25 +36,25 @@ import { removeAlgQuadsRecursive } from './quads.js';
 export const translateAlgUpdateOperation: AstIndir<'translateUpdateOperation', UpdateOperation, [Algebra.Update]> = {
   name: 'translateUpdateOperation',
   fun: ({ SUBRULE }) => (_, op) => {
-    switch (op.subType) {
-      case UpdateTypes.DELETE_INSERT:
+    switch (op.type) {
+      case Types.DELETE_INSERT:
         return SUBRULE(translateAlgDeleteInsert, op);
-      case UpdateTypes.LOAD:
+      case Types.LOAD:
         return SUBRULE(translateAlgLoad, op);
-      case UpdateTypes.CLEAR:
+      case Types.CLEAR:
         return SUBRULE(translateAlgClear, op);
-      case UpdateTypes.CREATE:
+      case Types.CREATE:
         return SUBRULE(translateAlgCreate, op);
-      case UpdateTypes.DROP:
+      case Types.DROP:
         return SUBRULE(translateAlgDrop, op);
-      case UpdateTypes.ADD:
+      case Types.ADD:
         return SUBRULE(translateAlgAdd, op);
-      case UpdateTypes.MOVE:
+      case Types.MOVE:
         return SUBRULE(translateAlgMove, op);
-      case UpdateTypes.COPY:
+      case Types.COPY:
         return SUBRULE(translateAlgCopy, op);
       default:
-        throw new Error(`Unknown Operation type ${(<Algebra.Operation> op).subType}`);
+        throw new Error(`Unknown Operation type ${(<Algebra.Operation> op).type}`);
     }
   },
 };

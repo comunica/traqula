@@ -1,6 +1,5 @@
 {
-  "type": "update",
-  "subType": "deleteinsert",
+  "type": "deleteinsert",
   "insert": [
     {
       "type": "pattern",

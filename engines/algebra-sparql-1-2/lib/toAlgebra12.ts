@@ -82,7 +82,7 @@ export const toAlgebra12Builder = IndirBuilder
     // Patterns
     [translateExpression.name]: [A.Expression, [T12.Expression | T12.Wildcard]];
     [translateGraphPattern.name]: [A.Operation, [T12.Pattern]];
-    [translateBgp.name]: [A.PropertyPathSymbolTypes, [T12.PatternBgp]];
+    [translateBgp.name]: [A.Operation, [T12.PatternBgp]];
     [accumulateGroupGraphPattern.name]: [A.Operation, [A.Operation, T12.Pattern]];
     [simplifiedJoin.name]: [A.Operation, [A.Operation, A.Operation]];
     // TripleAndQuad

@@ -2,7 +2,7 @@ import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
 import { stringToTerm } from 'rdf-string';
 import * as A from './algebra.js';
-import { PropertyPathSymbolTypes, UpdateTypes } from './algebra.js';
+import type { PropertyPathSymbol, Update } from './algebra.js';
 import * as OpenAlgebra from './openAlgebra.js';
 
 const { asKnown: known } = OpenAlgebra;
@@ -16,11 +16,10 @@ export class AlgebraFactory {
     this.stringType = <RDF.NamedNode> this.createTerm('http://www.w3.org/2001/XMLSchema#string');
   }
 
-  public createAlt(input: A.BasePropertyPathSymbol[], flatten = true): A.Alt {
+  public createAlt(input: A.BaseOperation[], flatten = true): A.Alt {
     return this.flattenMulti({
-      type: A.Types.PROPERTY_PATH_SYMBOL,
-      subType: PropertyPathSymbolTypes.ALT,
-      input: known(input),
+      type: A.Types.ALT,
+      input: <PropertyPathSymbol[]> input,
     }, flatten);
   }
 
@@ -89,8 +88,8 @@ export class AlgebraFactory {
     return { type: A.Types.GROUP, input: known(input), variables, aggregates: known(aggregates) };
   }
 
-  public createInv(path: A.BasePropertyPathSymbol): A.Inv {
-    return { type: A.Types.PROPERTY_PATH_SYMBOL, subType: A.PropertyPathSymbolTypes.INV, path: known(path) };
+  public createInv(path: A.BaseOperation): A.Inv {
+    return { type: A.Types.INV, path: <PropertyPathSymbol> path };
   }
 
   public createJoin(input: A.BaseOperation[], flatten = true): A.Join {
@@ -109,7 +108,7 @@ export class AlgebraFactory {
   }
 
   public createLink(iri: RDF.NamedNode): A.Link {
-    return { type: A.Types.PROPERTY_PATH_SYMBOL, subType: PropertyPathSymbolTypes.LINK, iri };
+    return { type: A.Types.LINK, iri };
   }
 
   public createMinus(left: A.BaseOperation, right: A.BaseOperation): A.Minus {
@@ -121,11 +120,11 @@ export class AlgebraFactory {
   }
 
   public createNps(iris: RDF.NamedNode[]): A.Nps {
-    return { type: A.Types.PROPERTY_PATH_SYMBOL, subType: PropertyPathSymbolTypes.NPS, iris };
+    return { type: A.Types.NPS, iris };
   }
 
-  public createOneOrMorePath(path: A.BasePropertyPathSymbol): A.OneOrMorePath {
-    return { type: A.Types.PROPERTY_PATH_SYMBOL, subType: PropertyPathSymbolTypes.ONE_OR_MORE_PATH, path: known(path) };
+  public createOneOrMorePath(path: A.BaseOperation): A.OneOrMorePath {
+    return { type: A.Types.ONE_OR_MORE_PATH, path: <PropertyPathSymbol> path };
   }
 
   public createOrderBy(input: A.BaseOperation, expressions: A.BaseExpression[]): A.OrderBy {
@@ -134,17 +133,17 @@ export class AlgebraFactory {
 
   public createPath(
     subject: RDF.Term,
-    predicate: A.BasePropertyPathSymbol,
+    predicate: A.BaseOperation,
     object: RDF.Term,
     graph?: RDF.Term,
   ): A.Path {
     if (graph) {
-      return { type: A.Types.PATH, subject, predicate: known(predicate), object, graph };
+      return { type: A.Types.PATH, subject, predicate: <PropertyPathSymbol> predicate, object, graph };
     }
     return {
       type: A.Types.PATH,
       subject,
-      predicate: known(predicate),
+      predicate: <PropertyPathSymbol> predicate,
       object,
       graph: this.dataFactory.defaultGraph(),
     };
@@ -164,11 +163,10 @@ export class AlgebraFactory {
     return { type: A.Types.REDUCED, input: known(input) };
   }
 
-  public createSeq(input: A.BasePropertyPathSymbol[], flatten = true): A.Seq {
+  public createSeq(input: A.BaseOperation[], flatten = true): A.Seq {
     return this.flattenMulti({
-      type: A.Types.PROPERTY_PATH_SYMBOL,
-      subType: A.PropertyPathSymbolTypes.SEQ,
-      input: known(input),
+      type: A.Types.SEQ,
+      input: <PropertyPathSymbol[]> input,
     }, flatten);
   }
 
@@ -192,19 +190,17 @@ export class AlgebraFactory {
     return { type: A.Types.VALUES, variables, bindings };
   }
 
-  public createZeroOrMorePath(path: A.BasePropertyPathSymbol): A.ZeroOrMorePath {
+  public createZeroOrMorePath(path: A.BaseOperation): A.ZeroOrMorePath {
     return {
-      type: A.Types.PROPERTY_PATH_SYMBOL,
-      subType: A.PropertyPathSymbolTypes.ZERO_OR_MORE_PATH,
-      path: known(path),
+      type: A.Types.ZERO_OR_MORE_PATH,
+      path: <PropertyPathSymbol> path,
     };
   }
 
-  public createZeroOrOnePath(path: A.BasePropertyPathSymbol): A.ZeroOrOnePath {
+  public createZeroOrOnePath(path: A.BaseOperation): A.ZeroOrOnePath {
     return {
-      type: A.Types.PROPERTY_PATH_SYMBOL,
-      subType: A.PropertyPathSymbolTypes.ZERO_OR_ONE_PATH,
-      path: known(path),
+      type: A.Types.ZERO_OR_ONE_PATH,
+      path: <PropertyPathSymbol> path,
     };
   }
 
@@ -261,8 +257,8 @@ export class AlgebraFactory {
   }
 
   // Update functions
-  public createCompositeUpdate(updates: A.BaseUpdate[]): A.CompositeUpdate {
-    return { type: A.Types.COMPOSITE_UPDATE, updates: known(updates) };
+  public createCompositeUpdate(updates: A.BaseOperation[]): A.CompositeUpdate {
+    return { type: A.Types.COMPOSITE_UPDATE, updates: <Update[]> updates };
   }
 
   public createDeleteInsert(
@@ -270,7 +266,7 @@ export class AlgebraFactory {
     insertQuads?: OpenAlgebra.Pattern[],
     where?: A.BaseOperation,
   ): A.DeleteInsert {
-    const result: A.DeleteInsert = { type: A.Types.UPDATE, subType: UpdateTypes.DELETE_INSERT };
+    const result: A.DeleteInsert = { type: A.Types.DELETE_INSERT };
     if (deleteQuads) {
       result.delete = deleteQuads;
     }
@@ -284,7 +280,7 @@ export class AlgebraFactory {
   }
 
   public createLoad(source: RDF.NamedNode, destination?: RDF.NamedNode, silent?: boolean): A.Load {
-    const result: A.Load = { type: A.Types.UPDATE, subType: UpdateTypes.LOAD, source };
+    const result: A.Load = { type: A.Types.LOAD, source };
     if (destination) {
       result.destination = destination;
     }
@@ -292,21 +288,20 @@ export class AlgebraFactory {
   }
 
   public createClear(source: 'DEFAULT' | 'NAMED' | 'ALL' | RDF.NamedNode, silent?: boolean): A.Clear {
-    return this.addSilent({ type: A.Types.UPDATE, subType: UpdateTypes.CLEAR, source }, Boolean(silent));
+    return this.addSilent({ type: A.Types.CLEAR, source }, Boolean(silent));
   }
 
   public createCreate(source: RDF.NamedNode, silent?: boolean): A.Create {
-    return this.addSilent({ type: A.Types.UPDATE, subType: UpdateTypes.CREATE, source }, Boolean(silent));
+    return this.addSilent({ type: A.Types.CREATE, source }, Boolean(silent));
   }
 
   public createDrop(source: 'DEFAULT' | 'NAMED' | 'ALL' | RDF.NamedNode, silent?: boolean): A.Drop {
-    return this.addSilent({ type: A.Types.UPDATE, subType: UpdateTypes.DROP, source }, Boolean(silent));
+    return this.addSilent({ type: A.Types.DROP, source }, Boolean(silent));
   }
 
   public createAdd(source: 'DEFAULT' | RDF.NamedNode, destination: 'DEFAULT' | RDF.NamedNode, silent?: boolean): A.Add {
     return this.addSilent({
-      type: A.Types.UPDATE,
-      subType: UpdateTypes.ADD,
+      type: A.Types.ADD,
       source,
       destination,
     }, Boolean(silent));
@@ -318,8 +313,7 @@ export class AlgebraFactory {
     silent?: boolean,
   ): A.Move {
     return this.addSilent({
-      type: A.Types.UPDATE,
-      subType: UpdateTypes.MOVE,
+      type: A.Types.MOVE,
       source,
       destination,
     }, Boolean(silent));
@@ -331,8 +325,7 @@ export class AlgebraFactory {
     silent?: boolean,
   ): A.Copy {
     return this.addSilent({
-      type: A.Types.UPDATE,
-      subType: UpdateTypes.COPY,
+      type: A.Types.COPY,
       source,
       destination,
     }, Boolean(silent));

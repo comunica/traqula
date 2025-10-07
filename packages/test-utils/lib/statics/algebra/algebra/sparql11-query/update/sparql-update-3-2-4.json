@@ -1,6 +1,5 @@
 {
-  "type": "update",
-  "subType": "move",
+  "type": "move",
   "source": "DEFAULT",
   "destination": {
     "termType": "NamedNode",

@@ -9,7 +9,7 @@ import type {
   TermIri,
 } from '@traqula/rules-sparql-1-1';
 import type * as Algebra from '../algebra.js';
-import { PropertyPathSymbolTypes } from '../algebra.js';
+import { types } from '../toAlgebra/core.js';
 import * as util from '../util.js';
 import type { AstIndir } from './core.js';
 import type { RdfTermToAst } from './general.js';
@@ -18,17 +18,17 @@ import { translateAlgTerm } from './general.js';
 export const translateAlgPathComponent: AstIndir<'translatePathComponent', Path, [Algebra.PropertyPathSymbol]> = {
   name: 'translatePathComponent',
   fun: ({ SUBRULE }) => (_, path) => {
-    switch (path.subType) {
-      case PropertyPathSymbolTypes.ALT: return SUBRULE(translateAlgAlt, path);
-      case PropertyPathSymbolTypes.INV: return SUBRULE(translateAlgInv, path);
-      case PropertyPathSymbolTypes.LINK: return SUBRULE(translateAlgLink, path);
-      case PropertyPathSymbolTypes.NPS: return SUBRULE(translateAlgNps, path);
-      case PropertyPathSymbolTypes.ONE_OR_MORE_PATH: return SUBRULE(translateAlgOneOrMorePath, path);
-      case PropertyPathSymbolTypes.SEQ: return SUBRULE(translateAlgSeq, path);
-      case PropertyPathSymbolTypes.ZERO_OR_MORE_PATH: return SUBRULE(translateAlgZeroOrMorePath, path);
-      case PropertyPathSymbolTypes.ZERO_OR_ONE_PATH: return SUBRULE(translateAlgZeroOrOnePath, path);
+    switch (path.type) {
+      case types.ALT: return SUBRULE(translateAlgAlt, path);
+      case types.INV: return SUBRULE(translateAlgInv, path);
+      case types.LINK: return SUBRULE(translateAlgLink, path);
+      case types.NPS: return SUBRULE(translateAlgNps, path);
+      case types.ONE_OR_MORE_PATH: return SUBRULE(translateAlgOneOrMorePath, path);
+      case types.SEQ: return SUBRULE(translateAlgSeq, path);
+      case types.ZERO_OR_MORE_PATH: return SUBRULE(translateAlgZeroOrMorePath, path);
+      case types.ZERO_OR_ONE_PATH: return SUBRULE(translateAlgZeroOrOnePath, path);
       default:
-        throw new Error(`Unknown Path type ${(<{ subType: string }>path).subType}`);
+        throw new Error(`Unknown Path type ${(<{ type: string }>path).type}`);
     }
   },
 };
@@ -55,7 +55,7 @@ export const translateAlgAlt: AstIndir<'translateAlt', Path, [Algebra.Alt]> = {
 export const translateAlgInv: AstIndir<'translateInv', Path, [Algebra.Inv]> = {
   name: 'translateInv',
   fun: ({ SUBRULE }) => ({ astFactory: F }, path) => {
-    if (path.path.subType === PropertyPathSymbolTypes.NPS) {
+    if (path.path.type === types.NPS) {
       const inv: Path[] = path.path.iris.map((iri: RDF.NamedNode) => F.path(
         '^',
         [ <RdfTermToAst<typeof iri>>SUBRULE(translateAlgTerm, iri) ],

@@ -120,40 +120,38 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
     return Algebra.mapOperationReplace<'unsafe', typeof res>(res, {
       [Algebra.Types.PATH]: {
         preVisitor: () => ({ continue: false }),
-        transform: op => factory.createPath(
-          blankToVariable(op.subject),
-          op.predicate,
-          blankToVariable(op.object),
-          blankToVariable(op.graph),
+        transform: pathOp => factory.createPath(
+          blankToVariable(pathOp.subject),
+          pathOp.predicate,
+          blankToVariable(pathOp.object),
+          blankToVariable(pathOp.graph),
         ),
       },
       [Algebra.Types.PATTERN]: {
         preVisitor: () => ({ continue: false }),
-        transform: op => factory.createPattern(
-          blankToVariable(op.subject),
-          blankToVariable(op.predicate),
-          blankToVariable(op.object),
-          blankToVariable(op.graph),
+        transform: patternOp => factory.createPattern(
+          blankToVariable(patternOp.subject),
+          blankToVariable(patternOp.predicate),
+          blankToVariable(patternOp.object),
+          blankToVariable(patternOp.graph),
         ),
       },
       [Algebra.Types.CONSTRUCT]: {
         preVisitor: () => ({ continue: false }),
         // Blank nodes in CONSTRUCT templates must be maintained
-        transform: op => AF.createConstruct(SUBRULE(translateBlankNodesToVariables, asKnown(op.input)), op.template),
+        transform: constructOp =>
+          AF.createConstruct(SUBRULE(translateBlankNodesToVariables, asKnown(constructOp.input)), constructOp.template),
       },
-      [Algebra.Types.UPDATE]: {
+      [Algebra.Types.DELETE_INSERT]: {
         preVisitor: () => ({ continue: false }),
-        transform: (op: Algebra.Update) => {
+        transform: delInsOp =>
           // Make sure blank nodes remain in the INSERT block, but do update the WHERE block
-          if (op.subType === Algebra.UpdateTypes.DELETE_INSERT) {
-            return AF.createDeleteInsert(
-              op.delete,
-              op.insert,
-              op.where && SUBRULE(translateBlankNodesToVariables, op.where),
-            );
-          }
-          return op;
-        },
+          AF.createDeleteInsert(
+            delInsOp.delete,
+            delInsOp.insert,
+            delInsOp.where && SUBRULE(translateBlankNodesToVariables, delInsOp.where),
+          )
+        ,
       },
     });
 

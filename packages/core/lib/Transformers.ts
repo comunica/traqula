@@ -12,6 +12,18 @@ export interface VisitContext {
    * Whether you should continue iterating deeper with this object. Default true.
    */
   continue?: boolean;
+  /**
+   * Object keys that can be ignored, meaning they do not get visited.
+   */
+  ignoreKeys?: string[];
+}
+
+export interface TransformContext extends VisitContext {
+  /**
+   * Object keys that will be shallowly copied but not traversed.
+   * When the same key is included here and in ignoreKeys, the copy will still be made.
+   */
+  shallowKeys?: string[];
 }
 
 export interface SelectiveTraversalContext<Nodes> {
@@ -27,11 +39,20 @@ export interface SelectiveTraversalContext<Nodes> {
 
 export class TransformerType<Nodes extends Pick<Node, 'type'>> {
   /**
-   * Function to shallow clone an object.
+   * Creates stateless transformer.
+   * @param defaultContext
+   */
+  public constructor(private readonly defaultContext: TransformContext = {}) {}
+
+  /**
+   * Function to shallow clone any type.
    * @param obj
    * @protected
    */
   protected clone<T>(obj: T): T {
+    if (typeof obj !== 'object') {
+      return obj;
+    }
     const newObj = Object.create(Object.getPrototypeOf(obj));
     Object.defineProperties(
       newObj,
@@ -68,25 +89,38 @@ export class TransformerType<Nodes extends Pick<Node, 'type'>> {
    */
   public transformObject(
     startObject: object,
-    mapper: (some: object) => unknown,
-    preVisitor: (some: object) => VisitContext = () => ({}),
+    mapper: (copy: object, orig: object) => unknown,
+    preVisitor: (orig: object) => TransformContext = () => ({}),
   ): unknown {
     let didShortCut = false;
+
     const recurse = (curObject: object): unknown => {
       const copy = this.clone(curObject);
       const context = preVisitor(copy);
-      didShortCut = context.shortcut ?? false;
-      const continues = context.continue ?? true;
+      didShortCut = context.shortcut ?? this.defaultContext.shortcut ?? false;
+      const continues = context.continue ?? this.defaultContext.continue ?? true;
+      const ignoreKeys = context.ignoreKeys ?? this.defaultContext.ignoreKeys ?? [];
+      const shallowKeys = context.shallowKeys ?? this.defaultContext.shallowKeys ?? [];
       if (continues && !didShortCut) {
         for (const [ key, value ] of Object.entries(copy)) {
           if (didShortCut) {
             return copy;
           }
-          (<Record<string, unknown>> copy)[key] =
-            this.safeObjectVisit(value, obj => recurse(obj));
+          // If shallow copy required, do
+          const onlyShallow = shallowKeys.includes(key);
+          if (onlyShallow) {
+            (<Record<string, unknown>> copy)[key] = this.clone(value);
+          }
+          if (ignoreKeys.includes(key)) {
+            continue;
+          }
+          if (!onlyShallow) {
+            (<Record<string, unknown>> copy)[key] =
+              this.safeObjectVisit(value, obj => recurse(obj));
+          }
         }
       }
-      return mapper(copy);
+      return mapper(copy, curObject);
     };
 
     return recurse(startObject);
@@ -104,12 +138,16 @@ export class TransformerType<Nodes extends Pick<Node, 'type'>> {
 
     const recurse = (curObject: object): void => {
       const context = preVisitor(curObject);
-      didShortCut = context.shortcut ?? false;
-      const continues = context.continue ?? true;
+      didShortCut = context.shortcut ?? this.defaultContext.shortcut ?? false;
+      const continues = context.continue ?? this.defaultContext.continue ?? true;
+      const ignoreKeys = context.ignoreKeys ?? this.defaultContext.ignoreKeys ?? [];
       if (continues && !didShortCut) {
-        for (const value of Object.values(curObject)) {
+        for (const [ key, value ] of Object.entries(curObject)) {
           if (didShortCut) {
             return;
+          }
+          if (ignoreKeys.includes(key)) {
+            continue;
           }
           this.safeObjectVisit(value, obj => recurse(obj));
         }
@@ -132,22 +170,22 @@ export class TransformerType<Nodes extends Pick<Node, 'type'>> {
   public transformNode<Safe extends Safeness = 'safe', OutType = unknown>(
     startObject: object,
     nodeCallBacks: {[T in Nodes['type']]?: {
-      transform?: (op: SafeWrap<Safe, Extract<Nodes, { type: T }>>) => unknown;
-      preVisitor?: (op: Extract<Nodes, { type: T }>) => VisitContext;
+      transform?: (copy: SafeWrap<Safe, Extract<Nodes, { type: T }>>, orig: Extract<Nodes, { type: T }>) => unknown;
+      preVisitor?: (orig: Extract<Nodes, { type: T }>) => VisitContext;
     }},
   ): Safe extends 'unsafe' ? OutType : unknown {
-    const transformWrapper = (curObject: object): unknown => {
-      const casted = <{ type?: Nodes['type'] }>curObject;
+    const transformWrapper = (copy: object, orig: object): unknown => {
+      const casted = <{ type?: Nodes['type'] }>copy;
       if (casted.type) {
-        const ogFunc: ((node: any) => unknown) | undefined = nodeCallBacks[casted.type]?.transform;
+        const ogFunc: ((copy: any, orig: any) => unknown) | undefined = nodeCallBacks[casted.type]?.transform;
         if (ogFunc) {
-          return ogFunc(casted);
+          return ogFunc(casted, orig);
         }
       }
-      return curObject;
+      return copy;
     };
-    const preTransformWrapper = (curObject: object): VisitContext => {
-      const casted = <{ type?: Nodes['type'] }>curObject;
+    const preTransformWrapper = (orig: object): VisitContext => {
+      const casted = <{ type?: Nodes['type'] }>orig;
       if (casted.type) {
         const ogFunc: ((node: any) => VisitContext) | undefined = nodeCallBacks[casted.type]?.preVisitor;
         if (ogFunc) {
@@ -237,8 +275,8 @@ export class TransformerSubType<Nodes extends Pick<Node, 'type' | 'subType'>> ex
   public transformNodeSpecific<Safe extends Safeness = 'safe', OutType = unknown>(
     startObject: object,
     nodeCallBacks: {[T in Nodes['type']]?: {
-      transform?: (op: SafeWrap<Safe, Extract<Nodes, { type: T }>>) => unknown;
-      preVisitor?: (op: Extract<Nodes, { type: T }>) => VisitContext;
+      transform?: (copy: SafeWrap<Safe, Extract<Nodes, { type: T }>>, orig: Extract<Nodes, { type: T }>) => unknown;
+      preVisitor?: (orig: Extract<Nodes, { type: T }>) => VisitContext;
     }},
     nodeSpecificCallBacks: {[Type in Nodes['type']]?: {
       [SubType in Extract<Nodes, { type: Type; subType: string }>['subType']]?: {
@@ -246,9 +284,9 @@ export class TransformerSubType<Nodes extends Pick<Node, 'type' | 'subType'>> ex
         preVisitor?: (op: Extract<Nodes, { type: Type; subType: SubType }>) => VisitContext;
       }}},
   ): Safe extends 'unsafe' ? OutType : unknown {
-    const transformWrapper = (curObject: object): unknown => {
-      let ogTransform: ((node: any) => unknown) | undefined;
-      const casted = <{ type?: Nodes['type']; subType?: string }>curObject;
+    const transformWrapper = (copy: object, orig: object): unknown => {
+      let ogTransform: ((copy: any, orig: any) => unknown) | undefined;
+      const casted = <{ type?: Nodes['type']; subType?: string }>copy;
       if (casted.type && casted.subType) {
         const specific = nodeSpecificCallBacks[casted.type];
         if (specific) {
@@ -258,7 +296,7 @@ export class TransformerSubType<Nodes extends Pick<Node, 'type' | 'subType'>> ex
           ogTransform = nodeCallBacks[casted.type]?.transform;
         }
       }
-      return ogTransform ? ogTransform(casted) : curObject;
+      return ogTransform ? ogTransform(casted, orig) : copy;
     };
     const preVisitWrapper = (curObject: object): VisitContext => {
       let ogPreVisit: ((node: any) => VisitContext) | undefined;

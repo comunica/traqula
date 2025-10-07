@@ -63,11 +63,9 @@
               "value": "instanceOf"
             },
             "predicate": {
-              "type": "propertypathsymbol",
-              "subType": "OneOrMorePath",
+              "type": "OneOrMorePath",
               "path": {
-                "type": "propertypathsymbol",
-                "subType": "link",
+                "type": "link",
                 "iri": {
                   "termType": "NamedNode",
                   "value": "http://www.wikidata.org/prop/direct/P279"

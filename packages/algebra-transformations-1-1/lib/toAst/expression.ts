@@ -8,7 +8,6 @@ import type {
   Wildcard,
 } from '@traqula/rules-sparql-1-1';
 import type { Algebra } from '../index.js';
-import * as util from '../util.js';
 import type { AstIndir } from './core.js';
 import { eTypes } from './core.js';
 import { type RdfTermToAst, translateAlgTerm } from './general.js';
@@ -79,7 +78,7 @@ AstIndir<'translateExistenceExpression', ExpressionPatternOperation, [Algebra.Ex
     F.expressionPatternOperation(
       expr.not ? 'notexists' : 'exists',
       // TranslateOperation can give an array
-      F.patternGroup(util.flatten([ SUBRULE(translateAlgPatternNew, expr.input) ]), F.gen()),
+      F.patternGroup([ SUBRULE(translateAlgPatternNew, expr.input) ].flat(), F.gen()),
       F.gen(),
     ),
 };

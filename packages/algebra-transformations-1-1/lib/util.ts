@@ -1,15 +1,13 @@
 import type * as RDF from '@rdfjs/types';
-import { someTermsNested } from 'rdf-terms';
-import * as A from './algebra.js';
+import { TransformerSubType } from '@traqula/core';
+import type * as A from './algebra.js';
 import { ExpressionTypes, Types } from './algebra.js';
 
-/**
- * Flattens an array of arrays to an array.
- * @param arr - Array of arrays
- */
-export function flatten<T>(arr: (T[] | T)[]): T[] {
-  return (<T[][]>arr).flat().filter(Boolean);
-}
+const transformer = new TransformerSubType<A.Operation>({ shallowKeys: [ 'metadata' ], ignoreKeys: [ 'metadata' ]});
+export const mapOperation = transformer.transformNode.bind(transformer);
+export const mapOperationSub = transformer.transformNodeSpecific.bind(transformer);
+export const visitOperation = transformer.visitNode.bind(transformer);
+export const visitOperationSub = transformer.visitNodeSpecific.bind(transformer);
 
 /**
  * Resolves an IRI against a base path in accordance to the [Syntax for IRIs](https://www.w3.org/TR/sparql11-query/#QSynIRI)
@@ -128,7 +126,7 @@ export function inScopeVariables(op: A.BaseOperation): RDF.Variable[] {
   }
 
   // https://www.w3.org/TR/sparql11-query/#variableScope
-  A.visitOperation(op, {
+  visitOperation(op, {
     [Types.EXPRESSION]: { visitor: (op) => {
       if (op.subType === ExpressionTypes.AGGREGATE && (<any> op).variable) {
         addVariable((<any> op).variable);
@@ -184,55 +182,4 @@ export function inScopeVariables(op: A.BaseOperation): RDF.Variable[] {
   });
 
   return Object.values(variables);
-}
-
-export function createUniqueVariable(
-  label: string,
-  variables: Set<string>,
-  dataFactory: RDF.DataFactory<RDF.BaseQuad, RDF.BaseQuad>,
-): RDF.Variable {
-  let counter = 0;
-  let labelLoop = label;
-  while (variables.has(labelLoop)) {
-    labelLoop = `${label}${counter++}`;
-  }
-  return dataFactory.variable!(labelLoop);
-}
-
-// Separate terms from wildcard since we handle them differently
-export function isSimpleTerm(term: any): term is RDF.Term {
-  return term.termType !== undefined && term.termType !== 'Quad' && term.termType !== 'wildcard' &&
-    term.termType !== 'Wildcard';
-}
-
-export function isQuad(term: any): term is RDF.Quad {
-  return term.termType === 'Quad';
-}
-
-export function hasQuadVariables(quad: RDF.Quad): boolean {
-  return someTermsNested(quad, term => term.termType === 'Variable');
-}
-
-/**
- * @interface RecurseResult
- * @property {Operation} result - The resulting A.Operation.
- * @property {boolean} recurse - Whether to continue with recursion.
- * @property {boolean} copyMetadata - If the metadata object should be copied. Defaults to true.
- */
-export interface RecurseResult {
-  result: A.BaseOperation;
-  recurse: boolean;
-  copyMetadata?: boolean;
-}
-
-/**
- * @interface ExpressionRecurseResult
- * @property {Expression} result - The resulting A.Expression.
- * @property {boolean} recurse - Whether to continue with recursion.
- * @property {boolean} copyMetadata - If the metadata object should be copied. Defaults to true.
- */
-export interface ExpressionRecurseResult {
-  result: A.BaseExpression;
-  recurse: boolean;
-  copyMetadata?: boolean;
 }

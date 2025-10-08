@@ -1,4 +1,5 @@
-import { Algebra, AlgebraFactory, algebraUtils } from '@traqula/algebra-transformations-1-1';
+import type { Algebra } from '@traqula/algebra-transformations-1-1';
+import { AlgebraFactory, algebraUtils } from '@traqula/algebra-transformations-1-1';
 import { sparqlAlgebraTests } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
 import { toAlgebra, toAst } from '../lib/index.js';
@@ -15,7 +16,7 @@ describe('util functions', () => {
       for (const test of sparqlAlgebraTests(suite, false, true)) {
         const { name, json: expected } = test;
         it (name, ({ expect }) => {
-          const clone = <Algebra.Operation> Algebra.mapOperation(<Algebra.Operation>expected, {});
+          const clone = <Algebra.Operation> algebraUtils.mapOperation(<Algebra.Operation>expected, {});
           if (clone.type === 'project') {
             const scope = algebraUtils.inScopeVariables(clone.input);
             // Console.log(scope);

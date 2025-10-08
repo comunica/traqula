@@ -17,7 +17,6 @@ import type {
   TermVariable,
 } from '@traqula/rules-sparql-1-1';
 import * as Algebra from '../algebra.js';
-import { AlgebraFactory } from '../algebraFactory.js';
 import * as util from '../util.js';
 import type { AlgebraIndir } from './core.js';
 
@@ -114,12 +113,41 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
   fun: ({ SUBRULE }) => ({ algebraFactory: AF, variables }, res) => {
     const blankToVariableMapping: Record<string, RDF.Variable> = {};
     const variablesRaw: Set<string> = new Set(variables);
-    const factory = new AlgebraFactory();
 
-    return Algebra.mapOperation<'unsafe', typeof res>(res, {
+    function uniqueVar(label: string): RDF.Variable {
+      let counter = 0;
+      let labelLoop = label;
+      while (variables.has(labelLoop)) {
+        labelLoop = `${label}${counter++}`;
+      }
+      return AF.dataFactory.variable!(labelLoop);
+    };
+
+    function blankToVariable(term: RDF.Term): RDF.Term {
+      if (term.termType === 'BlankNode') {
+        let variable = blankToVariableMapping[term.value];
+        if (!variable) {
+          variable = uniqueVar(term.value);
+          variablesRaw.add(variable.value);
+          blankToVariableMapping[term.value] = variable;
+        }
+        return variable;
+      }
+      if (term.termType === 'Quad') {
+        return AF.dataFactory.quad(
+          blankToVariable(term.subject),
+          blankToVariable(term.predicate),
+          blankToVariable(term.object),
+          blankToVariable(term.graph),
+        );
+      }
+      return term;
+    }
+
+    return util.mapOperation<'unsafe', typeof res>(res, {
       [Algebra.Types.PATH]: {
         preVisitor: () => ({ continue: false }),
-        transform: pathOp => factory.createPath(
+        transform: pathOp => AF.createPath(
           blankToVariable(pathOp.subject),
           pathOp.predicate,
           blankToVariable(pathOp.object),
@@ -128,7 +156,7 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
       },
       [Algebra.Types.PATTERN]: {
         preVisitor: () => ({ continue: false }),
-        transform: patternOp => factory.createPattern(
+        transform: patternOp => AF.createPattern(
           blankToVariable(patternOp.subject),
           blankToVariable(patternOp.predicate),
           blankToVariable(patternOp.object),
@@ -153,27 +181,6 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
         ,
       },
     });
-
-    function blankToVariable(term: RDF.Term): RDF.Term {
-      if (term.termType === 'BlankNode') {
-        let variable = blankToVariableMapping[term.value];
-        if (!variable) {
-          variable = util.createUniqueVariable(term.value, variablesRaw, AF.dataFactory);
-          variablesRaw.add(variable.value);
-          blankToVariableMapping[term.value] = variable;
-        }
-        return variable;
-      }
-      if (term.termType === 'Quad') {
-        return AF.dataFactory.quad(
-          blankToVariable(term.subject),
-          blankToVariable(term.predicate),
-          blankToVariable(term.object),
-          blankToVariable(term.graph),
-        );
-      }
-      return term;
-    }
   },
 };
 

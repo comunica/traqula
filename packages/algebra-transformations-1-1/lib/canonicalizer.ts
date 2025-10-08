@@ -1,6 +1,7 @@
 import type * as RDF from '@rdfjs/types';
 import { DataFactory } from 'rdf-data-factory';
 import * as Algebra from './algebra.js';
+import * as util from './util.js';
 import { AlgebraFactory } from './index.js';
 
 export class Canonicalizer {
@@ -23,7 +24,7 @@ export class Canonicalizer {
     const nameMapping: Record<string, string> = {};
     const factory = new AlgebraFactory();
 
-    return Algebra.mapOperation<'unsafe', typeof res>(res, {
+    return util.mapOperation<'unsafe', typeof res>(res, {
       [Algebra.Types.PATH]: { transform: pathOp => ({
         result: factory.createPath(
           this.replaceValue(pathOp.subject, nameMapping, replaceVariables, factory),

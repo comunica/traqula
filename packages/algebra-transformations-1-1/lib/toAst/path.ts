@@ -10,7 +10,6 @@ import type {
 } from '@traqula/rules-sparql-1-1';
 import type * as Algebra from '../algebra.js';
 import { types } from '../toAlgebra/core.js';
-import * as util from '../util.js';
 import type { AstIndir } from './core.js';
 import type { RdfTermToAst } from './general.js';
 import { translateAlgTerm } from './general.js';
@@ -42,7 +41,7 @@ export const translateAlgAlt: AstIndir<'translateAlt', Path, [Algebra.Alt]> = {
         '!',
         [ F.path(
           '|',
-          <(TermIri | PathNegatedElt)[]> util.flatten(mapped.map(entry => (<PathPure> entry).items)),
+          <(TermIri | PathNegatedElt)[]> mapped.flatMap(entry => (<PathPure> entry).items),
           F.gen(),
         ) ],
         F.gen(),

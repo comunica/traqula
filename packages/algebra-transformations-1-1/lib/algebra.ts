@@ -1,31 +1,4 @@
 import type * as RDF from '@rdfjs/types';
-import { TransformerSubType } from '@traqula/core';
-
-export function asKnown<T extends object>(arg: T): Operation {
-  return <any> arg;
-}
-
-export function isKnownOperation<T extends string>(val: { type: unknown }, type: T):
-  val is Extract<Operation, { type: T }> extends object ?
-    Extract<Operation, { type: T }> : { type: T } {
-  return val.type === type;
-}
-
-export function isKnownSub<T extends string, Obj extends { type: string; subType: unknown }>(val: Obj, type: T):
-  val is Extract<Operation, { type: Obj['type']; subType: T }> extends object ?
-    Obj & Extract<Operation, { type: Obj['type']; subType: T }> : Obj & { subType: T } {
-  return val.subType === type;
-}
-
-export function isKnownOperationSub<Type extends string, SubType extends string>(
-  val: { type: unknown; subType?: unknown },
-  type: Type,
-  subType: SubType,
-):
-  val is Extract<Operation, { type: Type; subType: SubType }> extends object ?
-    Extract<Operation, { type: Type; subType: SubType }> : { type: Type; subType: SubType } {
-  return val.type === type && val.subType === subType;
-}
 
 export enum Types {
   ASK = 'ask',
@@ -84,6 +57,7 @@ export enum ExpressionTypes {
   WILDCARD = 'wildcard',
 }
 
+// ----------------------- OPERATIONS -----------------------
 export type Operation = Ask | Expression | Bgp | Construct | Describe | Distinct | Extend | From | Filter
   | Graph | Group | Join | LeftJoin | Minus | Nop | OrderBy | Path | Pattern | Project | PropertyPathSymbol
   | Reduced | Service | Slice | Union | Values | Update | CompositeUpdate;
@@ -99,15 +73,7 @@ export type Update = DeleteInsert | Load | Clear | Create | Drop | Add | Move | 
 export type TypedOperation<T extends Types> = Extract<Operation, { type: T }>;
 export type TypedExpression<T extends ExpressionTypes> = Extract<Expression, { subType: T }>;
 
-// ----------------------- manipulators --------------------
-
-const transformer = new TransformerSubType<Operation>({ shallowKeys: [ 'metadata' ], ignoreKeys: [ 'metadata' ]});
-export const mapOperation = transformer.transformNode.bind(transformer);
-export const mapOperationSub = transformer.transformNodeSpecific.bind(transformer);
-export const visitOperation = transformer.visitNode.bind(transformer);
-export const visitOperationSub = transformer.visitNodeSpecific.bind(transformer);
-
-// ----------------------- OPERATIONS -----------------------
+// ----------------------- ABSTRACTS -----------------------
 /**
  * Open interface describing an operation. This type will often be used to reference to 'input operations'.
  * A closed form of this type is KnownOperation.
@@ -116,6 +82,7 @@ export const visitOperationSub = transformer.visitNodeSpecific.bind(transformer)
 export interface BaseOperation {
   type: string;
   subType?: string;
+  metadata?: Record<string, unknown>;
 }
 
 /**

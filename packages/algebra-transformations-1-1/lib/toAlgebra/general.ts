@@ -18,7 +18,6 @@ import type {
 } from '@traqula/rules-sparql-1-1';
 import * as Algebra from '../algebra.js';
 import { AlgebraFactory } from '../algebraFactory.js';
-import { asKnown } from '../openAlgebra.js';
 import * as util from '../util.js';
 import type { AlgebraIndir } from './core.js';
 
@@ -117,7 +116,7 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
     const variablesRaw: Set<string> = new Set(variables);
     const factory = new AlgebraFactory();
 
-    return Algebra.mapOperationReplace<'unsafe', typeof res>(res, {
+    return Algebra.mapOperation<'unsafe', typeof res>(res, {
       [Algebra.Types.PATH]: {
         preVisitor: () => ({ continue: false }),
         transform: pathOp => factory.createPath(
@@ -140,7 +139,7 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
         preVisitor: () => ({ continue: false }),
         // Blank nodes in CONSTRUCT templates must be maintained
         transform: constructOp =>
-          AF.createConstruct(SUBRULE(translateBlankNodesToVariables, asKnown(constructOp.input)), constructOp.template),
+          AF.createConstruct(SUBRULE(translateBlankNodesToVariables, constructOp.input), constructOp.template),
       },
       [Algebra.Types.DELETE_INSERT]: {
         preVisitor: () => ({ continue: false }),

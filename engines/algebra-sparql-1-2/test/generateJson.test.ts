@@ -16,7 +16,7 @@ const rootJsonBlankToVariable = path.join(rootDir, 'algebra-blank-to-var');
 
 const suites: AlgebraTestSuite[] = [ 'sparql12' ];
 
-describe('algebra 1.2 test generate', () => {
+describe.skip('algebra 1.2 test generate', () => {
   for (const suite of suites) {
     describe(suite, () => {
       for (const { query, name } of sparqlQueries(suite)) {

@@ -2,7 +2,6 @@ import type * as RDF from '@rdfjs/types';
 import { someTermsNested } from 'rdf-terms';
 import * as A from './algebra.js';
 import { ExpressionTypes, Types } from './algebra.js';
-import type * as OpenAlgebra from './openAlgebra.js';
 
 /**
  * Flattens an array of arrays to an array.
@@ -94,7 +93,7 @@ export function objectify(algebra: any): any {
  * @param {Operation} op - Input algebra tree.
  * @returns {Variable[]} - List of unique in-scope variables.
  */
-export function inScopeVariables(op: OpenAlgebra.Operation): RDF.Variable[] {
+export function inScopeVariables(op: A.BaseOperation): RDF.Variable[] {
   const variables: Record<string, RDF.Variable> = {};
 
   function addVariable(v: RDF.Variable): void {
@@ -129,7 +128,7 @@ export function inScopeVariables(op: OpenAlgebra.Operation): RDF.Variable[] {
   }
 
   // https://www.w3.org/TR/sparql11-query/#variableScope
-  A.recurseOperationReplace(op, {
+  A.visitOperation(op, {
     [Types.EXPRESSION]: { visitor: (op) => {
       if (op.subType === ExpressionTypes.AGGREGATE && (<any> op).variable) {
         addVariable((<any> op).variable);
@@ -221,7 +220,7 @@ export function hasQuadVariables(quad: RDF.Quad): boolean {
  * @property {boolean} copyMetadata - If the metadata object should be copied. Defaults to true.
  */
 export interface RecurseResult {
-  result: OpenAlgebra.Operation;
+  result: A.BaseOperation;
   recurse: boolean;
   copyMetadata?: boolean;
 }
@@ -233,7 +232,7 @@ export interface RecurseResult {
  * @property {boolean} copyMetadata - If the metadata object should be copied. Defaults to true.
  */
 export interface ExpressionRecurseResult {
-  result: OpenAlgebra.Expression;
+  result: A.BaseExpression;
   recurse: boolean;
   copyMetadata?: boolean;
 }

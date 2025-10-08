@@ -102,10 +102,10 @@ export type TypedExpression<T extends ExpressionTypes> = Extract<Expression, { s
 // ----------------------- manipulators --------------------
 
 const transformer = new TransformerSubType<Operation>({ shallowKeys: [ 'metadata' ], ignoreKeys: [ 'metadata' ]});
-export const mapOperationReplace = transformer.transformNode.bind(transformer);
-export const mapOperationSubReplace = transformer.transformNodeSpecific.bind(transformer);
-export const recurseOperationReplace = transformer.visitNode.bind(transformer);
-export const recurseOperationSubReplace = transformer.visitNodeSpecific.bind(transformer);
+export const mapOperation = transformer.transformNode.bind(transformer);
+export const mapOperationSub = transformer.transformNodeSpecific.bind(transformer);
+export const visitOperation = transformer.visitNode.bind(transformer);
+export const visitOperationSub = transformer.visitNodeSpecific.bind(transformer);
 
 // ----------------------- OPERATIONS -----------------------
 /**
@@ -114,7 +114,6 @@ export const recurseOperationSubReplace = transformer.visitNodeSpecific.bind(tra
  * We provide a version of the algebra that refers to the KnownOperation instead of the open interface.
  */
 export interface BaseOperation {
-  metadata?: Record<string, unknown>;
   type: string;
   subType?: string;
 }

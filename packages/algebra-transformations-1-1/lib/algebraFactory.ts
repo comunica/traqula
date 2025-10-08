@@ -3,9 +3,14 @@ import { DataFactory } from 'rdf-data-factory';
 import { stringToTerm } from 'rdf-string';
 import * as A from './algebra.js';
 import type { PropertyPathSymbol, Update } from './algebra.js';
-import * as OpenAlgebra from './openAlgebra.js';
 
-const { asKnown: known } = OpenAlgebra;
+function known<T extends A.Operation = A.Operation>(x: A.BaseOperation): T;
+function known<T extends A.Operation = A.Operation>(x: A.BaseOperation[]): T[];
+function known<T extends A.Operation = A.Operation>(
+  x: A.BaseOperation | A.BaseOperation[],
+): typeof x extends any[] ? T[] : T {
+  return <any> x;
+}
 
 export class AlgebraFactory {
   public dataFactory: RDF.DataFactory<RDF.BaseQuad, RDF.BaseQuad>;
@@ -36,7 +41,7 @@ export class AlgebraFactory {
   ): A.BoundAggregate {
     const result = <A.BoundAggregate> this.createAggregateExpression(
       aggregate,
-      known(expression),
+      known<A.Expression>(expression),
       distinct,
       separator,
     );
@@ -44,11 +49,11 @@ export class AlgebraFactory {
     return result;
   }
 
-  public createBgp(patterns: OpenAlgebra.Pattern[]): A.Bgp {
+  public createBgp(patterns: A.Pattern[]): A.Bgp {
     return { type: A.Types.BGP, patterns };
   }
 
-  public createConstruct(input: A.BaseOperation, template: OpenAlgebra.Pattern[]): A.Construct {
+  public createConstruct(input: A.BaseOperation, template: A.Pattern[]): A.Construct {
     return { type: A.Types.CONSTRUCT, input: known(input), template };
   }
 
@@ -83,7 +88,7 @@ export class AlgebraFactory {
   public createGroup(
     input: A.BaseOperation,
     variables: RDF.Variable[],
-    aggregates: OpenAlgebra.BoundAggregate[],
+    aggregates: A.BaseOperation[],
   ): A.Group {
     return { type: A.Types.GROUP, input: known(input), variables, aggregates: known(aggregates) };
   }
@@ -102,7 +107,11 @@ export class AlgebraFactory {
     expression?: A.BaseExpression,
   ): A.LeftJoin {
     if (expression) {
-      return { type: A.Types.LEFT_JOIN, input: [ known(left), known(right) ], expression: known(expression) };
+      return {
+        type: A.Types.LEFT_JOIN,
+        input: [ known(left), known(right) ],
+        expression: known<A.Expression>(expression),
+      };
     }
     return { type: A.Types.LEFT_JOIN, input: [ known(left), known(right) ]};
   }
@@ -262,8 +271,8 @@ export class AlgebraFactory {
   }
 
   public createDeleteInsert(
-    deleteQuads?: OpenAlgebra.Pattern[],
-    insertQuads?: OpenAlgebra.Pattern[],
+    deleteQuads?: A.Pattern[],
+    insertQuads?: A.Pattern[],
     where?: A.BaseOperation,
   ): A.DeleteInsert {
     const result: A.DeleteInsert = { type: A.Types.DELETE_INSERT };

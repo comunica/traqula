@@ -23,7 +23,7 @@ export class Canonicalizer {
     const nameMapping: Record<string, string> = {};
     const factory = new AlgebraFactory();
 
-    return Algebra.mapOperationReplace<'unsafe', typeof res>(res, {
+    return Algebra.mapOperation<'unsafe', typeof res>(res, {
       [Algebra.Types.PATH]: { transform: pathOp => ({
         result: factory.createPath(
           this.replaceValue(pathOp.subject, nameMapping, replaceVariables, factory),

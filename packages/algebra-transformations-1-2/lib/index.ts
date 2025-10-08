@@ -7,5 +7,4 @@ export {
   algebraUtils,
   Types,
   ExpressionTypes,
-  OpenAlgebra,
 } from '@traqula/algebra-transformations-1-1';

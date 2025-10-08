@@ -15,7 +15,7 @@ describe('util functions', () => {
       for (const test of sparqlAlgebraTests(suite, false, true)) {
         const { name, json: expected } = test;
         it (name, ({ expect }) => {
-          const clone = <Algebra.Operation> Algebra.mapOperationReplace(<Algebra.Operation>expected, {});
+          const clone = <Algebra.Operation> Algebra.mapOperation(<Algebra.Operation>expected, {});
           if (clone.type === 'project') {
             const scope = algebraUtils.inScopeVariables(clone.input);
             // Console.log(scope);

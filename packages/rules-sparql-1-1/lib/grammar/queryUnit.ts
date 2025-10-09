@@ -235,9 +235,9 @@ export const selectClause: SparqlRule<'selectClause', Wrap<Pick<QuerySelect, 'va
     ACTION(() => !couldParseAgg && C.parseMode.delete('canParseAggregate'));
     return ACTION(() => C.astFactory.wrap(val, C.astFactory.sourceLocation(select, last)));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD, PRINT_ON_EMPTY }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => {
-      PRINT_WORD('SELECT');
+      PRINT_ON_EMPTY('SELECT ');
       if (ast.val.distinct) {
         PRINT_WORD('DISTINCT');
       } else if (ast.val.reduced) {
@@ -256,8 +256,11 @@ export const selectClause: SparqlRule<'selectClause', Wrap<Pick<QuerySelect, 'va
         SUBRULE(var_, variable.variable);
         F.printFilter(ast, () => PRINT_WORD(')'));
       }
+      F.printFilter(ast, () => PRINT_WORD(''));
     }
+    F.printFilter(ast, () => PRINT_WORD(''));
   },
+
 };
 
 /**
@@ -314,19 +317,20 @@ export const constructQuery: SparqlRule<'constructQuery', Omit<QueryConstruct, H
       } },
     ]);
   },
-  gImpl: ({ SUBRULE, PRINT_WORD, PRINT_ON_EMPTY }) => (ast, C) => {
+  gImpl: ({ SUBRULE, PRINT_WORD, PRINT_ON_EMPTY, PRINT_ON_OWN_LINE, NEW_LINE }) => (ast, C) => {
     const { astFactory: F, indentInc } = C;
-    F.printFilter(ast, () => PRINT_WORD('CONSTRUCT'));
+    F.printFilter(ast, () => PRINT_ON_EMPTY('CONSTRUCT '));
     if (!F.isSourceLocationNoMaterialize(ast.where.loc)) {
       // You are NOT in second case construct
       F.printFilter(ast, () => {
         C[traqulaIndentation] += indentInc;
-        PRINT_WORD('{\n');
+        PRINT_WORD('{');
+        NEW_LINE();
       });
       SUBRULE(triplesBlock, ast.template);
       F.printFilter(ast, () => {
         C[traqulaIndentation] -= indentInc;
-        PRINT_ON_EMPTY('}\n');
+        PRINT_ON_OWN_LINE('}');
       });
     }
     SUBRULE(datasetClauseStar, ast.datasets);
@@ -380,8 +384,8 @@ export const describeQuery: SparqlRule<'describeQuery', Omit<QueryDescribe, Hand
       ),
     }));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
-    F.printFilter(ast, () => PRINT_WORD('DESCRIBE'));
+  gImpl: ({ SUBRULE, PRINT_WORD, PRINT_ON_EMPTY }) => (ast, { astFactory: F }) => {
+    F.printFilter(ast, () => PRINT_ON_EMPTY('DESCRIBE '));
     if (F.isWildcard(ast.variables[0])) {
       F.printFilter(ast, () => PRINT_WORD('*'));
     } else {
@@ -424,8 +428,8 @@ export const askQuery: SparqlRule<'askQuery', Omit<QueryAsk, HandledByBase>> = <
       ),
     } satisfies RuleDefReturn<typeof askQuery>));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
-    F.printFilter(ast, () => PRINT_WORD('ASK'));
+  gImpl: ({ SUBRULE, PRINT_ON_EMPTY }) => (ast, { astFactory: F }) => {
+    F.printFilter(ast, () => PRINT_ON_EMPTY('ASK '));
     SUBRULE(datasetClauseStar, ast.datasets);
     SUBRULE(whereClause, F.wrap(ast.where, ast.loc));
     SUBRULE(solutionModifier, ast.solutionModifiers);

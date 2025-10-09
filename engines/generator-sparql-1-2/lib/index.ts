@@ -101,17 +101,16 @@ export const sparql12GeneratorBuilder =
 export type SparqlGenerator = ReturnType<typeof sparql12GeneratorBuilder.build>;
 
 export class Generator {
+  public constructor(private readonly defaultContext: Partial<T12.SparqlGeneratorContext> = {}) {}
+
   private readonly generator: SparqlGenerator = sparql12GeneratorBuilder.build();
   private readonly F = new AstFactory();
 
-  public generate(
-    ast: T12.Query | T12.Update,
-context: Partial<T12.SparqlContext & { origSource: string }> = {},
-  ): string {
-    return this.generator.queryOrUpdate(ast, completeParseContext(context));
+  public generate(ast: T12.Query | T12.Update, context: Partial<T12.SparqlGeneratorContext> = {}): string {
+    return this.generator.queryOrUpdate(ast, completeParseContext({ ...this.defaultContext, ...context })).trim();
   }
 
-  public generatePath(ast: T12.Path, context: Partial<T12.SparqlContext & { origSource: string }> = {}): string {
-    return this.generator.path(ast, completeParseContext(context), undefined);
+  public generatePath(ast: T12.Path, context: Partial<T12.SparqlGeneratorContext> = {}): string {
+    return this.generator.path(ast, completeParseContext({ ...this.defaultContext, ...context }), undefined).trim();
   }
 }

@@ -1,3 +1,4 @@
+import { traqulaIndentation } from '@traqula/core';
 import { Parser } from '@traqula/parser-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import { AstFactory, AstTransformer } from '@traqula/rules-sparql-1-1';
@@ -14,7 +15,14 @@ describe('a SPARQL 1.1 generator', () => {
     const query = 'SELECT * WHERE { ?s ?p ?o }';
     const ast = <T11.Query> parser.parse(query);
     const result = generator.generate(ast, { origSource: query });
-    expect(result.replaceAll(/\s+/gu, ' ')).toBe(query);
+    expect(result).toBe(query);
+  });
+
+  it ('self generates on no pretty', ({ expect }) => {
+    const query = 'SELECT * WHERE { ?s ?p ?o . }';
+    const ast = parser.parse(query);
+    const result = generator.generate(F.forcedAutoGenTree(ast), { [traqulaIndentation]: -1, indentInc: 0 });
+    expect(result).toBe(query);
   });
 
   describe('on altered nodes', () => {
@@ -134,17 +142,15 @@ _:g_12 <c7> <e7> .
       );
 
       const result = generator.generate(flattenCollections, { origSource: query });
-      expect(result).toBe(`
-
-BASE <ex:>
+      expect(result).toBe(`BASE <ex:>
 CONSTRUCT { 
   ?s0 ?p0 _:g_0 .
 _:g_0 <a0> _:g_1 .
 _:g_1 <b0> <c0> .
 [
   <a0> [
-    <b0> <c0> ;    
-  ] ;  
+    <b0> <c0> ;
+  ] ;
 ] ?p0 ?o0 .
 
 
@@ -166,8 +172,8 @@ _:g_8 <a5> _:g_9 .
 _:g_9 <b5> <c5> .
 [
   <a6> [
-    <b6> <c6> ;    
-  ] ;  
+    <b6> <c6> ;
+  ] ;
 ] ?p6 ?o6 .
 _:g_12 <a7> <b7> .
 _:g_12 <c7> <d7> .
@@ -181,7 +187,7 @@ _:g_12 <c7> <e7> .
   it ('generates hand constructed query', ({ expect }) => {
     const query = `
 SELECT * WHERE {
-  ?s ?p ?o .  
+  ?s ?p ?o .
 }`;
     const ast = F.querySelect({
       variables: [ F.wildcard(F.gen()) ],

@@ -3,9 +3,9 @@ PREFIX : <http://example.org/book/>
 PREFIX ns: <http://example.org/ns#>
 SELECT ?book ?title ?price WHERE {
   ?book dc:title ?title .
-  ?book ns:price ?price .  
+  ?book ns:price ?price .
   VALUES ?title {
     "SPARQL Tutorial"
-    UNDEF    
-  }  
+    UNDEF
+  }
 }

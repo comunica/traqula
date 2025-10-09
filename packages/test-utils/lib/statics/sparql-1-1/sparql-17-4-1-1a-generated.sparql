@@ -4,7 +4,7 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 SELECT ?givenName WHERE {
   ?x foaf:givenName ?givenName .
   OPTIONAL {
-    ?x dc:date ?date .    
+    ?x dc:date ?date .
   }
-  FILTER ( BOUND( ?date ) )  
+  FILTER ( BOUND( ?date ) )
 }

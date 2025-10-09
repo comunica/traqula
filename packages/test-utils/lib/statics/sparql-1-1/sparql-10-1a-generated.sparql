@@ -5,5 +5,5 @@ SELECT ?title ?price WHERE {
   ?x ns:discount ?discount .
   BIND( ( ?p * ( "1"^^<http://www.w3.org/2001/XMLSchema#integer> - ?discount ) ) AS ?price )
   FILTER ( ( ?price < "20"^^<http://www.w3.org/2001/XMLSchema#integer> ) )
-  ?x dc:title ?title .  
+  ?x dc:title ?title .
 }

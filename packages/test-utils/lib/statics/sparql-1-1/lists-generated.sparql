@@ -1,7 +1,7 @@
 BASE <ex:>
 CONSTRUCT {
   ?s0 ?p0 ( <a0> ( <b0><c0> ) ) .
-  ( <a0> ( <b0><c0> ) ) ?p0 ?o0 .  
+  ( <a0> ( <b0><c0> ) ) ?p0 ?o0 .
 }
 WHERE {
   ?s1 ?p1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
@@ -15,6 +15,6 @@ WHERE {
   ?s8 ?p8 ( [
     <a8> <b8> ;
     <c8> <d8> ;
-    <c8> <e8> ;    
-  ] ) .  
+    <c8> <e8> ;
+  ] ) .
 }

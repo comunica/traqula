@@ -1,4 +1,4 @@
 PREFIX : <http://example.com/ns#>
 SELECT * WHERE {
-  ?S ?P << ?a ?b ?c ~ :iri >> .  
+  ?S ?P << ?a ?b ?c ~ :iri >> .
 }

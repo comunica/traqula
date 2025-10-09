@@ -3,5 +3,5 @@ SELECT * WHERE {
   << ?S :p :o ~ :iri >> .
   :iri :r :z .
   << << ?S :p :o ~ :iri >> :r :z ~ _:bnode >> .
-  _:bnode :q "1"^^<http://www.w3.org/2001/XMLSchema#integer> .  
+  _:bnode :q "1"^^<http://www.w3.org/2001/XMLSchema#integer> .
 }

@@ -3,7 +3,7 @@ SELECT ?x ?name WHERE {
   ?x foaf:mbox <mailto:alice@example> .
   ?x foaf:knows [
     foaf:knows [
-      foaf:name ?name ;      
-    ] ;    
-  ] .  
+      foaf:name ?name ;
+    ] ;
+  ] .
 }

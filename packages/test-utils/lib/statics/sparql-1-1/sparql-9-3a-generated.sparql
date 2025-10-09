@@ -1,4 +1,4 @@
 PREFIX : <http://example/>
 SELECT * WHERE {
-  ?s ( :item / :price ) ?x .  
+  ?s (:item/:price) ?x .
 }

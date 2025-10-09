@@ -49,14 +49,17 @@ SparqlGrammarRule<string, PatternBgp>['impl'] {
 export const triplesBlock: SparqlRule<'triplesBlock', PatternBgp> = <const>{
   name: 'triplesBlock',
   impl: implArgs => C => triplesDotSeperated(triplesSameSubjectPath)(implArgs)(C),
-  gImpl: ({ SUBRULE, PRINT_WORD, HANDLE_LOC }) => (ast, { astFactory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD, HANDLE_LOC, NEW_LINE }) => (ast, { astFactory: F }) => {
     for (const [ index, triple ] of ast.triples.entries()) {
       HANDLE_LOC(triple, () => {
         const nextTriple = ast.triples.at(index);
         if (F.isTripleCollection(triple)) {
           SUBRULE(graphNodePath, triple);
           // A top level tripleCollection block means that it is not used in a triple. So you endf with DOT.
-          F.printFilter(triple, () => PRINT_WORD('.\n'));
+          F.printFilter(triple, () => {
+            PRINT_WORD('.');
+            NEW_LINE();
+          });
         } else {
           // Subject
           SUBRULE(graphNodePath, triple.subject);
@@ -74,11 +77,17 @@ export const triplesBlock: SparqlRule<'triplesBlock', PatternBgp> = <const>{
           // If no more things, or a top level collection (only possible if new block was part), or new subject: add DOT
           if (nextTriple === undefined || F.isTripleCollection(nextTriple) ||
             !F.isSourceLocationNoMaterialize(nextTriple.subject.loc)) {
-            F.printFilter(ast, () => PRINT_WORD('.\n'));
+            F.printFilter(ast, () => {
+              PRINT_WORD('.');
+              NEW_LINE();
+            });
           } else if (F.isSourceLocationNoMaterialize(nextTriple.predicate.loc)) {
             F.printFilter(ast, () => PRINT_WORD(','));
           } else {
-            F.printFilter(ast, () => PRINT_WORD(';\n'));
+            F.printFilter(ast, () => {
+              PRINT_WORD(';');
+              NEW_LINE();
+            });
           }
         }
       });
@@ -376,11 +385,12 @@ SparqlRule<T, TripleCollectionBlankNodeProperties> {
         C.astFactory.sourceLocation(startToken, endToken),
       ));
     },
-    gImpl: ({ SUBRULE, PRINT, PRINT_WORD, HANDLE_LOC, PRINT_ON_EMPTY }) => (ast, c) => {
+    gImpl: ({ SUBRULE, PRINT, PRINT_WORD, HANDLE_LOC, PRINT_ON_EMPTY, NEW_LINE }) => (ast, c) => {
       const { astFactory: F, indentInc } = c;
       F.printFilter(ast, () => {
         c[traqulaIndentation] += indentInc;
-        PRINT('[\n');
+        PRINT('[');
+        NEW_LINE();
       });
       for (const triple of ast.triples) {
         HANDLE_LOC(triple, () => {
@@ -394,7 +404,10 @@ SparqlRule<T, TripleCollectionBlankNodeProperties> {
           // Object
           SUBRULE(graphNodePath, triple.object);
 
-          F.printFilter(ast, () => PRINT_WORD(';\n'));
+          F.printFilter(ast, () => {
+            PRINT_WORD(';');
+            NEW_LINE();
+          });
         });
       }
       F.printFilter(ast, () => {

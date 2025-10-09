@@ -1,6 +1,6 @@
 SELECT * WHERE {
-  ?s ?p ?o .  
+  ?s ?p ?o .
 }
 VALUES( ){
-  ( )  
+  ( )
 }

@@ -3,6 +3,6 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 SELECT * WHERE {
   ?movie dbpedia-owl:starring [
     rdfs:label "Brad Pitt"@en ;
-    (^ dbpedia-owl:starring ) ?otherMovie ;    
-  ] .  
+    (^dbpedia-owl:starring) ?otherMovie ;
+  ] .
 }

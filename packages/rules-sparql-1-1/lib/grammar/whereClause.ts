@@ -61,11 +61,12 @@ export const groupGraphPattern: SparqlRule<'groupGraphPattern', PatternGroup> = 
 
     return ACTION(() => C.astFactory.patternGroup(patterns, C.astFactory.sourceLocation(open, close)));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD, PRINT_ON_EMPTY }) => (ast, C) => {
+  gImpl: ({ SUBRULE, PRINT_WORD, NEW_LINE, PRINT_ON_OWN_LINE }) => (ast, C) => {
     const { astFactory: F, indentInc } = C;
     F.printFilter(ast, () => {
       C[traqulaIndentation] += indentInc;
-      PRINT_WORD('{\n');
+      PRINT_WORD('{');
+      NEW_LINE();
     });
 
     for (const pattern of ast.patterns) {
@@ -74,7 +75,7 @@ export const groupGraphPattern: SparqlRule<'groupGraphPattern', PatternGroup> = 
 
     F.printFilter(ast, () => {
       C[traqulaIndentation] -= indentInc;
-      PRINT_ON_EMPTY('}\n');
+      PRINT_ON_OWN_LINE('}');
     });
   },
 };
@@ -260,12 +261,15 @@ export const bind: SparqlRule<'bind', PatternBind> = <const> {
 
     return ACTION(() => C.astFactory.patternBind(expressionVal, variable, C.astFactory.sourceLocation(bind, close)));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD, NEW_LINE }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => PRINT_WORD('BIND', '('));
     SUBRULE(expression, ast.expression);
     F.printFilter(ast, () => PRINT_WORD('AS'));
     SUBRULE(var_, ast.variable);
-    F.printFilter(ast, () => PRINT_WORD(')\n'));
+    F.printFilter(ast, () => {
+      PRINT_WORD(')');
+      NEW_LINE();
+    });
   },
 };
 
@@ -280,18 +284,18 @@ export const inlineData: SparqlRule<'inlineData', PatternValues> = <const> {
 
     return ACTION(() => C.astFactory.patternValues(datablock.val, C.astFactory.sourceLocation(values, datablock)));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD, PRINT_ON_EMPTY }) => (ast, C) => {
+  gImpl: ({ SUBRULE, PRINT_WORD, PRINT_ON_EMPTY, NEW_LINE, PRINT_ON_OWN_LINE }) => (ast, C) => {
     const { astFactory: F, indentInc } = C;
     const variables = Object.keys(ast.values.at(0) ?? {});
     const singleVar = variables.length === 1;
     F.printFilter(ast, () => {
-      PRINT_ON_EMPTY('');
-      PRINT_WORD('VALUES', singleVar ? '' : '(');
+      PRINT_ON_EMPTY('VALUES', singleVar ? '' : '( ');
       for (const variable of variables) {
         PRINT_WORD(`?${variable}`);
       }
       C[traqulaIndentation] += indentInc;
-      PRINT_WORD(singleVar ? '' : ')', '{\n');
+      PRINT_WORD(singleVar ? '' : ')', '{');
+      NEW_LINE();
     });
 
     for (const mapping of ast.values) {
@@ -303,11 +307,14 @@ export const inlineData: SparqlRule<'inlineData', PatternValues> = <const> {
           SUBRULE(graphNodePath, mapping[variable]);
         }
       }
-      F.printFilter(ast, () => PRINT_WORD(singleVar ? '' : ')', '\n'));
+      F.printFilter(ast, () => {
+        PRINT_WORD(singleVar ? '' : ')');
+        NEW_LINE();
+      });
     }
     F.printFilter(ast, () => {
       C[traqulaIndentation] -= indentInc;
-      PRINT_ON_EMPTY('}\n');
+      PRINT_ON_OWN_LINE('}');
     });
   },
 };
@@ -495,10 +502,13 @@ export const filter: SparqlRule<'filter', PatternFilter> = <const> {
 
     return ACTION(() => C.astFactory.patternFilter(expression, C.astFactory.sourceLocation(filterToken, expression)));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD, NEW_LINE }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => PRINT_WORD('FILTER ('));
     SUBRULE(expression, ast.expression);
-    F.printFilter(ast, () => PRINT_WORD(')\n'));
+    F.printFilter(ast, () => {
+      PRINT_WORD(')');
+      NEW_LINE();
+    });
   },
 };
 

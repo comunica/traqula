@@ -27,6 +27,7 @@ export interface SparqlContext {
 export interface SparqlGeneratorContext {
   astFactory: AstFactory;
   indentInc: number;
+  origSource?: string;
   [traqulaIndentation]: number;
 }
 

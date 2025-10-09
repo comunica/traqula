@@ -19,5 +19,9 @@ export function createToken<Name extends string>(config: ITokenConfig & { name: 
 export type Patch<T extends object, Patch extends {[Key in keyof T ]?: unknown }> =
   {[Key in keyof T]: Key extends keyof Patch ? Patch[Key] : T[Key] };
 
+/**
+ * Key that allows you to set the space based indentation of your query when generating newlines using the NEW_LINE.
+ * A value of -1 disables the generation of newlines from the NEW_LINE function
+ */
 export const traqulaIndentation =
   'When you use this string, you expect traqula to handle indentation after every newline';

@@ -16,7 +16,7 @@ describe('a SPARQL 1.2 generator', () => {
     const query = 'SELECT * WHERE { ?s ?p ?o }';
     const ast = <T11.Query> parser.parse(query);
     const result = generator.generate(ast, { origSource: query });
-    expect(result.replaceAll(/\s+/gu, ' ')).toBe(query);
+    expect(result).toBe(query);
   });
 
   describe('on altered nodes', () => {
@@ -39,17 +39,15 @@ describe('a SPARQL 1.2 generator', () => {
     });
 
     it('translates blanknodes -> variables', ({ expect }) => {
-      const query = `
-
-BASE <ex:>
+      const query = `BASE <ex:>
 CONSTRUCT { 
   ?s0 ?p0 _:g_0 .
 _:g_0 <a0> _:g_1 .
 _:g_1 <b0><c0> .
 [
   <a0> [
-    <b0> <c0> ;    
-  ] ;  
+    <b0> <c0> ;
+  ] ;
 ] ?p0 ?o0 .
 
 }
@@ -121,17 +119,15 @@ WHERE {
       );
 
       const result = generator.generate(flattenCollections, { origSource: query });
-      expect(result).toBe(`
-
-BASE <ex:>
+      expect(result).toBe(`BASE <ex:>
 CONSTRUCT { 
   ?s0 ?p0 _:g_0 .
 _:g_0 <a0> _:g_1 .
 _:g_1 <b0> <c0> .
 [
   <a0> [
-    <b0> <c0> ;    
-  ] ;  
+    <b0> <c0> ;
+  ] ;
 ] ?p0 ?o0 .
 
 
@@ -153,8 +149,8 @@ _:g_6 <a5> _:g_7 .
 _:g_7 <b5> <c5> .
 [
   <a6> [
-    <b6> <c6> ;    
-  ] ;  
+    <b6> <c6> ;
+  ] ;
 ] ?p6 ?o6 .
 _:g_10 <a7> <b7> .
 _:g_10 <c7> <d7> .
@@ -167,7 +163,7 @@ _:g_10 <c7> <e7> .
   it ('generates hand constructed query', ({ expect }) => {
     const query = `
 SELECT * WHERE {
-  ?s ?p ?o .  
+  ?s ?p ?o .
 }`;
     const ast = F.querySelect({
       variables: [ F.wildcard(F.gen()) ],

@@ -7,5 +7,5 @@ SELECT ?aLabel1 ?bLabel WHERE {
   ?b :label ?bLabel .
   ?b :weight ?bWeight .
   ?b :displacement ?bDisp .
-  FILTER ( ( SAMETERM( ?aWeight , ?bWeight ) && ! SAMETERM( ?aDisp , ?bDisp ) ) )  
+  FILTER ( ( SAMETERM( ?aWeight , ?bWeight ) && ! SAMETERM( ?aDisp , ?bDisp ) ) )
 }

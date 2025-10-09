@@ -6,6 +6,6 @@ SELECT ?service ?projectName WHERE {
   ?p void:sparqlEndpoint ?service .
   FILTER ( REGEX( ?projectSubject , "remote" ) )
   SERVICE ?service {
-    ?project doap:name ?projectName .    
-  }  
+    ?project doap:name ?projectName .
+  }
 }

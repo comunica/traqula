@@ -1,10 +1,10 @@
 PREFIX : <http://example.com/ns#>
 CONSTRUCT {
-  ?t :graph ?g .  
+  ?t :graph ?g .
 }
 WHERE {
   GRAPH ?g {
     ?s ?p ?o .
-    BIND( <<( ?s ?p ?o )>> AS ?t )    
-  }  
+    BIND( <<( ?s ?p ?o )>> AS ?t )
+  }
 }

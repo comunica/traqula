@@ -3,5 +3,5 @@ SELECT ?x ?name WHERE {
   ?x foaf:mbox <mailto:alice@example> .
   ?x foaf:knows ?a1 .
   ?a1 foaf:knows ?a2 .
-  ?a2 foaf:name ?name .  
+  ?a2 foaf:name ?name .
 }

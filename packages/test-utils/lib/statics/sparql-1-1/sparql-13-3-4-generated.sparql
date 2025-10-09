@@ -5,6 +5,6 @@ SELECT ?name ?mbox ?date WHERE {
   ?g dc:date ?date .
   GRAPH ?g {
     ?person foaf:name ?name .
-    ?person foaf:mbox ?mbox .    
-  }  
+    ?person foaf:mbox ?mbox .
+  }
 }

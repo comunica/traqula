@@ -4,7 +4,7 @@ PREFIX dbpedia-owl: <http://dbpedia.org/ontology/>
 CONSTRUCT {
   ?person <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> dbpedia-owl:Artist .
   ?person rdfs:label ?name .
-  ?person dbpedia-owl:birthPlace ?city .  
+  ?person dbpedia-owl:birthPlace ?city .
 }
 WHERE {
   ?person <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> dbpedia-owl:Artist .
@@ -13,5 +13,5 @@ WHERE {
   ?city rdfs:label ?cityName .
   ?city rdfs:label "Ghent"@en .
   ?city dbpedia-owl:country ?country .
-  ?country rdfs:label "Belgium"@en .  
+  ?country rdfs:label "Belgium"@en .
 }

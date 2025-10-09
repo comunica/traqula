@@ -8,7 +8,11 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
   protected __context: Context | undefined = undefined;
   protected origSource = '';
   protected generatedUntil = 0;
-  protected expectsSpace: boolean;
+  protected toEnsure: ((willPrint: string) => void)[] = [];
+  /**
+   * Should not contain empty strings
+   * @protected
+   */
   protected readonly stringBuilder: string[] = [];
 
   public constructor(protected rules: RuleDefs) {
@@ -17,7 +21,6 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
       // Define function implementation
       this[<keyof (typeof this)> rule.name] =
         <any> ((input: any, context: Context & { origSource: string; offset?: number }, args: any) => {
-          this.expectsSpace = false;
           this.stringBuilder.length = 0;
           this.origSource = context.origSource;
           this.generatedUntil = context?.offset ?? 0;
@@ -36,8 +39,8 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
     this.__context = context;
   }
 
-  protected getSafeContext(): Context & { [traqulaIndentation]?: unknown } {
-    return <Context & { [traqulaIndentation]?: unknown }> this.__context;
+  protected getSafeContext(): Context & { [traqulaIndentation]?: number } {
+    return <Context & { [traqulaIndentation]?: number }> this.__context;
   }
 
   protected readonly subrule: RuleDefArg['SUBRULE'] = (cstDef, ast, ...arg) => {
@@ -49,12 +52,16 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
     const generate = (): void => def.gImpl({
       SUBRULE: this.subrule,
       PRINT: this.print,
-      PRINT_SPACE_LEFT: this.printSpaceLeft,
+      ENSURE: this.ensure,
+      ENSURE_EITHER: this.ensureEither,
+      NEW_LINE: this.newLine,
+      HANDLE_LOC: this.handleLoc,
+      CATCHUP: this.catchup,
+
       PRINT_WORD: this.printWord,
       PRINT_WORDS: this.printWords,
       PRINT_ON_EMPTY: this.printOnEmpty,
-      CATCHUP: this.catchup,
-      HANDLE_LOC: this.handleLoc,
+      PRINT_ON_OWN_LINE: this.printOnOwnLine,
     })(ast, this.getSafeContext(), ...arg);
 
     if (this.factory.isLocalized(ast)) {
@@ -99,46 +106,92 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
     this.generatedUntil = Math.max(this.generatedUntil, until);
   };
 
+  private handeEnsured(toPrint: string): void {
+    for (const callBack of this.toEnsure) {
+      callBack(toPrint);
+    }
+    this.toEnsure.length = 0;
+  }
+
   protected readonly print: RuleDefArg['PRINT'] = (...args) => {
-    const pureArgs = args.filter(x => x.length > 0);
-    if (pureArgs.length > 0) {
-      const head = pureArgs[0];
-      if (this.expectsSpace) {
-        this.expectsSpace = false;
-        const blanks = new Set([ '\n', ' ', '\t' ]);
-        if (this.stringBuilder.length > 0 &&
-          !(blanks.has(head[0]) || blanks.has(this.stringBuilder.at(-1)!.at(-1)!))) {
-          this.stringBuilder.push(' ');
+    const joined = args.join('');
+    this.handeEnsured(joined);
+    this.stringBuilder.push(joined);
+  };
+
+  private doesEndWith(subsStr: string): boolean {
+    const len = subsStr.length;
+    let temp = '';
+    while (temp.length < len && this.stringBuilder.length > 0) {
+      temp = this.stringBuilder.pop() + temp;
+    }
+    this.stringBuilder.push(temp);
+    return temp.endsWith(subsStr);
+  }
+
+  protected readonly ensure: RuleDefArg['ENSURE'] = (...args) => {
+    // Check whether already present
+    const toEnsure = args.join('');
+    if (!this.doesEndWith(toEnsure)) {
+      this.toEnsure.push((willPrint) => {
+        if (!willPrint.startsWith(toEnsure) && !this.doesEndWith(toEnsure)) {
+          this.stringBuilder.push(toEnsure);
         }
+      });
+    }
+  };
+
+  protected readonly ensureEither: RuleDefArg['ENSURE_EITHER'] = (...args) => {
+    if (args.length === 1) {
+      this.ensure(...args);
+    } else if (args.length > 1 &&
+      // Not already matched?
+      !args.some(subStr => this.doesEndWith(subStr))) {
+      this.toEnsure.push((willPrint) => {
+        if (!args.some(subStr => willPrint.startsWith(subStr)) && !args.some(subStr => this.doesEndWith(subStr))) {
+          this.stringBuilder.push(args[0]);
+        }
+      });
+    }
+  };
+
+  private pruneEndingBlanks(): void {
+    let temp = '';
+    while (/^[ \t]*$/u.test(temp) && this.stringBuilder.length > 0) {
+      temp = this.stringBuilder.pop() + temp;
+    }
+    this.print(temp.trimEnd());
+  }
+
+  protected readonly newLine: RuleDefArg['NEW_LINE'] = (arg) => {
+    const indentation = this.getSafeContext()[traqulaIndentation] ?? 0;
+    if (indentation === -1) {
+      return;
+    }
+    const force = arg?.force ?? false;
+    this.pruneEndingBlanks();
+    if (force) {
+      this.print('\n', ' '.repeat(indentation));
+    } else {
+      let temp = '';
+      while (!temp.includes('\n') && this.stringBuilder.length > 0) {
+        temp = this.stringBuilder.pop() + temp;
       }
-      const context = this.getSafeContext();
-      if (context[traqulaIndentation] && typeof context[traqulaIndentation] === 'number') {
-        const indent = context[traqulaIndentation];
-        for (const str of pureArgs) {
-          const [ noNl, ...postNl ] = str.split('\n');
-          this.stringBuilder.push(noNl);
-          for (const subStr of postNl.map(line => line.trimStart())) {
-            this.stringBuilder.push('\n', ' '.repeat(indent));
-            if (subStr.length > 0) {
-              this.stringBuilder.push(subStr);
-            }
-          }
-        }
+      if (/\n[ \t]*$/u.test(temp)) {
+        // Pointer is on empty newline -> set correct indentation
+        temp = temp.replace(/\n[ \t]*$/u, `\n${' '.repeat(indentation)}`);
+        this.print(temp);
       } else {
-        this.stringBuilder.push(...pureArgs);
+        // Pointer not on empty newline, print newline.
+        this.print(temp, '\n', ' '.repeat(indentation));
       }
     }
   };
 
   private readonly printWord: RuleDefArg['PRINT_WORD'] = (...args) => {
-    this.expectsSpace = true;
+    this.ensureEither(' ', '\n');
     this.print(...args);
-    this.expectsSpace = true;
-  };
-
-  private readonly printSpaceLeft: RuleDefArg['PRINT_WORD'] = (...args) => {
-    this.expectsSpace = true;
-    this.print(...args);
+    this.ensureEither(' ', '\n');
   };
 
   private readonly printWords: RuleDefArg['PRINT_WORD'] = (...args) => {
@@ -148,30 +201,13 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
   };
 
   private readonly printOnEmpty: RuleDefArg['PRINT_ON_EMPTY'] = (...args) => {
-    // Check if pointer already on empty line
-    let counter = this.stringBuilder.length - 1;
-    let onEmpty = true;
-    const isEmptyTest = /^[ \t\n]*$/u;
-    while (counter >= 0 && onEmpty) {
-      const cur = this.stringBuilder[counter];
-      const indexOfNl = cur.lastIndexOf('\n');
-      if (indexOfNl >= 0) {
-        // This is the last newline that is printed
-        onEmpty = isEmptyTest.test(cur.slice(indexOfNl));
-        if (onEmpty) {
-          // We still want to have the current indent printed
-          const newVal = cur.slice(0, indexOfNl);
-          if (newVal) {
-            this.stringBuilder[counter] = cur.slice(0, indexOfNl);
-          } else {
-            this.stringBuilder.splice(counter, 1);
-          }
-        }
-        break;
-      }
-      onEmpty = isEmptyTest.test(cur);
-      counter--;
-    }
-    this.print('\n', ...args);
+    this.newLine();
+    this.print(...args);
+  };
+
+  private readonly printOnOwnLine: RuleDefArg['PRINT_ON_OWN_LINE'] = (...args) => {
+    this.newLine();
+    this.print(...args);
+    this.newLine();
   };
 }

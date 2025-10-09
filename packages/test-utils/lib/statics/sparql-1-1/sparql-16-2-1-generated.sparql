@@ -3,19 +3,19 @@ PREFIX vcard: <http://www.w3.org/2001/vcard-rdf/3.0#>
 CONSTRUCT {
   ?x vcard:N _:v .
   _:v vcard:givenName ?gname .
-  _:v vcard:familyName ?fname .  
+  _:v vcard:familyName ?fname .
 }
 WHERE {
   {
-    ?x foaf:firstname ?gname .    
+    ?x foaf:firstname ?gname .
   }
   UNION {
-    ?x foaf:givenname ?gname .    
+    ?x foaf:givenname ?gname .
   }
   {
-    ?x foaf:surname ?fname .    
+    ?x foaf:surname ?fname .
   }
   UNION {
-    ?x foaf:family_name ?fname .    
-  }  
+    ?x foaf:family_name ?fname .
+  }
 }

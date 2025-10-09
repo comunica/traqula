@@ -1,2 +1,2 @@
-SELECT ?x WHERE {  
+SELECT ?x WHERE {
 }

@@ -35,40 +35,36 @@ export interface RuleDefArg {
    * @param rule the rule to be called
    * @param input the ast input to work on
    * @param arg the remaining parameters required by this rule.
-   * @constructor
    */
   SUBRULE: <T, U extends any[]>(rule: GeneratorRule<any, any, T, U>, input: T, ...arg: U) => void;
   /**
    * Print the characters to the output string
    * @param args arguments to be printed
-   * @constructor
    */
   PRINT: (...args: string[]) => void;
   /**
-   * Print the character  to the output stream ensuring there is a space to the left oif what you print.
-   * If a space was printed right before this, it will not print a space.
-   * @param args
-   * @constructor
+   * Ensures the requested characters are printed at the current location.
+   * Will not change the constructed string in case either:
+   *  1. The string builder ends in the to ensure string.
+   *  2: The next printed string starts with the ensure string.
+   * Otherwise, prints the sting.
    */
-  PRINT_SPACE_LEFT: (...args: string[]) => void;
+  ENSURE: (...args: string[]) => void;
   /**
-   * Prints all arguments as one word, ensuring it has a space before and behind each word
-   * @param args
-   * @constructor
+   * Ensures either one of the provided strings. If no string can be ensured, it will print the first argument.
    */
-  PRINT_WORD: (...args: string[]) => void;
+  ENSURE_EITHER: (...args: string[]) => void;
   /**
-   * Prints all arguments as words, ensuring they all have a space before and behind them.
-   * @param args
-   * @constructor
+   * Create a new line, will ensure the previous line does not end in blank characters.
+   * Will only print a newline if the pointer is not currently on a new line.
+   * When the traqulaIndentation is changed in the meanwhile, this will ensure the indentation of teh pointer updated.
    */
-  PRINT_WORDS: (...args: string[]) => void;
-  /**
-   * Ensures that what you print is on a newline with the indentation equal to the indentation currently setup.
-   * @param args
-   * @constructor
-   */
-  PRINT_ON_EMPTY: (...args: string[]) => void;
+  NEW_LINE: (arg?: {
+    /**
+     * Whether the newline should be printed regardless of the pointer is already on an empty newline.
+     */
+    force?: boolean;
+  }) => void;
   /**
    * Handles the location of a node as if it was generated using a SUBRULE.
    * Can be used to generate many nodes within a single subrule call while still having correct localization handling.
@@ -84,4 +80,24 @@ export interface RuleDefArg {
    * @constructor
    */
   CATCHUP: (until: number) => void;
+
+  // Derivations from the above fundamental functions
+  /**
+   * Prints all arguments as one word, ensuring it has a space before and behind each word
+   * @param args
+   */
+  PRINT_WORD: (...args: string[]) => void;
+  /**
+   * Prints all arguments as words, ensuring they all have a space before and behind them.
+   * @param args
+   */
+  PRINT_WORDS: (...args: string[]) => void;
+  /**
+   * Start a newline to print arguments on
+   */
+  PRINT_ON_EMPTY: (...args: string[]) => void;
+  /**
+   * Prints arguments on its own (shared) line
+   */
+  PRINT_ON_OWN_LINE: (...args: string[]) => void;
 }

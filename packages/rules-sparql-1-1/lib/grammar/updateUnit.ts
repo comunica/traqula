@@ -80,7 +80,7 @@ export const update: SparqlRule<'update', Update> = <const> {
       return update;
     });
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
+  gImpl: ({ SUBRULE, PRINT, NEW_LINE }) => (ast, { astFactory: F }) => {
     const [ head, ...tail ] = ast.updates;
     if (head) {
       SUBRULE(prologue, head.context);
@@ -89,7 +89,10 @@ export const update: SparqlRule<'update', Update> = <const> {
       }
     }
     for (const update of tail) {
-      F.printFilter(ast, () => PRINT_WORD(';\n'));
+      F.printFilter(ast, () => {
+        PRINT(';');
+        NEW_LINE();
+      });
       SUBRULE(prologue, update.context);
       if (update.operation) {
         SUBRULE(update1, update.operation);
@@ -175,9 +178,9 @@ export const load: SparqlRule<'load', UpdateOperationLoad> = <const> {
       destination,
     ));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD, PRINT_ON_EMPTY }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => {
-      PRINT_WORD('LOAD');
+      PRINT_ON_EMPTY('LOAD ');
       if (ast.silent) {
         PRINT_WORD('SILENT');
       }
@@ -205,9 +208,9 @@ SparqlRule<Uncapitalize<T>, UpdateOperationClear | UpdateOperationDrop> {
         C.astFactory.sourceLocation(opToken, destination),
       ));
     },
-    gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
+    gImpl: ({ SUBRULE, PRINT_WORD, PRINT_ON_EMPTY }) => (ast, { astFactory: F }) => {
       F.printFilter(ast, () => {
-        PRINT_WORD(operation.name.toUpperCase());
+        PRINT_ON_EMPTY(operation.name.toUpperCase(), ' ');
         if (ast.silent) {
           PRINT_WORD('SILENT');
         }
@@ -243,9 +246,9 @@ export const create: SparqlRule<'create', UpdateOperationCreate> = <const> {
       C.astFactory.sourceLocation(createToken, destination),
     ));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD, PRINT_ON_EMPTY }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => {
-      PRINT_WORD('CREATE');
+      PRINT_ON_EMPTY('CREATE ');
       if (ast.silent) {
         PRINT_WORD('SILENT');
       }
@@ -273,9 +276,9 @@ SparqlRule<Uncapitalize<T>, UpdateOperationAdd | UpdateOperationMove | UpdateOpe
         C.astFactory.sourceLocation(op, destination),
       ));
     },
-    gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
+    gImpl: ({ SUBRULE, PRINT_WORD, PRINT_ON_EMPTY }) => (ast, { astFactory: F }) => {
       F.printFilter(ast, () => {
-        PRINT_WORD(operation.name.toUpperCase());
+        PRINT_ON_EMPTY(operation.name.toUpperCase(), ' ');
         if (ast.silent) {
           PRINT_WORD('SILENT');
         }
@@ -355,23 +358,24 @@ function insertDeleteDelWhere<T extends string>(
       return ACTION(() =>
         C.astFactory.updateOperationInsDelDataWhere(subType, data.val, C.astFactory.sourceLocation(insDelToken, data)));
     },
-    gImpl: ({ SUBRULE, PRINT_WORD, PRINT_ON_EMPTY }) => (ast, C) => {
+    gImpl: ({ SUBRULE, PRINT_WORD, PRINT_ON_EMPTY, PRINT_ON_OWN_LINE, NEW_LINE }) => (ast, C) => {
       const { astFactory: F, indentInc } = C;
       F.printFilter(ast, () => {
-        C[traqulaIndentation] += indentInc;
         if (subType === 'insertdata') {
-          PRINT_WORD('INSERT DATA');
+          PRINT_ON_EMPTY('INSERT DATA ');
         } else if (subType === 'deletedata') {
-          PRINT_WORD('DELETE DATA');
+          PRINT_ON_EMPTY('DELETE DATA ');
         } else if (subType === 'deletewhere') {
-          PRINT_WORD('DELETE WHERE');
+          PRINT_ON_EMPTY('DELETE WHERE ');
         }
-        PRINT_WORD('{\n');
+        C[traqulaIndentation] += indentInc;
+        PRINT_WORD('{');
+        NEW_LINE();
       });
       SUBRULE(quads, F.wrap(ast.data, ast.loc));
       F.printFilter(ast, () => {
         C[traqulaIndentation] -= indentInc;
-        PRINT_ON_EMPTY('}\n');
+        PRINT_ON_OWN_LINE('}');
       });
     },
   };
@@ -430,36 +434,40 @@ export const modify: SparqlRule<'modify', UpdateOperationModify> = <const> {
       graph?.graph,
     ));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD, PRINT_ON_EMPTY }) => (ast, C) => {
+  gImpl: ({ SUBRULE, PRINT_WORDS, PRINT_ON_EMPTY, NEW_LINE }) => (ast, C) => {
     const { astFactory: F, indentInc } = C;
     if (ast.graph) {
-      F.printFilter(ast, () => PRINT_WORD('WITH'));
+      F.printFilter(ast, () => PRINT_WORDS('WITH'));
       SUBRULE(iri, ast.graph);
     }
     if (ast.delete.length > 0) {
       F.printFilter(ast, () => {
         C[traqulaIndentation] += indentInc;
-        PRINT_WORD('DELETE', '{\n');
+        PRINT_WORDS('DELETE', '{');
+        NEW_LINE();
       });
       SUBRULE(quads, F.wrap(ast.delete, ast.loc));
       F.printFilter(ast, () => {
         C[traqulaIndentation] -= indentInc;
-        PRINT_ON_EMPTY('}\n');
+        PRINT_ON_EMPTY('}');
+        NEW_LINE();
       });
     }
     if (ast.insert.length > 0) {
       F.printFilter(ast, () => {
         C[traqulaIndentation] += indentInc;
-        PRINT_WORD('INSERT', '{\n');
+        PRINT_WORDS('INSERT', '{');
+        NEW_LINE();
       });
       SUBRULE(quads, F.wrap(ast.insert, ast.loc));
       F.printFilter(ast, () => {
         C[traqulaIndentation] -= indentInc;
-        PRINT_ON_EMPTY('}\n');
+        PRINT_ON_EMPTY('} ');
+        NEW_LINE();
       });
     }
     SUBRULE(usingClauseStar, ast.from);
-    F.printFilter(ast, () => PRINT_WORD('WHERE'));
+    F.printFilter(ast, () => PRINT_WORDS('WHERE'));
     SUBRULE(groupGraphPattern, ast.where);
   },
 };
@@ -622,18 +630,19 @@ export const quadsNotTriples: SparqlRule<'quadsNotTriples', GraphQuads> = <const
       C.astFactory.sourceLocation(graph, close),
     ));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD, PRINT_ON_EMPTY }) => (ast, C) => {
+  gImpl: ({ SUBRULE, PRINT_WORD, NEW_LINE, PRINT_ON_OWN_LINE }) => (ast, C) => {
     const { astFactory: F, indentInc } = C;
     F.printFilter(ast, () => PRINT_WORD('GRAPH'));
     SUBRULE(varOrTerm, ast.graph);
     F.printFilter(ast, () => {
       C[traqulaIndentation] += indentInc;
-      PRINT_WORD('{\n');
+      PRINT_WORD('{');
+      NEW_LINE();
     });
     SUBRULE(triplesBlock, ast.triples);
     F.printFilter(ast, () => {
       C[traqulaIndentation] -= indentInc;
-      PRINT_ON_EMPTY('}\n');
+      PRINT_ON_OWN_LINE('}');
     });
   },
 };

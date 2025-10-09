@@ -3,7 +3,7 @@ PREFIX dc: <http://purl.org/dc/elements/1.1/>
 SELECT ?name WHERE {
   ?x foaf:givenName ?name .
   OPTIONAL {
-    ?x dc:date ?date .    
+    ?x dc:date ?date .
   }
-  FILTER ( ! BOUND( ?date ) )  
+  FILTER ( ! BOUND( ?date ) )
 }

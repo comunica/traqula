@@ -6,7 +6,7 @@ SELECT ?given ?family WHERE {
   ?annot dc:creator ?c .
   OPTIONAL {
     ?c foaf:given ?given .
-    ?c foaf:family ?family .    
+    ?c foaf:family ?family .
   }
-  FILTER ( ISBLANK( ?c ) )  
+  FILTER ( ISBLANK( ?c ) )
 }

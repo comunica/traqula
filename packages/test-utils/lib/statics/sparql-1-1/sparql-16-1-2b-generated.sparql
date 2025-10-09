@@ -3,5 +3,5 @@ PREFIX ns: <http://example.org/ns#>
 SELECT ?title ( ?p AS ?fullPrice ) ( ( ?fullPrice * ( "1"^^<http://www.w3.org/2001/XMLSchema#integer> - ?discount ) ) AS ?customerPrice ) WHERE {
   ?x ns:price ?p .
   ?x dc:title ?title .
-  ?x ns:discount ?discount .  
+  ?x ns:discount ?discount .
 }

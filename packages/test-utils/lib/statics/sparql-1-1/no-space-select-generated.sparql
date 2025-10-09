@@ -1,5 +1,5 @@
 SELECT DISTINCT ?s WHERE {
-  ?s ?p ?o .  
+  ?s ?p ?o .
 }
 GROUP BY ?s
 HAVING ( ?p = ?o )
@@ -8,5 +8,5 @@ LIMIT 10 OFFSET 9
 VALUES ?o {
   "true"^^<http://www.w3.org/2001/XMLSchema#boolean>
   UNDEF
-  "false"^^<http://www.w3.org/2001/XMLSchema#boolean>  
+  "false"^^<http://www.w3.org/2001/XMLSchema#boolean>
 }

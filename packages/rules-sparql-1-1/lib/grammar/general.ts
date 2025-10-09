@@ -49,10 +49,10 @@ export const baseDecl: SparqlRule<'baseDecl', ContextDefinitionBase> = <const> {
     const val = SUBRULE(iriFull);
     return ACTION(() => C.astFactory.contextDefinitionBase(C.astFactory.sourceLocation(base, val), val));
   },
-  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
-    F.printFilter(ast, () => PRINT_WORD('BASE'));
+  gImpl: ({ SUBRULE, PRINT_ON_EMPTY, NEW_LINE }) => (ast, { astFactory: F }) => {
+    F.printFilter(ast, () => PRINT_ON_EMPTY('BASE '));
     SUBRULE(iri, ast.value);
-    F.printFilter(ast, () => PRINT_WORD('\n'));
+    F.printFilter(ast, () => NEW_LINE());
   },
 };
 
@@ -69,12 +69,12 @@ export const prefixDecl: SparqlRule<'prefixDecl', ContextDefinitionPrefix> = <co
 
     return ACTION(() => C.astFactory.contextDefinitionPrefix(C.astFactory.sourceLocation(prefix, value), name, value));
   },
-  gImpl: ({ SUBRULE, PRINT_WORDS }) => (ast, { astFactory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_ON_EMPTY, NEW_LINE }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => {
-      PRINT_WORDS('PREFIX', `${ast.key}:`);
+      PRINT_ON_EMPTY('PREFIX ', `${ast.key}: `);
     });
     SUBRULE(iri, ast.value);
-    F.printFilter(ast, () => PRINT_WORDS('\n'));
+    F.printFilter(ast, () => NEW_LINE());
   },
 };
 
@@ -129,8 +129,8 @@ export const var_: SparqlRule<'var', TermVariable> = <const> {
     ]);
     return ACTION(() => C.astFactory.variable(varToken.image.slice(1), C.astFactory.sourceLocation(varToken)));
   },
-  gImpl: ({ PRINT_WORD }) => (ast, { astFactory: F }) => {
-    F.printFilter(ast, () => PRINT_WORD(`?${ast.value}`));
+  gImpl: ({ PRINT }) => (ast, { astFactory: F }) => {
+    F.printFilter(ast, () => PRINT(`?${ast.value}`));
   },
 };
 

@@ -4,6 +4,6 @@ SELECT ?movie WHERE {
   ?movie <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> dbpedia-owl:Film .
   ?movie dbpedia-owl:starring [
     rdfs:label "Brad Pitt"@en ;
-    (^ dbpedia-owl:starring ) ?otherMovie ;    
-  ] .  
+    (^dbpedia-owl:starring) ?otherMovie ;
+  ] .
 }

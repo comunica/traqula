@@ -5,8 +5,8 @@ SELECT ?person ?interest ?known WHERE {
     OPTIONAL {
       ?person foaf:interest ?interest .
       SERVICE <http://people2.example.org/sparql> {
-        ?person foaf:knows ?known .        
-      }      
-    }    
-  }  
+        ?person foaf:knows ?known .
+      }
+    }
+  }
 }

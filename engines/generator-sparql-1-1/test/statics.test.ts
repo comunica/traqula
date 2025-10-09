@@ -24,14 +24,14 @@ describe('a SPARQL 1.1 generator', () => {
         const path = <T11.Path>ast;
 
         const generated = generator.generatePath(path, { origSource: query });
-        expect(generated).toEqual(query);
+        expect(generated, 'round-trip generation').toEqual(query.trim());
 
         const replaceLoc = F.sourceLocationNodeReplaceUnsafe(path.loc);
         const autoGenAst = F.forcedAutoGenTree(path);
         autoGenAst.loc = replaceLoc;
         const selfGenerated = generator.generatePath(autoGenAst);
-        // SinkGenerated('paths', name, selfGenerated);
-        expect(selfGenerated).toEqual(autoGen);
+        // _sinkGenerated('paths', name, selfGenerated);
+        expect(selfGenerated, 'auto generated').toEqual(autoGen.trim());
       });
     }
   });
@@ -43,14 +43,14 @@ describe('a SPARQL 1.1 generator', () => {
         const queryUpdate = <T11.Query | T11.Update>ast;
 
         const roundTripped = generator.generate(queryUpdate, { origSource: query });
-        expect(roundTripped).toEqual(query);
+        expect(roundTripped, 'round-trip generation').toEqual(query.trim());
 
         const replaceLoc = F.sourceLocationNodeReplaceUnsafe(queryUpdate.loc);
         const autoGenAst = F.forcedAutoGenTree(queryUpdate);
         autoGenAst.loc = replaceLoc;
         const selfGenerated = generator.generate(autoGenAst);
         // _sinkGenerated('sparql-1-1', name, selfGenerated);
-        expect(selfGenerated).toEqual(autoGen);
+        expect(selfGenerated, 'auto generated').toEqual(autoGen.trim());
       });
     }
   });

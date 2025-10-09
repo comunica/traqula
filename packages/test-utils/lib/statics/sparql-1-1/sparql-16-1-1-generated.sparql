@@ -4,6 +4,6 @@ SELECT ?nameX ?nameY ?nickY WHERE {
   ?x foaf:name ?nameX .
   ?y foaf:name ?nameY .
   OPTIONAL {
-    ?y foaf:nick ?nickY .    
-  }  
+    ?y foaf:nick ?nickY .
+  }
 }

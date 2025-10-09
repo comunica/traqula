@@ -6,9 +6,9 @@ SELECT ?product ?label WHERE {
   ?product rdfs:label ?label .
   OPTIONAL {
     ?product bsbm:productFeature <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature1043> .
-    ?product rdfs:label ?testVar .    
+    ?product rdfs:label ?testVar .
   }
-  FILTER ( ! BOUND( ?testVar ) )  
+  FILTER ( ! BOUND( ?testVar ) )
 }
 ORDER BY ASC ( ?label )
 LIMIT 10

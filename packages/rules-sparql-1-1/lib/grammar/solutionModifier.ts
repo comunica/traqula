@@ -72,8 +72,7 @@ export const groupClause: SparqlRule<'groupClause', SolutionModifierGroup> = <co
   },
   gImpl: ({ PRINT_WORDS, SUBRULE, PRINT_ON_EMPTY }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => {
-      PRINT_ON_EMPTY('');
-      PRINT_WORDS('GROUP', 'BY');
+      PRINT_ON_EMPTY('GROUP BY ');
     });
     for (const grouping of ast.groupings) {
       if (F.isExpression(grouping)) {
@@ -143,10 +142,9 @@ export const havingClause: SparqlRule<'havingClause', SolutionModifierHaving> = 
     return ACTION(() =>
       C.astFactory.solutionModifierHaving(expressions, C.astFactory.sourceLocation(having, expressions.at(-1))));
   },
-  gImpl: ({ PRINT_WORD, PRINT_ON_EMPTY, SUBRULE }) => (ast, { astFactory: F }) => {
+  gImpl: ({ PRINT_ON_EMPTY, SUBRULE }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => {
-      PRINT_ON_EMPTY('');
-      PRINT_WORD('HAVING');
+      PRINT_ON_EMPTY('HAVING ');
     });
     for (const having of ast.having) {
       SUBRULE(expression, having);
@@ -184,8 +182,7 @@ export const orderClause: SparqlRule<'orderClause', SolutionModifierOrder> = <co
   },
   gImpl: ({ PRINT_WORDS, PRINT_ON_EMPTY, SUBRULE }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => {
-      PRINT_ON_EMPTY('');
-      PRINT_WORDS('ORDER', 'BY');
+      PRINT_ON_EMPTY('ORDER BY ');
     });
     for (const ordering of ast.orderDefs) {
       if (ordering.descending) {
@@ -263,9 +260,9 @@ export const limitOffsetClauses: SparqlRule<'limitOffsetClauses', SolutionModifi
       ));
     } },
   ]),
-  gImpl: ({ PRINT_WORDS, PRINT_ON_EMPTY }) => (ast, { astFactory: F }) => {
+  gImpl: ({ PRINT_WORDS, NEW_LINE }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => {
-      PRINT_ON_EMPTY('');
+      NEW_LINE();
       if (ast.limit) {
         PRINT_WORDS('LIMIT', String(ast.limit));
       }

@@ -4,5 +4,5 @@ SELECT ?name1 ?name2 WHERE {
   ?x foaf:mbox ?mbox1 .
   ?y foaf:name ?name2 .
   ?y foaf:mbox ?mbox2 .
-  FILTER ( ( SAMETERM( ?mbox1 , ?mbox2 ) && ! SAMETERM( ?name1 , ?name2 ) ) )  
+  FILTER ( ( SAMETERM( ?mbox1 , ?mbox2 ) && ! SAMETERM( ?name1 , ?name2 ) ) )
 }

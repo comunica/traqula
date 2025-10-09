@@ -1,5 +1,5 @@
 PREFIX : <http://www.example.org/>
 SELECT ( :foo AS ?foo ) ( COUNT( ?outObject ) AS ?out ) WHERE {
-  ?s :predicate ?outObject .  
+  ?s :predicate ?outObject .
 }
 GROUP BY ?s

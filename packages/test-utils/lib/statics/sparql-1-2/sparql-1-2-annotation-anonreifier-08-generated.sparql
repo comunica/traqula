@@ -1,9 +1,9 @@
 PREFIX : <http://example.com/ns#>
 CONSTRUCT {
-  ?s ?p ?o {| :source ?g |} .  
+  ?s ?p ?o {| :source ?g |} .
 }
 WHERE {
   GRAPH ?g {
-    ?s ?p ?o .    
-  }  
+    ?s ?p ?o .
+  }
 }

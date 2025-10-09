@@ -3,6 +3,6 @@ SELECT * WHERE {
   ?x :p ?n .
   MINUS {
     ?x :q ?m .
-    FILTER ( ( ?n = ?m ) )    
-  }  
+    FILTER ( ( ?n = ?m ) )
+  }
 }

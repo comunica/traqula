@@ -10,7 +10,7 @@ SELECT DISTINCT ?offer ?price WHERE {
   FILTER ( ( ?deliveryDays <= "3"^^<http://www.w3.org/2001/XMLSchema#integer> ) )
   ?offer bsbm:price ?price .
   ?offer bsbm:validTo ?date .
-  FILTER ( ( ?date > "2008-06-20T00:00:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> ) )  
+  FILTER ( ( ?date > "2008-06-20T00:00:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> ) )
 }
 ORDER BY ASC ( xsd:double ( STR( ?price ) ) )
 LIMIT 10

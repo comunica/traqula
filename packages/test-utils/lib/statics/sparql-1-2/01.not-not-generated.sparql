@@ -1,6 +1,6 @@
 PREFIX : <http://example/>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-SELECT ?v ?ebv WHERE {  
+SELECT ?v ?ebv WHERE {
   VALUES ?v {
     "true"^^<http://www.w3.org/2001/XMLSchema#boolean>
     "1"^^<http://www.w3.org/2001/XMLSchema#integer>
@@ -9,9 +9,9 @@ SELECT ?v ?ebv WHERE {
     "0"^^<http://www.w3.org/2001/XMLSchema#integer>
     ""
     "a"@en
-    "z"^^ xsd:boolean
-    "2020-01-01T00:00:00Z"^^ xsd:dateTime
-    :a    
+    "z"^^xsd:boolean
+    "2020-01-01T00:00:00Z"^^xsd:dateTime
+    :a
   }
-  BIND( ! ! ?v AS ?ebv )  
+  BIND( ! ! ?v AS ?ebv )
 }

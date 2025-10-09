@@ -41,9 +41,9 @@ export const versionDecl: SparqlRule<'versionDecl', ContextDefinitionVersion> = 
     return ACTION(() =>
       C.astFactory.contextDefinitionVersion(identifier.val, C.astFactory.sourceLocation(versionToken, identifier)));
   },
-  gImpl: ({ PRINT_WORDS }) => (ast, { astFactory: F }) => {
+  gImpl: ({ PRINT_ON_OWN_LINE }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => {
-      PRINT_WORDS('VERSION', `${S11.stringEscapedLexical(ast.version)}`, '\n');
+      PRINT_ON_OWN_LINE('VERSION ', `${S11.stringEscapedLexical(ast.version)}`);
     });
   },
 };
@@ -293,13 +293,13 @@ function annotationBlockImpl<T extends string>(name: T, allowPaths: boolean):
         C.astFactory.sourceLocation(open, close),
       ));
     },
-    gImpl: ({ SUBRULE, PRINT_WORD, HANDLE_LOC, PRINT_ON_EMPTY }) => (ast, C) => {
+    gImpl: ({ SUBRULE, PRINT_WORD, HANDLE_LOC, NEW_LINE, PRINT_ON_OWN_LINE }) => (ast, C) => {
       const { astFactory: F, indentInc } = C;
       F.printFilter(ast, () => {
         PRINT_WORD('{|');
         if (ast.triples.length > 1) {
           C[traqulaIndentation] += indentInc;
-          PRINT_WORD('\n');
+          NEW_LINE();
         }
       });
 
@@ -310,6 +310,7 @@ function annotationBlockImpl<T extends string>(name: T, allowPaths: boolean):
           } else {
             SUBRULE(S11.pathGenerator, triple.predicate, undefined);
           }
+          F.printFilter(triple, () => PRINT_WORD(''));
           SUBRULE(graphNodePath, triple.object);
         });
       }
@@ -317,13 +318,16 @@ function annotationBlockImpl<T extends string>(name: T, allowPaths: boolean):
       const [ head, ...tail ] = ast.triples;
       printTriple(head);
       for (const triple of tail) {
-        F.printFilter(ast, () => PRINT_WORD(';\n'));
+        F.printFilter(ast, () => {
+          PRINT_WORD(';');
+          NEW_LINE();
+        });
         printTriple(triple);
       }
 
       F.printFilter(ast, () => {
         if (ast.triples.length > 1) {
-          PRINT_ON_EMPTY('|}\n');
+          PRINT_ON_OWN_LINE('|}');
         } else {
           PRINT_WORD('|}');
         }
@@ -423,12 +427,17 @@ export const reifiedTriple: SparqlRule<'reifiedTriple', TripleCollectionReifiedT
     F.printFilter(ast, () => PRINT_WORD('<<'));
     const triple = ast.triples[0];
     SUBRULE(graphNodePath, triple.subject);
+
+    F.printFilter(ast, () => PRINT_WORD(''));
     if (F.isPathPure(triple.predicate)) {
       SUBRULE(S11.pathGenerator, triple.predicate, undefined);
     } else {
       SUBRULE(graphNodePath, triple.predicate);
     }
+
+    F.printFilter(ast, () => PRINT_WORD(''));
     SUBRULE(graphNodePath, triple.object);
+
     SUBRULE(annotationPath, [ F.wrap(ast.identifier, ast.identifier.loc) ]);
     F.printFilter(ast, () => PRINT_WORD('>>'));
   },
@@ -478,7 +487,9 @@ export const tripleTerm: SparqlRule<'tripleTerm', TermTriple> = <const> {
   gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => PRINT_WORD('<<('));
     SUBRULE(graphNodePath, ast.subject);
+    F.printFilter(ast, () => PRINT_WORD(''));
     SUBRULE(graphNodePath, ast.predicate);
+    F.printFilter(ast, () => PRINT_WORD(''));
     SUBRULE(graphNodePath, ast.object);
     F.printFilter(ast, () => PRINT_WORD(')>>'));
   },
@@ -713,14 +724,17 @@ export const unaryExpression: SparqlGrammarRule<(typeof S11.unaryExpression)['na
  */
 export const generateTriplesBlock: SparqlGeneratorRule<'triplesBlock', PatternBgp> = {
   name: 'triplesBlock',
-  gImpl: ({ SUBRULE, PRINT_WORD, HANDLE_LOC }) => (ast, { astFactory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD, NEW_LINE, HANDLE_LOC }) => (ast, { astFactory: F }) => {
     for (const [ index, triple ] of ast.triples.entries()) {
       HANDLE_LOC(triple, () => {
         const nextTriple = ast.triples.at(index);
         if (F.isTripleCollection(triple)) {
           SUBRULE(graphNodePath, triple);
           // A top level tripleCollection block means that it is not used in a triple. So you end with DOT.
-          F.printFilter(triple, () => PRINT_WORD('.\n'));
+          F.printFilter(triple, () => {
+            PRINT_WORD('.');
+            NEW_LINE();
+          });
         } else {
           // Subject
           SUBRULE(graphNodePath, triple.subject);
@@ -739,11 +753,17 @@ export const generateTriplesBlock: SparqlGeneratorRule<'triplesBlock', PatternBg
           // If no more things, or a top level collection (only possible if new block was part), or new subject: add DOT
           if (nextTriple === undefined || F.isTripleCollection(nextTriple) ||
             !F.isSourceLocationNoMaterialize(nextTriple.subject.loc)) {
-            F.printFilter(ast, () => PRINT_WORD('.\n'));
+            F.printFilter(ast, () => {
+              PRINT_WORD('.');
+              NEW_LINE();
+            });
           } else if (F.isSourceLocationNoMaterialize(nextTriple.predicate.loc)) {
             F.printFilter(ast, () => PRINT_WORD(','));
           } else {
-            F.printFilter(ast, () => PRINT_WORD(';\n'));
+            F.printFilter(ast, () => {
+              PRINT_WORD(';');
+              NEW_LINE();
+            });
           }
         }
       });

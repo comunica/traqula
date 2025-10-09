@@ -63,8 +63,11 @@ export const rdfLiteral: SparqlRule<'rdfLiteral', TermLiteral> = <const> {
       } },
     ])) ?? value;
   },
-  gImpl: ({ SUBRULE, PRINT, PRINT_SPACE_LEFT }) => (ast, { astFactory }) => {
-    astFactory.printFilter(ast, () => PRINT_SPACE_LEFT(stringEscapedLexical(ast.value)));
+  gImpl: ({ SUBRULE, PRINT, PRINT_WORD }) => (ast, { astFactory }) => {
+    astFactory.printFilter(ast, () => {
+      PRINT_WORD('');
+      PRINT(stringEscapedLexical(ast.value));
+    });
 
     if (ast.langOrIri) {
       if (typeof ast.langOrIri === 'string') {
@@ -267,8 +270,8 @@ export const prefixedName: SparqlRule<'prefixedName', TermIriPrefixed> = <const>
       ));
     } },
   ]),
-  gImpl: ({ PRINT_WORD }) => (ast, { astFactory: F }) => {
-    F.printFilter(ast, () => PRINT_WORD(ast.prefix, ':', ast.value));
+  gImpl: ({ PRINT }) => (ast, { astFactory: F }) => {
+    F.printFilter(ast, () => PRINT(ast.prefix, ':', ast.value));
   },
 };
 
@@ -299,8 +302,8 @@ export const blankNode: SparqlRule<'blankNode', TermBlank> = <const> {
     });
     return result;
   },
-  gImpl: ({ PRINT_WORD }) => (ast, { astFactory }) => {
-    astFactory.printFilter(ast, () => PRINT_WORD('_:', ast.label.replace(/^e_/u, '')));
+  gImpl: ({ PRINT }) => (ast, { astFactory }) => {
+    astFactory.printFilter(ast, () => PRINT('_:', ast.label.replace(/^e_/u, '')));
   },
 };
 

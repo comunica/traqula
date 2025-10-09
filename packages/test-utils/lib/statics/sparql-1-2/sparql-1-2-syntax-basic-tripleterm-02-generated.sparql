@@ -1,4 +1,4 @@
 PREFIX : <http://example.com/ns#>
 SELECT * WHERE {
-  :s :p <<( :a :b "c" )>> .  
+  :s :p <<( :a :b "c" )>> .
 }

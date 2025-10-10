@@ -173,7 +173,7 @@ export const translateAggregates: AlgebraIndir<'translateAggregates', Algebra.Op
   },
 };
 
-type MapAggregateType = Wildcard | Expression | Ordering | PatternBind;
+export type MapAggregateType = Wildcard | Expression | Ordering | PatternBind;
 
 /**
  * Rewrites some of the input sparql object to make use of aggregate variables

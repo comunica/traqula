@@ -38,21 +38,21 @@
       "aggregates": [
         {
           "type": "expression",
-          "expressionType": "aggregate",
+          "subType": "aggregate",
           "aggregator": "avg",
           "expression": {
             "type": "expression",
-            "expressionType": "operator",
+            "subType": "operator",
             "operator": "if",
             "args": [
               {
                 "type": "expression",
-                "expressionType": "operator",
+                "subType": "operator",
                 "operator": "isnumeric",
                 "args": [
                   {
                     "type": "expression",
-                    "expressionType": "term",
+                    "subType": "term",
                     "term": {
                       "termType": "Variable",
                       "value": "p"
@@ -62,7 +62,7 @@
               },
               {
                 "type": "expression",
-                "expressionType": "term",
+                "subType": "term",
                 "term": {
                   "termType": "Variable",
                   "value": "p"
@@ -70,12 +70,12 @@
               },
               {
                 "type": "expression",
-                "expressionType": "operator",
+                "subType": "operator",
                 "operator": "coalesce",
                 "args": [
                   {
                     "type": "expression",
-                    "expressionType": "named",
+                    "subType": "named",
                     "name": {
                       "termType": "NamedNode",
                       "value": "http://www.w3.org/2001/XMLSchema#double"
@@ -83,7 +83,7 @@
                     "args": [
                       {
                         "type": "expression",
-                        "expressionType": "term",
+                        "subType": "term",
                         "term": {
                           "termType": "Variable",
                           "value": "p"
@@ -93,7 +93,7 @@
                   },
                   {
                     "type": "expression",
-                    "expressionType": "term",
+                    "subType": "term",
                     "term": {
                       "termType": "Literal",
                       "value": "0",
@@ -121,7 +121,7 @@
     },
     "expression": {
       "type": "expression",
-      "expressionType": "term",
+      "subType": "term",
       "term": {
         "termType": "Variable",
         "value": "var0"

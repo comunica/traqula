@@ -35,12 +35,12 @@
       },
       "expression": {
         "type": "expression",
-        "expressionType": "operator",
+        "subType": "operator",
         "operator": "+",
         "args": [
           {
             "type": "expression",
-            "expressionType": "term",
+            "subType": "term",
             "term": {
               "termType": "Variable",
               "value": "o"
@@ -48,7 +48,7 @@
           },
           {
             "type": "expression",
-            "expressionType": "term",
+            "subType": "term",
             "term": {
               "termType": "Literal",
               "value": "10",
@@ -67,12 +67,12 @@
     },
     "expression": {
       "type": "expression",
-      "expressionType": "operator",
+      "subType": "operator",
       "operator": "+",
       "args": [
         {
           "type": "expression",
-          "expressionType": "term",
+          "subType": "term",
           "term": {
             "termType": "Variable",
             "value": "o"
@@ -80,7 +80,7 @@
         },
         {
           "type": "expression",
-          "expressionType": "term",
+          "subType": "term",
           "term": {
             "termType": "Literal",
             "value": "100",

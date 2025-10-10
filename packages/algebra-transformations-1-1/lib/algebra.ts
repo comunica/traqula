@@ -1,7 +1,6 @@
 import type * as RDF from '@rdfjs/types';
 
 export enum Types {
-  ALT = 'alt',
   ASK = 'ask',
   BGP = 'bgp',
   CONSTRUCT = 'construct',
@@ -13,27 +12,20 @@ export enum Types {
   FROM = 'from',
   GRAPH = 'graph',
   GROUP = 'group',
-  INV = 'inv',
   JOIN = 'join',
   LEFT_JOIN = 'leftjoin',
-  LINK = 'link',
   MINUS = 'minus',
   NOP = 'nop',
-  NPS = 'nps',
-  ONE_OR_MORE_PATH = 'OneOrMorePath',
   ORDER_BY = 'orderby',
-  PATH = 'path',
   PATTERN = 'pattern',
   PROJECT = 'project',
   REDUCED = 'reduced',
-  SEQ = 'seq',
   SERVICE = 'service',
   SLICE = 'slice',
   UNION = 'union',
   VALUES = 'values',
-  ZERO_OR_MORE_PATH = 'ZeroOrMorePath',
-  ZERO_OR_ONE_PATH = 'ZeroOrOnePath',
 
+  // Update
   COMPOSITE_UPDATE = 'compositeupdate',
   DELETE_INSERT = 'deleteinsert',
   LOAD = 'load',
@@ -43,6 +35,17 @@ export enum Types {
   ADD = 'add',
   MOVE = 'move',
   COPY = 'copy',
+
+  // Paths
+  PATH = 'path',
+  ALT = 'alt',
+  INV = 'inv',
+  LINK = 'link',
+  ONE_OR_MORE_PATH = 'OneOrMorePath',
+  SEQ = 'seq',
+  NPS = 'nps',
+  ZERO_OR_MORE_PATH = 'ZeroOrMorePath',
+  ZERO_OR_ONE_PATH = 'ZeroOrOnePath',
 }
 
 export enum ExpressionTypes {
@@ -55,47 +58,66 @@ export enum ExpressionTypes {
 }
 
 // ----------------------- OPERATIONS -----------------------
-export type Operation =
-  Ask | Expression | Bgp | Construct | Describe | Distinct | Extend | From | Filter | Graph | Group | Join | LeftJoin |
-  Minus | Nop | OrderBy | Path | Pattern | Project | PropertyPathSymbol | Reduced | Service | Slice | Union | Values |
-  Update;
+export type Operation = Ask | Expression | Bgp | Construct | Describe | Distinct | Extend | From | Filter
+  | Graph | Group | Join | LeftJoin | Minus | Nop | OrderBy | Path | Pattern | Project | PropertyPathSymbol
+  | Reduced | Service | Slice | Union | Values | Update | CompositeUpdate;
 
 export type Expression = AggregateExpression | GroupConcatExpression | ExistenceExpression | NamedExpression |
   OperatorExpression | TermExpression | WildcardExpression | BoundAggregate;
 
 export type PropertyPathSymbol = Alt | Inv | Link | Nps | OneOrMorePath | Seq | ZeroOrMorePath | ZeroOrOnePath;
 
-export type Update = CompositeUpdate | DeleteInsert | Load | Clear | Create | Drop | Add | Move | Copy | Nop;
+export type Update = DeleteInsert | Load | Clear | Create | Drop | Add | Move | Copy;
 
 // Returns the correct type based on the type enum
 export type TypedOperation<T extends Types> = Extract<Operation, { type: T }>;
-export type TypedExpression<T extends ExpressionTypes> = Extract<Expression, { expressionType: T }>;
-// ----------------------- ABSTRACTS -----------------------
+export type TypedExpression<T extends ExpressionTypes> = Extract<Expression, { subType: T }>;
 
+// ----------------------- ABSTRACTS -----------------------
+/**
+ * Open interface describing an operation. This type will often be used to reference to 'input operations'.
+ * A closed form of this type is KnownOperation.
+ * We provide a version of the algebra that refers to the KnownOperation instead of the open interface.
+ */
 export interface BaseOperation {
+  type: string;
+  subType?: string;
   metadata?: Record<string, unknown>;
-  type: Types;
 }
 
+/**
+ * Open interface describing an expression
+ */
+export interface BaseExpression extends BaseOperation {
+  type: Types.EXPRESSION;
+  subType: string;
+}
+
+// ----------------------- ABSTRACTS -----------------------
+
+/**
+ * Algebra operation taking a single operation as input.
+ */
 export interface Single extends BaseOperation {
   input: Operation;
 }
 
+/**
+ * Algebra operation taking multiple operations as input.
+ */
 export interface Multi extends BaseOperation {
   input: Operation[];
 }
 
+/**
+ * Algebra operation taking exactly two input operations.
+ */
 export interface Double extends Multi {
   input: [Operation, Operation];
 }
 
-export interface BaseExpression extends BaseOperation {
-  type: Types.EXPRESSION;
-  expressionType: ExpressionTypes;
-}
-
 export interface AggregateExpression extends BaseExpression {
-  expressionType: ExpressionTypes.AGGREGATE;
+  subType: ExpressionTypes.AGGREGATE;
   aggregator: 'avg' | 'count' | 'group_concat' | 'max' | 'min' | 'sample' | 'sum';
   distinct: boolean;
   expression: Expression;
@@ -108,30 +130,30 @@ export interface GroupConcatExpression extends AggregateExpression {
 }
 
 export interface ExistenceExpression extends BaseExpression {
-  expressionType: ExpressionTypes.EXISTENCE;
+  subType: ExpressionTypes.EXISTENCE;
   not: boolean;
   input: Operation;
 }
 
 export interface NamedExpression extends BaseExpression {
-  expressionType: ExpressionTypes.NAMED;
+  subType: ExpressionTypes.NAMED;
   name: RDF.NamedNode;
   args: Expression[];
 }
 
 export interface OperatorExpression extends BaseExpression {
-  expressionType: ExpressionTypes.OPERATOR;
+  subType: ExpressionTypes.OPERATOR;
   operator: string;
   args: Expression[];
 }
 
 export interface TermExpression extends BaseExpression {
-  expressionType: ExpressionTypes.TERM;
+  subType: ExpressionTypes.TERM;
   term: RDF.Term;
 }
 
 export interface WildcardExpression extends BaseExpression {
-  expressionType: ExpressionTypes.WILDCARD;
+  subType: ExpressionTypes.WILDCARD;
   wildcard: {
     type: 'wildcard';
   };
@@ -152,11 +174,6 @@ export interface Alt extends Multi {
 
 export interface Ask extends Single {
   type: Types.ASK;
-}
-
-// Also an expression
-export interface BoundAggregate extends AggregateExpression {
-  variable: RDF.Variable;
 }
 
 export interface Bgp extends BaseOperation {
@@ -200,6 +217,11 @@ export interface Graph extends Single {
   name: RDF.Variable | RDF.NamedNode;
 }
 
+// Also an expression
+export interface BoundAggregate extends AggregateExpression {
+  variable: RDF.Variable;
+}
+
 export interface Group extends Single {
   type: Types.GROUP;
   variables: RDF.Variable[];
@@ -240,6 +262,10 @@ export interface Minus extends Double {
   type: Types.MINUS;
 }
 
+/**
+ * An empty operation.
+ * For example used for the algebra representation of a query string that does not contain any operation.
+ */
 export interface Nop extends BaseOperation {
   type: Types.NOP;
 }
@@ -350,7 +376,7 @@ export interface ZeroOrOnePath extends BaseOperation {
 // ----------------------- UPDATE FUNCTIONS -----------------------
 export interface CompositeUpdate extends BaseOperation {
   type: Types.COMPOSITE_UPDATE;
-  updates: Update[];
+  updates: (Update | Nop)[];
 }
 
 export interface DeleteInsert extends BaseOperation {

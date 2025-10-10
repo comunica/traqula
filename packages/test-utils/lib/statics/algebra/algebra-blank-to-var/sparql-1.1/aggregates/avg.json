@@ -33,11 +33,11 @@
       "aggregates": [
         {
           "type": "expression",
-          "expressionType": "aggregate",
+          "subType": "aggregate",
           "aggregator": "avg",
           "expression": {
             "type": "expression",
-            "expressionType": "term",
+            "subType": "term",
             "term": {
               "termType": "Variable",
               "value": "o"
@@ -57,7 +57,7 @@
     },
     "expression": {
       "type": "expression",
-      "expressionType": "term",
+      "subType": "term",
       "term": {
         "termType": "Variable",
         "value": "var0"

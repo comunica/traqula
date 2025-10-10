@@ -36,12 +36,12 @@
         },
         "expression": {
           "type": "expression",
-          "expressionType": "operator",
+          "subType": "operator",
           "operator": "+",
           "args": [
             {
               "type": "expression",
-              "expressionType": "term",
+              "subType": "term",
               "term": {
                 "termType": "Literal",
                 "value": "1",
@@ -53,7 +53,7 @@
             },
             {
               "type": "expression",
-              "expressionType": "term",
+              "subType": "term",
               "term": {
                 "termType": "Variable",
                 "value": "o"

@@ -29,7 +29,7 @@
     },
     "expression": {
       "type": "expression",
-      "expressionType": "existence",
+      "subType": "existence",
       "not": false,
       "input": {
         "type": "bgp",

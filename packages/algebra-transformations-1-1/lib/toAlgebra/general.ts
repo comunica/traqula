@@ -17,7 +17,6 @@ import type {
   TermVariable,
 } from '@traqula/rules-sparql-1-1';
 import * as Algebra from '../algebra.js';
-import type { AlgebraFactory } from '../algebraFactory.js';
 import * as util from '../util.js';
 import type { AlgebraIndir } from './core.js';
 
@@ -115,49 +114,20 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
     const blankToVariableMapping: Record<string, RDF.Variable> = {};
     const variablesRaw: Set<string> = new Set(variables);
 
-    return util.mapOperation(res, {
-      [Algebra.Types.DELETE_INSERT]: (op: Algebra.DeleteInsert) =>
-        // Make sure blank nodes remain in the INSERT block, but do update the WHERE block
-        ({
-          result: AF.createDeleteInsert(
-            op.delete,
-            op.insert,
-            op.where && SUBRULE(translateBlankNodesToVariables, op.where),
-          ),
-          recurse: false,
-        }),
-      [Algebra.Types.PATH]: (op: Algebra.Path, factory: AlgebraFactory) => ({
-        result: factory.createPath(
-          blankToVariable(op.subject),
-          op.predicate,
-          blankToVariable(op.object),
-          blankToVariable(op.graph),
-        ),
-        recurse: false,
-      }),
-      [Algebra.Types.PATTERN]: (op: Algebra.Pattern, factory: AlgebraFactory) => ({
-        result: factory.createPattern(
-          blankToVariable(op.subject),
-          blankToVariable(op.predicate),
-          blankToVariable(op.object),
-          blankToVariable(op.graph),
-        ),
-        recurse: false,
-      }),
-      [Algebra.Types.CONSTRUCT]: (op: Algebra.Construct) =>
-        // Blank nodes in CONSTRUCT templates must be maintained
-        ({
-          result: AF.createConstruct(SUBRULE(translateBlankNodesToVariables, op.input), op.template),
-          recurse: false,
-        })
-      ,
-    });
+    function uniqueVar(label: string): RDF.Variable {
+      let counter = 0;
+      let labelLoop = label;
+      while (variables.has(labelLoop)) {
+        labelLoop = `${label}${counter++}`;
+      }
+      return AF.dataFactory.variable!(labelLoop);
+    };
 
     function blankToVariable(term: RDF.Term): RDF.Term {
       if (term.termType === 'BlankNode') {
         let variable = blankToVariableMapping[term.value];
         if (!variable) {
-          variable = util.createUniqueVariable(term.value, variablesRaw, AF.dataFactory);
+          variable = uniqueVar(term.value);
           variablesRaw.add(variable.value);
           blankToVariableMapping[term.value] = variable;
         }
@@ -173,6 +143,44 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
       }
       return term;
     }
+
+    return util.mapOperation<'unsafe', typeof res>(res, {
+      [Algebra.Types.PATH]: {
+        preVisitor: () => ({ continue: false }),
+        transform: pathOp => AF.createPath(
+          blankToVariable(pathOp.subject),
+          pathOp.predicate,
+          blankToVariable(pathOp.object),
+          blankToVariable(pathOp.graph),
+        ),
+      },
+      [Algebra.Types.PATTERN]: {
+        preVisitor: () => ({ continue: false }),
+        transform: patternOp => AF.createPattern(
+          blankToVariable(patternOp.subject),
+          blankToVariable(patternOp.predicate),
+          blankToVariable(patternOp.object),
+          blankToVariable(patternOp.graph),
+        ),
+      },
+      [Algebra.Types.CONSTRUCT]: {
+        preVisitor: () => ({ continue: false }),
+        // Blank nodes in CONSTRUCT templates must be maintained
+        transform: constructOp =>
+          AF.createConstruct(SUBRULE(translateBlankNodesToVariables, constructOp.input), constructOp.template),
+      },
+      [Algebra.Types.DELETE_INSERT]: {
+        preVisitor: () => ({ continue: false }),
+        transform: delInsOp =>
+          // Make sure blank nodes remain in the INSERT block, but do update the WHERE block
+          AF.createDeleteInsert(
+            delInsOp.delete,
+            delInsOp.insert,
+            delInsOp.where && SUBRULE(translateBlankNodesToVariables, delInsOp.where),
+          )
+        ,
+      },
+    });
   },
 };
 

@@ -10,12 +10,11 @@ import type {
 } from '@traqula/rules-sparql-1-1';
 import type * as Algebra from '../algebra.js';
 import { types } from '../toAlgebra/core.js';
-import * as util from '../util.js';
 import type { AstIndir } from './core.js';
 import type { RdfTermToAst } from './general.js';
 import { translateAlgTerm } from './general.js';
 
-export const translateAlgPathComponent: AstIndir<'translatePathComponent', Path, [Algebra.Operation]> = {
+export const translateAlgPathComponent: AstIndir<'translatePathComponent', Path, [Algebra.PropertyPathSymbol]> = {
   name: 'translatePathComponent',
   fun: ({ SUBRULE }) => (_, path) => {
     switch (path.type) {
@@ -28,7 +27,7 @@ export const translateAlgPathComponent: AstIndir<'translatePathComponent', Path,
       case types.ZERO_OR_MORE_PATH: return SUBRULE(translateAlgZeroOrMorePath, path);
       case types.ZERO_OR_ONE_PATH: return SUBRULE(translateAlgZeroOrOnePath, path);
       default:
-        throw new Error(`Unknown Path type ${path.type}`);
+        throw new Error(`Unknown Path type ${(<{ type: string }>path).type}`);
     }
   },
 };
@@ -42,7 +41,7 @@ export const translateAlgAlt: AstIndir<'translateAlt', Path, [Algebra.Alt]> = {
         '!',
         [ F.path(
           '|',
-          <(TermIri | PathNegatedElt)[]> util.flatten(mapped.map(entry => (<PathPure> entry).items)),
+          <(TermIri | PathNegatedElt)[]> mapped.flatMap(entry => (<PathPure> entry).items),
           F.gen(),
         ) ],
         F.gen(),

@@ -68,11 +68,11 @@
       "aggregates": [
         {
           "type": "expression",
-          "expressionType": "aggregate",
+          "subType": "aggregate",
           "aggregator": "sample",
           "expression": {
             "type": "expression",
-            "expressionType": "term",
+            "subType": "term",
             "term": {
               "termType": "Variable",
               "value": "v"
@@ -92,7 +92,7 @@
     },
     "expression": {
       "type": "expression",
-      "expressionType": "term",
+      "subType": "term",
       "term": {
         "termType": "Variable",
         "value": "var0"

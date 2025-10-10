@@ -37,11 +37,11 @@
           "aggregates": [
             {
               "type": "expression",
-              "expressionType": "aggregate",
+              "subType": "aggregate",
               "aggregator": "sample",
               "expression": {
                 "type": "expression",
-                "expressionType": "term",
+                "subType": "term",
                 "term": {
                   "termType": "Variable",
                   "value": "o"
@@ -61,7 +61,7 @@
         },
         "expression": {
           "type": "expression",
-          "expressionType": "term",
+          "subType": "term",
           "term": {
             "termType": "Variable",
             "value": "var0"
@@ -77,22 +77,22 @@
     },
     "expression": {
       "type": "expression",
-      "expressionType": "operator",
+      "subType": "operator",
       "operator": "||",
       "args": [
         {
           "type": "expression",
-          "expressionType": "operator",
+          "subType": "operator",
           "operator": "||",
           "args": [
             {
               "type": "expression",
-              "expressionType": "operator",
+              "subType": "operator",
               "operator": "=",
               "args": [
                 {
                   "type": "expression",
-                  "expressionType": "term",
+                  "subType": "term",
                   "term": {
                     "termType": "Variable",
                     "value": "sample"
@@ -100,7 +100,7 @@
                 },
                 {
                   "type": "expression",
-                  "expressionType": "term",
+                  "subType": "term",
                   "term": {
                     "termType": "Literal",
                     "value": "1.0",
@@ -114,12 +114,12 @@
             },
             {
               "type": "expression",
-              "expressionType": "operator",
+              "subType": "operator",
               "operator": "=",
               "args": [
                 {
                   "type": "expression",
-                  "expressionType": "term",
+                  "subType": "term",
                   "term": {
                     "termType": "Variable",
                     "value": "sample"
@@ -127,7 +127,7 @@
                 },
                 {
                   "type": "expression",
-                  "expressionType": "term",
+                  "subType": "term",
                   "term": {
                     "termType": "Literal",
                     "value": "2.2",
@@ -143,12 +143,12 @@
         },
         {
           "type": "expression",
-          "expressionType": "operator",
+          "subType": "operator",
           "operator": "=",
           "args": [
             {
               "type": "expression",
-              "expressionType": "term",
+              "subType": "term",
               "term": {
                 "termType": "Variable",
                 "value": "sample"
@@ -156,7 +156,7 @@
             },
             {
               "type": "expression",
-              "expressionType": "term",
+              "subType": "term",
               "term": {
                 "termType": "Literal",
                 "value": "3.5",

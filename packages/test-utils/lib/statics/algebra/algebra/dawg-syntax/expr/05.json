@@ -29,7 +29,7 @@
     },
     "expression": {
       "type": "expression",
-      "expressionType": "named",
+      "subType": "named",
       "name": {
         "termType": "NamedNode",
         "value": "http://example.org/ns#myFunc"
@@ -37,7 +37,7 @@
       "args": [
         {
           "type": "expression",
-          "expressionType": "term",
+          "subType": "term",
           "term": {
             "termType": "Variable",
             "value": "s"
@@ -45,7 +45,7 @@
         },
         {
           "type": "expression",
-          "expressionType": "term",
+          "subType": "term",
           "term": {
             "termType": "Variable",
             "value": "o"

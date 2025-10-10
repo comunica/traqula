@@ -349,6 +349,7 @@ export type PathAlternativeLimited = T11.PathAlternativeLimited;
 export type PathNegated = T11.PathNegated;
 // [[88]](https://www.w3.org/TR/sparql11-query/#rPath)
 export type Path = T11.Path;
+export type PathPure = PropertyPathChain | PathModified | PathNegated;
 
 export type ContextDefinitionPrefix = T11.ContextDefinitionPrefix;
 export type ContextDefinitionBase = T11.ContextDefinitionBase;

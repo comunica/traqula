@@ -48,6 +48,7 @@
     "@traqula/generator-sparql-1-2": "^0.0.19",
     "@traqula/parser-sparql-1-2": "^0.0.19",
     "@traqula/rules-sparql-1-2": "^0.0.19",
-    "@traqula/test-utils": "^0.0.19"
+    "@traqula/test-utils": "^0.0.19",
+    "sparqlalgebrajs": "^5.0.1"
   }
 }

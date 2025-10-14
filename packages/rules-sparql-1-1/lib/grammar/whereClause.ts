@@ -282,17 +282,24 @@ export const inlineData: SparqlRule<'inlineData', PatternValues> = <const> {
     const values = CONSUME(l.values);
     const datablock = SUBRULE(dataBlock);
 
-    return ACTION(() => C.astFactory.patternValues(datablock.val, C.astFactory.sourceLocation(values, datablock)));
+    return ACTION(() => {
+      datablock.loc = C.astFactory.sourceLocation(values, datablock);
+      return datablock;
+    });
   },
   gImpl: ({ SUBRULE, PRINT_WORD, PRINT_ON_EMPTY, NEW_LINE, PRINT_ON_OWN_LINE }) => (ast, C) => {
     const { astFactory: F, indentInc } = C;
-    const variables = Object.keys(ast.values.at(0) ?? {});
+    const variables = ast.variables;
     const singleVar = variables.length === 1;
     F.printFilter(ast, () => {
       PRINT_ON_EMPTY('VALUES', singleVar ? '' : '( ');
-      for (const variable of variables) {
-        PRINT_WORD(`?${variable}`);
-      }
+    });
+    for (const variable of variables) {
+      F.printFilter(ast, () => PRINT_WORD(''));
+      SUBRULE(varOrTerm, variable);
+      F.printFilter(ast, () => PRINT_WORD(''));
+    }
+    F.printFilter(ast, () => {
       C[traqulaIndentation] += indentInc;
       PRINT_WORD(singleVar ? '' : ')', '{');
       NEW_LINE();
@@ -301,10 +308,11 @@ export const inlineData: SparqlRule<'inlineData', PatternValues> = <const> {
     for (const mapping of ast.values) {
       F.printFilter(ast, () => !singleVar && PRINT_WORD('('));
       for (const variable of variables) {
-        if (mapping[variable] === undefined) {
+        const var_ = variable.value;
+        if (mapping[var_] === undefined) {
           F.printFilter(ast, () => PRINT_WORD('UNDEF'));
         } else {
-          SUBRULE(graphNodePath, mapping[variable]);
+          SUBRULE(graphNodePath, mapping[var_]);
         }
       }
       F.printFilter(ast, () => {
@@ -322,7 +330,7 @@ export const inlineData: SparqlRule<'inlineData', PatternValues> = <const> {
 /**
  * [[62]](https://www.w3.org/TR/sparql11-query/#rDataBlock)
  */
-export const dataBlock: SparqlGrammarRule<'dataBlock', Wrap<ValuePatternRow[]>> = <const> {
+export const dataBlock: SparqlGrammarRule<'dataBlock', PatternValues> = <const> {
   name: 'dataBlock',
   impl: ({ SUBRULE, OR }) => () => OR([
     { ALT: () => SUBRULE(inlineDataOneVar) },
@@ -333,7 +341,7 @@ export const dataBlock: SparqlGrammarRule<'dataBlock', Wrap<ValuePatternRow[]>> 
 /**
  * [[63]](https://www.w3.org/TR/sparql11-query/#rInlineDataOneVar)
  */
-export const inlineDataOneVar: SparqlGrammarRule<'inlineDataOneVar', Wrap<ValuePatternRow[]>> = <const> {
+export const inlineDataOneVar: SparqlGrammarRule<'inlineDataOneVar', PatternValues> = <const> {
   name: 'inlineDataOneVar',
   impl: ({ ACTION, SUBRULE, CONSUME, MANY }) => (C) => {
     const res: ValuePatternRow[] = [];
@@ -347,14 +355,14 @@ export const inlineDataOneVar: SparqlGrammarRule<'inlineDataOneVar', Wrap<ValueP
     });
     const close = CONSUME(l.symbols.RCurly);
 
-    return ACTION(() => C.astFactory.wrap(res, C.astFactory.sourceLocation(varVal, close)));
+    return ACTION(() => C.astFactory.patternValues([ varVal ], res, C.astFactory.sourceLocation(varVal, close)));
   },
 };
 
 /**
  * [[64]](https://www.w3.org/TR/sparql11-query/#rInlineDataFull)
  */
-export const inlineDataFull: SparqlGrammarRule<'inlineDataFull', Wrap<ValuePatternRow[]>> = <const> {
+export const inlineDataFull: SparqlGrammarRule<'inlineDataFull', PatternValues> = <const> {
   name: 'inlineDataFull',
   impl: ({
     ACTION,
@@ -380,7 +388,7 @@ export const inlineDataFull: SparqlGrammarRule<'inlineDataFull', Wrap<ValuePatte
         });
         const close = CONSUME1(l.symbols.RCurly);
 
-        return ACTION(() => C.astFactory.wrap(res, C.astFactory.sourceLocation(nil, close)));
+        return ACTION(() => C.astFactory.patternValues(vars, res, C.astFactory.sourceLocation(nil, close)));
       } },
       { ALT: () => {
         const open = CONSUME1(l.symbols.LParen);
@@ -412,7 +420,7 @@ export const inlineDataFull: SparqlGrammarRule<'inlineDataFull', Wrap<ValuePatte
           });
         });
         const close = CONSUME2(l.symbols.RCurly);
-        return ACTION(() => C.astFactory.wrap(res, C.astFactory.sourceLocation(open, close)));
+        return ACTION(() => C.astFactory.patternValues(vars, res, C.astFactory.sourceLocation(open, close)));
       } },
     ]);
   },

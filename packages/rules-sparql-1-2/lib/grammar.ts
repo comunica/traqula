@@ -142,7 +142,7 @@ export const reifier: SparqlGrammarRule<'reifier', Wrap<RuleDefReturn<typeof var
         throw new Error('Cannot create blanknodes in current parse mode');
       }
       return C.astFactory.wrap(
-        reifier ?? C.astFactory.blankNode(undefined, C.astFactory.sourceLocation()),
+        reifier ?? C.astFactory.termBlank(undefined, C.astFactory.sourceLocation()),
         C.astFactory.sourceLocation(tildeToken, reifier),
       );
     });
@@ -238,7 +238,7 @@ function annotationImpl<T extends string>(name: T, allowPaths: boolean): SparqlR
               if (!currentReifier && !C.parseMode.has('canCreateBlankNodes')) {
                 throw new Error('Cannot create blanknodes in current parse mode');
               }
-              currentReifier = currentReifier ?? C.astFactory.blankNode(undefined, C.astFactory.sourceLocation());
+              currentReifier = currentReifier ?? C.astFactory.termBlank(undefined, C.astFactory.sourceLocation());
             });
             const block = SUBRULE(
               allowPaths ? annotationBlockPath : annotationBlock,
@@ -389,7 +389,7 @@ export const varOrTerm: SparqlGrammarRule<'varOrTerm', Term> = <const> {
     { ALT: () => SUBRULE(S11.blankNode) },
     { ALT: () => {
       const token = CONSUME(l11.terminals.nil);
-      return ACTION(() => C.astFactory.namedNode(C.astFactory.sourceLocation(token), CommonIRIs.NIL));
+      return ACTION(() => C.astFactory.termNamed(C.astFactory.sourceLocation(token), CommonIRIs.NIL));
     } },
     { ALT: () => SUBRULE(tripleTerm) },
   ]),
@@ -533,7 +533,7 @@ export const tripleTermData: SparqlGrammarRule<'tripleTermData', TermTriple> = <
       { ALT: () => SUBRULE(S11.iri) },
       { ALT: () => {
         const token = CONSUME(l11.a);
-        return ACTION(() => C.astFactory.namedNode(C.astFactory.sourceLocation(token), CommonIRIs.TYPE));
+        return ACTION(() => C.astFactory.termNamed(C.astFactory.sourceLocation(token), CommonIRIs.TYPE));
       } },
     ]);
     const object = SUBRULE(tripleTermDataObject);
@@ -669,7 +669,7 @@ export const rdfLiteral: SparqlGrammarRule<'rdfLiteral', RuleDefReturn<typeof S1
       { ALT: () => {
         const langTag = CONSUME(l12.LANG_DIR);
         return ACTION(() => {
-          const literal = C.astFactory.literalTerm(
+          const literal = C.astFactory.termLiteral(
             C.astFactory.sourceLocation(value, langTag),
             value.value,
             langTag.image.slice(1).toLowerCase(),
@@ -681,7 +681,7 @@ export const rdfLiteral: SparqlGrammarRule<'rdfLiteral', RuleDefReturn<typeof S1
       { ALT: () => {
         CONSUME(l11.symbols.hathat);
         const iriVal = SUBRULE(S11.iri);
-        return ACTION(() => C.astFactory.literalTerm(
+        return ACTION(() => C.astFactory.termLiteral(
           C.astFactory.sourceLocation(value, iriVal),
           value.value,
           iriVal,

@@ -45,7 +45,7 @@ export class AstFactory extends Sparql11Factory {
       type: 'tripleCollection',
       subType: 'reifiedTriple',
       triples: [ this.triple(<T11.TripleNesting['subject']>subject, predicate, <T11.TripleNesting['object']>object) ],
-      identifier: reifier ?? this.blankNode(undefined, this.sourceLocationNoMaterialize()),
+      identifier: reifier ?? this.termBlank(undefined, this.sourceLocationNoMaterialize()),
       loc,
     };
   }

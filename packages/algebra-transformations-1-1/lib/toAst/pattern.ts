@@ -290,6 +290,7 @@ export const translateAlgValues: AstIndir<'translateValues', PatternValues, [Alg
   name: 'translateValues',
   fun: ({ SUBRULE }) => ({ astFactory: F }, op) =>
     F.patternValues(
+      op.variables.map(variable => F.termVariable(variable.value, F.gen())),
       op.bindings.map((binding) => {
         const result: ValuePatternRow = {};
         for (const v of op.variables) {

@@ -79,10 +79,8 @@ export const registerContextDefinitions: AlgebraIndir<'registerContextDefinition
 
 export const translateInlineData: AlgebraIndir<'translateInlineData', Algebra.Values, [PatternValues]> = {
   name: 'translateInlineData',
-  fun: ({ SUBRULE }) => ({ algebraFactory: AF, dataFactory: DF }, values) => {
-    const variables = values.values.length === 0 ?
-        [] :
-      Object.keys(values.values[0]).map(key => DF.variable(key));
+  fun: ({ SUBRULE }) => ({ algebraFactory: AF }, values) => {
+    const variables = values.variables.map(x => <AstToRdfTerm<typeof x>> SUBRULE(translateTerm, x));
     const bindings = values.values.map((binding) => {
       const map: Record<string, RDF.NamedNode | RDF.Literal> = {};
       for (const [ key, value ] of Object.entries(binding)) {
@@ -190,20 +188,9 @@ AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Opera
 export const findAllVariables: AlgebraIndir<'findAllVariables', void, [object]> = {
   name: 'findAllVariables',
   fun: () => ({ transformer, variables }, thingy) => {
-    transformer.visitNodeSpecific(
-      thingy,
-      {},
-      {
-        term: { variable: { visitor: (_var) => {
-          variables.add(_var.value);
-        } }},
-        pattern: { values: { visitor: (values) => {
-          for (const key in values.values.at(0) ?? {}) {
-            variables.add(key);
-          }
-        } }},
-      },
-    );
+    transformer.visitNodeSpecific(thingy, {}, { term: { variable: { visitor: (_var) => {
+      variables.add(_var.value);
+    } }}});
   },
 };
 

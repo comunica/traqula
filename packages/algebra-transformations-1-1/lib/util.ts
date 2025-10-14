@@ -3,7 +3,10 @@ import { TransformerSubType } from '@traqula/core';
 import type * as A from './algebra.js';
 import { ExpressionTypes, Types } from './algebra.js';
 
-const transformer = new TransformerSubType<A.Operation>({ shallowKeys: [ 'metadata' ], ignoreKeys: [ 'metadata' ]});
+const transformer = new TransformerSubType<A.Operation>({
+  shallowKeys: new Set([ 'metadata' ]),
+  ignoreKeys: new Set([ 'metadata' ]),
+});
 export const mapOperation = transformer.transformNode.bind(transformer);
 export const mapOperationSub = transformer.transformNodeSpecific.bind(transformer);
 export const visitOperation = transformer.visitNode.bind(transformer);
@@ -41,6 +44,16 @@ export function resolveIRI(iri: string, base: string | undefined): string {
     }
     // Resolve all other IRIs at the base IRI's path
     default: {
+      // Const lastSemi = base.lastIndexOf(':');
+      // const lastSlash = base.lastIndexOf('/');
+      // let basePath;
+      // if (lastSlash === -1 && lastSemi === -1) {
+      //   basePath = '';
+      // } else if (lastSlash > lastSemi) {
+      //   basePath = base.slice(0, lastSlash);
+      // } else {
+      //   basePath = base.slice(0, lastSemi);
+      // }
       const basePath = base.replace(/[^/:]*$/u, '');
       return basePath + iri;
     }
@@ -99,26 +112,33 @@ export function inScopeVariables(op: A.BaseOperation): RDF.Variable[] {
   }
 
   function recurseTerm(quad: RDF.BaseQuad): void {
+    // Subject
     if (quad.subject.termType === 'Variable') {
       addVariable(quad.subject);
-    }
-    if (quad.predicate.termType === 'Variable') {
-      addVariable(quad.predicate);
-    }
-    if (quad.object.termType === 'Variable') {
-      addVariable(quad.object);
-    }
-    if (quad.graph.termType === 'Variable') {
-      addVariable(quad.graph);
     }
     if (quad.subject.termType === 'Quad') {
       recurseTerm(quad.subject);
     }
+
+    // Predicate
+    if (quad.predicate.termType === 'Variable') {
+      addVariable(quad.predicate);
+    }
     if (quad.predicate.termType === 'Quad') {
       recurseTerm(quad.predicate);
     }
+
+    // Object
+    if (quad.object.termType === 'Variable') {
+      addVariable(quad.object);
+    }
     if (quad.object.termType === 'Quad') {
       recurseTerm(quad.object);
+    }
+
+    // Graph
+    if (quad.graph.termType === 'Variable') {
+      addVariable(quad.graph);
     }
     if (quad.graph.termType === 'Quad') {
       recurseTerm(quad.graph);

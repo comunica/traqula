@@ -1,4 +1,5 @@
-import { Parser } from '../lib/index.js';
+import { Parser } from '@traqula/parser-sparql-1-1';
+import { toAlgebra } from '../lib/index.js';
 
 export const queryLargeObjectList = `
 BASE <http://foo.com/>
@@ -146,8 +147,9 @@ INSERT DATA {
 
 if (false) {
   const parser = new Parser();
+  const ast = parser.parse(queryLargeObjectList);
 
-  for (let i = 0; i < 1000; i++) {
-    parser.parse(queryLargeObjectList);
+  for (let i = 0; i < 10000; i++) {
+    toAlgebra(ast, { quads: true });
   }
 }

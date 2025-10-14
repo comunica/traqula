@@ -190,7 +190,7 @@ AlgebraIndir<'mapAggregate', MapAggregateType, [MapAggregateType, Record<string,
       // Look for the matching aggregate
       for (const [ key, aggregate ] of Object.entries(aggregates)) {
         if (equal(aggregate, canonicalAggregate)) {
-          val = F.variable(key, F.sourceLocation());
+          val = F.termVariable(key, F.sourceLocation());
           break;
         }
       }
@@ -199,7 +199,7 @@ AlgebraIndir<'mapAggregate', MapAggregateType, [MapAggregateType, Record<string,
       }
       const freshVar = SUBRULE(generateFreshVar);
       aggregates[freshVar.value] = canonicalAggregate;
-      return F.variable(freshVar.value, F.sourceLocation());
+      return F.termVariable(freshVar.value, F.sourceLocation());
     }
 
     if (F.isExpressionPure(thingy) && !F.isExpressionPatternOperation(thingy)) {

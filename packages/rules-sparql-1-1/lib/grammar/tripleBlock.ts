@@ -297,11 +297,11 @@ function collectionImpl<T extends string>(name: T, allowPaths: boolean): SparqlR
         const F = C.astFactory;
         const triples: TripleNesting[] = [];
         // The triples created in your recursion
-        const predFirst = F.namedNode(F.sourceLocationNoMaterialize(), CommonIRIs.FIRST, undefined);
-        const predRest = F.namedNode(F.sourceLocationNoMaterialize(), CommonIRIs.REST, undefined);
-        const predNil = F.namedNode(F.sourceLocationNoMaterialize(), CommonIRIs.NIL, undefined);
+        const predFirst = F.termNamed(F.sourceLocationNoMaterialize(), CommonIRIs.FIRST, undefined);
+        const predRest = F.termNamed(F.sourceLocationNoMaterialize(), CommonIRIs.REST, undefined);
+        const predNil = F.termNamed(F.sourceLocationNoMaterialize(), CommonIRIs.NIL, undefined);
 
-        const listHead = F.blankNode(undefined, F.sourceLocationNoMaterialize());
+        const listHead = F.termBlank(undefined, F.sourceLocationNoMaterialize());
         let iterHead: TripleNesting['object'] = listHead;
         for (const [ index, term ] of terms.entries()) {
           const lastInList = index === terms.length - 1;
@@ -318,7 +318,7 @@ function collectionImpl<T extends string>(name: T, allowPaths: boolean): SparqlR
             const nilTriple: TripleNesting = F.triple(iterHead, predRest, predNil);
             triples.push(nilTriple);
           } else {
-            const tail = F.blankNode(undefined, F.sourceLocationNoMaterialize());
+            const tail = F.termBlank(undefined, F.sourceLocationNoMaterialize());
             const linkTriple: TripleNesting = F.triple(iterHead, predRest, tail);
             triples.push(linkTriple);
             iterHead = tail;
@@ -374,7 +374,7 @@ SparqlRule<T, TripleCollectionBlankNodeProperties> {
       const startToken = CONSUME(l.symbols.LSquare);
 
       const blankNode = ACTION(() =>
-        C.astFactory.blankNode(undefined, C.astFactory.sourceLocationNoMaterialize()));
+        C.astFactory.termBlank(undefined, C.astFactory.sourceLocationNoMaterialize()));
 
       const propList = SUBRULE(propertyPathNotEmptyImpl, blankNode);
       const endToken = CONSUME(l.symbols.RSquare);

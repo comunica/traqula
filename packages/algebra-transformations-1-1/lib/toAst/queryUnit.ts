@@ -239,7 +239,7 @@ export const putExtensionsInGroup: AstIndir<'putExtensionsInGroup', void, [Query
         result.where.patterns.push(
           F.patternBind(
             value,
-            F.variable(key, F.gen()),
+            F.termVariable(key, F.gen()),
             F.gen(),
           ),
         );

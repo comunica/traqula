@@ -35,7 +35,7 @@ describe('a SPARQL 1.1 generator', () => {
         {},
         { term: { variable: {
           transform: variable => variable.value === 's' ?
-            F.variable('subject', F.sourceLocationNodeReplaceUnsafe(variable.loc)) :
+            F.termVariable('subject', F.sourceLocationNodeReplaceUnsafe(variable.loc)) :
             variable,
         }}},
       );
@@ -195,7 +195,7 @@ SELECT * WHERE {
       context: [],
       where: F.patternGroup([
         F.patternBgp([
-          F.triple(F.variable('s', F.gen()), F.variable('p', F.gen()), F.variable('o', F.gen())),
+          F.triple(F.termVariable('s', F.gen()), F.termVariable('p', F.gen()), F.termVariable('o', F.gen())),
         ], F.gen()),
       ], F.gen()),
       solutionModifiers: {},

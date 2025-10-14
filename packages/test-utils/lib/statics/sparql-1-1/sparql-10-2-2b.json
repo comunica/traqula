@@ -156,6 +156,28 @@
       {
         "type": "pattern",
         "subType": "values",
+        "variables": [
+          {
+            "type": "term",
+            "subType": "variable",
+            "value": "book",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 224,
+              "end": 229
+            }
+          },
+          {
+            "type": "term",
+            "subType": "variable",
+            "value": "title",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 230,
+              "end": 236
+            }
+          }
+        ],
         "values": [
           {
             "title": {

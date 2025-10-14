@@ -337,6 +337,18 @@
   "values": {
     "type": "pattern",
     "subType": "values",
+    "variables": [
+      {
+        "type": "term",
+        "subType": "variable",
+        "value": "book",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 230,
+          "end": 235
+        }
+      }
+    ],
     "values": [
       {
         "book": {

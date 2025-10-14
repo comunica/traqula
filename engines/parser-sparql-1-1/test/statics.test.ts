@@ -36,7 +36,7 @@ describe('a SPARQL 1.1 parser', () => {
       it(`can parse ${name}`, async({ expect }) => {
         const { query, ast } = await statics();
         const res: unknown = parser.parsePath(query, context);
-        // SinkAst('paths', name, <object> res);
+        // _sinkAst('paths', name, <object> res);
         expect(res).toEqualParsedQuery(ast);
       });
     }
@@ -47,7 +47,7 @@ describe('a SPARQL 1.1 parser', () => {
       it(`can parse ${name}`, async({ expect }) => {
         const { query, ast } = await statics();
         const res: unknown = parser.parse(query, context);
-        // SinkAst('sparql-1-1', name, <object> res);
+        // _sinkAst('sparql-1-1', name, <object> res);
         expect(res).toEqualParsedQuery(ast);
       });
     }

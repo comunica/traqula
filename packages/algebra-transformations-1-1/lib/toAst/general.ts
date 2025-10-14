@@ -25,16 +25,16 @@ export const translateAlgTerm: AstIndir<'translateTerm', Term, [RDF.Term]> = {
   name: 'translateTerm',
   fun: ({ SUBRULE }) => ({ astFactory: F }, term) => {
     if (term.termType === 'NamedNode') {
-      return F.namedNode(F.gen(), term.value);
+      return F.termNamed(F.gen(), term.value);
     }
     if (term.termType === 'BlankNode') {
-      return F.blankNode(term.value, F.gen());
+      return F.termBlank(term.value, F.gen());
     }
     if (term.termType === 'Variable') {
-      return F.variable(term.value, F.gen());
+      return F.termVariable(term.value, F.gen());
     }
     if (term.termType === 'Literal') {
-      return F.literalTerm(
+      return F.termLiteral(
         F.gen(),
         term.value,
         term.language ? term.language : <RdfTermToAst<typeof term.datatype>>SUBRULE(translateAlgTerm, term.datatype),

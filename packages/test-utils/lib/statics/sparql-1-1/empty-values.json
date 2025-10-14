@@ -88,6 +88,7 @@
   "values": {
     "type": "pattern",
     "subType": "values",
+    "variables": [],
     "values": [
       {}
     ],

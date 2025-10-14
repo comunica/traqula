@@ -49,6 +49,18 @@
       {
         "type": "pattern",
         "subType": "values",
+        "variables": [
+          {
+            "type": "term",
+            "subType": "variable",
+            "value": "v",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 105,
+              "end": 107
+            }
+          }
+        ],
         "values": [
           {
             "v": {

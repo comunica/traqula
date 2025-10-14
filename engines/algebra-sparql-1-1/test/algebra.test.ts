@@ -5,6 +5,7 @@ import type { AlgebraTestSuite } from '@traqula/test-utils';
 import { sparqlAlgebraTests } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
 import { toAlgebra } from '../lib/index.js';
+import { queryLargeObjectList } from './heatmap.js';
 
 export const suites: AlgebraTestSuite[] = [ 'dawg-syntax', 'sparql11-query', 'sparql-1.1' ];
 
@@ -15,11 +16,19 @@ describe('algebra output', () => {
   const canon = new Canonicalizer();
   const parser = new Parser();
 
+  it.skip('temp', () => {
+    const algebra = toAlgebra(parser.parse(queryLargeObjectList), { quads: true });
+    algebraUtils.visitOperation(algebra, {});
+  });
+
   for (const suite of suites) {
     describe(suite, () => {
       for (const blankToVariable of [ true, false ]) {
         for (const test of sparqlAlgebraTests(suite, blankToVariable, true)) {
           const { name, json, sparql: query } = test;
+          // If (!name.includes('dawg-syntax/bnodes/01')) {
+          //   continue;
+          // }
           it(`${name}${blankToVariable ? ' (no blanks)' : ''}`, ({ expect }) => {
             const ast = parser.parse(query);
             const algebra = algebraUtils.objectify(

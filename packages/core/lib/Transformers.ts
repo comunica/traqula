@@ -219,67 +219,146 @@ export class TransformerType<Nodes extends Pick<Node, 'type'>> {
       preVisitor?: (orig: Extract<Nodes, { type: T }>) => TransformContext;
     }},
   ): Safe extends 'unsafe' ? OutType : unknown {
+    // Code handles own stack instead of using recursion - this optimizes it for deep operations.
     const defaults = this.defaultContext;
     const defaultCopy = defaults.copy ?? true;
     const defaultContinueFlag = defaults.continue ?? true;
     const defaultShortCut = defaults.shortcut ?? false;
     const defaultIgnoreKeys = defaults.ignoreKeys;
     const defaultShallowKeys = defaults.ignoreKeys;
+
     let didShortCut = false;
+    const resultWrap = { res: startObject };
 
-    const recurse = (curObject: object): unknown => {
-      let copyFlag = defaultCopy;
-      let continues = defaultContinueFlag;
-      let ignoreKeys = defaultIgnoreKeys;
-      let shallowKeys: Set<string> | undefined = defaultShallowKeys;
-      didShortCut = defaultShortCut;
+    // Grows with stack
+    const stack = [ startObject ];
+    const stackParent: object[] = [ resultWrap ];
+    const stackParentKey: string[] = [ 'res' ];
 
-      const casted = <{ type?: Nodes['type'] }>curObject;
-      let callBacks: (typeof nodeCallBacks)[string];
-      if (casted.type) {
-        callBacks = nodeCallBacks[casted.type];
-      }
-      if (callBacks?.preVisitor) {
-        const context = callBacks.preVisitor(<any>curObject);
-        copyFlag = context.copy ?? defaultCopy;
-        continues = context.continue ?? defaultContinueFlag;
-        ignoreKeys = context.ignoreKeys ?? defaultIgnoreKeys;
-        shallowKeys = context.shallowKeys ?? defaultShallowKeys;
-        didShortCut = context.shortcut ?? didShortCut;
-      }
+    // Grows with reverse stack - when poping down the stack, you realise you still want to map something.
+    // Counter of stack size when we started adding the childeren onf this object, going beyond this means a new parent
+    const handleMapperOnLen: number[] = [];
+    const mapperCopyStack: object[] = [];
+    const mapperOrigStack: object[] = [];
+    const mapperParent: object[] = [];
+    const mapperParentKey: string[] = [];
 
-      const copy = copyFlag ? this.clone(curObject) : curObject;
-
-      if (continues && !didShortCut) {
-        for (const key in copy) {
-          if (!Object.hasOwn(copy, key)) {
-            continue;
-          }
-          if (didShortCut) {
-            return copy;
-          }
-          const val = (<Record<string, unknown>> copy)[key];
-
-          // If shallow copy required, do
-          const onlyShallow = shallowKeys && shallowKeys?.has(key);
-          if (onlyShallow) {
-            (<Record<string, unknown>> copy)[key] = this.clone(val);
-          }
-          if (ignoreKeys && ignoreKeys.has(key)) {
-            continue;
-          }
-          if (!onlyShallow) {
-            (<Record<string, unknown>> copy)[key] = this.safeObjectMap(val, recurse);
+    function handleMapper(): void {
+      while (stack.length === handleMapperOnLen.at(-1)) {
+        handleMapperOnLen.pop();
+        const copyToMap = mapperCopyStack.pop()!;
+        const origToMap = mapperOrigStack.pop()!;
+        const parent = <Record<string, unknown>> mapperParent.pop()!;
+        const parentKey = mapperParentKey.pop()!;
+        if (Array.isArray(copyToMap)) {
+          parent[parentKey] = copyToMap;
+        } else {
+          const casted = <{ type?: Nodes['type'] }>copyToMap;
+          if (casted.type) {
+            const callbacks = nodeCallBacks[casted.type];
+            if (callbacks?.transform) {
+              parent[parentKey] = callbacks.transform(<any>casted, <any> origToMap);
+            } else {
+              parent[parentKey] = copyToMap;
+            }
+          } else {
+            parent[parentKey] = copyToMap;
           }
         }
       }
-      if (callBacks?.transform) {
-        return callBacks.transform(<any> copy, <any> curObject);
-      }
-      return copy;
-    };
+    }
 
-    return <any> recurse(startObject);
+    while (stack.length > 0) {
+      const curObject = stack.pop()!;
+      const curParent = stackParent.pop()!;
+      const curKey = stackParentKey.pop()!;
+
+      // Only add to the stack when you did not shortcut
+      if (!didShortCut) {
+        if (Array.isArray(curObject)) {
+          // eslint-disable-next-line unicorn/no-new-array
+          const newArr = new Array(curObject.length);
+          handleMapperOnLen.push(stack.length);
+          mapperCopyStack.push(newArr);
+          mapperOrigStack.push(curObject);
+          mapperParent.push(curParent);
+          mapperParentKey.push(curKey);
+
+          // eslint-disable-next-line unicorn/no-for-loop
+          for (let index = 0; index < curObject.length; index++) {
+            stack.push(curObject[index]);
+            stackParent.push(newArr);
+            stackParentKey.push(index.toString());
+          }
+          handleMapper();
+          continue;
+        }
+
+        // Perform pre visit before expanding the stack
+        let copyFlag = defaultCopy;
+        let continues = defaultContinueFlag;
+        let ignoreKeys = defaultIgnoreKeys;
+        let shallowKeys: Set<string> | undefined = defaultShallowKeys;
+        didShortCut = defaultShortCut;
+
+        const casted = <{ type?: Nodes['type'] }>curObject;
+        let callBacks: (typeof nodeCallBacks)[string];
+        if (casted.type) {
+          callBacks = nodeCallBacks[casted.type];
+        }
+        if (callBacks?.preVisitor) {
+          const context = callBacks.preVisitor(<any>curObject);
+          copyFlag = context.copy ?? defaultCopy;
+          continues = context.continue ?? defaultContinueFlag;
+          ignoreKeys = context.ignoreKeys ?? defaultIgnoreKeys;
+          shallowKeys = context.shallowKeys ?? defaultShallowKeys;
+          didShortCut = context.shortcut ?? didShortCut;
+        }
+
+        const copy = copyFlag ? this.clone(curObject) : curObject;
+
+        // Register that you want to be visited
+        handleMapperOnLen.push(stack.length);
+        mapperCopyStack.push(copy);
+        mapperOrigStack.push(curObject);
+        mapperParent.push(curParent);
+        mapperParentKey.push(curKey);
+
+        // Extend stack if needed. When shortcutted, should still unwind the stack, but no longer add to it.
+        if (continues && !didShortCut) {
+          for (const key in copy) {
+            if (!Object.hasOwn(copy, key)) {
+              continue;
+            }
+            const val = (<Record<string, unknown>> copy)[key];
+
+            // If shallow copy required, do
+            const onlyShallow = shallowKeys && shallowKeys?.has(key);
+            if (onlyShallow) {
+              // Do not add stack entry
+              (<Record<string, unknown>> copy)[key] = this.clone(val);
+            }
+            if (ignoreKeys && ignoreKeys.has(key)) {
+              // Do not add stack entry
+              continue;
+            }
+            if (!onlyShallow && val !== null && typeof val === 'object') {
+              // Do add stack entry.
+              stack.push(val);
+              stackParentKey.push(key);
+              stackParent.push(copy);
+            }
+          }
+        }
+      }
+
+      // Should we call a visitor?
+      handleMapper();
+    }
+    // Should we call a visitor?
+    handleMapper();
+
+    return <any> resultWrap.res;
   }
 
   /**
@@ -295,39 +374,89 @@ export class TransformerType<Nodes extends Pick<Node, 'type'>> {
       preVisitor?: (op: Extract<Nodes, { type: T }>) => VisitContext;
     }},
   ): void {
+    const defaults = this.defaultContext;
+    const defaultContinues = defaults.continue ?? true;
+    const defaultIgnoreKeys = defaults.ignoreKeys;
+    const defaultShortcut = defaults.shortcut ?? false;
+
     let didShortCut = false;
 
-    const recurse = (curObject: object): void => {
-      didShortCut = this.defaultContext.shortcut ?? false;
-      let continues = this.defaultContext.continue ?? true;
-      let ignoreKeys = this.defaultContext.ignoreKeys ?? undefined;
-      const casted = <{ type?: Nodes['type'] }>curObject;
-      let callBacks: (typeof nodeCallBacks)[string];
-      if (casted.type) {
-        callBacks = nodeCallBacks[casted.type];
-      }
-      if (callBacks?.preVisitor) {
-        const context = callBacks.preVisitor(<any> casted);
-        didShortCut = context.shortcut ?? didShortCut;
-        continues = context.continue ?? continues;
-        ignoreKeys = context.ignoreKeys ?? ignoreKeys;
-      }
-      if (continues && !didShortCut) {
-        for (const [ key, value ] of Object.entries(curObject)) {
-          if (didShortCut) {
-            return;
+    // Stack of things to preVisit
+    const stack = [ startObject ];
+    // When the stack is done preVisiting things above this lengths, visit the bellow
+    const handleVisitorOnLen: number[] = [];
+    const visitorStack: object[] = [];
+    while (stack.length > 0) {
+      const curObject = stack.pop()!;
+
+      if (!didShortCut) {
+        if (Array.isArray(curObject)) {
+          stack.push(...curObject);
+          continue;
+        }
+
+        // Perform pre visit before expanding the stack
+        didShortCut = defaultShortcut;
+        let continues = defaultContinues;
+        let ignoreKeys = defaultIgnoreKeys;
+        const casted = <{ type?: Nodes['type'] }>curObject;
+        let callBacks: (typeof nodeCallBacks)[string];
+        if (casted.type) {
+          callBacks = nodeCallBacks[casted.type];
+        }
+        if (callBacks?.preVisitor) {
+          const context = callBacks.preVisitor(<any> casted);
+          didShortCut = context.shortcut ?? didShortCut;
+          continues = context.continue ?? continues;
+          ignoreKeys = context.ignoreKeys ?? ignoreKeys;
+        }
+
+        // Register that you want to be visited
+        handleVisitorOnLen.push(stack.length);
+        visitorStack.push(curObject);
+
+        // Extend stack if needed. When shortcutted, should still unwind the stack, but no longer add to it.
+        if (continues && !didShortCut) {
+          for (const key in curObject) {
+            if (!Object.hasOwn(curObject, key)) {
+              continue;
+            }
+            if (ignoreKeys && ignoreKeys.has(key)) {
+              continue;
+            }
+            const val = (<Record<string, unknown>> curObject)[key];
+            if (val && typeof val === 'object') {
+              stack.push(val);
+            }
           }
-          if (ignoreKeys && ignoreKeys.has(key)) {
-            continue;
-          }
-          this.safeObjectVisit(value, recurse);
         }
       }
-      if (callBacks?.visitor) {
-        callBacks.visitor(<any> curObject);
+
+      // Should we call a visitor?
+      while (stack.length === handleVisitorOnLen.at(-1)) {
+        handleVisitorOnLen.pop();
+        const toVisit = visitorStack.pop()!;
+        const casted = <{ type?: Nodes['type'] }>toVisit;
+        if (casted.type) {
+          const callbacks = nodeCallBacks[casted.type];
+          if (callbacks?.visitor) {
+            callbacks.visitor(<any> casted);
+          }
+        }
       }
-    };
-    recurse(startObject);
+    }
+    // Should we call a visitor?
+    while (stack.length === handleVisitorOnLen.at(-1)) {
+      handleVisitorOnLen.pop();
+      const toVisit = visitorStack.pop()!;
+      const casted = <{ type?: Nodes['type'] }>toVisit;
+      if (casted.type) {
+        const callbacks = nodeCallBacks[casted.type];
+        if (callbacks?.visitor) {
+          callbacks.visitor(<any> casted);
+        }
+      }
+    }
   }
 
   /**

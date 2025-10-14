@@ -39,7 +39,8 @@ describe('transformer', () => {
     const in2 = { type: 'fruit', val: 'depth3' };
     const in1 = { type: 'vegetable', in: in2, val: 'depth2' };
     const side1 = { type: 'fruit', val: 'side1' };
-    const fruit: Fruit = { type: 'fruit', in: in1, val: 'depth1', side: side1 };
+    const side2 = { type: 'vegetable' };
+    const fruit: Fruit = { type: 'fruit', in: in1, val: 'depth1', side: side1, side2 };
 
     const onlyCopyDepth1 = <any> transformer.transformNode(fruit, {
       fruit: { preVisitor: () => ({ continue: false }) },
@@ -69,9 +70,10 @@ describe('transformer', () => {
       vegetable: { preVisitor: () => ({ shortcut: true }) },
     });
     expect(doNotCopySideWhenShortcut).not.toBe(fruit);
-    expect(doNotCopySideWhenShortcut.in).not.toBe(in1);
+    expect(doNotCopySideWhenShortcut.in).toBe(in1);
     expect(doNotCopySideWhenShortcut.in.in).toBe(in2);
     expect(doNotCopySideWhenShortcut.side).toBe(side1);
+    expect(doNotCopySideWhenShortcut.side2).not.toBe(side2);
   });
 
   it('knows shallowKeys and ignoreKeys', ({ expect }) => {

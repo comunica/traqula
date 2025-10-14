@@ -65,7 +65,6 @@ describe('toAlgebra 1.1, exclude parser construction', () => {
     bench('findvars using visitObjects traqula', () => {
       traqulaTransformerVar.clear();
       transformer.visitObject(ast, (obj) => {
-        const cast = <any> obj;
         if (isTerm(obj) && isVariable(obj)) {
           traqulaTransformerVar.add(`?${obj.value}`);
         }

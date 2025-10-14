@@ -152,7 +152,9 @@ export function inScopeVariables(op: A.BaseOperation): RDF.Variable[] {
         addVariable((<any> op).variable);
       }
     } },
-    [Types.EXTEND]: { visitor: op => addVariable(op.variable) },
+    [Types.EXTEND]: { visitor: op =>
+      addVariable(op.variable),
+    },
     [Types.GRAPH]: { visitor: (op) => {
       if (op.name.termType === 'Variable') {
         addVariable(op.name);
@@ -184,11 +186,14 @@ export function inScopeVariables(op: A.BaseOperation): RDF.Variable[] {
       }
     } },
     [Types.PATTERN]: { visitor: op => recurseTerm(op) },
-    [Types.PROJECT]: { visitor: (op) => {
-      for (const v of op.variables) {
-        addVariable(v);
-      }
-    } },
+    [Types.PROJECT]: {
+      preVisitor: () => ({ continue: false }),
+      visitor: (op) => {
+        for (const v of op.variables) {
+          addVariable(v);
+        }
+      },
+    },
     [Types.SERVICE]: { visitor: (op) => {
       if (op.name.termType === 'Variable') {
         addVariable(op.name);

@@ -60,7 +60,7 @@
     "rdf-data-factory": "^2.0.1"
   },
   "devDependencies": {
-    "@rdfjs/types": "^2.0.0",
+    "@rdfjs/types": "^2.0.1",
     "@traqula/test-utils": "^0.0.19",
     "rdf-data-factory": "^2.0.1",
     "rdf-test-suite": "^2.0.0",

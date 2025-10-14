@@ -66,7 +66,7 @@ describe('a SPARQL 1.2 parser', () => {
       it(`can parse ${name}`, async({ expect }) => {
         const { query, ast } = await statics();
         const res: unknown = parser.parse(query, context);
-        _sinkAst('sparql-1-2', name, <object> res);
+        // _sinkAst('sparql-1-2', name, <object> res);
         expect(res).toEqualParsedQuery(ast);
       });
     }

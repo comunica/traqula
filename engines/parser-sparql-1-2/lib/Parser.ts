@@ -1,5 +1,5 @@
 import { ParserBuilder } from '@traqula/core';
-import type { Patch, Wrap } from '@traqula/core';
+import type { Patch, Wrap, ParserBuildArgs } from '@traqula/core';
 import { sparql11ParserBuilder } from '@traqula/parser-sparql-1-1';
 import {
   gram as g11,
@@ -268,8 +268,9 @@ export class Parser {
 
   private readonly F = new AstFactory();
 
-  public constructor() {
+  public constructor(args: Pick<ParserBuildArgs, 'parserConfig' | 'lexerConfig'> = {}) {
     this.parser = sparql12ParserBuilder.build({
+      ...args,
       queryPreProcessor: sparqlCodepointEscape,
       tokenVocabulary: l12.sparql12LexerBuilder.tokenVocabulary,
     });

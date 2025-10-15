@@ -15,4 +15,6 @@ export * from './parser-builder/ruleDefTypes.js';
 export * from './utils.js';
 export * from './AstCoreFactory.js';
 export * from './nodeTypings.js';
-export * from './Transformers.js';
+export { VisitContext, TransformContext, TransformerObject, SelectiveTraversalContext } from './TransformerObject.js';
+export { TransformerTyped, Safeness, SafeWrap } from './TransformerTyped.js';
+export { TransformerSubTyped } from './TransformerSubTyped.js';

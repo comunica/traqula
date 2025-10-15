@@ -1,11 +1,30 @@
 import type * as RDF from '@rdfjs/types';
-import { TransformerSubType } from '@traqula/core';
+import { TransformerSubTyped } from '@traqula/core';
 import type * as A from './algebra.js';
 import { ExpressionTypes, Types } from './algebra.js';
 
-const transformer = new TransformerSubType<A.Operation>({
-  shallowKeys: new Set([ 'metadata' ]),
-  ignoreKeys: new Set([ 'metadata' ]),
+const transformer = new TransformerSubTyped<A.Operation>({}, {
+  // Optimization that causes search tree pruning
+  [Types.PATTERN]: { ignoreKeys: new Set([ 'subject', 'predicate', 'object', 'graph' ]) },
+  [Types.EXPRESSION]: { ignoreKeys: new Set([ 'name', 'term', 'wildcard', 'variable' ]) },
+  [Types.DESCRIBE]: { ignoreKeys: new Set([ 'terms' ]) },
+  [Types.EXTEND]: { ignoreKeys: new Set([ 'variable' ]) },
+  [Types.FROM]: { ignoreKeys: new Set([ 'default', 'named' ]) },
+  [Types.GRAPH]: { ignoreKeys: new Set([ 'name' ]) },
+  [Types.GROUP]: { ignoreKeys: new Set([ 'variables' ]) },
+  [Types.LINK]: { ignoreKeys: new Set([ 'iri' ]) },
+  [Types.NPS]: { ignoreKeys: new Set([ 'iris' ]) },
+  [Types.PATH]: { ignoreKeys: new Set([ 'subject', 'object', 'graph' ]) },
+  [Types.PROJECT]: { ignoreKeys: new Set([ 'variables' ]) },
+  [Types.SERVICE]: { ignoreKeys: new Set([ 'name' ]) },
+  [Types.VALUES]: { ignoreKeys: new Set([ 'variables', 'bindings' ]) },
+  [Types.LOAD]: { ignoreKeys: new Set([ 'source', 'destination' ]) },
+  [Types.CLEAR]: { ignoreKeys: new Set([ 'source' ]) },
+  [Types.CREATE]: { ignoreKeys: new Set([ 'source' ]) },
+  [Types.DROP]: { ignoreKeys: new Set([ 'source' ]) },
+  [Types.ADD]: { ignoreKeys: new Set([ 'source', 'destination' ]) },
+  [Types.MOVE]: { ignoreKeys: new Set([ 'source', 'destination' ]) },
+  [Types.COPY]: { ignoreKeys: new Set([ 'source', 'destination' ]) },
 });
 export const mapOperation = transformer.transformNode.bind(transformer);
 export const mapOperationSub = transformer.transformNodeSpecific.bind(transformer);
@@ -102,9 +121,14 @@ export function objectify(algebra: any): any {
  * In practice this means iterating through the entire algebra tree, finding all variables,
  * and stopping when a project function is found.
  * @param {Operation} op - Input algebra tree.
+ * @param visitor the visitor to be used to traverse the various nodes.
+ * Allows you to provide a visitor with different default preVisitor cotexts.
  * @returns {Variable[]} - List of unique in-scope variables.
  */
-export function inScopeVariables(op: A.BaseOperation): RDF.Variable[] {
+export function inScopeVariables(
+  op: A.BaseOperation,
+  visitor: typeof visitOperation = visitOperation,
+): RDF.Variable[] {
   const variables: Record<string, RDF.Variable> = {};
 
   function addVariable(v: RDF.Variable): void {
@@ -146,10 +170,10 @@ export function inScopeVariables(op: A.BaseOperation): RDF.Variable[] {
   }
 
   // https://www.w3.org/TR/sparql11-query/#variableScope
-  visitOperation(op, {
-    [Types.EXPRESSION]: { visitor: (op) => {
-      if (op.subType === ExpressionTypes.AGGREGATE && (<any> op).variable) {
-        addVariable((<any> op).variable);
+  visitor(op, {
+    [Types.EXPRESSION]: { visitor: (op: A.Expression & { variable?: RDF.Variable }) => {
+      if (op.subType === ExpressionTypes.AGGREGATE && (op).variable) {
+        addVariable((op).variable);
       }
     } },
     [Types.EXTEND]: { visitor: op =>

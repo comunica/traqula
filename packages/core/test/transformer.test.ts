@@ -1,5 +1,5 @@
 import { describe, it } from 'vitest';
-import { TransformerType } from '../lib/index.js';
+import { TransformerTyped } from '../lib/index.js';
 
 interface Fruit {
   type: 'fruit';
@@ -12,7 +12,7 @@ interface Vegetable {
 }
 
 describe('transformer', () => {
-  const transformer = new TransformerType<Fruit | Vegetable>();
+  const transformer = new TransformerTyped<Fruit | Vegetable>();
   it('makes copies when needed', ({ expect }) => {
     const fruit: Fruit = {
       type: 'fruit',

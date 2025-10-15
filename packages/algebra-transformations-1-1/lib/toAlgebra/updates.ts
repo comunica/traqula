@@ -81,12 +81,6 @@ export const translateSingleUpdate: AlgebraIndir<'translateSingleUpdate', Algebr
   },
 };
 
-/**
- * https://www.w3.org/TR/2013/REC-sparql11-update-20130321/#deleteInsert
- * > That is, a WITH clause may be viewed as syntactic sugar for wrapping both the QuadPatterns in subsequent
- * DELETE and INSERT clauses, and likewise the GroupGraphPattern in the subsequent WHERE clause into GRAPH patterns.
- * This can be used to avoid refering to the same graph multiple times in a single operation.
- */
 export const translateInsertDelete:
 AlgebraIndir<
   'translateInsertDelete',
@@ -94,35 +88,34 @@ Algebra.Update,
 [UpdateOperationInsertData | UpdateOperationDeleteData | UpdateOperationDeleteWhere | UpdateOperationModify]
 > = {
   name: 'translateInsertDelete',
-  fun: ({ SUBRULE }) => ({ useQuads, algebraFactory: AF, astFactory: F }, updateOp) => {
+  fun: ({ SUBRULE }) => ({ useQuads, algebraFactory: AF, astFactory: F }, op) => {
+    if (!useQuads) {
+      throw new Error('INSERT/DELETE operations are only supported with quads option enabled');
+    }
+
     const deleteTriples: Algebra.Pattern[] = [];
     const insertTriples: Algebra.Pattern[] = [];
     let where: Algebra.Operation | undefined;
-
-    if (F.isUpdateOperationDeleteData(updateOp) || F.isUpdateOperationDeleteWhere(updateOp)) {
-      deleteTriples.push(...updateOp.data.flatMap(quad => SUBRULE(translateUpdateTriplesBlock, quad, undefined)));
-      if (F.isUpdateOperationDeleteWhere(updateOp)) {
+    if (F.isUpdateOperationDeleteData(op) || F.isUpdateOperationDeleteWhere(op)) {
+      deleteTriples.push(...op.data.flatMap(quad => SUBRULE(translateUpdateTriplesBlock, quad, undefined)));
+      if (F.isUpdateOperationDeleteWhere(op)) {
         where = AF.createBgp(deleteTriples);
       }
-    } else if (F.isUpdateOperationInsertData(updateOp)) {
-      insertTriples.push(...updateOp.data.flatMap(quad => SUBRULE(translateUpdateTriplesBlock, quad, undefined)));
+    } else if (F.isUpdateOperationInsertData(op)) {
+      insertTriples.push(...op.data.flatMap(quad => SUBRULE(translateUpdateTriplesBlock, quad, undefined)));
     } else {
-      const translateGraph = updateOp.graph ? SUBRULE(translateNamed, updateOp.graph) : undefined;
-      const wrapInGraph = (op: Algebra.Operation): Algebra.Operation =>
-        translateGraph ? AF.createGraph(op, translateGraph) : op;
-
-      deleteTriples.push(...updateOp.delete.flatMap(quad =>
-        SUBRULE(translateUpdateTriplesBlock, quad, updateOp.graph ? SUBRULE(translateNamed, updateOp.graph) : updateOp.graph)));
-      insertTriples.push(...updateOp.insert.flatMap(quad =>
-        SUBRULE(translateUpdateTriplesBlock, quad, updateOp.graph ? SUBRULE(translateNamed, updateOp.graph) : updateOp.graph)));
-      if (updateOp.where.patterns.length > 0) {
-        where = SUBRULE(translateGraphPattern, updateOp.where);
-        const use: { default: RDF.NamedNode[]; named: RDF.NamedNode[] } = SUBRULE(translateDatasetClause, updateOp.from);
+      deleteTriples.push(...op.delete.flatMap(quad =>
+        SUBRULE(translateUpdateTriplesBlock, quad, op.graph ? SUBRULE(translateNamed, op.graph) : op.graph)));
+      insertTriples.push(...op.insert.flatMap(quad =>
+        SUBRULE(translateUpdateTriplesBlock, quad, op.graph ? SUBRULE(translateNamed, op.graph) : op.graph)));
+      if (op.where.patterns.length > 0) {
+        where = SUBRULE(translateGraphPattern, op.where);
+        const use: { default: RDF.NamedNode[]; named: RDF.NamedNode[] } = SUBRULE(translateDatasetClause, op.from);
         if (use.default.length > 0 || use.named.length > 0) {
           where = AF.createFrom(where, use.default, use.named);
-        } else if (F.isUpdateOperationModify(updateOp) && updateOp.graph) {
+        } else if (F.isUpdateOperationModify(op) && op.graph) {
           // This is equivalent
-          where = SUBRULE(recurseGraph, where, SUBRULE(translateNamed, updateOp.graph), undefined);
+          where = SUBRULE(recurseGraph, where, SUBRULE(translateNamed, op.graph), undefined);
         }
       }
     }
@@ -135,13 +128,11 @@ Algebra.Update,
   },
 };
 
-/**
- *
- */
+// UPDATE parsing will always return quads and have no GRAPH elements
 export const translateUpdateTriplesBlock:
 AlgebraIndir<'translateUpdateTriplesBlock', Algebra.Pattern[], [PatternBgp | GraphQuads, RDF.NamedNode | undefined]> = {
   name: 'translateUpdateTriplesBlock',
-  fun: ({ SUBRULE }) => (c, thingy) => {
+  fun: ({ SUBRULE }) => (c, thingy, graph) => {
     const F = c.astFactory;
     let currentGraph: RDF.NamedNode | RDF.Variable | undefined = graph;
     let patternBgp: PatternBgp;

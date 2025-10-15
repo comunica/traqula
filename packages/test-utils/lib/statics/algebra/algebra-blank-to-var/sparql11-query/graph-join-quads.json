@@ -4,57 +4,7 @@
     "type": "join",
     "input": [
       {
-        "type": "graph",
-        "input": {
-          "type": "filter",
-          "input": {
-            "type": "bgp",
-            "patterns": [
-              {
-                "type": "pattern",
-                "termType": "Quad",
-                "subject": {
-                  "termType": "Variable",
-                  "value": "s"
-                },
-                "predicate": {
-                  "termType": "Variable",
-                  "value": "p"
-                },
-                "object": {
-                  "termType": "Variable",
-                  "value": "o"
-                },
-                "graph": {
-                  "termType": "NamedNode",
-                  "value": "http://graph.example.com/"
-                }
-              }
-            ]
-          },
-          "expression": {
-            "type": "expression",
-            "subType": "operator",
-            "operator": "uri",
-            "args": [
-              {
-                "type": "expression",
-                "subType": "term",
-                "term": {
-                  "termType": "Variable",
-                  "value": "s"
-                }
-              }
-            ]
-          }
-        },
-        "name": {
-          "termType": "NamedNode",
-          "value": "http://graph.example.com/"
-        }
-      },
-      {
-        "type": "graph",
+        "type": "filter",
         "input": {
           "type": "bgp",
           "patterns": [
@@ -75,15 +25,51 @@
               },
               "graph": {
                 "termType": "NamedNode",
-                "value": "http://other.example.com/"
+                "value": "http://graph.example.com/"
               }
             }
           ]
         },
-        "name": {
-          "termType": "NamedNode",
-          "value": "http://other.example.com/"
+        "expression": {
+          "type": "expression",
+          "subType": "operator",
+          "operator": "uri",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "term",
+              "term": {
+                "termType": "Variable",
+                "value": "s"
+              }
+            }
+          ]
         }
+      },
+      {
+        "type": "bgp",
+        "patterns": [
+          {
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": {
+              "termType": "Variable",
+              "value": "s"
+            },
+            "predicate": {
+              "termType": "Variable",
+              "value": "p"
+            },
+            "object": {
+              "termType": "Variable",
+              "value": "o"
+            },
+            "graph": {
+              "termType": "NamedNode",
+              "value": "http://other.example.com/"
+            }
+          }
+        ]
       }
     ]
   },

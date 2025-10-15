@@ -120,20 +120,13 @@ export function objectify(algebra: any): any {
  * Detects all in-scope variables.
  * In practice this means iterating through the entire algebra tree, finding all variables,
  * and stopping when a project function is found.
- * Additionally, when translating using `{ quads: true }`,
- * the variable of `GRAPH ?G {}` is pushed down, and this function ignores it.
- * Note that in sparql the graph can only be assigned a var using GRAPH (so you can ignore graph position all together).
  * @param {Operation} op - Input algebra tree.
- * @param options collection of options on how the function should behave.
- * @param options.registerGraphVars whether variables present in the graph spot of a pattern should be registered.
- *   False by default (since they are only here because of some `GRAPH` operation).
  * @param visitor the visitor to be used to traverse the various nodes.
  * Allows you to provide a visitor with different default preVisitor cotexts.
  * @returns {RDF.Variable[]} - List of unique in-scope variables.
  */
 export function inScopeVariables(
   op: A.BaseOperation,
-  options: { registerGraphVars?: boolean } = {},
   visitor: typeof visitOperation = visitOperation,
 ): RDF.Variable[] {
   const variables: Record<string, RDF.Variable> = {};
@@ -161,15 +154,13 @@ export function inScopeVariables(
     } else if (quad.object.termType === 'Quad') {
       recurseTerm(quad.object);
     }
-    // Can ignore graph since they are actually not scoped from the pattern perspective,
-    // they are only scoped AFTER the Graph pattern
-    if (options.registerGraphVars ?? false) {
-      if (quad.graph.termType === 'Variable') {
-        addVariable(quad.graph);
-      }
-      if (quad.graph.termType === 'Quad') {
-        recurseTerm(quad.graph);
-      }
+
+    // Graph
+    if (quad.graph.termType === 'Variable') {
+      addVariable(quad.graph);
+    }
+    if (quad.graph.termType === 'Quad') {
+      recurseTerm(quad.graph);
     }
   }
 

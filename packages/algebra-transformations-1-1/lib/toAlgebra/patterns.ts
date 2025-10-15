@@ -93,10 +93,10 @@ export const translateGraphPattern: AlgebraIndir<'translateGraphPattern', Algebr
 
       // Output depends on if we use quads or not
       if (useQuads) {
-        // We cannot remove the graph operation itself since it is still needed to show where the variable is scoped
         result = SUBRULE(recurseGraph, result, SUBRULE(translateTerm, pattern.name), undefined);
+      } else {
+        result = AF.createGraph(result, <RDF.NamedNode | RDF.Variable> SUBRULE(translateTerm, pattern.name));
       }
-      result = AF.createGraph(result, <RDF.NamedNode | RDF.Variable> SUBRULE(translateTerm, pattern.name));
 
       return result;
     }

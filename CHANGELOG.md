@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v0.0.21"></a>
+## [v0.0.21](https://github.com/comunica/traqula/compare/v0.0.20...v0.0.21) - 2025-10-15
+
+* [Bugfix/incorrect inscopevars on minus (#64)](https://github.com/comunica/traqula/commit/549a52604cf879a27ff5a52f24f0c019361e6733)
+
 <a name="v0.0.20"></a>
 ## [v0.0.20](https://github.com/comunica/traqula/compare/v0.0.19...v0.0.20) - 2025-10-15
 

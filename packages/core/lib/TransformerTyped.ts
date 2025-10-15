@@ -16,6 +16,16 @@ export class TransformerTyped<Nodes extends Pick<Node, 'type'>> extends Transfor
     super(defaultContext);
   };
 
+  public override clone(
+    newDefaultContext: TransformContext = {},
+    newDefaultNodePreVisitor: DefaultNodePreVisitor<Nodes> = {},
+  ): TransformerTyped<Nodes> {
+    return new TransformerTyped(
+      { ...this.defaultContext, ...newDefaultContext },
+      { ...this.defaultNodePreVisitor, ...newDefaultNodePreVisitor },
+    );
+  }
+
   /**
    * Transform a single node.
    * The transformation calls the preVisitor from starting from the startObject.

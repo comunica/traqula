@@ -3,33 +3,40 @@
   "input": {
     "type": "service",
     "input": {
-      "type": "bgp",
-      "patterns": [
-        {
-          "type": "pattern",
-          "termType": "Quad",
-          "subject": {
-            "termType": "Variable",
-            "value": "s"
-          },
-          "predicate": {
-            "termType": "Variable",
-            "value": "p"
-          },
-          "object": {
-            "termType": "Literal",
-            "value": "foo",
-            "datatype": {
+      "type": "graph",
+      "input": {
+        "type": "bgp",
+        "patterns": [
+          {
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": {
+              "termType": "Variable",
+              "value": "s"
+            },
+            "predicate": {
+              "termType": "Variable",
+              "value": "p"
+            },
+            "object": {
+              "termType": "Literal",
+              "value": "foo",
+              "datatype": {
+                "termType": "NamedNode",
+                "value": "http://www.w3.org/2001/XMLSchema#string"
+              }
+            },
+            "graph": {
               "termType": "NamedNode",
-              "value": "http://www.w3.org/2001/XMLSchema#string"
+              "value": "http://iam.ucdavis.edu"
             }
-          },
-          "graph": {
-            "termType": "NamedNode",
-            "value": "http://iam.ucdavis.edu"
           }
-        }
-      ]
+        ]
+      },
+      "name": {
+        "termType": "NamedNode",
+        "value": "http://iam.ucdavis.edu"
+      }
     },
     "name": {
       "termType": "NamedNode",

@@ -15,14 +15,24 @@ describe('util functions', () => {
     describe(suite, () => {
       for (const test of sparqlAlgebraTests(suite, false, true)) {
         const { name, json: expected } = test;
+        // Test does not work for when the query selects an unbound variable (since scope is on the input)
+        if ([
+          'sparql11-query/existence-subquery',
+          'sparql11-query/filter-union',
+          'sparql-1.1/subqueries/02b-subquery-within-graph-pattern-graph-variable-is-extended',
+          'sparql-1.1/subqueries/02b-subquery-within-graph-pattern-graph-variable-is-extended-quads',
+        ].includes(name)) {
+          continue;
+        }
         it (name, ({ expect }) => {
           const clone = <Algebra.Operation> algebraUtils.mapOperation(<Algebra.Operation>expected, {});
           if (clone.type === 'project') {
             const scope = algebraUtils.inScopeVariables(clone.input);
             // Console.log(scope);
-            const project = <Algebra.Project> toAlgebra(toAst(factory.createProject(clone.input, [])));
-            for (const v of project.variables.map(v => v.value)) {
-              expect(scope.map(v => v.value)).toContain(v);
+            const ast = toAst(factory.createProject(clone.input, clone.variables));
+            const project = <Algebra.Project> toAlgebra(ast);
+            for (const v of project.variables) {
+              expect(scope.map(v => v.value)).toContain(v.value);
             }
           }
           expect(algebraUtils.objectify(clone)).toEqual(expected);

@@ -5,29 +5,36 @@
     "input": {
       "type": "group",
       "input": {
-        "type": "bgp",
-        "patterns": [
-          {
-            "type": "pattern",
-            "termType": "Quad",
-            "subject": {
-              "termType": "Variable",
-              "value": "s"
-            },
-            "predicate": {
-              "termType": "Variable",
-              "value": "p"
-            },
-            "object": {
-              "termType": "Variable",
-              "value": "o"
-            },
-            "graph": {
-              "termType": "Variable",
-              "value": "g"
+        "type": "graph",
+        "input": {
+          "type": "bgp",
+          "patterns": [
+            {
+              "type": "pattern",
+              "termType": "Quad",
+              "subject": {
+                "termType": "Variable",
+                "value": "s"
+              },
+              "predicate": {
+                "termType": "Variable",
+                "value": "p"
+              },
+              "object": {
+                "termType": "Variable",
+                "value": "o"
+              },
+              "graph": {
+                "termType": "Variable",
+                "value": "g"
+              }
             }
-          }
-        ]
+          ]
+        },
+        "name": {
+          "termType": "Variable",
+          "value": "g"
+        }
       },
       "variables": [],
       "aggregates": [

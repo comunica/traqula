@@ -1,5 +1,9 @@
 import type { Node } from './nodeTypings.js';
-import type { SelectiveTraversalContext, TransformContext, VisitContext } from './TransformerObject.js';
+import type {
+  SelectiveTraversalContext,
+  TransformContext,
+  VisitContext,
+} from './TransformerObject.js';
 import type { DefaultNodePreVisitor, Safeness, SafeWrap } from './TransformerTyped.js';
 import { TransformerTyped } from './TransformerTyped.js';
 
@@ -10,6 +14,16 @@ export class TransformerSubTyped<Nodes extends Pick<Node, 'type' | 'subType'>> e
   ) {
     super(defaultContext, defaultNodePreVisitor);
   };
+
+  public override clone(
+    newDefaultContext: TransformContext = {},
+    newDefaultNodePreVisitor: DefaultNodePreVisitor<Nodes> = {},
+  ): TransformerSubTyped<Nodes> {
+    return new TransformerSubTyped(
+      { ...this.defaultContext, ...newDefaultContext },
+      { ...this.defaultNodePreVisitor, ...newDefaultNodePreVisitor },
+    );
+  }
 
   /**
    * Shares the functionality and first two arguments with {@link this.transformNode}.

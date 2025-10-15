@@ -120,13 +120,20 @@ export function objectify(algebra: any): any {
  * Detects all in-scope variables.
  * In practice this means iterating through the entire algebra tree, finding all variables,
  * and stopping when a project function is found.
+ * Additionally, when translating using `{ quads: true }`,
+ * the variable of `GRAPH ?G {}` is pushed down, and this function ignores it.
+ * Note that in sparql the graph can only be assigned a var using GRAPH (so you can ignore graph position all together).
  * @param {Operation} op - Input algebra tree.
+ * @param options collection of options on how the function should behave.
+ * @param options.registerGraphVars whether variables present in the graph spot of a pattern should be registered.
+ *   False by default (since they are only here because of some `GRAPH` operation).
  * @param visitor the visitor to be used to traverse the various nodes.
  * Allows you to provide a visitor with different default preVisitor cotexts.
- * @returns {Variable[]} - List of unique in-scope variables.
+ * @returns {RDF.Variable[]} - List of unique in-scope variables.
  */
 export function inScopeVariables(
   op: A.BaseOperation,
+  options: { registerGraphVars?: boolean } = {},
   visitor: typeof visitOperation = visitOperation,
 ): RDF.Variable[] {
   const variables: Record<string, RDF.Variable> = {};
@@ -139,96 +146,103 @@ export function inScopeVariables(
     // Subject
     if (quad.subject.termType === 'Variable') {
       addVariable(quad.subject);
-    }
-    if (quad.subject.termType === 'Quad') {
+    } else if (quad.subject.termType === 'Quad') {
       recurseTerm(quad.subject);
     }
-
     // Predicate
     if (quad.predicate.termType === 'Variable') {
       addVariable(quad.predicate);
-    }
-    if (quad.predicate.termType === 'Quad') {
+    } else if (quad.predicate.termType === 'Quad') {
       recurseTerm(quad.predicate);
     }
-
     // Object
     if (quad.object.termType === 'Variable') {
       addVariable(quad.object);
-    }
-    if (quad.object.termType === 'Quad') {
+    } else if (quad.object.termType === 'Quad') {
       recurseTerm(quad.object);
     }
-
-    // Graph
-    if (quad.graph.termType === 'Variable') {
-      addVariable(quad.graph);
-    }
-    if (quad.graph.termType === 'Quad') {
-      recurseTerm(quad.graph);
+    // Can ignore graph since they are actually not scoped from the pattern perspective,
+    // they are only scoped AFTER the Graph pattern
+    if (options.registerGraphVars ?? false) {
+      if (quad.graph.termType === 'Variable') {
+        addVariable(quad.graph);
+      }
+      if (quad.graph.termType === 'Quad') {
+        recurseTerm(quad.graph);
+      }
     }
   }
 
-  // https://www.w3.org/TR/sparql11-query/#variableScope
-  visitor(op, {
-    [Types.EXPRESSION]: { visitor: (op: A.Expression & { variable?: RDF.Variable }) => {
-      if (op.subType === ExpressionTypes.AGGREGATE && (op).variable) {
-        addVariable((op).variable);
-      }
-    } },
-    [Types.EXTEND]: { visitor: op =>
-      addVariable(op.variable),
-    },
-    [Types.GRAPH]: { visitor: (op) => {
-      if (op.name.termType === 'Variable') {
-        addVariable(op.name);
-      }
-    } },
-    [Types.GROUP]: { visitor: (op) => {
-      for (const v of op.variables) {
-        addVariable(v);
-      }
-    } },
-    [Types.PATH]: { visitor: (op) => {
-      if (op.subject.termType === 'Variable') {
-        addVariable(op.subject);
-      }
-      if (op.object.termType === 'Variable') {
-        addVariable(op.object);
-      }
-      if (op.graph.termType === 'Variable') {
-        addVariable(op.graph);
-      }
-      if (op.subject.termType === 'Quad') {
-        recurseTerm(op.subject);
-      }
-      if (op.object.termType === 'Quad') {
-        recurseTerm(op.object);
-      }
-      if (op.graph.termType === 'Quad') {
-        recurseTerm(op.graph);
-      }
-    } },
-    [Types.PATTERN]: { visitor: op => recurseTerm(op) },
-    [Types.PROJECT]: {
-      preVisitor: () => ({ continue: false }),
-      visitor: (op) => {
+  function visitingRecursion(curOp: A.BaseOperation): void {
+    // https://www.w3.org/TR/sparql11-query/#variableScope
+    visitor(curOp, {
+      [Types.EXPRESSION]: { visitor: (op: A.Expression & { variable?: RDF.Variable }) => {
+        if (op.subType === ExpressionTypes.AGGREGATE && (op).variable) {
+          addVariable((op).variable);
+        }
+      } },
+      [Types.EXTEND]: { visitor: op =>
+        addVariable(op.variable),
+      },
+      [Types.GRAPH]: { visitor: (op) => {
+        if (op.name.termType === 'Variable') {
+          addVariable(op.name);
+        }
+      } },
+      [Types.GROUP]: { visitor: (op) => {
         for (const v of op.variables) {
           addVariable(v);
         }
+      } },
+      [Types.PATH]: { visitor: (op) => {
+        // Subject
+        if (op.subject.termType === 'Variable') {
+          addVariable(op.subject);
+        } else if (op.subject.termType === 'Quad') {
+          recurseTerm(op.subject);
+        }
+        // Predicate
+        if (op.object.termType === 'Variable') {
+          addVariable(op.object);
+        } else if (op.object.termType === 'Quad') {
+          recurseTerm(op.object);
+        }
+        // Object
+        if (op.graph.termType === 'Variable') {
+          addVariable(op.graph);
+        } else if (op.graph.termType === 'Quad') {
+          recurseTerm(op.graph);
+        }
+      } },
+      [Types.PATTERN]: { visitor: op => recurseTerm(op) },
+      [Types.PROJECT]: {
+        preVisitor: () => ({ continue: false }),
+        visitor: (op) => {
+          for (const v of op.variables) {
+            addVariable(v);
+          }
+        },
       },
-    },
-    [Types.SERVICE]: { visitor: (op) => {
-      if (op.name.termType === 'Variable') {
-        addVariable(op.name);
-      }
-    } },
-    [Types.VALUES]: { visitor: (op) => {
-      for (const v of op.variables) {
-        addVariable(v);
-      }
-    } },
-  });
+      [Types.SERVICE]: { visitor: (op) => {
+        if (op.name.termType === 'Variable') {
+          addVariable(op.name);
+        }
+      } },
+      [Types.VALUES]: { visitor: (op) => {
+        for (const v of op.variables) {
+          addVariable(v);
+        }
+      } },
+      [Types.MINUS]: {
+        preVisitor: () => ({ continue: false }),
+        visitor: (op) => {
+          // Cannot fully visit, only the left hand side is scoped
+          visitingRecursion(op.input[0]);
+        },
+      },
+    });
+  }
+  visitingRecursion(op);
 
   return Object.values(variables);
 }

@@ -1,36 +1,9 @@
 {
   "type": "project",
   "input": {
-    "type": "filter",
+    "type": "graph",
     "input": {
-      "type": "bgp",
-      "patterns": [
-        {
-          "type": "pattern",
-          "termType": "Quad",
-          "subject": {
-            "termType": "Variable",
-            "value": "s"
-          },
-          "predicate": {
-            "termType": "Variable",
-            "value": "p"
-          },
-          "object": {
-            "termType": "NamedNode",
-            "value": "http://www.example.org/o1"
-          },
-          "graph": {
-            "termType": "NamedNode",
-            "value": "http://www.example.org/graph"
-          }
-        }
-      ]
-    },
-    "expression": {
-      "type": "expression",
-      "subType": "existence",
-      "not": false,
+      "type": "filter",
       "input": {
         "type": "bgp",
         "patterns": [
@@ -47,7 +20,7 @@
             },
             "object": {
               "termType": "NamedNode",
-              "value": "http://www.example.org/o2"
+              "value": "http://www.example.org/o1"
             },
             "graph": {
               "termType": "NamedNode",
@@ -55,7 +28,41 @@
             }
           }
         ]
+      },
+      "expression": {
+        "type": "expression",
+        "subType": "existence",
+        "not": false,
+        "input": {
+          "type": "bgp",
+          "patterns": [
+            {
+              "type": "pattern",
+              "termType": "Quad",
+              "subject": {
+                "termType": "Variable",
+                "value": "s"
+              },
+              "predicate": {
+                "termType": "Variable",
+                "value": "p"
+              },
+              "object": {
+                "termType": "NamedNode",
+                "value": "http://www.example.org/o2"
+              },
+              "graph": {
+                "termType": "NamedNode",
+                "value": "http://www.example.org/graph"
+              }
+            }
+          ]
+        }
       }
+    },
+    "name": {
+      "termType": "NamedNode",
+      "value": "http://www.example.org/graph"
     }
   },
   "variables": [

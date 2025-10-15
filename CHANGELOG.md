@@ -1,6 +1,20 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v0.0.20"></a>
+## [v0.0.20](https://github.com/comunica/traqula/compare/v0.0.19...v0.0.20) - 2025-10-15
+
+### TODO: categorize commits, choose titles from: Added, Changed, Deprecated, Removed, Fixed, Security.
+* [Misc: open algebra in function of Comunica & optimizations in transformer & bugfixes](https://github.com/comunica/traqula/commit/c7df22724a7a31814c1daeb04c8670deb7ad581d)
+* [Chore: Update actions/setup-node action to v6](https://github.com/comunica/traqula/commit/fbb237734b5a38f1bbe1a540496a3eb9e2a8233c)
+* [Test: add more benchmarks to compare to sparqlAlgebra and sparqlJS](https://github.com/comunica/traqula/commit/c206d40765425ae2935d040825d1cb933f6783c2)
+* [feat: better generation API that is also more correct with regard to "uncontrolled" newlines](https://github.com/comunica/traqula/commit/224cd8cccad387f30e1091184046fb286bd0c46d)
+* [Docs: add some algebra operation docs](https://github.com/comunica/traqula/commit/a687b53712ce04a82ff32668b8741711678389c4)
+* [Feat: generator use single var VALUES clause when possible](https://github.com/comunica/traqula/commit/f63be3c1699ab5b6e56843706b2418c2474a250e)
+* [Feat: getRule on builders](https://github.com/comunica/traqula/commit/1b284e42ec831b47a7153b24951b3b4acafe0259)
+* [DOCS: add jsdocs to core transformer](https://github.com/comunica/traqula/commit/3c4f127010d2b4ba7e2319b2d5ef03347b78189f)
+* [Refactor: generate extends within a group to avoid unwrapping](https://github.com/comunica/traqula/commit/01c235c8fb8eb2781ee7988e548beb7da2256b8a)
+
 <a name="v0.0.19"></a>
 ## [v0.0.19](https://github.com/comunica/traqula/compare/v0.0.18...v0.0.19) - 2025-09-26
 

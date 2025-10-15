@@ -44,12 +44,16 @@ export class TransformerObject {
    */
   public constructor(protected readonly defaultContext: TransformContext = {}) {}
 
+  public clone(newDefaultContext: TransformContext = {}): TransformerObject {
+    return new TransformerObject({ ...this.defaultContext, ...newDefaultContext });
+  }
+
   /**
    * Function to shallow clone any type.
    * @param obj
    * @protected
    */
-  protected clone<T>(obj: T): T {
+  protected cloneObj<T>(obj: T): T {
     if (obj === null || typeof obj !== 'object') {
       return obj;
     }
@@ -150,7 +154,7 @@ export class TransformerObject {
         const shallowKeys = context.shallowKeys ?? defaultShallowKeys;
         didShortCut = context.shortcut ?? defaultDidShortCut;
 
-        const copy = copyFlag ? this.clone(curObject) : curObject;
+        const copy = copyFlag ? this.cloneObj(curObject) : curObject;
 
         // Register that you want to be visited
         handleMapperOnLen.push(stack.length);
@@ -171,7 +175,7 @@ export class TransformerObject {
             const onlyShallow = shallowKeys && shallowKeys?.has(key);
             if (onlyShallow) {
               // Do not add stack entry - assign straight away
-              (<Record<string, unknown>> copy)[key] = this.clone(val);
+              (<Record<string, unknown>> copy)[key] = this.cloneObj(val);
             }
             if (ignoreKeys && ignoreKeys.has(key)) {
               // Do not add stack entry

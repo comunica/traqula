@@ -135,6 +135,12 @@ AlgebraIndir<'recurseGraph', Algebra.Operation, [Algebra.Operation, RDF.Term, RD
         replacement = SUBRULE(generateFreshVar);
       }
       algOp.input = SUBRULE(recurseGraph, algOp.input, graph, replacement);
+    } else if (algOp.type === types.MINUS && graph.termType === 'Variable') {
+      algOp.graphScopeVar = graph;
+      algOp.input = [
+        SUBRULE(recurseGraph, algOp.input[0], graph, replacement),
+        SUBRULE(recurseGraph, algOp.input[1], graph, replacement),
+      ];
     } else {
       for (const [ key, value ] of Object.entries(algOp)) {
         const castedKey = <keyof typeof algOp> key;

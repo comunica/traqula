@@ -181,7 +181,6 @@ export function findPatternBoundedVars(
       service: op => ({ next: [ op.name, ...op.patterns ]}),
       bind: op => ({ next: [ op.variable ]}),
       graph: op => ({ next: [ op.name, ...op.patterns ]}),
-      minus: op => ({ next: op.patterns.slice(0, 1) }),
     },
     term: {
       variable: (op) => {

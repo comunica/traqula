@@ -260,6 +260,17 @@ export interface Link extends BaseOperation {
 
 export interface Minus extends Double {
   type: Types.MINUS;
+  /**
+   * Since our graph translation is not really part of the spec,
+   * there is a MINUS edge case we need to consider with GRAPH ?g.
+   * If left and right of MINUS have disjoint variables, the whole left solution sequence must be kept.
+   * If GRAPH is defined outside of an operator (e.g. MINUS), then the spec says that evaluation of the operators
+   * must be done as union over the evaluation of that operator within each graph separately,
+   * and that the variable of ?g must only be bound **after** that evaluation.
+   * As such, MINUS will not be aware of this variable ?g, and the disjoint case will apply.
+   * The code below adds metadata to the operation so that engines can special-case this.
+   */
+  graphScopeVar?: RDF.Variable;
 }
 
 /**

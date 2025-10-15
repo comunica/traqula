@@ -8,7 +8,6 @@ import type {
   Wildcard,
 } from '@traqula/rules-sparql-1-1';
 import type { Algebra } from '../index.js';
-import * as util from '../util.js';
 import type { AstIndir } from './core.js';
 import { eTypes } from './core.js';
 import { type RdfTermToAst, translateAlgTerm } from './general.js';
@@ -17,7 +16,7 @@ import { translateAlgPatternNew } from './pattern.js';
 export const translateAlgPureExpression: AstIndir<'translatePureExpression', Expression, [Algebra.Expression]> = {
   name: 'translatePureExpression',
   fun: ({ SUBRULE }) => (_, expr) => {
-    switch (expr.expressionType) {
+    switch (expr.subType) {
       case eTypes.AGGREGATE:
         return SUBRULE(translateAlgAggregateExpression, expr);
       case eTypes.EXISTENCE:
@@ -29,7 +28,7 @@ export const translateAlgPureExpression: AstIndir<'translatePureExpression', Exp
       case eTypes.TERM:
         return <Expression> SUBRULE(translateAlgTerm, expr.term);
       default:
-        throw new Error(`Unknown Expression Operation type ${expr.expressionType}`);
+        throw new Error(`Unknown Expression Operation type ${expr.subType}`);
     }
   },
 };
@@ -37,7 +36,7 @@ export const translateAlgPureExpression: AstIndir<'translatePureExpression', Exp
 export const translateAlgExpressionOrWild:
 AstIndir<'translateExpressionOrWild', Expression | Wildcard, [Algebra.Expression]> = {
   name: 'translateExpressionOrWild',
-  fun: ({ SUBRULE }) => (_, expr) => expr.expressionType === eTypes.WILDCARD ?
+  fun: ({ SUBRULE }) => (_, expr) => expr.subType === eTypes.WILDCARD ?
     SUBRULE(translateAlgWildcardExpression, expr) :
     SUBRULE(translateAlgPureExpression, expr),
 };
@@ -46,7 +45,7 @@ export const translateAlgExpressionOrOrdering:
 AstIndir<'translateExpressionOrOrdering', Expression | Ordering, [Algebra.Expression]> = {
   name: 'translateExpressionOrOrdering',
   fun: ({ SUBRULE }) => (_, expr) =>
-    expr.expressionType === eTypes.OPERATOR ?
+    expr.subType === eTypes.OPERATOR ?
       SUBRULE(translateAlgOperatorExpression, expr) :
       SUBRULE(translateAlgPureExpression, expr),
 };
@@ -54,7 +53,7 @@ AstIndir<'translateExpressionOrOrdering', Expression | Ordering, [Algebra.Expres
 export const translateAlgAnyExpression:
 AstIndir<'translateAnyExpression', Expression | Ordering | Wildcard, [Algebra.Expression]> = {
   name: 'translateAnyExpression',
-  fun: ({ SUBRULE }) => (_, expr) => expr.expressionType === eTypes.OPERATOR ?
+  fun: ({ SUBRULE }) => (_, expr) => expr.subType === eTypes.OPERATOR ?
     SUBRULE(translateAlgOperatorExpression, expr) :
     SUBRULE(translateAlgExpressionOrWild, expr),
 };
@@ -79,7 +78,7 @@ AstIndir<'translateExistenceExpression', ExpressionPatternOperation, [Algebra.Ex
     F.expressionPatternOperation(
       expr.not ? 'notexists' : 'exists',
       // TranslateOperation can give an array
-      F.patternGroup(util.flatten([ SUBRULE(translateAlgPatternNew, expr.input) ]), F.gen()),
+      F.patternGroup([ SUBRULE(translateAlgPatternNew, expr.input) ].flat(), F.gen()),
       F.gen(),
     ),
 };

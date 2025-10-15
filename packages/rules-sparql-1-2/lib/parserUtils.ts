@@ -1,4 +1,4 @@
-import { TransformerSubType, traqulaIndentation } from '@traqula/core';
+import { TransformerSubTyped, traqulaIndentation } from '@traqula/core';
 import { AstFactory } from './AstFactory.js';
 import type { SparqlContext, SparqlGeneratorContext } from './sparql12HelperTypes.js';
 import type { Sparql12Nodes } from './sparql12Types.js';
@@ -19,4 +19,4 @@ export function completeParseContext(
   };
 }
 
-export class AstTransformer extends TransformerSubType<Sparql12Nodes> {}
+export class AstTransformer extends TransformerSubTyped<Sparql12Nodes> {}

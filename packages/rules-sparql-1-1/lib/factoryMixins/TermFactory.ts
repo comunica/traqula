@@ -28,7 +28,7 @@ export function TermFactoryMixin<TBase extends Constructor<AstCoreFactory>>(Base
       return this.isOfType(x, 'term');
     }
 
-    public blankNode(label: undefined | string, loc: SourceLocation): TermBlank {
+    public termBlank(label: undefined | string, loc: SourceLocation): TermBlank {
       const base = <const>{
         type: 'term',
         subType: 'blankNode',
@@ -47,17 +47,17 @@ export function TermFactoryMixin<TBase extends Constructor<AstCoreFactory>>(Base
     /**
      * String, no lang, no type
      */
-    public literalTerm(loc: SourceLocation, value: string, lang?: undefined): TermLiteralStr;
+    public termLiteral(loc: SourceLocation, value: string, lang?: undefined): TermLiteralStr;
     /**
      * String with a language tag
      */
-    public literalTerm(loc: SourceLocation, value: string, lang: string): TermLiteralLangStr;
+    public termLiteral(loc: SourceLocation, value: string, lang: string): TermLiteralLangStr;
     /**
      * Lexical form with a type
      */
-    public literalTerm(loc: SourceLocation, value: string, iri: TermIri): TermLiteralTyped;
-    public literalTerm(loc: SourceLocation, value: string, langOrIri?: string | TermIri): TermLiteral;
-    public literalTerm(loc: SourceLocation, value: string, langOrIri?: string | TermIri): TermLiteral {
+    public termLiteral(loc: SourceLocation, value: string, iri: TermIri): TermLiteralTyped;
+    public termLiteral(loc: SourceLocation, value: string, langOrIri?: string | TermIri): TermLiteral;
+    public termLiteral(loc: SourceLocation, value: string, langOrIri?: string | TermIri): TermLiteral {
       return {
         type: nodeType,
         subType: 'literal',
@@ -86,7 +86,7 @@ export function TermFactoryMixin<TBase extends Constructor<AstCoreFactory>>(Base
         casted.langOrIri !== null && this.isTermNamed(casted.langOrIri);
     }
 
-    public variable(value: string, loc: SourceLocation): TermVariable {
+    public termVariable(value: string, loc: SourceLocation): TermVariable {
       return {
         type: nodeType,
         subType: 'variable',
@@ -102,12 +102,12 @@ export function TermFactoryMixin<TBase extends Constructor<AstCoreFactory>>(Base
     /**
      * A namednode with fully defined with a uri.
      */
-    public namedNode(loc: SourceLocation, value: string, prefix?: undefined): TermIriFull;
+    public termNamed(loc: SourceLocation, value: string, prefix?: undefined): TermIriFull;
     /**
      * A namednode defined using a prefix
      */
-    public namedNode(loc: SourceLocation, value: string, prefix: string): TermIriPrefixed;
-    public namedNode(loc: SourceLocation, value: string, prefix?: string): TermIriFull | TermIriPrefixed {
+    public termNamed(loc: SourceLocation, value: string, prefix: string): TermIriPrefixed;
+    public termNamed(loc: SourceLocation, value: string, prefix?: string): TermIriFull | TermIriPrefixed {
       const base = <const>{
         type: nodeType,
         subType: 'namedNode',

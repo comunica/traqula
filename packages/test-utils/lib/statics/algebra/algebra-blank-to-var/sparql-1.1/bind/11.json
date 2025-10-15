@@ -17,7 +17,7 @@
           },
           "expression": {
             "type": "expression",
-            "expressionType": "term",
+            "subType": "term",
             "term": {
               "termType": "Literal",
               "value": "4",
@@ -57,12 +57,12 @@
     },
     "expression": {
       "type": "expression",
-      "expressionType": "operator",
+      "subType": "operator",
       "operator": "=",
       "args": [
         {
           "type": "expression",
-          "expressionType": "term",
+          "subType": "term",
           "term": {
             "termType": "Variable",
             "value": "v"
@@ -70,7 +70,7 @@
         },
         {
           "type": "expression",
-          "expressionType": "term",
+          "subType": "term",
           "term": {
             "termType": "Variable",
             "value": "z"

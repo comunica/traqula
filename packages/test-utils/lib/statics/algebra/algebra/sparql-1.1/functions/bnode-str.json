@@ -53,22 +53,22 @@
         },
         "expression": {
           "type": "expression",
-          "expressionType": "operator",
+          "subType": "operator",
           "operator": "&&",
           "args": [
             {
               "type": "expression",
-              "expressionType": "operator",
+              "subType": "operator",
               "operator": "||",
               "args": [
                 {
                   "type": "expression",
-                  "expressionType": "operator",
+                  "subType": "operator",
                   "operator": "=",
                   "args": [
                     {
                       "type": "expression",
-                      "expressionType": "term",
+                      "subType": "term",
                       "term": {
                         "termType": "Variable",
                         "value": "a"
@@ -76,7 +76,7 @@
                     },
                     {
                       "type": "expression",
-                      "expressionType": "term",
+                      "subType": "term",
                       "term": {
                         "termType": "NamedNode",
                         "value": "http://example.org/s1"
@@ -86,12 +86,12 @@
                 },
                 {
                   "type": "expression",
-                  "expressionType": "operator",
+                  "subType": "operator",
                   "operator": "=",
                   "args": [
                     {
                       "type": "expression",
-                      "expressionType": "term",
+                      "subType": "term",
                       "term": {
                         "termType": "Variable",
                         "value": "a"
@@ -99,7 +99,7 @@
                     },
                     {
                       "type": "expression",
-                      "expressionType": "term",
+                      "subType": "term",
                       "term": {
                         "termType": "NamedNode",
                         "value": "http://example.org/s3"
@@ -111,17 +111,17 @@
             },
             {
               "type": "expression",
-              "expressionType": "operator",
+              "subType": "operator",
               "operator": "||",
               "args": [
                 {
                   "type": "expression",
-                  "expressionType": "operator",
+                  "subType": "operator",
                   "operator": "=",
                   "args": [
                     {
                       "type": "expression",
-                      "expressionType": "term",
+                      "subType": "term",
                       "term": {
                         "termType": "Variable",
                         "value": "b"
@@ -129,7 +129,7 @@
                     },
                     {
                       "type": "expression",
-                      "expressionType": "term",
+                      "subType": "term",
                       "term": {
                         "termType": "NamedNode",
                         "value": "http://example.org/s1"
@@ -139,12 +139,12 @@
                 },
                 {
                   "type": "expression",
-                  "expressionType": "operator",
+                  "subType": "operator",
                   "operator": "=",
                   "args": [
                     {
                       "type": "expression",
-                      "expressionType": "term",
+                      "subType": "term",
                       "term": {
                         "termType": "Variable",
                         "value": "b"
@@ -152,7 +152,7 @@
                     },
                     {
                       "type": "expression",
-                      "expressionType": "term",
+                      "subType": "term",
                       "term": {
                         "termType": "NamedNode",
                         "value": "http://example.org/s3"
@@ -171,12 +171,12 @@
       },
       "expression": {
         "type": "expression",
-        "expressionType": "operator",
+        "subType": "operator",
         "operator": "bnode",
         "args": [
           {
             "type": "expression",
-            "expressionType": "term",
+            "subType": "term",
             "term": {
               "termType": "Variable",
               "value": "s1"
@@ -191,12 +191,12 @@
     },
     "expression": {
       "type": "expression",
-      "expressionType": "operator",
+      "subType": "operator",
       "operator": "bnode",
       "args": [
         {
           "type": "expression",
-          "expressionType": "term",
+          "subType": "term",
           "term": {
             "termType": "Variable",
             "value": "s2"

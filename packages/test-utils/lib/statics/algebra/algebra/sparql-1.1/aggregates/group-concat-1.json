@@ -37,11 +37,11 @@
           "aggregates": [
             {
               "type": "expression",
-              "expressionType": "aggregate",
+              "subType": "aggregate",
               "aggregator": "group_concat",
               "expression": {
                 "type": "expression",
-                "expressionType": "term",
+                "subType": "term",
                 "term": {
                   "termType": "Variable",
                   "value": "o"
@@ -62,7 +62,7 @@
         },
         "expression": {
           "type": "expression",
-          "expressionType": "term",
+          "subType": "term",
           "term": {
             "termType": "Variable",
             "value": "var0"
@@ -78,17 +78,17 @@
     },
     "expression": {
       "type": "expression",
-      "expressionType": "operator",
+      "subType": "operator",
       "operator": "||",
       "args": [
         {
           "type": "expression",
-          "expressionType": "operator",
+          "subType": "operator",
           "operator": "=",
           "args": [
             {
               "type": "expression",
-              "expressionType": "term",
+              "subType": "term",
               "term": {
                 "termType": "Variable",
                 "value": "g"
@@ -96,7 +96,7 @@
             },
             {
               "type": "expression",
-              "expressionType": "term",
+              "subType": "term",
               "term": {
                 "termType": "Literal",
                 "value": "1 22",
@@ -110,12 +110,12 @@
         },
         {
           "type": "expression",
-          "expressionType": "operator",
+          "subType": "operator",
           "operator": "=",
           "args": [
             {
               "type": "expression",
-              "expressionType": "term",
+              "subType": "term",
               "term": {
                 "termType": "Variable",
                 "value": "g"
@@ -123,7 +123,7 @@
             },
             {
               "type": "expression",
-              "expressionType": "term",
+              "subType": "term",
               "term": {
                 "termType": "Literal",
                 "value": "22 1",

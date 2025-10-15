@@ -1,3 +1,4 @@
+import type { ParserBuildArgs } from '@traqula/core';
 import { ParserBuilder } from '@traqula/core';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import { gram, lex as l, MinimalSparqlParser, sparqlCodepointEscape } from '@traqula/rules-sparql-1-1';
@@ -11,8 +12,9 @@ export const sparql11ParserBuilder = ParserBuilder.create(queryUnitParserBuilder
 export type SparqlParser = ReturnType<typeof sparql11ParserBuilder.build>;
 
 export class Parser extends MinimalSparqlParser<T11.SparqlQuery> {
-  public constructor() {
+  public constructor(args: Pick<ParserBuildArgs, 'parserConfig' | 'lexerConfig'> = {}) {
     const parser: SparqlParser = sparql11ParserBuilder.build({
+      ...args,
       tokenVocabulary: l.sparql11LexerBuilder.tokenVocabulary,
       queryPreProcessor: sparqlCodepointEscape,
     });

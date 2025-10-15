@@ -144,8 +144,10 @@ INSERT DATA {
 }
 `;
 
-const parser = new Parser();
+if (false) {
+  const parser = new Parser();
 
-for (let i = 0; i < 1000; i++) {
-  parser.parse(queryLargeObjectList);
+  for (let i = 0; i < 1000; i++) {
+    parser.parse(queryLargeObjectList);
+  }
 }

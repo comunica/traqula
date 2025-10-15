@@ -246,6 +246,7 @@ export type PatternService = PatternBase & {
 export type ValuePatternRow = Record<string, TermIri | TermLiteral | undefined>;
 export type PatternValues = PatternBase & {
   subType: 'values';
+  variables: TermVariable[];
   values: ValuePatternRow[];
 };
 export type SubSelect = QuerySelect;

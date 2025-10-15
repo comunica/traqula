@@ -23,6 +23,14 @@ function listToRuleDefMap<T extends readonly ParserRule[]>(rules: T): ParseRules
   return <ParseRulesToObject<T>>newRules;
 }
 
+export interface ParserBuildArgs {
+  tokenVocabulary: readonly TokenType[];
+  parserConfig?: IParserConfig;
+  lexerConfig?: ILexerConfig;
+  queryPreProcessor?: (input: string) => string;
+  errorHandler?: (errors: IRecognitionException[]) => void;
+}
+
 /**
  * The grammar builder. This is the core of traqula (besides using the amazing chevrotain framework).
  * Using the builder you can create a grammar + AST creator.
@@ -236,13 +244,7 @@ ${errorLine}`);
     lexerConfig = {},
     queryPreProcessor = s => s,
     errorHandler,
-  }: {
-    tokenVocabulary: readonly TokenType[];
-    parserConfig?: IParserConfig;
-    lexerConfig?: ILexerConfig;
-    queryPreProcessor?: (input: string) => string;
-    errorHandler?: (errors: IRecognitionException[]) => void;
-  }): ParserFromRules<Context, Names, RuleDefs> {
+  }: ParserBuildArgs): ParserFromRules<Context, Names, RuleDefs> {
     const lexer = LexerBuilder.create().add(...tokenVocabulary).build({
       positionTracking: 'full',
       recoveryEnabled: false,

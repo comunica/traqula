@@ -67,12 +67,12 @@
         },
         "expression": {
           "type": "expression",
-          "expressionType": "operator",
+          "subType": "operator",
           "operator": "coalesce",
           "args": [
             {
               "type": "expression",
-              "expressionType": "term",
+              "subType": "term",
               "term": {
                 "termType": "Variable",
                 "value": "w"
@@ -80,7 +80,7 @@
             },
             {
               "type": "expression",
-              "expressionType": "term",
+              "subType": "term",
               "term": {
                 "termType": "Literal",
                 "value": "1605-11-05",
@@ -102,11 +102,11 @@
       "aggregates": [
         {
           "type": "expression",
-          "expressionType": "aggregate",
+          "subType": "aggregate",
           "aggregator": "sample",
           "expression": {
             "type": "expression",
-            "expressionType": "term",
+            "subType": "term",
             "term": {
               "termType": "Variable",
               "value": "v"
@@ -126,7 +126,7 @@
     },
     "expression": {
       "type": "expression",
-      "expressionType": "term",
+      "subType": "term",
       "term": {
         "termType": "Variable",
         "value": "var0"

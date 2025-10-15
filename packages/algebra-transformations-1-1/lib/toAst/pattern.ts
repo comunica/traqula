@@ -11,7 +11,6 @@ import type {
 } from '@traqula/rules-sparql-1-1';
 import type * as Algebra from '../algebra.js';
 import { types } from '../toAlgebra/index.js';
-import * as util from '../util.js';
 import type { AstIndir } from './core.js';
 import { registerProjection } from './core.js';
 import { translateAlgPureExpression } from './expression.js';
@@ -133,10 +132,10 @@ export const translateAlgFilter: AstIndir<'translateFilter', PatternGroup, [Alge
   name: 'translateFilter',
   fun: ({ SUBRULE }) => ({ astFactory: F }, op) =>
     F.patternGroup(
-      util.flatten([
+      [
         SUBRULE(translateAlgPatternNew, op.input),
         F.patternFilter(SUBRULE(translateAlgPureExpression, op.expression), F.gen()),
-      ]),
+      ].flat(),
       F.gen(),
     ),
 };
@@ -146,7 +145,7 @@ export const translateAlgGraph: AstIndir<'translateGraph', PatternGraph, [Algebr
   fun: ({ SUBRULE }) => ({ astFactory: F }, op) =>
     F.patternGraph(
       <RdfTermToAst<typeof op.name>>SUBRULE(translateAlgTerm, op.name),
-      util.flatten([ SUBRULE(translateAlgPatternNew, op.input) ]),
+      [ SUBRULE(translateAlgPatternNew, op.input) ].flat(),
       F.gen(),
     ),
 };
@@ -169,7 +168,7 @@ export const translateAlgGroup: AstIndir<'translateGroup', Pattern | Pattern[], 
 export const translateAlgJoin: AstIndir<'translateJoin', Pattern[], [Algebra.Join]> = {
   name: 'translateJoin',
   fun: ({ SUBRULE }) => ({ astFactory: F }, op) => {
-    const arr = util.flatten(op.input.map(x => SUBRULE(translateAlgPatternNew, x)));
+    const arr = op.input.flatMap(x => SUBRULE(translateAlgPatternNew, x));
 
     // Merge bgps
     // This is possible if one side was a path and the other a bgp for example
@@ -201,20 +200,20 @@ export const translateAlgLeftJoin: AstIndir<'translateLeftJoin', Pattern[], [Alg
     }
     leftJoin.patterns = leftJoin.patterns.filter(Boolean);
 
-    return util.flatten([
+    return [
       SUBRULE(translateAlgPatternNew, op.input[0]),
       leftJoin,
-    ]);
+    ].flat();
   },
 };
 
 export const translateAlgMinus: AstIndir<'translateMinus', Pattern[], [Algebra.Minus]> = {
   name: 'translateMinus',
   fun: ({ SUBRULE }) => ({ astFactory: F }, op) =>
-    util.flatten([
+    [
       SUBRULE(translateAlgPatternNew, op.input[0]),
       F.patternMinus(SUBRULE(operationAlgInputAsPatternList, op.input[1]), F.gen()),
-    ]),
+    ].flat(),
 };
 
 export const translateAlgService: AstIndir<'translateService', PatternService, [Algebra.Service]> = {
@@ -291,6 +290,7 @@ export const translateAlgValues: AstIndir<'translateValues', PatternValues, [Alg
   name: 'translateValues',
   fun: ({ SUBRULE }) => ({ astFactory: F }, op) =>
     F.patternValues(
+      op.variables.map(variable => F.termVariable(variable.value, F.gen())),
       op.bindings.map((binding) => {
         const result: ValuePatternRow = {};
         for (const v of op.variables) {

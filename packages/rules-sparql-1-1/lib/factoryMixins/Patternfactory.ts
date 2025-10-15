@@ -61,8 +61,8 @@ export function PatternFactoryMixin<TBase extends Constructor<AstCoreFactory>>(B
       return this.isOfSubType(obj, nodeType, 'optional');
     }
 
-    public patternValues(values: ValuePatternRow[], loc: SourceLocation): PatternValues {
-      return { type: nodeType, subType: 'values', values, loc };
+    public patternValues(variables: TermVariable[], values: ValuePatternRow[], loc: SourceLocation): PatternValues {
+      return { type: nodeType, subType: 'values', variables, values, loc };
     }
 
     public isPatternValues(obj: object): obj is SubTyped<NodeType, 'values'> {

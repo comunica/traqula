@@ -127,7 +127,7 @@ export const var_: SparqlRule<'var', TermVariable> = <const> {
       { ALT: () => CONSUME(l.terminals.var1) },
       { ALT: () => CONSUME(l.terminals.var2) },
     ]);
-    return ACTION(() => C.astFactory.variable(varToken.image.slice(1), C.astFactory.sourceLocation(varToken)));
+    return ACTION(() => C.astFactory.termVariable(varToken.image.slice(1), C.astFactory.sourceLocation(varToken)));
   },
   gImpl: ({ PRINT }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => PRINT(`?${ast.value}`));
@@ -148,7 +148,7 @@ export const graphTerm: SparqlRule<'graphTerm', GraphTerm> = <const> {
     { ALT: () => {
       const tokenNil = CONSUME(l.terminals.nil);
       return ACTION(() =>
-        C.astFactory.namedNode(C.astFactory.sourceLocation(tokenNil), CommonIRIs.NIL));
+        C.astFactory.termNamed(C.astFactory.sourceLocation(tokenNil), CommonIRIs.NIL));
     } },
   ]),
   gImpl: ({ SUBRULE }) => (ast, { astFactory: F }) => {

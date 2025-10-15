@@ -1,5 +1,5 @@
 import { ParserBuilder } from '@traqula/core';
-import type { Patch, Wrap } from '@traqula/core';
+import type { Patch, Wrap, ParserBuildArgs } from '@traqula/core';
 import { sparql11ParserBuilder } from '@traqula/parser-sparql-1-1';
 import {
   gram as g11,
@@ -199,9 +199,9 @@ export const sparql12ParserBuilder = ParserBuilder.create(sparql11ParserBuilder)
     [g11.serviceGraphPattern.name]: [T12.PatternService];
     [g11.bind.name]: [T12.PatternBind];
     [g11.inlineData.name]: [T12.PatternValues];
-    [g11.dataBlock.name]: [Wrap<T12.ValuePatternRow[]>];
-    [g11.inlineDataOneVar.name]: [Wrap<T12.ValuePatternRow[]>];
-    [g11.inlineDataFull.name]: [Wrap<T12.ValuePatternRow[]>];
+    [g11.dataBlock.name]: [T12.PatternValues];
+    [g11.inlineDataOneVar.name]: [T12.PatternValues];
+    [g11.inlineDataFull.name]: [T12.PatternValues];
     [g11.dataBlockValue.name]: [T12.TermIri | T12.TermLiteral | undefined];
     [g11.minusGraphPattern.name]: [T12.PatternMinus];
     [g11.groupOrUnionGraphPattern.name]: [T12.PatternGroup | T12.PatternUnion];
@@ -268,8 +268,9 @@ export class Parser {
 
   private readonly F = new AstFactory();
 
-  public constructor() {
+  public constructor(args: Pick<ParserBuildArgs, 'parserConfig' | 'lexerConfig'> = {}) {
     this.parser = sparql12ParserBuilder.build({
+      ...args,
       queryPreProcessor: sparqlCodepointEscape,
       tokenVocabulary: l12.sparql12LexerBuilder.tokenVocabulary,
     });

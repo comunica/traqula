@@ -31,22 +31,22 @@
       },
       "expression": {
         "type": "expression",
-        "expressionType": "operator",
+        "subType": "operator",
         "operator": "!",
         "args": [
           {
             "type": "expression",
-            "expressionType": "operator",
+            "subType": "operator",
             "operator": "&&",
             "args": [
               {
                 "type": "expression",
-                "expressionType": "operator",
+                "subType": "operator",
                 "operator": "bound",
                 "args": [
                   {
                     "type": "expression",
-                    "expressionType": "term",
+                    "subType": "term",
                     "term": {
                       "termType": "Variable",
                       "value": "c"
@@ -56,17 +56,17 @@
               },
               {
                 "type": "expression",
-                "expressionType": "operator",
+                "subType": "operator",
                 "operator": "regex",
                 "args": [
                   {
                     "type": "expression",
-                    "expressionType": "operator",
+                    "subType": "operator",
                     "operator": "str",
                     "args": [
                       {
                         "type": "expression",
-                        "expressionType": "term",
+                        "subType": "term",
                         "term": {
                           "termType": "Variable",
                           "value": "c"
@@ -76,7 +76,7 @@
                   },
                   {
                     "type": "expression",
-                    "expressionType": "term",
+                    "subType": "term",
                     "term": {
                       "termType": "Literal",
                       "value": "^toto",
@@ -88,7 +88,7 @@
                   },
                   {
                     "type": "expression",
-                    "expressionType": "term",
+                    "subType": "term",
                     "term": {
                       "termType": "Literal",
                       "value": "i",

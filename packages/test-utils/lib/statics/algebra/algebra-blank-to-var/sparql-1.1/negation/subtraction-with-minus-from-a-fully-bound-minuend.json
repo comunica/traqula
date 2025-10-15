@@ -140,7 +140,7 @@
     "expressions": [
       {
         "type": "expression",
-        "expressionType": "term",
+        "subType": "term",
         "term": {
           "termType": "Variable",
           "value": "a"

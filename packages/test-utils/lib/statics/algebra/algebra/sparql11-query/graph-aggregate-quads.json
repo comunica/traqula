@@ -33,11 +33,11 @@
       "aggregates": [
         {
           "type": "expression",
-          "expressionType": "aggregate",
+          "subType": "aggregate",
           "aggregator": "count",
           "expression": {
             "type": "expression",
-            "expressionType": "wildcard",
+            "subType": "wildcard",
             "wildcard": {
               "type": "wildcard"
             }
@@ -56,7 +56,7 @@
     },
     "expression": {
       "type": "expression",
-      "expressionType": "term",
+      "subType": "term",
       "term": {
         "termType": "Variable",
         "value": "var0"

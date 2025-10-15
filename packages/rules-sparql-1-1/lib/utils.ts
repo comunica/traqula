@@ -1,4 +1,4 @@
-import { TransformerSubType } from '@traqula/core';
+import { TransformerSubTyped } from '@traqula/core';
 import type { Sparql11Nodes } from './Sparql11types.js';
 
 /**
@@ -42,4 +42,4 @@ export enum CommonIRIs {
   TYPE = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
 }
 
-export class AstTransformer extends TransformerSubType<Sparql11Nodes> {}
+export class AstTransformer extends TransformerSubTyped<Sparql11Nodes> {}

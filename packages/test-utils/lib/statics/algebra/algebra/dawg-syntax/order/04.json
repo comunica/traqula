@@ -30,12 +30,12 @@
     "expressions": [
       {
         "type": "expression",
-        "expressionType": "operator",
+        "subType": "operator",
         "operator": "desc",
         "args": [
           {
             "type": "expression",
-            "expressionType": "term",
+            "subType": "term",
             "term": {
               "termType": "Variable",
               "value": "o"

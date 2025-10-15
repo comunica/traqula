@@ -29,27 +29,27 @@
     },
     "expression": {
       "type": "expression",
-      "expressionType": "operator",
+      "subType": "operator",
       "operator": "&&",
       "args": [
         {
           "type": "expression",
-          "expressionType": "operator",
+          "subType": "operator",
           "operator": "&&",
           "args": [
             {
               "type": "expression",
-              "expressionType": "operator",
+              "subType": "operator",
               "operator": "&&",
               "args": [
                 {
                   "type": "expression",
-                  "expressionType": "operator",
+                  "subType": "operator",
                   "operator": "istriple",
                   "args": [
                     {
                       "type": "expression",
-                      "expressionType": "term",
+                      "subType": "term",
                       "term": {
                         "termType": "Variable",
                         "value": "t"
@@ -59,17 +59,17 @@
                 },
                 {
                   "type": "expression",
-                  "expressionType": "operator",
+                  "subType": "operator",
                   "operator": "=",
                   "args": [
                     {
                       "type": "expression",
-                      "expressionType": "operator",
+                      "subType": "operator",
                       "operator": "subject",
                       "args": [
                         {
                           "type": "expression",
-                          "expressionType": "term",
+                          "subType": "term",
                           "term": {
                             "termType": "Variable",
                             "value": "t"
@@ -79,7 +79,7 @@
                     },
                     {
                       "type": "expression",
-                      "expressionType": "term",
+                      "subType": "term",
                       "term": {
                         "termType": "NamedNode",
                         "value": "http://example.com/ns#s"
@@ -91,17 +91,17 @@
             },
             {
               "type": "expression",
-              "expressionType": "operator",
+              "subType": "operator",
               "operator": "=",
               "args": [
                 {
                   "type": "expression",
-                  "expressionType": "operator",
+                  "subType": "operator",
                   "operator": "predicate",
                   "args": [
                     {
                       "type": "expression",
-                      "expressionType": "term",
+                      "subType": "term",
                       "term": {
                         "termType": "Variable",
                         "value": "t"
@@ -111,7 +111,7 @@
                 },
                 {
                   "type": "expression",
-                  "expressionType": "term",
+                  "subType": "term",
                   "term": {
                     "termType": "NamedNode",
                     "value": "http://example.com/ns#p"
@@ -123,17 +123,17 @@
         },
         {
           "type": "expression",
-          "expressionType": "operator",
+          "subType": "operator",
           "operator": "=",
           "args": [
             {
               "type": "expression",
-              "expressionType": "operator",
+              "subType": "operator",
               "operator": "object",
               "args": [
                 {
                   "type": "expression",
-                  "expressionType": "term",
+                  "subType": "term",
                   "term": {
                     "termType": "Variable",
                     "value": "t"
@@ -143,7 +143,7 @@
             },
             {
               "type": "expression",
-              "expressionType": "term",
+              "subType": "term",
               "term": {
                 "termType": "NamedNode",
                 "value": "http://example.com/ns#o"

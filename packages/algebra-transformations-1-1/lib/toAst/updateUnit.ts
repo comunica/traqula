@@ -25,40 +25,41 @@ import type {
 } from '@traqula/rules-sparql-1-1';
 import { isomorphic } from 'rdf-isomorphic';
 import type * as Algebra from '../algebra.js';
+import { Types } from '../algebra.js';
 import { isVariable, types } from '../toAlgebra/index.js';
 import type { AstIndir } from './core.js';
 import type { RdfTermToAst } from './general.js';
 import { translateAlgDatasetClauses, translateAlgPattern, translateAlgTerm } from './general.js';
-import { translateAlgPatternNew, algWrapInPatternGroup } from './pattern.js';
+import { algWrapInPatternGroup, translateAlgPatternNew } from './pattern.js';
 import { removeAlgQuadsRecursive } from './quads.js';
 
-export const translateAlgUpdateOperation: AstIndir<'translateUpdateOperation', UpdateOperation, [Algebra.Operation]> = {
+export const translateAlgUpdateOperation: AstIndir<'translateUpdateOperation', UpdateOperation, [Algebra.Update]> = {
   name: 'translateUpdateOperation',
   fun: ({ SUBRULE }) => (_, op) => {
     switch (op.type) {
-      case types.DELETE_INSERT:
+      case Types.DELETE_INSERT:
         return SUBRULE(translateAlgDeleteInsert, op);
-      case types.LOAD:
+      case Types.LOAD:
         return SUBRULE(translateAlgLoad, op);
-      case types.CLEAR:
+      case Types.CLEAR:
         return SUBRULE(translateAlgClear, op);
-      case types.CREATE:
+      case Types.CREATE:
         return SUBRULE(translateAlgCreate, op);
-      case types.DROP:
+      case Types.DROP:
         return SUBRULE(translateAlgDrop, op);
-      case types.ADD:
+      case Types.ADD:
         return SUBRULE(translateAlgAdd, op);
-      case types.MOVE:
+      case Types.MOVE:
         return SUBRULE(translateAlgMove, op);
-      case types.COPY:
+      case Types.COPY:
         return SUBRULE(translateAlgCopy, op);
       default:
-        throw new Error(`Unknown Operation type ${op.type}`);
+        throw new Error(`Unknown Operation type ${(<Algebra.Operation> op).type}`);
     }
   },
 };
 
-export const toUpdate: AstIndir<'toUpdate', Update, [UpdateOperation[]]> = {
+export const toUpdate: AstIndir<'toUpdate', Update, [(UpdateOperation | undefined)[]]> = {
   name: 'toUpdate',
   fun: () => ({ astFactory: F }, ops) => ({
     type: 'update',
@@ -69,8 +70,10 @@ export const toUpdate: AstIndir<'toUpdate', Update, [UpdateOperation[]]> = {
 
 export const translateAlgCompositeUpdate: AstIndir<'translateCompositeUpdate', Update, [Algebra.CompositeUpdate]> = {
   name: 'translateCompositeUpdate',
-  fun: ({ SUBRULE }) => (_, op) =>
-    SUBRULE(toUpdate, op.updates.map(update => SUBRULE(translateAlgUpdateOperation, update))),
+  fun: ({ SUBRULE }) => (_, op) => SUBRULE(
+    toUpdate,
+    op.updates.map(update => update.type === Types.NOP ? undefined : SUBRULE(translateAlgUpdateOperation, update)),
+  ),
 };
 
 type LikeModify = UpdateOperationModify

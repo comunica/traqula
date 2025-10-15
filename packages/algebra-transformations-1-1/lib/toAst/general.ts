@@ -12,7 +12,6 @@ import type {
   TripleNesting,
 } from '@traqula/rules-sparql-1-1';
 import { Algebra } from '../index.js';
-import * as util from '../util.js';
 import type { AstIndir } from './core.js';
 import { translateAlgPureExpression } from './expression.js';
 import { translateAlgPatternIntoGroup, translateAlgPatternNew } from './pattern.js';
@@ -26,16 +25,16 @@ export const translateAlgTerm: AstIndir<'translateTerm', Term, [RDF.Term]> = {
   name: 'translateTerm',
   fun: ({ SUBRULE }) => ({ astFactory: F }, term) => {
     if (term.termType === 'NamedNode') {
-      return F.namedNode(F.gen(), term.value);
+      return F.termNamed(F.gen(), term.value);
     }
     if (term.termType === 'BlankNode') {
-      return F.blankNode(term.value, F.gen());
+      return F.termBlank(term.value, F.gen());
     }
     if (term.termType === 'Variable') {
-      return F.variable(term.value, F.gen());
+      return F.termVariable(term.value, F.gen());
     }
     if (term.termType === 'Literal') {
-      return F.literalTerm(
+      return F.termLiteral(
         F.gen(),
         term.value,
         term.language ? term.language : <RdfTermToAst<typeof term.datatype>>SUBRULE(translateAlgTerm, term.datatype),
@@ -68,14 +67,14 @@ export const translateAlgExtend: AstIndir<'translateExtend', Pattern | Pattern[]
       return op;
     }
     const input = collectExtends(op);
-    return F.patternGroup(util.flatten([
+    return F.patternGroup([
       SUBRULE(translateAlgPatternNew, input),
       ...extendsOperations.reverse().map(extend => F.patternBind(
         SUBRULE(translateAlgPureExpression, extend.expression),
         <RdfTermToAst<typeof extend.variable>> SUBRULE(translateAlgTerm, extend.variable),
         F.gen(),
       )),
-    ]), F.gen());
+    ].flat(), F.gen());
   },
 };
 

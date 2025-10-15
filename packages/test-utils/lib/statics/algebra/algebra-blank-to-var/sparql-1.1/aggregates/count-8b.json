@@ -59,12 +59,12 @@
           },
           "expression": {
             "type": "expression",
-            "expressionType": "operator",
+            "subType": "operator",
             "operator": "+",
             "args": [
               {
                 "type": "expression",
-                "expressionType": "term",
+                "subType": "term",
                 "term": {
                   "termType": "Variable",
                   "value": "O1"
@@ -72,7 +72,7 @@
               },
               {
                 "type": "expression",
-                "expressionType": "term",
+                "subType": "term",
                 "term": {
                   "termType": "Variable",
                   "value": "O2"
@@ -90,11 +90,11 @@
         "aggregates": [
           {
             "type": "expression",
-            "expressionType": "aggregate",
+            "subType": "aggregate",
             "aggregator": "count",
             "expression": {
               "type": "expression",
-              "expressionType": "term",
+              "subType": "term",
               "term": {
                 "termType": "Variable",
                 "value": "O1"
@@ -114,7 +114,7 @@
       },
       "expression": {
         "type": "expression",
-        "expressionType": "term",
+        "subType": "term",
         "term": {
           "termType": "Variable",
           "value": "var0"
@@ -124,7 +124,7 @@
     "expressions": [
       {
         "type": "expression",
-        "expressionType": "term",
+        "subType": "term",
         "term": {
           "termType": "Variable",
           "value": "O12"

@@ -46,7 +46,7 @@ export const rdfLiteral: SparqlRule<'rdfLiteral', TermLiteral> = <const> {
     return OPTION(() => OR<TermLiteral>([
       { ALT: () => {
         const lang = CONSUME(l.terminals.langTag);
-        return ACTION(() => C.astFactory.literalTerm(
+        return ACTION(() => C.astFactory.termLiteral(
           C.astFactory.sourceLocation(value, lang),
           value.value,
           lang.image.slice(1).toLowerCase(),
@@ -55,7 +55,7 @@ export const rdfLiteral: SparqlRule<'rdfLiteral', TermLiteral> = <const> {
       { ALT: () => {
         CONSUME(l.symbols.hathat);
         const iriVal = SUBRULE1(iri);
-        return ACTION(() => C.astFactory.literalTerm(
+        return ACTION(() => C.astFactory.termLiteral(
           C.astFactory.sourceLocation(value, iriVal),
           value.value,
           iriVal,
@@ -105,10 +105,10 @@ export const numericLiteralUnsigned: SparqlGrammarRule<'numericLiteralUnsigned',
       { ALT: () => <const> [ CONSUME(l.terminals.decimal), CommonIRIs.DECIMAL ]},
       { ALT: () => <const> [ CONSUME(l.terminals.double), CommonIRIs.DOUBLE ]},
     ]);
-    return ACTION(() => C.astFactory.literalTerm(
+    return ACTION(() => C.astFactory.termLiteral(
       C.astFactory.sourceLocation(parsed[0]),
       parsed[0].image,
-      C.astFactory.namedNode(C.astFactory.sourceLocationNoMaterialize(), parsed[1]),
+      C.astFactory.termNamed(C.astFactory.sourceLocationNoMaterialize(), parsed[1]),
     ));
   },
 };
@@ -125,10 +125,10 @@ export const numericLiteralPositive: SparqlGrammarRule<'numericLiteralPositive',
       { ALT: () => <const> [ CONSUME(l.terminals.decimalPositive), CommonIRIs.DECIMAL ]},
       { ALT: () => <const> [ CONSUME(l.terminals.doublePositive), CommonIRIs.DOUBLE ]},
     ]);
-    return ACTION(() => C.astFactory.literalTerm(
+    return ACTION(() => C.astFactory.termLiteral(
       C.astFactory.sourceLocation(parsed[0]),
       parsed[0].image,
-      C.astFactory.namedNode(C.astFactory.sourceLocationNoMaterialize(), parsed[1]),
+      C.astFactory.termNamed(C.astFactory.sourceLocationNoMaterialize(), parsed[1]),
     ));
   },
 };
@@ -145,10 +145,10 @@ export const numericLiteralNegative: SparqlGrammarRule<'numericLiteralNegative',
       { ALT: () => <const> [ CONSUME(l.terminals.decimalNegative), CommonIRIs.DECIMAL ]},
       { ALT: () => <const> [ CONSUME(l.terminals.doubleNegative), CommonIRIs.DOUBLE ]},
     ]);
-    return ACTION(() => C.astFactory.literalTerm(
+    return ACTION(() => C.astFactory.termLiteral(
       C.astFactory.sourceLocation(parsed[0]),
       parsed[0].image,
-      C.astFactory.namedNode(C.astFactory.sourceLocationNoMaterialize(), parsed[1]),
+      C.astFactory.termNamed(C.astFactory.sourceLocationNoMaterialize(), parsed[1]),
     ));
   },
 };
@@ -165,10 +165,10 @@ export const booleanLiteral: SparqlGrammarRule<'booleanLiteral', TermLiteralType
       { ALT: () => CONSUME(l.false_) },
     ]);
 
-    return ACTION(() => C.astFactory.literalTerm(
+    return ACTION(() => C.astFactory.termLiteral(
       C.astFactory.sourceLocation(token),
       token.image.toLowerCase(),
-      C.astFactory.namedNode(C.astFactory.sourceLocationNoMaterialize(), CommonIRIs.BOOLEAN),
+      C.astFactory.termNamed(C.astFactory.sourceLocationNoMaterialize(), CommonIRIs.BOOLEAN),
     ));
   },
 };
@@ -217,7 +217,7 @@ export const string: SparqlGrammarRule<'string', TermLiteralStr> = <const> {
             return char;
         }
       });
-      return F.literalTerm(F.sourceLocation(x[0]), value);
+      return F.termLiteral(F.sourceLocation(x[0]), value);
     });
   },
 };
@@ -240,7 +240,7 @@ export const iriFull: SparqlRule<'iriFull', TermIriFull> = <const> {
   name: 'iriFull',
   impl: ({ ACTION, CONSUME }) => (C) => {
     const iriToken = CONSUME(l.terminals.iriRef);
-    return ACTION(() => C.astFactory.namedNode(C.astFactory.sourceLocation(iriToken), iriToken.image.slice(1, -1)));
+    return ACTION(() => C.astFactory.termNamed(C.astFactory.sourceLocation(iriToken), iriToken.image.slice(1, -1)));
   },
   gImpl: ({ PRINT }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => PRINT('<', ast.value, '>'));
@@ -258,12 +258,12 @@ export const prefixedName: SparqlRule<'prefixedName', TermIriPrefixed> = <const>
       const longName = CONSUME(l.terminals.pNameLn);
       return ACTION(() => {
         const [ prefix, localName ] = longName.image.split(':');
-        return C.astFactory.namedNode(C.astFactory.sourceLocation(longName), localName, prefix);
+        return C.astFactory.termNamed(C.astFactory.sourceLocation(longName), localName, prefix);
       });
     } },
     { ALT: () => {
       const shortName = CONSUME(l.terminals.pNameNs);
-      return ACTION(() => C.astFactory.namedNode(
+      return ACTION(() => C.astFactory.termNamed(
         C.astFactory.sourceLocation(shortName),
         '',
         shortName.image.slice(0, -1),
@@ -288,11 +288,11 @@ export const blankNode: SparqlRule<'blankNode', TermBlank> = <const> {
       { ALT: () => {
         const labelToken = CONSUME(l.terminals.blankNodeLabel);
         return ACTION(() =>
-          C.astFactory.blankNode(labelToken.image.slice(2), C.astFactory.sourceLocation(labelToken)));
+          C.astFactory.termBlank(labelToken.image.slice(2), C.astFactory.sourceLocation(labelToken)));
       } },
       { ALT: () => {
         const anonToken = CONSUME(l.terminals.anon);
-        return ACTION(() => C.astFactory.blankNode(undefined, C.astFactory.sourceLocation(anonToken)));
+        return ACTION(() => C.astFactory.termBlank(undefined, C.astFactory.sourceLocation(anonToken)));
       } },
     ]);
     ACTION(() => {
@@ -311,6 +311,6 @@ export const verbA: SparqlGrammarRule<'VerbA', TermIriFull> = <const> {
   name: 'VerbA',
   impl: ({ ACTION, CONSUME }) => (C) => {
     const token = CONSUME(l.a);
-    return ACTION(() => C.astFactory.namedNode(C.astFactory.sourceLocation(token), CommonIRIs.TYPE, undefined));
+    return ACTION(() => C.astFactory.termNamed(C.astFactory.sourceLocation(token), CommonIRIs.TYPE, undefined));
   },
 };

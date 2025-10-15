@@ -6,6 +6,11 @@ import { queryLargeObjectList } from './heatmap.js';
 
 describe('query 1.1, exclude construction', () => {
   const traqulaParser = new TraqulaParser();
+  const noSourceTrackingTraqula = new TraqulaParser({
+    lexerConfig: {
+      positionTracking: 'onlyOffset',
+    },
+  });
   const sparqlJSparser = new SparqlJSparser();
   const query = queryLargeObjectList;
 
@@ -31,6 +36,9 @@ describe('query 1.1, exclude construction', () => {
       for (const query of allQueries) {
         sparqlJSparser.parse(query);
       }
+    });
+    bench('traqula no-source tracking', () => {
+      noSourceTrackingTraqula.parse(query);
     });
   });
 });

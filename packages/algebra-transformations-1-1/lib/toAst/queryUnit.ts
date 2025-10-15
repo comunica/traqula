@@ -14,7 +14,6 @@ import type {
 } from '@traqula/rules-sparql-1-1';
 import type { Algebra } from '../index.js';
 import { types } from '../toAlgebra/index.js';
-import * as util from '../util.js';
 import type { AstIndir } from './core.js';
 import { resetContext } from './core.js';
 import { translateAlgExpressionOrOrdering, translateAlgPureExpression } from './expression.js';
@@ -29,7 +28,7 @@ export const translateAlgConstruct: AstIndir<'translateConstruct', PatternGroup,
       F.gen(),
       [],
       F.patternBgp(<BasicGraphPattern> op.template.map(x => SUBRULE(translateAlgPattern, x)), F.gen()),
-      F.patternGroup(util.flatten([ SUBRULE(translateAlgPatternNew, op.input) ]), F.gen()),
+      F.patternGroup([ SUBRULE(translateAlgPatternNew, op.input) ].flat(), F.gen()),
       {},
       F.datasetClauses([], F.gen()),
     );
@@ -41,6 +40,12 @@ export const translateAlgConstruct: AstIndir<'translateConstruct', PatternGroup,
   },
 };
 
+// Separate terms from wildcard since we handle them differently
+function isSimpleTerm(term: any): term is RDF.Term {
+  return term.termType !== undefined && term.termType !== 'Quad' && term.termType !== 'wildcard' &&
+    term.termType !== 'Wildcard';
+}
+
 /**
  * Will mostly return the same type as what you give in second arg.
  */
@@ -48,7 +53,7 @@ export const replaceAlgAggregatorVariables:
 AstIndir<'replaceAggregatorVariables', unknown, [unknown, Record<string, Expression>]> = {
   name: 'replaceAggregatorVariables',
   fun: ({ SUBRULE }) => ({ astFactory: F }, s, map) => {
-    const st: Sparql11Nodes = util.isSimpleTerm(s) ? SUBRULE(translateAlgTerm, s) : <Sparql11Nodes> s;
+    const st: Sparql11Nodes = isSimpleTerm(s) ? SUBRULE(translateAlgTerm, s) : <Sparql11Nodes> s;
 
     // Look for TermVariable, if we find, replace it by the aggregator.
     if (F.isTermVariable(st)) {
@@ -105,7 +110,7 @@ AstIndir<'translateProject', PatternGroup, [Algebra.Project | Algebra.Ask | Alge
     c.project = true;
 
     // TranslateOperation could give an array.
-    let input = util.flatten([ SUBRULE(translateAlgPatternNew, op.input) ]);
+    let input = [ SUBRULE(translateAlgPatternNew, op.input) ].flat();
     if (input.length === 1 && F.isPatternGroup(input[0])) {
       input = (input[0]).patterns;
     }
@@ -234,7 +239,7 @@ export const putExtensionsInGroup: AstIndir<'putExtensionsInGroup', void, [Query
         result.where.patterns.push(
           F.patternBind(
             value,
-            F.variable(key, F.gen()),
+            F.termVariable(key, F.gen()),
             F.gen(),
           ),
         );

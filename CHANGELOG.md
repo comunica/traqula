@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v0.0.22"></a>
+## [v0.0.22](https://github.com/comunica/traqula/compare/v0.0.21...v0.0.22) - 2025-10-16
+
+* [Chore/better dual packaging (#65)](https://github.com/comunica/traqula/commit/f187b7af4a5b161503e8ef501f5193d934d1b944)
+
 <a name="v0.0.21"></a>
 ## [v0.0.21](https://github.com/comunica/traqula/compare/v0.0.20...v0.0.21) - 2025-10-15
 

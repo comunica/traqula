@@ -1,7 +1,7 @@
 {
   "name": "@traqula/generator-sparql-1-2",
   "type": "module",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "description": "SPARQL 1.2 generator",
   "lsd:module": true,
   "license": "MIT",
@@ -40,13 +40,13 @@
     "build:transpile": "esbuild \"dist/esm/**/*.js\" --outdir=dist/cjs --platform=node --format=cjs"
   },
   "dependencies": {
-    "@traqula/core": "^0.0.21",
-    "@traqula/generator-sparql-1-1": "^0.0.21",
-    "@traqula/rules-sparql-1-1": "^0.0.21",
-    "@traqula/rules-sparql-1-2": "^0.0.21"
+    "@traqula/core": "^0.0.22",
+    "@traqula/generator-sparql-1-1": "^0.0.22",
+    "@traqula/rules-sparql-1-1": "^0.0.22",
+    "@traqula/rules-sparql-1-2": "^0.0.22"
   },
   "devDependencies": {
-    "@traqula/parser-sparql-1-2": "^0.0.21",
-    "@traqula/test-utils": "^0.0.21"
+    "@traqula/parser-sparql-1-2": "^0.0.22",
+    "@traqula/test-utils": "^0.0.22"
   }
 }

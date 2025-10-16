@@ -27,7 +27,6 @@
     "access": "public"
   },
   "files": [
-    "dist/**/*.cjs",
     "dist/**/*.d.ts",
     "dist/**/*.js",
     "dist/**/*.js.map"
@@ -35,7 +34,6 @@
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   },
-  "typings": "lib/index",
   "scripts": {
     "build": "node \"../../node_modules/typescript/bin/tsc\" -b",
     "build:transpile": "node \"../../node_modules/esbuild/bin/esbuild\" --format=cjs --bundle --log-level=error --outfile=dist/cjs/lib/index.js lib/index.ts"

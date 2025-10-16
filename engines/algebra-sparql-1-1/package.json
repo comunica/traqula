@@ -28,7 +28,6 @@
     "access": "public"
   },
   "files": [
-    "dist/**/*.cjs",
     "dist/**/*.d.ts",
     "dist/**/*.js",
     "dist/**/*.js.map"

@@ -27,7 +27,6 @@
     "access": "public"
   },
   "files": [
-    "dist/**/*.cjs",
     "dist/**/*.d.ts",
     "dist/**/*.js",
     "dist/**/*.js.map"
@@ -35,7 +34,6 @@
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   },
-  "typings": "lib/index",
   "scripts": {
     "build": "yarn build:ts && yarn build:transpile && yarn build:transpile-spec",
     "build:ts": "node \"../../node_modules/typescript/bin/tsc\"",

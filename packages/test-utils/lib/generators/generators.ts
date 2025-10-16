@@ -1,7 +1,7 @@
 /* eslint-disable import/no-nodejs-modules,no-sync */
 import * as fs from 'node:fs';
-import * as path from 'node:path';
 import { readFile } from '../fileUtils.js';
+import { getStaticFilePath } from './utils.js';
 
 interface PositiveTest {
   name: string;
@@ -16,7 +16,7 @@ export function* positiveTest(
   type: 'paths' | 'sparql-1-1' | 'sparql-1-2',
   filter?: (name: string) => boolean,
 ): Generator<PositiveTest> {
-  const dir = path.join(__dirname, type);
+  const dir = getStaticFilePath(type);
   const statics = fs.readdirSync(dir);
   for (const file of statics) {
     if (file.endsWith('.json')) {
@@ -57,7 +57,7 @@ export function* negativeTest(
   type: 'sparql-1-1-invalid' | 'sparql-1-2-invalid',
   filter?: (name: string) => boolean,
 ): Generator<NegativeTest> {
-  const dir = path.join(__dirname, type);
+  const dir = getStaticFilePath(type);
   const statics = fs.readdirSync(dir);
   for (const file of statics) {
     if (file.endsWith('.sparql')) {

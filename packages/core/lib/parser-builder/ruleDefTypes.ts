@@ -6,8 +6,10 @@ import type {
   IOrAlt,
   ManySepMethodOpts,
   OrMethodOpts,
-} from '@chevrotain/types';
-import type { ConsumeMethodOpts, IToken, TokenType } from 'chevrotain';
+  ConsumeMethodOpts,
+  IToken,
+  TokenType,
+} from '@traqula/chevrotain';
 
 /**
  * Get the return-type of a RuleDef

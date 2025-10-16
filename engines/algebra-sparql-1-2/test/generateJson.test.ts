@@ -4,13 +4,14 @@ import * as path from 'node:path';
 import { algebraUtils } from '@traqula/algebra-transformations-1-1';
 import { Parser } from '@traqula/parser-sparql-1-2';
 import { type AlgebraTestSuite, sparqlQueries } from '@traqula/test-utils';
+import { getStaticFilePath } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
 import { toAlgebra } from '../lib/index.js';
 
 // WARNING: use this script with caution!
 // After running this script, manual inspection of the output is needed to make sure that conversion happened correctly.
 const parser = new Parser();
-const rootDir = path.join(__dirname, '..', '..', '..', 'packages', 'test-utils', 'lib', 'statics', 'algebra');
+const rootDir = getStaticFilePath('algebra');
 const rootJson = path.join(rootDir, 'algebra');
 const rootJsonBlankToVariable = path.join(rootDir, 'algebra-blank-to-var');
 

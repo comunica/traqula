@@ -5,4 +5,3 @@ export * as Algebra from './algebra.js';
 export * from './algebraFactory.js';
 export * as algebraUtils from './util.js';
 export * from './canonicalizer.js';
-export * as Util from './sparqlAlgebraUtils.js';

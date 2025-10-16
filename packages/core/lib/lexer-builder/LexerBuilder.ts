@@ -1,6 +1,5 @@
-import type { ILexerConfig } from '@chevrotain/types';
-import type { TokenType } from 'chevrotain';
-import { Lexer } from 'chevrotain';
+import type { ILexerConfig, TokenType } from '@traqula/chevrotain';
+import { Lexer } from '@traqula/chevrotain';
 import type { CheckOverlap, NamedToken } from '../utils.js';
 
 export class LexerBuilder<NAMES extends string = string> {

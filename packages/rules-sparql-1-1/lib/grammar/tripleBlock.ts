@@ -1,5 +1,5 @@
+import type { IToken } from '@traqula/chevrotain';
 import { traqulaIndentation } from '@traqula/core';
-import type { IToken } from 'chevrotain';
 import * as l from '../lexer/index.js';
 import type { SparqlGrammarRule, SparqlRule } from '../sparql11HelperTypes.js';
 import type {

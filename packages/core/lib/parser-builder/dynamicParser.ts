@@ -1,5 +1,5 @@
-import type { IParserConfig } from '@chevrotain/types';
-import { EmbeddedActionsParser, type TokenVocabulary } from 'chevrotain';
+import { EmbeddedActionsParser } from '@traqula/chevrotain';
+import type { IParserConfig, TokenVocabulary } from '@traqula/chevrotain';
 import type { ParseRuleMap } from './builderTypes.js';
 import type { CstDef, ImplArgs, ParserRule } from './ruleDefTypes.js';
 

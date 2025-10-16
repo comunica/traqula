@@ -1,4 +1,4 @@
-import type { ParserMethod } from 'chevrotain';
+import type { ParserMethod } from '@traqula/chevrotain';
 import type { ParserRule } from './ruleDefTypes.js';
 
 /**

@@ -1,5 +1,5 @@
+import type { TokenType } from '@traqula/chevrotain';
 import type { RuleDefReturn, Wrap } from '@traqula/core';
-import type { TokenType } from 'chevrotain';
 import * as l from '../lexer/index.js';
 import type { SparqlGrammarRule, SparqlRule } from '../sparql11HelperTypes.js';
 import type { DatasetClauses, TermIri } from '../Sparql11types.js';

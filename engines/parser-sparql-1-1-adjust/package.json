@@ -17,32 +17,29 @@
   "exports": {
     "./package.json": "./package.json",
     ".": {
-      "types": "./lib/index.d.ts",
-      "import": "./lib/index.js",
-      "require": "./lib/index.cjs"
+      "types": "./dist/esm/lib/index.d.ts",
+      "import": "./dist/esm/lib/index.js",
+      "require": "./dist/cjs/lib/index.js"
     }
   },
-  "main": "lib/index.js",
+  "main": "dist/esm/lib/index.js",
   "publishConfig": {
     "access": "public"
   },
   "files": [
-    "lib/**/*.cjs",
-    "lib/**/*.d.ts",
-    "lib/**/*.js",
-    "lib/**/*.js.map"
+    "dist/**/*.d.ts",
+    "dist/**/*.js",
+    "dist/**/*.js.map"
   ],
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   },
-  "typings": "lib/index",
   "scripts": {
     "build": "yarn build:ts && yarn build:transpile && yarn build:transpile-spec",
-    "build:ts": "node \"../../node_modules/typescript/bin/tsc\"",
-    "build:transpile": " node \"../../node_modules/esbuild/bin/esbuild\" --format=cjs --bundle --log-level=error --outfile=lib/index.cjs lib/index.ts",
-    "build:transpile-spec": " node \"../../node_modules/esbuild/bin/esbuild\" --format=cjs --platform=node --bundle --log-level=error --outfile=spec/parser.cjs spec/parser.ts",
-    "spec:base": "rdf-test-suite spec/parser.cjs http://w3c.github.io/rdf-tests/sparql/sparql11/manifest-all.ttl -c ../../.rdf-test-suite-cache/",
-    "spec:adjust-spec-tests": "rdf-test-suite spec/parser.cjs https://raw.githubusercontent.com/kasei/sparql-12/xsd_datetime_duration/tests/xsd_functions/manifest.ttl -c ../../.rdf-test-suite-cache/",
+    "build:ts": "node \"../../node_modules/typescript/bin/tsc\" -b",
+    "build:transpile": "esbuild \"dist/esm/**/*.js\" --outdir=dist/cjs --platform=node --format=cjs",
+    "spec:base": "rdf-test-suite dist/cjs/spec/parser.js http://w3c.github.io/rdf-tests/sparql/sparql11/manifest-all.ttl -c ../../.rdf-test-suite-cache/",
+    "spec:adjust-spec-tests": "rdf-test-suite dist/cjs/spec/parser.js https://raw.githubusercontent.com/kasei/sparql-12/xsd_datetime_duration/tests/xsd_functions/manifest.ttl -c ../../.rdf-test-suite-cache/",
     "spec:query": "yarn spec:base -- -s http://www.w3.org/TR/sparql11-query/",
     "spec:update": "yarn spec:base -- -s http://www.w3.org/TR/sparql11-update/",
     "spec:earl:query": "yarn spec:query --silent -- -o earl -p spec/earl-meta.json > spec/earl-query.ttl",

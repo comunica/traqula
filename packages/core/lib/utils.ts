@@ -1,5 +1,5 @@
-import type { ITokenConfig, TokenType } from '@chevrotain/types';
-import { createToken as chevcT } from 'chevrotain';
+import type { ITokenConfig, TokenType } from '@traqula/chevrotain';
+import { createToken as chevcT } from '@traqula/chevrotain';
 
 /**
  * Check whether the first two types overlap, if no, return the 3th argument, else the 4th.

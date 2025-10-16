@@ -2,8 +2,12 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
-    "declaration": true
+    "rootDir": ".",
+    "outDir": "dist/esm"
   },
+  "references": [
+    { "path": "../chevrotain" }
+  ],
   "include": ["lib/**/*.ts", "test/**/*.ts"],
-  "exclude": ["lib/**/*.d.ts"]
+  "exclude": ["dist/**"]
 }

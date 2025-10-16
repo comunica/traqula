@@ -1,4 +1,4 @@
-import type { IToken } from 'chevrotain';
+import type { IToken } from '@traqula/chevrotain';
 
 import type {
   SourceLocation,
@@ -10,10 +10,9 @@ import type {
   Node,
   Localized,
   Wrap,
-} from './nodeTypings.js';
-
-export type Typed<Type extends PropertyKey> = { type: Type };
-export type SubTyped<Type extends PropertyKey, Subtype extends PropertyKey> = { type: Type; subType: Subtype };
+  Typed,
+  SubTyped,
+} from './types.js';
 
 export class AstCoreFactory {
   public wrap<T>(val: T, loc: SourceLocation): Wrap<T> {

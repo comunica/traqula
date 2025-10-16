@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { BaseQuad } from '@rdfjs/types';
 import { lex } from '@traqula/rules-sparql-1-1';
-import { importSparql11NoteTests, negativeTest, positiveTest } from '@traqula/test-utils';
+import { getStaticFilePath, importSparql11NoteTests, negativeTest, positiveTest } from '@traqula/test-utils';
 import { DataFactory } from 'rdf-data-factory';
 import { describe, it } from 'vitest';
 import { Parser, sparql11ParserBuilder } from '../lib/index.js';
@@ -12,7 +12,7 @@ describe('a SPARQL 1.1 parser', () => {
   const context = { prefixes: { ex: 'http://example.org/' }};
 
   function _sinkAst(suite: string, test: string, response: object): void {
-    const dir = path.join(__dirname, '..', '..', '..', 'packages', 'test-utils', 'lib', 'statics');
+    const dir = getStaticFilePath();
     const fileLoc = path.join(dir, suite, `${test}.json`);
     // eslint-disable-next-line no-sync
     fs.writeFileSync(fileLoc, JSON.stringify(response, null, 2));

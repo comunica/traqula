@@ -1,5 +1,5 @@
+import { Lexer } from '@traqula/chevrotain';
 import { LexerBuilder, createToken } from '@traqula/core';
-import { Lexer } from 'chevrotain';
 import {
   anonPattern,
   blankNodeLabelPattern,

@@ -18,25 +18,24 @@
   "exports": {
     "./package.json": "./package.json",
     ".": {
-      "types": "./lib/index.d.ts",
-      "import": "./lib/index.js",
-      "require": "./lib/index.cjs"
+      "types": "./dist/esm/lib/index.d.ts",
+      "import": "./dist/esm/lib/index.js",
+      "require": "./dist/cjs/lib/index.js"
     }
   },
-  "main": "lib/index.js",
+  "main": "dist/esm/lib/index.js",
   "publishConfig": {
     "access": "public"
   },
   "files": [
-    "lib/**/*.cjs",
-    "lib/**/*.d.ts",
-    "lib/**/*.js",
-    "lib/**/*.js.map"
+    "dist/**/*.d.ts",
+    "dist/**/*.js",
+    "dist/**/*.js.map"
   ],
   "scripts": {
     "build": "yarn build:ts && yarn build:transpile",
-    "build:ts": "node \"../../node_modules/typescript/bin/tsc\"",
-    "build:transpile": "node \"../../node_modules/esbuild/bin/esbuild\" --format=cjs --bundle --log-level=error --outfile=lib/index.cjs lib/index.ts"
+    "build:ts": "node \"../../node_modules/typescript/bin/tsc\" -b",
+    "build:transpile": "esbuild \"dist/esm/**/*.js\" --outdir=dist/cjs/lib --platform=node --format=cjs"
   },
   "dependencies": {
     "@traqula/core": "^0.0.21",

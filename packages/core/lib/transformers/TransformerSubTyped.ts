@@ -1,4 +1,4 @@
-import type { Node } from './nodeTypings.js';
+import type { SubTyped, Typed } from '../types.js';
 import type {
   SelectiveTraversalContext,
   TransformContext,
@@ -7,7 +7,7 @@ import type {
 import type { DefaultNodePreVisitor, Safeness, SafeWrap } from './TransformerTyped.js';
 import { TransformerTyped } from './TransformerTyped.js';
 
-export class TransformerSubTyped<Nodes extends Pick<Node, 'type' | 'subType'>> extends TransformerTyped<Nodes> {
+export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<Nodes> {
   public constructor(
     defaultContext: TransformContext = {},
     defaultNodePreVisitor: DefaultNodePreVisitor<Nodes> = {},
@@ -36,18 +36,18 @@ export class TransformerSubTyped<Nodes extends Pick<Node, 'type' | 'subType'>> e
   public transformNodeSpecific<Safe extends Safeness = 'safe', OutType = unknown>(
     startObject: object,
     nodeCallBacks: {[T in Nodes['type']]?: {
-      transform?: (copy: SafeWrap<Safe, Extract<Nodes, { type: T }>>, orig: Extract<Nodes, { type: T }>) => unknown;
-      preVisitor?: (orig: Extract<Nodes, { type: T }>) => TransformContext;
+      transform?: (copy: SafeWrap<Safe, Extract<Nodes, Typed<T>>>, orig: Extract<Nodes, Typed<T>>) => unknown;
+      preVisitor?: (orig: Extract<Nodes, Typed<T>>) => TransformContext;
     }},
     nodeSpecificCallBacks: {[Type in Nodes['type']]?: {
-      [SubType in Extract<Nodes, { type: Type; subType: string }>['subType']]?: {
-        transform?: (op: SafeWrap<Safe, Extract<Nodes, { type: Type; subType: SubType }>>) => unknown;
-        preVisitor?: (op: Extract<Nodes, { type: Type; subType: SubType }>) => TransformContext;
+      [SubType in Extract<Nodes, SubTyped<Type>>['subType']]?: {
+        transform?: (op: SafeWrap<Safe, Extract<Nodes, SubTyped<Type, SubType>>>) => unknown;
+        preVisitor?: (op: Extract<Nodes, SubTyped<Type, SubType>>) => TransformContext;
       }}},
   ): Safe extends 'unsafe' ? OutType : unknown {
     const transformWrapper = (copy: object, orig: object): unknown => {
       let ogTransform: ((copy: any, orig: any) => unknown) | undefined;
-      const casted = <{ type?: Nodes['type']; subType?: string }>copy;
+      const casted = <SubTyped<Nodes['type']>>copy;
       if (casted.type && casted.subType) {
         const specific = nodeSpecificCallBacks[casted.type];
         if (specific) {
@@ -61,7 +61,7 @@ export class TransformerSubTyped<Nodes extends Pick<Node, 'type' | 'subType'>> e
     };
     const preVisitWrapper = (curObject: object): VisitContext => {
       let ogPreVisit: ((node: any) => VisitContext) | undefined;
-      const casted = <{ type?: Nodes['type']; subType?: string }>curObject;
+      const casted = <SubTyped<Nodes['type']>>curObject;
       if (casted.type && casted.subType) {
         const specific = nodeSpecificCallBacks[casted.type];
         if (specific) {
@@ -83,18 +83,18 @@ export class TransformerSubTyped<Nodes extends Pick<Node, 'type' | 'subType'>> e
   public visitNodeSpecific(
     startObject: object,
     nodeCallBacks: {[T in Nodes['type']]?: {
-      visitor?: (op: Extract<Nodes, { type: T }>) => void;
-      preVisitor?: (op: Extract<Nodes, { type: T }>) => VisitContext;
+      visitor?: (op: Extract<Nodes, Typed<T>>) => void;
+      preVisitor?: (op: Extract<Nodes, Typed<T>>) => VisitContext;
     }},
     nodeSpecificCallBacks: {[Type in Nodes['type']]?:
-      {[Subtype in Extract<Nodes, { type: Type; subType: string }>['subType']]?: {
-        visitor?: (op: Extract<Nodes, { type: Type; subType: Subtype }>) => void;
-        preVisitor?: (op: Extract<Nodes, { type: Type; subType: Subtype }>) => VisitContext;
+      {[Subtype in Extract<Nodes, SubTyped<Type>>['subType']]?: {
+        visitor?: (op: Extract<Nodes, SubTyped<Type, Subtype>>) => void;
+        preVisitor?: (op: Extract<Nodes, SubTyped<Type, Subtype>>) => VisitContext;
       }}},
   ): void {
     const visitWrapper = (curObject: object): void => {
       let ogTransform: ((node: any) => void) | undefined;
-      const casted = <{ type?: Nodes['type']; subType?: string }>curObject;
+      const casted = <SubTyped<Nodes['type']>>curObject;
       if (casted.type && casted.subType) {
         const specific = nodeSpecificCallBacks[casted.type];
         if (specific) {
@@ -110,7 +110,7 @@ export class TransformerSubTyped<Nodes extends Pick<Node, 'type' | 'subType'>> e
     };
     const preVisitWrapper = (curObject: object): VisitContext => {
       let ogPreVisit: ((node: any) => VisitContext) | undefined;
-      const casted = <{ type?: Nodes['type']; subType?: string }>curObject;
+      const casted = <SubTyped<Nodes['type']>>curObject;
       if (casted.type && casted.subType) {
         const specific = nodeSpecificCallBacks[casted.type];
         if (specific) {
@@ -134,10 +134,10 @@ export class TransformerSubTyped<Nodes extends Pick<Node, 'type' | 'subType'>> e
   public traverseSubNodes(
     currentNode: Nodes,
     traverseNode: {[Type in Nodes['type']]?:
-      (op: Extract<Nodes, { type: Type }>) => SelectiveTraversalContext<Nodes> },
+      (op: Extract<Nodes, Typed<Type>>) => SelectiveTraversalContext<Nodes> },
     traverseSubNode: {[Type in Nodes['type']]?:
-      {[Subtype in Extract<Nodes, { type: Type; subType: string }>['subType']]?:
-        (op: Extract<Nodes, { type: Type; subType: Subtype }>) => SelectiveTraversalContext<Nodes> }},
+      {[Subtype in Extract<Nodes, SubTyped<Type>>['subType']]?:
+        (op: Extract<Nodes, SubTyped<Type, Subtype>>) => SelectiveTraversalContext<Nodes> }},
   ): void {
     let didShortCut = false;
 

@@ -38,7 +38,9 @@
   },
   "typings": "lib/index",
   "scripts": {
-    "build": "node \"../../node_modules/typescript/bin/tsc\""
+    "build": "yarn build:ts && yarn build:transpile",
+    "build:ts": "node \"../../node_modules/typescript/bin/tsc\" -b",
+    "build:transpile": "esbuild dist/esm/**/*.js  --outdir=dist/cjs --platform=node --format=cjs --out-extension:.js=.cjs"
   },
   "dependencies": {
     "rdf-data-factory": "^2.0.1",

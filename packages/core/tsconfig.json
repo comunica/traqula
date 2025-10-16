@@ -1,12 +1,9 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "composite": false,
-    "declaration": false,
+    "composite": true,
     "rootDir": ".",
-    "outDir": "dist/esm",
-    "outFile": ".cjs",
-    "forceConsistentCasingInFileNames": true
+    "outDir": "dist/esm"
   },
   "include": ["lib/**/*.ts", "test/**/*.ts"],
   "exclude": ["dist/**"]

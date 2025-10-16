@@ -37,12 +37,12 @@
   },
   "typings": "lib/index",
   "scripts": {
-    "build": "node \"../../node_modules/typescript/bin/tsc\" -b ",
-    "transpile": "tsup dist/esm/**/*.js --format cjs --out-dir dist/cjs"
+    "build": "yarn build:ts && yarn build:transpile",
+    "build:ts": "node \"../../node_modules/typescript/bin/tsc\"",
+    "build:transpile": "esbuild dist/esm/lib/index.js  --outdir=dist/cjs --resolve-extensions=.ts,.js --platform=node --format=cjs"
   },
   "dependencies": {
-    "chevrotain": "^11.0.3",
-    "tsup": "^8.5.0"
+    "chevrotain": "^11.0.3"
   },
   "devDependencies": {
     "@chevrotain/types": "^11.0.3"

@@ -1,7 +1,7 @@
 {
   "name": "@traqula/core",
   "type": "module",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "description": "Core components of Traqula",
   "lsd:module": true,
   "license": "MIT",
@@ -41,6 +41,6 @@
     "build:transpile": "esbuild \"dist/esm/**/*.js\" --outdir=dist/cjs --platform=node --format=cjs"
   },
   "dependencies": {
-    "@traqula/chevrotain": "^0.0.22"
+    "@traqula/chevrotain": "^0.0.23"
   }
 }

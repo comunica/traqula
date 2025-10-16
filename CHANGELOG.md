@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v0.0.23"></a>
+## [v0.0.23](https://github.com/comunica/traqula/compare/v0.0.22...v0.0.23) - 2025-10-16
+
+* [Chore: publish the package.json that makes files commonjs](https://github.com/comunica/traqula/commit/ebdb8f665690218c1bed176b4ce9579b56897b98)
+
 <a name="v0.0.22"></a>
 ## [v0.0.22](https://github.com/comunica/traqula/compare/v0.0.21...v0.0.22) - 2025-10-16
 

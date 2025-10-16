@@ -38,13 +38,10 @@
   "typings": "lib/index",
   "scripts": {
     "build": "yarn build:ts && yarn build:transpile",
-    "build:ts": "node \"../../node_modules/typescript/bin/tsc\"",
-    "build:transpile": "esbuild dist/esm/lib/index.js  --outdir=dist/cjs --resolve-extensions=.ts,.js --platform=node --format=cjs"
+    "build:ts": "node \"../../node_modules/typescript/bin/tsc\" -b",
+    "build:transpile": "esbuild \"dist/esm/**/*.js\" --outdir=dist/cjs --platform=node --format=cjs"
   },
   "dependencies": {
-    "chevrotain": "^11.0.3"
-  },
-  "devDependencies": {
-    "@chevrotain/types": "^11.0.3"
+    "@traqula/chevrotain": "^0.0.21"
   }
 }

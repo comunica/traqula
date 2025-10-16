@@ -1,5 +1,11 @@
-import type { ILexerConfig, IParserConfig, IRecognitionException } from '@chevrotain/types';
-import type { TokenType, TokenVocabulary, EmbeddedActionsParser } from 'chevrotain';
+import type {
+  ILexerConfig,
+  IParserConfig,
+  IRecognitionException,
+  TokenType,
+  TokenVocabulary,
+  EmbeddedActionsParser,
+} from '@traqula/chevrotain';
 import { LexerBuilder } from '../lexer-builder/LexerBuilder.js';
 import type { CheckOverlap } from '../utils.js';
 import type {

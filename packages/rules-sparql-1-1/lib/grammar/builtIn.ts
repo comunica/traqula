@@ -1,4 +1,4 @@
-import type { IOrAlt } from '@chevrotain/types';
+import type { IOrAlt } from '@traqula/chevrotain';
 import type { ImplArgs } from '@traqula/core';
 import {
   unCapitalize,

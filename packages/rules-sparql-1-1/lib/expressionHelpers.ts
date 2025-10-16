@@ -1,5 +1,5 @@
+import type { TokenType } from '@traqula/chevrotain';
 import { unCapitalize } from '@traqula/core';
-import type { TokenType } from 'chevrotain';
 import { var_, expression, expressionList, groupGraphPattern } from './grammar/index.js';
 import * as l from './lexer/index.js';
 import type { SparqlGrammarRule } from './sparql11HelperTypes.js';

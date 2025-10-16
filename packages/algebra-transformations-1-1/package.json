@@ -35,8 +35,8 @@
   ],
   "scripts": {
     "build": "yarn build:ts && yarn build:transpile",
-    "build:ts": "node \"../../node_modules/typescript/bin/tsc\"",
-    "build:transpile": "esbuild dist/esm/**/*.js  --outdir=dist/cjs --platform=node --format=cjs --out-extension:.js=.cjs"
+    "build:ts": "node \"../../node_modules/typescript/bin/tsc\" -b",
+    "build:transpile": "esbuild \"dist/esm/**/*.js\" --outdir=dist/cjs/lib --platform=node --format=cjs"
   },
   "dependencies": {
     "@traqula/core": "^0.0.21",

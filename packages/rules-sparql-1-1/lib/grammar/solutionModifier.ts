@@ -1,4 +1,4 @@
-import type { IToken } from '@chevrotain/types';
+import type { IToken } from '@traqula/chevrotain';
 import type { Wrap } from '@traqula/core';
 import * as l from '../lexer/index.js';
 import type { SparqlGrammarRule, SparqlRule } from '../sparql11HelperTypes.js';

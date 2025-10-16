@@ -1,4 +1,4 @@
-import type { IToken } from 'chevrotain';
+import type { IToken } from '@traqula/chevrotain';
 
 import type {
   SourceLocation,

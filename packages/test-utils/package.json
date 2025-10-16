@@ -29,6 +29,7 @@
     "dist/**/*.d.ts",
     "dist/**/*.js",
     "dist/**/*.js.map",
+    "dist/**/package.json",
     "lib/generators/**/*.json",
     "lib/generators/**/*.sparql"
   ],

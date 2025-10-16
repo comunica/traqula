@@ -29,7 +29,8 @@
   "files": [
     "dist/**/*.d.ts",
     "dist/**/*.js",
-    "dist/**/*.js.map"
+    "dist/**/*.js.map",
+    "dist/**/package.json"
   ],
   "engines": {
     "node": "^20.19.0 || >=22.12.0"

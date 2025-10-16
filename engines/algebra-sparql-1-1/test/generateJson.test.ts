@@ -3,7 +3,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { algebraUtils } from '@traqula/algebra-transformations-1-1';
 import { Parser } from '@traqula/parser-sparql-1-1';
-import { sparqlQueries } from '@traqula/test-utils';
+import { sparqlQueries, getStaticFilePath } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
 import { toAlgebra } from '../lib/index.js';
 import { suites } from './algebra.test.js';
@@ -11,7 +11,7 @@ import { suites } from './algebra.test.js';
 // WARNING: use this script with caution!
 // After running this script, manual inspection of the output is needed to make sure that conversion happened correctly.
 const parser = new Parser();
-const rootDir = path.join(__dirname, '..', '..', '..', 'packages', 'test-utils', 'lib', 'statics', 'algebra');
+const rootDir = getStaticFilePath('algebra');
 const rootJson = path.join(rootDir, 'algebra');
 const rootJsonBlankToVariable = path.join(rootDir, 'algebra-blank-to-var');
 

@@ -1,5 +1,5 @@
 import type * as RDF from '@rdfjs/types';
-import { createAlgebraContext, findAllVariables, algebraUtils, Util } from '@traqula/algebra-transformations-1-1';
+import { createAlgebraContext, findAllVariables, algebraUtils } from '@traqula/algebra-transformations-1-1';
 import { Parser as TraqulaParser } from '@traqula/parser-sparql-1-1';
 import { positiveTest } from '@traqula/test-utils';
 import { translate } from 'sparqlalgebrajs';
@@ -7,6 +7,7 @@ import { Parser } from 'sparqljs';
 import { describe, bench } from 'vitest';
 import { toAlgebra } from '../lib/index.js';
 import { queryLargeObjectList } from './heatmap.js';
+import * as Util from './sparqlAlgebraUtils.js';
 
 describe('toAlgebra 1.1, exclude parser construction', () => {
   const traqulaParser = new TraqulaParser();

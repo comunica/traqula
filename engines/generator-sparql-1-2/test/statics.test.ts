@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type * as T12 from '@traqula/rules-sparql-1-1';
 import { AstFactory } from '@traqula/rules-sparql-1-2';
-import { positiveTest } from '@traqula/test-utils';
+import { getStaticFilePath, positiveTest } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
 import { Generator } from '../lib/index.js';
 
@@ -11,7 +11,7 @@ describe('a SPARQL 1.2 generator', () => {
   const F = new AstFactory();
 
   function _sinkGenerated(suite: string, test: string, response: string): void {
-    const dir = path.join(__dirname, '..', '..', '..', 'packages', 'test-utils', 'lib', 'statics');
+    const dir = getStaticFilePath();
     const fileLoc = path.join(dir, suite, `${test}-generated.sparql`);
     // eslint-disable-next-line no-sync
     fs.writeFileSync(fileLoc, response);

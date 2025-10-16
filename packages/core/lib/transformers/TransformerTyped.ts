@@ -1,4 +1,4 @@
-import type { Node } from './nodeTypings.js';
+import type { Typed } from '../types.js';
 import type { SelectiveTraversalContext, TransformContext, VisitContext } from './TransformerObject.js';
 import { TransformerObject } from './TransformerObject.js';
 
@@ -6,9 +6,9 @@ export type Safeness = 'safe' | 'unsafe';
 export type SafeWrap<Safe extends Safeness, obj extends object> =
   Safe extends 'safe' ? {[key in keyof obj]: unknown } : obj;
 
-export type DefaultNodePreVisitor<Nodes extends Pick<Node, 'type'>> = {[T in Nodes['type']]?: TransformContext };
+export type DefaultNodePreVisitor<Nodes extends Typed> = {[T in Nodes['type']]?: TransformContext };
 
-export class TransformerTyped<Nodes extends Pick<Node, 'type'>> extends TransformerObject {
+export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
   public constructor(
     defaultContext: TransformContext = {},
     protected defaultNodePreVisitor: DefaultNodePreVisitor<Nodes> = {},
@@ -39,13 +39,13 @@ export class TransformerTyped<Nodes extends Pick<Node, 'type'>> extends Transfor
   public transformNode<Safe extends Safeness = 'safe', OutType = unknown>(
     startObject: object,
     nodeCallBacks: {[T in Nodes['type']]?: {
-      transform?: (copy: SafeWrap<Safe, Extract<Nodes, { type: T }>>, orig: Extract<Nodes, { type: T }>) => unknown;
-      preVisitor?: (orig: Extract<Nodes, { type: T }>) => TransformContext;
+      transform?: (copy: SafeWrap<Safe, Extract<Nodes, Typed<T>>>, orig: Extract<Nodes, Typed<T>>) => unknown;
+      preVisitor?: (orig: Extract<Nodes, Typed<T>>) => TransformContext;
     }},
   ): Safe extends 'unsafe' ? OutType : unknown {
     const transformWrapper = (copy: object, orig: object): unknown => {
       let ogTransform: ((copy: any, orig: any) => unknown) | undefined;
-      const casted = <{ type?: Nodes['type'] }>copy;
+      const casted = <Typed<Nodes['type']>>copy;
       if (casted.type) {
         ogTransform = nodeCallBacks[casted.type]?.transform;
       }
@@ -55,7 +55,7 @@ export class TransformerTyped<Nodes extends Pick<Node, 'type'>> extends Transfor
     const preVisitWrapper = (curObject: object): VisitContext => {
       let ogPreVisit: ((node: any) => VisitContext) | undefined;
       let nodeContext: VisitContext = {};
-      const casted = <{ type?: Nodes['type'] }>curObject;
+      const casted = <Typed<Nodes['type']>>curObject;
       if (casted.type) {
         ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
         nodeContext = nodeDefaults[casted.type] ?? nodeContext;
@@ -74,12 +74,12 @@ export class TransformerTyped<Nodes extends Pick<Node, 'type'>> extends Transfor
   public visitNode(
     startObject: object,
     nodeCallBacks: {[T in Nodes['type']]?: {
-      visitor?: (op: Extract<Nodes, { type: T }>) => void;
-      preVisitor?: (op: Extract<Nodes, { type: T }>) => VisitContext;
+      visitor?: (op: Extract<Nodes, Typed<T>>) => void;
+      preVisitor?: (op: Extract<Nodes, Typed<T>>) => VisitContext;
     }},
   ): void {
     const visitorWrapper = (curObject: object): void => {
-      const casted = <{ type?: Nodes['type'] }>curObject;
+      const casted = <Typed<Nodes['type']>>curObject;
       if (casted.type) {
         const ogTransform = nodeCallBacks[casted.type]?.visitor;
         if (ogTransform) {
@@ -91,7 +91,7 @@ export class TransformerTyped<Nodes extends Pick<Node, 'type'>> extends Transfor
     const preVisitWrapper = (curObject: object): VisitContext => {
       let ogPreVisit: ((node: any) => VisitContext) | undefined;
       let nodeContext: VisitContext = {};
-      const casted = <{ type?: Nodes['type'] }>curObject;
+      const casted = <Typed<Nodes['type']>>curObject;
       if (casted.type) {
         ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
         nodeContext = nodeDefaults[casted.type] ?? nodeContext;
@@ -108,7 +108,7 @@ export class TransformerTyped<Nodes extends Pick<Node, 'type'>> extends Transfor
    */
   public traverseNodes(
     currentNode: Nodes,
-    traverse: {[T in Nodes['type']]?: (op: Extract<Nodes, { type: T }>) => SelectiveTraversalContext<Nodes> },
+    traverse: {[T in Nodes['type']]?: (op: Extract<Nodes, Typed<T>>) => SelectiveTraversalContext<Nodes> },
   ): void {
     let didShortCut = false;
 

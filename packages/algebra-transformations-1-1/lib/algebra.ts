@@ -1,4 +1,5 @@
 import type * as RDF from '@rdfjs/types';
+import type { Typed, SubTyped } from '@traqula/core';
 
 export enum Types {
   ASK = 'ask',
@@ -74,21 +75,12 @@ export type TypedOperation<T extends Types> = Extract<Operation, { type: T }>;
 export type TypedExpression<T extends ExpressionTypes> = Extract<Expression, { subType: T }>;
 
 // ----------------------- ABSTRACTS -----------------------
-/**
- * Open interface describing an operation. This type will often be used to reference to 'input operations'.
- * A closed form of this type is KnownOperation.
- * We provide a version of the algebra that refers to the KnownOperation instead of the open interface.
- */
-export interface BaseOperation {
-  type: string;
-  subType?: string;
-  metadata?: Record<string, unknown>;
-}
+export interface BaseOperation extends Typed { }
 
 /**
  * Open interface describing an expression
  */
-export interface BaseExpression extends BaseOperation {
+export interface BaseExpression extends BaseOperation, SubTyped<Types.EXPRESSION> {
   type: Types.EXPRESSION;
   subType: string;
 }

@@ -47,7 +47,7 @@ which contains all possible values for the `type` field in the output results.
 Besides that it also contains all the TypeScript interfaces of the possible output results.
 The output of the `toAlgebra` function will always be an `Algebra.Operation` instance.
 
-The best way to see what output would be generated is to look in the [`test` folder](../../packages/test-utils/lib/statics/algebra),
+The best way to see what output would be generated is to look in the [`test` folder](../../packages/test-utils/statics/algebra),
 where we have many SPARQL queries and their corresponding algebra output.
 
 ## Deviations from the spec

@@ -1,14 +1,5 @@
-import type {
-  BoundAggregate,
-  Expression,
-  Operation,
-  Pattern,
-  TypedExpression,
-  TypedOperation,
-  Update,
-} from './algebra.js';
-import { ExpressionTypes, Types } from './algebra.js';
-import { AlgebraFactory } from './algebraFactory.js';
+import { ExpressionTypes, Types, AlgebraFactory } from '@traqula/algebra-transformations-1-1';
+import type { Algebra } from '@traqula/algebra-transformations-1-1';
 
 /**
  * Recurses through the given algebra tree
@@ -19,8 +10,8 @@ import { AlgebraFactory } from './algebraFactory.js';
  * @param { [type: string]: (op: Operation) => boolean } callbacks - A map of required callback Operations.
  */
 export function recurseOperation(
-  op: Operation,
-  callbacks: {[T in Types]?: (op: TypedOperation<T>,) => boolean },
+  op: Algebra.Operation,
+  callbacks: {[T in Types]?: (op: Algebra.TypedOperation<T>,) => boolean },
 ): void {
   const result = op;
   let doRecursion = true;
@@ -34,7 +25,7 @@ export function recurseOperation(
     return;
   }
 
-  const recurseOp = (op: Operation): void => recurseOperation(op, callbacks);
+  const recurseOp = (op: Algebra.Operation): void => recurseOperation(op, callbacks);
 
   switch (result.type) {
     case Types.ALT:
@@ -184,7 +175,7 @@ export function recurseOperation(
  * @property {boolean} copyMetadata - If the metadata object should be copied. Defaults to true.
  */
 export interface RecurseResult {
-  result: Operation;
+  result: Algebra.Operation;
   recurse: boolean;
   copyMetadata?: boolean;
 }
@@ -196,7 +187,7 @@ export interface RecurseResult {
  * @property {boolean} copyMetadata - If the metadata object should be copied. Defaults to true.
  */
 export interface ExpressionRecurseResult {
-  result: Expression;
+  result: Algebra.Expression;
   recurse: boolean;
   copyMetadata?: boolean;
 }
@@ -214,12 +205,12 @@ export interface ExpressionRecurseResult {
  * @returns {Operation} - The copied result.
  */
 export function mapOperationOld(
-  op: Operation,
+  op: Algebra.Operation,
   callbacks: {
-    [T in Types]?: (op: TypedOperation<T>, factory: AlgebraFactory) => RecurseResult } &
-    {[T in ExpressionTypes]?: (expr: TypedExpression<T>, factory: AlgebraFactory) => ExpressionRecurseResult },
+    [T in Types]?: (op: Algebra.TypedOperation<T>, factory: AlgebraFactory) => RecurseResult } &
+    {[T in ExpressionTypes]?: (expr: Algebra.TypedExpression<T>, factory: AlgebraFactory) => ExpressionRecurseResult },
   factory?: AlgebraFactory,
-): Operation {
+): Algebra.Operation {
   let result = op;
   let doRecursion = true;
   let copyMetadata = true;
@@ -236,20 +227,20 @@ export function mapOperationOld(
   }
 
   let toCopyMetadata;
-  if (copyMetadata && (result.metadata ?? op.metadata)) {
-    toCopyMetadata = { ...result.metadata, ...op.metadata };
+  if (copyMetadata && ((<any> result).metadata ?? (<any> op).metadata)) {
+    toCopyMetadata = { ...(<any> result).metadata, ...(<any> op).metadata };
   }
 
   if (!doRecursion) {
     // Inherit metadata
     if (toCopyMetadata) {
-      result.metadata = toCopyMetadata;
+      (<any> result).metadata = toCopyMetadata;
     }
 
     return result;
   }
 
-  const mapOp = (op: Operation): Operation =>
+  const mapOp = (op: Algebra.Operation): Algebra.Operation =>
     mapOperationOld(op, callbacks, factory);
 
   // Several casts here might be wrong though depending on the callbacks output
@@ -261,10 +252,10 @@ export function mapOperationOld(
       result = factory.createAsk(mapOp(result.input));
       break;
     case Types.BGP:
-      result = factory.createBgp(<Pattern[]> result.patterns.map(mapOp));
+      result = factory.createBgp(<Algebra.Pattern[]> result.patterns.map(mapOp));
       break;
     case Types.CONSTRUCT:
-      result = factory.createConstruct(mapOp(result.input), <Pattern[]> result.template.map(mapOp));
+      result = factory.createConstruct(mapOp(result.input), <Algebra.Pattern[]> result.template.map(mapOp));
       break;
     case Types.DESCRIBE:
       result = factory.createDescribe(mapOp(result.input), result.terms);
@@ -279,11 +270,11 @@ export function mapOperationOld(
       result = factory.createExtend(
         mapOp(result.input),
         result.variable,
-        <Expression> mapOp(result.expression),
+        <Algebra.Expression> mapOp(result.expression),
       );
       break;
     case Types.FILTER:
-      result = factory.createFilter(mapOp(result.input), <Expression> mapOp(result.expression));
+      result = factory.createFilter(mapOp(result.input), <Algebra.Expression> mapOp(result.expression));
       break;
     case Types.FROM:
       result = factory.createFrom(mapOp(result.input), [ ...result.default ], [ ...result.named ]);
@@ -295,7 +286,7 @@ export function mapOperationOld(
       result = factory.createGroup(
         mapOp(result.input),
         [ ...result.variables ],
-        <BoundAggregate[]> result.aggregates.map(mapOp),
+        <Algebra.BoundAggregate[]> result.aggregates.map(mapOp),
       );
       break;
     case Types.INV:
@@ -308,7 +299,7 @@ export function mapOperationOld(
       result = factory.createLeftJoin(
         mapOp(result.input[0]),
         mapOp(result.input[1]),
-        result.expression ? <Expression> mapOp(result.expression) : undefined,
+        result.expression ? <Algebra.Expression> mapOp(result.expression) : undefined,
       );
       break;
     case Types.LINK:
@@ -327,7 +318,7 @@ export function mapOperationOld(
       result = factory.createOneOrMorePath(<any> mapOp(result.path));
       break;
     case Types.ORDER_BY:
-      result = factory.createOrderBy(mapOp(result.input), <Expression[]> result.expressions.map(mapOp));
+      result = factory.createOrderBy(mapOp(result.input), <Algebra.Expression[]> result.expressions.map(mapOp));
       break;
     case Types.PATH:
       result = factory.createPath(
@@ -372,12 +363,12 @@ export function mapOperationOld(
       break;
     // UPDATE operations
     case Types.COMPOSITE_UPDATE:
-      result = factory.createCompositeUpdate(<Update[]> result.updates.map(mapOp));
+      result = factory.createCompositeUpdate(<Algebra.Update[]> result.updates.map(mapOp));
       break;
     case Types.DELETE_INSERT:
       result = factory.createDeleteInsert(
-        result.delete ? <Pattern[]> result.delete.map(mapOp) : undefined,
-        result.insert ? <Pattern[]> result.insert.map(mapOp) : undefined,
+        result.delete ? <Algebra.Pattern[]> result.delete.map(mapOp) : undefined,
+        result.insert ? <Algebra.Pattern[]> result.insert.map(mapOp) : undefined,
         result.where ? mapOp(result.where) : undefined,
       );
       break;
@@ -407,7 +398,7 @@ export function mapOperationOld(
 
   // Inherit metadata
   if (toCopyMetadata) {
-    result.metadata = toCopyMetadata;
+    (<any> result).metadata = toCopyMetadata;
   }
 
   return result;
@@ -423,11 +414,12 @@ export function mapOperationOld(
  * @returns {Operation} - The copied result.
  */
 export function mapExpression(
-  expr: Expression,
-  callbacks: {[T in Types]?: (op: TypedOperation<T>, factory: AlgebraFactory) => RecurseResult }
-    & {[T in ExpressionTypes]?: (expr: TypedExpression<T>, factory: AlgebraFactory) => ExpressionRecurseResult },
+  expr: Algebra.Expression,
+  callbacks: {[T in Types]?: (op: Algebra.TypedOperation<T>, factory: AlgebraFactory) => RecurseResult }
+    & {[T in ExpressionTypes]?: (expr: Algebra.TypedExpression<T>, factory: AlgebraFactory) =>
+    ExpressionRecurseResult },
   factory?: AlgebraFactory,
-): Expression {
+): Algebra.Expression {
   let result = expr;
   let doRecursion = true;
 
@@ -442,7 +434,7 @@ export function mapExpression(
     return result;
   }
 
-  const mapOp = (op: Operation): Operation =>
+  const mapOp = (op: Algebra.Operation): Algebra.Operation =>
     mapOperationOld(op, callbacks, factory);
 
   switch (result.subType) {
@@ -451,23 +443,23 @@ export function mapExpression(
         return factory.createBoundAggregate(
           result.variable,
           result.aggregator,
-          <Expression> mapOp(result.expression),
+          <Algebra.Expression> mapOp(result.expression),
           result.distinct,
           result.separator,
         );
       }
       return factory.createAggregateExpression(
         result.aggregator,
-        <Expression> mapOp(result.expression),
+        <Algebra.Expression> mapOp(result.expression),
         result.distinct,
         result.separator,
       );
     case ExpressionTypes.EXISTENCE:
       return factory.createExistenceExpression(result.not, mapOp(result.input));
     case ExpressionTypes.NAMED:
-      return factory.createNamedExpression(result.name, <Expression[]> result.args.map(mapOp));
+      return factory.createNamedExpression(result.name, <Algebra.Expression[]> result.args.map(mapOp));
     case ExpressionTypes.OPERATOR:
-      return factory.createOperatorExpression(result.operator, <Expression[]> result.args.map(mapOp));
+      return factory.createOperatorExpression(result.operator, <Algebra.Expression[]> result.args.map(mapOp));
     case ExpressionTypes.TERM:
       return factory.createTermExpression(result.term);
     case ExpressionTypes.WILDCARD:

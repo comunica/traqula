@@ -1,3 +1,12 @@
+export interface Typed<Type extends string = string> {
+  type: Type;
+  subType?: string;
+}
+
+export interface SubTyped<Type extends string = string, SubType extends string = string> extends Typed<Type> {
+  subType: SubType;
+}
+
 export interface Localized {
   /**
    * Location undefined means the node does have a string representation, but it was not clarified.
@@ -14,10 +23,7 @@ export interface Wrap<T> extends Localized {
  * A AST node. Nodes are indexable by their types.
  * When generating, the SUBRULES called should be located within the current location range.
  */
-export interface Node extends Localized {
-  type: string;
-  subType?: string;
-}
+export interface Node extends Localized, Typed {}
 
 export interface SourceLocationBase {
   sourceLocationType: string;

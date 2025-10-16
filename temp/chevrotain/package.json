@@ -1,0 +1,50 @@
+{
+  "name": "@traqula/chevrotain",
+  "type": "module",
+  "version": "0.0.21",
+  "description": "A package used by Traqula to provide a CJS version of Chevrotain (I think this is the way)",
+  "lsd:module": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/comunica/traqula.git",
+    "directory": "packages/chevrotain"
+  },
+  "bugs": {
+    "url": "https://github.com/comunica/traqula/issues"
+  },
+  "sideEffects": false,
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./lib/index.js",
+      "require": "./lib/index.cjs"
+    }
+  },
+  "main": "lib/index.js",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "lib/**/*.cjs",
+    "lib/**/*.d.ts",
+    "lib/**/*.js",
+    "lib/**/*.js.map"
+  ],
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
+  },
+  "typings": "lib/index",
+  "scripts": {
+    "build": "yarn build:ts && yarn build:transpile",
+    "build:ts": "node \"../../node_modules/typescript/bin/tsc\"",
+    "build:transpile": "node \"../../node_modules/esbuild/bin/esbuild\" --format=cjs --log-level=error --outfile=lib/index.cjs lib/index.ts"
+  },
+  "dependencies": {
+    "chevrotain": "^11.0.3"
+  },
+  "devDependencies": {
+    "@chevrotain/types": "^11.0.3"
+  }
+}

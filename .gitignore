@@ -9,6 +9,7 @@ documentation
 tsconfig.tsbuildinfo
 *.log
 /.*
+**/dist
 
 engines/*/lib/**/*.cjs
 engines/*/lib/**/*.js

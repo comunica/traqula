@@ -2,7 +2,9 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
-    "declaration": true
+    "rootDir": ".",
+    "declaration": true,
+    "outDir": "dist/esm"
   },
   "references": [
     { "path": "../../packages/core" },
@@ -15,5 +17,5 @@
     { "path": "../generator-sparql-1-2" }
   ],
   "include": ["lib/**/*.ts", "test/**/*.ts"],
-  "exclude": ["lib/**/*.d.ts"]
+  "exclude": ["dist/**"]
 }

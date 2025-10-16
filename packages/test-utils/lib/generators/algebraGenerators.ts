@@ -2,8 +2,9 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { readFileSync } from '../fileUtils.js';
+import { getStaticFilePath } from './utils.js';
 
-const rootDir = path.join(__dirname, 'algebra');
+const rootDir = getStaticFilePath('algebra');
 const rootSparql = path.join(rootDir, 'sparql');
 const rootJson = path.join(rootDir, 'algebra');
 const rootJsonBlankToVariable = path.join(rootDir, 'algebra-blank-to-var');

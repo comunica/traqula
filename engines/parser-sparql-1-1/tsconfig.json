@@ -2,7 +2,9 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
-    "declaration": true
+    "rootDir": ".",
+    "declaration": true,
+    "outDir": "dist/esm"
   },
   "references": [
     { "path": "../../packages/core" },
@@ -10,5 +12,5 @@
     { "path": "../../packages/test-utils" }
   ],
   "include": ["lib/**/*.ts", "test/**/*.ts", "spec/**/*.ts"],
-  "exclude": ["lib/**/*.d.ts"]
+  "exclude": ["dist/**"]
 }

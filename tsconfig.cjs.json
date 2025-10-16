@@ -7,7 +7,6 @@
     { "path": "packages/rules-sparql-1-1/tsconfig.cjs.json" },
     { "path": "packages/rules-sparql-1-1-adjust/tsconfig.cjs.json" },
     { "path": "packages/rules-sparql-1-2/tsconfig.cjs.json" },
-    { "path": "packages/test-utils/tsconfig.cjs.json" },
 
     { "path": "engines/algebra-sparql-1-1/tsconfig.cjs.json" },
     { "path": "engines/algebra-sparql-1-2/tsconfig.cjs.json" },

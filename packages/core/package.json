@@ -22,7 +22,7 @@
       "require": "./dist/cjs/lib/index.js"
     }
   },
-  "main": "dist/esm/index.js",
+  "main": "dist/esm/lib/index.js",
   "publishConfig": {
     "access": "public"
   },
@@ -37,10 +37,12 @@
   },
   "typings": "lib/index",
   "scripts": {
-    "build": "node \"../../node_modules/typescript/bin/tsc\""
+    "build": "node \"../../node_modules/typescript/bin/tsc\" -b ",
+    "transpile": "tsup dist/esm/**/*.js --format cjs --out-dir dist/cjs"
   },
   "dependencies": {
-    "chevrotain": "^11.0.3"
+    "chevrotain": "^11.0.3",
+    "tsup": "^8.5.0"
   },
   "devDependencies": {
     "@chevrotain/types": "^11.0.3"

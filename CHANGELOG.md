@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v0.0.24"></a>
+## [v0.0.24](https://github.com/comunica/traqula/compare/v0.0.23...v0.0.24) - 2025-10-17
+
+* [Chore: compile cjs using tsc (#66)](https://github.com/comunica/traqula/commit/7940e18e9ae6c320dc596310edf1cd26e6989af6)
+
 <a name="v0.0.23"></a>
 ## [v0.0.23](https://github.com/comunica/traqula/compare/v0.0.22...v0.0.23) - 2025-10-16
 

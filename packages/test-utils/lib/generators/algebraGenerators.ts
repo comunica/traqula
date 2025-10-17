@@ -1,13 +1,13 @@
-/* eslint-disable import/no-nodejs-modules,no-sync */
-import * as fs from 'node:fs';
-import * as path from 'node:path';
+/* eslint-disable import/no-nodejs-modules */
+import { lstatSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { readFileSync } from '../fileUtils.js';
 import { getStaticFilePath } from './utils.js';
 
 const rootDir = getStaticFilePath('algebra');
-const rootSparql = path.join(rootDir, 'sparql');
-const rootJson = path.join(rootDir, 'algebra');
-const rootJsonBlankToVariable = path.join(rootDir, 'algebra-blank-to-var');
+const rootSparql = join(rootDir, 'sparql');
+const rootJson = join(rootDir, 'algebra');
+const rootJsonBlankToVariable = join(rootDir, 'algebra-blank-to-var');
 
 export interface algebraTestGen {
   name: string;
@@ -26,15 +26,15 @@ export function* sparqlAlgebraTests(suite: AlgebraTestSuite, blankToVariable: bo
 Generator<algebraTestGen> {
   // Relative path starting from roots declared above.
   function* subGen(relativePath: string): Generator<algebraTestGen> {
-    const absolutePath = path.join(blankToVariable ? rootJsonBlankToVariable : rootJson, relativePath);
-    if (fs.lstatSync(absolutePath).isDirectory()) {
+    const absolutePath = join(blankToVariable ? rootJsonBlankToVariable : rootJson, relativePath);
+    if (lstatSync(absolutePath).isDirectory()) {
       // Recursion
-      for (const sub of fs.readdirSync(absolutePath)) {
-        yield* subGen(path.join(relativePath, sub));
+      for (const sub of readdirSync(absolutePath)) {
+        yield* subGen(join(relativePath, sub));
       }
     } else {
       const name = relativePath.replace(/\.json$/u, '');
-      const sparqlPath = path.join(rootSparql, relativePath.replace(/\.json/u, '.sparql'));
+      const sparqlPath = join(rootSparql, relativePath.replace(/\.json/u, '.sparql'));
       yield {
         name,
         json: JSON.parse(readFileSync(absolutePath)),
@@ -44,7 +44,7 @@ Generator<algebraTestGen> {
     }
   }
 
-  const subfolders = fs.readdirSync(blankToVariable ? rootJsonBlankToVariable : rootJson);
+  const subfolders = readdirSync(blankToVariable ? rootJsonBlankToVariable : rootJson);
   if (subfolders.includes(suite)) {
     yield* subGen(suite);
   }
@@ -53,15 +53,15 @@ Generator<algebraTestGen> {
 type GenQuery = { query: string; name: string };
 export function* sparqlQueries(suite: AlgebraTestSuite): Generator<GenQuery> {
   function* subGen(relativePath: string): Generator<GenQuery> {
-    const absolutePath = path.join(rootSparql, relativePath);
-    if (fs.lstatSync(absolutePath).isDirectory()) {
+    const absolutePath = join(rootSparql, relativePath);
+    if (lstatSync(absolutePath).isDirectory()) {
       // Recursion
-      for (const sub of fs.readdirSync(absolutePath)) {
-        yield* subGen(path.join(relativePath, sub));
+      for (const sub of readdirSync(absolutePath)) {
+        yield* subGen(join(relativePath, sub));
       }
     } else {
       const name = relativePath.replace(/\.sparql$/u, '');
-      const content = fs.readFileSync(absolutePath, 'utf-8');
+      const content = readFileSync(absolutePath, 'utf-8');
       yield {
         name,
         query: content.replaceAll(/\r?\n/gu, '\n'),
@@ -69,7 +69,7 @@ export function* sparqlQueries(suite: AlgebraTestSuite): Generator<GenQuery> {
     }
   }
 
-  const subfolders = fs.readdirSync(rootSparql);
+  const subfolders = readdirSync(rootSparql);
   if (subfolders.includes(suite)) {
     yield* subGen(suite);
   }

@@ -1,5 +1,5 @@
-/* eslint-disable import/no-nodejs-modules,no-sync */
-import * as fs from 'node:fs';
+/* eslint-disable import/no-nodejs-modules */
+import { readdirSync } from 'node:fs';
 import { readFile } from '../fileUtils.js';
 import { getStaticFilePath } from './utils.js';
 
@@ -17,7 +17,7 @@ export function* positiveTest(
   filter?: (name: string) => boolean,
 ): Generator<PositiveTest> {
   const dir = getStaticFilePath(type);
-  const statics = fs.readdirSync(dir);
+  const statics = readdirSync(dir);
   for (const file of statics) {
     if (file.endsWith('.json')) {
       if (filter && !filter(file.replace('.json', ''))) {
@@ -58,7 +58,7 @@ export function* negativeTest(
   filter?: (name: string) => boolean,
 ): Generator<NegativeTest> {
   const dir = getStaticFilePath(type);
-  const statics = fs.readdirSync(dir);
+  const statics = readdirSync(dir);
   for (const file of statics) {
     if (file.endsWith('.sparql')) {
       if (filter && !filter(file.replace('.sparql', ''))) {

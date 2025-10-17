@@ -1,5 +1,9 @@
 import type * as RDF from '@rdfjs/types';
-import * as Trans11 from '@traqula/algebra-transformations-1-1';
+import type * as Trans11 from '@traqula/algebra-transformations-1-1';
+import {
+  createAlgebraContext as createAlgebraContext11,
+  createAstContext as createAstContext11,
+} from '@traqula/algebra-transformations-1-1';
 import type { IndirDef, Patch } from '@traqula/core';
 import { AstFactory } from '@traqula/rules-sparql-1-2';
 import type * as T12 from '@traqula/rules-sparql-1-2';
@@ -11,7 +15,7 @@ export type AlgebraContext = Patch<Trans11.AlgebraContext, {
 export type FlattenedTriple = Patch<Trans11.FlattenedTriple, { predicate: RDF.Term | T12.PathPure }>;
 export type ContextConfigs = Trans11.ContextConfigs;
 export function createAlgebraContext(config: ContextConfigs): AlgebraContext {
-  const context11 = Trans11.createAlgebraContext(config);
+  const context11 = createAlgebraContext11(config);
   return {
     ...context11,
     astFactory: new AstFactory(),
@@ -25,7 +29,7 @@ export type AstContext = Patch<Trans11.AstContext, {
 }>;
 
 export function createAstContext(): AstContext {
-  const context11 = Trans11.createAstContext();
+  const context11 = createAstContext11();
   return {
     ...context11,
     astFactory: new AstFactory(),

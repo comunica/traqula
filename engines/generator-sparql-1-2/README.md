@@ -8,6 +8,8 @@
 
 # Traqula SPARQL 1.2 generator
 
+[![npm version](https://badge.fury.io/js/@traqula%2Fgenerator-sparql-1-2.svg)](https://www.npmjs.com/package/@traqula/generator-sparql-1-2)
+
 Traqula Generator Sparql 1.2 is a [SPARQL 1.2](https://www.w3.org/TR/sparql12-query/#grammar) query generator for TypeScript.
 It can generate SPARQL given the AST created by [Traqula parser SPARQL 1-2](https://github.com/comunica/traqula/tree/main/engines/parser-sparql-1-2).
 

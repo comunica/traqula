@@ -8,6 +8,8 @@
 
 # Traqula parser engine for SPARQL 1.1
 
+[![npm version](https://badge.fury.io/js/@traqula%2Fparser-sparql-1-1.svg)](https://www.npmjs.com/package/@traqula/parser-sparql-1-1)
+
 Traqula Sparql 1.1 is a [SPARQL 1.1](https://www.w3.org/TR/sparql11-query/#grammar) query parser for TypeScript.
 
 ## Installation

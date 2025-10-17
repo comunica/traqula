@@ -1,5 +1,7 @@
 # Traqula Chevrotain package
 
+[![npm version](https://badge.fury.io/js/@traqula%2Fchevrotain.svg)](https://www.npmjs.com/package/@traqula/chevrotain)
+
 Exports the [Chevrotain](https://chevrotain.io/docs/) package and tries to bundle a CJS version too.
 This is NOT a redistribution of Chevrotain, not should a project outside of Traqula depend on this.
 

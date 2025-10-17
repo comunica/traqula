@@ -8,6 +8,8 @@
 
 # Traqula parser engine for SPARQL 1.2
 
+[![npm version](https://badge.fury.io/js/@traqula%2Fparser-sparql-1-2.svg)](https://www.npmjs.com/package/@traqula/parser-sparql-1-2)
+
 Traqula Sparql 1.2 is a [SPARQL 1.2](https://www.w3.org/TR/sparql12-query/#grammar) query parser for TypeScript.
 It is a grammar extension of [Traqula engine-sparql-1-1](https://github.com/comunica/traqula/tree/main/engines/engine-sparql-1-1)
 

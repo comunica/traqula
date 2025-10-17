@@ -8,6 +8,8 @@
 
 # SPARQL to SPARQL Algebra converter
 
+[![npm version](https://badge.fury.io/js/@traqula%2Falgebra-sparql-1-2.svg)](https://www.npmjs.com/package/@traqula/algebra-sparql-1-2)
+
 There is also support for 'non-algebra' entities such as ASK, FROM, etc.
 to make sure the output contains all relevant information from the query.
 

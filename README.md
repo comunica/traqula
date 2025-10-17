@@ -6,6 +6,12 @@
   <strong>A query language transpiler framework for JavaScript</strong>
 </p>
 
+<p align="center">
+<a href="https://github.com/comunica/traqula/actions?query=workflow%3ACI"><img src="https://github.com/comunica/traqula/workflows/CI/badge.svg" alt="Build Status"></a>
+<a href='https://coveralls.io/github/comunica/traqula?branch=main'><img src='https://coveralls.io/repos/github/comunica/traqula/badge.svg?branch=main' alt='Coverage Status' /></a>
+<a href="https://comunica.github.io/traqula/"><img src="https://img.shields.io/badge/doc-code_documentation-blueviolet"/></a>
+</p>
+
 This repository is a [monorepo](https://monorepo.tools/) containing multiple packages.
 The purpose of Traqula is to provide highly flexible parsers/ generators for query languages.
 Traqula achieves this by shipping default configurations as [engines](/engines) which can easily be modified by [builders](https://refactoring.guru/design-patterns/builder) found in the [core package of Traqula](/packages/core).

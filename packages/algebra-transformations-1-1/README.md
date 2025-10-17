@@ -1,5 +1,7 @@
 # Traqula algebra transformations 1.1
 
+[![npm version](https://badge.fury.io/js/@traqula%2Falgebra-transformations-1-1.svg)](https://www.npmjs.com/package/@traqula/algebra-transformations-1-1)
+
 Traqula algebra transformations contains translation functions for translating the [Traqula AST](../rules-sparql-1-1) into SPARQL Algebra.
 The algebra rules and algebra definitions are derived from [SPARQLAlgebra.js](https://github.com/joachimvh/SPARQLAlgebra.js).
 

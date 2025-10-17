@@ -6,7 +6,7 @@ export default defineConfig({
     coverage: {
       enabled: true,
       include: [
-        'packages/*/lib/**/*.js',
+        'packages/*/dist/esm/**/*.js',
       ],
     },
     include: [

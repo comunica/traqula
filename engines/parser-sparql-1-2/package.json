@@ -27,18 +27,18 @@
     "access": "public"
   },
   "files": [
-    "dist/**/*.d.ts",
-    "dist/**/*.js",
-    "dist/**/*.js.map",
-    "dist/**/package.json"
+    "dist/*/lib/**/*.d.ts",
+    "dist/*/lib/**/*.js",
+    "dist/*/lib/**/*.js.map",
+    "dist/cjs/package.json"
   ],
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   },
   "scripts": {
-    "build": "yarn build:ts && yarn build:transpile && yarn build:transpile-spec",
+    "build": "yarn build:ts && yarn build:cjs",
     "build:ts": "node \"../../node_modules/typescript/bin/tsc\" -b",
-    "build:transpile": "esbuild \"dist/esm/**/*.js\" --outdir=dist/cjs --platform=node --format=cjs",
+    "build:cjs": "node \"../../node_modules/typescript/bin/tsc\" -b tsconfig.cjs.json",
     "spec:base-1-1": "rdf-test-suite dist/cjs/spec/parser.js http://w3c.github.io/rdf-tests/sparql/sparql11/manifest-all.ttl -c ../../.rdf-test-suite-cache/",
     "spec:base-1-2": "rdf-test-suite dist/cjs/spec/parser.js https://w3c.github.io/rdf-tests/sparql/sparql12/manifest.ttl -c ../../.rdf-test-suite-cache/",
     "spec:query-1-1": "yarn spec:base-1-1 -- -s http://www.w3.org/TR/sparql11-query/",

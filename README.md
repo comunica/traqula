@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-<a href="https://github.com/comunica/traqula/actions?query=workflow%3ACI"><img src="https://github.com/comunica/traqula/workflows/CI/badge.svg" alt="Build Status"></a>
+<a href="https://github.com/comunica/traqula/actions?query=workflow%3ACI+branch%3Amain"><img src="https://github.com/comunica/traqula/actions/workflows/ci.yml/badge.svg" alt="Build Status"></a>
 <a href='https://coveralls.io/github/comunica/traqula?branch=main'><img src='https://coveralls.io/repos/github/comunica/traqula/badge.svg?branch=main' alt='Coverage Status' /></a>
 <a href="https://comunica.github.io/traqula/"><img src="https://img.shields.io/badge/doc-code_documentation-blueviolet"/></a>
 </p>

@@ -279,7 +279,7 @@ ${errorLine}`);
         parser.setContext(context);
         const result = parser[rule.name](context, ...args);
         if (parser.errors.length > 0) {
-          // Console.log(lexResult);
+          // Console.log(JSON.stringify(lexResult, null, 2));
           if (errorHandler) {
             errorHandler(parser.errors);
           } else {

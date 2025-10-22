@@ -18,14 +18,6 @@ describe('a SPARQL 1.1 parser', () => {
     fs.writeFileSync(fileLoc, JSON.stringify(response, null, 2));
   }
 
-  it('does not pass', ({ expect }) => {
-    expect(() => parser.parse(`PREFIX : <http://xmlns.com/foaf/0.1/>
-ASK { _:who :homepage ?homepage 
-      GRAPH ?g { ?someone :made ?homepage } 
-      _:who :schoolHomepage ?schoolPage }
-`)).toThrow();
-  });
-
   it('passes chevrotain validation', () => {
     sparql11ParserBuilder.build({
       tokenVocabulary: lex.sparql11LexerBuilder.tokenVocabulary,

@@ -39,14 +39,16 @@
     "build": "yarn build:ts && yarn build:cjs",
     "build:ts": "node \"../../node_modules/typescript/bin/tsc\" -b",
     "build:cjs": "node \"../../node_modules/typescript/bin/tsc\" -b tsconfig.cjs.json",
-    "spec:base": "rdf-test-suite dist/cjs/spec/parser.js http://w3c.github.io/rdf-tests/sparql/sparql11/manifest-all.ttl -c ../../.rdf-test-suite-cache/",
+    "spec:base-1-0": "rdf-test-suite dist/cjs/spec/parser.js https://w3c.github.io/rdf-tests/sparql/sparql10/manifest.ttl -c ../../.rdf-test-suite-cache/ --skip \"(syn-bad-GRAPH-breaks-BGP|syn-bad-UNION-breaks-BGP|syn-bad-OPT-breaks-BGP|syn-bad-38|syn-bad-37|syn-bad-36|syn-bad-35|syn-bad-34|blabel-cross-union-bad|blabel-cross-optional-bad|blabel-cross-graph-bad)\"",
+    "spec:base-1-1": "rdf-test-suite dist/cjs/spec/parser.js http://w3c.github.io/rdf-tests/sparql/sparql11/manifest-all.ttl -c ../../.rdf-test-suite-cache/",
     "spec:adjust-spec-tests": "rdf-test-suite dist/cjs/spec/parser.js https://raw.githubusercontent.com/kasei/sparql-12/xsd_datetime_duration/tests/xsd_functions/manifest.ttl -c ../../.rdf-test-suite-cache/",
-    "spec:query": "yarn spec:base -- -s http://www.w3.org/TR/sparql11-query/",
-    "spec:update": "yarn spec:base -- -s http://www.w3.org/TR/sparql11-update/",
+    "spec:query": "yarn spec:base-1-1 -- -s http://www.w3.org/TR/sparql11-query/",
+    "spec:update": "yarn spec:base-1-1 -- -s http://www.w3.org/TR/sparql11-update/",
     "spec:earl:query": "yarn spec:query --silent -- -o earl -p spec/earl-meta.json > spec/earl-query.ttl",
     "spec:earl:update": "yarn spec:update --silent -- -o earl -p spec/earl-meta.json > spec/earl-update.ttl",
-    "spec:all": "yarn spec:base && yarn spec:query && yarn spec:update && yarn spec:adjust-spec-tests",
-    "spec:earl": "yarn spec:earl:query && yarn spec:earl:update"
+    "spec:earl:base-1-0": "yarn spec:base-1-0 --silent -- -o earl -p spec/earl-meta.json > spec/earl-base-1-0.ttl",
+    "spec:all": "yarn spec:base-1-0 && yarn spec:base-1-1 && yarn spec:query && yarn spec:update && yarn spec:adjust-spec-tests",
+    "spec:earl": "yarn spec:earl:base-1-0 && yarn spec:earl:query && yarn spec:earl:update"
   },
   "dependencies": {
     "@traqula/core": "^0.0.24",

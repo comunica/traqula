@@ -12,7 +12,7 @@ import {
   doublePositivePattern,
   integerNegativePattern,
   integerPattern,
-  interferePositivePattern,
+  integerPositivePattern,
   iriRefPattern,
   langTagPattern,
   nilPattern,
@@ -70,7 +70,7 @@ export const double = createToken({ name: 'Double', pattern: doublePattern });
 /**
  * [[149]](https://www.w3.org/TR/sparql11-query/#rINTEGER_POSITIVE)
  */
-export const integerPositive = createToken({ name: 'InterferePositive', pattern: interferePositivePattern });
+export const integerPositive = createToken({ name: 'IntegerPositive', pattern: integerPositivePattern });
 /**
  * [[150]](https://www.w3.org/TR/sparql11-query/#rDECIMAL_POSITIVE)
  */
@@ -132,12 +132,12 @@ export const allTerminals = LexerBuilder.create().add(
   double,
   decimal,
   integer,
-  integerPositive,
-  decimalPositive,
   doublePositive,
-  integerNegative,
-  decimalNegative,
+  decimalPositive,
+  integerPositive,
   doubleNegative,
+  decimalNegative,
+  integerNegative,
   stringLiteralLong1,
   stringLiteralLong2,
   stringLiteral1,

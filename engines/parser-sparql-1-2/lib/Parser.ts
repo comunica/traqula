@@ -1,12 +1,12 @@
 import { ParserBuilder } from '@traqula/core';
 import type { Patch, Wrap, ParserBuildArgs } from '@traqula/core';
 import { sparql11ParserBuilder } from '@traqula/parser-sparql-1-1';
-import type {
-  TermIri,
-} from '@traqula/rules-sparql-1-1';
 import {
   gram as g11,
   sparqlCodepointEscape,
+} from '@traqula/rules-sparql-1-1';
+import type {
+  TermIri,
 } from '@traqula/rules-sparql-1-1';
 import { completeParseContext, copyParseContext, gram as S12, lex as l12 } from '@traqula/rules-sparql-1-2';
 import type * as T12 from '@traqula/rules-sparql-1-2';
@@ -270,15 +270,14 @@ export class Parser {
   protected readonly defaultContext: T12.SparqlContext;
 
   public constructor(
-    args: Pick<ParserBuildArgs, 'parserConfig' | 'lexerConfig'> = {},
-    defaultContext: Partial<T12.SparqlContext> = {},
+    args: Pick<ParserBuildArgs, 'parserConfig' | 'lexerConfig'> & { defaultContext?: Partial<T12.SparqlContext> } = {},
   ) {
     this.parser = sparql12ParserBuilder.build({
       ...args,
       queryPreProcessor: sparqlCodepointEscape,
       tokenVocabulary: l12.sparql12LexerBuilder.tokenVocabulary,
     });
-    this.defaultContext = completeParseContext(defaultContext);
+    this.defaultContext = completeParseContext(args.defaultContext ?? {});
   }
 
   public parse(query: string, context: Partial<T12.SparqlContext> = {}): T12.SparqlQuery {

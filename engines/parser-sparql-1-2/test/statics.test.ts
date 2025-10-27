@@ -4,13 +4,23 @@ import type { BaseQuad } from '@rdfjs/types';
 import { AstFactory, lex as l12 } from '@traqula/rules-sparql-1-2';
 import { positiveTest, importSparql11NoteTests, negativeTest, getStaticFilePath } from '@traqula/test-utils';
 import { DataFactory } from 'rdf-data-factory';
-import { describe, it } from 'vitest';
+import { beforeEach, describe, it } from 'vitest';
 import { Parser, sparql12ParserBuilder } from '../lib/index.js';
 
 describe('a SPARQL 1.2 parser', () => {
-  const parser = new Parser();
-  const F = new AstFactory();
+  const astFactory = new AstFactory({ tracksSourceLocation: false });
+  const sourceTrackingAstFactory = new AstFactory();
+  const sourceTrackingParser = new Parser({
+    defaultContext: { astFactory: sourceTrackingAstFactory },
+    lexerConfig: { positionTracking: 'full' },
+  });
+  const _noSourceTrackingParser = new Parser();
   const context = { prefixes: { ex: 'http://example.org/' }};
+
+  beforeEach(() => {
+    astFactory.resetBlankNodeCounter();
+    sourceTrackingAstFactory.resetBlankNodeCounter();
+  });
 
   function _sinkAst(suite: string, test: string, response: object): void {
     const dir = getStaticFilePath();
@@ -36,7 +46,7 @@ describe('a SPARQL 1.2 parser', () => {
     for (const { name, statics } of positiveTest('paths')) {
       it(`can parse ${name}`, async({ expect }) => {
         const { query, astWithSource } = await statics();
-        const res: unknown = parser.parsePath(query, context);
+        const res: unknown = sourceTrackingParser.parsePath(query, context);
         expect(res).toEqualParsedQuery(astWithSource);
       });
     }
@@ -46,8 +56,8 @@ describe('a SPARQL 1.2 parser', () => {
     for (const { name, statics } of positiveTest('sparql-1-1')) {
       it(`can parse ${name}`, async({ expect }) => {
         const { query, astWithSource } = await statics();
-        const res: unknown = parser.parse(query, context);
-        expect(res).toEqualParsedQueryIgnoring(obj => F.isTriple(obj), [ 'annotations' ], astWithSource);
+        const res: unknown = sourceTrackingParser.parse(query, context);
+        expect(res).toEqualParsedQueryIgnoring(obj => astFactory.isTriple(obj), [ 'annotations' ], astWithSource);
       });
     }
   });
@@ -56,7 +66,7 @@ describe('a SPARQL 1.2 parser', () => {
     for (const { name, statics } of negativeTest('sparql-1-1-invalid')) {
       it(`should NOT parse ${name}`, async({ expect }) => {
         const { query } = await statics();
-        expect(() => parser.parse(query, context)).toThrow();
+        expect(() => sourceTrackingParser.parse(query, context)).toThrow();
       });
     }
   });
@@ -65,7 +75,7 @@ describe('a SPARQL 1.2 parser', () => {
     for (const { name, statics } of positiveTest('sparql-1-2')) {
       it(`can parse ${name}`, async({ expect }) => {
         const { query, astWithSource } = await statics();
-        const res: unknown = parser.parse(query, context);
+        const res: unknown = sourceTrackingParser.parse(query, context);
         // _sinkAst('sparql-1-2', name, <object> res);
         expect(res).toEqualParsedQuery(astWithSource);
       });
@@ -80,7 +90,7 @@ SELECT * WHERE {
    <<( ?s ?p ?o )>> .
 }
     `;
-    expect(() => parser.parse(query)).toThrow();
+    expect(() => sourceTrackingParser.parse(query)).toThrow();
   });
 
   describe('negative sparql 1.2', () => {
@@ -92,12 +102,12 @@ SELECT * WHERE {
     for (const { name, statics } of negativeTest('sparql-1-2-invalid', name => !skip.has(name))) {
       it(`should NOT parse ${name}`, async({ expect }) => {
         const { query } = await statics();
-        expect(() => parser.parse(query, context)).toThrow();
+        expect(() => sourceTrackingParser.parse(query, context)).toThrow();
       });
     }
   });
 
   describe('specific sparql 1.1 tests', () => {
-    importSparql11NoteTests(parser, new DataFactory<BaseQuad>());
+    importSparql11NoteTests(sourceTrackingParser, new DataFactory<BaseQuad>());
   });
 });

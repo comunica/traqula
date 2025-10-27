@@ -9,16 +9,24 @@ interface Parser<ParseRet> {
 }
 
 export function completeParseContext(
-  context: Partial<SparqlContext & SparqlGeneratorContext & { origSource: string; offset?: number }>,
-): SparqlContext & SparqlGeneratorContext & { origSource: string; offset?: number } {
+  context: Partial<SparqlContext>,
+): SparqlContext {
   return {
-    astFactory: context.astFactory ?? new AstFactory(),
+    astFactory: context.astFactory ?? new AstFactory({ tracksSourceLocation: false }),
     baseIRI: context.baseIRI,
     prefixes: { ...context.prefixes },
-    origSource: context.origSource ?? '',
-    offset: context.offset,
     parseMode: context.parseMode ? new Set(context.parseMode) : new Set([ 'canParseVars', 'canCreateBlankNodes' ]),
     skipValidation: context.skipValidation ?? false,
+  };
+}
+
+export function completeGeneratorContext(
+  context: Partial<SparqlGeneratorContext & { offset?: number }>,
+): SparqlGeneratorContext & { offset?: number } {
+  return {
+    astFactory: context.astFactory ?? new AstFactory(),
+    origSource: context.origSource ?? '',
+    offset: context.offset,
     [traqulaIndentation]: context[traqulaIndentation] ?? 0,
     indentInc: context.indentInc ?? 2,
   };

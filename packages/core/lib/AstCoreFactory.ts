@@ -15,11 +15,17 @@ import type {
 } from './types.js';
 
 export interface AstCoreFactoryArgs {
+  /**
+   * Whether the AstFactory can track sources, if not, the sourceLocation function returns autoGen. Default true
+   */
   tracksSourceLocation: boolean;
 }
 
-export class AstCoreFactory {
-  public constructor(public readonly args: Partial<AstCoreFactoryArgs> = {}) {}
+export class AstCoreFactory implements AstCoreFactoryArgs {
+  public tracksSourceLocation: boolean;
+  public constructor(args: Partial<AstCoreFactoryArgs> = {}) {
+    this.tracksSourceLocation = args.tracksSourceLocation ?? true;
+  }
 
   public wrap<T>(val: T, loc: SourceLocation): Wrap<T> {
     return { val, loc };
@@ -31,7 +37,7 @@ export class AstCoreFactory {
   }
 
   public sourceLocation(...elements: (undefined | IToken | Localized)[]): SourceLocation {
-    if (!this.args?.tracksSourceLocation) {
+    if (!this.tracksSourceLocation) {
       return this.gen();
     }
 

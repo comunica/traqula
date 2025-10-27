@@ -8,14 +8,19 @@ import { beforeEach, describe, it } from 'vitest';
 import { Parser, sparql11ParserBuilder } from '../lib/index.js';
 
 describe('a SPARQL 1.1 parser', () => {
-  const astFactory = new AstFactory();
-  const sourceTrackingAstFactory = new AstFactory({ tracksSourceLocation: true });
+  const astFactory = new AstFactory({ tracksSourceLocation: false });
+  const sourceTrackingAstFactory = new AstFactory();
   const sourceTrackingParser = new Parser({
     defaultContext: { astFactory: sourceTrackingAstFactory },
     lexerConfig: { positionTracking: 'full' },
   });
-  const _noSourceTrackingParser = new Parser({ defaultContext: { astFactory }});
+  const _noSourceTrackingParser = new Parser();
   const context = { prefixes: { ex: 'http://example.org/' }};
+
+  beforeEach(() => {
+    astFactory.resetBlankNodeCounter();
+    sourceTrackingAstFactory.resetBlankNodeCounter();
+  });
 
   function _sinkAst(suite: string, test: string, response: object): void {
     const dir = getStaticFilePath();
@@ -23,11 +28,6 @@ describe('a SPARQL 1.1 parser', () => {
     // eslint-disable-next-line no-sync
     fs.writeFileSync(fileLoc, JSON.stringify(response, null, 2));
   }
-
-  beforeEach(() => {
-    astFactory.resetBlankNodeCounter();
-    sourceTrackingAstFactory.resetBlankNodeCounter();
-  });
 
   it('passes chevrotain validation', () => {
     sparql11ParserBuilder.build({

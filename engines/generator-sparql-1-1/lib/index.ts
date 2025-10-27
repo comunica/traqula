@@ -1,6 +1,6 @@
 import { GeneratorBuilder } from '@traqula/core';
 import type * as T11 from '@traqula/rules-sparql-1-1';
-import { completeParseContext, AstFactory, gram } from '@traqula/rules-sparql-1-1';
+import { gram, completeGeneratorContext } from '@traqula/rules-sparql-1-1';
 
 export const sparql11GeneratorBuilder = GeneratorBuilder.create(<const> [
   gram.queryOrUpdate,
@@ -88,16 +88,18 @@ export const sparql11GeneratorBuilder = GeneratorBuilder.create(<const> [
 export type SparqlGenerator = ReturnType<typeof sparql11GeneratorBuilder.build>;
 
 export class Generator {
-  public constructor(private readonly defaultContext: Partial<T11.SparqlGeneratorContext> = {}) {}
+  protected readonly defaultContext: T11.SparqlGeneratorContext;
+  public constructor(defaultContext: Partial<T11.SparqlGeneratorContext> = {}) {
+    this.defaultContext = completeGeneratorContext(defaultContext);
+  }
 
   private readonly generator: SparqlGenerator = sparql11GeneratorBuilder.build();
-  private readonly factory = new AstFactory();
 
   public generate(ast: T11.Query | T11.Update, context: Partial<T11.SparqlGeneratorContext> = {}): string {
-    return this.generator.queryOrUpdate(ast, completeParseContext({ ...this.defaultContext, ...context })).trim();
+    return this.generator.queryOrUpdate(ast, { ...this.defaultContext, ...context }).trim();
   }
 
   public generatePath(ast: T11.Path, context: Partial<T11.SparqlGeneratorContext> = {}): string {
-    return this.generator.path(ast, completeParseContext({ ...this.defaultContext, ...context }), undefined).trim();
+    return this.generator.path(ast, completeGeneratorContext({ ...this.defaultContext, ...context }), undefined).trim();
   }
 }

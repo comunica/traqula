@@ -1,5 +1,6 @@
 /* eslint-disable import/no-nodejs-modules */
 import { readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import { readFile } from '../fileUtils.js';
 import { getStaticFilePath } from './utils.js';
 
@@ -7,7 +8,8 @@ interface PositiveTest {
   name: string;
   statics: () => Promise<{
     query: string;
-    ast: unknown;
+    astWithSource: unknown;
+    astNoSource: unknown;
     autoGen: string;
   }>;
 }
@@ -16,33 +18,42 @@ export function* positiveTest(
   type: 'paths' | 'sparql-1-1' | 'sparql-1-2',
   filter?: (name: string) => boolean,
 ): Generator<PositiveTest> {
-  const dir = getStaticFilePath(type);
-  const statics = readdirSync(dir);
+  const astDir = getStaticFilePath('ast');
+  const jsonSourceTrackedDir = join(astDir, 'ast-source-tracked', type);
+  const jsonNonSourceTrackedDir = join(astDir, 'ast-no-source-tracked', type);
+  const sparqlDir = join(astDir, 'sparql', type);
+  const sparqlGeneratedDir = join(astDir, 'sparql-generated', type);
+  const statics = readdirSync(jsonSourceTrackedDir);
   for (const file of statics) {
-    if (file.endsWith('.json')) {
-      if (filter && !filter(file.replace('.json', ''))) {
-        continue;
-      }
-      yield {
-        name: file.replace(/\.json$/u, ''),
-        statics: async() => {
-          const query = await readFile(`${dir}/${file.replace('.json', '.sparql')}`);
-          const result = await readFile(`${dir}/${file}`);
-          let autoGen: string;
-          try {
-            autoGen = await readFile(`${dir}/${file.replace('.json', '-generated.sparql')}`);
-          } catch {
-            autoGen = query;
-          }
-          const json: unknown = JSON.parse(result);
-          return {
-            query,
-            ast: json,
-            autoGen,
-          };
-        },
-      };
+    if (filter && !filter(file.replace('.json', ''))) {
+      continue;
     }
+    const name = file.replace(/\.json$/u, '');
+    yield {
+      name,
+      statics: async() => {
+        const query = await readFile(join(sparqlDir, `${name}.sparql`));
+        const sourceTracked = await readFile(join(jsonSourceTrackedDir, file));
+        let noSourceTracked: string;
+        try {
+          noSourceTracked = await readFile(join(jsonNonSourceTrackedDir, file));
+        } catch {
+          noSourceTracked = '{}';
+        }
+        let autoGen: string;
+        try {
+          autoGen = await readFile(join(sparqlGeneratedDir, `${name}.sparql`));
+        } catch {
+          autoGen = '';
+        }
+        return {
+          query,
+          astWithSource: JSON.parse(sourceTracked),
+          astNoSource: JSON.parse(noSourceTracked),
+          autoGen,
+        };
+      },
+    };
   }
 }
 
@@ -57,17 +68,19 @@ export function* negativeTest(
   type: 'sparql-1-1-invalid' | 'sparql-1-2-invalid',
   filter?: (name: string) => boolean,
 ): Generator<NegativeTest> {
-  const dir = getStaticFilePath(type);
-  const statics = readdirSync(dir);
+  const astDir = getStaticFilePath('ast');
+  const sparqlGeneratedDir = join(astDir, 'sparql', type);
+  const statics = readdirSync(sparqlGeneratedDir);
   for (const file of statics) {
     if (file.endsWith('.sparql')) {
       if (filter && !filter(file.replace('.sparql', ''))) {
         continue;
       }
+      const name = file.replace(/\.sparql$/u, '');
       yield {
-        name: file.replace(/\.sparql$/u, ''),
+        name,
         statics: async() => {
-          const query = await readFile(`${dir}/${file}`);
+          const query = await readFile(join(sparqlGeneratedDir, file));
           return {
             query,
           };

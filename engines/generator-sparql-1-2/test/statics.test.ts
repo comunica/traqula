@@ -20,8 +20,8 @@ describe('a SPARQL 1.2 generator', () => {
   describe('positive paths', () => {
     for (const { name, statics } of positiveTest('paths')) {
       it(`can parse ${name}`, async({ expect }) => {
-        const { query, ast, autoGen } = await statics();
-        const path = <T12.Path>ast;
+        const { query, astWithSource, autoGen } = await statics();
+        const path = <T12.Path>astWithSource;
 
         const generated = generator.generatePath(path, { origSource: query });
         expect(generated, 'round tripped generation').toEqual(query.trim());
@@ -38,8 +38,8 @@ describe('a SPARQL 1.2 generator', () => {
   describe('positive sparql 1.1', () => {
     for (const { name, statics } of positiveTest('sparql-1-1')) {
       it(`can parse ${name}`, async({ expect }) => {
-        const { query, ast, autoGen } = await statics();
-        const queryUpdate = <T12.Query | T12.Update>ast;
+        const { query, astWithSource, autoGen } = await statics();
+        const queryUpdate = <T12.Query | T12.Update>astWithSource;
 
         const roundTripped = generator.generate(queryUpdate, { origSource: query });
         expect(roundTripped, 'round-tripped generation').toEqual(query.trim());
@@ -57,8 +57,8 @@ describe('a SPARQL 1.2 generator', () => {
   describe('positive sparql 1.2', () => {
     for (const { name, statics } of positiveTest('sparql-1-2')) {
       it(`can parse ${name}`, async({ expect }) => {
-        const { query, ast, autoGen } = await statics();
-        const queryUpdate = <T12.Query | T12.Update>ast;
+        const { query, astWithSource, autoGen } = await statics();
+        const queryUpdate = <T12.Query | T12.Update>astWithSource;
 
         const roundTripped = generator.generate(queryUpdate, { origSource: query });
         expect(roundTripped, 'round-tripped generation').toEqual(query.trim());

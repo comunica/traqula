@@ -20,8 +20,8 @@ describe('a SPARQL 1.1 generator', () => {
   describe('positive paths', () => {
     for (const { name, statics } of positiveTest('paths')) {
       it(`can generate ${name}`, async({ expect }) => {
-        const { query, ast, autoGen } = await statics();
-        const path = <T11.Path>ast;
+        const { query, astWithSource, autoGen } = await statics();
+        const path = <T11.Path>astWithSource;
 
         const generated = generator.generatePath(path, { origSource: query });
         expect(generated, 'round-trip generation').toEqual(query.trim());
@@ -39,8 +39,8 @@ describe('a SPARQL 1.1 generator', () => {
   describe('positive sparql 1.1', () => {
     for (const { name, statics } of positiveTest('sparql-1-1')) {
       it(`can generate ${name}`, async({ expect }) => {
-        const { query, ast, autoGen } = await statics();
-        const queryUpdate = <T11.Query | T11.Update>ast;
+        const { query, astWithSource, autoGen } = await statics();
+        const queryUpdate = <T11.Query | T11.Update>astWithSource;
 
         const roundTripped = generator.generate(queryUpdate, { origSource: query });
         expect(roundTripped, 'round-trip generation').toEqual(query.trim());

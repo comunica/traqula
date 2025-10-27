@@ -34,10 +34,10 @@ describe('a SPARQL 1.1 parser', () => {
   describe('positive paths', () => {
     for (const { name, statics } of positiveTest('paths')) {
       it(`can parse ${name}`, async({ expect }) => {
-        const { query, ast } = await statics();
+        const { query, astWithSource } = await statics();
         const res: unknown = parser.parsePath(query, context);
         // _sinkAst('paths', name, <object> res);
-        expect(res).toEqualParsedQuery(ast);
+        expect(res).toEqualParsedQuery(astWithSource);
       });
     }
   });
@@ -45,10 +45,10 @@ describe('a SPARQL 1.1 parser', () => {
   describe('positive sparql 1.1', () => {
     for (const { name, statics } of positiveTest('sparql-1-1')) {
       it(`can parse ${name}`, async({ expect }) => {
-        const { query, ast } = await statics();
+        const { query, astWithSource } = await statics();
         const res: unknown = parser.parse(query, context);
         // _sinkAst('sparql-1-1', name, <object> res);
-        expect(res).toEqualParsedQuery(ast);
+        expect(res).toEqualParsedQuery(astWithSource);
       });
     }
   });

@@ -53,7 +53,7 @@ export class TransformerObject {
    * @param obj
    * @protected
    */
-  protected cloneObj<T>(obj: T): T {
+  public cloneObj<T>(obj: T): T {
     if (obj === null || typeof obj !== 'object') {
       return obj;
     }

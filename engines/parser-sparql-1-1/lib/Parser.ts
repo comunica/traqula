@@ -12,12 +12,14 @@ export const sparql11ParserBuilder = ParserBuilder.create(queryUnitParserBuilder
 export type SparqlParser = ReturnType<typeof sparql11ParserBuilder.build>;
 
 export class Parser extends MinimalSparqlParser<T11.SparqlQuery> {
-  public constructor(args: Pick<ParserBuildArgs, 'parserConfig' | 'lexerConfig'> = {}) {
+  public constructor(
+    args: Pick<ParserBuildArgs, 'parserConfig' | 'lexerConfig'> & { defaultContext?: Partial<T11.SparqlContext> } = {},
+  ) {
     const parser: SparqlParser = sparql11ParserBuilder.build({
       ...args,
       tokenVocabulary: l.sparql11LexerBuilder.tokenVocabulary,
       queryPreProcessor: sparqlCodepointEscape,
     });
-    super(parser);
+    super(parser, args.defaultContext);
   }
 }

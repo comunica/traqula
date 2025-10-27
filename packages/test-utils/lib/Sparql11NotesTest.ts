@@ -7,7 +7,7 @@ interface Parser {
   parse: (query: string, context?: { prefixes?: Record<string, string>; baseIRI?: string }) => unknown;
 }
 
-export function importSparql11NoteTests(parser: Parser, dataFactory: DataFactory<BaseQuad>): void {
+export function importSparql11NoteTests(parser: Parser, DF: DataFactory<BaseQuad>): void {
   function testErroneousQuery(query: string, _errorMsg: string): TestFunction<object> {
     return ({ expect }) => {
       let error: any;
@@ -87,9 +87,9 @@ export function importSparql11NoteTests(parser: Parser, dataFactory: DataFactory
           {
             triples: [
               {
-                subject: dataFactory.namedNode('ex:abc#a'),
-                predicate: dataFactory.namedNode('ex:def#b'),
-                object: dataFactory.literal(''),
+                subject: DF.namedNode('ex:abc#a'),
+                predicate: DF.namedNode('ex:def#b'),
+                object: DF.literal(''),
               },
             ],
           },
@@ -102,9 +102,9 @@ export function importSparql11NoteTests(parser: Parser, dataFactory: DataFactory
       expect(parser.parse(query, { prefixes })).toMatchObject({
         where: [{
           triples: [{
-            subject: dataFactory.namedNode('ex:xyz#a'),
-            predicate: dataFactory.namedNode('ex:def#b'),
-            object: dataFactory.literal(''),
+            subject: DF.namedNode('ex:xyz#a'),
+            predicate: DF.namedNode('ex:def#b'),
+            object: DF.literal(''),
           }],
         },
         ],
@@ -114,9 +114,9 @@ export function importSparql11NoteTests(parser: Parser, dataFactory: DataFactory
       expect(parser.parse(query2, { prefixes })).toMatchObject({
         where: [{
           triples: [{
-            subject: dataFactory.namedNode('ex:abc#a'),
-            predicate: dataFactory.namedNode('ex:def#b'),
-            object: dataFactory.literal(''),
+            subject: DF.namedNode('ex:abc#a'),
+            predicate: DF.namedNode('ex:def#b'),
+            object: DF.literal(''),
           }],
         },
         ],
@@ -148,7 +148,7 @@ WHERE { ?s ?p ?o }
       expect(parser.parse(query, context)).toMatchObject({
         from: {
           default: [
-            dataFactory.namedNode('http://ex.org/data.ttl'),
+            DF.namedNode('http://ex.org/data.ttl'),
           ],
         },
       });
@@ -157,9 +157,9 @@ WHERE { ?s ?p ?o }
     it.skip('should use the base IRI', ({ expect }) => {
       const query = 'SELECT * { <> <#b> "" }';
       const result = {
-        subject: dataFactory.namedNode('http://ex.org/'),
-        predicate: dataFactory.namedNode('http://ex.org/#b'),
-        object: dataFactory.literal(''),
+        subject: DF.namedNode('http://ex.org/'),
+        predicate: DF.namedNode('http://ex.org/#b'),
+        object: DF.literal(''),
       };
 
       expect(parser.parse(query, context)).toMatchObject({
@@ -175,9 +175,9 @@ WHERE { ?s ?p ?o }
 
       const context = { baseIRI: 'http://ex2.org/' };
       const result = {
-        subject: dataFactory.namedNode('http://ex2.org/'),
-        predicate: dataFactory.namedNode('http://ex2.org/#b'),
-        object: dataFactory.literal(''),
+        subject: DF.namedNode('http://ex2.org/'),
+        predicate: DF.namedNode('http://ex2.org/#b'),
+        object: DF.literal(''),
       };
       const data = parser.parse(goodQuery, context);
       expect(data).toMatchObject({
@@ -202,9 +202,9 @@ WHERE { ?s ?p ?o }
               type: 'bgp',
               triples: [
                 {
-                  subject: dataFactory.variable('s'),
-                  predicate: dataFactory.variable('p'),
-                  object: dataFactory.variable('o'),
+                  subject: DF.variable('s'),
+                  predicate: DF.variable('p'),
+                  object: DF.variable('o'),
                 },
               ],
             },
@@ -214,9 +214,9 @@ WHERE { ?s ?p ?o }
           type: 'bgp',
           triples: [
             {
-              subject: dataFactory.variable('a'),
-              predicate: dataFactory.variable('b'),
-              object: dataFactory.variable('c'),
+              subject: DF.variable('a'),
+              predicate: DF.variable('b'),
+              object: DF.variable('c'),
             },
           ],
         },

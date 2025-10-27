@@ -252,7 +252,7 @@ ${errorLine}`);
     errorHandler,
   }: ParserBuildArgs): ParserFromRules<Context, Names, RuleDefs> {
     const lexer = LexerBuilder.create().add(...tokenVocabulary).build({
-      positionTracking: 'full',
+      positionTracking: 'onlyOffset',
       recoveryEnabled: false,
       ensureOptimizations: true,
       safeMode: false,

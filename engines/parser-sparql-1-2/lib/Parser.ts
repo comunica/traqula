@@ -1,12 +1,14 @@
 import { ParserBuilder } from '@traqula/core';
 import type { Patch, Wrap, ParserBuildArgs } from '@traqula/core';
 import { sparql11ParserBuilder } from '@traqula/parser-sparql-1-1';
+import type {
+  TermIri,
+} from '@traqula/rules-sparql-1-1';
 import {
   gram as g11,
-  type TermIri,
   sparqlCodepointEscape,
 } from '@traqula/rules-sparql-1-1';
-import { completeParseContext, AstFactory, gram as S12, lex as l12 } from '@traqula/rules-sparql-1-2';
+import { completeParseContext, copyParseContext, gram as S12, lex as l12 } from '@traqula/rules-sparql-1-2';
 import type * as T12 from '@traqula/rules-sparql-1-2';
 
 export const sparql12ParserBuilder = ParserBuilder.create(sparql11ParserBuilder)
@@ -265,27 +267,30 @@ export type SparqlParser = ReturnType<typeof sparql12ParserBuilder.build>;
 
 export class Parser {
   private readonly parser: SparqlParser;
+  protected readonly defaultContext: T12.SparqlContext;
 
-  private readonly F = new AstFactory();
-
-  public constructor(args: Pick<ParserBuildArgs, 'parserConfig' | 'lexerConfig'> = {}) {
+  public constructor(
+    args: Pick<ParserBuildArgs, 'parserConfig' | 'lexerConfig'> = {},
+    defaultContext: Partial<T12.SparqlContext> = {},
+  ) {
     this.parser = sparql12ParserBuilder.build({
       ...args,
       queryPreProcessor: sparqlCodepointEscape,
       tokenVocabulary: l12.sparql12LexerBuilder.tokenVocabulary,
     });
+    this.defaultContext = completeParseContext(defaultContext);
   }
 
   public parse(query: string, context: Partial<T12.SparqlContext> = {}): T12.SparqlQuery {
-    return this.parser.queryOrUpdate(query, completeParseContext(context));
+    return this.parser.queryOrUpdate(query, copyParseContext({ ...this.defaultContext, ...context }));
   }
 
   public parsePath(
     query: string,
 context: Partial<T12.SparqlContext> = {},
   ): (T12.Path & { prefixes: object }) | TermIri {
-    const res = this.parser.path(query, completeParseContext(context));
-    if (this.F.isPathPure(res)) {
+    const res = this.parser.path(query, copyParseContext({ ...this.defaultContext, ...context }));
+    if (this.defaultContext.astFactory.isPathPure(res)) {
       return {
         ...res,
         prefixes: {},

@@ -14,7 +14,13 @@ import type {
   SubTyped,
 } from './types.js';
 
+export interface AstCoreFactoryArgs {
+  tracksSourceLocation: boolean;
+}
+
 export class AstCoreFactory {
+  public constructor(public readonly args: Partial<AstCoreFactoryArgs> = {}) {}
+
   public wrap<T>(val: T, loc: SourceLocation): Wrap<T> {
     return { val, loc };
   }
@@ -25,6 +31,10 @@ export class AstCoreFactory {
   }
 
   public sourceLocation(...elements: (undefined | IToken | Localized)[]): SourceLocation {
+    if (!this.args?.tracksSourceLocation) {
+      return this.gen();
+    }
+
     const pureElements = elements.filter(x => x !== undefined);
     if (pureElements.length === 0) {
       return this.sourceLocationNoMaterialize();

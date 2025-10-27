@@ -18,5 +18,15 @@ export function completeParseContext(
     [traqulaIndentation]: context[traqulaIndentation] ?? 0,
   };
 }
+export function copyParseContext<T extends
+Partial<SparqlContext & SparqlGeneratorContext & { origSource: string; offset?: number }>>(
+  context: T,
+): T {
+  return {
+    ...context,
+    prefixes: { ...context.prefixes },
+    parseMode: new Set(context.parseMode),
+  };
+}
 
 export class AstTransformer extends TransformerSubTyped<Sparql12Nodes> {}

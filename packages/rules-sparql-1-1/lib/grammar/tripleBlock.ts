@@ -52,7 +52,7 @@ export const triplesBlock: SparqlRule<'triplesBlock', PatternBgp> = <const>{
   gImpl: ({ SUBRULE, PRINT_WORD, HANDLE_LOC, NEW_LINE }) => (ast, { astFactory: F }) => {
     for (const [ index, triple ] of ast.triples.entries()) {
       HANDLE_LOC(triple, () => {
-        const nextTriple = ast.triples.at(index);
+        const nextTriple = ast.triples.at(index + 1);
         if (F.isTripleCollection(triple)) {
           SUBRULE(graphNodePath, triple);
           // A top level tripleCollection block means that it is not used in a triple. So you endf with DOT.

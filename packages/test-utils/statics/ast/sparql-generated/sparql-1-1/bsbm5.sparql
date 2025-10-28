@@ -8,10 +8,10 @@ SELECT DISTINCT ?product ?productLabel WHERE {
   ?product bsbm:productFeature ?prodFeature .
   <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer1/Product28> bsbm:productPropertyNumeric1 ?origProperty1 .
   ?product bsbm:productPropertyNumeric1 ?simProperty1 .
-  FILTER ( ( ( ?simProperty1 < ( ?origProperty1 + "120"^^<http://www.w3.org/2001/XMLSchema#integer> ) ) && ( ?simProperty1 > ( ?origProperty1 - "120"^^<http://www.w3.org/2001/XMLSchema#integer> ) ) ) )
+  FILTER ( ( ( ?simProperty1 < ( ?origProperty1 + 120 ) ) && ( ?simProperty1 > ( ?origProperty1 - 120 ) ) ) )
   <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer1/Product28> bsbm:productPropertyNumeric2 ?origProperty2 .
   ?product bsbm:productPropertyNumeric2 ?simProperty2 .
-  FILTER ( ( ( ?simProperty2 < ( ?origProperty2 + "170"^^<http://www.w3.org/2001/XMLSchema#integer> ) ) && ( ?simProperty2 > ( ?origProperty2 - "170"^^<http://www.w3.org/2001/XMLSchema#integer> ) ) ) )
+  FILTER ( ( ( ?simProperty2 < ( ?origProperty2 + 170 ) ) && ( ?simProperty2 > ( ?origProperty2 - 170 ) ) ) )
 }
 ORDER BY ASC ( ?productLabel )
 LIMIT 5

@@ -4,6 +4,6 @@ SELECT ?title ?price WHERE {
   ?x dc:title ?title .
   OPTIONAL {
     ?x ns:price ?price .
-    FILTER ( ( ?price < "30"^^<http://www.w3.org/2001/XMLSchema#integer> ) )
+    FILTER ( ( ?price < 30 ) )
   }
 }

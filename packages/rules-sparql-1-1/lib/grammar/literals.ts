@@ -64,18 +64,26 @@ export const rdfLiteral: SparqlRule<'rdfLiteral', TermLiteral> = <const> {
     ])) ?? value;
   },
   gImpl: ({ SUBRULE, PRINT, PRINT_WORD }) => (ast, { astFactory }) => {
-    astFactory.printFilter(ast, () => {
-      PRINT_WORD('');
-      PRINT(stringEscapedLexical(ast.value));
-    });
-
-    if (ast.langOrIri) {
+    if (!ast.langOrIri || typeof ast.langOrIri === 'string') {
+      // String or langdir string - no sub loc.
+      astFactory.printFilter(ast, () => {
+        PRINT_WORD('');
+        PRINT(stringEscapedLexical(ast.value));
+      });
       if (typeof ast.langOrIri === 'string') {
         astFactory.printFilter(ast, () => PRINT('@', ast.langOrIri));
-      } else {
-        astFactory.printFilter(ast, () => PRINT('^^'));
-        SUBRULE(iri, ast.langOrIri);
       }
+    } else if (astFactory.isSourceLocationNoMaterialize(ast.langOrIri.loc)) {
+      // You have a typed literal. -- If type is not materialized, print raw
+      astFactory.printFilter(ast, () => {
+        PRINT_WORD(ast.value);
+      });
+    } else {
+      astFactory.printFilter(ast, () => {
+        PRINT_WORD('');
+        PRINT(stringEscapedLexical(ast.value), '^^');
+      });
+      SUBRULE(iri, ast.langOrIri);
     }
   },
 };

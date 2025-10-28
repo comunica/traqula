@@ -1,6 +1,3 @@
-CONSTRUCT {
-  ?s ?p ?o .
-}
-WHERE {
+CONSTRUCT WHERE {
   ?s ?p ?o .
 }

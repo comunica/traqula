@@ -8,7 +8,7 @@ SELECT DISTINCT ?product ?label WHERE {
   ?product bsbm:productFeature bsbm-inst:ProductFeature815 .
   ?product bsbm:productFeature bsbm-inst:ProductFeature814 .
   ?product bsbm:productPropertyNumeric1 ?value1 .
-  FILTER ( ( ?value1 > "486"^^<http://www.w3.org/2001/XMLSchema#integer> ) )
+  FILTER ( ( ?value1 > 486 ) )
 }
 ORDER BY ASC ( ?label )
 LIMIT 10

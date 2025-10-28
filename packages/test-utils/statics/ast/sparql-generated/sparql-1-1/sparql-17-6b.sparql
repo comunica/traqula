@@ -6,5 +6,5 @@ SELECT ?neighbor WHERE {
   ?b aGeo:placeName ?neighbor .
   ?b aGeo:locationX ?bxLoc .
   ?b aGeo:locationY ?byLoc .
-  FILTER ( ( aGeo:distance ( ?axLoc , ?ayLoc , ?bxLoc , ?byLoc ) < "10"^^<http://www.w3.org/2001/XMLSchema#integer> ) )
+  FILTER ( ( aGeo:distance ( ?axLoc , ?ayLoc , ?bxLoc , ?byLoc ) < 10 ) )
 }

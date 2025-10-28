@@ -7,11 +7,11 @@ SELECT ?s ?p ?o WHERE {
   ] .
   ?s rdf:type [
     (example:prop*) ?o ;
-  ] .
-  ?s example:p2 ?_ .
-  ?s example:p1 ?_ .
-  ?s rdf:type [
+  ] ;
+  example:p2 ?_ .
+  ?s example:p1 ?_ ;
+  rdf:type [
     (example:prop*) ?o ;
-  ] .
-  ?s example:p2 ?o .
+  ] ;
+  example:p2 ?o .
 }

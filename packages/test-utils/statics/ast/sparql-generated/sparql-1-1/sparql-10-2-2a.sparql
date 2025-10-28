@@ -6,6 +6,6 @@ SELECT ?book ?title ?price WHERE {
     :book1
     :book3
   }
-  ?book dc:title ?title .
-  ?book ns:price ?price .
+  ?book dc:title ?title ;
+  ns:price ?price .
 }

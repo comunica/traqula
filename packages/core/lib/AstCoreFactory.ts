@@ -37,14 +37,15 @@ export class AstCoreFactory implements AstCoreFactoryArgs {
   }
 
   public sourceLocation(...elements: (undefined | IToken | Localized)[]): SourceLocation {
-    if (!this.tracksSourceLocation) {
-      return this.gen();
-    }
-
     const pureElements = elements.filter(x => x !== undefined);
     if (pureElements.length === 0) {
       return this.sourceLocationNoMaterialize();
     }
+
+    if (!this.tracksSourceLocation) {
+      return this.gen();
+    }
+
     const filtered = pureElements.filter(element =>
       !this.isLocalized(element) || this.isSourceLocationSource(element.loc) ||
       this.isSourceLocationStringReplace(element.loc) || this.isSourceLocationNodeReplace(element.loc));
@@ -91,7 +92,7 @@ export class AstCoreFactory implements AstCoreFactoryArgs {
     for (const [ key, value ] of Object.entries(copy)) {
       (<Record<string, object>> copy)[key] = this.safeObjectTransform(value, obj => this.forcedAutoGenTree(obj));
     }
-    if (this.isLocalized(copy)) {
+    if (this.isLocalized(copy) && !this.isSourceLocationNoMaterialize(copy.loc)) {
       copy.loc = this.gen();
     }
     return copy;

@@ -13,6 +13,9 @@ import type {
   TripleNesting,
 } from './sparql12Types.js';
 
+/**
+ * A factory that helps you create, and check types for AST nodes for SPARQL 1.2
+ */
 export class AstFactory extends Sparql11Factory {
   public termTriple(
     subject: TermTriple['subject'],

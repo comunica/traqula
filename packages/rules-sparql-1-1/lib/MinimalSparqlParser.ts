@@ -51,10 +51,22 @@ export class MinimalSparqlParser<ParseRet> {
     this.defaultContext = completeParseContext(defaultContext);
   }
 
+  /**
+   * Parse a query string starting from the
+   * [QueryUnit](https://www.w3.org/TR/sparql11-query/#rQueryUnit)
+   * or [QueryUpdate](https://www.w3.org/TR/sparql11-query/#rUpdateUnit) rules.
+   * @param query
+   * @param context
+   */
   public parse(query: string, context: Partial<SparqlContext> = {}): ParseRet {
     return this.parser.queryOrUpdate(query, copyParseContext({ ...this.defaultContext, ...context }));
   }
 
+  /**
+   * Parse a query string starting from the [Path](https://www.w3.org/TR/sparql11-query/#rPath) grammar rule.
+   * @param query
+   * @param context
+   */
   public parsePath(query: string, context: Partial<SparqlContext> = {}):
     (Path & { prefixes: object }) | TermIri {
     const result = this.parser.path(query, copyParseContext({ ...this.defaultContext, ...context }));

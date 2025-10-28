@@ -87,6 +87,9 @@ export const sparql11GeneratorBuilder = GeneratorBuilder.create(<const> [
 
 export type SparqlGenerator = ReturnType<typeof sparql11GeneratorBuilder.build>;
 
+/**
+ * Generator that can generate a SPARQL 1.1 query string given a SPARQL 1.1 Traqula AST.
+ */
 export class Generator {
   protected readonly defaultContext: T11.SparqlGeneratorContext;
   public constructor(defaultContext: Partial<T11.SparqlGeneratorContext> = {}) {
@@ -95,10 +98,22 @@ export class Generator {
 
   private readonly generator: SparqlGenerator = sparql11GeneratorBuilder.build();
 
+  /**
+   * Generates a query string starting from the
+   * [QueryUnit](https://www.w3.org/TR/sparql11-query/#rQueryUnit)
+   * or [QueryUpdate](https://www.w3.org/TR/sparql11-query/#rUpdateUnit) rules.
+   * @param ast
+   * @param context
+   */
   public generate(ast: T11.Query | T11.Update, context: Partial<T11.SparqlGeneratorContext> = {}): string {
     return this.generator.queryOrUpdate(ast, { ...this.defaultContext, ...context }).trim();
   }
 
+  /**
+   * Generates a query string starting from the [Path](https://www.w3.org/TR/sparql11-query/#rPath) grammar rule.
+   * @param ast
+   * @param context
+   */
   public generatePath(ast: T11.Path, context: Partial<T11.SparqlGeneratorContext> = {}): string {
     return this.generator.path(ast, completeGeneratorContext({ ...this.defaultContext, ...context }), undefined).trim();
   }

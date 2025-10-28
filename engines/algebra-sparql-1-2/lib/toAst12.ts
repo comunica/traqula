@@ -13,6 +13,10 @@ export const toAst12Builder = IndirBuilder
     [algToSparql.name]: [SparqlQuery, [Algebra.Operation]];
   }>();
 
+/**
+ * Transform an operation to a Traqula SPARQL 1.2 AST.
+ * @param op
+ */
 export function toAst(op: Algebra.Operation): SparqlQuery {
   const c = createAstContext();
   const transformer = toAst12Builder.build();

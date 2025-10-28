@@ -27,6 +27,9 @@ import type {
   Wildcard,
 } from './Sparql11types.js';
 
+/**
+ * A factory that helps you create, and check types for AST nodes for SPARQL 1.1
+ */
 export class AstFactory extends asArg(AstCoreFactory)
   .call(ContextFactoryMixin)
   .call(ExpressionFactoryMixin)

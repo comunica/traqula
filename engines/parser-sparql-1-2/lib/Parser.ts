@@ -265,6 +265,9 @@ export const sparql12ParserBuilder = ParserBuilder.create(sparql11ParserBuilder)
 
 export type SparqlParser = ReturnType<typeof sparql12ParserBuilder.build>;
 
+/**
+ * Generator that can generate a SPARQL 1.2 AST given a SPARQL 1.2 string.
+ */
 export class Parser {
   private readonly parser: SparqlParser;
   protected readonly defaultContext: T12.SparqlContext;
@@ -280,10 +283,22 @@ export class Parser {
     this.defaultContext = completeParseContext(args.defaultContext ?? {});
   }
 
+  /**
+   * Parse a query string starting from the
+   * [QueryUnit](https://www.w3.org/TR/sparql12-query/#rQueryUnit)
+   * or [QueryUpdate](https://www.w3.org/TR/sparql12-query/#rUpdateUnit) rules.
+   * @param query
+   * @param context
+   */
   public parse(query: string, context: Partial<T12.SparqlContext> = {}): T12.SparqlQuery {
     return this.parser.queryOrUpdate(query, copyParseContext({ ...this.defaultContext, ...context }));
   }
 
+  /**
+   * Parse a query string starting from the [Path](https://www.w3.org/TR/sparql12-query/#rPath) grammar rule.
+   * @param query
+   * @param context
+   */
   public parsePath(
     query: string,
 context: Partial<T12.SparqlContext> = {},

@@ -14,6 +14,10 @@ export type Adjust11Parser = ReturnType<typeof adjustParserBuilder.build>;
 
 export const adjustLexerBuilder = LexerBuilder.create(l11.sparql11LexerBuilder).addBefore(l11.a, lex.BuiltInAdjust);
 
+/**
+ * Generator that can generate a SPARQL 1.1 AST given a SPARQL 1.1 string + able to parse the
+ * [ADJUST function](https://github.com/w3c/sparql-dev/blob/main/SEP/SEP-0002/sep-0002.md).
+ */
 export class Parser extends MinimalSparqlParser<SparqlQuery> {
   public constructor(
     args: Pick<ParserBuildArgs, 'parserConfig' | 'lexerConfig'> & { defaultContext?: Partial<SparqlContext> } = {},

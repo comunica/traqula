@@ -11,6 +11,9 @@ export const sparql11ParserBuilder = ParserBuilder.create(queryUnitParserBuilder
 
 export type SparqlParser = ReturnType<typeof sparql11ParserBuilder.build>;
 
+/**
+ * Generator that can generate a SPARQL 1.1 AST given a SPARQL 1.1 string.
+ */
 export class Parser extends MinimalSparqlParser<T11.SparqlQuery> {
   public constructor(
     args: Pick<ParserBuildArgs, 'parserConfig' | 'lexerConfig'> & { defaultContext?: Partial<T11.SparqlContext> } = {},

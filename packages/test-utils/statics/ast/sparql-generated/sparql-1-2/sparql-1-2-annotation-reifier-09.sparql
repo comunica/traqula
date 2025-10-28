@@ -1,7 +1,4 @@
 PREFIX : <http://example.com/ns#>
-CONSTRUCT {
-  ?s :p ?o ~ _:bnode {| :q1 ?z |} .
-}
-WHERE {
+CONSTRUCT WHERE {
   ?s :p ?o ~ _:bnode {| :q1 ?z |} .
 }

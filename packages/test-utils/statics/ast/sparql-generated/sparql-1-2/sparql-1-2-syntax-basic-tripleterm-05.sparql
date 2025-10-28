@@ -5,7 +5,7 @@ SELECT * WHERE {
     <<( :x :q <<( :s :p :o )>> )>>
   }
   VALUES( ?y ?z ){
-    ( <<( :s :p :o )>> "123"^^<http://www.w3.org/2001/XMLSchema#integer> )
-    ( "123"^^<http://www.w3.org/2001/XMLSchema#integer> <<( :s :p :o )>> )
+    ( <<( :s :p :o )>> 123 )
+    ( 123 <<( :s :p :o )>> )
   }
 }

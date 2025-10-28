@@ -1,9 +1,5 @@
 PREFIX : <http://example.com/ns#>
-CONSTRUCT {
-  :s ?q <<( ?s ?p :o )>> .
-  ?a ?b <<( ?s ?p ?o )>> .
-}
-WHERE {
+CONSTRUCT WHERE {
   :s ?q <<( ?s ?p :o )>> .
   ?a ?b <<( ?s ?p ?o )>> .
 }

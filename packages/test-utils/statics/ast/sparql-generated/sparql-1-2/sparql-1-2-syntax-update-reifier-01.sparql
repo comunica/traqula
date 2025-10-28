@@ -1,5 +1,4 @@
 PREFIX : <http://example.com/ns#>
 INSERT DATA {
-  << :a :b :c ~ :iri >> .
-  :iri :p :o .
+  << :a :b :c ~ :iri >> :p :o .
 }

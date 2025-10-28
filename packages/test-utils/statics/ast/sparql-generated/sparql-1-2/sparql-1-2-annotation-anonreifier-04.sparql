@@ -1,5 +1,5 @@
 PREFIX : <http://example.com/ns#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 SELECT * WHERE {
-  :s :p << :a :b :c ~ _:g_0 >> {| ?q << :s1 :p1 ?z ~ _:g_2 >> |} .
+  :s :p << :a :b :c >> {| ?q << :s1 :p1 ?z >> |} .
 }

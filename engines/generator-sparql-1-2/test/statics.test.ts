@@ -12,7 +12,7 @@ describe('a SPARQL 1.2 generator', () => {
 
   function _sinkGenerated(suite: string, test: string, response: string): void {
     const dir = getStaticFilePath();
-    const fileLoc = path.join(dir, suite, `${test}-generated.sparql`);
+    const fileLoc = path.join(dir, 'ast', 'sparql-generated', suite, `${test}.sparql`);
     // eslint-disable-next-line no-sync
     fs.writeFileSync(fileLoc, response);
   }

@@ -1,3 +1,4 @@
+import { AstFactory } from '@traqula/rules-sparql-1-1';
 import { positiveTest } from '@traqula/test-utils';
 import { Parser as SparqlJSparser } from 'sparqljs';
 import { describe, bench } from 'vitest';
@@ -5,18 +6,18 @@ import { Parser as TraqulaParser } from '../lib/index.js';
 import { queryLargeObjectList } from './heatmap.js';
 
 describe('query 1.1, exclude construction', () => {
-  const traqulaParser = new TraqulaParser();
-  const noSourceTrackingTraqula = new TraqulaParser({
-    lexerConfig: {
-      positionTracking: 'onlyOffset',
-    },
+  const sourceTrackingAstFactory = new AstFactory({ tracksSourceLocation: true });
+  const sourceTrackingParser = new TraqulaParser({
+    defaultContext: { astFactory: sourceTrackingAstFactory },
+    lexerConfig: { positionTracking: 'full' },
   });
+  const noSourceTrackingTraqula = new TraqulaParser();
   const sparqlJSparser = new SparqlJSparser();
   const query = queryLargeObjectList;
 
   describe('large objectList', () => {
     bench('traqula parse', () => {
-      traqulaParser.parse(query);
+      sourceTrackingParser.parse(query);
     });
     bench('sparqljs', () => {
       sparqlJSparser.parse(query);
@@ -29,7 +30,7 @@ describe('query 1.1, exclude construction', () => {
 
     bench('traqula parse 1.1', () => {
       for (const query of allQueries) {
-        traqulaParser.parse(query);
+        sourceTrackingParser.parse(query);
       }
     });
     bench('sparqljs', () => {

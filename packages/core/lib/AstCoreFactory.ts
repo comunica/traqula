@@ -14,7 +14,19 @@ import type {
   SubTyped,
 } from './types.js';
 
-export class AstCoreFactory {
+export interface AstCoreFactoryArgs {
+  /**
+   * Whether the AstFactory can track sources, if not, the sourceLocation function returns autoGen. Default true
+   */
+  tracksSourceLocation: boolean;
+}
+
+export class AstCoreFactory implements AstCoreFactoryArgs {
+  public tracksSourceLocation: boolean;
+  public constructor(args: Partial<AstCoreFactoryArgs> = {}) {
+    this.tracksSourceLocation = args.tracksSourceLocation ?? true;
+  }
+
   public wrap<T>(val: T, loc: SourceLocation): Wrap<T> {
     return { val, loc };
   }
@@ -25,10 +37,15 @@ export class AstCoreFactory {
   }
 
   public sourceLocation(...elements: (undefined | IToken | Localized)[]): SourceLocation {
+    if (!this.tracksSourceLocation) {
+      return this.gen();
+    }
+
     const pureElements = elements.filter(x => x !== undefined);
     if (pureElements.length === 0) {
       return this.sourceLocationNoMaterialize();
     }
+
     const filtered = pureElements.filter(element =>
       !this.isLocalized(element) || this.isSourceLocationSource(element.loc) ||
       this.isSourceLocationStringReplace(element.loc) || this.isSourceLocationNodeReplace(element.loc));
@@ -48,14 +65,17 @@ export class AstCoreFactory {
     };
   }
 
-  public sourceLocationNoMaterialize(): SourceLocationNoMaterialize {
+  public sourceLocationNoMaterialize(): SourceLocation {
+    if (!this.tracksSourceLocation) {
+      return this.gen();
+    }
     return { sourceLocationType: 'noMaterialize' };
   }
 
   /**
    * Returns a copy of the argument that is not materialized
    */
-  public dematerialized<T extends Node>(arg: T): T & { loc: SourceLocationNoMaterialize } {
+  public dematerialized<T extends Node>(arg: T): T {
     return { ...arg, loc: this.sourceLocationNoMaterialize() };
   }
 

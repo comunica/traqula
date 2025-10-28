@@ -52,14 +52,20 @@ export const triplesBlock: SparqlRule<'triplesBlock', PatternBgp> = <const>{
   gImpl: ({ SUBRULE, PRINT_WORD, HANDLE_LOC, NEW_LINE }) => (ast, { astFactory: F }) => {
     for (const [ index, triple ] of ast.triples.entries()) {
       HANDLE_LOC(triple, () => {
-        const nextTriple = ast.triples.at(index);
+        const nextTriple = ast.triples.at(index + 1);
         if (F.isTripleCollection(triple)) {
           SUBRULE(graphNodePath, triple);
-          // A top level tripleCollection block means that it is not used in a triple. So you endf with DOT.
-          F.printFilter(triple, () => {
-            PRINT_WORD('.');
-            NEW_LINE();
-          });
+          // A top level tripleCollection block means that it is either not used in a triple
+          //   - or is the subject of a triple. In case it is the subject,
+          //   the identifier of the block will be the subject of the next triple and that subject is not materialized.
+          const isSubjectOfTriple = nextTriple?.type === 'triple' &&
+            F.isSourceLocationNoMaterialize(nextTriple.subject.loc);
+          if (!isSubjectOfTriple) {
+            F.printFilter(triple, () => {
+              PRINT_WORD('.');
+              NEW_LINE();
+            });
+          }
         } else {
           // Subject
           SUBRULE(graphNodePath, triple.subject);
@@ -297,11 +303,11 @@ function collectionImpl<T extends string>(name: T, allowPaths: boolean): SparqlR
         const F = C.astFactory;
         const triples: TripleNesting[] = [];
         // The triples created in your recursion
-        const predFirst = F.termNamed(F.sourceLocationNoMaterialize(), CommonIRIs.FIRST, undefined);
-        const predRest = F.termNamed(F.sourceLocationNoMaterialize(), CommonIRIs.REST, undefined);
-        const predNil = F.termNamed(F.sourceLocationNoMaterialize(), CommonIRIs.NIL, undefined);
+        const predFirst = F.termNamed(F.sourceLocation(), CommonIRIs.FIRST, undefined);
+        const predRest = F.termNamed(F.sourceLocation(), CommonIRIs.REST, undefined);
+        const predNil = F.termNamed(F.sourceLocation(), CommonIRIs.NIL, undefined);
 
-        const listHead = F.termBlank(undefined, F.sourceLocationNoMaterialize());
+        const listHead = F.termBlank(undefined, F.sourceLocation());
         let iterHead: TripleNesting['object'] = listHead;
         for (const [ index, term ] of terms.entries()) {
           const lastInList = index === terms.length - 1;
@@ -318,7 +324,7 @@ function collectionImpl<T extends string>(name: T, allowPaths: boolean): SparqlR
             const nilTriple: TripleNesting = F.triple(iterHead, predRest, predNil);
             triples.push(nilTriple);
           } else {
-            const tail = F.termBlank(undefined, F.sourceLocationNoMaterialize());
+            const tail = F.termBlank(undefined, F.sourceLocation());
             const linkTriple: TripleNesting = F.triple(iterHead, predRest, tail);
             triples.push(linkTriple);
             iterHead = tail;
@@ -374,7 +380,7 @@ SparqlRule<T, TripleCollectionBlankNodeProperties> {
       const startToken = CONSUME(l.symbols.LSquare);
 
       const blankNode = ACTION(() =>
-        C.astFactory.termBlank(undefined, C.astFactory.sourceLocationNoMaterialize()));
+        C.astFactory.termBlank(undefined, C.astFactory.sourceLocation()));
 
       const propList = SUBRULE(propertyPathNotEmptyImpl, blankNode);
       const endToken = CONSUME(l.symbols.RSquare);

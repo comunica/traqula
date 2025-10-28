@@ -64,18 +64,26 @@ export const rdfLiteral: SparqlRule<'rdfLiteral', TermLiteral> = <const> {
     ])) ?? value;
   },
   gImpl: ({ SUBRULE, PRINT, PRINT_WORD }) => (ast, { astFactory }) => {
-    astFactory.printFilter(ast, () => {
-      PRINT_WORD('');
-      PRINT(stringEscapedLexical(ast.value));
-    });
-
-    if (ast.langOrIri) {
+    if (!ast.langOrIri || typeof ast.langOrIri === 'string') {
+      // String or langdir string - no sub loc.
+      astFactory.printFilter(ast, () => {
+        PRINT_WORD('');
+        PRINT(stringEscapedLexical(ast.value));
+      });
       if (typeof ast.langOrIri === 'string') {
         astFactory.printFilter(ast, () => PRINT('@', ast.langOrIri));
-      } else {
-        astFactory.printFilter(ast, () => PRINT('^^'));
-        SUBRULE(iri, ast.langOrIri);
       }
+    } else if (astFactory.isSourceLocationNoMaterialize(ast.langOrIri.loc)) {
+      // You have a typed literal. -- If type is not materialized, print raw
+      astFactory.printFilter(ast, () => {
+        PRINT_WORD(ast.value);
+      });
+    } else {
+      astFactory.printFilter(ast, () => {
+        PRINT_WORD('');
+        PRINT(stringEscapedLexical(ast.value), '^^');
+      });
+      SUBRULE(iri, ast.langOrIri);
     }
   },
 };
@@ -108,7 +116,7 @@ export const numericLiteralUnsigned: SparqlGrammarRule<'numericLiteralUnsigned',
     return ACTION(() => C.astFactory.termLiteral(
       C.astFactory.sourceLocation(parsed[0]),
       parsed[0].image,
-      C.astFactory.termNamed(C.astFactory.sourceLocationNoMaterialize(), parsed[1]),
+      C.astFactory.termNamed(C.astFactory.sourceLocation(), parsed[1]),
     ));
   },
 };
@@ -128,7 +136,7 @@ export const numericLiteralPositive: SparqlGrammarRule<'numericLiteralPositive',
     return ACTION(() => C.astFactory.termLiteral(
       C.astFactory.sourceLocation(parsed[0]),
       parsed[0].image,
-      C.astFactory.termNamed(C.astFactory.sourceLocationNoMaterialize(), parsed[1]),
+      C.astFactory.termNamed(C.astFactory.sourceLocation(), parsed[1]),
     ));
   },
 };
@@ -148,7 +156,7 @@ export const numericLiteralNegative: SparqlGrammarRule<'numericLiteralNegative',
     return ACTION(() => C.astFactory.termLiteral(
       C.astFactory.sourceLocation(parsed[0]),
       parsed[0].image,
-      C.astFactory.termNamed(C.astFactory.sourceLocationNoMaterialize(), parsed[1]),
+      C.astFactory.termNamed(C.astFactory.sourceLocation(), parsed[1]),
     ));
   },
 };
@@ -168,7 +176,7 @@ export const booleanLiteral: SparqlGrammarRule<'booleanLiteral', TermLiteralType
     return ACTION(() => C.astFactory.termLiteral(
       C.astFactory.sourceLocation(token),
       token.image.toLowerCase(),
-      C.astFactory.termNamed(C.astFactory.sourceLocationNoMaterialize(), CommonIRIs.BOOLEAN),
+      C.astFactory.termNamed(C.astFactory.sourceLocation(), CommonIRIs.BOOLEAN),
     ));
   },
 };

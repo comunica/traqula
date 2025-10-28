@@ -54,7 +54,6 @@
     "@traqula/rules-sparql-1-1": "^0.0.24"
   },
   "devDependencies": {
-    "@rdfjs/types": "^2.0.0",
     "@traqula/test-utils": "^0.0.24",
     "@types/sparqljs": "^3.1.12",
     "rdf-data-factory": "^2.0.1",

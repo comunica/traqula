@@ -16,6 +16,7 @@ export class DynamicParser<Context, Names extends string, RuleDefs extends Parse
       // RecoveryEnabled: true,
       maxLookahead: 1,
       skipValidations: true,
+      dynamicTokensEnabled: false,
       ...config,
     });
     this.context = undefined;

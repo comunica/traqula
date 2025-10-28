@@ -727,14 +727,20 @@ export const generateTriplesBlock: SparqlGeneratorRule<'triplesBlock', PatternBg
   gImpl: ({ SUBRULE, PRINT_WORD, NEW_LINE, HANDLE_LOC }) => (ast, { astFactory: F }) => {
     for (const [ index, triple ] of ast.triples.entries()) {
       HANDLE_LOC(triple, () => {
-        const nextTriple = ast.triples.at(index);
+        const nextTriple = ast.triples.at(index + 1);
         if (F.isTripleCollection(triple)) {
           SUBRULE(graphNodePath, triple);
-          // A top level tripleCollection block means that it is not used in a triple. So you end with DOT.
-          F.printFilter(triple, () => {
-            PRINT_WORD('.');
-            NEW_LINE();
-          });
+          // A top level tripleCollection block means that it is either not used in a triple
+          //   - or is the subject of a triple. In case it is the subject,
+          //   the identifier of the block will be the subject of the next triple and that subject is not materialized.
+          const isSubjectOfTriple = nextTriple?.type === 'triple' &&
+            F.isSourceLocationNoMaterialize(nextTriple.subject.loc);
+          if (!isSubjectOfTriple) {
+            F.printFilter(triple, () => {
+              PRINT_WORD('.');
+              NEW_LINE();
+            });
+          }
         } else {
           // Subject
           SUBRULE(graphNodePath, triple.subject);

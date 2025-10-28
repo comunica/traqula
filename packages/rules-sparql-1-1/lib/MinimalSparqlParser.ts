@@ -1,4 +1,4 @@
-import { traqulaIndentation } from '@traqula/core';
+import { TransformerObject, traqulaIndentation } from '@traqula/core';
 import { AstFactory } from './astFactory.js';
 import type { SparqlContext, SparqlGeneratorContext } from './sparql11HelperTypes.js';
 import type { Path, TermIri } from './Sparql11types.js';
@@ -9,33 +9,56 @@ interface Parser<ParseRet> {
 }
 
 export function completeParseContext(
-  context: Partial<SparqlContext & SparqlGeneratorContext & { origSource: string; offset?: number }>,
-): SparqlContext & SparqlGeneratorContext & { origSource: string; offset?: number } {
+  context: Partial<SparqlContext>,
+): SparqlContext {
   return {
-    astFactory: context.astFactory ?? new AstFactory(),
+    astFactory: context.astFactory ?? new AstFactory({ tracksSourceLocation: false }),
     baseIRI: context.baseIRI,
     prefixes: { ...context.prefixes },
-    origSource: context.origSource ?? '',
-    offset: context.offset,
     parseMode: context.parseMode ? new Set(context.parseMode) : new Set([ 'canParseVars', 'canCreateBlankNodes' ]),
     skipValidation: context.skipValidation ?? false,
+  };
+}
+
+export function completeGeneratorContext(
+  context: Partial<SparqlGeneratorContext & { offset?: number }>,
+): SparqlGeneratorContext & { offset?: number } {
+  return {
+    astFactory: context.astFactory ?? new AstFactory(),
+    origSource: context.origSource ?? '',
+    offset: context.offset,
     [traqulaIndentation]: context[traqulaIndentation] ?? 0,
     indentInc: context.indentInc ?? 2,
   };
 }
 
+export function copyParseContext<T extends
+Partial<SparqlContext & SparqlGeneratorContext & { origSource: string; offset?: number }>>(
+  context: T,
+): T {
+  return {
+    ...context,
+    prefixes: { ...context.prefixes },
+    parseMode: new Set(context.parseMode),
+  };
+}
+
 export class MinimalSparqlParser<ParseRet> {
-  public constructor(private readonly parser: Parser<ParseRet>) {}
-  private readonly F = new AstFactory();
+  protected readonly defaultContext: SparqlContext;
+  protected readonly coreTransformer = new TransformerObject();
+
+  public constructor(protected readonly parser: Parser<ParseRet>, defaultContext: Partial<SparqlContext> = {}) {
+    this.defaultContext = completeParseContext(defaultContext);
+  }
 
   public parse(query: string, context: Partial<SparqlContext> = {}): ParseRet {
-    return this.parser.queryOrUpdate(query, completeParseContext(context));
+    return this.parser.queryOrUpdate(query, copyParseContext({ ...this.defaultContext, ...context }));
   }
 
   public parsePath(query: string, context: Partial<SparqlContext> = {}):
     (Path & { prefixes: object }) | TermIri {
-    const result = this.parser.path(query, completeParseContext(context));
-    if (this.F.isPathPure(result)) {
+    const result = this.parser.path(query, copyParseContext({ ...this.defaultContext, ...context }));
+    if (this.defaultContext.astFactory.isPathPure(result)) {
       return {
         ...result,
         prefixes: {},

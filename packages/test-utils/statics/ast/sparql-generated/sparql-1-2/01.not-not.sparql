@@ -2,11 +2,11 @@ PREFIX : <http://example/>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 SELECT ?v ?ebv WHERE {
   VALUES ?v {
-    true
-    1
+    "true"^^<http://www.w3.org/2001/XMLSchema#boolean>
+    "1"^^<http://www.w3.org/2001/XMLSchema#integer>
     "a"
-    false
-    0
+    "false"^^<http://www.w3.org/2001/XMLSchema#boolean>
+    "0"^^<http://www.w3.org/2001/XMLSchema#integer>
     ""
     "a"@en
     "z"^^xsd:boolean

@@ -626,7 +626,7 @@ export const quadsNotTriples: SparqlRule<'quadsNotTriples', GraphQuads> = <const
 
     return ACTION(() => C.astFactory.graphQuads(
       name,
-      triples ?? C.astFactory.patternBgp([], C.astFactory.sourceLocationNoMaterialize()),
+      triples ?? C.astFactory.patternBgp([], C.astFactory.sourceLocation()),
       C.astFactory.sourceLocation(graph, close),
     ));
   },

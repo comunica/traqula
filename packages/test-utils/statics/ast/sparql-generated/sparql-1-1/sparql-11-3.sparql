@@ -3,4 +3,4 @@ SELECT ( AVG( ?size ) AS ?asize ) WHERE {
   ?x :size ?size .
 }
 GROUP BY ?x
-HAVING ( AVG( ?size ) > 10 )
+HAVING ( AVG( ?size ) > "10"^^<http://www.w3.org/2001/XMLSchema#integer> )

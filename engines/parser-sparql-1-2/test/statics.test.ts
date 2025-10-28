@@ -61,7 +61,6 @@ describe('a SPARQL 1.2 parser', () => {
         const { query, astWithSource } = await statics();
         const astNoSource = astFactory.forcedAutoGenTree(<object> astWithSource);
         const res: unknown = sourceTrackingParser.parse(query, context);
-        // _sinkAst('sparql-1-1', name, <object> res);
         expect(res, 'source tracking res')
           .toEqualParsedQueryIgnoring(obj => astFactory.isTriple(obj), [ 'annotations' ], astWithSource);
         const resNoSource = noSourceTrackingParser.parse(query, context);

@@ -10,7 +10,7 @@ SELECT DISTINCT ?product ?label ?propertyTextual WHERE {
     ?product bsbm:productFeature <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature1475> .
     ?product bsbm:productPropertyTextual1 ?propertyTextual .
     ?product bsbm:productPropertyNumeric1 ?p1 .
-    FILTER ( ( ?p1 > 160 ) )
+    FILTER ( ( ?p1 > "160"^^<http://www.w3.org/2001/XMLSchema#integer> ) )
   }
   UNION {
     ?product rdfs:label ?label .
@@ -19,7 +19,7 @@ SELECT DISTINCT ?product ?label ?propertyTextual WHERE {
     ?product bsbm:productFeature <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature4372> .
     ?product bsbm:productPropertyTextual1 ?propertyTextual .
     ?product bsbm:productPropertyNumeric2 ?p2 .
-    FILTER ( ( ?p2 > 77 ) )
+    FILTER ( ( ?p2 > "77"^^<http://www.w3.org/2001/XMLSchema#integer> ) )
   }
 }
 ORDER BY ASC ( ?label )

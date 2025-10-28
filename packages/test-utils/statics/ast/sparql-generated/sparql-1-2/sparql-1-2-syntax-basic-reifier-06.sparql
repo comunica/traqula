@@ -1,6 +1,7 @@
 PREFIX : <http://example.com/ns#>
 CONSTRUCT {
-  << :s :p :o ~ :iri >> :q :z .
+  << :s :p :o ~ :iri >> .
+  :iri :q :z .
 }
 WHERE {
 }

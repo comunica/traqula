@@ -116,7 +116,7 @@ export const numericLiteralUnsigned: SparqlGrammarRule<'numericLiteralUnsigned',
     return ACTION(() => C.astFactory.termLiteral(
       C.astFactory.sourceLocation(parsed[0]),
       parsed[0].image,
-      C.astFactory.termNamed(C.astFactory.sourceLocationNoMaterialize(), parsed[1]),
+      C.astFactory.termNamed(C.astFactory.sourceLocation(), parsed[1]),
     ));
   },
 };
@@ -136,7 +136,7 @@ export const numericLiteralPositive: SparqlGrammarRule<'numericLiteralPositive',
     return ACTION(() => C.astFactory.termLiteral(
       C.astFactory.sourceLocation(parsed[0]),
       parsed[0].image,
-      C.astFactory.termNamed(C.astFactory.sourceLocationNoMaterialize(), parsed[1]),
+      C.astFactory.termNamed(C.astFactory.sourceLocation(), parsed[1]),
     ));
   },
 };
@@ -156,7 +156,7 @@ export const numericLiteralNegative: SparqlGrammarRule<'numericLiteralNegative',
     return ACTION(() => C.astFactory.termLiteral(
       C.astFactory.sourceLocation(parsed[0]),
       parsed[0].image,
-      C.astFactory.termNamed(C.astFactory.sourceLocationNoMaterialize(), parsed[1]),
+      C.astFactory.termNamed(C.astFactory.sourceLocation(), parsed[1]),
     ));
   },
 };
@@ -176,7 +176,7 @@ export const booleanLiteral: SparqlGrammarRule<'booleanLiteral', TermLiteralType
     return ACTION(() => C.astFactory.termLiteral(
       C.astFactory.sourceLocation(token),
       token.image.toLowerCase(),
-      C.astFactory.termNamed(C.astFactory.sourceLocationNoMaterialize(), CommonIRIs.BOOLEAN),
+      C.astFactory.termNamed(C.astFactory.sourceLocation(), CommonIRIs.BOOLEAN),
     ));
   },
 };

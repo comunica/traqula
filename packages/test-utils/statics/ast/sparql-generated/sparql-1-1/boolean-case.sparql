@@ -1,10 +1,10 @@
 SELECT * WHERE {
-  ?s ?p true .
-  ?s ?p true .
-  ?s ?p true .
-  ?s ?p true .
-  ?s ?p false .
-  ?s ?p false .
-  ?s ?p false .
-  ?s ?p false .
+  ?s ?p "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+  ?s ?p "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+  ?s ?p "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+  ?s ?p "true"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+  ?s ?p "false"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+  ?s ?p "false"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+  ?s ?p "false"^^<http://www.w3.org/2001/XMLSchema#boolean> .
+  ?s ?p "false"^^<http://www.w3.org/2001/XMLSchema#boolean> .
 }

@@ -37,13 +37,13 @@ export class AstCoreFactory implements AstCoreFactoryArgs {
   }
 
   public sourceLocation(...elements: (undefined | IToken | Localized)[]): SourceLocation {
+    if (!this.tracksSourceLocation) {
+      return this.gen();
+    }
+
     const pureElements = elements.filter(x => x !== undefined);
     if (pureElements.length === 0) {
       return this.sourceLocationNoMaterialize();
-    }
-
-    if (!this.tracksSourceLocation) {
-      return this.gen();
     }
 
     const filtered = pureElements.filter(element =>
@@ -65,14 +65,17 @@ export class AstCoreFactory implements AstCoreFactoryArgs {
     };
   }
 
-  public sourceLocationNoMaterialize(): SourceLocationNoMaterialize {
+  public sourceLocationNoMaterialize(): SourceLocation {
+    if (!this.tracksSourceLocation) {
+      return this.gen();
+    }
     return { sourceLocationType: 'noMaterialize' };
   }
 
   /**
    * Returns a copy of the argument that is not materialized
    */
-  public dematerialized<T extends Node>(arg: T): T & { loc: SourceLocationNoMaterialize } {
+  public dematerialized<T extends Node>(arg: T): T {
     return { ...arg, loc: this.sourceLocationNoMaterialize() };
   }
 
@@ -92,7 +95,7 @@ export class AstCoreFactory implements AstCoreFactoryArgs {
     for (const [ key, value ] of Object.entries(copy)) {
       (<Record<string, object>> copy)[key] = this.safeObjectTransform(value, obj => this.forcedAutoGenTree(obj));
     }
-    if (this.isLocalized(copy) && !this.isSourceLocationNoMaterialize(copy.loc)) {
+    if (this.isLocalized(copy)) {
       copy.loc = this.gen();
     }
     return copy;

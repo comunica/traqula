@@ -7,7 +7,7 @@ SELECT DISTINCT ?offer ?price WHERE {
   ?offer dc:publisher ?vendor .
   ?vendor bsbm:country <http://downlode.org/rdf/iso-3166/countries#US> .
   ?offer bsbm:deliveryDays ?deliveryDays .
-  FILTER ( ( ?deliveryDays <= 3 ) )
+  FILTER ( ( ?deliveryDays <= "3"^^<http://www.w3.org/2001/XMLSchema#integer> ) )
   ?offer bsbm:price ?price .
   ?offer bsbm:validTo ?date .
   FILTER ( ( ?date > "2008-06-20T00:00:00"^^<http://www.w3.org/2001/XMLSchema#dateTime> ) )

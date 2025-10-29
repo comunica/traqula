@@ -295,9 +295,17 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX dc10:  <http://purl.org/dc/elements/1.0/>\nPREFIX dc11:  <http://purl.org/dc/elements/1.1/>\n\nSELECT ?title ?author\nWHERE  { { ?book dc10:title ?title .  ?book dc10:creator ?author }\n         UNION\n         { ?book dc11:title ?title .  ?book dc11:creator ?author }\n       }\n",
     "start": 0,
-    "end": 278
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 278
+    },
+    "startOnNew": 0,
+    "endOnNew": 278
   },
   "type": "query"
 }

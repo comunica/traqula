@@ -365,9 +365,17 @@
   },
   "solutionModifiers": {},
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX  dc: <http://purl.org/dc/elements/1.1/>\nPREFIX app: <http://example.org/ns#>\nPREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n\nCONSTRUCT { ?s ?p ?o } WHERE\n {\n   GRAPH ?g { ?s ?p ?o } .\n   ?g dc:publisher <http://www.w3.org/> .\n   ?g dc:date ?date .\n   FILTER ( app:customDate(?date) > \"2005-02-28T00:00:00Z\"^^xsd:dateTime ) .\n }\n",
     "start": 0,
-    "end": 335
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 335
+    },
+    "startOnNew": 0,
+    "endOnNew": 335
   },
   "type": "query"
 }

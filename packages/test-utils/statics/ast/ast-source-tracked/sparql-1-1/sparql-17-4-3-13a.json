@@ -195,9 +195,17 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX dc: <http://purl.org/dc/elements/1.1/>\nSELECT ?title\n WHERE { ?x dc:title  \"That Seventies Show\"@en ;\n            dc:title  ?title .\n         FILTER langMatches( lang(?title), \"FR\" ) }\n",
     "start": 0,
-    "end": 191
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 191
+    },
+    "startOnNew": 0,
+    "endOnNew": 191
   },
   "type": "query"
 }

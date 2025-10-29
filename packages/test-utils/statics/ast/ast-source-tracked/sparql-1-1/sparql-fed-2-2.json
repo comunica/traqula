@@ -279,9 +279,17 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX foaf:   <http://xmlns.com/foaf/0.1/>\nSELECT ?person ?interest ?known\nWHERE\n{\n  SERVICE <http://people.example.org/sparql> { \n    ?person foaf:name ?name .  \n    OPTIONAL { \n      ?person foaf:interest ?interest .\n      SERVICE <http://people2.example.org/sparql> { \n        ?person foaf:knows ?known . } }\n  }    \n}\n",
     "start": 0,
-    "end": 322
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 322
+    },
+    "startOnNew": 0,
+    "endOnNew": 322
   },
   "type": "query"
 }

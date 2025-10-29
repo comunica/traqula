@@ -167,9 +167,17 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
-    "start": 2,
-    "end": 188
+    "sourceLocationType": "inlinedSource",
+    "newSource": "  PREFIX  rdfs:   <http://www.w3.org/2000/01/rdf-schema#> \n  PREFIX  rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n  SELECT ?x ?type\n  { \n    ?x rdf:type/rdfs:subClassOf* ?type\n  }\n",
+    "start": 0,
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 2,
+      "end": 188
+    },
+    "startOnNew": 2,
+    "endOnNew": 188
   },
   "type": "query"
 }

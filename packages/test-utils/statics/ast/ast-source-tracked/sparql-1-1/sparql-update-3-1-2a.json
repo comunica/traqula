@@ -125,8 +125,16 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX dc: <http://purl.org/dc/elements/1.1/>\n\nDELETE DATA\n{\n  <http://example/book2> dc:title \"David Copperfield\" ;\n                         dc:creator \"Edmund Wells\" .\n}\n",
     "start": 0,
-    "end": 171
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 171
+    },
+    "startOnNew": 0,
+    "endOnNew": 171
   }
 }

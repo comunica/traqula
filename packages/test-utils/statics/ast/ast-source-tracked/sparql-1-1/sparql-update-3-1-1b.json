@@ -134,8 +134,16 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX dc: <http://purl.org/dc/elements/1.1/>\nPREFIX ns: <http://example.org/ns#>\nINSERT DATA\n{ GRAPH <http://example/bookStore> { <http://example/book1>  ns:price  42 } }\n",
     "start": 0,
-    "end": 171
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 171
+    },
+    "startOnNew": 0,
+    "endOnNew": 171
   }
 }

@@ -104,9 +104,17 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX  dc: <http://purl.org/dc/elements/1.1/>\nSELECT  ?title\nWHERE   { <http://example.org/book/book1> dc:title ?title } \n",
     "start": 0,
-    "end": 121
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 121
+    },
+    "startOnNew": 0,
+    "endOnNew": 121
   },
   "type": "query"
 }

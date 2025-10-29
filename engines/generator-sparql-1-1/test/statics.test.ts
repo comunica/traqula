@@ -23,7 +23,7 @@ describe('a SPARQL 1.1 generator', () => {
         const { query, astWithSource, autoGen } = await statics();
         const path = <T11.Path>astWithSource;
 
-        const generated = generator.generatePath(path, { origSource: query });
+        const generated = generator.generatePath(path);
         expect(generated, 'round-trip generation').toEqual(query.trim());
 
         const replaceLoc = F.sourceLocationNodeReplaceUnsafe(path.loc);
@@ -42,7 +42,7 @@ describe('a SPARQL 1.1 generator', () => {
         const { query, astWithSource, autoGen } = await statics();
         const queryUpdate = <T11.Query | T11.Update>astWithSource;
 
-        const roundTripped = generator.generate(queryUpdate, { origSource: query });
+        const roundTripped = generator.generate(queryUpdate);
         expect(roundTripped, 'round-trip generation').toEqual(query.trim());
 
         const replaceLoc = F.sourceLocationNodeReplaceUnsafe(queryUpdate.loc);

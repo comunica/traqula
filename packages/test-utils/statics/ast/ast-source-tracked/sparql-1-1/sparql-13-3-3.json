@@ -475,9 +475,17 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX  data:  <http://example.org/foaf/>\nPREFIX  foaf:  <http://xmlns.com/foaf/0.1/>\nPREFIX  rdfs:  <http://www.w3.org/2000/01/rdf-schema#>\n\nSELECT ?mbox ?nick ?ppd\nFROM NAMED <http://example.org/foaf/aliceFoaf>\nFROM NAMED <http://example.org/foaf/bobFoaf>\nWHERE\n{\n  GRAPH data:aliceFoaf\n  {\n    ?alice foaf:mbox <mailto:alice@work.example> ;\n           foaf:knows ?whom .\n    ?whom  foaf:mbox ?mbox ;\n           rdfs:seeAlso ?ppd .\n    ?ppd  a foaf:PersonalProfileDocument .\n  } .\n  GRAPH ?ppd\n  {\n      ?w foaf:mbox ?mbox ;\n         foaf:nick ?nick\n  }\n}\n",
     "start": 0,
-    "end": 557
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 557
+    },
+    "startOnNew": 0,
+    "endOnNew": 557
   },
   "type": "query"
 }

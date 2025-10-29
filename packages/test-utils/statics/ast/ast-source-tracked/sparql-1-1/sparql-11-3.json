@@ -222,9 +222,17 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX : <http://data.example/>\nSELECT (AVG(?size) AS ?asize)\nWHERE {\n  ?x :size ?size\n}\nGROUP BY ?x\nHAVING(AVG(?size) > 10)\n",
     "start": 0,
-    "end": 124
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 124
+    },
+    "startOnNew": 0,
+    "endOnNew": 124
   },
   "type": "query"
 }

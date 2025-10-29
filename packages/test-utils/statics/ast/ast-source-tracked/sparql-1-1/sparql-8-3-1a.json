@@ -159,9 +159,17 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "SELECT *\n{ \n  ?s ?p ?o\n  FILTER NOT EXISTS { ?x ?y ?z }\n}\n",
     "start": 0,
-    "end": 57
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 57
+    },
+    "startOnNew": 0,
+    "endOnNew": 57
   },
   "type": "query"
 }

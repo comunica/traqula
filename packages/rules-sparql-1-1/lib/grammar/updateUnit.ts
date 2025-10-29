@@ -70,10 +70,7 @@ export const update: SparqlRule<'update', Update> = <const> {
         type: 'update',
         updates,
         loc: C.astFactory.sourceLocation(
-          ...updates[0].context,
-          updates[0].operation,
-          ...updates.at(-1)!.context,
-          updates.at(-1)?.operation,
+          ...updates.flatMap(x => [ ...x.context, x.operation ]),
         ),
       } satisfies Update;
       updateNoReuseBlankNodeLabels(update);

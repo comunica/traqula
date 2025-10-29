@@ -18,7 +18,7 @@ describe('a SPARQL 1.1 generator', () => {
   it ('generates simple round tripped', ({ expect }) => {
     const query = 'SELECT * WHERE { ?s ?p ?o }';
     const ast = <T11.Query> parser.parse(query);
-    const result = generator.generate(ast, { origSource: query });
+    const result = generator.generate(ast);
     expect(result).toBe(query);
   });
 
@@ -44,7 +44,7 @@ describe('a SPARQL 1.1 generator', () => {
         }}},
       );
 
-      const result = generator.generate(altered, { origSource: query });
+      const result = generator.generate(altered);
       expect(result).toBe(`SELECT * WHERE { ?subject ?p ?o }`);
     });
 
@@ -145,7 +145,7 @@ _:g_12 <c7> <e7> .
         }}},
       );
 
-      const result = generator.generate(flattenCollections, { origSource: query });
+      const result = generator.generate(flattenCollections);
       expect(result).toBe(`BASE <ex:>
 CONSTRUCT { 
   ?s0 ?p0 _:g_0 .

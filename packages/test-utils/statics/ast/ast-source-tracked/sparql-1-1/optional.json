@@ -250,9 +250,17 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "SELECT ?p ?c ?d WHERE {\n    ?p a <http://dbpedia.org/ontology/Artist>.\n    OPTIONAL {\n      ?p <http://dbpedia.org/ontology/deathPlace> ?d.\n    }\n    ?p <http://dbpedia.org/ontology/birthPlace> ?c.\n    ?c <http://xmlns.com/foaf/0.1/name> \"York\"@en.\n}\n",
     "start": 0,
-    "end": 250
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 250
+    },
+    "startOnNew": 0,
+    "endOnNew": 250
   },
   "type": "query"
 }

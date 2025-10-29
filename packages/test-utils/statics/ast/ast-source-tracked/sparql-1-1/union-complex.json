@@ -314,9 +314,17 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX dbpedia: <http://dbpedia.org/resource/>\nPREFIX dbpedia-owl: <http://dbpedia.org/ontology/>\nSELECT * WHERE {\n  ?city dbpedia-owl:country dbpedia:Belgium.\n\n  { ?city <http://www.w3.org/2000/01/rdf-schema#label> ?label. }\n  UNION\n  { ?city <http://dbpedia.org/property/commonName>     ?label. }\n  UNION\n  { ?city <http://xmlns.com/foaf/0.1/name>             ?label. }\n}\n",
     "start": 0,
-    "end": 373
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 373
+    },
+    "startOnNew": 0,
+    "endOnNew": 373
   },
   "type": "query"
 }

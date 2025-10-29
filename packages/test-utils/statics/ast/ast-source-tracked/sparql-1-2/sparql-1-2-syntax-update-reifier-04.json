@@ -501,8 +501,16 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX : <http://example.com/ns#>\n\nINSERT {\n    << :a :b :c ~ _:bnode >> ?P :o2  {| ?Y <<:s1 :p1 ?Z ~ :iri>> |}\n} WHERE {\n   << :a :b :c ~ _:bnode >> ?P :o1 {| ?Y <<:s1 :p1 ?Z ~ :iri>> |}\n}\n\n",
     "start": 0,
-    "end": 189
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 189
+    },
+    "startOnNew": 0,
+    "endOnNew": 189
   }
 }

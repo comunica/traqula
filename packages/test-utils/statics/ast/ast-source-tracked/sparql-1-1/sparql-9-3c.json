@@ -159,9 +159,17 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
-    "start": 2,
-    "end": 95
+    "sourceLocationType": "inlinedSource",
+    "newSource": "  PREFIX :   <http://example/>\n  SELECT (sum(?x) AS ?total)\n  { \n    :order :item/:price ?x\n  }\n",
+    "start": 0,
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 2,
+      "end": 95
+    },
+    "startOnNew": 2,
+    "endOnNew": 95
   },
   "type": "query"
 }

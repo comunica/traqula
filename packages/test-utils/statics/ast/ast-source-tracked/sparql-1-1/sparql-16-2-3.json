@@ -239,9 +239,17 @@
     }
   },
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\nPREFIX site: <http://example.org/stats#>\n\nCONSTRUCT { [] foaf:name ?name }\nWHERE\n{ [] foaf:name ?name ;\n     site:hits ?hits .\n}\nORDER BY desc(?hits)\nLIMIT 2\n",
     "start": 0,
-    "end": 199
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 199
+    },
+    "startOnNew": 0,
+    "endOnNew": 199
   },
   "type": "query"
 }

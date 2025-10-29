@@ -1,4 +1,5 @@
 import { AstCoreFactory } from '../AstCoreFactory.js';
+import type { SourceLocationInlinedSource } from '../types.js';
 import { traqulaIndentation } from '../utils.js';
 import type { GenRuleMap } from './builderTypes.js';
 import type { GeneratorRule, RuleDefArg } from './generatorTypes.js';
@@ -7,6 +8,7 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
   protected readonly factory = new AstCoreFactory();
   protected __context: Context | undefined = undefined;
   protected origSource = '';
+  protected handledInlineSource: SourceLocationInlinedSource | undefined;
   protected generatedUntil = 0;
   protected toEnsure: ((willPrint: string) => void)[] = [];
   /**
@@ -88,6 +90,24 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
     if (this.factory.isSourceLocationSource(localized.loc)) {
       this.catchup(localized.loc.start);
     }
+    if (this.factory.isSourceLocationInlinedSource(localized.loc) && this.handledInlineSource !== localized.loc) {
+      // Calling handleLoc on the same AST multiple times should be the same as doing it once.
+      this.handledInlineSource = localized.loc;
+      this.catchup(localized.loc.start);
+      const origSource = this.origSource;
+      const origPointer = this.generatedUntil;
+      this.origSource = localized.loc.newSource;
+      this.generatedUntil = 0;
+      this.catchup(localized.loc.startOnNew);
+
+      this.handleLoc(localized.loc, handle);
+
+      this.generatedUntil = localized.loc.endOnNew;
+      this.catchup(this.origSource.length);
+      this.origSource = origSource;
+      this.generatedUntil = Math.max(origPointer, localized.loc.end);
+      return;
+    }
     // If autoGenerate - do nothing
 
     const ret = handle();
@@ -98,6 +118,9 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
     return ret;
   };
 
+  /**
+   * Catchup until, excluding
+   */
   protected readonly catchup: RuleDefArg['CATCHUP'] = (until) => {
     const start = this.generatedUntil;
     if (start < until) {

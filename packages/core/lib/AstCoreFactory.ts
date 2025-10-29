@@ -12,6 +12,7 @@ import type {
   Wrap,
   Typed,
   SubTyped,
+  SourceLocationInlinedSource,
 } from './types.js';
 
 export interface AstCoreFactoryArgs {
@@ -120,12 +121,52 @@ export class AstCoreFactory implements AstCoreFactoryArgs {
     };
   }
 
+  /**
+   * {@inheritDoc SourceLocationInlinedSource}
+   */
+  public sourceLocationInlinedSource(
+    newSource: string,
+    subLoc: SourceLocation,
+    start: number,
+    end: number,
+    startOnNew = 0,
+    endOnNew: number = newSource.length,
+  ): SourceLocation {
+    if (!this.tracksSourceLocation) {
+      return this.gen();
+    }
+    if (this.isSourceLocationSource(subLoc)) {
+      startOnNew = subLoc.start;
+      endOnNew = subLoc.end;
+    }
+    return {
+      sourceLocationType: 'inlinedSource',
+      newSource,
+      start,
+      end,
+      loc: subLoc,
+      startOnNew,
+      endOnNew,
+    }satisfies SourceLocationInlinedSource;
+  };
+
+  public isSourceLocationInlinedSource(loc: object): loc is SourceLocationInlinedSource {
+    return this.isSourceLocation(loc) && loc.sourceLocationType === 'inlinedSource';
+  }
+
   public gen(): SourceLocationNodeAutoGenerate {
     return { sourceLocationType: 'autoGenerate' };
   }
 
   public isSourceLocationSource(loc: object): loc is SourceLocationSource {
     return this.isSourceLocation(loc) && loc.sourceLocationType === 'source';
+  }
+
+  public sourceLocationStringReplace(newSource: string, start: number, end: number): SourceLocation {
+    if (!this.tracksSourceLocation) {
+      return this.gen();
+    }
+    return { sourceLocationType: 'stringReplace', newSource, start, end } satisfies SourceLocationStringReplace;
   }
 
   public isSourceLocationStringReplace(loc: object): loc is SourceLocationStringReplace {
@@ -136,7 +177,10 @@ export class AstCoreFactory implements AstCoreFactoryArgs {
     if (this.isSourceLocationSource(loc)) {
       return this.sourceLocationNodeReplace(loc);
     }
-    throw new Error('not possible');
+    if (this.isSourceLocationInlinedSource(loc)) {
+      return this.sourceLocationNodeReplaceUnsafe(loc.loc);
+    }
+    throw new Error(`Cannot convert SourceLocation of type ${loc.sourceLocationType} to SourceLocationNodeReplace`);
   }
 
   public sourceLocationNodeReplace(location: SourceLocationSource): SourceLocationNodeReplace;
@@ -166,13 +210,14 @@ export class AstCoreFactory implements AstCoreFactoryArgs {
     return this.isSourceLocation(loc) && loc.sourceLocationType === 'autoGenerate';
   }
 
-  public nodeShouldPrint(node: Localized): boolean {
-    return this.isSourceLocationNodeReplace(node.loc) ||
-      this.isSourceLocationNodeAutoGenerate(node.loc);
+  public isPrintingLoc(loc: SourceLocation): boolean {
+    return this.isSourceLocationNodeReplace(loc) ||
+      this.isSourceLocationNodeAutoGenerate(loc) ||
+      (this.isSourceLocationInlinedSource(loc) && this.isPrintingLoc(loc.loc));
   }
 
   public printFilter(node: Localized, callback: () => void): void {
-    if (this.nodeShouldPrint(node)) {
+    if (this.isPrintingLoc(node.loc)) {
       callback();
     }
   }

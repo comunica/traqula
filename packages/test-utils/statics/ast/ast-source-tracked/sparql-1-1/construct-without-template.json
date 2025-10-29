@@ -117,9 +117,17 @@
   },
   "solutionModifiers": {},
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "CONSTRUCT WHERE { ?s ?p ?o }\n",
     "start": 0,
-    "end": 28
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 28
+    },
+    "startOnNew": 0,
+    "endOnNew": 28
   },
   "type": "query"
 }

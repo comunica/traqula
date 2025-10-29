@@ -134,9 +134,17 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX foaf:    <http://xmlns.com/foaf/0.1/>\n\nSELECT ?name\nWHERE { ?x foaf:name ?name }\nORDER BY ?name\n",
     "start": 0,
-    "end": 102
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 102
+    },
+    "startOnNew": 0,
+    "endOnNew": 102
   },
   "type": "query"
 }

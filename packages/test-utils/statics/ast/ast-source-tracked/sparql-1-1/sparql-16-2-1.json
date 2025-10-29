@@ -456,9 +456,17 @@
   },
   "solutionModifiers": {},
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX foaf:    <http://xmlns.com/foaf/0.1/>\nPREFIX vcard:   <http://www.w3.org/2001/vcard-rdf/3.0#>\n\nCONSTRUCT { ?x  vcard:N _:v .\n            _:v vcard:givenName ?gname .\n            _:v vcard:familyName ?fname }\nWHERE\n {\n    { ?x foaf:firstname ?gname } UNION  { ?x foaf:givenname   ?gname } .\n    { ?x foaf:surname   ?fname } UNION  { ?x foaf:family_name ?fname } .\n }\n",
     "start": 0,
-    "end": 372
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 372
+    },
+    "startOnNew": 0,
+    "endOnNew": 372
   },
   "type": "query"
 }

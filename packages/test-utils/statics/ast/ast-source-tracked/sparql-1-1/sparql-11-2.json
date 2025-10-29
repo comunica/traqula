@@ -198,11 +198,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX : <http://data.example/>\nSELECT (AVG(?y) AS ?avg)\nWHERE {\n  ?a :x ?x ;\n     :y ?y .\n}\nGROUP BY ?x\n",
     "start": 0,
-    "end": 104,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 104
+    },
+    "startOnNew": 0,
+    "endOnNew": 105
   },
   "type": "query"
 }

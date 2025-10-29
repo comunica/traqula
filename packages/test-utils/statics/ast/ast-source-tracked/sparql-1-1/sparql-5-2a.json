@@ -156,11 +156,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX foaf:    <http://xmlns.com/foaf/0.1/>\nSELECT ?name ?mbox\nWHERE  {\n          ?x foaf:name ?name .\n          ?x foaf:mbox ?mbox .\n       }\n",
     "start": 0,
-    "end": 143,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 143
+    },
+    "startOnNew": 0,
+    "endOnNew": 144
   },
   "type": "query"
 }

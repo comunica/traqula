@@ -309,11 +309,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX :        <http://example.com/ns#>\nPREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>\n\nSELECT * {\n   :s :p <<:a :b :c>> ~ :iri {| ?q <<:s1 :p1 ?z>> |}\n}\n",
     "start": 0,
-    "end": 159,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 159
+    },
+    "startOnNew": 0,
+    "endOnNew": 160
   },
   "type": "query"
 }

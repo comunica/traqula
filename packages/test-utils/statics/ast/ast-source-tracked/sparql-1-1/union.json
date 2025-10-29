@@ -251,11 +251,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX dbpedia: <http://dbpedia.org/resource/>\nSELECT ?label WHERE {\n  { dbpedia:Belgium <http://www.w3.org/2000/01/rdf-schema#label> ?label. }\n  UNION\n  { dbpedia:Belgium <http://dbpedia.org/property/commonName>     ?label. }\n  UNION\n  { dbpedia:Belgium <http://xmlns.com/foaf/0.1/name>             ?label. }\n}\n",
     "start": 0,
-    "end": 311,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 311
+    },
+    "startOnNew": 0,
+    "endOnNew": 312
   },
   "type": "query"
 }

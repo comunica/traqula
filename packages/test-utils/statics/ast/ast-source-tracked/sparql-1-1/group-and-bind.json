@@ -191,11 +191,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX : <http://www.example.org/>\nSELECT (:foo AS ?foo) (COUNT(?outObject) AS ?out)\nWHERE {\n    ?s :predicate ?outObject\n}\nGROUP BY ?s\n",
     "start": 0,
-    "end": 135,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 135
+    },
+    "startOnNew": 0,
+    "endOnNew": 136
   },
   "type": "query"
 }

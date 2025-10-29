@@ -212,11 +212,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX     :    <http://example.org/ns#>\nPREFIX foaf:    <http://xmlns.com/foaf/0.1/>\n\nSELECT ?name\nWHERE { ?x foaf:name ?name ; :empId ?emp }\nORDER BY ?name DESC(?emp)\n",
     "start": 0,
-    "end": 168,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 168
+    },
+    "startOnNew": 0,
+    "endOnNew": 169
   },
   "type": "query"
 }

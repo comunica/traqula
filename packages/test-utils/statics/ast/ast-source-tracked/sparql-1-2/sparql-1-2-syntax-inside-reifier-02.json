@@ -360,11 +360,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX : <http://example.com/ns#>\n\nSELECT * {\n  ( <<?S1 :p :o1 ~ :iri >> <<?S2 :p :o2 ~ _:bnode>> )  :q 123 .\n}\n",
     "start": 0,
-    "end": 111,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 111
+    },
+    "startOnNew": 0,
+    "endOnNew": 112
   },
   "type": "query"
 }

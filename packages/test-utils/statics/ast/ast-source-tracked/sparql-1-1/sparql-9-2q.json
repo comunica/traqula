@@ -149,11 +149,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n  SELECT *\n  { ?x !(rdf:type|^rdf:type) ?y }\n",
     "start": 0,
-    "end": 102,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 102
+    },
+    "startOnNew": 0,
+    "endOnNew": 103
   },
   "type": "query"
 }

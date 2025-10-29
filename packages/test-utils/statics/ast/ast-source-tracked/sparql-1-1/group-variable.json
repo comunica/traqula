@@ -276,11 +276,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX : <http://www.example.org/>\nSELECT ?O12 (COUNT(?O1) AS ?C)\nWHERE { ?S :p ?O1; :q ?O2 } GROUP BY ((?O1 + ?O2) AS ?O12)\nORDER BY ?O12\n",
     "start": 0,
-    "end": 138,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 138
+    },
+    "startOnNew": 0,
+    "endOnNew": 139
   },
   "type": "query"
 }

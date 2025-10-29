@@ -90,24 +90,23 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
     if (this.factory.isSourceLocationSource(localized.loc)) {
       this.catchup(localized.loc.start);
     }
-    let origSource: string | undefined;
-    let origPointer: number | undefined;
-    const locIsHandled = this.handledInlineSource === localized.loc;
-    if (this.factory.isSourceLocationInlinedSource(localized.loc) && !locIsHandled) {
+    if (this.factory.isSourceLocationInlinedSource(localized.loc) && this.handledInlineSource !== localized.loc) {
       // Calling handleLoc on the same AST multiple times should be the same as doing it once.
       this.handledInlineSource = localized.loc;
-
-      const from = localized.loc.replaceRange?.at(0);
-      if (from !== undefined) {
-        this.catchup(from);
-      }
-      origSource = this.origSource;
-      origPointer = this.generatedUntil;
-
+      this.catchup(localized.loc.start);
+      const origSource = this.origSource;
+      const origPointer = this.generatedUntil;
       this.origSource = localized.loc.newSource;
       this.generatedUntil = 0;
+      this.catchup(localized.loc.startOnNew);
 
-      this.catchup(localized.loc.start);
+      this.handleLoc(localized.loc, handle);
+
+      this.generatedUntil = localized.loc.endOnNew;
+      this.catchup(this.origSource.length);
+      this.origSource = origSource;
+      this.generatedUntil = origPointer > localized.loc.end ? origPointer : localized.loc.end;
+      return;
     }
     // If autoGenerate - do nothing
 
@@ -115,16 +114,6 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
 
     if (this.factory.isSourceLocationSource(localized.loc)) {
       this.catchup(localized.loc.end);
-    }
-    if (this.factory.isSourceLocationInlinedSource(localized.loc) && !locIsHandled) {
-      this.catchup(this.origSource.length);
-      this.origSource = origSource!;
-      const until = localized.loc.replaceRange?.at(-1);
-      if (until === undefined) {
-        this.generatedUntil = origPointer!;
-      } else {
-        this.generatedUntil = until;
-      }
     }
     return ret;
   };

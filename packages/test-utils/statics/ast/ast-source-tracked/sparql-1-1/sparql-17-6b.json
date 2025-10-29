@@ -404,11 +404,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX aGeo: <http://example.org/geo#>\n\nSELECT ?neighbor\nWHERE { ?a aGeo:placeName \"Grenoble\" .\n        ?a aGeo:locationX ?axLoc .\n        ?a aGeo:locationY ?ayLoc .\n\n        ?b aGeo:placeName ?neighbor .\n        ?b aGeo:locationX ?bxLoc .\n        ?b aGeo:locationY ?byLoc .\n\n        FILTER ( aGeo:distance(?axLoc, ?ayLoc, ?bxLoc, ?byLoc) < 10 ) .\n      }\n",
     "start": 0,
-    "end": 355,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 355
+    },
+    "startOnNew": 0,
+    "endOnNew": 356
   },
   "type": "query"
 }

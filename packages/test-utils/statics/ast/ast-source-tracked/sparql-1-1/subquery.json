@@ -146,11 +146,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "SELECT ?x WHERE { SELECT ?x ?p ?y WHERE { ?x ?p ?y. } }\n",
     "start": 0,
-    "end": 55,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 55
+    },
+    "startOnNew": 0,
+    "endOnNew": 56
   },
   "type": "query"
 }

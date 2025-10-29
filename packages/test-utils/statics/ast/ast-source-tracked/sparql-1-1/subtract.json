@@ -93,11 +93,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "SELECT * WHERE {\n  BIND (?a-1 AS ?b)\n}\n",
     "start": 0,
-    "end": 38,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 38
+    },
+    "startOnNew": 0,
+    "endOnNew": 39
   },
   "type": "query"
 }

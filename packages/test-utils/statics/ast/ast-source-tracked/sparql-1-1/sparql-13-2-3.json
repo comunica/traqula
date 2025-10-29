@@ -260,11 +260,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\nPREFIX dc: <http://purl.org/dc/elements/1.1/>\n\nSELECT ?who ?g ?mbox\nFROM <http://example.org/dft.ttl>\nFROM NAMED <http://example.org/alice>\nFROM NAMED <http://example.org/bob>\nWHERE\n{\n   ?g dc:publisher ?who .\n   GRAPH ?g { ?x foaf:mbox ?mbox }\n}\n",
     "start": 0,
-    "end": 288,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 288
+    },
+    "startOnNew": 0,
+    "endOnNew": 289
   },
   "type": "query"
 }

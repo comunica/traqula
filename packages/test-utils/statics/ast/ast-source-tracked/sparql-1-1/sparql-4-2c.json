@@ -126,11 +126,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "BASE    <http://example.org/book/>\nPREFIX  dc: <http://purl.org/dc/elements/1.1/>\n\nSELECT  $title\nWHERE   { <book1>  dc:title  ?title }\n",
     "start": 0,
-    "end": 135,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 135
+    },
+    "startOnNew": 0,
+    "endOnNew": 136
   },
   "type": "query"
 }

@@ -425,11 +425,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX bsbm-inst: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/>\nPREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n\nSELECT DISTINCT ?product ?label\nWHERE {\n    ?product rdfs:label ?label .\n    ?product a bsbm-inst:ProductType105 .\n    ?product bsbm:productFeature bsbm-inst:ProductFeature815 .\n    ?product bsbm:productFeature bsbm-inst:ProductFeature814 .\n    ?product bsbm:productPropertyNumeric1 ?value1 .\n\tFILTER (?value1 > 486)\n}\nORDER BY ?label\nLIMIT 10\n",
     "start": 0,
-    "end": 607,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 607
+    },
+    "startOnNew": 0,
+    "endOnNew": 608
   },
   "type": "query"
 }

@@ -47,7 +47,7 @@ describe('autoGen query inserting comments', () => {
 }`);
   });
 
-  it('auto generates - comment through sourceLocation', ({ expect }) => {
+  it('auto generates - comment through sourceLocationStringReplace', ({ expect }) => {
     const ast = F.forcedAutoGenTree(parser.parse(query));
     const detailGenerator = sparql11GeneratorBuilder.build();
     const genContext = completeGeneratorContext({});
@@ -71,6 +71,27 @@ VALUES ?o {
   "c"
 }
 ?s ?p ?o .
+}`);
+  });
+
+  it('auto generates - comment through sourceLocationInlineSource', ({ expect }) => {
+    const ast = F.forcedAutoGenTree(parser.parse(query));
+    const alteredAst = transformer.transformNodeSpecific<'unsafe', typeof ast>(ast, {}, {
+      pattern: { values: { transform: (values) => {
+        const comment = '# My comment, the coolest\n';
+        values.loc = F.sourceLocationInlinedSource(comment, F.gen(), 0, 0, comment.length, comment.length);
+        return values;
+      } }},
+    });
+    const result = generator.generate(alteredAst);
+    expect(result).toBe(`SELECT * WHERE {
+  # My comment, the coolest
+  VALUES ?o {
+    "a"
+    "b"
+    "c"
+  }
+  ?s ?p ?o .
 }`);
   });
 

@@ -413,11 +413,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "SELECT * WHERE {\n    ?s ?p true .\n    ?s ?p True .\n    ?s ?p trUE .\n    ?s ?p TRUE .\n    ?s ?p false .\n    ?s ?p False .\n    ?s ?p falSE .\n    ?s ?p FALSE .\n}\n",
     "start": 0,
-    "end": 158,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 158
+    },
+    "startOnNew": 0,
+    "endOnNew": 159
   },
   "type": "query"
 }

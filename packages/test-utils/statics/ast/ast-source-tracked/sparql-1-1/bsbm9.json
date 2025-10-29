@@ -107,11 +107,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX rev: <http://purl.org/stuff/rev#>\n\nDESCRIBE ?x\nWHERE { <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromRatingSite1/Review7958> rev:reviewer ?x }\n",
     "start": 0,
-    "end": 169,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 169
+    },
+    "startOnNew": 0,
+    "endOnNew": 170
   },
   "type": "query"
 }

@@ -148,11 +148,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX foaf:    <http://xmlns.com/foaf/0.1/>\n\nSELECT  ?name\nWHERE   { ?x foaf:name ?name }\nORDER BY ?name\nLIMIT   5\nOFFSET  10\n",
     "start": 0,
-    "end": 126,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 126
+    },
+    "startOnNew": 0,
+    "endOnNew": 127
   },
   "type": "query"
 }

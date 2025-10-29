@@ -253,11 +253,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX dc:   <http://purl.org/dc/elements/1.1/> \nPREFIX :     <http://example.org/book/> \nPREFIX ns:   <http://example.org/ns#> \n\nSELECT ?book ?title ?price\n{\n   VALUES ?book { :book1 :book3 }\n   ?book dc:title ?title ;\n         ns:price ?price .\n}\n",
     "start": 0,
-    "end": 248,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 248
+    },
+    "startOnNew": 0,
+    "endOnNew": 249
   },
   "type": "query"
 }

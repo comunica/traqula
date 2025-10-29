@@ -304,11 +304,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX : <http://people.example/>\nPREFIX : <http://people.example/>\nSELECT ?y ?minName\nWHERE {\n  :alice :knows ?y .\n  {\n    SELECT ?y (MIN(?name) AS ?minName)\n    WHERE {\n      ?y :name ?name .\n    } GROUP BY ?y\n  }\n}\n",
     "start": 0,
-    "end": 217,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 217
+    },
+    "startOnNew": 0,
+    "endOnNew": 218
   },
   "type": "query"
 }

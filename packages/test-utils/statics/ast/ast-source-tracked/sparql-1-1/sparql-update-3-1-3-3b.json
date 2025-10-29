@@ -212,10 +212,13 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX foaf:  <http://xmlns.com/foaf/0.1/>\n\nDELETE WHERE {\n  GRAPH <http://example.com/names> {\n    ?person foaf:givenName 'Fred' ;\n            ?property1 ?value1\n  }\n  GRAPH <http://example.com/addresses> {\n    ?person ?property2 ?value2\n  }\n}\n",
     "start": 0,
-    "end": 244,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 244
+    },
+    "startOnNew": 0,
+    "endOnNew": 245
   }
 }

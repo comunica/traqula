@@ -107,11 +107,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX ent:  <http://org.example.com/employees#>\nDESCRIBE ?x WHERE { ?x ent:employeeId \"1234\" }\n",
     "start": 0,
-    "end": 95,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 95
+    },
+    "startOnNew": 0,
+    "endOnNew": 96
   },
   "type": "query"
 }

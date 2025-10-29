@@ -307,11 +307,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX  void: <http://rdfs.org/ns/void#>\nPREFIX  dc:   <http://purl.org/dc/elements/1.1/>\nPREFIX  doap: <http://usefulinc.com/ns/doap#> \n\nSELECT ?service ?projectName\nWHERE {\n  # Find the service with subject \"remote\".\n  ?p dc:subject ?projectSubject ;\n     void:sparqlEndpoint ?service .\n     FILTER regex(?projectSubject, \"remote\")\n\n  # Query that service projects.\n  SERVICE ?service {\n     ?project  doap:name ?projectName . } \n}\n",
     "start": 0,
-    "end": 433,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 433
+    },
+    "startOnNew": 0,
+    "endOnNew": 434
   },
   "type": "query"
 }

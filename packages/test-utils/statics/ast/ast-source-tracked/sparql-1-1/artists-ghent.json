@@ -487,11 +487,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX dbpedia: <http://dbpedia.org/resource/>\nPREFIX dbpedia-owl: <http://dbpedia.org/ontology/>\n\nCONSTRUCT {\n  ?person a dbpedia-owl:Artist;\n          rdfs:label ?name;\n          dbpedia-owl:birthPlace ?city.\n}\nWHERE {\n  ?person a dbpedia-owl:Artist;\n          rdfs:label ?name;\n          dbpedia-owl:birthPlace ?city.\n  ?city rdfs:label ?cityName;\n        rdfs:label \"Ghent\"@en;\n        dbpedia-owl:country ?country.\n  ?country rdfs:label \"Belgium\"@en.\n}\n",
     "start": 0,
-    "end": 510,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 510
+    },
+    "startOnNew": 0,
+    "endOnNew": 511
   },
   "type": "query"
 }

@@ -257,11 +257,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n  SELECT *\n  { ?x foaf:mbox <mailto:alice@example> .\n    ?x foaf:knows/foaf:knows ?y .\n    FILTER ( ?x != ?y )\n    ?y foaf:name ?name \n  }\n",
     "start": 0,
-    "end": 180,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 180
+    },
+    "startOnNew": 0,
+    "endOnNew": 181
   },
   "type": "query"
 }

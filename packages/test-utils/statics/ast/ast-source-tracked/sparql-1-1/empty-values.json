@@ -83,11 +83,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "SELECT *\nWHERE {\n  ?s ?p ?o.\n}\nVALUES () { () }\n",
     "start": 0,
-    "end": 47,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 47
+    },
+    "startOnNew": 0,
+    "endOnNew": 48
   },
   "type": "query",
   "values": {

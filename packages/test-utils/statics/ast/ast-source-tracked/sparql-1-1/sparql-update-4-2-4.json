@@ -168,10 +168,13 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "DELETE { ?S ?P ?O . } WHERE { ?S ?P ?O . FILTER ( isBlank(?S)) } \n",
     "start": 0,
-    "end": 64,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 64
+    },
+    "startOnNew": 0,
+    "endOnNew": 66
   }
 }

@@ -1127,11 +1127,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "BASE <ex:>\nCONSTRUCT {\n  ?s0 ?p0 [ <a0> [ <b0> <c0> ] ].\n  [ <a0> [ <b0> <c0> ] ] ?p0 ?o0.\n}\nWHERE {\n  ?s1 ?p1 [], <a1>; ?q1 <b1>, <c1>.\n  []  ?p2 ?o2.\n  ?s3 ?p3 [ <a3> <b3> ].\n  ?s4 ?p4 [ <a4> <b4>; <c4> <d4>, <e4> ].\n  ?s5 ?p5 [ <a5> [ <b5> <c5> ] ].\n  [ <a6> [ <b6> <c6> ] ] ?p6 ?o6.\n  [ <a7> <b7>; <c7> <d7>, <e7> ].\n}\n",
     "start": 0,
-    "end": 322,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 322
+    },
+    "startOnNew": 0,
+    "endOnNew": 323
   },
   "type": "query"
 }

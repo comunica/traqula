@@ -698,11 +698,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "SELECT * WHERE {\n  ?a ?b ?c.\n  FILTER (?a = 1 || ?a = 2 || ?a = 3 || ?a = 4)\n  FILTER (?a = 1 && ?a = 2 && ?a = 3 && ?a = 4)\n  FILTER (?a = 1 && ?a = 2 || ?a = 3 && ?a = 4)\n}\n",
     "start": 0,
-    "end": 174,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 174
+    },
+    "startOnNew": 0,
+    "endOnNew": 175
   },
   "type": "query"
 }

@@ -333,10 +333,13 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "CREATE SILENT GRAPH <ex:graph>;\nCREATE GRAPH <ex:graph>;\nCLEAR SILENT GRAPH <ex:graph>;\nCLEAR GRAPH <ex:graph>;\nCLEAR DEFAULT;\nCLEAR NAMED;\nCLEAR ALL;\nDROP SILENT GRAPH <ex:graph>;\nDROP GRAPH <ex:graph>;\nDROP DEFAULT;\nDROP NAMED;\nDROP ALL;\n",
     "start": 0,
-    "end": 30,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 238
+    },
+    "startOnNew": 0,
+    "endOnNew": 240
   }
 }

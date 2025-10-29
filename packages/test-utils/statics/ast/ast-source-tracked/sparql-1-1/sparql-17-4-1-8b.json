@@ -429,11 +429,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX  :      <http://example.org/WMterms#>\nPREFIX  t:     <http://example.org/types#>\n\nSELECT ?aLabel1 ?bLabel\nWHERE { ?a  :label        ?aLabel .\n        ?a  :weight       ?aWeight .\n        ?a  :displacement ?aDisp .\n\n        ?b  :label        ?bLabel .\n        ?b  :weight       ?bWeight .\n        ?b  :displacement ?bDisp .\n\n        FILTER ( sameTerm(?aWeight, ?bWeight) && !sameTerm(?aDisp, ?bDisp)) }\n",
     "start": 0,
-    "end": 408,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 408
+    },
+    "startOnNew": 0,
+    "endOnNew": 409
   },
   "type": "query"
 }

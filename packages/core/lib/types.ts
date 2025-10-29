@@ -54,7 +54,7 @@ export interface SourceLocationSource extends SourceLocationBase {
  * Similar to {@link SourceLocationSource} but also carrying the source it related too.
  * All sourceLocation nodes that are descends of this one, relate themselves to this source.
  */
-export interface SourceLocationInlinedSource extends SourceLocationBase {
+export interface SourceLocationInlinedSource extends SourceLocationBase, Localized {
   sourceLocationType: 'inlinedSource';
   /**
    * The string that will be used as the source for this node and the descends of this node.
@@ -62,17 +62,16 @@ export interface SourceLocationInlinedSource extends SourceLocationBase {
    */
   newSource: string;
   /**
-   * The start of the region in the source that this node represents.
+   * Behavior of the current loc, after replacing the source string.
    */
-  start: number;
-  /**
-   * The start of the region in the source that this node represents.
-   */
-  end: number;
+  loc: SourceLocation;
   /**
    * The range that this node replaces in the context of the original source.
    */
-  replaceRange?: [number, number];
+  start: number;
+  end: number;
+  startOnNew: number;
+  endOnNew: number;
 }
 
 /**
@@ -129,9 +128,15 @@ export interface SourceLocationNodeAutoGenerate extends SourceLocationBase {
 }
 
 export type SourceLocation =
+  // Relate yourself to the source
   | SourceLocationSource
+  // Add a new source
   | SourceLocationInlinedSource
+  // No not generate anything for the current node and descendants
   | SourceLocationNoMaterialize
+  // Replace some range by a string
   | SourceLocationStringReplace
+  // Replace this node by some autogen
   | SourceLocationNodeReplace
+  // Auto gen current node.
   | SourceLocationNodeAutoGenerate;

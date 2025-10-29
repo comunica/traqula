@@ -315,11 +315,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\nSELECT ?name1 ?name2\nWHERE { ?x foaf:name  ?name1 ;\n        foaf:mbox  ?mbox1 .\n        ?y foaf:name  ?name2 ;\n        foaf:mbox  ?mbox2 .\n        FILTER (?mbox1 = ?mbox2 && ?name1 != ?name2)\n      }\n",
     "start": 0,
-    "end": 241,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 241
+    },
+    "startOnNew": 0,
+    "endOnNew": 242
   },
   "type": "query"
 }

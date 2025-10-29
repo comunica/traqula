@@ -208,11 +208,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX foaf:    <http://xmlns.com/foaf/0.1/>\nSELECT ?name ?mbox\n  {\n    ?x foaf:name ?name . FILTER regex(?name, \"Smith\")\n    ?x foaf:mbox ?mbox .\n  }\n",
     "start": 0,
-    "end": 150,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 150
+    },
+    "startOnNew": 0,
+    "endOnNew": 151
   },
   "type": "query"
 }

@@ -360,11 +360,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX bsbm-inst: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/>\nPREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n\nSELECT ?product ?label\nWHERE {\n    ?product rdfs:label ?label .\n    OPTIONAL {\n        ?product bsbm:productFeature <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature1043> .\n        ?product rdfs:label ?testVar }\n    FILTER (!bound(?testVar)) \n}\nORDER BY ?label\nLIMIT 10\n",
     "start": 0,
-    "end": 556,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 556
+    },
+    "startOnNew": 0,
+    "endOnNew": 557
   },
   "type": "query"
 }

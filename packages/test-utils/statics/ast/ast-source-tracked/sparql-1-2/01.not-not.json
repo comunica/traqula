@@ -339,11 +339,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX : <http://example/>\nPREFIX xsd:    <http://www.w3.org/2001/XMLSchema#>\n\nSELECT ?v ?ebv {\n  VALUES ?v { true 1 \"a\" false 0 \"\" \"a\"@en \"z\"^^xsd:boolean \"2020-01-01T00:00:00Z\"^^xsd:dateTime :a }\n  BIND(!!?v AS ?ebv)\n}",
     "start": 0,
-    "end": 220,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 220
+    },
+    "startOnNew": 0,
+    "endOnNew": 220
   },
   "type": "query"
 }

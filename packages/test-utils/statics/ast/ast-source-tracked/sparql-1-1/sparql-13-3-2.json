@@ -217,11 +217,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\nPREFIX data: <http://example.org/foaf/>\n\nSELECT ?nick\nFROM NAMED <http://example.org/foaf/aliceFoaf>\nFROM NAMED <http://example.org/foaf/bobFoaf>\nWHERE\n  {\n     GRAPH data:bobFoaf {\n         ?x foaf:mbox <mailto:bob@work.example> .\n         ?x foaf:nick ?nick }\n  }\n",
     "start": 0,
-    "end": 307,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 307
+    },
+    "startOnNew": 0,
+    "endOnNew": 308
   },
   "type": "query"
 }

@@ -221,10 +221,13 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX foaf:  <http://xmlns.com/foaf/0.1/>\n\nWITH <http://example/addresses>\nDELETE { ?person foaf:givenName 'Bill' }\nINSERT { ?person foaf:givenName 'William' }\nWHERE\n  { ?person foaf:givenName 'Bill'\n  }\n",
     "start": 0,
-    "end": 204,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 204
+    },
+    "startOnNew": 0,
+    "endOnNew": 205
   }
 }

@@ -332,11 +332,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX : <http://books.example/>\nSELECT (SUM(?lprice) AS ?totalPrice)\nWHERE {\n  ?org :affiliates ?auth .\n  ?auth :writesBook ?book .\n  ?book :price ?lprice .\n}\nGROUP BY ?org\nHAVING (SUM(?lprice) > 10)\nORDER BY ?totalPrice\nVALUES (?book) { \n     (:book2)\n   }\n",
     "start": 0,
-    "end": 258,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 258
+    },
+    "startOnNew": 0,
+    "endOnNew": 259
   },
   "type": "query",
   "values": {

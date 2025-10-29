@@ -121,21 +121,16 @@ export class AstCoreFactory implements AstCoreFactoryArgs {
     };
   }
 
-  public sourceLocationSourceToInlined<T extends Localized>(node: T, source: string): T {
-    if (this.isSourceLocationSource(node.loc)) {
-      node.loc = this.sourceLocationInlinedSource(source, node.loc.start, node.loc.end, [ 0, Number.MAX_SAFE_INTEGER ]);
-    }
-    return node;
-  }
-
   /**
    * {@inheritDoc SourceLocationInlinedSource}
    */
   public sourceLocationInlinedSource(
     newSource: string,
+    subLoc: SourceLocation,
     start: number,
     end: number,
-    replaceRange?: [number, number],
+    startOnNew: number = 0,
+    endOnNew: number = newSource.length,
   ): SourceLocation {
     if (!this.tracksSourceLocation) {
       return this.gen();
@@ -145,7 +140,9 @@ export class AstCoreFactory implements AstCoreFactoryArgs {
       newSource,
       start,
       end,
-      replaceRange,
+      loc: subLoc,
+      startOnNew,
+      endOnNew
     }satisfies SourceLocationInlinedSource;
   };
 
@@ -176,8 +173,8 @@ export class AstCoreFactory implements AstCoreFactoryArgs {
     if (this.isSourceLocationSource(loc)) {
       return this.sourceLocationNodeReplace(loc);
     }
-    if (this.isSourceLocationInlinedSource(loc) && loc.replaceRange) {
-      return this.sourceLocationNodeReplace(loc.replaceRange.at(0)!, loc.replaceRange.at(-1)!);
+    if (this.isSourceLocationInlinedSource(loc)) {
+      return this.sourceLocationNodeReplaceUnsafe(loc.loc);
     }
     throw new Error(`Cannot convert SourceLocation of type ${loc.sourceLocationType} to SourceLocationNodeReplace`);
   }
@@ -209,13 +206,14 @@ export class AstCoreFactory implements AstCoreFactoryArgs {
     return this.isSourceLocation(loc) && loc.sourceLocationType === 'autoGenerate';
   }
 
-  public nodeShouldPrint(node: Localized): boolean {
-    return this.isSourceLocationNodeReplace(node.loc) ||
-      this.isSourceLocationNodeAutoGenerate(node.loc);
+  public isPrintingLoc(loc: SourceLocation): boolean {
+    return this.isSourceLocationNodeReplace(loc) ||
+      this.isSourceLocationNodeAutoGenerate(loc) ||
+      (this.isSourceLocationInlinedSource(loc) && this.isPrintingLoc(loc.loc));
   }
 
   public printFilter(node: Localized, callback: () => void): void {
-    if (this.nodeShouldPrint(node)) {
+    if (this.isPrintingLoc(node.loc)) {
       callback();
     }
   }

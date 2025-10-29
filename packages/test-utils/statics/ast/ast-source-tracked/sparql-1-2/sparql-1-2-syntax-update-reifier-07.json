@@ -337,10 +337,13 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX : <http://example.com/ns#>\n\nDELETE {\n    ?s :r ?o~ :iri {| :added 'Property :r' |}\n} WHERE {\n   ?s :p ?o~ :iri {| :q1+ 'ABC' |}\n}\n",
     "start": 0,
-    "end": 136,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 136
+    },
+    "startOnNew": 0,
+    "endOnNew": 137
   }
 }

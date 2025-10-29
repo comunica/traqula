@@ -248,11 +248,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\nPREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>\nPREFIX eg:   <http://biometrics.example/ns#>\nSELECT ?name ?shoeSize\n WHERE { ?x foaf:name  ?name ; eg:shoeSize  ?shoeSize .\n         FILTER ( datatype(?shoeSize) = xsd:integer ) }\n",
     "start": 0,
-    "end": 270,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 270
+    },
+    "startOnNew": 0,
+    "endOnNew": 271
   },
   "type": "query"
 }

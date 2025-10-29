@@ -128,11 +128,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX : <http://example.com/ns#>\n\nCONSTRUCT { :s :q <<(:s :p :o )>> }\nWHERE {}\n",
     "start": 0,
-    "end": 79,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 79
+    },
+    "startOnNew": 0,
+    "endOnNew": 80
   },
   "type": "query"
 }

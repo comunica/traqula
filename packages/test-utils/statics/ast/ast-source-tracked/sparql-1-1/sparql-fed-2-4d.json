@@ -189,11 +189,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX foaf:   <http://xmlns.com/foaf/0.1/>\nSELECT ?s ?o\n{\n  ?s a foaf:Person\n  SERVICE <http://example.org/sparql> {?s foaf:knows ?o }\n}\n",
     "start": 0,
-    "end": 137,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 137
+    },
+    "startOnNew": 0,
+    "endOnNew": 138
   },
   "type": "query"
 }

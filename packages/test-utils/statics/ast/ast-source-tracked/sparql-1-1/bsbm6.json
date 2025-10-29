@@ -238,11 +238,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nPREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>\n\nSELECT ?product ?label\nWHERE {\n\t?product rdfs:label ?label .\n    ?product rdf:type bsbm:Product .\n\tFILTER regex(?label, \"word\")\n}\n",
     "start": 0,
-    "end": 315,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 315
+    },
+    "startOnNew": 0,
+    "endOnNew": 316
   },
   "type": "query"
 }

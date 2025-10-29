@@ -578,11 +578,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>\nPREFIX xsd: <http://www.w3.org/2001/XMLSchema#> \nPREFIX dc: <http://purl.org/dc/elements/1.1/>\n\nSELECT DISTINCT ?offer ?price\nWHERE {\n\t?offer bsbm:product <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer5/Product186> .\n\t?offer bsbm:vendor ?vendor .\n    ?offer dc:publisher ?vendor .\n\t?vendor bsbm:country <http://downlode.org/rdf/iso-3166/countries#US> .\n\t?offer bsbm:deliveryDays ?deliveryDays .\n\tFILTER (?deliveryDays <= 3)\n\t?offer bsbm:price ?price .\n    ?offer bsbm:validTo ?date .\n    FILTER (?date > \"2008-06-20T00:00:00\"^^<http://www.w3.org/2001/XMLSchema#dateTime> )\n}\nORDER BY xsd:double(str(?price))\nLIMIT 10\n",
     "start": 0,
-    "end": 718,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 718
+    },
+    "startOnNew": 0,
+    "endOnNew": 719
   },
   "type": "query"
 }

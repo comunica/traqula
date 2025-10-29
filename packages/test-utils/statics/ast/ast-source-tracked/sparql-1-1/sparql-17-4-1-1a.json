@@ -239,11 +239,14 @@
     "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\nPREFIX dc:   <http://purl.org/dc/elements/1.1/>\nPREFIX xsd:   <http://www.w3.org/2001/XMLSchema#>\nSELECT ?givenName\n WHERE { ?x foaf:givenName  ?givenName .\n         OPTIONAL { ?x dc:date ?date } .\n         FILTER ( bound(?date) ) }\n",
     "start": 0,
-    "end": 274,
-    "replaceRange": [
-      0,
-      9007199254740991
-    ]
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 274
+    },
+    "startOnNew": 0,
+    "endOnNew": 275
   },
   "type": "query"
 }

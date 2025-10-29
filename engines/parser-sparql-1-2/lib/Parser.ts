@@ -291,7 +291,8 @@ export class Parser {
    * @param context
    */
   public parse(query: string, context: Partial<T12.SparqlContext> = {}): T12.SparqlQuery {
-    return this.parser.queryOrUpdate(query, copyParseContext({ ...this.defaultContext, ...context }));
+    const ast = this.parser.queryOrUpdate(query, copyParseContext({ ...this.defaultContext, ...context }));
+    return this.defaultContext.astFactory.sourceLocationSourceToInlined(ast, query);
   }
 
   /**
@@ -303,13 +304,13 @@ export class Parser {
     query: string,
 context: Partial<T12.SparqlContext> = {},
   ): (T12.Path & { prefixes: object }) | TermIri {
-    const res = this.parser.path(query, copyParseContext({ ...this.defaultContext, ...context }));
-    if (this.defaultContext.astFactory.isPathPure(res)) {
-      return {
-        ...res,
+    const ast = this.parser.path(query, copyParseContext({ ...this.defaultContext, ...context }));
+    if (this.defaultContext.astFactory.isPathPure(ast)) {
+      return this.defaultContext.astFactory.sourceLocationSourceToInlined({
+        ...ast,
         prefixes: {},
-      };
+      }, query);
     }
-    return res;
+    return this.defaultContext.astFactory.sourceLocationSourceToInlined(ast, query);
   }
 }

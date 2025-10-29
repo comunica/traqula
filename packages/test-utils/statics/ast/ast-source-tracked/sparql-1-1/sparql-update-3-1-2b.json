@@ -188,8 +188,13 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX dc: <http://purl.org/dc/elements/1.1/>\nDELETE DATA\n{ GRAPH <http://example/bookStore> { <http://example/book1>  dc:title  \"Fundamentals of Compiler Desing\" } } ;\n\nINSERT DATA\n{ GRAPH <http://example/bookStore> { <http://example/book1>  dc:title  \"Fundamentals of Compiler Design\" } }\n",
     "start": 0,
-    "end": 290
+    "end": 290,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   }
 }

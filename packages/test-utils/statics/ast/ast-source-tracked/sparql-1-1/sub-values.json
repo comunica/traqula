@@ -199,9 +199,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX : <http://example.org/>\nSELECT ?s ?o {\n{\n    SELECT * WHERE {\n        ?s ?p ?o .\n    }\n    VALUES (?o) { (:b) }\n}\n}\n",
     "start": 0,
-    "end": 122
+    "end": 122,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

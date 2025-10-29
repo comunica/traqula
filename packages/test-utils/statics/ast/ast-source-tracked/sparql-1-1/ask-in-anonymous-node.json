@@ -107,9 +107,14 @@
   },
   "solutionModifiers": {},
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "BASE <ex:>\nask { [<>?o]. }\n",
     "start": 0,
-    "end": 26
+    "end": 26,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

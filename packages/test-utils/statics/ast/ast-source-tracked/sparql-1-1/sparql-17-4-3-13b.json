@@ -157,9 +157,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX dc: <http://purl.org/dc/elements/1.1/>\nSELECT ?title\n WHERE { ?x dc:title  ?title .\n         FILTER langMatches( lang(?title), \"*\" ) }\n",
     "start": 0,
-    "end": 141
+    "end": 141,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

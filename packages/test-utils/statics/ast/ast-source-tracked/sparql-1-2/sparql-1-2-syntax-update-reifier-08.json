@@ -322,8 +322,13 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX : <http://example.com/ns#>\n\nDELETE DATA  {\n    :s :p :o1 ~ :iri  {| :added 'Test' |}\n}\n;\nINSERT DATA  {\n    :s :p :o2 ~ :iri  {| :added 'Test' |}\n}\n\n\n",
     "start": 0,
-    "end": 154
+    "end": 154,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   }
 }

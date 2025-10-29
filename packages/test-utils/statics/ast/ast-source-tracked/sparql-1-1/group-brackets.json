@@ -236,9 +236,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX : <http://www.example.org/>\nSELECT ?company (COUNT(DISTINCT ?key) AS ?keyCount) WHERE {\n    ?company a :Company .\n    ?company :hasKey ?key.\n}\nGROUP BY ?company\nORDER BY ?company\n",
     "start": 0,
-    "end": 185
+    "end": 185,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

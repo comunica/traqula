@@ -204,9 +204,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX : <http://example/>\nSELECT * WHERE {\n        ?x :p ?n\n        MINUS {\n                ?x :q ?m .\n                FILTER(?n = ?m)\n        }\n}\n",
     "start": 0,
-    "end": 147
+    "end": 147,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

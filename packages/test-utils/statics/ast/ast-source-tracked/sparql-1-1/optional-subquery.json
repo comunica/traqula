@@ -140,9 +140,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "SELECT * { {} OPTIONAL {SELECT * { ?s ?p ?o }} }\n",
     "start": 0,
-    "end": 48
+    "end": 48,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

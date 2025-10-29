@@ -125,8 +125,13 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX dc: <http://purl.org/dc/elements/1.1/>\nINSERT DATA\n{ \n  <http://example/book1> dc:title \"A new book\" ;\n                         dc:creator \"A.N.Other\" .\n}\n",
     "start": 0,
-    "end": 161
+    "end": 161,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   }
 }

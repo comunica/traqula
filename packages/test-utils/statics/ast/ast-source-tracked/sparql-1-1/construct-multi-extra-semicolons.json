@@ -191,9 +191,14 @@
   },
   "solutionModifiers": {},
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "CONSTRUCT { \n  ?s a <http://example.org/ExampleThing>;;\n     <http://example.org/hasvalue> \"value\";;\n     ?p ?o;;;\n  .\n} WHERE { ?s ?p ?o }\n",
     "start": 0,
-    "end": 139
+    "end": 139,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

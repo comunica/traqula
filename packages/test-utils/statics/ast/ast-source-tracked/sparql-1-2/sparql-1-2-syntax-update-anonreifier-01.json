@@ -149,8 +149,13 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX : <http://example.com/ns#>\n\nINSERT DATA {\n    << :a :b :c >> :p :o .\n}\n",
     "start": 0,
-    "end": 77
+    "end": 77,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   }
 }

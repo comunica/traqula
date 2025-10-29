@@ -27,8 +27,13 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX a: <urn:a>\n",
     "start": 0,
-    "end": 17
+    "end": 17,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   }
 }

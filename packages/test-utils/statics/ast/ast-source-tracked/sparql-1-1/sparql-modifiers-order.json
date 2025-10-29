@@ -329,9 +329,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX : <http://books.example/>\nSELECT (SUM(?lprice) AS ?totalPrice)\nWHERE {\n  ?org :affiliates ?auth .\n  ?auth :writesBook ?book .\n  ?book :price ?lprice .\n}\nGROUP BY ?org\nHAVING (SUM(?lprice) > 10)\nORDER BY ?totalPrice\n",
     "start": 0,
-    "end": 221
+    "end": 221,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

@@ -1,9 +1,14 @@
 {
   "type": "path",
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "<http://example.org/a>/<http://example.org/b>\n",
     "start": 0,
-    "end": 45
+    "end": 45,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "items": [
     {

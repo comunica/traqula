@@ -250,9 +250,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "SELECT * {\n  ?a ?b ?c.\n  FILTER (?a IN (1, 2, 3))\n  FILTER (?c NOT IN (1, 2, 3))\n}\n",
     "start": 0,
-    "end": 82
+    "end": 82,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

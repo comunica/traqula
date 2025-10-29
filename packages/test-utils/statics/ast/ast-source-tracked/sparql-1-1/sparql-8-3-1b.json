@@ -140,9 +140,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "SELECT *\n{ \n   ?s ?p ?o \n   MINUS \n     { ?x ?y ?z }\n}\n",
     "start": 0,
-    "end": 54
+    "end": 54,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

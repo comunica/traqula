@@ -45,8 +45,13 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "LOAD <http://www.w3.org/TR/skos-reference/skos.rdf> INTO GRAPH <urn:namespaces:skos>\n",
     "start": 0,
-    "end": 84
+    "end": 84,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   }
 }

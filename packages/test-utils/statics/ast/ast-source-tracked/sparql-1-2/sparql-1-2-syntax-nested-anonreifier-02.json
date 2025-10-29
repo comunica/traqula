@@ -303,9 +303,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX : <http://example.com/ns#>\n\nSELECT * {\n  :a :q <<:s :p ?O >> .\n  << :a :q <<:s :p ?O >>>> :r :z .\n}\n",
     "start": 0,
-    "end": 106
+    "end": 106,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

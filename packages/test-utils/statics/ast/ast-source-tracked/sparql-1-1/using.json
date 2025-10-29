@@ -173,8 +173,13 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "WITH <urn:one:graph>\nDELETE { ?s <foo:bar> ?o }\nUSING <urn:another:graph>\nUSING NAMED <urn:anamed:graph>\nWHERE { ?s <foo:bar> ?o }\n",
     "start": 0,
-    "end": 130
+    "end": 130,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   }
 }

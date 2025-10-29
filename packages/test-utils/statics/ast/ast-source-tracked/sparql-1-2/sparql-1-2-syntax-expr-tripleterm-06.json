@@ -222,9 +222,14 @@
   },
   "solutionModifiers": {},
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX : <http://example.com/ns#>\n\nCONSTRUCT {\n  ?t :graph ?g .\n} WHERE {\n  GRAPH ?g {\n    ?s ?p ?o .\n    BIND(<<(?s ?p  ?o)>> AS ?t)\n  }\n}\n",
     "start": 0,
-    "end": 139
+    "end": 139,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

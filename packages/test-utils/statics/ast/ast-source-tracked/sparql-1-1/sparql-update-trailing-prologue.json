@@ -90,8 +90,13 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "INSERT DATA { <http://example/book1> <urn:label> \"A new book\" .} ; PREFIX a: <urn:a>\n",
     "start": 0,
-    "end": 84
+    "end": 84,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   }
 }

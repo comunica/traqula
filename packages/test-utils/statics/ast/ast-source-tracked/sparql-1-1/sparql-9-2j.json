@@ -176,9 +176,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n  SELECT *\n  {\n    ?x foaf:knows/^foaf:knows ?y .  \n    FILTER(?x != ?y)\n  }\n",
     "start": 0,
-    "end": 118
+    "end": 118,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

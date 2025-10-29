@@ -122,9 +122,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX foaf:   <http://xmlns.com/foaf/0.1/>\nPREFIX : <http://example.org/>\nSELECT * {?s foaf:knows ?o } VALUES (?s) { (:a) (:b) }\n\n",
     "start": 0,
-    "end": 129
+    "end": 129,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query",
   "values": {

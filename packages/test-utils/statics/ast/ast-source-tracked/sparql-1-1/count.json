@@ -139,9 +139,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "select ?p (count(*) as ?n) {\n  [ ?p [] ].\n}\n",
     "start": 0,
-    "end": 43
+    "end": 43,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

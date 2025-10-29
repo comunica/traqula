@@ -261,9 +261,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX foaf:    <http://xmlns.com/foaf/0.1/>\nSELECT ?nameX ?nameY ?nickY\nWHERE\n  { ?x foaf:knows ?y ;\n       foaf:name ?nameX .\n    ?y foaf:name ?nameY .\n    OPTIONAL { ?y foaf:nick ?nickY }\n  }\n",
     "start": 0,
-    "end": 194
+    "end": 194,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

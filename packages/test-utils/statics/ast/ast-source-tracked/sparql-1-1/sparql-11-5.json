@@ -275,9 +275,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX : <http://example.com/data/#>\nSELECT ?g (AVG(?p) AS ?avg) ((MIN(?p) + MAX(?p)) / 2 AS ?c)\nWHERE {\n  ?g :p ?p .\n}\nGROUP BY ?g\n",
     "start": 0,
-    "end": 131
+    "end": 131,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

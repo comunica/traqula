@@ -3,8 +3,13 @@
   "subType": "namedNode",
   "value": "http://example.org/a",
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "<http://example.org/a>\n",
     "start": 0,
-    "end": 22
+    "end": 22,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   }
 }

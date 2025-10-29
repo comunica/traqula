@@ -102,9 +102,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n  SELECT *\n  { ?x foaf:mbox <mailto:alice@example> }\n",
     "start": 0,
-    "end": 94
+    "end": 94,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

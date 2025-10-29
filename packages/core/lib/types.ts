@@ -51,6 +51,31 @@ export interface SourceLocationSource extends SourceLocationBase {
 }
 
 /**
+ * Similar to {@link SourceLocationSource} but also carrying the source it related too.
+ * All sourceLocation nodes that are descends of this one, relate themselves to this source.
+ */
+export interface SourceLocationInlinedSource extends SourceLocationBase {
+  sourceLocationType: 'inlinedSource';
+  /**
+   * The string that will be used as the source for this node and the descends of this node.
+   * Note that the generator will print the characters from newSource[0] until start. Likewise for the suffix.
+   */
+  newSource: string;
+  /**
+   * The start of the region in the source that this node represents.
+   */
+  start: number;
+  /**
+   * The start of the region in the source that this node represents.
+   */
+  end: number;
+  /**
+   * The range that this node replaces in the context of the original source.
+   */
+  replaceRange?: [number, number];
+}
+
+/**
  * NoStringManifestation means the node does not have a string representation.
  * For example the literal '5' has an integer type (which is an AST node),
  * but the type does not have an associated string representation.
@@ -105,6 +130,7 @@ export interface SourceLocationNodeAutoGenerate extends SourceLocationBase {
 
 export type SourceLocation =
   | SourceLocationSource
+  | SourceLocationInlinedSource
   | SourceLocationNoMaterialize
   | SourceLocationStringReplace
   | SourceLocationNodeReplace

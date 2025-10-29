@@ -140,9 +140,14 @@
   },
   "solutionModifiers": {},
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\nCONSTRUCT WHERE { ?x foaf:name ?name }\n",
     "start": 0,
-    "end": 80
+    "end": 80,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

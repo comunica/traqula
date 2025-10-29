@@ -154,9 +154,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "BASE <http://example.org/>\nPREFIX ex: <http://example.org/#>\n  SELECT *\n  { ?ancestor (ex:motherOf|ex:fatherOf)+ <#me> }\n",
     "start": 0,
-    "end": 120
+    "end": 120,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

@@ -254,9 +254,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "SELECT ?president ?party ?page WHERE {\n   ?president <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/President> .\n   ?president <http://dbpedia.org/ontology/nationality> <http://dbpedia.org/resource/United_States> .\n   ?president <http://dbpedia.org/ontology/party> ?party .\n   ?x <http://data.nytimes.com/elements/topicPage> ?page .\n   ?x <http://www.w3.org/2002/07/owl#sameAs> ?president .\n}\n",
     "start": 0,
-    "end": 424
+    "end": 424,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

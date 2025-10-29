@@ -22,9 +22,14 @@
   },
   "solutionModifiers": {},
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "DESCRIBE <http://example.org/>\n",
     "start": 0,
-    "end": 30
+    "end": 30,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

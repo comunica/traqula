@@ -182,9 +182,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\nSELECT ?name ?mbox\nWHERE { ?x foaf:name  ?name ;\n        foaf:mbox  ?mbox .\n        FILTER isLiteral(?mbox) }\n",
     "start": 0,
-    "end": 151
+    "end": 151,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

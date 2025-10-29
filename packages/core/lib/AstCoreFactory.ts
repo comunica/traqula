@@ -12,6 +12,7 @@ import type {
   Wrap,
   Typed,
   SubTyped,
+  SourceLocationInlinedSource,
 } from './types.js';
 
 export interface AstCoreFactoryArgs {
@@ -120,12 +121,51 @@ export class AstCoreFactory implements AstCoreFactoryArgs {
     };
   }
 
+  public sourceLocationSourceToInlined<T extends Localized>(node: T, source: string): T {
+    if (this.isSourceLocationSource(node.loc)) {
+      node.loc = this.sourceLocationInlinedSource(source, node.loc.start, node.loc.end, [ 0, Number.MAX_SAFE_INTEGER ]);
+    }
+    return node;
+  }
+
+  /**
+   * {@inheritDoc SourceLocationInlinedSource}
+   */
+  public sourceLocationInlinedSource(
+    newSource: string,
+    start: number,
+    end: number,
+    replaceRange?: [number, number],
+  ): SourceLocation {
+    if (!this.tracksSourceLocation) {
+      return this.gen();
+    }
+    return {
+      sourceLocationType: 'inlinedSource',
+      newSource,
+      start,
+      end,
+      replaceRange,
+    }satisfies SourceLocationInlinedSource;
+  };
+
+  public isSourceLocationInlinedSource(loc: object): loc is SourceLocationInlinedSource {
+    return this.isSourceLocation(loc) && loc.sourceLocationType === 'inlinedSource';
+  }
+
   public gen(): SourceLocationNodeAutoGenerate {
     return { sourceLocationType: 'autoGenerate' };
   }
 
   public isSourceLocationSource(loc: object): loc is SourceLocationSource {
     return this.isSourceLocation(loc) && loc.sourceLocationType === 'source';
+  }
+
+  public sourceLocationStringReplace(newSource: string, start: number, end: number): SourceLocation {
+    if (!this.tracksSourceLocation) {
+      return this.gen();
+    }
+    return { sourceLocationType: 'stringReplace', newSource, start, end } satisfies SourceLocationStringReplace;
   }
 
   public isSourceLocationStringReplace(loc: object): loc is SourceLocationStringReplace {
@@ -136,7 +176,10 @@ export class AstCoreFactory implements AstCoreFactoryArgs {
     if (this.isSourceLocationSource(loc)) {
       return this.sourceLocationNodeReplace(loc);
     }
-    throw new Error('not possible');
+    if (this.isSourceLocationInlinedSource(loc) && loc.replaceRange) {
+      return this.sourceLocationNodeReplace(loc.replaceRange.at(0)!, loc.replaceRange.at(-1)!);
+    }
+    throw new Error(`Cannot convert SourceLocation of type ${loc.sourceLocationType} to SourceLocationNodeReplace`);
   }
 
   public sourceLocationNodeReplace(location: SourceLocationSource): SourceLocationNodeReplace;

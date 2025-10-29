@@ -192,9 +192,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX dbpedia-owl: <http://dbpedia.org/ontology/>\nSELECT ?p ?c WHERE {\n    ?p a dbpedia-owl:Artist.\n    ?p dbpedia-owl:birthPlace ?c.\n    ?c <http://xmlns.com/foaf/0.1/name> \"York\"@en.\n}\n",
     "start": 0,
-    "end": 187
+    "end": 187,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

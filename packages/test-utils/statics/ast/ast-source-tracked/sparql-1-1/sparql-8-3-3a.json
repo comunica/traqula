@@ -223,9 +223,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX : <http://example.com/>\nSELECT * WHERE {\n        ?x :p ?n\n        FILTER NOT EXISTS {\n                ?x :q ?m .\n                FILTER(?n = ?m)\n        }\n}\n",
     "start": 0,
-    "end": 163
+    "end": 163,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

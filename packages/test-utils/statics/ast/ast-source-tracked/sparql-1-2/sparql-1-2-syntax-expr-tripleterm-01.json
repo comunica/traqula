@@ -160,9 +160,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX : <http://example.com/ns#>\n\nSELECT * {\n  ?s ?p ?o .\n  BIND(<<(?s ?p ?o)>> AS ?t)\n}\n",
     "start": 0,
-    "end": 89
+    "end": 89,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

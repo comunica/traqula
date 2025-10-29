@@ -322,9 +322,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX a:      <http://www.w3.org/2000/10/annotation-ns#>\nPREFIX dc:     <http://purl.org/dc/elements/1.1/>\nPREFIX foaf:   <http://xmlns.com/foaf/0.1/>\n\nSELECT ?given ?family\nWHERE { ?annot  a:annotates  <http://www.w3.org/TR/rdf-sparql-query/> .\n  ?annot  dc:creator   ?c .\n  OPTIONAL { ?c  foaf:given   ?given ; foaf:family  ?family } .\n  FILTER isBlank(?c)\n}\n",
     "start": 0,
-    "end": 361
+    "end": 361,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

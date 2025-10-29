@@ -316,8 +316,13 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX foaf:  <http://xmlns.com/foaf/0.1/>\nPREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n\nINSERT \n  { GRAPH <http://example/addresses>\n    {\n      ?person  foaf:name  ?name .\n      ?person  foaf:mbox  ?email\n    } }\nWHERE\n  { GRAPH  <http://example/people>\n    {\n      ?person  foaf:name  ?name .\n      OPTIONAL { ?person  foaf:mbox  ?email }\n    } }\n",
     "start": 0,
-    "end": 362
+    "end": 362,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   }
 }

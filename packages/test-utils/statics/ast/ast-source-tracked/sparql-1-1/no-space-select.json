@@ -188,9 +188,14 @@
   ],
   "distinct": true,
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "SELECTDISTINCT?s{?s?p?o}GROUPBY(?s)HAVING(?p=?o)ORDERBY(?s)LIMIT10OFFSET9VALUES?o{trueundeffalse}\n",
     "start": 0,
-    "end": 97
+    "end": 97,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query",
   "values": {

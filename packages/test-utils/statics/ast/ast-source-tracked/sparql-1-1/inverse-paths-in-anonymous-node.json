@@ -254,9 +254,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX dbpedia-owl: <http://dbpedia.org/ontology/>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n\nSELECT *\nWHERE {\n  ?movie a dbpedia-owl:Film ;\n    dbpedia-owl:starring [\n      rdfs:label \"Brad Pitt\"@en ;\n      ^dbpedia-owl:starring ?otherMovie\n    ] .\n}\n",
     "start": 0,
-    "end": 262
+    "end": 262,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

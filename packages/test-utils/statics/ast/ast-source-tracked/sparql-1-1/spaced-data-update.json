@@ -195,8 +195,13 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "# Basically tests Note 7 of the SPARQL 1.1 spec\nINsert     Data {\n  <http://example.org/subject> <http://example.org/predicate> \"object\" .\n};\nDelete\nData {\n  <http://example.org/subject> <http://example.org/predicate> \"object\" .\n};\nDeLete WHERE {\n  <http://example.org/subject> <http://example.org/predicate> ?o .\n};",
     "start": 48,
-    "end": 140
+    "end": 140,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   }
 }

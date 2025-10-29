@@ -124,9 +124,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX : <http://example.org/>\nPREFIX foaf:   <http://xmlns.com/foaf/0.1/>\nSELECT ?s\n{\n  ?s a foaf:Person\n} \n",
     "start": 0,
-    "end": 107
+    "end": 107,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

@@ -161,9 +161,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX : <http://example.org/ns#>\nSELECT * { ?s ?p ?o }\nORDER BY (?o+5)\n",
     "start": 0,
-    "end": 71
+    "end": 71,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

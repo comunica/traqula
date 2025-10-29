@@ -217,9 +217,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX dc10:  <http://purl.org/dc/elements/1.0/>\nPREFIX dc11:  <http://purl.org/dc/elements/1.1/>\n\nSELECT ?x ?y\nWHERE  { { ?book dc10:title ?x } UNION { ?book dc11:title  ?y } }\n",
     "start": 0,
-    "end": 177
+    "end": 177,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

@@ -157,9 +157,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "prefix : <http://example.org/>\nselect ?X where { :A0 ((:P)*)* ?X }\norder by ?X\n",
     "start": 0,
-    "end": 78
+    "end": 78,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

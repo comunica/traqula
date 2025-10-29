@@ -787,9 +787,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>\nPREFIX dc: <http://purl.org/dc/elements/1.1/>\nPREFIX rev: <http://purl.org/stuff/rev#>\nPREFIX foaf: <http://xmlns.com/foaf/0.1/>\n\nSELECT ?title ?text ?reviewDate ?reviewer ?reviewerName ?rating1 ?rating2 ?rating3 ?rating4 \nWHERE { \n\t?review bsbm:reviewFor <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer16/Product783> .\n\t?review dc:title ?title .\n\t?review rev:text ?text .\n\tFILTER langMatches( lang(?text), \"EN\" ) \n\t?review bsbm:reviewDate ?reviewDate .\n\t?review rev:reviewer ?reviewer .\n\t?reviewer foaf:name ?reviewerName .\n\tOPTIONAL { ?review bsbm:rating1 ?rating1 . }\n\tOPTIONAL { ?review bsbm:rating2 ?rating2 . }\n\tOPTIONAL { ?review bsbm:rating3 ?rating3 . }\n\tOPTIONAL { ?review bsbm:rating4 ?rating4 . }\n}\nORDER BY DESC(?reviewDate)\nLIMIT 20\n",
     "start": 0,
-    "end": 847
+    "end": 847,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

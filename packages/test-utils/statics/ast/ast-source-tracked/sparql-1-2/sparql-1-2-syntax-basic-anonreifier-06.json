@@ -152,9 +152,14 @@
   },
   "solutionModifiers": {},
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX : <http://example.com/ns#>\n\nCONSTRUCT { <<:s :p :o >> :q :z }\nWHERE {}\n",
     "start": 0,
-    "end": 77
+    "end": 77,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

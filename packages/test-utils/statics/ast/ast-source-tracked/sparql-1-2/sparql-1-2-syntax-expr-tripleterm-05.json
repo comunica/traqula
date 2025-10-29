@@ -297,9 +297,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX : <http://example.com/ns#>\n\nSELECT * {\n  ?t :source :g\n  FILTER(isTriple(?t))\n  FILTER(SUBJECT(?t) = :s)\n  FILTER(PREDICATE(?t) = :p)\n  FILTER(OBJECT(?t) = :o)\n}\n",
     "start": 0,
-    "end": 168
+    "end": 168,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

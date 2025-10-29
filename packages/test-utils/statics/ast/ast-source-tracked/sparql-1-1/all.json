@@ -80,9 +80,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "SELECT * WHERE {\n  ?s ?p ?o\n}\n",
     "start": 0,
-    "end": 29
+    "end": 29,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

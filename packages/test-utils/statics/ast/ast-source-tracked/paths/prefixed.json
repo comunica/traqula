@@ -1,9 +1,14 @@
 {
   "type": "path",
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "ex:a|ex:b\n",
     "start": 0,
-    "end": 9
+    "end": 9,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "items": [
     {

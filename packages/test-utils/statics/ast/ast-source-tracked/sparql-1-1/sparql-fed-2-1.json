@@ -192,9 +192,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX foaf:   <http://xmlns.com/foaf/0.1/>\nSELECT ?name\nFROM <http://example.org/myfoaf.rdf>\nWHERE\n{\n  <http://example.org/myfoaf/I> foaf:knows ?person .\n  SERVICE <http://people.example.org/sparql> { \n    ?person foaf:name ?name . } \n}\n",
     "start": 0,
-    "end": 237
+    "end": 237,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

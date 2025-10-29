@@ -212,9 +212,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "prefix : <https://ex.com/>\nselect ?a {\n:a ?a :a ;\n  :a [\n    :a/:a :a\n  ] .\n}\n",
     "start": 0,
-    "end": 77
+    "end": 77,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

@@ -1,4 +1,5 @@
 import { AstCoreFactory } from '../AstCoreFactory.js';
+import type { SourceLocationInlinedSource } from '../types.js';
 import { traqulaIndentation } from '../utils.js';
 import type { GenRuleMap } from './builderTypes.js';
 import type { GeneratorRule, RuleDefArg } from './generatorTypes.js';
@@ -7,6 +8,7 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
   protected readonly factory = new AstCoreFactory();
   protected __context: Context | undefined = undefined;
   protected origSource = '';
+  protected handledInlineSource: SourceLocationInlinedSource | undefined;
   protected generatedUntil = 0;
   protected toEnsure: ((willPrint: string) => void)[] = [];
   /**
@@ -88,12 +90,41 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
     if (this.factory.isSourceLocationSource(localized.loc)) {
       this.catchup(localized.loc.start);
     }
+    let origSource: string | undefined;
+    let origPointer: number | undefined;
+    const locIsHandled = this.handledInlineSource === localized.loc;
+    if (this.factory.isSourceLocationInlinedSource(localized.loc) && !locIsHandled) {
+      // Calling handleLoc on the same AST multiple times should be the same as doing it once.
+      this.handledInlineSource = localized.loc;
+
+      const from = localized.loc.replaceRange?.at(0);
+      if (from !== undefined) {
+        this.catchup(from);
+      }
+      origSource = this.origSource;
+      origPointer = this.generatedUntil;
+
+      this.origSource = localized.loc.newSource;
+      this.generatedUntil = 0;
+
+      this.catchup(localized.loc.start);
+    }
     // If autoGenerate - do nothing
 
     const ret = handle();
 
     if (this.factory.isSourceLocationSource(localized.loc)) {
       this.catchup(localized.loc.end);
+    }
+    if (this.factory.isSourceLocationInlinedSource(localized.loc) && !locIsHandled) {
+      this.catchup(this.origSource.length);
+      this.origSource = origSource!;
+      const until = localized.loc.replaceRange?.at(-1);
+      if (until === undefined) {
+        this.generatedUntil = origPointer!;
+      } else {
+        this.generatedUntil = until;
+      }
     }
     return ret;
   };

@@ -164,9 +164,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX : <http://example/>\nSELECT * \n{ \n  ?s ?p ?o \n  MINUS { :a :b :c }\n}\n",
     "start": 0,
-    "end": 74
+    "end": 74,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

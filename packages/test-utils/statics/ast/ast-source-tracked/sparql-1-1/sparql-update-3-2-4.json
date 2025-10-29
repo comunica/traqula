@@ -44,8 +44,13 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "MOVE DEFAULT TO <http://example.org/named>\n",
     "start": 0,
-    "end": 42
+    "end": 42,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   }
 }

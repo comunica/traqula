@@ -235,9 +235,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX a:      <http://www.w3.org/2000/10/annotation-ns#>\nPREFIX dc:     <http://purl.org/dc/elements/1.1/>\nPREFIX xsd:    <http://www.w3.org/2001/XMLSchema#>\n\nSELECT ?annot\nWHERE { ?annot  a:annotates  <http://www.w3.org/TR/rdf-sparql-query/> .\n        ?annot  dc:date      ?date .\n        FILTER ( ?date > \"2005-01-01T00:00:00Z\"^^xsd:dateTime ) }\n",
     "start": 0,
-    "end": 348
+    "end": 348,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

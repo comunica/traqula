@@ -1,3 +1,4 @@
+import type { Localized } from '@traqula/core';
 import { TransformerObject, traqulaIndentation } from '@traqula/core';
 import { AstFactory } from './astFactory.js';
 import type { SparqlContext, SparqlGeneratorContext } from './sparql11HelperTypes.js';
@@ -43,7 +44,7 @@ Partial<SparqlContext & SparqlGeneratorContext & { origSource: string; offset?: 
   };
 }
 
-export class MinimalSparqlParser<ParseRet> {
+export class MinimalSparqlParser<ParseRet extends Localized> {
   protected readonly defaultContext: SparqlContext;
   protected readonly coreTransformer = new TransformerObject();
 
@@ -59,7 +60,8 @@ export class MinimalSparqlParser<ParseRet> {
    * @param context
    */
   public parse(query: string, context: Partial<SparqlContext> = {}): ParseRet {
-    return this.parser.queryOrUpdate(query, copyParseContext({ ...this.defaultContext, ...context }));
+    const ast = this.parser.queryOrUpdate(query, copyParseContext({ ...this.defaultContext, ...context }));
+    return this.defaultContext.astFactory.sourceLocationSourceToInlined(ast, query);
   }
 
   /**
@@ -69,13 +71,13 @@ export class MinimalSparqlParser<ParseRet> {
    */
   public parsePath(query: string, context: Partial<SparqlContext> = {}):
     (Path & { prefixes: object }) | TermIri {
-    const result = this.parser.path(query, copyParseContext({ ...this.defaultContext, ...context }));
-    if (this.defaultContext.astFactory.isPathPure(result)) {
-      return {
-        ...result,
+    const ast = this.parser.path(query, copyParseContext({ ...this.defaultContext, ...context }));
+    if (this.defaultContext.astFactory.isPathPure(ast)) {
+      return this.defaultContext.astFactory.sourceLocationSourceToInlined({
+        ...ast,
         prefixes: {},
-      };
+      }, query);
     }
-    return result;
+    return this.defaultContext.astFactory.sourceLocationSourceToInlined(ast, query);
   }
 }

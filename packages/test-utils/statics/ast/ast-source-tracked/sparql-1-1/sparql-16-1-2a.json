@@ -283,9 +283,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX  dc:  <http://purl.org/dc/elements/1.1/>\nPREFIX  ns:  <http://example.org/ns#>\nSELECT  ?title (?p*(1-?discount) AS ?price)\n{ ?x ns:price ?p .\n  ?x dc:title ?title . \n  ?x ns:discount ?discount \n}\n",
     "start": 0,
-    "end": 202
+    "end": 202,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

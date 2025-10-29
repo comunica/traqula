@@ -468,9 +468,14 @@
   },
   "solutionModifiers": {},
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX : <http://example.com/ns#>\n\nCONSTRUCT WHERE {\n  ?s :p ?o ~ :iri1 {| :r1 ?Z1 |} ~:iri2 {| :r2 ?Z2 |} .\n}\n",
     "start": 0,
-    "end": 110
+    "end": 110,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

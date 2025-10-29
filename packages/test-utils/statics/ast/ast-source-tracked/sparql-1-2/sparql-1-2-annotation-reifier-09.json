@@ -300,9 +300,14 @@
   },
   "solutionModifiers": {},
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX : <http://example.com/ns#>\n\nCONSTRUCT WHERE {\n  ?s :p ?o ~ _:bnode {| :q1 ?z |}\n}\n",
     "start": 0,
-    "end": 88
+    "end": 88,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

@@ -136,9 +136,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "  PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n  PREFIX :     <http://example/>\n  SELECT ?person\n  { \n    :x foaf:knows+ ?person\n  }\n",
     "start": 2,
-    "end": 129
+    "end": 129,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

@@ -233,9 +233,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX owl: <http://www.w3.org/2002/07/owl#>\n\nselect *\nwhere {\n    { ?c a owl:Class . }\n    FILTER ( ! (BOUND(?c) && ( REGEX(str(?c), \"^toto\",\"i\"))) )\n}\nlimit 10\n",
     "start": 0,
-    "end": 161
+    "end": 161,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

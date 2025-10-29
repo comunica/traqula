@@ -439,9 +439,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX :        <http://example.com/ns#>\nPREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>\n\nSELECT * {\n   :s :p :o  ~ :iri {| :source [ :graph <http://host1/> ;\n                         :date \"2020-01-20\"^^xsd:date\n                       ] ;\n                       ?source [ :graph <http://host2/> ;\n                         :date \"2020-12-31\"^^xsd:date\n                       ]\n                    |}\n}\n",
     "start": 0,
-    "end": 405
+    "end": 405,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

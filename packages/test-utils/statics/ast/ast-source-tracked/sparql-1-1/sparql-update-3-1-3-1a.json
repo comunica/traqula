@@ -277,8 +277,13 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX dc:  <http://purl.org/dc/elements/1.1/>\nPREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n\nDELETE\n { ?book ?p ?v }\nWHERE\n { ?book dc:date ?date .\n   FILTER ( ?date > \"1970-01-01T00:00:00-02:00\"^^xsd:dateTime )\n   ?book ?p ?v\n }\n",
     "start": 0,
-    "end": 232
+    "end": 232,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   }
 }

@@ -163,9 +163,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX :     <http://example/>\nPREFIX dc:   <http://purl.org/dc/elements/1.1/>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nSELECT *\n  { :book1 <http://purl.org/dc/elements/1.1/title> | <http://www.w3.org/2000/01/rdf-schema#label> ?displayString }\n",
     "start": 0,
-    "end": 255
+    "end": 255,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

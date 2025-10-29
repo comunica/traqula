@@ -124,8 +124,13 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX foaf:  <http://xmlns.com/foaf/0.1/>\n\nDELETE WHERE { ?person foaf:givenName 'Fred';\n                       ?property      ?value }\n",
     "start": 0,
-    "end": 136
+    "end": 136,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   }
 }

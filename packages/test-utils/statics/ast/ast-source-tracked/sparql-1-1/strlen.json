@@ -123,9 +123,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "SELECT ?str (STRLEN(?str) as ?strlen) { [] ?p ?str }\n",
     "start": 0,
-    "end": 52
+    "end": 52,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

@@ -233,9 +233,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "SELECT ?s (GROUP_CONCAT(?p) AS ?plist) (GROUP_CONCAT(DISTINCT ?p; SEPARATOR = \",\\\"/\") AS ?plist2) (GROUP_CONCAT(DISTINCT ?p; SEPARATOR = \"\") AS ?plist3)\n{\n  ?s ?p ?c\n}\nGROUP BY ?s\n",
     "start": 0,
-    "end": 179
+    "end": 179,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

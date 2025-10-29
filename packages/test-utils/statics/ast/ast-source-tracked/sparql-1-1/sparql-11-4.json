@@ -259,9 +259,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX : <http://example.com/data/#>\nSELECT ?x (MIN(?y) * 2 AS ?min)\nWHERE {\n  ?x :p ?y .\n  ?x :q ?z .\n} GROUP BY ?x (STR(?z))\n",
     "start": 0,
-    "end": 125
+    "end": 125,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

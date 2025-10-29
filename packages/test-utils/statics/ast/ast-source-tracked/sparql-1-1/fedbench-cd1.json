@@ -212,9 +212,14 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "source",
+    "sourceLocationType": "inlinedSource",
+    "newSource": "SELECT ?predicate ?object WHERE {\n   { <http://dbpedia.org/resource/Barack_Obama> ?predicate ?object }\n   UNION\n   { ?subject <http://www.w3.org/2002/07/owl#sameAs> <http://dbpedia.org/resource/Barack_Obama> .\n     ?subject ?predicate ?object }\n}\n",
     "start": 0,
-    "end": 246
+    "end": 246,
+    "replaceRange": [
+      0,
+      9007199254740991
+    ]
   },
   "type": "query"
 }

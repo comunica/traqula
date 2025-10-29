@@ -165,7 +165,7 @@
       "end": 127
     },
     "startOnNew": 0,
-    "endOnNew": 128
+    "endOnNew": 127
   },
   "type": "query"
 }

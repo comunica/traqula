@@ -105,7 +105,7 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
       this.generatedUntil = localized.loc.endOnNew;
       this.catchup(this.origSource.length);
       this.origSource = origSource;
-      this.generatedUntil = origPointer > localized.loc.end ? origPointer : localized.loc.end;
+      this.generatedUntil = Math.max(origPointer, localized.loc.end);
       return;
     }
     // If autoGenerate - do nothing
@@ -118,6 +118,9 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
     return ret;
   };
 
+  /**
+   * Catchup until, excluding
+   */
   protected readonly catchup: RuleDefArg['CATCHUP'] = (until) => {
     const start = this.generatedUntil;
     if (start < until) {

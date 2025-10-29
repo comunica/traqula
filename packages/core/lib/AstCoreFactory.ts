@@ -129,11 +129,15 @@ export class AstCoreFactory implements AstCoreFactoryArgs {
     subLoc: SourceLocation,
     start: number,
     end: number,
-    startOnNew: number = 0,
+    startOnNew = 0,
     endOnNew: number = newSource.length,
   ): SourceLocation {
     if (!this.tracksSourceLocation) {
       return this.gen();
+    }
+    if (this.isSourceLocationSource(subLoc)) {
+      startOnNew = subLoc.start;
+      endOnNew = subLoc.end;
     }
     return {
       sourceLocationType: 'inlinedSource',
@@ -142,7 +146,7 @@ export class AstCoreFactory implements AstCoreFactoryArgs {
       end,
       loc: subLoc,
       startOnNew,
-      endOnNew
+      endOnNew,
     }satisfies SourceLocationInlinedSource;
   };
 

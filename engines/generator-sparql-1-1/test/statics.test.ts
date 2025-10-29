@@ -37,7 +37,7 @@ describe('a SPARQL 1.1 generator', () => {
   });
 
   describe('positive sparql 1.1', () => {
-    for (const { name, statics } of positiveTest('sparql-1-1', x => x === 'sparql-9-3c')) {
+    for (const { name, statics } of positiveTest('sparql-1-1')) {
       it(`can generate ${name}`, async({ expect }) => {
         const { query, astWithSource, autoGen } = await statics();
         const queryUpdate = <T11.Query | T11.Update>astWithSource;

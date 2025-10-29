@@ -61,7 +61,7 @@ export class MinimalSparqlParser<ParseRet extends Localized> {
    */
   public parse(query: string, context: Partial<SparqlContext> = {}): ParseRet {
     const ast = this.parser.queryOrUpdate(query, copyParseContext({ ...this.defaultContext, ...context }));
-    ast.loc = this.defaultContext.astFactory.sourceLocationInlinedSource(query, ast.loc, 0, Number.MAX_SAFE_INTEGER)
+    ast.loc = this.defaultContext.astFactory.sourceLocationInlinedSource(query, ast.loc, 0, Number.MAX_SAFE_INTEGER);
     return ast;
   }
 
@@ -73,7 +73,7 @@ export class MinimalSparqlParser<ParseRet extends Localized> {
   public parsePath(query: string, context: Partial<SparqlContext> = {}):
     (Path & { prefixes: object }) | TermIri {
     const ast = this.parser.path(query, copyParseContext({ ...this.defaultContext, ...context }));
-    ast.loc = this.defaultContext.astFactory.sourceLocationInlinedSource(query, ast.loc, 0, Number.MAX_SAFE_INTEGER)
+    ast.loc = this.defaultContext.astFactory.sourceLocationInlinedSource(query, ast.loc, 0, Number.MAX_SAFE_INTEGER);
     if (this.defaultContext.astFactory.isPathPure(ast)) {
       return {
         ...ast,

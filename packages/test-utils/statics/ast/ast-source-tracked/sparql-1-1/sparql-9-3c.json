@@ -168,8 +168,8 @@
       "start": 2,
       "end": 95
     },
-    "startOnNew": 0,
-    "endOnNew": 96
+    "startOnNew": 2,
+    "endOnNew": 95
   },
   "type": "query"
 }

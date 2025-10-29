@@ -176,8 +176,8 @@
       "start": 2,
       "end": 188
     },
-    "startOnNew": 0,
-    "endOnNew": 189
+    "startOnNew": 2,
+    "endOnNew": 188
   },
   "type": "query"
 }

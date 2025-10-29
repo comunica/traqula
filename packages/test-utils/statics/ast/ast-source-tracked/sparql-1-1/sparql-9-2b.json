@@ -173,7 +173,7 @@
       "end": 255
     },
     "startOnNew": 0,
-    "endOnNew": 256
+    "endOnNew": 255
   },
   "type": "query"
 }

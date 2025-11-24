@@ -2,6 +2,7 @@ import type {
   Algebra,
 } from '@traqula/algebra-transformations-1-1';
 import {
+
   registerProjection,
   resetContext,
   translateAlgAggregateExpression,
@@ -172,6 +173,20 @@ export const toAst11Builder = IndirBuilder
     // ToAst
     algToSparql,
   );
+
+type ToAst11Transformer = ReturnType<typeof toAst11Builder.build>;
+
+export class AlgebraToAstTransformer {
+  private readonly transformer: ToAst11Transformer;
+  public constructor() {
+    this.transformer = toAst11Builder.build();
+  }
+
+  public transform(op: Algebra.Operation): SparqlQuery {
+    const context = createAstContext();
+    return this.transformer.algToSparql(context, op);
+  }
+}
 
 /**
  * Transform an operation to a SPARQL 1.1 Traqula AST.

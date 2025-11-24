@@ -5,21 +5,21 @@ import { describe, bench } from 'vitest';
 import { Parser as TraqulaParser } from '../lib/index.js';
 import { queryLargeObjectList } from './heatmap.js';
 
-describe('query 1.1, exclude construction', () => {
+describe('ast 1.1 parse', () => {
   const sourceTrackingAstFactory = new AstFactory({ tracksSourceLocation: true });
   const sourceTrackingParser = new TraqulaParser({
     defaultContext: { astFactory: sourceTrackingAstFactory },
     lexerConfig: { positionTracking: 'full' },
   });
-  const noSourceTrackingTraqula = new TraqulaParser();
+  const noSourceTrackingParser = new TraqulaParser();
   const sparqlJSparser = new SparqlJSparser();
   const query = queryLargeObjectList;
 
   describe('large objectList', () => {
-    bench('traqula parse', () => {
+    bench('traqula large objectList', () => {
       sourceTrackingParser.parse(query);
     });
-    bench('sparqljs', () => {
+    bench('sparqljs large objectList', () => {
       sparqlJSparser.parse(query);
     });
   });
@@ -28,18 +28,39 @@ describe('query 1.1, exclude construction', () => {
     const allQueries = await Promise.all([ ...positiveTest('sparql-1-1') ]
       .map(x => x.statics().then(x => x.query)));
 
-    bench('traqula parse 1.1', () => {
+    bench('traqula 1.1 source tracking query -> AST', () => {
       for (const query of allQueries) {
         sourceTrackingParser.parse(query);
       }
     });
-    bench('sparqljs', () => {
+
+    bench('traqula 1.1 source tracking query -> AST COLD', () => {
+      for (const query of allQueries) {
+        const sourceTrackingParser = new TraqulaParser({
+          defaultContext: { astFactory: sourceTrackingAstFactory },
+          lexerConfig: { positionTracking: 'full' },
+        });
+        sourceTrackingParser.parse(query);
+      }
+    });
+
+    bench('sparqljs 1.1 query -> AST', () => {
       for (const query of allQueries) {
         sparqlJSparser.parse(query);
       }
     });
-    bench('traqula no-source tracking', () => {
-      noSourceTrackingTraqula.parse(query);
+
+    bench('traqula 1.1 no-source tracking query -> AST', () => {
+      for (const query of allQueries) {
+        noSourceTrackingParser.parse(query);
+      }
+    });
+
+    bench('traqula 1.1 no-source tracking query -> AST COLD', () => {
+      for (const query of allQueries) {
+        const noSourceTrackingTraqula = new TraqulaParser();
+        noSourceTrackingTraqula.parse(query);
+      }
     });
   });
 });

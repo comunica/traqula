@@ -3,27 +3,45 @@ import { createAlgebraContext, findAllVariables, algebraUtils } from '@traqula/a
 import { Parser as TraqulaParser } from '@traqula/parser-sparql-1-1';
 import { positiveTest } from '@traqula/test-utils';
 import { translate } from 'sparqlalgebrajs';
-import { Parser } from 'sparqljs';
+import { Parser as SparqlJsParser } from 'sparqljs';
 import { describe, bench } from 'vitest';
-import { toAlgebra } from '../lib/index.js';
+import { AstToAlgebraTransformer, toAlgebra } from '../lib/index.js';
 import { queryLargeObjectList } from './heatmap.js';
 import * as Util from './sparqlAlgebraUtils.js';
 
-describe('toAlgebra 1.1, exclude parser construction', () => {
+describe('algebra 1.1 parse', () => {
   const traqulaParser = new TraqulaParser();
+  const traqulaToAlgebraTransformer = new AstToAlgebraTransformer();
+  const sparqlJSParser = new SparqlJsParser();
 
   describe('general queries', async() => {
     const allQueries = await Promise.all([ ...positiveTest('sparql-1-1') ]
       .map(x => x.statics().then(x => x.query)));
 
-    bench('traqula toAlgebra 1.1', () => {
+    bench('traqula 1.1 query -> algebra', () => {
       for (const query of allQueries) {
-        toAlgebra(traqulaParser.parse(query), { quads: true });
+        traqulaToAlgebraTransformer.transform(traqulaParser.parse(query), { quads: true });
       }
     });
-    bench('sparqlAlgebraJs to Algebra', () => {
+
+    bench('traqula 1.1 query -> algebra COLD', () => {
       for (const query of allQueries) {
-        translate(query, { quads: true });
+        const traqulaParser = new TraqulaParser();
+        const traqulaToAlgebraTransformer = new AstToAlgebraTransformer();
+        traqulaToAlgebraTransformer.transform(traqulaParser.parse(query), { quads: true });
+      }
+    });
+
+    bench('sparqlAlgebraJs query -> algebra', () => {
+      for (const query of allQueries) {
+        translate(sparqlJSParser.parse(query), { quads: true });
+      }
+    });
+
+    bench('sparqlAlgebraJs query -> algebra COLD', () => {
+      for (const query of allQueries) {
+        const sparqlJSParser = new SparqlJsParser();
+        translate(sparqlJSParser.parse(query), { quads: true });
       }
     });
   });
@@ -32,19 +50,26 @@ describe('toAlgebra 1.1, exclude parser construction', () => {
    * This test benefits sparqlAlgebra since it needs to process a smaller AST, but it still provides usefull insights
    */
   describe('general queries - only transformation', async() => {
-    const sparqlJs = new Parser();
+    const sparqlJs = new SparqlJsParser();
+    const algebraTransformer = new AstToAlgebraTransformer();
     const traqulaAsts = await Promise.all([ ...positiveTest('sparql-1-1') ]
       .map(async x => traqulaParser.parse((await x.statics()).query)));
     const sparqlJsAsts = await Promise.all([ ...positiveTest('sparql-1-1') ]
       .map(async x => sparqlJs.parse((await x.statics()).query)));
 
-    bench('traqula to algebra 1.1 RAW', () => {
+    bench('traqula 1.1 AST -> algebra COLD', () => {
       for (const ast of traqulaAsts) {
         toAlgebra(ast, { quads: true });
       }
     });
 
-    bench('sparqlAlgebra sparqlJs to Algebra', () => {
+    bench('traqula 1.1 AST -> algebra', () => {
+      for (const ast of traqulaAsts) {
+        algebraTransformer.transform(ast, { quads: true });
+      }
+    });
+
+    bench('sparqlAlgebra AST -> algebra', () => {
       for (const ast of sparqlJsAsts) {
         translate(ast, { quads: true });
       }

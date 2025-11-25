@@ -5,6 +5,7 @@ export default defineConfig({
   test: {
     coverage: {
       enabled: true,
+      provider: 'v8',
       include: [
         'packages/*/dist/esm/**/*.js',
       ],

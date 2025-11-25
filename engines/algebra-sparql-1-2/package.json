@@ -50,6 +50,7 @@
     "@traqula/parser-sparql-1-2": "^0.0.24",
     "@traqula/rules-sparql-1-2": "^0.0.24",
     "@traqula/test-utils": "^0.0.24",
-    "sparqlalgebrajs": "^5.0.1"
+    "sparqlalgebrajs": "^5.0.1",
+    "sparqljs": "^3.7.3"
   }
 }

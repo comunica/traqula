@@ -11,40 +11,6 @@ import * as Util from './sparqlAlgebraUtils.js';
 
 describe('algebra 1.1 parse', () => {
   const traqulaParser = new TraqulaParser();
-  const traqulaToAlgebraTransformer = new AstToAlgebraTransformer();
-  const sparqlJSParser = new SparqlJsParser();
-
-  describe('general queries', async() => {
-    const allQueries = await Promise.all([ ...positiveTest('sparql-1-1') ]
-      .map(x => x.statics().then(x => x.query)));
-
-    bench('traqula 1.1 query -> algebra', () => {
-      for (const query of allQueries) {
-        traqulaToAlgebraTransformer.transform(traqulaParser.parse(query), { quads: true });
-      }
-    });
-
-    bench('traqula 1.1 query -> algebra COLD', () => {
-      for (const query of allQueries) {
-        const traqulaParser = new TraqulaParser();
-        const traqulaToAlgebraTransformer = new AstToAlgebraTransformer();
-        traqulaToAlgebraTransformer.transform(traqulaParser.parse(query), { quads: true });
-      }
-    });
-
-    bench('sparqlAlgebraJs query -> algebra', () => {
-      for (const query of allQueries) {
-        translate(sparqlJSParser.parse(query), { quads: true });
-      }
-    });
-
-    bench('sparqlAlgebraJs query -> algebra COLD', () => {
-      for (const query of allQueries) {
-        const sparqlJSParser = new SparqlJsParser();
-        translate(sparqlJSParser.parse(query), { quads: true });
-      }
-    });
-  });
 
   /**
    * This test benefits sparqlAlgebra since it needs to process a smaller AST, but it still provides usefull insights

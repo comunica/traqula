@@ -3,7 +3,7 @@
  * otherwise warmup or V8 optimization/ deoptimization might result in unfair comparisons
  */
 
-import { writeFileSync } from 'node:fs';
+import { appendFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { Parser as TraqulaParser } from '@traqula/parser-sparql-1-2';
 import { positiveTest } from '@traqula/test-utils';
@@ -19,7 +19,8 @@ interface SetupRet {
   sparqlJSparser: SparqlJSparserType;
 }
 
-export const fastTestsConfig: BenchOptions = { warmupIterations: 100, iterations: 1000 };
+export const fastTestsConfig = { warmupIterations: 100, iterations: 1000 } satisfies BenchOptions;
+export const slowTestConfig = { warmupIterations: 10, iterations: 20 } satisfies BenchOptions;
 
 export function noSourceTrackingParser(): TraqulaParser {
   return new TraqulaParser();
@@ -52,9 +53,12 @@ export function perf(callback: () => void): number {
 }
 
 export function appendMeasurement(name: string, measurements: number[]): void {
-  writeFileSync(
-    join(__dirname, '../../../../bench-times.csv'),
-`${name};${measurements.join(';')}`,
-{ encoding: 'utf-8' },
+  const file = join(__dirname, '../../../../bench-times.csv');
+  appendFileSync(
+    file,
+    `${name};${measurements.join(';')}\n`,
+    { encoding: 'utf-8' },
   );
+  // eslint-disable-next-line no-console
+  console.log(`Wrote ${measurements.length} into ${file}.`);
 }

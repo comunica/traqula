@@ -1,5 +1,5 @@
 import { describe, bench } from 'vitest';
-import { fastTestsConfig, setup } from './setup.js';
+import { appendMeasurement, fastTestsConfig, perf, setup } from './setup.js';
 
 describe('ast 1.2 parse', async() => {
   const {
@@ -7,9 +7,18 @@ describe('ast 1.2 parse', async() => {
     allQueries,
   } = await setup();
 
+  const measurements: number[] = [];
+
   bench('traqula 1.2 source tracking query -> AST', () => {
-    for (const query of allQueries) {
-      traqulaSourceTracking.parse(query);
+    measurements.push(perf(() => {
+      for (const query of allQueries) {
+        traqulaSourceTracking.parse(query);
+      }
+    }));
+  }, { ...fastTestsConfig, teardown: () => {
+    if (measurements.length >= fastTestsConfig.iterations) {
+      appendMeasurement('1.2 parser to AST + source', measurements);
     }
-  }, fastTestsConfig);
+    measurements.length = 0;
+  } });
 });

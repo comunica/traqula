@@ -17,9 +17,9 @@ describe('algebra 1.2 parse', async() => {
       }
     }));
   }, { ...fastTestsConfig, teardown: () => {
-    // eslint-disable-next-line no-console
-    console.log(`Wrote ${measurements.length} measurements`);
-    appendMeasurement('sparqlJS', measurements);
+    if (measurements.length >= fastTestsConfig.iterations) {
+      appendMeasurement('sparqlJS to algebra', measurements);
+    }
     measurements.length = 0;
   } });
 });

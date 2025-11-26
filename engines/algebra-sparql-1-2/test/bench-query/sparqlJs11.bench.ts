@@ -1,6 +1,6 @@
 import { translate } from 'sparqlalgebrajs';
 import { describe, bench } from 'vitest';
-import { fastTestsConfig, setup } from './setup.js';
+import { appendMeasurement, fastTestsConfig, perf, setup } from './setup.js';
 
 describe('algebra 1.2 parse', async() => {
   const {
@@ -8,9 +8,18 @@ describe('algebra 1.2 parse', async() => {
     allQueries,
   } = await setup();
 
+  const measurements: number[] = [];
+
   bench('sparqlJs 1.1 query -> algebra', () => {
-    for (const query of allQueries) {
-      translate(sparqlJSparser.parse(query), { quads: true });
-    }
-  }, fastTestsConfig);
+    measurements.push(perf(() => {
+      for (const query of allQueries) {
+        translate(sparqlJSparser.parse(query), { quads: true });
+      }
+    }));
+  }, { ...fastTestsConfig, teardown: () => {
+    // eslint-disable-next-line no-console
+    console.log(`Wrote ${measurements.length} measurements`);
+    appendMeasurement('sparqlJS', measurements);
+    measurements.length = 0;
+  } });
 });

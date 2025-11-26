@@ -3,6 +3,8 @@
  * otherwise warmup or V8 optimization/ deoptimization might result in unfair comparisons
  */
 
+import { writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { Parser as TraqulaParser } from '@traqula/parser-sparql-1-2';
 import { positiveTest } from '@traqula/test-utils';
 import type { SparqlParser as SparqlJSparserType } from 'sparqljs';
@@ -40,4 +42,19 @@ export async function setup(): Promise<SetupRet> {
     astToAlgebraTransformer: astToAlgebraTransformer(),
     sparqlJSparser: sparqlJsParser(),
   };
+}
+
+export function perf(callback: () => void): number {
+  const start = performance.now();
+  callback();
+  const end = performance.now();
+  return end - start;
+}
+
+export function appendMeasurement(name: string, measurements: number[]): void {
+  writeFileSync(
+    join(__dirname, '../../../../bench-times.csv'),
+`${name};${measurements.join(';')}`,
+{ encoding: 'utf-8' },
+  );
 }

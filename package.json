@@ -32,7 +32,7 @@
     "depcheck": "^1.4.7",
     "eslint": "^8.57.0",
     "husky": "^9.1.7",
-    "lerna": "9.0.1",
+    "lerna": "9.0.3",
     "manual-git-changelog": "^1.0.2",
     "rdf-test-suite": "^2.0.0",
     "tsup": "^8.5.0",

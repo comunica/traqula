@@ -31,7 +31,7 @@ export interface Wrap<T> extends Localized {
 }
 
 /**
- * A AST node. Nodes are indexable by their types.
+ * An AST node. Nodes are indexable by their types.
  * When generating, the SUBRULES called should be located within the current location range.
  */
 export interface Node extends Localized, Typed {}

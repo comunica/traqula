@@ -1,6 +1,5 @@
 import type { SubTyped, Typed } from '../types.js';
 import type {
-  SelectiveTraversalContext,
   TransformContext,
   VisitContext,
 } from './TransformerObject.js';
@@ -145,47 +144,5 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
       return ogPreVisit ? ogPreVisit(casted) : {};
     };
     this.visitObject(startObject, visitWrapper, preVisitWrapper);
-  }
-
-  /**
-   * Similar to {@link this.traverseNodes} but also allows you to match based on the subtype of objects.
-   * @param currentNode
-   * @param traverseNode
-   * @param traverseSubNode
-   */
-  public traverseSubNodes(
-    currentNode: Nodes,
-    traverseNode: {[Type in Nodes['type']]?:
-      (op: Extract<Nodes, Typed<Type>>) => SelectiveTraversalContext<Nodes> },
-    traverseSubNode: {[Type in Nodes['type']]?:
-      {[Subtype in Extract<Nodes, SubTyped<Type>>['subType']]?:
-        (op: Extract<Nodes, SubTyped<Type, Subtype>>) => SelectiveTraversalContext<Nodes> }},
-  ): void {
-    let didShortCut = false;
-
-    const recurse = (curNode: Nodes): void => {
-      let traverser: ((call: any) => SelectiveTraversalContext<Nodes>) | undefined;
-      const subObj = traverseSubNode[<Nodes['type']>curNode.type];
-      if (subObj) {
-        traverser = subObj[<keyof typeof subObj>curNode.subType];
-      }
-      if (!traverser) {
-        traverser = traverseNode[<Nodes['type']>curNode.type];
-      }
-      if (traverser) {
-        const { next, shortcut } = traverser(<any>curNode);
-        didShortCut = shortcut ?? false;
-        if (!didShortCut) {
-          for (const node of next ?? []) {
-            if (didShortCut) {
-              return;
-            }
-            recurse(node);
-          }
-        }
-      }
-    };
-
-    recurse(currentNode);
   }
 }

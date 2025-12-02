@@ -1,5 +1,5 @@
 import type { Typed } from '../types.js';
-import type { SelectiveTraversalContext, TransformContext, VisitContext } from './TransformerObject.js';
+import type { TransformContext, VisitContext } from './TransformerObject.js';
 import { TransformerObject } from './TransformerObject.js';
 
 export type Safeness = 'safe' | 'unsafe';
@@ -111,35 +111,5 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
       return ogPreVisit ? { ...nodeContext, ...ogPreVisit(casted) } : nodeContext;
     };
     return this.visitObject(startObject, visitorWrapper, preVisitWrapper);
-  }
-
-  /**
-   * Traverses only selected nodes as returned by the function.
-   * @param currentNode
-   * @param traverse
-   */
-  public traverseNodes(
-    currentNode: Nodes,
-    traverse: {[T in Nodes['type']]?: (op: Extract<Nodes, Typed<T>>) => SelectiveTraversalContext<Nodes> },
-  ): void {
-    let didShortCut = false;
-
-    const recurse = (curNode: Nodes): void => {
-      const traverser = traverse[<Nodes['type']>curNode.type];
-      if (traverser) {
-        const { next, shortcut } = traverser(<any>curNode);
-        didShortCut = shortcut ?? false;
-        if (!didShortCut) {
-          for (const node of next ?? []) {
-            if (didShortCut) {
-              return;
-            }
-            recurse(node);
-          }
-        }
-      }
-    };
-
-    recurse(currentNode);
   }
 }

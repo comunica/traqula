@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.0.0"></a>
+## [v1.0.0](https://github.com/comunica/traqula/compare/v0.0.25...v1.0.0) - 2025-12-02
+
+* [DOCS: main project README - Traqula is framework](https://github.com/comunica/traqula/commit/209c4ac3b4daecfb293fcb6cc0d1ed41e487dbd6)
+
 <a name="v0.0.25"></a>
 ## [v0.0.25](https://github.com/comunica/traqula/compare/v0.0.24...v0.0.25) - 2025-12-02
 

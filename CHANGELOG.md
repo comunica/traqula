@@ -1,6 +1,26 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v0.0.25"></a>
+## [v0.0.25](https://github.com/comunica/traqula/compare/v0.0.24...v0.0.25) - 2025-12-02
+
+* [CHORE: remove traverseSubnodes since a propper implementation needs to be created in the future](https://github.com/comunica/traqula/commit/e15f2eccf3af359bb33bc1a12a809a20b86bb7cc)
+* [increase transformer docs quality](https://github.com/comunica/traqula/commit/91c237ceb875c589b9f6fda0eb50c723e984487e)
+* [Update actions/checkout action to v6 (#78)](https://github.com/comunica/traqula/commit/9118e28f6262ee881fceea880d8172f3e6db567a)
+* [Update dependency lerna to v9.0.3](https://github.com/comunica/traqula/commit/3981b67dda7eebb3acc2ebd803866fc24936a96b)
+* [Update dependency lerna to v9.0.1](https://github.com/comunica/traqula/commit/2f0e975d4abf458ced15b93d56af737bfe336ad2)
+* [Update dependency esbuild to ^0.27.0](https://github.com/comunica/traqula/commit/a84cb8c49e31d59fdaac4350b525734897372103)
+* [Feat: generator API does not require origSource - add SourceLocationInlinedSource (#76)](https://github.com/comunica/traqula/commit/ac278a201bf487889b063168c056b5495b9ed6b5)
+* [Docs/better api docs (#73)](https://github.com/comunica/traqula/commit/b605a581d6bbaba0bf16683475dba7bcb30dff45)
+* [Test: add benchmark for source and no source tracking for 1.2 parser](https://github.com/comunica/traqula/commit/9362cf522cb71bdd0d02cade5d9cd80f7f98350e)
+* [Refactor/no source tracking by default (#72)](https://github.com/comunica/traqula/commit/dfd7a4f156a7c1754cdb487bb5aed0685901d887)
+* [Refactor: ast test files in separate dirs per file kind (#71)](https://github.com/comunica/traqula/commit/a92a9369fb133f2b33a16f90e58533a2587b3389)
+* [Update actions/upload-artifact action to v5](https://github.com/comunica/traqula/commit/51be29f2e9075389b2f4a78a68a059d65512d7ea)
+* [Test: add SPARQL 1.0 spec tests (#69)](https://github.com/comunica/traqula/commit/0838734e4f277ed72e7bd83bf5881e4d8776d511)
+* [Docs: fix ci badge](https://github.com/comunica/traqula/commit/65984b22cad9f6a9f32d6e179e77c86346a17a29)
+* [Chore: add badges to readmes + add coveralls to CI](https://github.com/comunica/traqula/commit/a2c4e9d0df015f17ca8439a7054e08bd2bcad07d)
+* [Chore: sub-licence chevrotain package to be sure + Refactor: less import *](https://github.com/comunica/traqula/commit/3b880fc6205dac30593f73d6d1ea01d7497955ae)
+
 <a name="v0.0.24"></a>
 ## [v0.0.24](https://github.com/comunica/traqula/compare/v0.0.23...v0.0.24) - 2025-10-17
 

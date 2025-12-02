@@ -1,7 +1,7 @@
 {
   "name": "@traqula/parser-sparql-1-1-adjust",
   "type": "module",
-  "version": "0.0.24",
+  "version": "0.0.25",
   "description": "SPARQL 1.1 + ADJUST parser",
   "lsd:module": true,
   "license": "MIT",
@@ -51,13 +51,13 @@
     "spec:earl": "yarn spec:earl:base-1-0 && yarn spec:earl:query && yarn spec:earl:update"
   },
   "dependencies": {
-    "@traqula/core": "^0.0.24",
-    "@traqula/parser-sparql-1-1": "^0.0.24",
-    "@traqula/rules-sparql-1-1": "^0.0.24",
-    "@traqula/rules-sparql-1-1-adjust": "^0.0.24"
+    "@traqula/core": "^0.0.25",
+    "@traqula/parser-sparql-1-1": "^0.0.25",
+    "@traqula/rules-sparql-1-1": "^0.0.25",
+    "@traqula/rules-sparql-1-1-adjust": "^0.0.25"
   },
   "devDependencies": {
-    "@traqula/test-utils": "^0.0.24",
+    "@traqula/test-utils": "^0.0.25",
     "rdf-data-factory": "^2.0.1",
     "rdf-test-suite": "^2.0.0"
   }

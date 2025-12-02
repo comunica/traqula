@@ -26,12 +26,20 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
   }
 
   /**
-   * Shares the functionality and first two arguments with {@link this.transformNode}.
-   * The third argument allows you to also transform based on the subType of objects.
-   * Note that when a callback for the subtype is provided, the callback for the general type is **NOT** executed.
-   * @param startObject
-   * @param nodeCallBacks
-   * @param nodeSpecificCallBacks
+   * Transform a single node ({@link Typed}).
+   * Similar to {@link this.transformNode} but also allowing you to target the subTypes.
+   * @param startObject the object from which we will start the transformation,
+   *   potentially visiting and transforming its descendants along the way.
+   * @param nodeCallBacks a dictionary mapping the various operation types to objects optionally
+   *    containing preVisitor and transformer.
+   *    The preVisitor allows you to provide {@link TransformContext} for the current object,
+   *    altering how it will be transformed.
+   *    The transformer allows you to manipulate the copy of the current object,
+   *    and expects you to return the value that should take the current objects place.
+   * @param nodeSpecificCallBacks Same as nodeCallBacks but using an additional level of indirection to
+   *     indicate the subType.
+   * @return the result of transforming the requested descendant operations (based on the preVisitor)
+   * using a transformer that works its way back up from the descendant to the startObject.
    */
   public transformNodeSpecific<Safe extends Safeness = 'safe', OutType = unknown>(
     startObject: object,
@@ -77,8 +85,22 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
   }
 
   /**
-   * Similar to {@link this.visitNode} but also allows you to match based on the subtype of objects.
-   * When both nodeCallBack and NodeSpecific callBack are matched, will only visit nodeSpecifCallback
+   * Visit a selected subTree given a startObject, steering the visits based on {@link Typed} nodes.
+   * Similar to {@link this.visitNode}, but also allowing you to target subTypes.
+   * Will call the preVisitor on the outer distinct, then the visitor of the special distinct,
+   * followed by the visiting the outer distinct, printing '231'.
+   * The pre-visitor visits starting from the root, going deeper, while the actual visitor goes in reverse.
+   * @param startObject the object from which we will start visiting,
+   *   potentially visiting its descendants along the way.
+   * @param nodeCallBacks a dictionary mapping the various operation types to objects optionally
+   *    containing preVisitor and visitor.
+   *    The preVisitor allows you to provide {@link VisitContext} for the current object,
+   *    altering how it will be visited.
+   *    The visitor allows you to visit the object from deepest to the outermost object.
+   *    This is useful if you for example want to manipulate the objects you visit during your visits,
+   *    similar to {@link mapOperation}.
+   * @param nodeSpecificCallBacks Same as nodeCallBacks but using an additional level of indirection to
+   *     indicate the subType.
    */
   public visitNodeSpecific(
     startObject: object,

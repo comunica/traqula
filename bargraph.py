@@ -29,7 +29,7 @@ with open(CSV_FILE, newline='') as csvfile:
         names.append(name)
         means.append(mean_val)
 
-names = wrap_labels(names, width=20)
+names = wrap_labels(names, width=30)
 colors = ["#ffe6cc" if i >= 2 else "#d5e8d4" for i in range(len(names))]
 
 # Plot bar graph

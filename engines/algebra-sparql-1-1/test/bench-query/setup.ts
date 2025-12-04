@@ -37,7 +37,6 @@ export function astToAlgebraTransformer(): AstToAlgebraTransformer {
 export async function setup(): Promise<SetupRet> {
   const allQueries = await Promise.all([ ...positiveTest('AKSWBenchmark') ]
     .map(x => x.statics().then(x => x.query)));
-  console.log(allQueries.length);
   return {
     allQueries,
     traqulaParser: noSourceTrackingParser(),

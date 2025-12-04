@@ -3,7 +3,8 @@
 [![npm version](https://badge.fury.io/js/@traqula%2Fcore.svg)](https://www.npmjs.com/package/@traqula/core)
 
 Traqula core contains core components of Traqula.
-Most importantly, its [lexer builder](./lib/lexer-builder/LexerBuilder.ts), [parser builder](./lib/parser-builder/parserBuilder.ts), and [generator builder](./lib/generator-builder/generatorBuilder.ts).
+Most importantly, its [lexer builder](./lib/lexer-builder/LexerBuilder.ts), [parser builder](./lib/parser-builder/parserBuilder.ts), and [generator builder](./lib/generator-builder/generatorBuilder.ts);
+ as well as providing generic DAG transformers/ visitors.
 This library heavily relies on the amazing [Chevrotain package](https://chevrotain.io/docs/).
 Knowing the basics of that package will allow you to quickly generate your own grammars.
 

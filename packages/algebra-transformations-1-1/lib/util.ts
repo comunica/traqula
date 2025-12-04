@@ -1,12 +1,13 @@
 import type * as RDF from '@rdfjs/types';
+import type { TransformContext, VisitContext } from '@traqula/core';
 import { TransformerSubTyped } from '@traqula/core';
 import type * as A from './algebra.js';
 import { ExpressionTypes, Types } from './algebra.js';
 
 const transformer = new TransformerSubTyped<A.Operation>({}, {
   // Optimization that causes search tree pruning
-  [Types.PATTERN]: { ignoreKeys: new Set([ 'subject', 'predicate', 'object', 'graph' ]) },
-  [Types.EXPRESSION]: { ignoreKeys: new Set([ 'name', 'term', 'wildcard', 'variable' ]) },
+  [Types.PATTERN]: { ignoreKeys: new Set([ 'subject', 'predicate', 'object', 'graph' ]) } satisfies TransformContext,
+  [Types.EXPRESSION]: { ignoreKeys: new Set([ 'name', 'term', 'wildcard', 'variable' ]) } satisfies VisitContext,
   [Types.DESCRIBE]: { ignoreKeys: new Set([ 'terms' ]) },
   [Types.EXTEND]: { ignoreKeys: new Set([ 'variable' ]) },
   [Types.FROM]: { ignoreKeys: new Set([ 'default', 'named' ]) },
@@ -26,9 +27,182 @@ const transformer = new TransformerSubTyped<A.Operation>({}, {
   [Types.MOVE]: { ignoreKeys: new Set([ 'source', 'destination' ]) },
   [Types.COPY]: { ignoreKeys: new Set([ 'source', 'destination' ]) },
 });
+
+/**
+ * Transform a single operation.
+ * e.g. wrapping a distinct around the outermost project:
+ * ```ts
+ * mapOperation({
+ *   type: Algebra.Types.SLICE,
+ *   input: {
+ *     type: Algebra.Types.PROJECT,
+ *     input: {
+ *       type: Algebra.Types.JOIN,
+ *       input: [{ type: Algebra.Types.PROJECT }, { type: Algebra.Types.BGP }],
+ *     },
+ *   },
+ * }, {
+ *   [Algebra.Types.PROJECT]: {
+ *     preVisitor: () => ({ continue: false }),
+ *     transform: projection => algebraFactory.createDistinct(projection),
+ *   },
+ * });
+ * const returns = {
+ *   type: Algebra.Types.SLICE,
+ *   input: {
+ *     type: Algebra.Types.DISTINCT,
+ *     input: {
+ *       type: Algebra.Types.PROJECT,
+ *       input: {
+ *         type: Algebra.Types.JOIN,
+ *         input: [{ type: Algebra.Types.PROJECT }, { type: Algebra.Types.BGP }],
+ *       },
+ *     },
+ *   },
+ * };
+ * ```
+ * @param startObject the object from which we will start the transformation,
+ *   potentially visiting and transforming its descendants along the way.
+ * @param nodeCallBacks a dictionary mapping the various operation types to objects optionally
+ *    containing preVisitor and transformer.
+ *    The preVisitor allows you to provide {@link TransformContext} for the current object,
+ *    altering how it will be transformed.
+ *    The transformer allows you to manipulate the copy of the current object,
+ *    and expects you to return the value that should take the current objects place.
+ * @return the result of transforming the requested descendant operations (based on the preVisitor)
+ * using a transformer that works its way back up from the descendant to the startObject.
+ */
 export const mapOperation = transformer.transformNode.bind(transformer);
+
+/**
+ * Transform a single operation, similar to {@link mapOperation}, but also allowing you to target subTypes.
+ * e.g. wrapping a distinct around the all project operations not contained in an aggregate expression
+ * (invalid algebra anyway):
+ * ```ts
+ * mapOperationSub({
+ *   type: Algebra.Types.SLICE,
+ *   input: {
+ *     type: Algebra.Types.PROJECT,
+ *     input: {
+ *       type: Algebra.Types.JOIN,
+ *       input: [{
+ *         type: Algebra.Types.EXPRESSION,
+ *         subType: Algebra.ExpressionTypes.AGGREGATE,
+ *         input: { type: Algebra.Types.PROJECT },
+ *       }, { type: Algebra.Types.BGP }],
+ *     },
+ *   },
+ * }, { [Algebra.Types.PROJECT]: {
+ *   transform: projection => algebraFactory.createDistinct(projection),
+ * }}, { [Algebra.Types.EXPRESSION]: { [Algebra.ExpressionTypes.AGGREGATE]: {
+ *   preVisitor: () => ({ continue: false }),
+ * }}});
+ * const returns = {
+ *   type: Algebra.Types.SLICE,
+ *   input: {
+ *     type: Algebra.Types.DISTINCT,
+ *     input: {
+ *       type: Algebra.Types.PROJECT,
+ *       input: {
+ *         type: Algebra.Types.JOIN,
+ *         input: [{
+ *           type: Algebra.Types.EXPRESSION,
+ *           subType: Algebra.ExpressionTypes.AGGREGATE,
+ *           input: { type: Algebra.Types.PROJECT },
+ *         }, { type: Algebra.Types.BGP }],
+ *       },
+ *     },
+ *   },
+ * };
+ * ```
+ * @param startObject the object from which we will start the transformation,
+ *   potentially visiting and transforming its descendants along the way.
+ * @param nodeCallBacks a dictionary mapping the various operation types to objects optionally
+ *    containing preVisitor and transformer.
+ *    The preVisitor allows you to provide {@link TransformContext} for the current object,
+ *    altering how it will be transformed.
+ *    The transformer allows you to manipulate the copy of the current object,
+ *    and expects you to return the value that should take the current objects place.
+ * @param nodeSpecificCallBacks Same as nodeCallBacks but using an additional level of indirection to
+ *     indicate the subType.
+ * @return the result of transforming the requested descendant operations (based on the preVisitor)
+ * using a transformer that works its way back up from the descendant to the startObject.
+ */
 export const mapOperationSub = transformer.transformNodeSpecific.bind(transformer);
+
+/**
+ * Similar to {@link mapOperation}, but only visiting instead of copying and transforming explicitly.
+ * e.g.:
+ * ```ts
+ * visitOperation({
+ *   type: Algebra.Types.DISTINCT,
+ *   input: {
+ *     type: Algebra.Types.PROJECT,
+ *     input: { type: Algebra.Types.DISTINCT },
+ *   },
+ * }, {
+ *   [Algebra.Types.DISTINCT]: { visitor: () => console.log('1') },
+ *   [Algebra.Types.PROJECT]: {
+ *     preVisitor: () => ({ continue: false }),
+ *     visitor: () => console.log('2'),
+ *   },
+ * });
+ * ```
+ * Will first call the preVisitor on the project and notice it should not iterate on its descendants.
+ * It then visits the project, and the outermost distinct, printing '21'.
+ * The pre-visitor visits starting from the root, going deeper, while the actual visitor goes in reverse.
+ * @param startObject the object from which we will start visiting,
+ *   potentially visiting its descendants along the way.
+ * @param nodeCallBacks a dictionary mapping the various operation types to objects optionally
+ *    containing preVisitor and visitor.
+ *    The preVisitor allows you to provide {@link VisitContext} for the current object,
+ *    altering how it will be visited.
+ *    The visitor allows you to visit the object from deepest to the outermost object.
+ *    This is useful if you for example want to manipulate the objects you visit during your visits,
+ *    similar to {@link mapOperation}.
+ */
 export const visitOperation = transformer.visitNode.bind(transformer);
+
+/**
+ * Visits an object and it's descendants, similar to {@link visitOperation},
+ * but also allowing you to target subTypes. e.g.:
+ * e.g.:
+ * ```ts
+ * visitOperationSub({
+ *   type: Algebra.Types.DISTINCT,
+ *   input: {
+ *     type: Algebra.Types.DISTINCT,
+ *     subType: 'special',
+ *   },
+ * }, {
+ *   [Algebra.Types.DISTINCT]: {
+ *     visitor: () => console.log('1'),
+ *     preVisitor: () => {
+ *       console.log('2');
+ *       return {};
+ *     },
+ *   },
+ * }, {
+ *   [Algebra.Types.DISTINCT]: { special: {
+ *     visitor: () => console.log('3'),
+ *   }},
+ * });
+ * ```
+ * Will call the preVisitor on the outer distinct, then the visitor of the special distinct,
+ * followed by the visiting the outer distinct, printing '231'.
+ * The pre-visitor visits starting from the root, going deeper, while the actual visitor goes in reverse.
+ * @param startObject the object from which we will start visiting,
+ *   potentially visiting its descendants along the way.
+ * @param nodeCallBacks a dictionary mapping the various operation types to objects optionally
+ *    containing preVisitor and visitor.
+ *    The preVisitor allows you to provide {@link VisitContext} for the current object,
+ *    altering how it will be visited.
+ *    The visitor allows you to visit the object from deepest to the outermost object.
+ *    This is useful if you for example want to manipulate the objects you visit during your visits,
+ *    similar to {@link mapOperation}.
+ * @param nodeSpecificCallBacks Same as nodeCallBacks but using an additional level of indirection to
+ *     indicate the subType.
+ */
 export const visitOperationSub = transformer.visitNodeSpecific.bind(transformer);
 
 /**

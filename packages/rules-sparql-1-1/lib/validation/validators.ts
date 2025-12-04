@@ -1,4 +1,3 @@
-import type { SelectiveTraversalContext } from '@traqula/core';
 import { AstFactory } from '../astFactory.js';
 import type {
   Wildcard,
@@ -10,11 +9,6 @@ import type {
   SolutionModifierGroupBind,
   Update,
   PatternBind,
-  TripleCollection,
-  Path,
-  TripleNesting,
-  Term,
-  SparqlQuery,
   Sparql11Nodes,
 } from '../Sparql11types.js';
 import { AstTransformer } from '../utils.js';
@@ -132,63 +126,57 @@ export function queryIsGood(query: Pick<QuerySelect, 'variables' | 'solutionModi
   }
 }
 
-function notUndefined<T>(some: T): some is Exclude<T, undefined> {
-  return some !== undefined;
-}
-
 export function findPatternBoundedVars(
-  iter: SparqlQuery | Pattern | TripleNesting | TripleCollection | Path | Term | Wildcard,
+  op: Sparql11Nodes | undefined | (Sparql11Nodes | undefined)[],
   boundedVars: Set<string>,
 ): void {
-  transformer.traverseSubNodes(iter, {
-    query: op => ({ next: [
-      op.solutionModifiers.group,
-    ].filter(notUndefined) }),
-    triple: op => ({ next: [ op.subject, op.predicate, op.object ]}),
-    path: op => ({ next: op.items }),
-    tripleCollection: op => ({ next: [ op.identifier, ...op.triples ]}),
-  }, {
-    query: {
-      select: op => ({ next: [
+  function recurse(x: Parameters<(typeof findPatternBoundedVars)>[0]): void {
+    findPatternBoundedVars(x, boundedVars);
+  }
+  if (op === undefined) {
+    return;
+  }
+  if (Array.isArray(op)) {
+    for (const iter of op) {
+      recurse(iter);
+    }
+  } else if (F.isQuery(op)) {
+    if (F.isQuerySelect(op) || F.isQueryDescribe(op)) {
+      recurse([
         ...(op.variables.some(x => F.isWildcard(x)) ? [ op.where ] : op.variables),
         op.solutionModifiers.group,
         op.values,
-      ].filter(notUndefined) } satisfies SelectiveTraversalContext<Sparql11Nodes>),
-      describe: op => ({ next: [
-        ...(op.variables.some(x => F.isWildcard(x)) ? [ op.where ] : op.variables),
-        op.solutionModifiers.group,
-        op.values,
-      ].filter(notUndefined) }),
-    },
-    solutionModifier: {
-      group: op => ({ next:
-          op.groupings.filter(g => 'variable' in g).map(x => x.variable),
-      }),
-      having: op => ({ next: op.having }),
-      order: op => ({ next: op.orderDefs.map(x => x.expression) }),
-    },
-    pattern: {
-      values: (op) => {
-        for (const v of Object.keys(op.values.at(0) ?? {})) {
-          boundedVars.add(v);
-        }
-        return {};
-      },
-      bgp: op => ({ next: op.triples }),
-      group: op => ({ next: op.patterns }),
-      union: op => ({ next: op.patterns }),
-      optional: op => ({ next: op.patterns }),
-      service: op => ({ next: [ op.name, ...op.patterns ]}),
-      bind: op => ({ next: [ op.variable ]}),
-      graph: op => ({ next: [ op.name, ...op.patterns ]}),
-    },
-    term: {
-      variable: (op) => {
-        boundedVars.add(op.value);
-        return {};
-      },
-    },
-  });
+      ]);
+    } else {
+      recurse(op.solutionModifiers.group);
+    }
+  } else if (F.isTriple(op)) {
+    recurse([ op.subject, op.predicate, op.object ]);
+  } else if (F.isPathPure(op)) {
+    recurse(op.items);
+  } else if (F.isTripleCollection(op)) {
+    recurse([ op.identifier, ...op.triples ]);
+  } else if (F.isSolutionModifierGroup(op)) {
+    recurse(op.groupings.filter(g => 'variable' in g).map(x => x.variable));
+  } else if (F.isSolutionModifierHaving(op)) {
+    recurse(op.having);
+  } else if (F.isSolutionModifierOrder(op)) {
+    recurse(op.orderDefs.map(x => x.expression));
+  } else if (F.isPatternValues(op)) {
+    for (const v of Object.keys(op.values.at(0) ?? {})) {
+      boundedVars.add(v);
+    }
+  } else if (F.isPatternBgp(op)) {
+    recurse(op.triples);
+  } else if (F.isPatternGroup(op) || F.isPatternUnion(op) || F.isPatternOptional(op)) {
+    recurse(op.patterns);
+  } else if (F.isPatternService(op) || F.isPatternGraph(op)) {
+    recurse([ op.name, ...op.patterns ]);
+  } else if (F.isPatternBind(op)) {
+    recurse(op.variable);
+  } else if (F.isTermVariable(op)) {
+    boundedVars.add(op.value);
+  }
 }
 
 /**

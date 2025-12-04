@@ -1,5 +1,5 @@
 import type { Typed } from '../types.js';
-import type { SelectiveTraversalContext, TransformContext, VisitContext } from './TransformerObject.js';
+import type { TransformContext, VisitContext } from './TransformerObject.js';
 import { TransformerObject } from './TransformerObject.js';
 
 export type Safeness = 'safe' | 'unsafe';
@@ -27,14 +27,17 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
   }
 
   /**
-   * Transform a single node.
-   * The transformation calls the preVisitor from starting from the startObject.
-   * The preVisitor can dictate whether transformation should be stopped.
-   * Note that stopping the transformation also prevets further copying.
-   * The transformer itself transforms object starting with the deepest one that can be visited.
-   * The transformer callback is performed on a copy of the original.
-   * @param startObject
-   * @param nodeCallBacks
+   * Transform a single node ({@link Typed}).
+   * @param startObject the object from which we will start the transformation,
+   *   potentially visiting and transforming its descendants along the way.
+   * @param nodeCallBacks a dictionary mapping the various node types to objects optionally
+   *    containing preVisitor and transformer.
+   *    The preVisitor allows you to provide {@link TransformContext} for the current object,
+   *    altering how it will be transformed.
+   *    The transformer allows you to manipulate the copy of the current object,
+   *    and expects you to return the value that should take the current objects place.
+   * @return the result of transforming the requested descendant operations (based on the preVisitor)
+   * using a transformer that works its way back up from the descendant to the startObject.
    */
   public transformNode<Safe extends Safeness = 'safe', OutType = unknown>(
     startObject: object,
@@ -66,10 +69,19 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
   }
 
   /**
-   * Similar to {@link this.transformNode}, but without copying the startObject.
+   * Visit a selected subTree given a startObject, steering the visits based on {@link Typed} nodes.
+   * Will first call the preVisitor on the project and notice it should not iterate on its descendants.
+   * It then visits the project, and the outermost distinct, printing '21'.
    * The pre-visitor visits starting from the root, going deeper, while the actual visitor goes in reverse.
-   * @param startObject
-   * @param nodeCallBacks
+   * @param startObject the object from which we will start visiting,
+   *   potentially visiting its descendants along the way.
+   * @param nodeCallBacks a dictionary mapping the various operation types to objects optionally
+   *    containing preVisitor and visitor.
+   *    The preVisitor allows you to provide {@link VisitContext} for the current object,
+   *    altering how it will be visited.
+   *    The visitor allows you to visit the object from deepest to the outermost object.
+   *    This is useful if you for example want to manipulate the objects you visit during your visits,
+   *    similar to {@link this.transformNode}.
    */
   public visitNode(
     startObject: object,
@@ -99,35 +111,5 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
       return ogPreVisit ? { ...nodeContext, ...ogPreVisit(casted) } : nodeContext;
     };
     return this.visitObject(startObject, visitorWrapper, preVisitWrapper);
-  }
-
-  /**
-   * Traverses only selected nodes as returned by the function.
-   * @param currentNode
-   * @param traverse
-   */
-  public traverseNodes(
-    currentNode: Nodes,
-    traverse: {[T in Nodes['type']]?: (op: Extract<Nodes, Typed<T>>) => SelectiveTraversalContext<Nodes> },
-  ): void {
-    let didShortCut = false;
-
-    const recurse = (curNode: Nodes): void => {
-      const traverser = traverse[<Nodes['type']>curNode.type];
-      if (traverser) {
-        const { next, shortcut } = traverser(<any>curNode);
-        didShortCut = shortcut ?? false;
-        if (!didShortCut) {
-          for (const node of next ?? []) {
-            if (didShortCut) {
-              return;
-            }
-            recurse(node);
-          }
-        }
-      }
-    };
-
-    recurse(currentNode);
   }
 }

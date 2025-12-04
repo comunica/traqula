@@ -53,7 +53,7 @@ export function perf(callback: () => void): number {
 }
 
 export function appendMeasurement(name: string, measurements: number[]): void {
-  const file = join(__dirname, '../../../../bench-times.csv');
+  const file = join(__dirname, '../../../../eval/bench-times.csv');
   appendFileSync(
     file,
     `${name};${measurements.join(';')}\n`,

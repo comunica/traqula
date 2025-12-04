@@ -34,4 +34,4 @@ def transform_csv(input_path: str, output_path: str) -> None:
         writer.writerows(rows)
 
 
-transform_csv("bench-times-rt.csv", 'trans.csv')
+transform_csv("bench-times-no-cold-no-space.csv", 'transformed.csv')

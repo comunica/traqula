@@ -15,7 +15,7 @@ interface PositiveTest {
 }
 
 export function* positiveTest(
-  type: 'paths' | 'sparql-1-1' | 'sparql-1-2',
+  type: 'paths' | 'sparql-1-1' | 'sparql-1-2' | 'AKSWBenchmark',
   filter?: (name: string) => boolean,
 ): Generator<PositiveTest> {
   const astDir = getStaticFilePath('ast');

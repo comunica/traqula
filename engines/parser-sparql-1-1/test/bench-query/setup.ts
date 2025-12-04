@@ -39,7 +39,7 @@ export function sparqlJsParser(): SparqlJSparserType {
 }
 
 export async function setup(): Promise<SetupRet> {
-  const allQueries = await Promise.all([ ...positiveTest('sparql-1-1') ]
+  const allQueries = await Promise.all([ ...positiveTest('AKSWBenchmark') ]
     .map(x => x.statics().then(x => x.query)));
   return {
     allQueries,

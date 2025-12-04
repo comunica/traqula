@@ -1,0 +1,1 @@
+SELECT DISTINCT ?var0 ?var1 FROM <http://dbpedia.org>  where { ?var2 a <http://dbpedia.org/ontology/Organisation> . ?var2 <http://dbpedia.org/ontology/foundationPlace> ?var0 . ?var4 <http://dbpedia.org/ontology/developer> ?var2 . ?var4 a ?var1 . } LIMIT 1000

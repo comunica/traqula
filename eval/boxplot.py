@@ -10,7 +10,7 @@ def wrap_labels(labels, width=12):
     return [textwrap.fill(label, width=width) for label in labels]
 
 
-CSV_FILE = "my-bench-times.csv"
+CSV_FILE = "boxplots.csv"
 
 names = []
 data_to_plot = []

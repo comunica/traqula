@@ -9,7 +9,7 @@ def wrap_labels(labels, width=12):
     """Wrap each label to a given character width."""
     return [textwrap.fill(label, width=width) for label in labels]
 
-CSV_FILE = "bench-times.csv"
+CSV_FILE = "bargraph.csv"
 
 names = []
 means = []

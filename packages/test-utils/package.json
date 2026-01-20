@@ -30,8 +30,8 @@
     "dist/*/lib/**/*.js",
     "dist/*/lib/**/*.js.map",
     "dist/cjs/package.json",
-    "lib/generators/**/*.json",
-    "lib/generators/**/*.sparql"
+    "statics/**/*.json",
+    "statics/**/*.sparql"
   ],
   "engines": {
     "node": "^20.19.0 || >=22.12.0"

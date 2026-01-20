@@ -2,9 +2,9 @@
 
 yarn install
 yarn bench engines/parser-sparql-1-1/test/bench-query/*
-yarn bench engines/parser-sparql-1-2/test/bench-query/*
-yarn bench engines/algebra-sparql-1-1/test/bench-query/*
-yarn bench engines/algebra-sparql-1-2/test/bench-query/*
+#yarn bench engines/parser-sparql-1-2/test/bench-query/*
+#yarn bench engines/algebra-sparql-1-1/test/bench-query/*
+#yarn bench engines/algebra-sparql-1-2/test/bench-query/*
 
 
 # cat bench-to-ast11.txt | grep -e '·' | sed -e 's/\( *[^ ]*\)\{3\} *\([^ ]*\)\( *[^ ]*\)\{4\} *\([^ ]*\)\( *[^ ]*\)\{1\}$/;\2;\4/' | sed -e 's/^[ ·]*//' | sed -e 's/[±%]//g' > bench-to-ast11.csv

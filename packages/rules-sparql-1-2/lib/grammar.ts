@@ -551,10 +551,6 @@ export const tripleTermDataSubject: SparqlGrammarRule<'tripleTermDataSubject', T
     name: 'tripleTermDataSubject',
     impl: ({ OR, SUBRULE }) => () => OR<RuleDefReturn<typeof tripleTermDataSubject>>([
       { ALT: () => SUBRULE(S11.iri) },
-      { ALT: () => SUBRULE(rdfLiteral) },
-      { ALT: () => SUBRULE(S11.numericLiteral) },
-      { ALT: () => SUBRULE(S11.booleanLiteral) },
-      { ALT: () => SUBRULE(tripleTermData) },
     ]),
   };
 
@@ -564,7 +560,13 @@ export const tripleTermDataSubject: SparqlGrammarRule<'tripleTermDataSubject', T
 export const tripleTermDataObject:
 SparqlGrammarRule<'tripleTermDataObject', RuleDefReturn<typeof tripleTermDataSubject>> = <const> {
   name: 'tripleTermDataObject',
-  impl: tripleTermDataSubject.impl,
+  impl: ({ OR, SUBRULE }) => () => OR<RuleDefReturn<typeof tripleTermDataSubject>>([
+    { ALT: () => SUBRULE(S11.iri) },
+    { ALT: () => SUBRULE(rdfLiteral) },
+    { ALT: () => SUBRULE(S11.numericLiteral) },
+    { ALT: () => SUBRULE(S11.booleanLiteral) },
+    { ALT: () => SUBRULE(tripleTermData) },
+  ]),
 };
 
 /**
@@ -609,11 +611,7 @@ SparqlGrammarRule<'exprTripleTermSubject', TermIri | TermVariable | TermLiteral 
   impl: ({ OR, SUBRULE }) => C =>
     OR<RuleDefReturn<typeof exprTripleTermSubject>>([
       { ALT: () => SUBRULE(S11.iri) },
-      { ALT: () => SUBRULE(rdfLiteral) },
-      { ALT: () => SUBRULE(S11.numericLiteral) },
-      { ALT: () => SUBRULE(S11.booleanLiteral) },
       { GATE: () => C.parseMode.has('canParseVars'), ALT: () => SUBRULE(S11.var_) },
-      { ALT: () => SUBRULE(exprTripleTerm) },
     ]),
 };
 
@@ -623,7 +621,15 @@ SparqlGrammarRule<'exprTripleTermSubject', TermIri | TermVariable | TermLiteral 
 export const exprTripleTermObject:
 SparqlGrammarRule<'exprTripleTermObject', RuleDefReturn<typeof exprTripleTermSubject> | TermTriple> = <const> {
   name: 'exprTripleTermObject',
-  impl: exprTripleTermSubject.impl,
+  impl: ({ OR, SUBRULE }) => C =>
+    OR<RuleDefReturn<typeof exprTripleTermSubject>>([
+      { ALT: () => SUBRULE(S11.iri) },
+      { ALT: () => SUBRULE(rdfLiteral) },
+      { ALT: () => SUBRULE(S11.numericLiteral) },
+      { ALT: () => SUBRULE(S11.booleanLiteral) },
+      { GATE: () => C.parseMode.has('canParseVars'), ALT: () => SUBRULE(S11.var_) },
+      { ALT: () => SUBRULE(exprTripleTerm) },
+    ]),
 };
 
 export const buildInLangDir = funcExpr1(l12.buildInLangDir);

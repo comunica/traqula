@@ -8,7 +8,6 @@ This is a living document listing implementations of AST and algebra transformat
 
 ## Algebra transformations
 
-
 1. [Comunica: assign source](https://github.com/comunica/comunica/blob/master/packages/actor-optimize-query-operation-assign-sources-exhaustive/lib/ActorOptimizeQueryOperationAssignSourcesExhaustive.ts#L68)
 2. [Comunica: Bgp to join](https://github.com/comunica/comunica/blob/master/packages/actor-optimize-query-operation-bgp-to-join/lib/ActorOptimizeQueryOperationBgpToJoin.ts)
 3. [Comunica: construct distinct](https://github.com/comunica/comunica/blob/master/packages/actor-optimize-query-operation-construct-distinct/lib/ActorOptimizeQueryOperationConstructDistinct.ts)

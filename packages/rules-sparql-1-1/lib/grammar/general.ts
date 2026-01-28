@@ -67,7 +67,10 @@ export const prefixDecl: SparqlRule<'prefixDecl', ContextDefinitionPrefix> = <co
     const name = CONSUME(l.terminals.pNameNs).image.slice(0, -1);
     const value = SUBRULE(iriFull);
 
-    return ACTION(() => C.astFactory.contextDefinitionPrefix(C.astFactory.sourceLocation(prefix, value), name, value));
+    return ACTION(() => {
+      C.prefixes[name] = value.value;
+      return C.astFactory.contextDefinitionPrefix(C.astFactory.sourceLocation(prefix, value), name, value);
+    });
   },
   gImpl: ({ SUBRULE, PRINT_ON_EMPTY, NEW_LINE }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => {

@@ -57,7 +57,7 @@ export function* positiveTest(
   }
 }
 
-interface NegativeTest {
+export interface NegativeTest {
   name: string;
   statics: () => Promise<{
     query: string;

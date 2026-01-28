@@ -97,7 +97,6 @@ describe('a SPARQL 1.2 parser', () => {
 
   describe('negative sparql 1.2', () => {
     const skip = new Set([
-      'sparql-1-2-syntax-basic-tripleterm-subject',
       'sparql-1-2-syntax-compound-tripleterm-subject',
       'sparql-1-2-syntax-subject-tripleterm',
     ]);

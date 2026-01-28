@@ -2,7 +2,7 @@ import type { Algebra } from '@traqula/algebra-transformations-1-1';
 import { Canonicalizer, algebraUtils } from '@traqula/algebra-transformations-1-1';
 import { Parser } from '@traqula/parser-sparql-1-1';
 import type { AlgebraTestSuite } from '@traqula/test-utils';
-import { sparqlAlgebraTests } from '@traqula/test-utils';
+import { sparqlAlgebraNegativeTests, sparqlAlgebraTests } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
 import { toAlgebra } from '../lib/index.js';
 
@@ -35,4 +35,14 @@ describe('algebra output', () => {
       }
     });
   }
+
+  describe('negative 1.1 algebra', () => {
+    for (const test of sparqlAlgebraNegativeTests('sparql-1.1-negative')) {
+      it(test.name, async({ expect }) => {
+        const { query } = await test.statics();
+        const ast = parser.parse(query, { skipValidation: true });
+        expect(() => algebraUtils.objectify(toAlgebra(ast))).toThrow();
+      });
+    }
+  });
 });

@@ -1,7 +1,8 @@
 /* eslint-disable import/no-nodejs-modules */
 import { lstatSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { readFileSync } from '../fileUtils.js';
+import { readFile, readFileSync } from '../fileUtils.js';
+import type { NegativeTest } from './generators.js';
 import { getStaticFilePath } from './utils.js';
 
 const rootDir = getStaticFilePath('algebra');
@@ -72,5 +73,33 @@ export function* sparqlQueries(suite: AlgebraTestSuite): Generator<GenQuery> {
   const subfolders = readdirSync(rootSparql);
   if (subfolders.includes(suite)) {
     yield* subGen(suite);
+  }
+}
+
+export type NegativeAlgebraSuite = 'sparql-1.1-negative' | 'sparql-1.2-negative';
+
+export function* sparqlAlgebraNegativeTests(
+  suite: NegativeAlgebraSuite,
+  filter?: (name: string) => boolean,
+): Generator<NegativeTest> {
+  const astDir = getStaticFilePath('algebra');
+  const sparqlDir = join(astDir, 'sparql', suite);
+  const statics = readdirSync(sparqlDir);
+  for (const file of statics) {
+    if (file.endsWith('.sparql')) {
+      if (filter && !filter(file.replace('.sparql', ''))) {
+        continue;
+      }
+      const name = file.replace(/\.sparql$/u, '');
+      yield {
+        name,
+        statics: async() => {
+          const query = await readFile(join(sparqlDir, file));
+          return {
+            query,
+          };
+        },
+      };
+    }
   }
 }

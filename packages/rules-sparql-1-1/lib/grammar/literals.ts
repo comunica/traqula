@@ -261,23 +261,34 @@ export const iriFull: SparqlRule<'iriFull', TermIriFull> = <const> {
  */
 export const prefixedName: SparqlRule<'prefixedName', TermIriPrefixed> = <const> {
   name: 'prefixedName',
-  impl: ({ ACTION, CONSUME, OR }) => C => OR([
-    { ALT: () => {
+  impl: ({ ACTION, CONSUME, OR }) => (C) => {
+    function verifyPrefix(prefix: string): void {
+      if (!C.skipValidation && C.prefixes[prefix] === undefined) {
+        throw new Error(`Unknown prefix: ${prefix}`);
+      }
+    }
+    return OR([{ ALT: () => {
       const longName = CONSUME(l.terminals.pNameLn);
       return ACTION(() => {
         const [ prefix, localName ] = longName.image.split(':');
+        verifyPrefix(prefix);
         return C.astFactory.termNamed(C.astFactory.sourceLocation(longName), localName, prefix);
       });
-    } },
-    { ALT: () => {
+    },
+    }, { ALT: () => {
       const shortName = CONSUME(l.terminals.pNameNs);
-      return ACTION(() => C.astFactory.termNamed(
-        C.astFactory.sourceLocation(shortName),
-        '',
-        shortName.image.slice(0, -1),
-      ));
-    } },
-  ]),
+      return ACTION(() => {
+        const prefix = shortName.image.slice(0, -1);
+        verifyPrefix(prefix);
+        return C.astFactory.termNamed(
+          C.astFactory.sourceLocation(shortName),
+          '',
+          prefix,
+        );
+      });
+    },
+    }]);
+  },
   gImpl: ({ PRINT }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => PRINT(ast.prefix, ':', ast.value));
   },

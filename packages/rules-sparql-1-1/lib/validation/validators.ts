@@ -63,7 +63,13 @@ function getVariablesFromExpression(expression: Expression, variables: Set<strin
   }
 }
 
-export function queryIsGood(query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where'>): void {
+/**
+ * Verify that the projected variables (select head) are allowed:
+ * - no group-by on select *
+ * - if group-by, selected variables need to be collected by the group-by
+ * - 'select ?var as ?other', ?other cannot be in scope
+ */
+export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where'>): void {
   // NoGroupByOnWildcardSelect
   if (query.variables.length === 1 && F.isWildcard(query.variables[0])) {
     if (query.solutionModifiers.group !== undefined) {

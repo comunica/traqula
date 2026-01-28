@@ -17,7 +17,7 @@ import type {
   TermVariable,
   Wildcard,
 } from '../Sparql11types.js';
-import { queryIsGood } from '../validation/validators.js';
+import { queryProjectionIsGood } from '../validation/validators.js';
 import { datasetClauseStar } from './dataSetClause.js';
 import { expression } from './expression.js';
 import { prologue, var_, varOrIri, varOrTerm } from './general.js';
@@ -106,7 +106,9 @@ export const selectQuery: SparqlRule<'selectQuery', Omit<QuerySelect, HandledByB
           modifiers.limitOffset,
         ),
       } satisfies RuleDefReturn<typeof selectQuery>;
-      queryIsGood(ret);
+      if (!C.skipValidation) {
+        queryProjectionIsGood(ret);
+      }
       return ret;
     });
   },
@@ -205,7 +207,7 @@ export const selectClause: SparqlRule<'selectClause', Wrap<Pick<QuerySelect, 'va
           { ALT: () => {
             const raw = SUBRULE1(var_);
             ACTION(() => {
-              if (usedVars.some(v => v.value === raw.value)) {
+              if (!C.skipValidation && usedVars.some(v => v.value === raw.value)) {
                 throw new Error(`Variable ${raw.value} used more than once in SELECT clause`);
               }
               usedVars.push(raw);
@@ -221,7 +223,7 @@ export const selectClause: SparqlRule<'selectClause', Wrap<Pick<QuerySelect, 'va
             const close = CONSUME(l.symbols.RParen);
             ACTION(() => {
               last = close;
-              if (usedVars.some(v => v.value === variable.value)) {
+              if (!C.skipValidation && usedVars.some(v => v.value === variable.value)) {
                 throw new Error(`Variable ${variable.value} used more than once in SELECT clause`);
               }
               usedVars.push(variable);

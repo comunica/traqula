@@ -76,7 +76,9 @@ export const queryOrUpdate: SparqlRule<'queryOrUpdate', SparqlQuery> = {
               ...updates.flatMap(x => [ ...x.context, x.operation ]),
             ),
           } satisfies Update;
-          updateNoReuseBlankNodeLabels(update);
+          if (!C.skipValidation) {
+            updateNoReuseBlankNodeLabels(update);
+          }
           return update;
         });
       } },

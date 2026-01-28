@@ -73,7 +73,9 @@ export const update: SparqlRule<'update', Update> = <const> {
           ...updates.flatMap(x => [ ...x.context, x.operation ]),
         ),
       } satisfies Update;
-      updateNoReuseBlankNodeLabels(update);
+      if (!C.skipValidation) {
+        updateNoReuseBlankNodeLabels(update);
+      }
       return update;
     });
   },

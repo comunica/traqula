@@ -16,13 +16,13 @@ It is a grammar extension of [Traqula engine-sparql-1-1](https://github.com/comu
 ## Installation
 
 ```bash
-npm install @traqula/parser-sparql-1-1
+npm install @traqula/parser-sparql-1-2
 ```
 
 or
 
 ```bash
-yarn add @traqula/parser-sparql-1-1
+yarn add @traqula/parser-sparql-1-2
 ```
 
 ## Import
@@ -30,13 +30,13 @@ yarn add @traqula/parser-sparql-1-1
 Either through ESM import:
 
 ```typescript
-import {Parser} from '';
+import { Parser } from '@traqula/parser-sparql-1-2';
 ```
 
 _or_ CJS require:
 
 ```typescript
-const Parser = require('').Parser;
+const Parser = require('@traqula/parser-sparql-1-2').Parser;
 ```
 
 ## Usage

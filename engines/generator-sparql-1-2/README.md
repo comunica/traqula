@@ -36,7 +36,7 @@ import { Generator } from '@traqula/generator-sparql-1-2';
 _or_ CJS require:
 
 ```javascript
-const Generator = require('@traqula/generator-sparql-1-2').Parser;
+const Generator = require('@traqula/generator-sparql-1-2').Generator;
 ```
 
 ## Usage

@@ -50,8 +50,10 @@ const abstractSyntaxTree = parser.parse('SELECT * { ?s ?p ?o }');
 Note that a single parser cannot parse multiple queries in parallel.
 
 The package also contains multiple parserBuilders.
-These builders can be used either to consume to a parser,
-or to usage as a starting point for your own grammar.
+These builders can be used either to consume to a parser, or to usage as a starting point for your own grammar.
+
+Note: it is essential that you reuse created parser to the full extent.
+Traqula builds ontop of [Chevrotain](https://chevrotain.io/docs/), an amazing project that allows for the definition of parsers within JavaScript, since the definition of the parser is part of the program, so is the optimization of our parser. Everytime you create a parser, the grammar optimizations need to be computed again.
 
 ## Configuration
 

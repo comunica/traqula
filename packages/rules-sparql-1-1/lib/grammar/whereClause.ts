@@ -110,7 +110,7 @@ export const generatePattern: SparqlGeneratorRule<'generatePattern', Pattern> = 
 export const groupGraphPatternSub:
 SparqlGrammarRule<'groupGraphPatternSub', Pattern[]> = <const> {
   name: 'groupGraphPatternSub',
-  impl: ({ ACTION, SUBRULE, CONSUME, MANY, SUBRULE1, SUBRULE2, OPTION1, OPTION2, OPTION3 }) => () => {
+  impl: ({ ACTION, SUBRULE, CONSUME, MANY, SUBRULE1, SUBRULE2, OPTION1, OPTION2, OPTION3 }) => (C) => {
     const patterns: Pattern[] = [];
 
     const bgpPattern = OPTION1(() => SUBRULE1(triplesBlock));
@@ -129,7 +129,7 @@ SparqlGrammarRule<'groupGraphPatternSub', Pattern[]> = <const> {
       }
     });
 
-    ACTION(() => checkNote13(patterns));
+    ACTION(() => !C.skipValidation && checkNote13(patterns));
 
     return patterns;
   },
@@ -402,9 +402,11 @@ export const inlineDataFull: SparqlGrammarRule<'inlineDataFull', PatternValues> 
           const currentRow: ValuePatternRow = {};
           CONSUME2(l.symbols.LParen);
           MANY4(() => {
-            if (parsedValues >= vars.length) {
-              throw new Error('Number of dataBlockValues does not match number of variables. Too much values.');
-            }
+            ACTION(() => {
+              if (!C.skipValidation && parsedValues >= vars.length) {
+                throw new Error('Number of dataBlockValues does not match number of variables. Too much values.');
+              }
+            });
             const value = SUBRULE(dataBlockValue);
             ACTION(() => {
               currentRow[vars[parsedValues].value] = value;
@@ -414,7 +416,7 @@ export const inlineDataFull: SparqlGrammarRule<'inlineDataFull', PatternValues> 
           CONSUME2(l.symbols.RParen);
           ACTION(() => {
             res.push(currentRow);
-            if (vars.length !== parsedValues) {
+            if (!C.skipValidation && vars.length !== parsedValues) {
               throw new Error('Number of dataBlockValues does not match number of variables. Too few values.');
             }
           });

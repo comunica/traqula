@@ -46,7 +46,8 @@ Input for the translation function should be a Traqula AST, by calling [Traqula 
 Algebra operations are modeled as objects of the structure `{ name: string; input: Operation[] }`.
 The transformation is detailed by [section 18.2 of the SPARQL specification](https://www.w3.org/TR/sparql11-query/#sparqlQuery).
 
-The example bellow demonstrates this package usage where we parse a query string and transform it to algebra, from the algebra we will go back to a query string.
+The example bellow demonstrates this package usage where we parse a query string and transform it to algebra,
+from the algebra we will go back to a query string.
 Note that unlike the AST level, we do not provide [round tripping](../generator-sparql-1-1/README.md#round-tripping-generation) on algebra level.
 
 ```typescript
@@ -76,23 +77,26 @@ The best way to see what output would be generated is to look in the [`test` fol
 where we have many SPARQL queries and their corresponding algebra output.
 
 ## Deviations from the spec
-This implementation tries to stay as close to the SPARQL 1.1
-[specification](https://www.w3.org/TR/sparql11-query/#sparqlDefinition),
+
+This implementation tries to stay as close to the SPARQL 1.1 [specification](https://www.w3.org/TR/sparql11-query/#sparqlDefinition),
 but some changes were made for ease of use.
 These are mostly based on the Jena ARQ [implementation](https://jena.apache.org/documentation/query/).
 What follows is a non-exhaustive list of deviations:
 
 #### Named parameters
+
 This is the biggest visual change.
 The functions no longer take an ordered list of parameters but a named list instead.
 The reason for this is to prevent having to memorize the order of parameters and also
 due to seeing some differences between the spec and the Jena ARQ SSE output when ordering parameters.
 
 #### Multiset/List conversion
+
 The functions `toMultiset` and `toList` have been removed for brevity.
 Conversions between the two are implied by the operations used.
 
 #### Quads
+
 The `translate` function has an optional second parameter
 indicating whether patterns should be translated to triple or quad patterns.
 In the case of quads the `graph` operation will be removed
@@ -149,12 +153,13 @@ With quads:
 ```
 
 ### Flattened operators
+
 Several binary operators that can be nested,
 such as the path operators,
 can take an array of input entries to simply this notation.
 For example, the following SPARQL:
 ```sparql
-SELECT * WHERE { ?x <a:a>|<b:b>|<c:c> ?z }
+SELECT * WHERE { ?x <http://a.a>|<http://b.b>|<http://c.c> ?z }
 ```
 outputs the following algebra:
 ```json
@@ -166,9 +171,9 @@ outputs the following algebra:
     "predicate": {
       "type": "alt",
       "input": [
-        { "type": "link", "iri": { "termType": "NamedNode", "value": "a:a" } },
-        { "type": "link", "iri": { "termType": "NamedNode", "value": "b:b" } },
-        { "type": "link", "iri": { "termType": "NamedNode", "value": "c:c" } }
+        { "type": "link", "iri": { "termType": "NamedNode", "value": "http://a.a" } },
+        { "type": "link", "iri": { "termType": "NamedNode", "value": "http://b.b" } },
+        { "type": "link", "iri": { "termType": "NamedNode", "value": "http://c.c" } }
       ]
     },
     "object": { "termType": "Variable", "value": "z" },
@@ -183,59 +188,41 @@ outputs the following algebra:
 
 #### VALUES
 For the VALUES block we return the following output:
-```
-PREFIX dc:   <http://purl.org/dc/elements/1.1/>
-PREFIX :     <http://example.org/book/>
-PREFIX ns:   <http://example.org/ns#>
 
-SELECT ?book ?title ?price
-{
-   VALUES ?book { :book1 :book3 }
-   ?book dc:title ?title ;
-         ns:price ?price .
+```
+PREFIX : <http://example.org/book/>
+
+SELECT ?book ?title {
+   VALUES (?book ?title) { ( :book1 UNDEF ) ( :book3 'Fantastic Mr. Fox' ) }
 }
 ```
 ```json
 {
   "type": "project",
   "input": {
-    "type": "join",
-    "input": [
+    "type": "values",
+    "variables": [{ "termType": "Variable", "value": "book" }, { "termType": "Variable", "value": "title" }],
+    "bindings": [
       {
-        "type": "values",
-        "variables": [{ "termType": "Variable", "value": "book" }],
-        "bindings": [
-          { "book": { "termType": "NamedNode", "value": "http://example.org/book/book1" } },
-          { "book": { "termType": "NamedNode", "value": "http://example.org/book/book3" } }
-        ]
+        "book": { "termType": "NamedNode", "value": "http://example.org/book/book1" }
       },
       {
-        "type": "bgp",
-        "patterns": [
-          {
-            "type": "pattern",
-            "termType": "Quad",
-            "subject": { "termType": "Variable", "value": "book" },
-            "predicate": { "termType": "NamedNode", "value": "http://purl.org/dc/elements/1.1/title" },
-            "object": { "termType": "Variable", "value": "title" },
-            "graph": { "termType": "DefaultGraph", "value": "" }
-          },
-          {
-            "type": "pattern",
-            "termType": "Quad",
-            "subject": { "termType": "Variable", "value": "book" },
-            "predicate": { "termType": "NamedNode", "value": "http://example.org/ns#price" },
-            "object": { "termType": "Variable", "value": "price" },
-            "graph": { "termType": "DefaultGraph", "value": "" }
+        "book": { "termType": "NamedNode", "value": "http://example.org/book/book3" },
+        "title": {
+          "termType": "Literal",
+          "value": "Alan",
+          "datatype": {
+            "termType": "NamedNode",
+            "value": "http://www.w3.org/2001/XMLSchema#string"
           }
-        ]
+
+        }
       }
     ]
   },
   "variables": [
     { "termType": "Variable", "value": "book" },
-    { "termType": "Variable", "value": "title" },
-    { "termType": "Variable", "value": "price" }
+    { "termType": "Variable", "value": "title" }
   ]
 }
 ```
@@ -246,7 +233,6 @@ no prefixes are used (all uris get expanded)
 and the project operation always gets used (even in the case of `SELECT *`).
 
 ## A note on tests
+
 Every test consists of a sparql file and a corresponding json file containing the algebra result.
 Tests ending with `(quads)` in their name are tested/generated with `quads: true` in the options.
-
-If you need to regenerate the parsed JSON files in bulk, you can invoke `node test/generateJson.test.js`.

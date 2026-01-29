@@ -27,7 +27,7 @@ unknown,
       return op.map(sub => SUBRULE(removeAlgQuadsRecursive, sub, graphs));
     }
 
-    if (!op.type) {
+    if (typeof op !== 'object' || op === null || !op.type) {
       return op;
     }
 

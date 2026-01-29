@@ -104,7 +104,7 @@ export const expressionList: SparqlGrammarRule<'expressionList', Wrap<Expression
 };
 
 const infixOperators = new Set([ 'in', 'notin', '||', '&&', '=', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/' ]);
-const prefixOperator = new Set([ '!', 'UPLUS', 'UMINUS' ]);
+const prefixOperator: Record<string, string> = { '!': '', uplus: '+', uminus: '-' };
 
 /**
  * [[110]](https://www.w3.org/TR/sparql11-query/#rExpression)
@@ -135,9 +135,9 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
           SUBRULE(argList, F.wrap({ args: right, distinct: false }, ast.loc));
         }
         F.printFilter(ast, () => PRINT_WORD(')'));
-      } else if (prefixOperator.has(ast.operator)) {
+      } else if (typeof prefixOperator[ast.operator] === 'string') {
         const [ expr ] = <[Expression]>ast.args;
-        F.printFilter(ast, () => PRINT_WORD(ast.operator.toUpperCase()));
+        F.printFilter(ast, () => PRINT_WORD(prefixOperator[ast.operator] || ast.operator.toUpperCase()));
         SUBRULE(expression, expr);
       } else {
         F.printFilter(ast, () => PRINT_WORD(ast.operator.toUpperCase(), '('));

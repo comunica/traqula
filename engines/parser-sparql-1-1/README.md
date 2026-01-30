@@ -29,13 +29,13 @@ yarn add @traqula/parser-sparql-1-1
 Either through ESM import:
 
 ```javascript
-import {Parser} from 'engines/parser-sparql-1-1';
+import { Parser } from '@traqula/parser-sparql-1-1';
 ```
 
 _or_ CJS require:
 
 ```javascript
-const Parser = require('engines/parser-sparql-1-1').Parser;
+const Parser = require('@traqula/parser-sparql-1-1').Parser;
 ```
 
 ## Usage
@@ -50,40 +50,30 @@ const abstractSyntaxTree = parser.parse('SELECT * { ?s ?p ?o }');
 Note that a single parser cannot parse multiple queries in parallel.
 
 The package also contains multiple parserBuilders.
-These builders can be used either to consume to a parser,
-or to usage as a starting point for your own grammar.
+These builders can be used either to consume to a parser, or to usage as a starting point for your own grammar.
 
-### Consuming parserBuilder to parser
-
-At the core of Traqula, parser are constructed of multiple parser rules that have been consumed by the builder.
-This consumption returns a parser that can parse strings starting from any grammar rule.
-
-The `sparql11ParserBuilder` for example contains both the rules `queryOrUpdate` and `path` (among many others).
-The consumption of `sparql11ParserBuilder` will thus return an object that has function `queryOrUpdate` and `path`.
-Calling those function with a string will cause that string to be parsed using the appropriate rule as a starting rule.
-
-```typescript
-const parser: {
-  queryOrUpdate: (input: string) => SparqlQuery;
-  path: (input: string) => PropertyPath | IriTerm;
-} = sparql11ParserBuilder.consumeToParser({
-  tokenVocabulary: l.sparql11Tokens.build(),
-}, {
-  parseMode: new Set([ gram.canParseVars, gram.canCreateBlankNodes ]),
-  dataFactory: new DataFactory(),
-});
-```
-
-### Constructing a new grammar from an existing one
-
-The builders can also be used to construct new parsers.
-As an example the `triplesBlockParserBuilder` is created by merging the `objectListBuilder` with some new rules.
+Note: it is essential that you reuse created parser to the full extent.
+Traqula builds ontop of [Chevrotain](https://chevrotain.io/docs/), an amazing project that allows for the definition of parsers within JavaScript, since the definition of the parser is part of the program, so is the optimization of our parser. Everytime you create a parser, the grammar optimizations need to be computed again.
 
 ## Configuration
 
-Optionally, the following parameters can be set in the `Parser` constructor:
+Optionally, the following parameters can be set in the Parsers defaultContext:
 
 * `dataFactory`: A custom [RDFJS DataFactory](http://rdf.js.org/#datafactory-interface) to construct terms and triples. _(Default: `require('@rdfjs/data-model')`)_
-* `baseIRI`:  An initial default base IRI. _(Default: none)_
-* `prefixes`: An initial map of prefixes
-* `skipValidation`: Can be used to disable the validation that used variables in a select clause are in scope.
+* `skipValidation`: Can be used to disable the validation that used variables in a select clause are in scope. _(Default: `false`)_
+
+### Collecting round tripping information
+
+The generated AST is constructed such that it allows for round tripping.
+This means that a parsed query string produces an AST that, when generated from provides **exactly** the same query string.
+By default, though, the configured lexer does not collect enough information to enable this because it comes at a small slowdown ([see our report](https://traqula-resource.jitsedesmet.be/#traqula-bench)).
+Simply provide the following configuration to the parser, a astFactory that handles source information, and a lexerConfig that states location information should be collected:
+```typescript
+import { AstFactory } from '@traqula/rules-sparql-1-1';
+import { adjustParserBuilder, adjustLexerBuilder, Parser } from '@traqula/parser-sparql-1-1';
+const sourceTrackingAstFactory = new AstFactory();
+const sourceTrackingParser = new Parser({
+  defaultContext: { astFactory: sourceTrackingAstFactory },
+  lexerConfig: { positionTracking: 'full' },
+});
+```

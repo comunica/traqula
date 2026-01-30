@@ -1,3 +1,5 @@
+# Modifying a parser
+
 ### Consuming parserBuilder to parser
 
 At the core of Traqula, parser are constructed of multiple parser rules that have been consumed by the builder.
@@ -23,3 +25,5 @@ const parser: {
 
 The builders can also be used to construct new parsers.
 As an example the `triplesBlockParserBuilder` is created by merging the `objectListBuilder` with some new rules.
+
+### Type patching

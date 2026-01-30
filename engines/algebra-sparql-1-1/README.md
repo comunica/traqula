@@ -76,6 +76,23 @@ The output of the `toAlgebra` function will always be an `Algebra.Operation` ins
 The best way to see what output would be generated is to look in the [`test` folder](../../packages/test-utils/statics/algebra),
 where we have many SPARQL queries and their corresponding algebra output.
 
+### Modifying an Algebra Tree
+
+Traqula's core library provides a way to easily modify trees.
+This functionality is exported specifically for the algebra tree under the [mapOperation](../../packages/algebra-transformations-1-1/lib/util.ts#L75) function in `@traqula/algebra-transformations-1-1`.
+
+Query engines such as [Comunica](https://comunica.dev/) use the algebra operators as a way to guide the execution of a query.
+Query execution may be optimized by manipulating the query operations in the algebra tree e.g.
+[filter pushdown](https://github.com/comunica/comunica/blob/master/packages/actor-optimize-query-operation-filter-pushdown/lib/ActorOptimizeQueryOperationFilterPushdown.ts), and for this task the `mapOperation` function is be instrumental.
+
+Furthermore, using `toAst`, one can convert an algebra tree to an AST, which can in turn be used to generate a SPARQL query using the [@traqula/generator-sparql-1-1](../generator-sparql-1-1).
+Exactly this functionality is used in Comunica in order to support the SERVICE operator and support [federated queries](https://comunica.dev/docs/query/advanced/federation/).
+
+> [!NOTE]
+> Whether you manipulate queries on AST level or algebra level is entirely use case dependent.
+> AST level provides full control over the query that will be generated, but provides no abstraction.
+> Algebra level provides abstraction over the grammatical component of the language, allowing you to focus on the functional component, but leaves no control over the generated query string.
+
 ## Deviations from the spec
 
 This implementation tries to stay as close to the SPARQL 1.1 [specification](https://www.w3.org/TR/sparql11-query/#sparqlDefinition),

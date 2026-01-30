@@ -16,7 +16,7 @@ The source location (`loc`) optionally relates an AST-node to the string charact
 This information is then used by the Traqula core generator to enable round-tripping.
 
 There are six kinds of source location information:
-1. **SourceLocationSource**: Relate the node to the source through ranges
+1. **SourceLocationSource**: Relate the node to the source through a character range.
 2. **SourceLocationInlinedSource**: Add a new source indicating what part of the new source this node represents and what part of the original source is replaced by this new source.
 3. **SourceLocationNoMaterialize**: Indicate this node and it's children are not represented in the query, but merely provide additional usability to the AST consumers.
 4. **SourceLocationStringReplace**: Indicate this node and it's children can be represented using a specified string instead of the specified range of characters in the original string.
@@ -90,6 +90,7 @@ SELECT * {
 }
 `)
 const transformed = transformer.transformNodeSpecific(ast, {}, {
+  // Target Nodes of type 'term' and subType 'literal', providing the function to transform them.
   'term': { 'literal': { transform: (literal) => {
     if (typeof literal.langOrIri === 'object' &&
       literal.langOrIri.value === 'http://www.w3.org/2001/XMLSchema#string') {

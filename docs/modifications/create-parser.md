@@ -107,6 +107,10 @@ const myParserBuilder = ParserBuilder
   .create(<const> [myRuleObj, otherRule]);
 ```
 
+> [!note]
+> When creating be carefully not to add too many rules to the parser using a single call to `.create` or `.addMany`.
+> When doing this, tsc might become unhappy and throw in a similar way that it does when you would add duplicate rules.
+
 In case you want to merge a whole ParserBuilder,
 you can call `.merge()` and provide the other ParserBuilder, possibly requiring you to resolve conflicts when name clashes present.
 

@@ -19,35 +19,36 @@ export const removeAlgQuads: AstIndir<'removeQuads', Algebra.Operation, [Algebra
 export const removeAlgQuadsRecursive: AstIndir<
   'removeQuadsRecursive',
 unknown,
-[Algebra.Operation | Algebra.Operation[], (RDF.NamedNode | RDF.DefaultGraph)[]]
+[unknown, (RDF.NamedNode | RDF.DefaultGraph)[]]
 > = {
   name: 'removeQuadsRecursive',
-  fun: ({ SUBRULE }) => ({ algebraFactory: AF }, op, graphs) => {
-    if (Array.isArray(op)) {
-      return op.map(sub => SUBRULE(removeAlgQuadsRecursive, sub, graphs));
+  fun: ({ SUBRULE }) => ({ algebraFactory: AF }, unknownVal, graphs) => {
+    if (Array.isArray(unknownVal)) {
+      return unknownVal.map(sub => SUBRULE(removeAlgQuadsRecursive, sub, graphs));
     }
 
-    if (!op.type) {
-      return op;
+    if (typeof unknownVal !== 'object' || unknownVal === null || !('type' in unknownVal) || !unknownVal.type) {
+      return unknownVal;
     }
+    const knownOp = <Algebra.Operation> unknownVal;
 
     // UPDATE operations with Patterns handle graphs a bit differently - do not traverse
-    if (op.type === types.DELETE_INSERT) {
-      return op;
+    if (knownOp.type === types.DELETE_INSERT) {
+      return unknownVal;
     }
 
     // If triple or path register graph and return - graphs will be populated by in order graph occurrence
-    if ((op.type === types.PATTERN || op.type === types.PATH) && op.graph) {
-      const graph = <RDF.NamedNode | RDF.DefaultGraph> op.graph;
+    if ((knownOp.type === types.PATTERN || knownOp.type === types.PATH) && knownOp.graph) {
+      const graph = <RDF.NamedNode | RDF.DefaultGraph> knownOp.graph;
       // We create a list that tracks, for each pattern the original graph and remove the graph
       graphs.push(graph);
       // Remove non-default graphs
       if (graph.value !== '') {
-        return op.type === types.PATTERN ?
-          AF.createPattern(op.subject, op.predicate, op.object) :
-          AF.createPath(op.subject, op.predicate, op.object);
+        return knownOp.type === types.PATTERN ?
+          AF.createPattern(knownOp.subject, knownOp.predicate, knownOp.object) :
+          AF.createPath(knownOp.subject, knownOp.predicate, knownOp.object);
       }
-      return op;
+      return knownOp;
     }
 
     // We build our `op` again.
@@ -56,7 +57,7 @@ unknown,
     const keyGraphs: Record<string, (RDF.NamedNode | RDF.DefaultGraph)[]> = {};
     // Track all the unique graph names for the entire Operation
     const operationGraphNames: Record<string, RDF.NamedNode | RDF.DefaultGraph> = {};
-    for (const [ key, value ] of Object.entries(op)) {
+    for (const [ key, value ] of Object.entries(knownOp)) {
       const newGraphs: (RDF.NamedNode | RDF.DefaultGraph)[] = [];
       result[key] = SUBRULE(removeAlgQuadsRecursive, value, newGraphs);
 
@@ -74,11 +75,11 @@ unknown,
     // Finally, if we found graphs at some keys, wrap those keys in Algebra.graphOperations
     if (graphNameSet.length > 0) {
       // We also need to create graph statement if we are at the edge of certain operations
-      if (graphNameSet.length === 1 && ![ types.PROJECT, types.SERVICE ].includes(op.type)) {
+      if (graphNameSet.length === 1 && ![ types.PROJECT, types.SERVICE ].includes(knownOp.type)) {
         graphs.push(operationGraphNames[graphNameSet[0]]);
-      } else if (op.type === types.BGP) {
+      } else if (knownOp.type === types.BGP) {
         // This is the specific case that `op` got changed because of using quads. -
-        return SUBRULE(splitAlgBgpToGraphs, op, keyGraphs.patterns);
+        return SUBRULE(splitAlgBgpToGraphs, knownOp, keyGraphs.patterns);
       } else {
         // Multiple graphs (or project), need to create graph objects for them
         for (const key of Object.keys(keyGraphs)) {

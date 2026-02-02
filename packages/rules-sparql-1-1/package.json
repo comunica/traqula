@@ -1,7 +1,7 @@
 {
   "name": "@traqula/rules-sparql-1-1",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "TRAQULA Lexer and Grammar Rules for sparql 1.1",
   "lsd:module": true,
   "license": "MIT",
@@ -42,6 +42,6 @@
   },
   "dependencies": {
     "@traqula/chevrotain": "^1.0.0",
-    "@traqula/core": "^1.0.0"
+    "@traqula/core": "^1.0.2"
   }
 }

@@ -1,7 +1,7 @@
 {
   "name": "@traqula/algebra-transformations-1-1",
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Rules for converting SPARQL 1.1 Traqula AST to SPARQL 1.1 algebra",
   "author": "Jitse De Smet",
   "lsd:module": true,
@@ -39,8 +39,8 @@
     "build:cjs": "node \"../../node_modules/typescript/bin/tsc\" -b tsconfig.cjs.json"
   },
   "dependencies": {
-    "@traqula/core": "^1.0.0",
-    "@traqula/rules-sparql-1-1": "^1.0.0",
+    "@traqula/core": "^1.0.2",
+    "@traqula/rules-sparql-1-1": "^1.0.2",
     "fast-deep-equal": "^3.1.3",
     "rdf-data-factory": "^2.0.1",
     "rdf-isomorphic": "^2.0.0",

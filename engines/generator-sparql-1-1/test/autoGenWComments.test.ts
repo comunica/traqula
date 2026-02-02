@@ -31,7 +31,7 @@ describe('autoGen query inserting comments', () => {
   it('auto generates on no pretty - with no comments', ({ expect }) => {
     const ast = parser.parse(query);
     const result = generator.generate(F.forcedAutoGenTree(ast), { [traqulaIndentation]: -1, indentInc: 0 });
-    expect(result).toBe(`SELECT * WHERE { VALUES ?o { "a" "b" "c" }?s ?p ?o . }`);
+    expect(result).toBe(`SELECT * WHERE { VALUES ?o { "a" "b" "c" } ?s ?p ?o . }`);
   });
 
   it('auto generates - with no comments', ({ expect }) => {

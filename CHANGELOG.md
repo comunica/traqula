@@ -1,6 +1,28 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.0.2"></a>
+## [v1.0.2](https://github.com/comunica/traqula/compare/v1.0.1...v1.0.2) - 2026-02-02
+
+* [Bugfix: SPARQL no newline generation needs space (#103)](https://github.com/comunica/traqula/commit/dac077ce271bc18c0e282438a38822ffdf6c19a8)
+
+<a name="v1.0.1"></a>
+## [v1.0.1](https://github.com/comunica/traqula/compare/v1.0.0...v1.0.1) - 2026-01-30
+
+* [Bugfix: robust removeAlgQuadsRecursive & fix unary operator generation (#101)](https://github.com/comunica/traqula/commit/caa78bb9a1f01cf8beb6257be61ac40bfc8f7dfc)
+* [Bugfix: Implementation of skipValidation (#97)](https://github.com/comunica/traqula/commit/8e38d350d6042d5afd27e548f7919f744ab99c80)
+* [Bugfix: parser throw on missing prefix (#96)](https://github.com/comunica/traqula/commit/a3e35e6406fc6710d8ebfd0d290f773c42168b47)
+* [Chore: upgrade vitest, vite, typedoc, and rdf-test-suite (#99)](https://github.com/comunica/traqula/commit/25900caa2c1cb29a0596ccc888c0de32351611aa)
+* [Docs: add descriptions to transformation catalogue (#94)](https://github.com/comunica/traqula/commit/c2dead67651ad6cfd144aaa25a8554e2803a9305)
+* [Docs: transformation catalogue (#93)](https://github.com/comunica/traqula/commit/e1e02d45924329431aa493e97f2999d7c45924cb)
+* [Test: add unit test for lexer on escaped prefixed iri (#91)](https://github.com/comunica/traqula/commit/7cb363a25fdccc02e77571f2d72234b7ab459db7)
+* [Feat: throw on subject-recursive triple-term (#92)](https://github.com/comunica/traqula/commit/f34230b963ddb2e9a0bb3f9059e9115b07f45dff)
+* [Chore: utils package should track statics (#87)](https://github.com/comunica/traqula/commit/88ca4f620cc5b0289d99fcdb9aeadac50770d881)
+* [Chore: Update actions/upload-artifact action to v6 (#80)](https://github.com/comunica/traqula/commit/c04c5cabf7c3fad81130d322675a00ced944b777)
+* [Chore: Update actions/cache action to v5 (#79)](https://github.com/comunica/traqula/commit/8bede66b10793cccea4790c0abad9d5559e6e233)
+* [CI: remove macos-13 runners due to deprecation](https://github.com/comunica/traqula/commit/15c95e98253e249c387db4c2fba530048004d90f)
+* [Chore: lock vitest version in test-utils](https://github.com/comunica/traqula/commit/55cfd3cf68c05467d030a2fa3b86f9b6303f195b)
+
 <a name="v1.0.0"></a>
 ## [v1.0.0](https://github.com/comunica/traqula/compare/v0.0.25...v1.0.0) - 2025-12-02
 

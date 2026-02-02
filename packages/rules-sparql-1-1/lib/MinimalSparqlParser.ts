@@ -1,5 +1,5 @@
 import type { Localized } from '@traqula/core';
-import { TransformerObject, traqulaIndentation } from '@traqula/core';
+import { traqulaNewlineAlternative, TransformerObject, traqulaIndentation } from '@traqula/core';
 import { AstFactory } from './astFactory.js';
 import type { SparqlContext, SparqlGeneratorContext } from './sparql11HelperTypes.js';
 import type { Path, TermIri } from './Sparql11types.js';
@@ -29,6 +29,7 @@ export function completeGeneratorContext(
     origSource: context.origSource ?? '',
     offset: context.offset,
     [traqulaIndentation]: context[traqulaIndentation] ?? 0,
+    [traqulaNewlineAlternative]: context[traqulaNewlineAlternative] ?? ' ',
     indentInc: context.indentInc ?? 2,
   };
 }

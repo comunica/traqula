@@ -1,4 +1,4 @@
-import { TransformerSubTyped, traqulaIndentation } from '@traqula/core';
+import { TransformerSubTyped, traqulaIndentation, traqulaNewlineAlternative } from '@traqula/core';
 import { AstFactory } from './AstFactory.js';
 import type { SparqlContext, SparqlGeneratorContext } from './sparql12HelperTypes.js';
 import type { Sparql12Nodes } from './sparql12Types.js';
@@ -24,6 +24,7 @@ export function completeGeneratorContext(
     offset: context.offset,
     indentInc: context.indentInc ?? 2,
     [traqulaIndentation]: context[traqulaIndentation] ?? 0,
+    [traqulaNewlineAlternative]: context[traqulaNewlineAlternative] ?? ' ',
   };
 }
 

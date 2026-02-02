@@ -33,5 +33,12 @@ export type Patch<T extends object, Patch extends {[Key in keyof T ]?: unknown }
  * Key that allows you to set the space based indentation of your query when generating newlines using the NEW_LINE.
  * A value of -1 disables the generation of newlines from the NEW_LINE function
  */
-export const traqulaIndentation =
+export const traqulaIndentation = <const>
   'When you use this string, you expect traqula to handle indentation after every newline';
+
+/**
+ * Key that allows you to configure the string that should be printed in case newline generation is disabled by
+ * {@link traqulaIndentation} NEW_LINE is called on the generator.
+ */
+export const traqulaNewlineAlternative = <const>
+  `When you use this string, you expect that the core generator of Traqula does prints a given string instead of a ewline when NEW_LINE printing is disabled through traqulaIndentation`;

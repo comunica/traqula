@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.0.2"></a>
+## [v1.0.2](https://github.com/comunica/traqula/compare/v1.0.1...v1.0.2) - 2026-02-02
+
+* [Bugfix: SPARQL no newline generation needs space (#103)](https://github.com/comunica/traqula/commit/dac077ce271bc18c0e282438a38822ffdf6c19a8)
+
 <a name="v1.0.1"></a>
 ## [v1.0.1](https://github.com/comunica/traqula/compare/v1.0.0...v1.0.1) - 2026-01-30
 

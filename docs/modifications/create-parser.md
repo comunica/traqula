@@ -113,7 +113,30 @@ you can call `.merge()` and provide the other ParserBuilder, possibly requiring 
 Building the chevrotain parser is possible using `.build()`, interestingly, Chevrotain allows [multiple start rules](https://chevrotain.io/docs/features/multiple_start_rules.html), so you can parse starting from any grammar rule.
 
 ```typescript
-myParserBuilder.build({
+const myParser = myParserBuilder.build({
   tokenVocabulary: myLexerBuilder.tokenVocabulary,
 });
+//            parse string        the context
+myParser.myRule('test me', { myKey: 'myValue' });
+```
+
+## Round tripping on self created parser.
+
+By default, a parser and accompanying generator ([see creating a generator](./create-generator.md)) created using `@traqula/core`
+should be able to support round tripping.
+By default, to support this, the generator will require the original string for this to work.
+However, you can also choose to manipulate the AST in such a way that it delivers the original string to the generator:
+
+```typescript
+import { SourceLocationInlinedSource } from '@traqula/core';
+const myAst = myParser.myRule('test me', { myKey: 'myValue' });
+myAst.loc = {
+  sourceLocationType: 'inlinedSource',
+  newSource: 'test me',
+  start: 0,
+  end: Number.MAX_SAFE_INTEGER,
+  loc: myAst.loc,
+  startOnNew: 0,
+  endOnNew: 'test me'.length,
+} satisfies SourceLocationInlinedSource;
 ```

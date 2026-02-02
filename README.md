@@ -24,8 +24,7 @@ Traqula maintains a few engines (default parser, transformer, and generator conf
 ## Documentation
 
 To use Traqula's engines, the used engine should have self-documenting READMEs.
-In order to modify the parsers, transformers and generators to your desire, we provide dedicated documentation pages for:
-[modifying a parser](docs/modifications/modify-parser.md), [modifying a transformer](docs/modifications/modify-transformer.md), [modifying a generator](docs/modifications/modify-generator.md).
+In order to create or modify the parsers, transformers and generators to your desire, we provide [**dedicated documentation pages**](docs/index.md).
 Additionally, a documentation website is generated based on the source code's documentation: [https://comunica.github.io/traqula/](https://comunica.github.io/traqula/).
 The source code itself is available on [GitHub](https://comunica.github.io/traqula/).
 

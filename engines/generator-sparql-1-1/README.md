@@ -61,8 +61,22 @@ Note that a single generator cannot generate multiple queries in parallel.
 Optionally, the following parameters can be set in to the generator:
 
 * `astFactory`: A custom AstFactory that is able to create the various AST nodes. _(default: `new AstFactory`)_
-* `indentInc`: the number of spaces the built-in 'pretty print' mode must print for a single indentation level. _(default: `2`)_
+* `indentInc`: the number of spaces the built-in 'pretty print' mode must print for a single indentation level. _(default: `2`)_.
 * `origSource`: the original query string the ast is constructed from.
+* `[traqulaIndentation]` from `@traqula/core`: the current number of spaces to print on a newline.
+Whenever this number is negative, no newline will be printed. _(default: 0)_
+* `[traqulaNewlineAlternative]` from `@traqula/core`: the character that should be printed instead of a newline in case `[traqulaIndentation]` is negative. _(default: ' ')_
+
+> [!note]
+> To create a generator without pretty print:
+> ```typescript
+> import { Generator } from '@traqula/generator-sparql-1-1';
+> import { traqulaIndentation } from '@traqula/core';
+> const flatGenerator = new Generator({
+>   indentInc: 0,
+>   [traqulaIndentation]: -1,
+> })
+> ```
 
 ## Round-tripping generation
 

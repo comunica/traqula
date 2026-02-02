@@ -108,7 +108,7 @@ const myParserBuilder = ParserBuilder
 ```
 
 In case you want to merge a whole ParserBuilder,
-you can call `.merge()` and provide the other ParserBuilder, posibly requiring you to resolve conflicts when name clashes present.
+you can call `.merge()` and provide the other ParserBuilder, possibly requiring you to resolve conflicts when name clashes present.
 
 Building the chevrotain parser is possible using `.build()`, interestingly, Chevrotain allows [multiple start rules](https://chevrotain.io/docs/features/multiple_start_rules.html), so you can parse starting from any grammar rule.
 

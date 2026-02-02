@@ -1,1 +1,1 @@
-INSERT DATA { <http://example/book1> <urn:label> "A new book" . };PREFIX a: <urn:a>
+INSERT DATA { <http://example/book1> <urn:label> "A new book" . } ; PREFIX a: <urn:a>

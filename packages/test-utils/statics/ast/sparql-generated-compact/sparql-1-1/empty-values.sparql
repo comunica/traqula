@@ -1,1 +1,1 @@
-SELECT * WHERE { ?s ?p ?o . }VALUES( ){ ( ) }
+SELECT * WHERE { ?s ?p ?o . } VALUES( ){ ( ) }

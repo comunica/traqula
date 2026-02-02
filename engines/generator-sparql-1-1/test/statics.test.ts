@@ -46,20 +46,20 @@ describe('a SPARQL 1.1 generator', () => {
   });
 
   describe('positive sparql 1.1', () => {
-    for (const { name, statics } of positiveTest('sparql-1-1', x => x === 'nested-path')) {
+    for (const { name, statics } of positiveTest('sparql-1-1')) {
       it(`can generate ${name}`, async({ expect }) => {
         const { query, astWithSource, autoGen, autoGenCompact } = await statics();
         const queryUpdate = <T11.Query | T11.Update>astWithSource;
 
-        // Const roundTripped = generator.generate(queryUpdate);
-        // expect(roundTripped, 'round-trip generation').toEqual(query.trim());
+        const roundTripped = generator.generate(queryUpdate);
+        expect(roundTripped, 'round-trip generation').toEqual(query.trim());
 
         const replaceLoc = F.sourceLocationNodeReplaceUnsafe(queryUpdate.loc);
         const autoGenAst = F.forcedAutoGenTree(queryUpdate);
         autoGenAst.loc = replaceLoc;
-        // Const selfGenerated = generator.generate(autoGenAst);
+        const selfGenerated = generator.generate(autoGenAst);
         // _sinkGenerated('sparql-1-1', name, selfGenerated);
-        // expect(selfGenerated, 'auto generated').toEqual(autoGen.trim());
+        expect(selfGenerated, 'auto generated').toEqual(autoGen.trim());
 
         const oneLineGen = oneLineGenerator.generate(autoGenAst);
         // _sinkGenerated('sparql-1-1', name, oneLineGen, true);

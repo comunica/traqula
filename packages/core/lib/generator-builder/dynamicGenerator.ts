@@ -193,14 +193,16 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
 
   protected readonly newLine: RuleDefArg['NEW_LINE'] = (arg) => {
     const indentation = this.getSafeContext()[traqulaIndentation] ?? 0;
+    const force = arg?.force ?? false;
     if (indentation < 0) {
       const newlineAlternative = this.getSafeContext()[traqulaNewlineAlternative];
-      if (newlineAlternative !== undefined) {
+      if (newlineAlternative !== undefined &&
+        // If we force, it means we would print \n no matter. - otherwise check whether we have printed the char
+        (force || (this.stringBuilder.at(-1) !== newlineAlternative))) {
         this.print(newlineAlternative);
       }
       return;
     }
-    const force = arg?.force ?? false;
     this.pruneEndingBlanks();
     if (force) {
       this.print('\n', ' '.repeat(indentation));

@@ -1,1 +1,1 @@
-SELECT * WHERE { { } OPTIONAL { SELECT * WHERE { ?s ?p ?o . }}}
+SELECT * WHERE { { } OPTIONAL { SELECT * WHERE { ?s ?p ?o . } } }

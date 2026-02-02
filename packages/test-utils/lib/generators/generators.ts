@@ -11,6 +11,7 @@ interface PositiveTest {
     astWithSource: unknown;
     astNoSource: unknown;
     autoGen: string;
+    autoGenCompact: string;
   }>;
 }
 
@@ -23,6 +24,7 @@ export function* positiveTest(
   const jsonNonSourceTrackedDir = join(astDir, 'ast-no-source-tracked', type);
   const sparqlDir = join(astDir, 'sparql', type);
   const sparqlGeneratedDir = join(astDir, 'sparql-generated', type);
+  const sparqlGenCompactDir = join(astDir, 'sparql-generated-compact', type);
   const statics = readdirSync(jsonSourceTrackedDir);
   for (const file of statics) {
     if (filter && !filter(file.replace('.json', ''))) {
@@ -40,17 +42,20 @@ export function* positiveTest(
         } catch {
           noSourceTracked = '{}';
         }
-        let autoGen: string;
+        let autoGen = '';
         try {
           autoGen = await readFile(join(sparqlGeneratedDir, `${name}.sparql`));
-        } catch {
-          autoGen = '';
-        }
+        } catch { /* Already initialized */ }
+        let autoGenCompact = '';
+        try {
+          autoGenCompact = await readFile(join(sparqlGenCompactDir, `${name}.sparql`));
+        } catch { /* Already initialized */ }
         return {
           query,
           astWithSource: JSON.parse(sourceTracked),
           astNoSource: JSON.parse(noSourceTracked),
           autoGen,
+          autoGenCompact,
         };
       },
     };

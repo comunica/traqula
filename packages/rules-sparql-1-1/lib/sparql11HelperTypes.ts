@@ -1,4 +1,4 @@
-import type { GeneratorRule, ParserRule, traqulaIndentation } from '@traqula/core';
+import type { GeneratorRule, ParserRule, traqulaIndentation, traqulaNewlineAlternative } from '@traqula/core';
 import type { AstFactory } from './astFactory.js';
 
 export interface SparqlContext {
@@ -29,6 +29,7 @@ export interface SparqlGeneratorContext {
   indentInc: number;
   origSource: string;
   [traqulaIndentation]: number;
+  [traqulaNewlineAlternative]: string;
 }
 
 export type SparqlRule<

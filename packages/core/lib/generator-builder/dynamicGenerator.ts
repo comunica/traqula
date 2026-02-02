@@ -1,8 +1,13 @@
 import { AstCoreFactory } from '../AstCoreFactory.js';
 import type { SourceLocationInlinedSource } from '../types.js';
-import { traqulaIndentation } from '../utils.js';
+import { traqulaIndentation, traqulaNewlineAlternative } from '../utils.js';
 import type { GenRuleMap } from './builderTypes.js';
 import type { GeneratorRule, RuleDefArg } from './generatorTypes.js';
+
+export interface GeneratorContext {
+  [traqulaIndentation]?: number;
+  [traqulaNewlineAlternative]?: string;
+}
 
 export class DynamicGenerator<Context, Names extends string, RuleDefs extends GenRuleMap<Names>> {
   protected readonly factory = new AstCoreFactory();
@@ -41,8 +46,8 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
     this.__context = context;
   }
 
-  protected getSafeContext(): Context & { [traqulaIndentation]?: number } {
-    return <Context & { [traqulaIndentation]?: number }> this.__context;
+  protected getSafeContext(): Context & GeneratorContext {
+    return <Context & GeneratorContext> this.__context;
   }
 
   protected readonly subrule: RuleDefArg['SUBRULE'] = (cstDef, ast, ...arg) => {
@@ -188,7 +193,11 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
 
   protected readonly newLine: RuleDefArg['NEW_LINE'] = (arg) => {
     const indentation = this.getSafeContext()[traqulaIndentation] ?? 0;
-    if (indentation === -1) {
+    if (indentation < 0) {
+      const newlineAlternative = this.getSafeContext()[traqulaNewlineAlternative];
+      if (newlineAlternative !== undefined) {
+        this.print(newlineAlternative);
+      }
       return;
     }
     const force = arg?.force ?? false;

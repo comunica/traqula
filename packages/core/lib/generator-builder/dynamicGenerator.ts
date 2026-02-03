@@ -13,6 +13,10 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
   protected readonly factory = new AstCoreFactory();
   protected __context: Context | undefined = undefined;
   protected origSource = '';
+  /**
+   * Reference to the latest SourceLocationInlinedSource this generator handled (used for idempotency)
+   * @protected
+   */
   protected handledInlineSource: SourceLocationInlinedSource | undefined;
   protected generatedUntil = 0;
   protected toEnsure: ((willPrint: string) => void)[] = [];
@@ -96,22 +100,27 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
       this.catchup(localized.loc.start);
     }
     if (this.factory.isSourceLocationInlinedSource(localized.loc) && this.handledInlineSource !== localized.loc) {
-      // Calling handleLoc on the same AST multiple times should be the same as doing it once.
+      // Idempotence: calling handleLoc on the same AST multiple times should be the same as doing it once.
       this.handledInlineSource = localized.loc;
+      // Like normal, catch up until the start of what this node represents.
       this.catchup(localized.loc.start);
+      // Save pointer location of current source and register new source.
       const origSource = this.origSource;
       const origPointer = this.generatedUntil;
       this.origSource = localized.loc.newSource;
       this.generatedUntil = 0;
+      // Catchup the new source to where this node starts representing the source.
       this.catchup(localized.loc.startOnNew);
 
-      this.handleLoc(localized.loc, handle);
+      const ret = this.handleLoc(localized.loc, handle);
 
+      // Catchup so the entire new source is generated outside what this node represents.
       this.generatedUntil = localized.loc.endOnNew;
       this.catchup(this.origSource.length);
+      // Recover the original source and register that you generated the range of this node.
       this.origSource = origSource;
       this.generatedUntil = Math.max(origPointer, localized.loc.end);
-      return;
+      return ret;
     }
     // If autoGenerate - do nothing
 

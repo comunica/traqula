@@ -75,6 +75,17 @@ HANDLE_LOC can help generatorRules that generate many AST nodes at once without 
 ## Building the generator
 
 The construction of the generator works exactly the same as the construction of a parser.
-1. Register the rules in a GeneratorBuilder
-2. Build using the builder
-3. Call the constructed generator from any rule you added.
+
+1. Register the rules in a GeneratorBuilder:
+```typescript
+import { GeneratorBuilder } from '@traqula/core';
+const generatorBuilder = GeneratorBuilder.create(<const> [var_, someOtherRule]);
+```
+2. Build using the builder:
+```typescript
+const myGenerator = generatorBuilder.build();
+```
+3. Call the constructed generator from any rule you added:
+```typescript
+const generated = myGenerator.var_(varAst, myContext);
+```

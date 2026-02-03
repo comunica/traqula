@@ -124,6 +124,9 @@ const myParser = myParserBuilder.build({
 myParser.myRule('test me', { myKey: 'myValue' });
 ```
 
+> [!important]
+> Building a parser is an expensive operator since Chevrotain needs to perform its [grammar recording](https://chevrotain.io/docs/guide/internals.html#grammar-recording). One should therefore always try to reuse a created parser.
+
 ## Round tripping on self created parser.
 
 By default, a parser and accompanying generator ([see creating a generator](./create-generator.md)) created using `@traqula/core`

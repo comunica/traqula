@@ -1,6 +1,9 @@
 import type * as RDF from '@rdfjs/types';
 import type { Typed, SubTyped } from '@traqula/core';
 
+/**
+ * Enum type listing the type strings for Traqula's SPARQL algebra operations.
+ */
 export enum Types {
   ASK = 'ask',
   BGP = 'bgp',
@@ -59,22 +62,43 @@ export enum ExpressionTypes {
 }
 
 // ----------------------- OPERATIONS -----------------------
+/**
+ * Union type of all known SPARQL 1.1 operations.
+ */
 export type Operation = Ask | Expression | Bgp | Construct | Describe | Distinct | Extend | From | Filter
   | Graph | Group | Join | LeftJoin | Minus | Nop | OrderBy | Path | Pattern | Project | PropertyPathSymbol
   | Reduced | Service | Slice | Union | Values | Update | CompositeUpdate;
 
+/**
+ * Union type of all known SPARQL 1.1 expression operations.
+ */
 export type Expression = AggregateExpression | GroupConcatExpression | ExistenceExpression | NamedExpression |
   OperatorExpression | TermExpression | WildcardExpression | BoundAggregate;
 
+/**
+ * Union type of all known SPARQL 1.1 Property Path symbols.
+ */
 export type PropertyPathSymbol = Alt | Inv | Link | Nps | OneOrMorePath | Seq | ZeroOrMorePath | ZeroOrOnePath;
 
+/**
+ * Union type of all known SPARQL 1.1 update operations.
+ */
 export type Update = DeleteInsert | Load | Clear | Create | Drop | Add | Move | Copy;
 
-// Returns the correct type based on the type enum
+/**
+ * Returns the correct type based on the type enum
+ */
 export type TypedOperation<T extends Types> = Extract<Operation, { type: T }>;
+/**
+ * Returns the correct subType based on the type enum
+ */
 export type TypedExpression<T extends ExpressionTypes> = Extract<Expression, { subType: T }>;
 
 // ----------------------- ABSTRACTS -----------------------
+
+/**
+ * All SPARQL operations are typed nodes, allowing them to be altered using the transformers in @traqula/core
+ */
 export interface BaseOperation extends Typed { }
 
 /**
@@ -108,6 +132,9 @@ export interface Double extends Multi {
   input: [Operation, Operation];
 }
 
+/**
+ * [Aggregate Algebra expression](https://www.w3.org/TR/sparql11-query/#aggregateAlgebra)
+ */
 export interface AggregateExpression extends BaseExpression {
   subType: ExpressionTypes.AGGREGATE;
   aggregator: 'avg' | 'count' | 'group_concat' | 'max' | 'min' | 'sample' | 'sum';
@@ -116,11 +143,17 @@ export interface AggregateExpression extends BaseExpression {
   separator?: string;
 }
 
+/**
+ * @inheritDoc
+ */
 export interface GroupConcatExpression extends AggregateExpression {
   aggregator: 'group_concat';
   separator?: string;
 }
 
+/**
+ * [Exists / Not Exists Algebra expression](https://www.w3.org/TR/sparql11-query/#defn_evalExists)
+ */
 export interface ExistenceExpression extends BaseExpression {
   subType: ExpressionTypes.EXISTENCE;
   not: boolean;
@@ -156,7 +189,7 @@ export interface WildcardExpression extends BaseExpression {
 // ----------------------- ACTUAL FUNCTIONS -----------------------
 
 /**
- * Algebra operation representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) alternative (`|`).
+ * [Alternative Property Path algebra operation](https://www.w3.org/TR/sparql11-query/#defn_evalPP_alternative) representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) alternative (`|`).
  * Property paths have a specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
  */
 export interface Alt extends Multi {
@@ -183,10 +216,16 @@ export interface Describe extends Single {
   terms: (RDF.Variable | RDF.NamedNode)[];
 }
 
+/**
+ * [Distinct algebra operation](https://www.w3.org/TR/sparql11-query/#defn_evalDistinct)
+ */
 export interface Distinct extends Single {
   type: Types.DISTINCT;
 }
 
+/**
+ * [Extend algebra operation](https://www.w3.org/TR/sparql11-query/#defn_evalExtend)
+ */
 export interface Extend extends Single {
   type: Types.EXTEND;
   variable: RDF.Variable;
@@ -199,11 +238,17 @@ export interface From extends Single {
   named: RDF.NamedNode[];
 }
 
+/**
+ * [Filter algebra operation](https://www.w3.org/TR/sparql11-query/#defn_evalFilter)
+ */
 export interface Filter extends Single {
   type: Types.FILTER;
   expression: Expression;
 }
 
+/**
+ * [Graph algebra operation](https://www.w3.org/TR/sparql11-query/#defn_evalGraph)
+ */
 export interface Graph extends Single {
   type: Types.GRAPH;
   name: RDF.Variable | RDF.NamedNode;
@@ -214,6 +259,9 @@ export interface BoundAggregate extends AggregateExpression {
   variable: RDF.Variable;
 }
 
+/**
+ * [Group algebra operation](https://www.w3.org/TR/sparql11-query/#defn_evalGroup)
+ */
 export interface Group extends Single {
   type: Types.GROUP;
   variables: RDF.Variable[];
@@ -230,10 +278,16 @@ export interface Inv extends BaseOperation {
   path: PropertyPathSymbol;
 }
 
+/**
+ * [Join algebra operation](https://www.w3.org/TR/sparql11-query/#defn_evalJoin)
+ */
 export interface Join extends Multi {
   type: Types.JOIN;
 }
 
+/**
+ * [Leftjoin algebra operation](https://www.w3.org/TR/sparql11-query/#defn_evalLeftJoin)
+ */
 export interface LeftJoin extends Double {
   type: Types.LEFT_JOIN;
   expression?: Expression;
@@ -250,6 +304,9 @@ export interface Link extends BaseOperation {
   iri: RDF.NamedNode;
 }
 
+/**
+ * [Algebra operation minus](https://www.w3.org/TR/sparql11-query/#defn_algMinus)
+ */
 export interface Minus extends Double {
   type: Types.MINUS;
   /**
@@ -274,7 +331,7 @@ export interface Nop extends BaseOperation {
 }
 
 /**
- * Algebra operation representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) negated property set (`!`).
+ * [NegatedPropertySet algebra operation](eval_negatedPropertySet) representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) negated property set (`!`).
  * Property paths have a specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
  */
 export interface Nps extends BaseOperation {
@@ -283,7 +340,7 @@ export interface Nps extends BaseOperation {
 }
 
 /**
- * Algebra operation representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) one or more (`+`).
+ * [OneOrMorePath algebra operation](https://www.w3.org/TR/sparql11-query/#defn_evalOneOrMorePath) representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) one or more (`+`).
  * Property paths have a specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
  */
 export interface OneOrMorePath extends BaseOperation {
@@ -291,6 +348,9 @@ export interface OneOrMorePath extends BaseOperation {
   path: PropertyPathSymbol;
 }
 
+/**
+ * [OrderBy algebra operation](https://www.w3.org/TR/sparql11-query/#defn_evalOrderBy)
+ */
 export interface OrderBy extends Single {
   type: Types.ORDER_BY;
   expressions: Expression[];
@@ -311,11 +371,17 @@ export interface Pattern extends BaseOperation, RDF.BaseQuad {
   type: Types.PATTERN;
 }
 
+/**
+ * [Project algebra operation](https://www.w3.org/TR/sparql11-query/#defn_evalProject)
+ */
 export interface Project extends Single {
   type: Types.PROJECT;
   variables: RDF.Variable[];
 }
 
+/**
+ * [Reduced algebra operation](https://www.w3.org/TR/sparql11-query/#defn_evalReduced)
+ */
 export interface Reduced extends Single {
   type: Types.REDUCED;
 }
@@ -335,12 +401,18 @@ export interface Service extends Single {
   silent: boolean;
 }
 
+/**
+ * [Slice algebra operation](https://www.w3.org/TR/sparql11-query/#defn_evalSlice)
+ */
 export interface Slice extends Single {
   type: Types.SLICE;
   start: number;
   length?: number;
 }
 
+/**
+ * [Union algebra operation](https://www.w3.org/TR/sparql11-query/#defn_evalUnion)
+ */
 export interface Union extends Multi {
   type: Types.UNION;
 }
@@ -359,7 +431,7 @@ export interface Values extends BaseOperation {
 }
 
 /**
- * Algebra operation representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) zero or more (`*`).
+ * [ZeroOrMore algebra operation](https://www.w3.org/TR/sparql11-query/#defn_evalZeroOrMorePath) representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) zero or more (`*`).
  * The having specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
  */
 export interface ZeroOrMorePath extends BaseOperation {
@@ -368,7 +440,7 @@ export interface ZeroOrMorePath extends BaseOperation {
 }
 
 /**
- * Algebra operation representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) zero or one (`?`).
+ * [ZeroOrOnePath algebra operation](https://www.w3.org/TR/sparql11-query/#defn_evalPP_ZeroOrOnePath) representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) zero or one (`?`).
  * The having specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
  */
 export interface ZeroOrOnePath extends BaseOperation {

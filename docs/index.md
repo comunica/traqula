@@ -1,11 +1,13 @@
 # Traqula Documentation
 
 The Traqula framework enables a modular definition of parsers, transformers and generators.
+This documentation documents Traqula's core design decisions, spanning outside the SPARQL query language to other structured languages.
+Traqula does currently NOT support streaming parsing, making it ill-suited for creating a parser for large data files.
 The following documentation details how to use Traqula to **create your own components**:
 
 1. [Create a parser](modifications/create-parser.md)
 2. [AST structure](usage/AST-structure.md)
-3. [create a transformer](modifications/create-transformer.md)
+3. [Create a transformer](modifications/create-transformer.md)
 4. [Create a generator](modifications/create-generator.md)
 
 The following documentation pages detail how to **create your own by making modifications to existing components**:

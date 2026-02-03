@@ -16,7 +16,7 @@ This repository is a [monorepo](https://monorepo.tools/) containing multiple pac
 Traqula is a highly flexible framework for parsing, transforming and generating structured languages, with an initial focus on the [SPARQL](https://www.w3.org/TR/sparql11-query/) query language.
 Traqula achieves this by shipping default configurations as [engines](/engines) which can easily be modified by [builders](https://refactoring.guru/design-patterns/builder) found in the [core package of Traqula](/packages/core).
 
-Traqula maintains a few engines (default parser, transformer, and generator configurations) built ontop of its own [code packages](/packages):
+Traqula maintains a few engines (default parser, transformer, and generator configurations) built on top of its own [code packages](/packages):
 * For [SPARQL 1.1](https://www.w3.org/TR/sparql11-query/): a [parser](/engines/parser-sparql-1-1), [generator](/engines/generator-sparql-1-1), and [algebra transformer](engines/algebra-sparql-1-1).
 * For [SPARQL 1.2](https://www.w3.org/TR/sparql12-query/): a [parser](/engines/parser-sparql-1-2), [generator](./engines/generator-sparql-1-2), and [algebra transformer](engines/algebra-sparql-1-2).
 * For [SPARQL 1.1](https://www.w3.org/TR/sparql11-query/#grammar) + [ADJUST](https://github.com/w3c/sparql-dev/blob/main/SEP/SEP-0002/sep-0002.md) function: a [parser](/engines/parser-sparql-1-1-adjust), the generator and transformers of SPARQL1.1 also work here.

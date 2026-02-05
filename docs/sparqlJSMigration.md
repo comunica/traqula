@@ -291,7 +291,7 @@ While Traqula is much more verbose:
 ```
 
 The reason for changing this is to create an AST that is not too invasive and sticks to providing a tree representation of the grammar.
-By creating a more consistent AST, Traqula is able to provide an efficient yet generic transformer allowing you to visit or manipulate teh AST. The code bellow aggregates the prefix entries into a similar object as that of SPARQL.js:
+By creating a more consistent AST, Traqula is able to provide an efficient yet generic transformer allowing you to visit or manipulate the AST. The code bellow aggregates the prefix entries into a similar object as that of SPARQL.js:
 
 ```typescript
 import { AstTransformer } from "@traqula/rules-sparql-1-1";

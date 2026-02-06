@@ -21,7 +21,8 @@
     "./package.json": "./package.json",
     ".": {
       "types": "./dist/esm/lib/index.d.ts",
-      "import": "./dist/esm/lib/index.js"
+      "import": "./dist/esm/lib/index.js",
+      "require": "./dist/cjs/lib/index.js"
     }
   },
   "main": "dist/esm/lib/index.js",

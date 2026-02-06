@@ -16,7 +16,13 @@ export default defineConfig({
     typecheck: {
       enabled: true,
       include: [
-        'packages/*/test/**/*.types.test.ts',
+        '**/test/**/*.types.test.ts',
+      ],
+    },
+    benchmark: {
+      exclude: [
+        '**/node_modules/**',
+        '**/dist/**',
       ],
     },
   },

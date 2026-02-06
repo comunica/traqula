@@ -108,6 +108,11 @@ In Traqula these kind of subTypes are normalized to all use the key 'subType' an
 }
 ```
 
+### Capitalization of build in operators
+
+In SPARQL.js all operators were lowercase, except `BNODE`.
+Traqula applies the small case consistently and thus has lowercase `bnode`:
+
 ### Iri expansion & Update queries & prefix / base repetitions
 
 SPARQL.js would expand parsed prefixUris by resolving them to the registered `PREFIX` and `BASE`.

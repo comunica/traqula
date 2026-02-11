@@ -135,7 +135,7 @@ export class TransformerObject {
           mapperParentKey.push(curKey);
 
           for (let index = curObject.length - 1; index >= 0; index--) {
-            const val = curObject[index];
+            const val = <unknown> curObject[index];
             if (val !== null && typeof val === 'object') {
               stack.push(val);
               stackParent.push(newArr);
@@ -235,7 +235,10 @@ export class TransformerObject {
       if (!didShortCut) {
         if (Array.isArray(curObject)) {
           for (let i = curObject.length - 1; i >= 0; i--) {
-            stack.push(curObject[i]);
+            const val = <unknown> curObject[i];
+            if (val !== null && typeof val === 'object') {
+              stack.push(val);
+            }
           }
           handleVisitor();
           continue;

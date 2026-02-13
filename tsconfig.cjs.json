@@ -3,6 +3,7 @@
   "references": [
     { "path": "packages/algebra-transformations-1-1/tsconfig.cjs.json" },
     { "path": "packages/algebra-transformations-1-2/tsconfig.cjs.json" },
+    { "path": "packages/cli-utils/tsconfig.cjs.json" },
     { "path": "packages/core/tsconfig.cjs.json" },
     { "path": "packages/rules-sparql-1-1/tsconfig.cjs.json" },
     { "path": "packages/rules-sparql-1-1-adjust/tsconfig.cjs.json" },

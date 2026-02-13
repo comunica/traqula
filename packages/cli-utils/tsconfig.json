@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": ".",
+    "types": ["node"],
+    "outDir": "dist/esm"
+  },
+  "include": [
+    "lib/**/*"
+  ],
+  "exclude": ["dist/**"]
+}

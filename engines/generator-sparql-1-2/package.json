@@ -23,10 +23,17 @@
     }
   },
   "main": "dist/esm/lib/index.js",
+  "bin": {
+    "traqula-sparql-generator-1-2": "bin/traqula-sparql-generator-1-2.js"
+  },
   "publishConfig": {
     "access": "public"
   },
   "files": [
+    "bin/*",
+    "dist/*/cli/**/*.d.ts",
+    "dist/*/cli/**/*.js",
+    "dist/*/cli/**/*.js.map",
     "dist/*/lib/**/*.d.ts",
     "dist/*/lib/**/*.js",
     "dist/*/lib/**/*.js.map",
@@ -36,15 +43,18 @@
     "node": "^20.19.0 || >=22.12.0"
   },
   "scripts": {
-    "build": "yarn build:ts && yarn build:cjs",
+    "build": "yarn build:ts && yarn build:cjs && yarn build:cli",
     "build:ts": "node \"../../node_modules/typescript/bin/tsc\" -b",
-    "build:cjs": "node \"../../node_modules/typescript/bin/tsc\" -b tsconfig.cjs.json"
+    "build:cjs": "node \"../../node_modules/typescript/bin/tsc\" -b tsconfig.cjs.json",
+    "build:cli": "node \"../../node_modules/typescript/bin/tsc\" -b tsconfig.cli.json"
   },
   "dependencies": {
+    "@traqula/cli-utils": "^1.0.2",
     "@traqula/core": "^1.0.2",
     "@traqula/generator-sparql-1-1": "^1.0.2",
     "@traqula/rules-sparql-1-1": "^1.0.2",
-    "@traqula/rules-sparql-1-2": "^1.0.2"
+    "@traqula/rules-sparql-1-2": "^1.0.2",
+    "minimist": "^1.2.8"
   },
   "devDependencies": {
     "@traqula/parser-sparql-1-2": "^1.0.2",

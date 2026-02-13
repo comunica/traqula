@@ -1,14 +1,14 @@
 {
-  "name": "@traqula/generator-sparql-1-1",
+  "name": "@traqula/cli-utils",
   "type": "module",
   "version": "1.0.2",
-  "description": "SPARQL 1.1 generator",
+  "description": "Utilities for building CLI tools for Traqula parsers, generators, and transformers",
   "lsd:module": true,
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/comunica/traqula.git",
-    "directory": "engines/generator-sparql-1-1"
+    "directory": "packages/cli-utils"
   },
   "bugs": {
     "url": "https://github.com/comunica/traqula/issues"
@@ -23,17 +23,10 @@
     }
   },
   "main": "dist/esm/lib/index.js",
-  "bin": {
-    "traqula-sparql-generator-1-1": "bin/traqula-sparql-generator-1-1.js"
-  },
   "publishConfig": {
     "access": "public"
   },
   "files": [
-    "bin/*",
-    "dist/*/cli/**/*.d.ts",
-    "dist/*/cli/**/*.js",
-    "dist/*/cli/**/*.js.map",
     "dist/*/lib/**/*.d.ts",
     "dist/*/lib/**/*.js",
     "dist/*/lib/**/*.js.map",
@@ -43,19 +36,14 @@
     "node": "^20.19.0 || >=22.12.0"
   },
   "scripts": {
-    "build": "yarn build:ts && yarn build:cjs && yarn build:cli",
+    "build": "yarn build:ts && yarn build:cjs",
     "build:ts": "node \"../../node_modules/typescript/bin/tsc\" -b",
-    "build:cjs": "node \"../../node_modules/typescript/bin/tsc\" -b tsconfig.cjs.json",
-    "build:cli": "node \"../../node_modules/typescript/bin/tsc\" -b tsconfig.cli.json"
+    "build:cjs": "node \"../../node_modules/typescript/bin/tsc\" -b tsconfig.cjs.json"
   },
   "dependencies": {
-    "@traqula/cli-utils": "^1.0.2",
-    "@traqula/core": "^1.0.2",
-    "@traqula/rules-sparql-1-1": "^1.0.2",
     "minimist": "^1.2.8"
   },
   "devDependencies": {
-    "@traqula/parser-sparql-1-1": "^1.0.2",
-    "@traqula/test-utils": "^1.0.2"
+    "@types/minimist": "^1.2.5"
   }
 }

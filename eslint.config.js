@@ -52,11 +52,23 @@ export default config([
     // Specific rules for NodeJS-specific files
     files: [
       '**/test/**/*.ts',
+      '**/bin/**/*.ts',
+      'packages/cli-utils/**/*.ts',
     ],
     rules: {
       'import/no-nodejs-modules': 'off',
       'ts/no-require-imports': 'off',
       'ts/no-var-requires': 'off',
+    },
+  },
+  {
+    // CLI files have specific naming conventions
+    files: [
+      '**/cli/**/*.ts',
+    ],
+    rules: {
+      'unicorn/filename-case': 'off',
+      'antfu/no-import-dist': 'off',
     },
   },
   {

@@ -7,11 +7,11 @@ export interface SparqlContext {
    */
   astFactory: AstFactory;
   /**
-   * Current scoped prefixes. Used for resolving prefixed names.
+   * Current scoped prefixes. Only used to validate parsed prefixes are known.
    */
   prefixes: Record<string, string>;
   /**
-   * The base IRI for the query. Used for resolving relative IRIs.
+   * Currently scoped base IRI. Only used to validate a base is set when parsing.
    */
   baseIRI: string | undefined;
   /**

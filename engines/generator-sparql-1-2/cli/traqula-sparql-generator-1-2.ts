@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readInput, writeOutput, exitWithError, printUsage } from '@traqula/cli-utils';
+import { exitWithError, readInput, writeOutput } from '@traqula/cli-utils';
 import minimist from 'minimist';
 import { Generator } from '../dist/esm/lib/index.js';
 
@@ -31,7 +31,7 @@ async function main(): Promise<void> {
   });
 
   if (args.help) {
-    printUsage(usage);
+    process.stderr.write(`${usage}\n`);
     process.exit(0);
   }
 

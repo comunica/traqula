@@ -29,16 +29,6 @@ export async function readInput(arg?: string, isFile = false): Promise<string> {
 }
 
 /**
- * Format output as JSON with proper indentation.
- * @param data - The data to format
- * @param pretty - Whether to pretty print (default: true)
- * @returns Formatted JSON string
- */
-export function formatJson(data: any, pretty = true): string {
-  return JSON.stringify(data, null, pretty ? 2 : undefined);
-}
-
-/**
  * Write output to stdout.
  * @param content - The content to write
  */
@@ -57,12 +47,4 @@ export function exitWithError(message: string, exitCode = 1): never {
   process.exit(exitCode);
   // TypeScript requires this for 'never' return type
   throw new Error('Unreachable');
-}
-
-/**
- * Print usage information.
- * @param usage - The usage string
- */
-export function printUsage(usage: string): void {
-  process.stderr.write(`${usage}\n`);
 }

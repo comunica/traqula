@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readInput, formatJson, writeOutput, exitWithError, printUsage } from '@traqula/cli-utils';
+import { exitWithError, readInput, writeOutput } from '@traqula/cli-utils';
 import { Generator } from '@traqula/generator-sparql-1-2';
 import { Parser } from '@traqula/parser-sparql-1-2';
 import minimist from 'minimist';
@@ -45,7 +45,7 @@ async function main(): Promise<void> {
   });
 
   if (args.help) {
-    printUsage(usage);
+    process.stderr.write(`${usage}\n`);
     process.exit(0);
   }
 
@@ -81,7 +81,7 @@ async function main(): Promise<void> {
         blankToVariable: args['blank-to-variable'],
       });
 
-      writeOutput(formatJson(algebra));
+      writeOutput(JSON.stringify(algebra, null, 2));
     } else if (toAstMode) {
       // Parse algebra JSON
       let algebra: any;
@@ -93,7 +93,7 @@ async function main(): Promise<void> {
 
       // Convert to AST
       const ast = toAst(algebra);
-      writeOutput(formatJson(ast));
+      writeOutput(JSON.stringify(ast, null, 2));
     } else if (toSparqlMode) {
       // Parse algebra JSON
       let algebra: any;

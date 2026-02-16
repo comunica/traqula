@@ -23,10 +23,17 @@
     }
   },
   "main": "dist/esm/lib/index.js",
+  "bin": {
+    "traqula-sparql-parser-1-1": "bin/traqula-sparql-parser-1-1.js"
+  },
   "publishConfig": {
     "access": "public"
   },
   "files": [
+    "bin/*",
+    "dist/*/cli/**/*.d.ts",
+    "dist/*/cli/**/*.js",
+    "dist/*/cli/**/*.js.map",
     "dist/*/lib/**/*.d.ts",
     "dist/*/lib/**/*.js",
     "dist/*/lib/**/*.js.map",
@@ -36,9 +43,10 @@
     "node": "^20.19.0 || >=22.12.0"
   },
   "scripts": {
-    "build": "yarn build:ts && yarn build:cjs",
+    "build": "yarn build:ts && yarn build:cjs && yarn build:cli",
     "build:ts": "node \"../../node_modules/typescript/bin/tsc\" -b",
     "build:cjs": "node \"../../node_modules/typescript/bin/tsc\" -b tsconfig.cjs.json",
+    "build:cli": "node \"../../node_modules/typescript/bin/tsc\" -b tsconfig.cli.json",
     "spec:base-1-0": "rdf-test-suite dist/cjs/spec/parser.js https://w3c.github.io/rdf-tests/sparql/sparql10/manifest.ttl -c ../../.rdf-test-suite-cache/ --skip \"(syn-bad-GRAPH-breaks-BGP|syn-bad-UNION-breaks-BGP|syn-bad-OPT-breaks-BGP|syn-bad-38|syn-bad-37|syn-bad-36|syn-bad-35|syn-bad-34|blabel-cross-union-bad|blabel-cross-optional-bad|blabel-cross-graph-bad)\"",
     "spec:base-1-1": "rdf-test-suite dist/cjs/spec/parser.js http://w3c.github.io/rdf-tests/sparql/sparql11/manifest-all.ttl -c ../../.rdf-test-suite-cache/",
     "spec:query": "yarn spec:base-1-1 -- -s http://www.w3.org/TR/sparql11-query/",
@@ -50,8 +58,10 @@
     "spec:earl": "yarn spec:earl:base-1-0 && yarn spec:earl:query && yarn spec:earl:update"
   },
   "dependencies": {
+    "@traqula/cli-utils": "^1.0.2",
     "@traqula/core": "^1.0.2",
-    "@traqula/rules-sparql-1-1": "^1.0.2"
+    "@traqula/rules-sparql-1-1": "^1.0.2",
+    "minimist": "^1.2.8"
   },
   "devDependencies": {
     "@traqula/test-utils": "^1.0.2",

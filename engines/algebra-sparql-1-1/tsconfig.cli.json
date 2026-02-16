@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  "references": [
+    { "path": "./tsconfig.json" },
+    { "path": "../../packages/cli-utils" }
+  ],
+  "include": [
+    "cli/**/*"
+  ]
+}

@@ -19,7 +19,7 @@
     "doc": "typedoc",
     "lint": "eslint . --cache",
     "postinstall": "yarn husky && yarn run build",
-    "publish": "yarn run build",
+    "lerna-publish": "yarn install && npm login && lerna publish",
     "spec:all": "lerna run spec:all --concurrency 1",
     "spec:earl": "lerna run spec:earl --concurrency 1",
     "test": "vitest test --run",

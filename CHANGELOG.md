@@ -1,6 +1,19 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.0.3"></a>
+## [v1.0.3](https://github.com/comunica/traqula/compare/v1.0.2...v1.0.3) - 2026-02-20
+
+* [Chore: patch publish script](https://github.com/comunica/traqula/commit/f4cc461a355f7aabdc3dff8db62baf43a5045884)
+* [Docs: detail create parsing process & migration of sparql.js further (#108)](https://github.com/comunica/traqula/commit/269ae11800e6a99565b0f572f5fcc6568c334686)
+* [Docs: better wording of SparqlContext parse options in jsdocs (#107)](https://github.com/comunica/traqula/commit/c73a20efa8424da6aa289e7817bab3a001b1f4f1)
+* [Chore: update dependency lerna to v9.0.4](https://github.com/comunica/traqula/commit/39fc068812ef3d7ba035f9d5c3e4dc08962cb565)
+* [Bugfix: visitObject should check whether array items are objects](https://github.com/comunica/traqula/commit/175638b8d1dc7cea40b6373dcb3c2739b048ad62)
+* [Docs: add casing of bnode operation to sparql.js migration guide](https://github.com/comunica/traqula/commit/08ddaf4e0911c41bfa693ad34a43ec22f7de9968)
+* [Docs: add AST documentation for AstFactory and AstTransformer (#105)](https://github.com/comunica/traqula/commit/4f750dfb168c100dcafaa6f62f8ccb24b82fb8c4)
+* [Docs: cleanup migration guides (#104)](https://github.com/comunica/traqula/commit/ca5c3336911d0ebbd015cc8c70d1a200a8634c4b)
+* [Docs: reviewing all READMEs (#98)](https://github.com/comunica/traqula/commit/0b19a887468491023f996add536dc01948517f1f)
+
 <a name="v1.0.2"></a>
 ## [v1.0.2](https://github.com/comunica/traqula/compare/v1.0.1...v1.0.2) - 2026-02-02
 

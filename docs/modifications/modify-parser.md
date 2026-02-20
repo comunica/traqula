@@ -84,5 +84,12 @@ ParserBuilder
   }>();
 ```
 
+> [!warning]
+> Once again, it is essential that you DO NOT manipulate the ParserBuilder created by another,
+> but define your own builder starting from an existing one:
+> ```typescript
+> ParserBuilder.create(existingBuilder)
+> ```
+
 Although type patching is not strictly necessary for people modifying a parser, it is hugely helpful for people using your modified parser builder.
 The SPARQL 1.2 parser Traqula provides for example [performs type patching](../../engines/parser-sparql-1-2/lib/Parser.ts#L16-L213) to ensure correctness of all rules in that parser builder.

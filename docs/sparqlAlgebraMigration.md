@@ -10,6 +10,8 @@ while in Traqula that is simplified to `{ type: "values", variables: [ ... ], bi
 
 ## Migration
 
+### toAlgebra
+
 SPARQLAlgebra.js allowed you to provide a query string to `toAlgebra`, Traqula does not allow this.
 The reason is that Traqula tries to force you to **reuse your parser** since creating one is quite resource intensive.
 
@@ -28,6 +30,8 @@ const ast = parser.parse('SELECT * WHERE { ?x ?y ?z }');
 const algebra = toAlgebra(ast);
 ```
 
+### toAst
+
 To go from algebra to a SPARQL query string, you would write the following in SPARQLAlgebra.js:
 ```typescript
 const { toSparql } = require('sparqlalgebrajs');
@@ -41,4 +45,32 @@ import { toAST } from '@traqula/algebra-sparql-1-1';
 const generator = new Generator();
 const genAst = toAST(algebra);
 const sparqlQuery = generator.generate(genAst);
+```
+
+### Type and subType
+
+In Traqula, all operations now have a type and an optional subType.
+In sparqlAlgebra.js you would have ExpressionOperations with a `expressionType`,
+in Traqula, expression have a `subType`.
+
+### Utils - algebraUtils
+
+SparqlAlgebra.js exposed a `Util` class to help you manipulate the algebra.
+In Traqula, we expose a modernized alternative called `algebraUtils`:
+algebraUtils contains a few usefully functions (e.g.:
+`mapOperation`, `mapOperationSub`, `visitOperation`, `visitOperationSub`, and `resolveIRI`).
+
+```typescript
+import { algebraUtils } from "@traqula/algebra-transformations-1-1";
+```
+
+In case you are using TypeScript,
+`mapOperation` and `mapOperationSub` will provide you the type of the operation you
+are mapping at a particular moment.
+However, since the values of the operation being mapped might have been changed by deeper mapOperations,
+the values will be of type `unknown`.
+In case you do now want this behaviour, you should call mapoperation like so:
+
+```typescript
+mapOperation<'unsafe', typeof operation>(operation, {})
 ```

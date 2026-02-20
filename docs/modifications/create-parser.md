@@ -119,10 +119,28 @@ Building the chevrotain parser is possible using `.build()`, interestingly, Chev
 ```typescript
 const myParser = myParserBuilder.build({
   tokenVocabulary: myLexerBuilder.tokenVocabulary,
+  // By default, the positionTracking will be off as to ensure maximal
+  lexerConfig: {
+    // Default position tracking is `onlyOffset` since it is faster,
+    // but the errors generated are much more obscure.
+    positionTracking: 'full',
+    // SkipValidation can be off when you know the implementation of the lexer is correct.
+    // While testing however, we suggest you do not skip this step.
+    skipValidations: false,
+  },
+  parserConfig: {
+    // SkipValidation can be off when you know the implementation of the parser is correct.
+    // While testing however, we suggest you do not skip this step.
+    skipValidations: false,
+  },
 });
 //            parse string        the context
 myParser.myRule('test me', { myKey: 'myValue' });
 ```
+
+> [!important]
+> When creating a new parser,
+> disable `skipValidation` and only remove it once the implementation is final and correct.
 
 > [!important]
 > Building a parser is an expensive operator since Chevrotain needs to perform its [grammar recording](https://chevrotain.io/docs/guide/internals.html#grammar-recording). One should therefore always try to reuse a created parser.

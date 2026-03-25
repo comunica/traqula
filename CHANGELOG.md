@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.0.4"></a>
+## [v1.0.4](https://github.com/comunica/traqula/compare/v1.0.3...v1.0.4) - 2026-03-25
+
+* [Bugfix: "in" and "not in" with one argument should still have brackets (#115)](https://github.com/comunica/traqula/commit/90e33ba444134ea9baf44e34049cc434d34dd642)
+* [Update actions/upload-artifact action to v7 (#110)](https://github.com/comunica/traqula/commit/36fac908cc0523687d88404af76d3087d231caba)
+* [Update dependency lerna to v9.0.7 (#112)](https://github.com/comunica/traqula/commit/09a7e2b0601452bf9c7670b96980deea8bf372ce)
+* [Update dependency vite to v8](https://github.com/comunica/traqula/commit/ab1e28a93bfc644467925192f674c395f61a4f4a)
+* [Update dependency lerna to v9.0.6 (#111)](https://github.com/comunica/traqula/commit/a898d974d34458b28e1c995811f15755fa38c171)
+
 <a name="v1.0.3"></a>
 ## [v1.0.3](https://github.com/comunica/traqula/compare/v1.0.2...v1.0.3) - 2026-02-20
 

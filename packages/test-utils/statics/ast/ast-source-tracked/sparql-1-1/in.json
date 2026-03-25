@@ -223,12 +223,92 @@
           "start": 52,
           "end": 80
         }
+      },
+      {
+        "type": "pattern",
+        "subType": "filter",
+        "expression": {
+          "type": "expression",
+          "subType": "operation",
+          "operator": "in",
+          "args": [
+            {
+              "type": "term",
+              "subType": "variable",
+              "value": "a",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 91,
+                "end": 93
+              }
+            },
+            {
+              "type": "term",
+              "subType": "literal",
+              "value": "1",
+              "langOrIri": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "http://www.w3.org/2001/XMLSchema#integer",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 98,
+                "end": 99
+              }
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 90,
+            "end": 101
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 83,
+          "end": 101
+        }
+      },
+      {
+        "type": "pattern",
+        "subType": "filter",
+        "expression": {
+          "type": "expression",
+          "subType": "operation",
+          "operator": "notin",
+          "args": [
+            {
+              "type": "term",
+              "subType": "variable",
+              "value": "c",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 112,
+                "end": 114
+              }
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 111,
+            "end": 125
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 104,
+          "end": 125
+        }
       }
     ],
     "loc": {
       "sourceLocationType": "source",
       "start": 9,
-      "end": 82
+      "end": 127
     }
   },
   "solutionModifiers": {},
@@ -251,16 +331,16 @@
   ],
   "loc": {
     "sourceLocationType": "inlinedSource",
-    "newSource": "SELECT * {\n  ?a ?b ?c.\n  FILTER (?a IN (1, 2, 3))\n  FILTER (?c NOT IN (1, 2, 3))\n}\n",
+    "newSource": "SELECT * {\n  ?a ?b ?c.\n  FILTER (?a IN (1, 2, 3))\n  FILTER (?c NOT IN (1, 2, 3))\n  FILTER (?a in (1))\n  FILTER (?c NOT IN ())\n}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
       "sourceLocationType": "source",
       "start": 0,
-      "end": 82
+      "end": 127
     },
     "startOnNew": 0,
-    "endOnNew": 82
+    "endOnNew": 127
   },
   "type": "query"
 }

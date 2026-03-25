@@ -103,6 +103,7 @@ export const expressionList: SparqlGrammarRule<'expressionList', Wrap<Expression
   ]),
 };
 
+const optimizedBracketsInfixOperator = new Set([ '||', '&&', '=', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/' ]);
 const infixOperators = new Set([ 'in', 'notin', '||', '&&', '=', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/' ]);
 const prefixOperator: Record<string, string> = { '!': '', uplus: '+', uminus: '-' };
 
@@ -115,6 +116,14 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
   gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
     if (F.isTerm(ast)) {
       SUBRULE(varOrTerm, ast);
+    } else if (F.isExpressionPatternOperation(ast)) {
+      const patterns = ast.args;
+      F.printFilter(ast, () => PRINT_WORD(ast.operator === 'exists' ? 'EXISTS' : 'NOT EXISTS'));
+      SUBRULE(groupGraphPattern, patterns);
+    } else if (F.isExpressionFunctionCall(ast)) {
+      SUBRULE(iriOrFunction, ast);
+    } else if (F.isExpressionAggregate(ast)) {
+      SUBRULE(aggregate, ast);
     } else if (F.isExpressionOperator(ast)) {
       if (infixOperators.has(ast.operator)) {
         const [ left, ...right ] = ast.args;
@@ -129,7 +138,7 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
             PRINT_WORD(ast.operator.toUpperCase());
           }
         });
-        if (right.length === 1) {
+        if (right.length === 1 && optimizedBracketsInfixOperator.has(ast.operator)) {
           SUBRULE(expression, right[0]);
         } else {
           SUBRULE(argList, F.wrap({ args: right, distinct: false }, ast.loc));
@@ -151,14 +160,6 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
         }
         F.printFilter(ast, () => PRINT_WORD(')'));
       }
-    } else if (F.isExpressionPatternOperation(ast)) {
-      const patterns = ast.args;
-      F.printFilter(ast, () => PRINT_WORD(ast.operator === 'exists' ? 'EXISTS' : 'NOT EXISTS'));
-      SUBRULE(groupGraphPattern, patterns);
-    } else if (F.isExpressionFunctionCall(ast)) {
-      SUBRULE(iriOrFunction, ast);
-    } else if (F.isExpressionAggregate(ast)) {
-      SUBRULE(aggregate, ast);
     }
   },
 };

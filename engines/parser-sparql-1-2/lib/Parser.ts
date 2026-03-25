@@ -256,12 +256,12 @@ export const sparql12ParserBuilder = ParserBuilder.create(sparql11ParserBuilder)
   .patchRule(S12.graphNode)
   .patchRule(S12.graphNodePath)
   .patchRule(S12.varOrTerm)
-  .deleteRule(g11.graphTerm.name)
   .patchRule(S12.primaryExpression)
   .patchRule(S12.builtInCall)
   .patchRule(S12.rdfLiteral)
   .patchRule(S12.unaryExpression)
-  .patchRule(S12.prologue);
+  .patchRule(S12.prologue)
+  .deleteRule(g11.graphTerm.name);
 
 export type SparqlParser = ReturnType<typeof sparql12ParserBuilder.build>;
 

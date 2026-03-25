@@ -88,11 +88,11 @@ export const sparql12GeneratorBuilder =
     }>()
     .addRule(g12.tripleTerm)
     .addRule(g12.reifiedTriple)
-    .patchRule(g12.graphNodePath)
     .addRule(g12.annotationBlockPath)
     .addRule(g12.annotationPath)
     .addRule(g12.versionDecl)
     .patchRule(g12.prologue)
+    .patchRule(g12.graphNodePath)
     .patchRule(g12.generateTriplesBlock)
     .patchRule(g12.generateGraphTerm);
 

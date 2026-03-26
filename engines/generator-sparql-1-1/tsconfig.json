@@ -3,15 +3,17 @@
   "compilerOptions": {
     "composite": true,
     "rootDir": ".",
+    "types": ["vitest/globals", "node"],
     "declaration": true,
     "outDir": "dist/esm"
   },
   "references": [
+    { "path": "../../packages/cli-utils" },
     { "path": "../../packages/core" },
     { "path": "../../packages/rules-sparql-1-1" },
     { "path": "../../packages/test-utils" },
     { "path": "../parser-sparql-1-1" }
   ],
-  "include": ["lib/**/*.ts", "test/**/*.ts"],
+  "include": ["lib/**/*.ts", "bin/**/*.ts", "test/**/*.ts"],
   "exclude": ["dist/**"]
 }

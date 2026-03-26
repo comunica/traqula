@@ -7,3 +7,4 @@ export * from './triplesBlockParser.js';
 export * from './triplesTemplateParserBuilder.js';
 export * from './updateNoModifyParser.js';
 export * from './updateUnitParser.js';
+export * from './cli.js';

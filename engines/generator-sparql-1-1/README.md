@@ -82,3 +82,31 @@ Whenever this number is negative, no newline will be printed. _(default: 0)_
 
 By default, the generator will emit the round tripped query string where possible.
 In order to create an AST that supports round-tripping, you should make sure the [parser is set up correctly](../parser-sparql-1-1/README.md#collecting-round-tripping-information).
+
+## CLI
+
+This package exposes the `traqula-generator-sparql-1-1` binary.
+
+Generate query text from an AST JSON file:
+
+```bash
+traqula-generator-sparql-1-1 --input ast.json --output query.sparql
+```
+
+Compact output (single line):
+
+```bash
+traqula-generator-sparql-1-1 --input ast.json --compact
+```
+
+Run as a long-lived JSONL service:
+
+```bash
+traqula-generator-sparql-1-1 --service
+```
+
+Request example:
+
+```json
+{"id":"1","ast":{...},"path":false,"context":{}}
+```

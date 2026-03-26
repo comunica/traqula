@@ -253,3 +253,31 @@ and the project operation always gets used (even in the case of `SELECT *`).
 
 Every test consists of a sparql file and a corresponding json file containing the algebra result.
 Tests ending with `(quads)` in their name are tested/generated with `quads: true` in the options.
+
+## CLI
+
+This package exposes the `traqula-algebra-sparql-1-1` binary.
+
+Convert AST JSON to algebra JSON:
+
+```bash
+traqula-algebra-sparql-1-1 --input ast.json --output algebra.json --pretty
+```
+
+Convert algebra JSON back to AST JSON:
+
+```bash
+traqula-algebra-sparql-1-1 --from algebra --input algebra.json --output ast.json --pretty
+```
+
+Run as a long-lived JSONL service:
+
+```bash
+traqula-algebra-sparql-1-1 --service
+```
+
+Request example:
+
+```json
+{"id":"1","mode":"toAlgebra","input":{...},"options":{"quads":false,"blankToVariable":false}}
+```

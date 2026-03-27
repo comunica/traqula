@@ -41,6 +41,6 @@
     "build:cjs": "node \"../../node_modules/typescript/bin/tsc\" -b tsconfig.cjs.json"
   },
   "devDependencies": {
-    "@types/node": "*"
+    "@types/node": "^24.3.1"
   }
 }

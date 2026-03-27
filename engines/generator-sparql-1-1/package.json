@@ -54,6 +54,6 @@
   "devDependencies": {
     "@traqula/parser-sparql-1-1": "^1.0.4",
     "@traqula/test-utils": "^1.0.4",
-    "@types/node": "^25.5.0"
+    "@types/node": "^24.3.1"
   }
 }

@@ -63,7 +63,7 @@ describe('astCoreFactory', () => {
       const factory = new AstCoreFactory({ tracksSourceLocation: true });
       const genLoc = factory.gen();
       expect(() => factory.sourceLocationNodeReplaceUnsafe(genLoc))
-        .toThrowError(/Cannot convert SourceLocation/u);
+        .toThrowError('Cannot convert SourceLocation');
     });
 
     it('sourceLocationInlinedSource creates inlined source location', ({ expect }) => {

@@ -1,5 +1,6 @@
 import { Lexer } from '@traqula/chevrotain';
 import { describe, it, vi } from 'vitest';
+import type { GeneratorRule, IndirDef, ParserRule } from '../lib/index.js';
 import { createToken, GeneratorBuilder, IndirBuilder, LexerBuilder, ParserBuilder } from '../lib/index.js';
 
 type ParseContext = { prefix: string };
@@ -10,40 +11,41 @@ const A = createToken({ name: 'A', pattern: /A/u });
 const B = createToken({ name: 'B', pattern: /B/u });
 const WS = createToken({ name: 'WS', pattern: /\s+/u, group: Lexer.SKIPPED });
 
-const parseA = <const>{
+const parseA: ParserRule<ParseContext, 'parseA', string, []> = {
   name: 'parseA',
-  impl: ({ CONSUME }: any) => () => CONSUME(A).image,
+  impl: ({ CONSUME }) => () => CONSUME(A).image,
 };
 
-const parseStart = <const>{
+const parseStart: ParserRule<ParseContext, 'parseStart', string, []> = {
   name: 'parseStart',
-  impl: ({ SUBRULE }: any) => (context?: ParseContext) => `${context?.prefix ?? ''}${SUBRULE(parseA)}`,
+  impl: ({ SUBRULE }) =>
+    (context?: ParseContext) => `${context?.prefix ?? ''}${SUBRULE(parseA)}`,
 };
 
-const emit = <const>{
+const emit: GeneratorRule<GenerateContext, 'emit', { value: string }, []> = {
   name: 'emit',
-  gImpl: ({ PRINT }: any) => (ast: { value: string }, context: GenerateContext) => {
+  gImpl: ({ PRINT }) => (ast, context) => {
     PRINT(ast.value, context.suffix ?? '');
   },
 };
 
-const wrap = <const>{
+const wrap: GeneratorRule<GenerateContext, 'wrap', { inner: { value: string }}, []> = {
   name: 'wrap',
-  gImpl: ({ SUBRULE, PRINT }: any) => (ast: { inner: { value: string }}) => {
+  gImpl: ({ SUBRULE, PRINT }) => (ast) => {
     PRINT('[');
     SUBRULE(emit, ast.inner);
     PRINT(']');
   },
 };
 
-const leaf = <const>{
+const leaf: IndirDef<ParseContext, 'leaf', string, [string]> = <const>{
   name: 'leaf',
-  fun: () => (context: { prefix: string }, value: string) => `${context.prefix}${value}`,
+  fun: () => (context, value) => `${context.prefix}${value}`,
 };
 
-const root = <const>{
+const root: IndirDef<ParseContext, 'root', string, [string]> = {
   name: 'root',
-  fun: ({ SUBRULE }: any) => (_context: { prefix: string }, value: string) => `(${SUBRULE(leaf, value)})`,
+  fun: ({ SUBRULE }) => (_context, value) => `(${SUBRULE(leaf, value)})`,
 };
 
 describe('core builders runtime coverage', () => {
@@ -77,14 +79,14 @@ describe('core builders runtime coverage', () => {
   });
 
   it('parserBuilder merge resolves conflicts only when an override is provided', ({ expect }) => {
-    const leftRule = <const>{ name: 'same', impl: () => () => 'left' };
-    const rightRule = <const>{ name: 'same', impl: () => () => 'right' };
+    const leftRule: ParserRule<ParseContext, 'same'> = { name: 'same', impl: () => () => 'left' };
+    const rightRule: ParserRule<ParseContext, 'same'> = { name: 'same', impl: () => () => 'right' };
 
     expect(() => ParserBuilder.create(<const>[ leftRule ])
       .merge(ParserBuilder.create(<const>[ rightRule ]), <const>[]))
-      .toThrowError(/already exists/u);
+      .toThrowError('already exists');
 
-    const overrideRule = <const>{ name: 'same', impl: () => () => 'override' };
+    const overrideRule: ParserRule<ParseContext, 'same'> = { name: 'same', impl: () => () => 'override' };
     const parser = ParserBuilder
       .create(<const>[ leftRule ])
       .merge(ParserBuilder.create(<const>[ rightRule ]), <const>[ overrideRule ])
@@ -98,7 +100,7 @@ describe('core builders runtime coverage', () => {
       .create(GeneratorBuilder.create(<const>[ emit, wrap ]))
       .patchRule({
         name: 'emit',
-        gImpl: ({ PRINT }: any) => (ast: { value: string }, context: GenerateContext) => {
+        gImpl: ({ PRINT }) => (ast: { value: string }, context: GenerateContext) => {
           PRINT(`${ast.value}${context.suffix ?? ''}`);
         },
       });
@@ -109,20 +111,20 @@ describe('core builders runtime coverage', () => {
     const removed = GeneratorBuilder.create(patched).deleteRule('wrap').build();
     expect(removed.emit({ value: 'Z' }, { origSource: '' })).toBe('Z');
 
-    const conflictingEmit = <const>{
+    const conflictingEmit: GeneratorRule<GenerateContext, 'emit', { value: string }, []> = {
       name: 'emit',
-      gImpl: ({ PRINT }: any) => (ast: { value: string }) => {
+      gImpl: ({ PRINT }) => (ast) => {
         PRINT(ast.value.toLowerCase());
       },
     };
 
     expect(() => GeneratorBuilder.create(<const>[ emit ])
       .merge(GeneratorBuilder.create(<const>[ conflictingEmit ]), <const>[]))
-      .toThrowError(/already exists/u);
+      .toThrowError('already exists');
 
-    const override = <const>{
+    const override: GeneratorRule<GenerateContext, 'emit', { value: string }, []> = {
       name: 'emit',
-      gImpl: ({ PRINT }: any) => (ast: { value: string }) => {
+      gImpl: ({ PRINT }) => (ast) => {
         PRINT(`override:${ast.value}`);
       },
     };
@@ -155,13 +157,13 @@ describe('core builders runtime coverage', () => {
 
     expect(onlyLeaf.leaf({ prefix: '' }, 'x')).toBe('x');
 
-    const duplicateLeaf = <const>{
+    const duplicateLeaf: IndirDef<ParseContext, 'leaf', string, [string]> = {
       name: 'leaf',
-      fun: () => (_context: { prefix: string }, value: string) => value.toUpperCase(),
+      fun: () => (_context, value) => value.toUpperCase(),
     };
 
     expect(() => IndirBuilder.create(<const>[ leaf ]).addRuleRedundant(duplicateLeaf))
-      .toThrowError(/already exists/u);
+      .toThrowError('already exists');
 
     const withRule = IndirBuilder.create(<const>[ leaf ]).addRule(root);
     expect(withRule.getRule('root')).toBe(root);
@@ -169,23 +171,23 @@ describe('core builders runtime coverage', () => {
 });
 
 describe('dynamicGenerator runtime coverage', () => {
-  const genWord = <const>{
+  const genWord: GeneratorRule<GenerateContext, 'genWord', { word: string }, []> = {
     name: 'genWord',
-    gImpl: ({ PRINT_WORD }: any) => (ast: { word: string }) => {
+    gImpl: ({ PRINT_WORD }) => (ast) => {
       PRINT_WORD(ast.word);
     },
   };
 
-  const genWords = <const>{
+  const genWords: GeneratorRule<GenerateContext, 'genWords', { words: string[] }, []> = {
     name: 'genWords',
-    gImpl: ({ PRINT_WORDS }: any) => (ast: { words: string[] }) => {
+    gImpl: ({ PRINT_WORDS }) => (ast) => {
       PRINT_WORDS(...ast.words);
     },
   };
 
-  const genEnsure = <const>{
+  const genEnsure: GeneratorRule<GenerateContext, 'genEnsure', { parts: string[] }, []> = {
     name: 'genEnsure',
-    gImpl: ({ PRINT, ENSURE }: any) => (ast: { parts: string[] }) => {
+    gImpl: ({ PRINT, ENSURE }) => (ast) => {
       for (const part of ast.parts) {
         ENSURE(' ');
         PRINT(part);
@@ -193,9 +195,9 @@ describe('dynamicGenerator runtime coverage', () => {
     },
   };
 
-  const genEnsureEither = <const>{
+  const genEnsureEither: GeneratorRule<GenerateContext, 'genEnsureEither', { parts: string[] }, []> = {
     name: 'genEnsureEither',
-    gImpl: ({ PRINT, ENSURE_EITHER }: any) => (ast: { parts: string[] }) => {
+    gImpl: ({ PRINT, ENSURE_EITHER }) => (ast: { parts: string[] }) => {
       for (const part of ast.parts) {
         ENSURE_EITHER(' ', '\n');
         PRINT(part);
@@ -203,9 +205,9 @@ describe('dynamicGenerator runtime coverage', () => {
     },
   };
 
-  const genNewLine = <const>{
+  const genNewLine: GeneratorRule<GenerateContext, 'genNewLine', { lines: string[] }, []> = {
     name: 'genNewLine',
-    gImpl: ({ NEW_LINE, PRINT }: any) => (ast: { lines: string[] }) => {
+    gImpl: ({ NEW_LINE, PRINT }) => (ast) => {
       for (const line of ast.lines) {
         PRINT(line);
         NEW_LINE();
@@ -213,34 +215,34 @@ describe('dynamicGenerator runtime coverage', () => {
     },
   };
 
-  const genOnEmpty = <const>{
+  const genOnEmpty: GeneratorRule<GenerateContext, 'genOnEmpty', { val: string }, []> = {
     name: 'genOnEmpty',
-    gImpl: ({ PRINT_ON_EMPTY }: any) => (ast: { val: string }) => {
+    gImpl: ({ PRINT_ON_EMPTY }) => (ast) => {
       PRINT_ON_EMPTY(ast.val);
     },
   };
 
-  const genOnOwn = <const>{
+  const genOnOwn: GeneratorRule<GenerateContext, 'genOnOwn', { val: string }, []> = {
     name: 'genOnOwn',
-    gImpl: ({ PRINT_ON_OWN_LINE }: any) => (ast: { val: string }) => {
+    gImpl: ({ PRINT_ON_OWN_LINE }) => (ast) => {
       PRINT_ON_OWN_LINE(ast.val);
     },
   };
 
-  it('pRINT_WORD and PRINT_WORDS ensure surrounding spaces', ({ expect }) => {
+  it('x PRINT_WORD and PRINT_WORDS ensure surrounding spaces', ({ expect }) => {
     const gen = GeneratorBuilder.create(<const>[ genWord, genWords ]).build();
     // PRINT_WORD prints space before and after, but trailing ensure is deferred and may not resolve
     expect(gen.genWord({ word: 'hello' }, { origSource: '' })).toBe(' hello');
     expect(gen.genWords({ words: [ 'a', 'b' ]}, { origSource: '' })).toBe(' a b');
   });
 
-  it('eNSURE and ENSURE_EITHER insert characters if missing', ({ expect }) => {
+  it('x ENSURE and ENSURE_EITHER insert characters if missing', ({ expect }) => {
     const gen = GeneratorBuilder.create(<const>[ genEnsure, genEnsureEither ]).build();
     expect(gen.genEnsure({ parts: [ 'a', 'b' ]}, { origSource: '' })).toBe(' a b');
     expect(gen.genEnsureEither({ parts: [ 'x', 'y' ]}, { origSource: '' })).toBe(' x y');
   });
 
-  it('nEW_LINE, PRINT_ON_EMPTY, PRINT_ON_OWN_LINE format output', ({ expect }) => {
+  it('x NEW_LINE, PRINT_ON_EMPTY, PRINT_ON_OWN_LINE format output', ({ expect }) => {
     const gen = GeneratorBuilder.create(<const>[ genNewLine, genOnEmpty, genOnOwn ]).build();
     expect(gen.genNewLine({ lines: [ 'L1', 'L2' ]}, { origSource: '' })).toBe('L1\nL2\n');
     expect(gen.genOnEmpty({ val: 'X' }, { origSource: '' })).toBe('\nX');

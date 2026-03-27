@@ -172,8 +172,7 @@ describe('transformerObject', () => {
       () => ({ ignoreKeys: new Set([ 'ignored' ]) }),
     );
 
-    expect(visited).toContain('kept-child');
-    expect(visited).not.toContain('ignored-child');
+    expect(visited).toEqual([ 'kept-child', 'root' ]);
   });
 
   it('visitObject respects shortcut', ({ expect }) => {
@@ -193,22 +192,16 @@ describe('transformerObject', () => {
       obj => ((<any>obj).name === 'a' ? { shortcut: true } : {}),
     );
 
-    // After shortcut at 'a', the visitor still has 'c' on the stack already
-    expect(visited).toContain('a');
-    // 'b' is a child of 'a' so it's not added to stack after shortcut
-    expect(visited).not.toContain('b');
+    expect(visited).toEqual([ 'c', 'a', 'root' ]);
   });
 
   it('clone creates a new transformer with merged context', ({ expect }) => {
     const original = new TransformerObject({ copy: false });
-    const cloned = original.clone({ continue: false });
+    const cloned = original.clone();
 
-    // Can't directly test private defaultContext, but can verify it works differently
-    // copy: false from original
     const obj = { a: { b: 1 }};
     const result = <any>cloned.transformObject(obj, x => x);
     expect(result).toBe(obj);
-    // Continue: false from clone
     expect(result.a).toBe(obj.a);
   });
 });
@@ -240,7 +233,7 @@ describe('transformerTyped additional coverage', () => {
     const fruit: Fruit = { type: 'fruit', value: 1 };
     const result = <Fruit>customTransformer.transformNode(fruit, {});
     // Default preVisitor sets copy: false, so result should be same object
-    expect(result.type).toBe('fruit');
+    expect(result).toBe(fruit);
   });
 });
 

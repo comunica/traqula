@@ -4,6 +4,14 @@ import { describe, it } from 'vitest';
 const F = new AstFactory();
 const noLoc = F.gen();
 
+describe('astFactory12', () => {
+  it('isContextDefinitionVersion identifies version context definitions', ({ expect }) => {
+    expect(F.isContextDefinitionVersion({ type: 'contextDef', subType: 'version' })).toBe(true);
+    expect(F.isContextDefinitionVersion({ type: 'contextDef', subType: 'base' })).toBe(false);
+    expect(F.isContextDefinitionVersion({ type: 'other' })).toBe(false);
+  });
+});
+
 describe('langTagHasCorrectRange', () => {
   it('does nothing for a plain string literal', ({ expect }) => {
     const lit = F.termLiteral(noLoc, 'hello');

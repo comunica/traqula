@@ -251,9 +251,11 @@ describe('findPatternBoundedVars', () => {
     const expr = F.expressionOperation('+', [ varX ], noLoc);
 
     const groupVars = new Set<string>();
-    const group = F.solutionModifierGroup([ varX ], noLoc);
+    // Use a SolutionModifierGroupBind (has .variable property) to cover the x => x.variable map lambda
+    const groupBind = <any>{ expression: varX, variable: varX, loc: noLoc };
+    const group = F.solutionModifierGroup([ groupBind ], noLoc);
     findPatternBoundedVars(group, groupVars);
-    expect(groupVars.has('x')).toBe(false);
+    expect(groupVars.has('x')).toBe(true);
 
     const havingVars = new Set<string>();
     const having = F.solutionModifierHaving([ expr ], noLoc);
@@ -262,6 +264,7 @@ describe('findPatternBoundedVars', () => {
     const orderVars = new Set<string>();
     const order = F.solutionModifierOrder([{ expression: varX, descending: false, loc: noLoc }], noLoc);
     findPatternBoundedVars(order, orderVars);
+    expect(orderVars.has('x')).toBe(true);
   });
 });
 

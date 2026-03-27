@@ -443,4 +443,12 @@ describe('astFactory', () => {
       expect(F.isUpdateOperationDeleteWhere(delWhere)).toBe(true);
     });
   });
+
+  describe('graphRefFactory - type guards', () => {
+    it('isGraphRef identifies any graphRef', ({ expect }) => {
+      const graphRef = F.graphRefDefault(noLoc);
+      expect(F.isGraphRef(graphRef)).toBe(true);
+      expect(F.isGraphRef({ type: 'other' })).toBe(false);
+    });
+  });
 });

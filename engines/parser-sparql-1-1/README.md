@@ -122,3 +122,31 @@ const sourceTrackingParser = new Parser({
   lexerConfig: { positionTracking: 'full' },
 });
 ```
+
+## CLI
+
+This package exposes the `traqula-parser-sparql-1-1` binary.
+
+Parse from stdin to JSON output:
+
+```bash
+echo 'SELECT * WHERE { ?s ?p ?o }' | traqula-parser-sparql-1-1 --pretty
+```
+
+Parse from file and write JSON to a file:
+
+```bash
+traqula-parser-sparql-1-1 --input query.sparql --output ast.json
+```
+
+Run as a long-lived JSONL service (one JSON request per line):
+
+```bash
+traqula-parser-sparql-1-1 --service
+```
+
+Request example:
+
+```json
+{ "id": "1", "query": "SELECT * WHERE { ?s ?p ?o }", "path": false, "context": { "skipValidation": false } }
+```

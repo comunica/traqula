@@ -4,6 +4,7 @@
     { "path": "packages/algebra-transformations-1-1" },
     { "path": "packages/algebra-transformations-1-2" },
     { "path": "packages/chevrotain" },
+    { "path": "packages/cli-utils" },
     { "path": "packages/core" },
     { "path": "packages/rules-sparql-1-1" },
     { "path": "packages/rules-sparql-1-1-adjust" },

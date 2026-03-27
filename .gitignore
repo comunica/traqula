@@ -34,3 +34,4 @@ packages/*/test/**/*.js
 packages/*/test/**/*.js.map
 packages/*/test/**/*.d.ts
 !packages/test-utils/lib/matchers/vitest.ts
+/package-lock.json

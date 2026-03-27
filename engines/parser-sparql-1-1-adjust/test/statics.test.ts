@@ -1,9 +1,9 @@
 import type { BaseQuad } from '@rdfjs/types';
+import { adjustParserBuilder, adjustLexerBuilder, Parser } from '@traqula/parser-sparql-1-1-adjust';
 import { AstFactory } from '@traqula/rules-sparql-1-1';
 import { positiveTest, importSparql11NoteTests, negativeTest } from '@traqula/test-utils';
 import { DataFactory } from 'rdf-data-factory';
 import { beforeEach, describe, it } from 'vitest';
-import { adjustParserBuilder, adjustLexerBuilder, Parser } from '../lib/index.js';
 
 describe('a SPARQL 1.1 + adjust parser', () => {
   const astFactory = new AstFactory({ tracksSourceLocation: false });

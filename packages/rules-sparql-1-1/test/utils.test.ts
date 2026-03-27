@@ -1,5 +1,5 @@
+import { sparqlCodepointEscape, CommonIRIs, AstTransformer } from '@traqula/rules-sparql-1-1';
 import { describe, it } from 'vitest';
-import { sparqlCodepointEscape, CommonIRIs, AstTransformer } from '../lib/utils.js';
 
 describe('sparqlCodepointEscape', () => {
   it('converts \\uXXXX escapes to unicode characters', ({ expect }) => {

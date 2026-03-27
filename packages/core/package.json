@@ -42,5 +42,10 @@
   },
   "dependencies": {
     "@traqula/chevrotain": "^1.0.0"
+  },
+  "depcheck": {
+    "ignores": [
+      "@traqula/core"
+    ]
   }
 }

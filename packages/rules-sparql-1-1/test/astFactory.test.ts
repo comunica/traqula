@@ -1,5 +1,5 @@
+import { AstFactory } from '@traqula/rules-sparql-1-1';
 import { describe, it } from 'vitest';
-import { AstFactory } from '../lib/astFactory.js';
 
 const F = new AstFactory();
 const noLoc = F.gen();

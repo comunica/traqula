@@ -1,6 +1,5 @@
+import { TransformerTyped, TransformerSubTyped, TransformerObject } from '@traqula/core';
 import { describe, it } from 'vitest';
-import { TransformerTyped, TransformerSubTyped } from '../lib/index.js';
-import { TransformerObject } from '../lib/transformers/TransformerObject.js';
 
 interface Fruit {
   type: 'fruit';

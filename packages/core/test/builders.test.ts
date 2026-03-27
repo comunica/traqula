@@ -179,6 +179,35 @@ describe('core builders runtime coverage', () => {
     const withRule = IndirBuilder.create(<const>[ leaf ]).addRule(root);
     expect(withRule.getRule('root')).toBe(root);
   });
+
+  it('generatorBuilder.addRuleRedundant throws on conflicting rule', ({ expect }) => {
+    const emitA: GeneratorRule<GenerateContext, 'emit', { value: string }, []> = {
+      name: 'emit',
+      gImpl: ({ PRINT }) => (ast) => {
+        PRINT(ast.value);
+      },
+    };
+    const emitB: GeneratorRule<GenerateContext, 'emit', { value: string }, []> = {
+      name: 'emit',
+      gImpl: ({ PRINT }) => (ast) => {
+        PRINT(ast.value.toUpperCase());
+      },
+    };
+    expect(() => GeneratorBuilder.create(<const>[ emitA ]).addRuleRedundant(emitB))
+      .toThrowError('already exists');
+  });
+
+  it('dynamicIndirected throws when calling a rule not found in the built indir', ({ expect }) => {
+    // Build an indir where 'root' references 'leaf' via SUBRULE
+    const badRoot: IndirDef<ParseContext, 'root', string, [string]> = {
+      name: 'root',
+      fun: ({ SUBRULE }) => (_context, value) => `(${SUBRULE(leaf, value)})`,
+    };
+    // Build with ONLY badRoot (no leaf), so leaf is not registered
+    const indir = IndirBuilder.create(<const>[ badRoot ]).build();
+    // Calling root tries to SUBRULE(leaf) which is not found
+    expect(() => indir.root({ prefix: '' }, 'x')).toThrowError('not found');
+  });
 });
 
 describe('dynamicGenerator runtime coverage', () => {
@@ -253,6 +282,41 @@ describe('dynamicGenerator runtime coverage', () => {
     expect(gen.genEnsureEither({ parts: [ 'x', 'y' ]}, { origSource: '' })).toBe(' x y');
   });
 
+  it('x ENSURE_EITHER with single arg delegates to ensure', ({ expect }) => {
+    const genEnsureEitherSingle: GeneratorRule<GenerateContext, 'genEnsureEitherSingle', { val: string }, []> = {
+      name: 'genEnsureEitherSingle',
+      gImpl: ({ PRINT, ENSURE_EITHER }) => (ast: { val: string }) => {
+        ENSURE_EITHER(' ');
+        PRINT(ast.val);
+      },
+    };
+    const gen = GeneratorBuilder.create(<const>[ genEnsureEitherSingle ]).build();
+    expect(gen.genEnsureEitherSingle({ val: 'x' }, { origSource: '' })).toBe(' x');
+  });
+
+  it('x NEW_LINE with force=true forces a newline', ({ expect }) => {
+    const genForceNewLine: GeneratorRule<GenerateContext, 'genForceNewLine', { val: string }, []> = {
+      name: 'genForceNewLine',
+      gImpl: ({ PRINT, NEW_LINE }) => (ast: { val: string }) => {
+        PRINT(ast.val);
+        NEW_LINE({ force: true });
+      },
+    };
+    const gen = GeneratorBuilder.create(<const>[ genForceNewLine ]).build();
+    expect(gen.genForceNewLine({ val: 'hi' }, { origSource: '' })).toBe('hi\n');
+  });
+
+  it('x SUBRULE throws when rule not found in generator', ({ expect }) => {
+    const genCallMissing: GeneratorRule<GenerateContext, 'genCallMissing', { val: string }, []> = {
+      name: 'genCallMissing',
+      gImpl: ({ SUBRULE }) => (ast: { val: string }) => {
+        SUBRULE(genWord, <any>{ word: ast.val });
+      },
+    };
+    const gen = GeneratorBuilder.create(<const>[ genCallMissing ]).build();
+    expect(() => gen.genCallMissing({ val: 'x' }, { origSource: '' })).toThrowError('not found');
+  });
+
   it('x NEW_LINE, PRINT_ON_EMPTY, PRINT_ON_OWN_LINE format output', ({ expect }) => {
     const gen = GeneratorBuilder.create(<const>[ genNewLine, genOnEmpty, genOnOwn ]).build();
     expect(gen.genNewLine({ lines: [ 'L1', 'L2' ]}, { origSource: '' })).toBe('L1\nL2\n');
@@ -301,6 +365,18 @@ describe('lexerBuilder runtime coverage', () => {
       .add(tokA)
       .merge(LexerBuilder.create().add(tokA2, tokB), [ tokA2 ]);
     expect(merged.tokenVocabulary).toEqual([ tokA, tokB ]);
+
+    // Merging with same token object (not a conflict - returns false in filter, no re-add)
+    const mergedSame = LexerBuilder.create().add(tokA).merge(LexerBuilder.create().add(tokA));
+    expect(mergedSame.tokenVocabulary).toEqual([ tokA ]);
+  });
+
+  it('throws on missing tokens for moveBefore and moveAfter', ({ expect }) => {
+    const builder = LexerBuilder.create().add(tokA, tokB);
+    // MoveBefore with not-found 'before' token
+    expect(() => (<any> builder).moveBefore(tokC, tokA)).toThrowError(/BeforeToken not found/u);
+    // MoveAfter with not-found 'token to move'
+    expect(() => (<any> builder).moveAfter(tokA, tokC)).toThrowError(/Token not found/u);
   });
 
   it('throws on missing tokens for addBefore, addAfter, delete', ({ expect }) => {

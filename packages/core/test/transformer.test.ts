@@ -203,6 +203,30 @@ describe('transformerObject', () => {
     expect(result).toBe(obj);
     expect(result.a).toBe(obj.a);
   });
+
+  it('transformObject skips non-own inherited properties', ({ expect }) => {
+    const transformer = new TransformerObject();
+    const proto = { inherited: 'value' };
+    const obj = Object.create(proto);
+    obj.type = 'test';
+    // TransformObject iterates with for...in; non-own properties should be skipped
+    const result = <any> transformer.transformObject(obj, copy => ({ ...copy, transformed: true }));
+    expect(result.type).toBe('test');
+    expect(result.inherited).toBeUndefined();
+  });
+
+  it('visitObject skips non-own inherited properties', ({ expect }) => {
+    const transformer = new TransformerObject();
+    const visited: string[] = [];
+    const proto = { inherited: 'value' };
+    const obj = Object.create(proto);
+    obj.type = 'test';
+    obj.child = { type: 'child' };
+    // VisitObject uses for...in; inherited props skipped
+    transformer.visitObject(obj, (o: any) => visited.push(o.type));
+    expect(visited).not.toContain('value');
+    expect(visited).toContain('child');
+  });
 });
 
 describe('transformerTyped additional coverage', () => {

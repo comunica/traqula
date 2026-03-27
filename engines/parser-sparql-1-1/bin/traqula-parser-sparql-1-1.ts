@@ -1,50 +1,61 @@
 #!/usr/bin/env node
 import {
-  getFlagAsBoolean,
-  getFlagAsString,
-  getFlagAsStrings,
-  parseCliArgs,
   parsePrefixMappings,
   readTextInput,
   runJsonlService,
   writeJsonOutput,
 } from '@traqula/cli-utils';
 import type { SparqlContext } from '@traqula/rules-sparql-1-1';
+import { Command } from 'commander';
 import { createParserCliRuntime, handleParserCliRequest } from '../lib/cli.js';
 
-function printHelp(): void {
-  process.stdout.write(`Usage: traqula-parser-sparql-1-1 [options]\n\n` +
-    `Parse SPARQL 1.1 input into a Traqula AST (JSON).\n\n` +
-    `Options:\n` +
-    `  -i, --input <path>          Read query text from file (defaults to stdin)\n` +
-    `  -o, --output <path>         Write JSON output to file (defaults to stdout)\n` +
-    `      --path                  Parse input as a SPARQL path expression\n` +
-    `      --base-iri <iri>        Set default base IRI\n` +
-    `      --prefix <pfx=iri>      Set default prefix mapping (repeatable)\n` +
-    `      --skip-validation       Skip parser validation checks\n` +
-    `      --allow-vars            Enable variable parsing mode\n` +
-    `      --allow-blank-nodes     Enable blank node creation mode\n` +
-    `      --pretty                Pretty-print JSON output\n` +
-    `      --service [jsonl]       Run JSONL service mode over stdio\n` +
-    `  -h, --help                  Show this help text\n\n` +
-    `Service request format:\n` +
-    `  {"id":"1","query":"SELECT * WHERE { ?s ?p ?o }","path":false,"context":{...}}\n`);
+function collectStrings(val: string, prev: string[]): string[] {
+  return [ ...prev, val ];
 }
 
-function createDefaultContext(args: ReturnType<typeof parseCliArgs>): Partial<SparqlContext> {
+const program = new Command()
+  .name('traqula-parser-sparql-1-1')
+  .description('Parse SPARQL 1.1 input into a Traqula AST (JSON).')
+  .option('-i, --input <path>', 'Read query text from file (defaults to stdin)')
+  .option('-o, --output <path>', 'Write JSON output to file (defaults to stdout)')
+  .option('--path', 'Parse input as a SPARQL path expression')
+  .option('--base-iri <iri>', 'Set default base IRI')
+  .option('--prefix <pfx=iri>', 'Set default prefix mapping (repeatable)', collectStrings, <string[]> [])
+  .option('--skip-validation', 'Skip parser validation checks')
+  .option('--allow-vars', 'Enable variable parsing mode')
+  .option('--allow-blank-nodes', 'Enable blank node creation mode')
+  .option('--pretty', 'Pretty-print JSON output')
+  .option('--service', 'Run JSONL service mode over stdio')
+  .addHelpText('after', `
+Service request format:
+  {"id":"1","query":"SELECT * WHERE { ?s ?p ?o }","path":false,"context":{...}}`);
+
+interface Options {
+  input?: string;
+  output?: string;
+  path?: boolean;
+  baseIri?: string;
+  prefix: string[];
+  skipValidation?: boolean;
+  allowVars?: boolean;
+  allowBlankNodes?: boolean;
+  pretty?: boolean;
+  service?: boolean;
+}
+
+function createDefaultContext(opts: Options): Partial<SparqlContext> {
   const parseMode = new Set<string>();
-  if (getFlagAsBoolean(args, 'allow-vars')) {
+  if (opts.allowVars) {
     parseMode.add('canParseVars');
   }
-  if (getFlagAsBoolean(args, 'allow-blank-nodes')) {
+  if (opts.allowBlankNodes) {
     parseMode.add('canCreateBlankNodes');
   }
 
-  const prefixes = parsePrefixMappings(getFlagAsStrings(args, 'prefix'));
   const context: Partial<SparqlContext> = {
-    baseIRI: getFlagAsString(args, 'base-iri'),
-    skipValidation: getFlagAsBoolean(args, 'skip-validation'),
-    prefixes,
+    baseIRI: opts.baseIri,
+    skipValidation: opts.skipValidation,
+    prefixes: parsePrefixMappings(opts.prefix),
   };
   if (parseMode.size > 0) {
     context.parseMode = parseMode;
@@ -52,15 +63,10 @@ function createDefaultContext(args: ReturnType<typeof parseCliArgs>): Partial<Sp
   return context;
 }
 
-async function run(): Promise<void> {
-  const args = parseCliArgs(process.argv.slice(2));
-  if (getFlagAsBoolean(args, 'help', 'h')) {
-    printHelp();
-    return;
-  }
+program.action(async(opts: Options) => {
+  const runtime = createParserCliRuntime(createDefaultContext(opts));
 
-  const runtime = createParserCliRuntime(createDefaultContext(args));
-  if (getFlagAsBoolean(args, 'service')) {
+  if (opts.service) {
     await runJsonlService((request: unknown) => {
       if (request === null || typeof request !== 'object') {
         throw new Error('Service request must be a JSON object');
@@ -78,15 +84,15 @@ async function run(): Promise<void> {
     return;
   }
 
-  const query = await readTextInput(getFlagAsString(args, 'input', 'i'));
+  const query = await readTextInput(opts.input);
   const output = handleParserCliRequest(runtime, {
     query,
-    path: getFlagAsBoolean(args, 'path'),
+    path: opts.path ?? false,
   });
-  await writeJsonOutput(output, getFlagAsBoolean(args, 'pretty'), getFlagAsString(args, 'output', 'o'));
-}
+  await writeJsonOutput(output, opts.pretty ?? false, opts.output);
+});
 
-run().catch((error: unknown) => {
+program.parseAsync().catch((error: unknown) => {
   process.stderr.write(`${error instanceof Error ? error.message : 'Unknown error'}\n`);
   process.exitCode = 1;
 });

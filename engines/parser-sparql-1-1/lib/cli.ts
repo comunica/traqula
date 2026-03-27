@@ -33,10 +33,20 @@ function mergeContext(
   }
 
   const parseMode = override.parseMode ?? defaults.parseMode;
-  return {
+  const merged: Partial<SparqlContext> = {
     ...defaults,
     ...override,
     prefixes: { ...defaults.prefixes, ...override.prefixes },
-    parseMode: parseMode ? new Set(parseMode) : undefined,
   };
+
+  // Avoid setting parseMode to undefined: an explicit undefined overwrites the
+  // parser's built-in default Set (canParseVars + canCreateBlankNodes) when the
+  // partial context is spread inside Parser.parse / Parser.parsePath.
+  if (parseMode === undefined) {
+    delete merged.parseMode;
+  } else {
+    merged.parseMode = new Set(parseMode);
+  }
+
+  return merged;
 }

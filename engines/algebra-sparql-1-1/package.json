@@ -51,7 +51,8 @@
     "@traqula/algebra-transformations-1-1": "^1.0.4",
     "@traqula/cli-utils": "^1.0.4",
     "@traqula/core": "^1.0.3",
-    "@traqula/rules-sparql-1-1": "^1.0.4"
+    "@traqula/rules-sparql-1-1": "^1.0.4",
+    "commander": "^14.0.3"
   },
   "devDependencies": {
     "@traqula/generator-sparql-1-1": "^1.0.4",

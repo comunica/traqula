@@ -1,54 +1,58 @@
 #!/usr/bin/env node
 import {
-  getFlagAsBoolean,
-  getFlagAsString,
-  parseCliArgs,
   readJsonInput,
   runJsonlService,
   writeTextOutput,
 } from '@traqula/cli-utils';
 import { traqulaIndentation, traqulaNewlineAlternative } from '@traqula/core';
 import type { SparqlGeneratorContext, Path, Query, Update } from '@traqula/rules-sparql-1-1';
+import { Command } from 'commander';
 import { createGeneratorCliRuntime, handleGeneratorCliRequest } from '../lib/cli.js';
 
-function printHelp(): void {
-  process.stdout.write(`Usage: traqula-generator-sparql-1-1 [options]\n\n` +
-    `Generate SPARQL 1.1 text from a Traqula AST JSON input.\n\n` +
-    `Options:\n` +
-    `  -i, --input <path>          Read AST JSON from file (defaults to stdin)\n` +
-    `  -o, --output <path>         Write generated SPARQL to file (defaults to stdout)\n` +
-    `      --path                  Treat input AST as a SPARQL path\n` +
-    `      --compact               Disable pretty printing and newlines\n` +
-    `      --indent <count>        Configure indentation width\n` +
-    `      --newline-alt <text>    Separator used when compact mode disables newlines\n` +
-    `      --service [jsonl]       Run JSONL service mode over stdio\n` +
-    `  -h, --help                  Show this help text\n\n` +
-    `Service request format:\n` +
-    `  {"id":"1","ast":{...},"path":false,"context":{...}}\n`);
+const program = new Command()
+  .name('traqula-generator-sparql-1-1')
+  .description('Generate SPARQL 1.1 text from a Traqula AST JSON input.')
+  .option('-i, --input <path>', 'Read AST JSON from file (defaults to stdin)')
+  .option('-o, --output <path>', 'Write generated SPARQL to file (defaults to stdout)')
+  .option('--path', 'Treat input AST as a SPARQL path')
+  .option('--compact', 'Disable pretty printing and newlines')
+  .option('--indent <count>', 'Configure indentation width')
+  .option('--newline-alt <text>', 'Separator used when compact mode disables newlines')
+  .option('--service', 'Run JSONL service mode over stdio')
+  .addHelpText('after', `
+Service request format:
+  {"id":"1","ast":{...},"path":false,"context":{...}}`);
+
+interface Options {
+  input?: string;
+  output?: string;
+  path?: boolean;
+  compact?: boolean;
+  indent?: string;
+  newlineAlt?: string;
+  service?: boolean;
 }
 
-function parsePositiveInt(input: string, option: string): number {
-  const parsed = Number.parseInt(input, 10);
+function parseNonNegativeInt(value: string, option: string): number {
+  const parsed = Number.parseInt(value, 10);
   if (!Number.isInteger(parsed) || parsed < 0) {
-    throw new Error(`Invalid value for --${option}: ${input}`);
+    throw new Error(`Invalid value for --${option}: must be a non-negative integer`);
   }
   return parsed;
 }
 
-function createDefaultContext(args: ReturnType<typeof parseCliArgs>): Partial<SparqlGeneratorContext> {
+function createDefaultContext(opts: Options): Partial<SparqlGeneratorContext> {
   const context: Partial<SparqlGeneratorContext> = {};
 
-  const indent = getFlagAsString(args, 'indent');
-  if (indent !== undefined) {
-    context.indentInc = parsePositiveInt(indent, 'indent');
+  if (opts.indent !== undefined) {
+    context.indentInc = parseNonNegativeInt(opts.indent, 'indent');
   }
 
-  const newlineAlt = getFlagAsString(args, 'newline-alt');
-  if (newlineAlt !== undefined) {
-    context[traqulaNewlineAlternative] = newlineAlt;
+  if (opts.newlineAlt !== undefined) {
+    context[traqulaNewlineAlternative] = opts.newlineAlt;
   }
 
-  if (getFlagAsBoolean(args, 'compact')) {
+  if (opts.compact) {
     context[traqulaIndentation] = -1;
     context.indentInc = 0;
   }
@@ -56,15 +60,10 @@ function createDefaultContext(args: ReturnType<typeof parseCliArgs>): Partial<Sp
   return context;
 }
 
-async function run(): Promise<void> {
-  const args = parseCliArgs(process.argv.slice(2));
-  if (getFlagAsBoolean(args, 'help', 'h')) {
-    printHelp();
-    return;
-  }
+program.action(async(opts: Options) => {
+  const runtime = createGeneratorCliRuntime(createDefaultContext(opts));
 
-  const runtime = createGeneratorCliRuntime(createDefaultContext(args));
-  if (getFlagAsBoolean(args, 'service')) {
+  if (opts.service) {
     await runJsonlService((request: unknown) => {
       if (request === null || typeof request !== 'object') {
         throw new Error('Service request must be a JSON object');
@@ -88,14 +87,14 @@ async function run(): Promise<void> {
     return;
   }
 
-  const ast = await readJsonInput<Query | Update | Path>(getFlagAsString(args, 'input', 'i'));
-  const output = getFlagAsBoolean(args, 'path') ?
+  const ast = await readJsonInput<Query | Update | Path>(opts.input);
+  const output = opts.path ?
     handleGeneratorCliRequest(runtime, { ast: <Path> ast, path: true }) :
     handleGeneratorCliRequest(runtime, { ast: <Query | Update> ast });
-  await writeTextOutput(output, getFlagAsString(args, 'output', 'o'));
-}
+  await writeTextOutput(output, opts.output);
+});
 
-run().catch((error: unknown) => {
+program.parseAsync().catch((error: unknown) => {
   process.stderr.write(`${error instanceof Error ? error.message : 'Unknown error'}\n`);
   process.exitCode = 1;
 });

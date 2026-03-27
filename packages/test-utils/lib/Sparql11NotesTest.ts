@@ -7,7 +7,7 @@ interface Parser {
   parse: (query: string, context?: { prefixes?: Record<string, string>; baseIRI?: string }) => unknown;
 }
 
-export function importSparql11NoteTests(parser: Parser, DF: DataFactory<BaseQuad>): void {
+export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQuad>): void {
   function testErroneousQuery(query: string, _errorMsg: string): TestFunction<object> {
     return ({ expect }) => {
       let error: any;
@@ -24,7 +24,7 @@ export function importSparql11NoteTests(parser: Parser, DF: DataFactory<BaseQuad
 
   it('should throw an error on an invalid query', testErroneousQuery('invalid', 'Parse error on line 1'));
 
-  it.skip('should throw an error on a projection of ungrouped variable', testErroneousQuery(
+  it('should throw an error on a projection of ungrouped variable', testErroneousQuery(
     'PREFIX : <http://www.example.org/> SELECT ?o WHERE { ?s ?p ?o } GROUP BY ?s',
     'Projection of ungrouped variable (?o)',
   ));
@@ -44,12 +44,12 @@ export function importSparql11NoteTests(parser: Parser, DF: DataFactory<BaseQuad
     expect(parser.parse(query)).toMatchObject({});
   });
 
-  it.skip('should throw an error on an invalid selectscope', testErroneousQuery(
+  it('should throw an error on an invalid selectscope', testErroneousQuery(
     'SELECT (1 AS ?X ) { SELECT (2 AS ?X ) {} }',
     'Target id of \'AS\' (?X) already used in subquery',
   ));
 
-  it.skip('should throw an error on bind to variable in scope', testErroneousQuery(
+  it('should throw an error on bind to variable in scope', testErroneousQuery(
     'SELECT * { ?s ?p ?o BIND(?o AS ?o) }',
     'Target id of \'AS\' (?X) already used in subquery',
   ));
@@ -80,48 +80,9 @@ export function importSparql11NoteTests(parser: Parser, DF: DataFactory<BaseQuad
   describe('with pre-defined prefixes', () => {
     const prefixes = { a: 'ex:abc#', b: 'ex:def#' };
 
-    it.skip('should use those prefixes', ({ expect }) => {
-      const query = 'SELECT * { a:a b:b "" }';
-      expect(parser.parse(query, { prefixes })).toMatchObject({
-        where: [
-          {
-            triples: [
-              {
-                subject: DF.namedNode('ex:abc#a'),
-                predicate: DF.namedNode('ex:def#b'),
-                object: DF.literal(''),
-              },
-            ],
-          },
-        ],
-      });
-    });
+    it.todo('should use those prefixes');
 
-    it.skip('should allow temporarily overriding prefixes', ({ expect }) => {
-      const query = 'PREFIX a: <ex:xyz#> SELECT * { a:a b:b "" }';
-      expect(parser.parse(query, { prefixes })).toMatchObject({
-        where: [{
-          triples: [{
-            subject: DF.namedNode('ex:xyz#a'),
-            predicate: DF.namedNode('ex:def#b'),
-            object: DF.literal(''),
-          }],
-        },
-        ],
-      });
-
-      const query2 = 'SELECT * { a:a b:b "" }';
-      expect(parser.parse(query2, { prefixes })).toMatchObject({
-        where: [{
-          triples: [{
-            subject: DF.namedNode('ex:abc#a'),
-            predicate: DF.namedNode('ex:def#b'),
-            object: DF.literal(''),
-          }],
-        },
-        ],
-      });
-    });
+    it.todo('should allow temporarily overriding prefixes');
 
     it('should not change the original prefixes', ({ expect }) => {
       expect(prefixes).toEqual({ a: 'ex:abc#', b: 'ex:def#' });
@@ -129,146 +90,23 @@ export function importSparql11NoteTests(parser: Parser, DF: DataFactory<BaseQuad
   });
 
   describe('with pre-defined base IRI', () => {
-    const context = { baseIRI: 'http://ex.org/' };
+    const _context = { baseIRI: 'http://ex.org/' };
 
-    it.skip('contains the base', ({ expect }) => {
-      const query = 'SELECT * { ?s ?p ?o }';
-      expect(parser.parse(query, context)).toMatchObject({
-        base: 'http://ex.org/',
-      });
-    });
+    it.todo('contains the base');
 
-    it.skip('using prefixed as relative iri', ({ expect }) => {
-      const context = { baseIRI: 'http://ex.org/apl' };
-      const query = `
-CONSTRUCT
-FROM <data.ttl>
-WHERE { ?s ?p ?o }
-`;
-      expect(parser.parse(query, context)).toMatchObject({
-        from: {
-          default: [
-            DF.namedNode('http://ex.org/data.ttl'),
-          ],
-        },
-      });
-    });
+    it.todo('using prefixed as relative iri');
 
-    it.skip('should use the base IRI', ({ expect }) => {
-      const query = 'SELECT * { <> <#b> "" }';
-      const result = {
-        subject: DF.namedNode('http://ex.org/'),
-        predicate: DF.namedNode('http://ex.org/#b'),
-        object: DF.literal(''),
-      };
+    it.todo('should use the base IRI');
 
-      expect(parser.parse(query, context)).toMatchObject({
-        where: [{ triples: [ result ]}],
-      });
-    });
-
-    it.skip('should work after a previous query failed', ({ expect }) => {
-      const badQuery = 'SELECT * { <> <#b> "" } invalid!';
-      expect(() => parser.parse(badQuery, context)).toThrow(Error);
-
-      const goodQuery = 'SELECT * { <> <#b> "" }';
-
-      const context = { baseIRI: 'http://ex2.org/' };
-      const result = {
-        subject: DF.namedNode('http://ex2.org/'),
-        predicate: DF.namedNode('http://ex2.org/#b'),
-        object: DF.literal(''),
-      };
-      const data = parser.parse(goodQuery, context);
-      expect(data).toMatchObject({
-        where: [{ triples: [ result ]}],
-      });
-    });
+    it.todo('should work after a previous query failed');
   });
 
-  it.skip('should throw an error on relative IRIs if no base IRI is specified', testErroneousQuery(
-    'SELECT * { <a> <b> <c> }',
-    'Cannot resolve relative IRI a because no base IRI was set.',
-  ));
+  it.todo('should throw an error on relative IRIs if no base IRI is specified');
 
   describe('with group collapsing disabled', () => {
-    it.skip('should keep explicit pattern group', ({ expect }) => {
-      const query = 'SELECT * WHERE { { ?s ?p ?o } ?a ?b ?c }';
-      const result = [
-        {
-          type: 'group',
-          patterns: [
-            {
-              type: 'bgp',
-              triples: [
-                {
-                  subject: DF.variable('s'),
-                  predicate: DF.variable('p'),
-                  object: DF.variable('o'),
-                },
-              ],
-            },
-          ],
-        },
-        {
-          type: 'bgp',
-          triples: [
-            {
-              subject: DF.variable('a'),
-              predicate: DF.variable('b'),
-              object: DF.variable('c'),
-            },
-          ],
-        },
-      ];
+    it.todo('should keep explicit pattern group');
 
-      expect(parser.parse(query)).toMatchObject({ where: result });
-    });
-
-    it.skip('should still collapse immediate union groups', ({ expect }) => {
-      const query = 'SELECT * WHERE { { ?s ?p ?o } UNION { ?a ?b ?c } }';
-
-      const result = [
-        {
-          type: 'union',
-          patterns: [{
-            type: 'bgp',
-            triples: [{
-              subject: {
-                termType: 'Variable',
-                value: 's',
-              },
-              predicate: {
-                termType: 'Variable',
-                value: 'p',
-              },
-              object: {
-                termType: 'Variable',
-                value: 'o',
-              },
-            }],
-          }, {
-            type: 'bgp',
-            triples: [{
-              subject: {
-                termType: 'Variable',
-                value: 'a',
-              },
-              predicate: {
-                termType: 'Variable',
-                value: 'b',
-              },
-              object: {
-                termType: 'Variable',
-                value: 'c',
-              },
-            }],
-          }],
-        },
-      ];
-
-      expect(parser.parse(query)).toMatchObject({ where: result });
-    });
+    it.todo('should still collapse immediate union groups');
   });
 
   describe('for update queries', () => {
@@ -314,12 +152,12 @@ WHERE { ?s ?p ?o }
       expect(parser.parse(query)).toMatchObject({});
     });
 
-    it.skip('should throw an error on reused blank nodes across INSERT DATA clauses', testErroneousQuery(
+    it('should throw an error on reused blank nodes across INSERT DATA clauses', testErroneousQuery(
       'INSERT DATA { _:a <ex:p> <ex:o> }; INSERT DATA { _:a <ex:p> <ex:o> }',
       'Detected reuse blank node across different INSERT DATA clauses',
     ));
 
-    it.skip('should throw an error on reused blank nodes across INSERT DATA clauses with GRAPH', testErroneousQuery(
+    it('should throw an error on reused blank nodes across INSERT DATA clauses with GRAPH', testErroneousQuery(
       'INSERT DATA { _:a <ex:p> <ex:o> }; INSERT DATA { GRAPH <ex:g> { _:a <ex:p> <ex:o> } }',
       'Detected reuse blank node across different INSERT DATA clauses',
     ));

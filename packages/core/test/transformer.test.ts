@@ -280,3 +280,13 @@ describe('transformerSubTyped', () => {
     expect(cloned).toBeInstanceOf(TransformerSubTyped);
   });
 });
+
+describe('transformerTyped clone', () => {
+  type FruitOrVeg = { type: 'fruit'; name?: string } | { type: 'vegetable'; name?: string };
+  it('clone creates new TransformerTyped with merged context and nodePreVisitor', ({ expect }) => {
+    const original = new TransformerTyped<FruitOrVeg>({ copy: true }, { fruit: { copy: false }});
+    const cloned = original.clone({ copy: false }, { vegetable: { copy: true }});
+    expect(cloned).not.toBe(original);
+    expect(cloned).toBeInstanceOf(TransformerTyped);
+  });
+});

@@ -125,7 +125,7 @@ function objectsEqual(
 
 // If true, the value is a term. With ts annotation
 function isTerm(value: unknown): value is { equals: (other: { termType: unknown } | undefined | null) => boolean } {
-  return false;
+  return typeof value === 'object' && value !== null && 'termType' in value && 'equals' in value;
 }
 
 function isPrimitive(value: unknown): value is string | number | boolean {

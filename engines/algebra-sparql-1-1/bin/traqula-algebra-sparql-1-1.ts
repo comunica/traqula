@@ -1,6 +1,5 @@
 #!/usr/bin/env node
-import type { ContextConfigs } from '@traqula/algebra-transformations-1-1';
-import type { Algebra } from '@traqula/algebra-transformations-1-1';
+import type { Algebra, ContextConfigs } from '@traqula/algebra-transformations-1-1';
 import {
   getFlagAsBoolean,
   getFlagAsString,
@@ -67,17 +66,23 @@ async function run(): Promise<void> {
       if (request === null || typeof request !== 'object') {
         throw new Error('Service request must be a JSON object');
       }
-      const data = request as { mode?: unknown; input?: unknown; options?: unknown };
+      const data = <{ mode?: unknown; input?: unknown; options?: unknown }> request;
       if (data.mode !== 'toAlgebra' && data.mode !== 'toAst') {
         throw new Error('Service request must include mode: toAlgebra | toAst');
       }
       if (data.input === undefined) {
         throw new Error('Service request must include property: input');
       }
+      if (data.mode === 'toAlgebra') {
+        return handleAlgebraCliRequest(runtime, {
+          mode: 'toAlgebra',
+          input: <SparqlQuery> data.input,
+          options: <ContextConfigs | undefined> data.options,
+        });
+      }
       return handleAlgebraCliRequest(runtime, {
-        mode: data.mode,
-        input: data.input as SparqlQuery | Algebra.Operation,
-        options: data.options as ContextConfigs | undefined,
+        mode: 'toAst',
+        input: <Algebra.Operation> data.input,
       });
     });
     return;
@@ -85,11 +90,16 @@ async function run(): Promise<void> {
 
   const mode = parseMode(args);
   const input = await readJsonInput<SparqlQuery | Algebra.Operation>(getFlagAsString(args, 'input', 'i'));
-  const output = handleAlgebraCliRequest(runtime, {
-    mode,
-    input,
-    options: mode === 'toAlgebra' ? createToAlgebraOptions(args) : undefined,
-  });
+  const output = mode === 'toAlgebra' ?
+    handleAlgebraCliRequest(runtime, {
+      mode: 'toAlgebra',
+      input: <SparqlQuery> input,
+      options: createToAlgebraOptions(args),
+    }) :
+    handleAlgebraCliRequest(runtime, {
+      mode: 'toAst',
+      input: <Algebra.Operation> input,
+    });
 
   await writeJsonOutput(output, getFlagAsBoolean(args, 'pretty'), getFlagAsString(args, 'output', 'o'));
 }

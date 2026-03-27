@@ -4,11 +4,17 @@ import type { SparqlQuery } from '@traqula/rules-sparql-1-1';
 import { toAlgebra11Builder } from './toAlgebra.js';
 import { toAst11Builder } from './toAst.js';
 
-export interface AlgebraCliRequest {
-  readonly mode: 'toAlgebra' | 'toAst';
-  readonly input: SparqlQuery | Algebra.Operation;
-  readonly options?: ContextConfigs;
-}
+export type AlgebraCliRequest =
+  | {
+    readonly mode: 'toAlgebra';
+    readonly input: SparqlQuery;
+    readonly options?: ContextConfigs;
+  }
+  | {
+    readonly mode: 'toAst';
+    readonly input: Algebra.Operation;
+    readonly options?: ContextConfigs;
+  };
 
 export interface AlgebraCliRuntime {
   readonly toAlgebraTransformer: ReturnType<typeof toAlgebra11Builder.build>;
@@ -28,7 +34,7 @@ export function handleAlgebraCliRequest(runtime: AlgebraCliRuntime, request: Alg
     const context = createAlgebraContext(options);
     const operation = runtime.toAlgebraTransformer.translateQuery(
       context,
-      request.input as SparqlQuery,
+      request.input,
       options.quads,
       options.blankToVariable,
     );
@@ -36,5 +42,5 @@ export function handleAlgebraCliRequest(runtime: AlgebraCliRuntime, request: Alg
   }
 
   const context = createAstContext();
-  return runtime.toAstTransformer.algToSparql(context, request.input as Algebra.Operation);
+  return runtime.toAstTransformer.algToSparql(context, request.input);
 }

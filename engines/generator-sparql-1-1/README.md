@@ -108,5 +108,5 @@ traqula-generator-sparql-1-1 --service
 Request example:
 
 ```json
-{"id":"1","ast":{...},"path":false,"context":{}}
+{ "id": "1", "ast": { "type": "query", "subType": "ask" }, "path": false, "context": {} }
 ```

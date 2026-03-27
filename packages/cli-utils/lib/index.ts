@@ -1,3 +1,4 @@
+/* eslint-disable import/no-nodejs-modules */
 import fs from 'node:fs/promises';
 import { createInterface } from 'node:readline';
 
@@ -127,7 +128,7 @@ export async function readTextInput(filePath?: string): Promise<string> {
 
   const chunks: string[] = [];
   for await (const chunk of process.stdin) {
-    chunks.push(typeof chunk === 'string' ? chunk : (chunk as Buffer).toString('utf8'));
+    chunks.push(typeof chunk === 'string' ? chunk : (<Buffer> chunk).toString('utf8'));
   }
   return chunks.join('');
 }
@@ -145,7 +146,7 @@ export async function writeTextOutput(text: string, filePath?: string): Promise<
 
 export async function readJsonInput<T>(filePath?: string): Promise<T> {
   const text = await readTextInput(filePath);
-  return JSON.parse(text) as T;
+  return <T> JSON.parse(text);
 }
 
 export async function writeJsonOutput(value: unknown, pretty: boolean, filePath?: string): Promise<void> {
@@ -179,7 +180,7 @@ export async function runJsonlService(
     }
 
     const id =
-      typeof request === 'object' && request !== null ? (request as Record<string, unknown>).id : undefined;
+      typeof request === 'object' && request !== null ? (<Record<string, unknown>> request).id : undefined;
     try {
       const result = await handler(request);
       const response: JsonlResponse = {

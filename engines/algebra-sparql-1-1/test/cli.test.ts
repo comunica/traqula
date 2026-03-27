@@ -9,17 +9,17 @@ describe('algebra CLI runtime', () => {
     const runtime = createAlgebraCliRuntime();
     const ast = parser.parse('SELECT * WHERE { ?s ?p ?o }');
 
-    const algebra = handleAlgebraCliRequest(runtime, {
+    const algebra = <Algebra.Operation> handleAlgebraCliRequest(runtime, {
       mode: 'toAlgebra',
       input: ast,
-    }) as Algebra.Operation;
+    });
 
     expect(algebra).toHaveProperty('type');
 
-    const astAgain = handleAlgebraCliRequest(runtime, {
+    const astAgain = <{ where?: unknown; loc?: unknown }> handleAlgebraCliRequest(runtime, {
       mode: 'toAst',
       input: algebra,
-    }) as { where?: unknown; loc?: unknown };
+    });
 
     expect(astAgain.where).toBeDefined();
     expect(astAgain.loc).toBeDefined();

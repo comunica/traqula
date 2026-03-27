@@ -1,11 +1,17 @@
 import type { SparqlGeneratorContext, Path, Query, Update } from '@traqula/rules-sparql-1-1';
 import { Generator } from './index.js';
 
-export interface GeneratorCliRequest {
-  readonly ast: Query | Update | Path;
-  readonly path?: boolean;
-  readonly context?: Partial<SparqlGeneratorContext>;
-}
+export type GeneratorCliRequest =
+  | {
+    readonly ast: Path;
+    readonly path: true;
+    readonly context?: Partial<SparqlGeneratorContext>;
+  }
+  | {
+    readonly ast: Query | Update;
+    readonly path?: false;
+    readonly context?: Partial<SparqlGeneratorContext>;
+  };
 
 export interface GeneratorCliRuntime {
   readonly generator: Generator;
@@ -22,8 +28,8 @@ export function createGeneratorCliRuntime(defaultContext: Partial<SparqlGenerato
 export function handleGeneratorCliRequest(runtime: GeneratorCliRuntime, request: GeneratorCliRequest): string {
   const context = mergeContext(runtime.defaultContext, request.context);
   return request.path ?
-    runtime.generator.generatePath(request.ast as Path, context) :
-    runtime.generator.generate(request.ast as Query | Update, context);
+    runtime.generator.generatePath(request.ast, context) :
+    runtime.generator.generate(request.ast, context);
 }
 
 function mergeContext(

@@ -69,24 +69,29 @@ async function run(): Promise<void> {
       if (request === null || typeof request !== 'object') {
         throw new Error('Service request must be a JSON object');
       }
-      const data = request as { ast?: unknown; path?: unknown; context?: unknown };
+      const data = <{ ast?: unknown; path?: unknown; context?: unknown }> request;
       if (data.ast === undefined) {
         throw new Error('Missing property: ast');
       }
+      if (data.path) {
+        return handleGeneratorCliRequest(runtime, {
+          ast: <Path> data.ast,
+          path: true,
+          context: <Partial<SparqlGeneratorContext> | undefined> data.context,
+        });
+      }
       return handleGeneratorCliRequest(runtime, {
-        ast: data.ast as Query | Update | Path,
-        path: Boolean(data.path),
-        context: data.context as Partial<SparqlGeneratorContext> | undefined,
+        ast: <Query | Update> data.ast,
+        context: <Partial<SparqlGeneratorContext> | undefined> data.context,
       });
     });
     return;
   }
 
   const ast = await readJsonInput<Query | Update | Path>(getFlagAsString(args, 'input', 'i'));
-  const output = handleGeneratorCliRequest(runtime, {
-    ast,
-    path: getFlagAsBoolean(args, 'path'),
-  });
+  const output = getFlagAsBoolean(args, 'path') ?
+    handleGeneratorCliRequest(runtime, { ast: <Path> ast, path: true }) :
+    handleGeneratorCliRequest(runtime, { ast: <Query | Update> ast });
   await writeTextOutput(output, getFlagAsString(args, 'output', 'o'));
 }
 

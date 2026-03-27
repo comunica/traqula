@@ -279,5 +279,5 @@ traqula-algebra-sparql-1-1 --service
 Request example:
 
 ```json
-{"id":"1","mode":"toAlgebra","input":{...},"options":{"quads":false,"blankToVariable":false}}
+{ "id": "1", "mode": "toAlgebra", "input": { "type": "query", "subType": "ask" }, "options": { "quads": false, "blankToVariable": false } }
 ```

@@ -1,11 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { BaseQuad } from '@rdfjs/types';
+import { Parser, sparql12ParserBuilder } from '@traqula/parser-sparql-1-2';
 import { AstFactory, lex as l12 } from '@traqula/rules-sparql-1-2';
 import { positiveTest, importSparql11NoteTests, negativeTest, getStaticFilePath } from '@traqula/test-utils';
 import { DataFactory } from 'rdf-data-factory';
 import { beforeEach, describe, it } from 'vitest';
-import { Parser, sparql12ParserBuilder } from '../lib/index.js';
 
 describe('a SPARQL 1.2 parser', () => {
   const astFactory = new AstFactory({ tracksSourceLocation: false });
@@ -40,6 +40,11 @@ describe('a SPARQL 1.2 parser', () => {
         skipValidations: false,
       },
     });
+  });
+
+  it('parses a simple property path', ({ expect }) => {
+    const result = sourceTrackingParser.parsePath('<http://example.org/p>/<http://example.org/q>');
+    expect(result).toBeDefined();
   });
 
   describe('positive paths', () => {

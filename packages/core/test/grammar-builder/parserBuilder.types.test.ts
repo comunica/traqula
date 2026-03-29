@@ -1,6 +1,6 @@
+import type { ParserRule } from '@traqula/core';
+import { ParserBuilder } from '@traqula/core';
 import { describe, it, expectTypeOf } from 'vitest';
-import type { ParserRule } from '../../lib/index.js';
-import { ParserBuilder } from '../../lib/index.js';
 
 interface Context {
   world: 'hello';

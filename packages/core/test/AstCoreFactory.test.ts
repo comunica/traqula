@@ -1,5 +1,5 @@
+import { AstCoreFactory } from '@traqula/core';
 import { describe, it } from 'vitest';
-import { AstCoreFactory } from '../lib/AstCoreFactory.js';
 
 describe('astCoreFactory', () => {
   describe('source location management', () => {
@@ -124,6 +124,25 @@ describe('astCoreFactory', () => {
 
       const nodeReplaceLoc = factory.sourceLocationNodeReplace(0, 5);
       expect(factory.isSourceLocationNodeReplace(nodeReplaceLoc)).toBe(true);
+    });
+  });
+
+  describe('forceMaterialized', () => {
+    it('converts noMaterialize location to autoGenerate tree', ({ expect }) => {
+      const factory = new AstCoreFactory({ tracksSourceLocation: true });
+      const noMatLoc = factory.sourceLocationNoMaterialize();
+      const node = { type: 'test', loc: noMatLoc, value: 'x' };
+      const result = factory.forceMaterialized(node);
+      expect(factory.isSourceLocationNodeAutoGenerate(result.loc)).toBe(true);
+    });
+
+    it('returns shallow copy when location is not noMaterialize', ({ expect }) => {
+      const factory = new AstCoreFactory({ tracksSourceLocation: true });
+      const sourceLoc = factory.sourceLocationSource(0, 10);
+      const node = { type: 'test', loc: sourceLoc, value: 'x' };
+      const result = factory.forceMaterialized(node);
+      expect(result).not.toBe(node);
+      expect(result.loc).toBe(sourceLoc);
     });
   });
 });

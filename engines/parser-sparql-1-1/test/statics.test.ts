@@ -1,11 +1,16 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { BaseQuad } from '@rdfjs/types';
+import {
+  Parser,
+  sparql11ParserBuilder,
+  expressionParserBuilder,
+  updateNoModifyParserBuilder,
+} from '@traqula/parser-sparql-1-1';
 import { AstFactory, lex } from '@traqula/rules-sparql-1-1';
 import { getStaticFilePath, importSparql11NoteTests, negativeTest, positiveTest } from '@traqula/test-utils';
 import { DataFactory } from 'rdf-data-factory';
 import { beforeEach, describe, it } from 'vitest';
-import { Parser, sparql11ParserBuilder } from '../lib/index.js';
 
 describe('a SPARQL 1.1 parser', () => {
   const astFactory = new AstFactory({ tracksSourceLocation: false });
@@ -87,5 +92,19 @@ describe('a SPARQL 1.1 parser', () => {
 
   describe('specific sparql 1.1 without source tracking', () => {
     importSparql11NoteTests(noSourceTrackingParser, new DataFactory<BaseQuad>());
+  });
+
+  it('expression parser builder builds without errors', () => {
+    expressionParserBuilder.build({
+      tokenVocabulary: lex.sparql11LexerBuilder.tokenVocabulary,
+    });
+  });
+
+  it('update-no-modify parser builder builds without errors', () => {
+    updateNoModifyParserBuilder.build({
+      tokenVocabulary: lex.sparql11LexerBuilder.tokenVocabulary,
+      lexerConfig: { skipValidations: false, ensureOptimizations: true },
+      parserConfig: { skipValidations: false },
+    });
   });
 });

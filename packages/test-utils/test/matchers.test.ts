@@ -1,5 +1,5 @@
 import { describe, it } from 'vitest';
-import '../lib/index.js';
+import '@traqula/test-utils';
 
 describe('toEqualParsedQuery matchers', () => {
   it('matches nested objects and arrays', ({ expect }) => {
@@ -99,5 +99,32 @@ describe('toEqualParsedQuery matchers', () => {
       data: [[ 1, 2 ], [ 3, 5 ]],
     };
     expect(() => expect(received).toEqualParsedQuery(expected)).toThrowError();
+  });
+
+  it('triggers pass message when using .not on a passing match', ({ expect }) => {
+    // These cover the pass=true message lambdas in both matchers
+    expect(() => expect({ a: 1 }).not.toEqualParsedQuery({ a: 1 })).toThrowError();
+    expect(() =>
+      expect({ a: 1 }).not.toEqualParsedQueryIgnoring(() => false, [], { a: 1 })).toThrowError();
+  });
+
+  it('handles term-like objects with termType and equals', ({ expect }) => {
+    const term = {
+      termType: 'NamedNode',
+      value: 'http://example.org/',
+      equals: (other: unknown) => other !== null && typeof other === 'object' &&
+        (<{ value?: unknown }> other).value === 'http://example.org/',
+    };
+    expect(term).toEqualParsedQuery(term);
+    const otherTerm = {
+      termType: 'NamedNode',
+      value: 'http://other.org/',
+      equals: (other: unknown) => other !== null && typeof other === 'object' &&
+        (<{ value?: unknown }> other).value === 'http://other.org/',
+    };
+    expect(() => expect(term).toEqualParsedQuery(otherTerm)).toThrowError();
+    // Cover isTerm(expected) branch: received is NOT a term, expected IS a term
+    const plainObj = { value: 'http://other.org/' };
+    expect(() => expect(plainObj).toEqualParsedQuery(term)).toThrowError();
   });
 });

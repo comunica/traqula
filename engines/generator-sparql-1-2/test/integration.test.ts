@@ -1,10 +1,10 @@
+import { Generator } from '@traqula/generator-sparql-1-2';
 import { Parser } from '@traqula/parser-sparql-1-2';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import { AstTransformer } from '@traqula/rules-sparql-1-1';
 import type * as T12 from '@traqula/rules-sparql-1-2';
 import { AstFactory } from '@traqula/rules-sparql-1-2';
 import { describe, it } from 'vitest';
-import { Generator } from '../lib/index.js';
 
 describe('a SPARQL 1.2 generator', () => {
   const generator = new Generator();
@@ -158,6 +158,13 @@ _:g_10 <c7> <e7> .
 
 }`);
     });
+  });
+
+  it('generates a simple property path', ({ expect }) => {
+    const path = parser.parsePath('<http://example.org/p>/<http://example.org/q>');
+    const result = generator.generatePath(<T12.Path> path);
+    expect(typeof result).toBe('string');
+    expect(result.length).toBeGreaterThan(0);
   });
 
   it ('generates hand constructed query', ({ expect }) => {

@@ -1,5 +1,5 @@
+import { AstFactory } from '@traqula/rules-sparql-1-1';
 import { describe, it } from 'vitest';
-import { AstFactory } from '../lib/astFactory.js';
 
 const F = new AstFactory();
 const noLoc = F.gen();
@@ -340,6 +340,115 @@ describe('astFactory', () => {
   describe('updateFactory', () => {
     it('isUpdate returns false for non-update objects', ({ expect }) => {
       expect(F.isUpdate({ type: 'other' })).toBe(false);
+    });
+  });
+
+  describe('pathFactory - additional guards', () => {
+    it('isPathChain identifies / and | paths', ({ expect }) => {
+      const iri = F.termNamed(noLoc, 'http://p');
+      const seq = F.path('/', [ iri, iri ], noLoc);
+      expect(F.isPathChain(seq)).toBe(true);
+      const alt = F.path('|', [ iri, iri ], noLoc);
+      expect(F.isPathChain(alt)).toBe(true);
+      expect(F.isPathChain(iri)).toBe(false);
+    });
+
+    it('isPathModified identifies ?, *, +, ^ paths', ({ expect }) => {
+      const iri = F.termNamed(noLoc, 'http://p');
+      const star = F.path('*', [ iri ], noLoc);
+      expect(F.isPathModified(star)).toBe(true);
+      expect(F.isPathModified(iri)).toBe(false);
+    });
+
+    it('isPathNegated identifies ! paths', ({ expect }) => {
+      const iri = F.termNamed(noLoc, 'http://p');
+      const neg = F.path('!', [ iri ], noLoc);
+      expect(F.isPathNegated(neg)).toBe(true);
+      expect(F.isPathNegated(iri)).toBe(false);
+    });
+
+    it('path returns PathNegatedElt for ^ with a non-path term', ({ expect }) => {
+      const iri = F.termNamed(noLoc, 'http://p');
+      // ^ with a TermIri (not a path) returns a PathNegatedElt
+      const negElt = F.path('^', [ iri ], noLoc);
+      expect(negElt.subType).toBe('^');
+    });
+
+    it('throws on invalid path combination', ({ expect }) => {
+      const iri = F.termNamed(noLoc, 'http://p');
+      // No branch matches for ^ with multiple items - should throw
+      expect(() => F.path(<any> '^', [ iri, iri ], noLoc)).toThrowError('Invalid path type');
+    });
+  });
+
+  describe('expressionFactory - aggregate type guards', () => {
+    it('isExpressionAggregateOnWildcard identifies wildcard aggregates', ({ expect }) => {
+      const wild = F.wildcard(noLoc);
+      const agg = F.aggregate('count', false, wild, undefined, noLoc);
+      expect(F.isExpressionAggregateOnWildcard(agg)).toBe(true);
+      const varX = F.termVariable('x', noLoc);
+      const aggNonWild = F.aggregate('sum', false, varX, undefined, noLoc);
+      expect(F.isExpressionAggregateOnWildcard(aggNonWild)).toBe(false);
+    });
+
+    it('isExpressionAggregateDefault identifies default aggregates', ({ expect }) => {
+      const varX = F.termVariable('x', noLoc);
+      const agg = F.aggregate('sum', false, varX, undefined, noLoc);
+      // Note: this method checks for 'operation' subType internally (it's a quirk)
+      expect(F.isExpressionAggregateDefault(agg)).toBe(false);
+      const opExpr = F.expressionOperation('+', [ varX ], noLoc);
+      expect(F.isExpressionAggregateDefault(opExpr)).toBe(false);
+    });
+  });
+
+  describe('solutionModifiersFactory - type guards', () => {
+    it('isSolutionModifier identifies any solutionModifier', ({ expect }) => {
+      const expr = F.termLiteral(noLoc, 'true');
+      const having = F.solutionModifierHaving([ expr ], noLoc);
+      expect(F.isSolutionModifier(having)).toBe(true);
+      expect(F.isSolutionModifier({ type: 'other' })).toBe(false);
+    });
+
+    it('isSolutionModifierLimitOffset identifies limitOffset', ({ expect }) => {
+      const limitOffset = F.solutionModifierLimitOffset(10, 0, noLoc);
+      expect(F.isSolutionModifierLimitOffset(limitOffset)).toBe(true);
+      const expr = F.termLiteral(noLoc, 'true');
+      const having = F.solutionModifierHaving([ expr ], noLoc);
+      expect(F.isSolutionModifierLimitOffset(having)).toBe(false);
+    });
+  });
+
+  describe('updateOperationFactory - type guards and additional operations', () => {
+    it('isUpdateOperation identifies any update operation', ({ expect }) => {
+      const iri = F.termNamed(noLoc, 'http://source');
+      const load = F.updateOperationLoad(noLoc, iri, false);
+      expect(F.isUpdateOperation(load)).toBe(true);
+      expect(F.isUpdateOperation({ type: 'other' })).toBe(false);
+    });
+
+    it('creates insertData, deleteData, and deleteWhere operations', ({ expect }) => {
+      const bgp = F.patternBgp([], noLoc);
+      const quads = F.graphQuads(F.termNamed(noLoc, 'http://g'), bgp, noLoc);
+
+      const insert = F.updateOperationInsertData([ quads ], noLoc);
+      expect(insert.subType).toBe('insertdata');
+      expect(F.isUpdateOperationInsertData(insert)).toBe(true);
+
+      const del = F.updateOperationDeleteData([ quads ], noLoc);
+      expect(del.subType).toBe('deletedata');
+      expect(F.isUpdateOperationDeleteData(del)).toBe(true);
+
+      const delWhere = F.updateOperationDeleteWhere([ quads ], noLoc);
+      expect(delWhere.subType).toBe('deletewhere');
+      expect(F.isUpdateOperationDeleteWhere(delWhere)).toBe(true);
+    });
+  });
+
+  describe('graphRefFactory - type guards', () => {
+    it('isGraphRef identifies any graphRef', ({ expect }) => {
+      const graphRef = F.graphRefDefault(noLoc);
+      expect(F.isGraphRef(graphRef)).toBe(true);
+      expect(F.isGraphRef({ type: 'other' })).toBe(false);
     });
   });
 });

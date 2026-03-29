@@ -1,6 +1,6 @@
+import type { GeneratorRule, Node } from '@traqula/core';
+import { GeneratorBuilder } from '@traqula/core';
 import { describe, it, expectTypeOf } from 'vitest';
-import type { GeneratorRule, Node } from '../../lib/index.js';
-import { GeneratorBuilder } from '../../lib/index.js';
 
 interface Context {
   world: 'hello';

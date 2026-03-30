@@ -360,4 +360,97 @@ describe('transformerSubTyped without-specific-preVisitor fallback', () => {
     );
     expect(result).toBe(root);
   });
+
+  it('transformNodeSpecific uses specific preVisitor when present (branch 77:1)', ({ expect }) => {
+    // Covers TransformerSubTyped branch 77:1 — ogPreVisit IS found from nodeSpecificCallBacks
+    const root: Cat = { type: 'cat', subType: 'small', size: 1 };
+    const result = <Cat> transformer.transformNodeSpecific(
+      root,
+      {},
+      { cat: { small: { preVisitor: () => ({ copy: false }) }}},
+    );
+    // PreVisitor returns copy:false so result should be same object
+    expect(result).toBe(root);
+  });
+
+  it('visitNodeSpecific uses specific preVisitor when present (branch 140:1)', ({ expect }) => {
+    // Covers TransformerSubTyped branch 140:1 — ogPreVisit IS found from nodeSpecificCallBacks
+    const visited: string[] = [];
+    const root: Cat = { type: 'cat', subType: 'small', size: 1 };
+    transformer.visitNodeSpecific(
+      root,
+      {},
+      { cat: { small: { preVisitor: () => ({ continue: false }), visitor: () => visited.push('small') }}},
+    );
+    // PreVisitor stops recursion into children; visitor is still called
+    expect(visited.length).toBe(1);
+  });
+});
+
+describe('transformerObject stack overflow', () => {
+  class TinyTransformer extends TransformerObject {
+    // Override maxStackSize to 1 so a single nested child overflows
+    protected override readonly maxStackSize = 1;
+  }
+
+  it('transformObject throws when stack overflows (line 196)', ({ expect }) => {
+    const tiny = new TinyTransformer();
+    const nested = { a: { b: 'deep' }};
+    expect(() => tiny.transformObject(nested, x => x)).toThrow(/Transform object stack overflowed/u);
+  });
+
+  it('visitObject throws when stack overflows (line 276)', ({ expect }) => {
+    const tiny = new TinyTransformer();
+    const nested = { a: { b: 'deep' }};
+    expect(() => tiny.visitObject(nested, () => {})).toThrow(/Transform object stack overflowed/u);
+  });
+});
+
+describe('transformerObject array with null/primitive elements', () => {
+  const transformer = new TransformerObject();
+
+  it('transformObject skips null/primitive values in arrays (line 139 false branch)', ({ expect }) => {
+    // Covers TransformerObject.ts line 139: val !== null && typeof val === 'object' → false for null/primitives
+    const visited: string[] = [];
+    const obj = { arr: [ null, 42, 'hello', { name: 'real' }]};
+    transformer.transformObject(obj, (copy) => {
+      if ((<any>copy).name) {
+        visited.push((<any>copy).name);
+      }
+      return copy;
+    });
+    expect(visited).toContain('real');
+  });
+
+  it('visitObject skips null/primitive values in arrays (line 239 false branch)', ({ expect }) => {
+    // Covers TransformerObject.ts line 239: val !== null && typeof val === 'object' → false for null/primitives
+    const visited: any[] = [];
+    const obj = { arr: [ null, 42, 'hello', { name: 'real' }]};
+    transformer.visitObject(obj, (item) => {
+      visited.push(item);
+    });
+    const visitedNames = visited.filter((x: any) => x?.name).map((x: any) => x.name);
+    expect(visitedNames).toContain('real');
+  });
+
+  it('visitObject visits remaining stack items after a shortcut (line 235 false branch)', ({ expect }) => {
+    // Covers TransformerObject.ts line 235: if (!didShortCut) → false when didShortCut=true
+    // When object 'b' at the TOP of the stack has shortcut set, 'a' at the bottom is still popped
+    // with didShortCut=true → the false branch of line 235 is taken for 'a'
+    const visited: string[] = [];
+    const tree = { a: { name: 'a' }, b: { name: 'b', c: { name: 'c' }}};
+    transformer.visitObject(
+      tree,
+      (obj) => {
+        if ((<any>obj).name) {
+          visited.push((<any>obj).name);
+        }
+      },
+      obj => ((<any>obj).name === 'b' ? { shortcut: true } : {}),
+    );
+    // 'b' is shortcutted so 'c' is NOT visited
+    expect(visited).not.toContain('c');
+    // 'b' itself IS visited
+    expect(visited).toContain('b');
+  });
 });

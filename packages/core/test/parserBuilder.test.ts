@@ -92,6 +92,17 @@ describe('parserBuilder', () => {
       expect(() => (<any>parser).num('abc', {})).toThrow(/Parse error/u);
     });
 
+    it('includes column pointer in error when token has column info (branch 239:1)', ({ expect }) => {
+      // Call defaultErrorHandler on the builder instance directly (it's a private method on ParserBuilder).
+      // Provides a mock error token with startLine + startColumn defined → branch 239:1 TRUE.
+      const builder = ParserBuilder.create(<const>[ numRule ]);
+      const mockError = {
+        token: { startLine: 1, startColumn: 5, image: 'x' },
+        message: 'unexpected token',
+      };
+      expect(() => (<any> builder).defaultErrorHandler('hello world', [ mockError ])).toThrow(/\^/u);
+    });
+
     it('calls the custom errorHandler instead of the default one when provided', ({ expect }) => {
       const errors: unknown[] = [];
       const parser = ParserBuilder.create(<const>[ numRule ]).build({

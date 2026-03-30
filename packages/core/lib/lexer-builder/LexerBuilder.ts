@@ -94,7 +94,7 @@ export class LexerBuilder<NAMES extends string = string> {
 
   public addAfter<Name extends string>(
     after: NamedToken<NAMES>,
-    ...token: CheckOverlap<Name, NAMES, never, NamedToken<Name>[]>
+    ...token: CheckOverlap<Name, NAMES, NamedToken<Name>[]>
   ): LexerBuilder<NAMES | Name> {
     const index = this.tokens.indexOf(after);
     if (index === -1) {

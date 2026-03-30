@@ -160,6 +160,13 @@ _:g_10 <c7> <e7> .
     });
   });
 
+  it('generates a simple property path', ({ expect }) => {
+    const path = parser.parsePath('<http://example.org/p>/<http://example.org/q>');
+    const result = generator.generatePath(<T12.Path> path);
+    expect(typeof result).toBe('string');
+    expect(result.length).toBeGreaterThan(0);
+  });
+
   it ('generates hand constructed query', ({ expect }) => {
     const query = `
 SELECT * WHERE {

@@ -42,6 +42,11 @@ describe('a SPARQL 1.2 parser', () => {
     });
   });
 
+  it('parses a simple property path', ({ expect }) => {
+    const result = sourceTrackingParser.parsePath('<http://example.org/p>/<http://example.org/q>');
+    expect(result).toBeDefined();
+  });
+
   describe('positive paths', () => {
     for (const { name, statics } of positiveTest('paths')) {
       it(`can parse ${name}`, async({ expect }) => {

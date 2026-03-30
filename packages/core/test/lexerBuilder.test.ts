@@ -1,5 +1,5 @@
-import { LexerBuilder, createToken } from '@traqula/core';
 import { describe, it } from 'vitest';
+import { LexerBuilder, createToken } from '../lib/index.js';
 
 const TokenA = createToken({ name: 'TokenA', pattern: /a/u });
 const TokenB = createToken({ name: 'TokenB', pattern: /b/u });

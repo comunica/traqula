@@ -1,10 +1,10 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, sep } from 'node:path';
-import { toAlgebra } from '@traqula/algebra-sparql-1-1';
 import { algebraUtils } from '@traqula/algebra-transformations-1-1';
 import { Parser } from '@traqula/parser-sparql-1-1';
 import { sparqlQueries, getStaticFilePath } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
+import { toAlgebra } from '../lib/index.js';
 import { suites } from './algebra.test.js';
 
 // WARNING: use this script with caution!

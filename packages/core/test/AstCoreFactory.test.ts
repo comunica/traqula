@@ -1,5 +1,5 @@
-import { AstCoreFactory } from '@traqula/core';
 import { describe, it } from 'vitest';
+import { AstCoreFactory } from '../lib/index.js';
 
 describe('astCoreFactory', () => {
   describe('source location management', () => {

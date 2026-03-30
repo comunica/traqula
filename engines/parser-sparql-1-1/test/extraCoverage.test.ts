@@ -1,6 +1,6 @@
-import { Parser, sparql11ParserBuilder } from '@traqula/parser-sparql-1-1';
 import { AstFactory, completeParseContext, lex } from '@traqula/rules-sparql-1-1';
 import { beforeEach, describe, it } from 'vitest';
+import { Parser, sparql11ParserBuilder } from '../lib/index.js';
 
 describe('extra parser coverage', () => {
   const F = new AstFactory();

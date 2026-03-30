@@ -1,6 +1,6 @@
-import { IndirBuilder } from '@traqula/core';
-import type { IndirDef } from '@traqula/core';
 import { describe, it } from 'vitest';
+import { IndirBuilder } from '../lib/index.js';
+import type { IndirDef } from '../lib/index.js';
 
 describe('indirBuilder', () => {
   describe('addRuleRedundant', () => {

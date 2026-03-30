@@ -1,5 +1,5 @@
-import { AstFactory, findPatternBoundedVars, langTagHasCorrectRange } from '@traqula/rules-sparql-1-2';
 import { describe, it } from 'vitest';
+import { AstFactory, findPatternBoundedVars, langTagHasCorrectRange } from '../lib/index.js';
 
 const F = new AstFactory();
 const noLoc = F.gen();

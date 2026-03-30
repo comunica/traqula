@@ -1,4 +1,3 @@
-import { toAlgebra } from '@traqula/algebra-sparql-1-2';
 import { Canonicalizer, algebraUtils } from '@traqula/algebra-transformations-1-1';
 import type { Algebra } from '@traqula/algebra-transformations-1-2';
 import { Parser } from '@traqula/parser-sparql-1-2';
@@ -11,6 +10,7 @@ import type {
   AlgebraTestSuite,
 } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
+import { toAlgebra } from '../lib/index.js';
 
 export const suites: AlgebraTestSuite[] = [ 'dawg-syntax', 'sparql11-query', 'sparql-1.1', 'sparql12' ];
 

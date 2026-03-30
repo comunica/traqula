@@ -1,7 +1,7 @@
 import { Lexer } from '@traqula/chevrotain';
-import type { GeneratorRule, IndirDef, ParserRule } from '@traqula/core';
-import { createToken, GeneratorBuilder, IndirBuilder, LexerBuilder, ParserBuilder } from '@traqula/core';
 import { describe, it, vi } from 'vitest';
+import type { GeneratorRule, IndirDef, ParserRule } from '../lib/index.js';
+import { createToken, GeneratorBuilder, IndirBuilder, LexerBuilder, ParserBuilder } from '../lib/index.js';
 
 type ParseContext = { prefix: string };
 

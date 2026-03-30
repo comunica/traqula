@@ -1,16 +1,16 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { BaseQuad } from '@rdfjs/types';
+import { AstFactory, lex } from '@traqula/rules-sparql-1-1';
+import { getStaticFilePath, importSparql11NoteTests, negativeTest, positiveTest } from '@traqula/test-utils';
+import { DataFactory } from 'rdf-data-factory';
+import { beforeEach, describe, it } from 'vitest';
 import {
   Parser,
   sparql11ParserBuilder,
   expressionParserBuilder,
   updateNoModifyParserBuilder,
-} from '@traqula/parser-sparql-1-1';
-import { AstFactory, lex } from '@traqula/rules-sparql-1-1';
-import { getStaticFilePath, importSparql11NoteTests, negativeTest, positiveTest } from '@traqula/test-utils';
-import { DataFactory } from 'rdf-data-factory';
-import { beforeEach, describe, it } from 'vitest';
+} from '../lib/index.js';
 
 describe('a SPARQL 1.1 parser', () => {
   const astFactory = new AstFactory({ tracksSourceLocation: false });

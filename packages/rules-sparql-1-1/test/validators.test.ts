@@ -1,11 +1,11 @@
+import { describe, it } from 'vitest';
 import {
   AstFactory,
   checkNote13,
   findPatternBoundedVars,
   queryProjectionIsGood,
   updateNoReuseBlankNodeLabels,
-} from '@traqula/rules-sparql-1-1';
-import { describe, it } from 'vitest';
+} from '../lib/index.js';
 
 const F = new AstFactory();
 const noLoc = F.gen();

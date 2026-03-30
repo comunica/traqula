@@ -1,7 +1,7 @@
-import { Generator, sparql11GeneratorBuilder } from '@traqula/generator-sparql-1-1';
 import { Parser } from '@traqula/parser-sparql-1-1';
 import { AstFactory, completeGeneratorContext } from '@traqula/rules-sparql-1-1';
 import { beforeEach, describe, it } from 'vitest';
+import { Generator, sparql11GeneratorBuilder } from '../lib/index.js';
 
 describe('extra generator coverage', () => {
   const generator = new Generator();

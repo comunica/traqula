@@ -15,7 +15,7 @@
     "build:transpile": "lerna run build:transpile",
     "build:cjs": "tsc -b tsconfig.cjs.json",
     "clean": "git clean -dfx",
-    "depcheck": "lerna exec --concurrency 1 -- depcheck --ignores=\"vitest,esbuild,@traqula/*,rdf-data-factory,fast-deep-equal,rdf-isomorphic,rdf-string\" --ignore-dirs=dist",
+    "depcheck": "lerna exec --concurrency 1 -- node ../../scripts/depcheck-self.mjs",
     "doc": "typedoc",
     "lint": "eslint . --cache",
     "postinstall": "yarn husky && yarn run build",

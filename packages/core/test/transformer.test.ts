@@ -314,3 +314,50 @@ describe('transformerTyped clone', () => {
     expect(cloned).toBeInstanceOf(TransformerTyped);
   });
 });
+
+describe('transformerTyped without-type branches', () => {
+  const transformer = new TransformerTyped<{ type: 'fruit' }>();
+
+  it('transformNode ignores objects without a type property', ({ expect }) => {
+    const obj = { type: 'fruit', child: { noType: true }};
+    const result = <any> transformer.transformNode(obj, {});
+    expect(result.child).toMatchObject({ noType: true });
+  });
+
+  it('visitNode ignores objects without a type property', ({ expect }) => {
+    const visited: string[] = [];
+    const obj = { type: 'fruit', child: { noType: true }};
+    transformer.visitNode(obj, { fruit: { visitor: () => visited.push('fruit') }});
+    expect(visited).toContain('fruit');
+  });
+});
+
+describe('transformerSubTyped without-specific-preVisitor fallback', () => {
+  interface Cat {
+    type: 'cat';
+    subType: 'small' | 'big';
+    size: number;
+  }
+  const transformer = new TransformerSubTyped<Cat>();
+
+  it('visitNodeSpecific falls back to nodeCallBacks preVisitor when specific has no preVisitor', ({ expect }) => {
+    const visited: string[] = [];
+    const root: Cat = { type: 'cat', subType: 'small', size: 1 };
+    transformer.visitNodeSpecific(
+      root,
+      { cat: { preVisitor: () => ({ continue: false }) }},
+      { cat: { big: { visitor: () => visited.push('big') }}},
+    );
+    expect(visited).toEqual([]);
+  });
+
+  it('transformNodeSpecific falls back to nodeCallBacks preVisitor when specific lacks preVisitor', ({ expect }) => {
+    const root: Cat = { type: 'cat', subType: 'small', size: 1 };
+    const result = <Cat> transformer.transformNodeSpecific(
+      root,
+      { cat: { preVisitor: () => ({ copy: false }) }},
+      {},
+    );
+    expect(result).toBe(root);
+  });
+});

@@ -1,8 +1,8 @@
+import { Parser as TraqulaParser } from '@traqula/parser-sparql-1-2';
 import { AstFactory } from '@traqula/rules-sparql-1-2';
 import { positiveTest } from '@traqula/test-utils';
 import { Parser as SparqlJSparser } from 'sparqljs';
 import { describe, bench } from 'vitest';
-import { Parser as TraqulaParser } from '../lib/index.js';
 
 describe('query 1.2, exclude construction', () => {
   const traqulaParser = new TraqulaParser();

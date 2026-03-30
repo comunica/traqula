@@ -1,5 +1,5 @@
 import { describe, it } from 'vitest';
-import '../lib/index.js';
+import '@traqula/test-utils';
 
 describe('toEqualParsedQuery matchers', () => {
   it('matches nested objects and arrays', ({ expect }) => {

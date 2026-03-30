@@ -1,8 +1,8 @@
+import { toAlgebra } from '@traqula/algebra-sparql-1-2';
 import { Parser as TraqulaParser } from '@traqula/parser-sparql-1-2';
 import { positiveTest } from '@traqula/test-utils';
 import { translate } from 'sparqlalgebrajs';
 import { describe, bench } from 'vitest';
-import { toAlgebra } from '../lib/index.js';
 
 describe('toAlgebra 1.2, exclude parser construction', () => {
   const traqulaParser = new TraqulaParser();

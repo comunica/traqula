@@ -1,10 +1,10 @@
 import type { SourceLocationStringReplace } from '@traqula/core';
 import { traqulaIndentation, GeneratorBuilder } from '@traqula/core';
+import { Generator, sparql11GeneratorBuilder } from '@traqula/generator-sparql-1-1';
 import { Parser } from '@traqula/parser-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import { AstFactory, AstTransformer, completeGeneratorContext } from '@traqula/rules-sparql-1-1';
 import { beforeEach, describe, it } from 'vitest';
-import { Generator, sparql11GeneratorBuilder } from '../lib/index.js';
 
 describe('autoGen query inserting comments', () => {
   const generator = new Generator();

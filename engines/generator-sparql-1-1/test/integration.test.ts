@@ -1,9 +1,9 @@
 import { traqulaIndentation } from '@traqula/core';
+import { Generator } from '@traqula/generator-sparql-1-1';
 import { Parser } from '@traqula/parser-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import { AstFactory, AstTransformer } from '@traqula/rules-sparql-1-1';
 import { beforeEach, describe, it } from 'vitest';
-import { Generator } from '../lib/index.js';
 
 describe('a SPARQL 1.1 generator', () => {
   const generator = new Generator();

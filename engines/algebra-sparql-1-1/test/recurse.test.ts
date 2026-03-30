@@ -1,8 +1,8 @@
+import { toAlgebra, toAst } from '@traqula/algebra-sparql-1-1';
 import type { Algebra } from '@traqula/algebra-transformations-1-1';
 import { AlgebraFactory, algebraUtils, isTriple } from '@traqula/algebra-transformations-1-1';
 import { sparqlAlgebraTests } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
-import { toAlgebra, toAst } from '../lib/index.js';
 import { suites } from './algebra.test.js';
 
 // https://www.w3.org/2001/sw/DataAccess/tests/r2#syntax-basic-01

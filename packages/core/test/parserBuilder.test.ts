@@ -1,6 +1,6 @@
+import { ParserBuilder, createToken } from '@traqula/core';
+import type { ParserRule } from '@traqula/core';
 import { describe, it } from 'vitest';
-import { ParserBuilder, createToken } from '../lib/index.js';
-import type { ParserRule } from '../lib/index.js';
 
 // ---------------------------------------------------------------------------
 // Minimal token / rule helpers used across tests

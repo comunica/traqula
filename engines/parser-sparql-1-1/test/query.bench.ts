@@ -1,8 +1,8 @@
+import { Parser as TraqulaParser } from '@traqula/parser-sparql-1-1';
 import { AstFactory } from '@traqula/rules-sparql-1-1';
 import { positiveTest } from '@traqula/test-utils';
 import { Parser as SparqlJSparser } from 'sparqljs';
 import { describe, bench } from 'vitest';
-import { Parser as TraqulaParser } from '../lib/index.js';
 import { queryLargeObjectList } from './heatmap.js';
 
 describe('query 1.1, exclude construction', () => {

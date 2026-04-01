@@ -571,7 +571,7 @@ describe('algebra-sparql-1-1 extra coverage', () => {
       expect(() =>
         (<any>transformer).translatePathPredicate(
           createAlgebraContext({}),
-          <any>{ subType: 'COMPLETELY_UNKNOWN', items: [] },
+          <any>{ subType: 'COMPLETELY_UNKNOWN', items: []},
         )).toThrow(/Unable to translate path expression/u);
     });
   });
@@ -612,7 +612,7 @@ describe('algebra-sparql-1-1 extra coverage', () => {
         AF.dataFactory.variable!('s'),
         AF.dataFactory.variable!('p'),
         AF.dataFactory.variable!('o'),
-      )]);
+      ) ]);
       const filterOp = AF.createFilter(innerBgp, filterExpr);
       // G = emptyBGP, A = FILTER → G.type === BGP && G.patterns.length === 0 → G = A
       const result = (<any>transformer).simplifiedJoin(c, emptyBgp, filterOp);
@@ -630,8 +630,7 @@ describe('algebra-sparql-1-1 extra coverage', () => {
       const inner = AF.createBgp([]);
       const graph = AF.createGraph(inner, g);
       expect(() =>
-        (<any>transformer).recurseGraph(c, graph, g, replacement),
-      ).toThrow(/Recursing through nested GRAPH/u);
+        (<any>transformer).recurseGraph(c, graph, g, replacement)).toThrow(/Recursing through nested GRAPH/u);
     });
 
     it('covers line 89 (nested GRAPH without replacement via direct transformer call)', ({ expect }) => {
@@ -692,7 +691,6 @@ describe('algebra-sparql-1-1 extra coverage', () => {
       const transformer = toAlgebra11Builder.build();
       const c = createAlgebraContext({ quads: true });
       const g = AF.dataFactory.variable!('g');
-      const replacement = AF.dataFactory.variable!('__replacement2__');
       const namedGraph = AF.dataFactory.namedNode('http://alreadySetGraph');
       // Create PATH with an already-set named graph (non-DefaultGraph)
       const path = AF.createPath(
@@ -703,7 +701,7 @@ describe('algebra-sparql-1-1 extra coverage', () => {
       );
       // Call recurseGraph: since graph is not DefaultGraph, line 120 FALSE branch is taken
       const result = (<any>transformer).recurseGraph(c, path, g, undefined);
-      expect((result as any).graph).toBe(namedGraph);
+      expect((result).graph).toBe(namedGraph);
     });
 
     it('directly tests PATH graph replacement: both subject and object replaced', ({ expect }) => {
@@ -720,8 +718,8 @@ describe('algebra-sparql-1-1 extra coverage', () => {
         g,
       );
       const result1 = (<any>transformer).recurseGraph(c, path1, g, replacement);
-      expect((result1 as any).subject).toBe(replacement);
-      expect((result1 as any).object).toBe(replacement);
+      expect((result1).subject).toBe(replacement);
+      expect((result1).object).toBe(replacement);
 
       // Test 2: subject = other, object = graph var → only object replaced (line 115 FALSE, line 118 TRUE)
       const other = AF.dataFactory.namedNode('http://other');
@@ -731,8 +729,8 @@ describe('algebra-sparql-1-1 extra coverage', () => {
         g,
       );
       const result2 = (<any>transformer).recurseGraph(c, path2, g, replacement);
-      expect((result2 as any).subject).toBe(other);
-      expect((result2 as any).object).toBe(replacement);
+      expect((result2).subject).toBe(other);
+      expect((result2).object).toBe(replacement);
 
       // Test 3: subject = graph var, object = other → only subject replaced (line 115 TRUE, line 118 FALSE)
       const path3 = AF.createPath(
@@ -741,8 +739,8 @@ describe('algebra-sparql-1-1 extra coverage', () => {
         other,
       );
       const result3 = (<any>transformer).recurseGraph(c, path3, g, replacement);
-      expect((result3 as any).subject).toBe(replacement);
-      expect((result3 as any).object).toBe(other);
+      expect((result3).subject).toBe(replacement);
+      expect((result3).object).toBe(other);
     });
   });
 });
@@ -766,19 +764,19 @@ describe('algebraGenerators filter (algebraGenerators.ts:91)', () => {
 describe('algebraGenerators false branches (algebraGenerators.ts:50,77)', () => {
   it('sparqlAlgebraTests with unknown suite returns empty (line 50 false branch)', ({ expect }) => {
     // Covers algebraGenerators.ts line 50: if (subfolders.includes(suite)) FALSE branch
-    const tests = [ ...sparqlAlgebraTests('nonexistent-suite-xyz' as any, false, false) ];
+    const tests = [ ...sparqlAlgebraTests(<any>'nonexistent-suite-xyz', false, false) ];
     expect(tests).toHaveLength(0);
   });
 
   it('sparqlQueries with unknown suite returns empty (line 77 false branch)', ({ expect }) => {
     // Covers algebraGenerators.ts line 77: if (subfolders.includes(suite)) FALSE branch
-    const tests = [ ...sparqlQueries('nonexistent-suite-xyz' as any) ];
+    const tests = [ ...sparqlQueries(<any>'nonexistent-suite-xyz') ];
     expect(tests).toHaveLength(0);
   });
 });
 
 describe('patterns.ts line 250: simplifiedJoin with empty BGP after non-BGP', () => {
-  const AF = new AlgebraFactory();
+  const _AF = new AlgebraFactory();
   const F = new AstFactory();
   const parser = new Parser({ defaultContext: { astFactory: F }});
 
@@ -799,6 +797,7 @@ describe('patterns.ts line 250: simplifiedJoin with empty BGP after non-BGP', ()
 describe('queryUnit.ts (toAst) lines 166-169: registerGroupBy direct call', () => {
   const AF = new AlgebraFactory();
   const F = new AstFactory();
+  const parser = new Parser({ defaultContext: { astFactory: F }});
 
   beforeEach(() => {
     F.resetBlankNodeCounter();
@@ -840,7 +839,7 @@ describe('queryUnit.ts (toAst) lines 166-169: registerGroupBy direct call', () =
       type: 'query',
       solutionModifiers: {},
       loc: F.gen(),
-      // where is intentionally undefined to trigger the ?? fallback
+      // Where is intentionally undefined to trigger the ?? fallback
     };
     const yExpr = F.termVariable('y', F.gen());
     const extensions: Record<string, any> = { y: yExpr };
@@ -854,7 +853,7 @@ describe('queryUnit.ts (toAst) lines 166-169: registerGroupBy direct call', () =
     const transformer = toAst11Builder.build();
     const c = createAstContext();
     // Pass a value with termType='Quad' to replaceAggregatorVariables
-    const quadLike = { termType: 'Quad', value: 'fake', subject: {}, predicate: {}, object: {}, graph: {} };
+    const quadLike = { termType: 'Quad', value: 'fake', subject: {}, predicate: {}, object: {}, graph: {}};
     const result = (<any>transformer).replaceAggregatorVariables(c, quadLike, {});
     expect(result).toBeDefined();
   });
@@ -882,12 +881,23 @@ describe('queryUnit.ts (toAst) lines 166-169: registerGroupBy direct call', () =
     // An RDF.Variable has termType='Variable', satisfying isSimpleTerm → TRUE branch taken
     const transformer = toAst11Builder.build();
     const c = createAstContext();
-    const rdfVar = AF.dataFactory.variable!('x'); // termType = 'Variable'
+    // TermType = 'Variable'
+    const rdfVar = AF.dataFactory.variable!('x');
     const result = (<any>transformer).replaceAggregatorVariables(c, rdfVar, {});
     expect(result).toBeDefined();
   });
 
-  it('translateAlgProject with DESCRIBE type covers line 98 (DESCRIBE branch)', ({ expect }) => {
+  it('translateAlgProject with DESCRIBE type covers line 98 (DESCRIBE branch) - round-trip', ({ expect }) => {
+    // Covers toAst/queryUnit.ts line 98: else if (type === types.DESCRIBE)
+    // Use parse+toAlgebra+toAst to go through the full code path
+    const ast = parser.parse('DESCRIBE <http://example.org/s> WHERE { ?s ?p ?o }');
+    const algebra = toAlgebra(ast);
+    const backAst = toAst(algebra);
+    expect(backAst).toBeDefined();
+    expect(backAst.type).toBe('query');
+  });
+
+  it('translateAlgProject with DESCRIBE type covers line 98 (direct algebra)', ({ expect }) => {
     // Covers toAst/queryUnit.ts line 98: else if (type === types.DESCRIBE)
     // Create a DESCRIBE algebra and call toAst on it
     const s = AF.dataFactory.namedNode('http://s');

@@ -130,21 +130,24 @@ describe('toEqualParsedQuery matchers', () => {
 });
 
 describe('toEqualParsedQuery - diffString falsy branch (lines 19, 48)', () => {
-  it('toEqualParsedQuery: covers FALSE diffString branch when diff returns null (same reference, false equals)', ({ expect }) => {
-    // Covers toEqualParsedQuery.ts line 19 FALSE branch of `diffString ?`:
-    // diff(a, a) returns null when comparing same reference — but objectsEqual can return false
-    // if the object has a custom equals() that always returns false.
-    // When diffString is null, the fallback Expected:/Received: text is shown.
-    const weirdObj = { termType: 'NamedNode', value: 'x', equals: () => false };
-    let caughtMessage = '';
-    try {
-      // pass = false (equals returns false), diff(weirdObj, weirdObj) = null (same reference)
-      expect(weirdObj).toEqualParsedQuery(weirdObj);
-    } catch (e: any) {
-      caughtMessage = String(e.message ?? e);
-    }
-    expect(caughtMessage).toContain('Expected:');
-  });
+  it(
+    'toEqualParsedQuery: covers FALSE diffString branch when diff returns null (same reference, false equals)',
+    ({ expect }) => {
+      // Covers toEqualParsedQuery.ts line 19 FALSE branch of `diffString ?`:
+      // diff(a, a) returns null when comparing same reference — but objectsEqual can return false
+      // if the object has a custom equals() that always returns false.
+      // When diffString is null, the fallback Expected:/Received: text is shown.
+      const weirdObj = { termType: 'NamedNode', value: 'x', equals: () => false };
+      let caughtMessage = '';
+      try {
+        // Pass = false (equals returns false), diff(weirdObj, weirdObj) = null (same reference)
+        expect(weirdObj).toEqualParsedQuery(weirdObj);
+      } catch (e: any) {
+        caughtMessage = String(e.message ?? e);
+      }
+      expect(caughtMessage).toContain('Expected:');
+    },
+  );
 
   it('toEqualParsedQueryIgnoring: covers FALSE diffString branch', ({ expect }) => {
     // Covers toEqualParsedQuery.ts line 48 FALSE branch of `diffString ?`
@@ -182,25 +185,28 @@ describe('toEqualParsedQuery - diffString falsy branch (lines 19, 48)', () => {
 });
 
 describe('toEqualParsedQuery - diffString undefined branch via asymmetric matcher (lines 19, 48)', () => {
-  it('toEqualParsedQuery: covers line 19 FALSE when diff returns undefined (non-jest asymmetricMatch)', ({ expect }) => {
-    // When diff(a, b) returns undefined (non-jest asymmetric matcher), diffString is falsy.
-    // This covers the FALSE branch of `diffString ? ... : ...` at line 19.
-    const weirdObj = {
-      asymmetricMatch: () => false,
-      $$typeof: Symbol.for('not.a.jest.matcher'),
-    };
-    let caughtMessage = '';
-    try {
-      // objectsEqual(42, weirdObj): isPrimitive(42)=true → 42 === weirdObj → false → pass=false
-      // diff(weirdObj, 42): weirdObj has asymmetricMatch, $$typeof !== jest marker → returns undefined
-      // diffString is undefined (falsy) → FALSE branch of diffString ? covered
-      expect(42).toEqualParsedQuery(weirdObj as any);
-    } catch (e: any) {
-      caughtMessage = String(e.message ?? e);
-    }
-    expect(caughtMessage.length).toBeGreaterThan(0);
-    expect(caughtMessage).toContain('Expected');
-  });
+  it(
+    'toEqualParsedQuery: covers line 19 FALSE when diff returns undefined (non-jest asymmetricMatch)',
+    ({ expect }) => {
+      // When diff(a, b) returns undefined (non-jest asymmetric matcher), diffString is falsy.
+      // This covers the FALSE branch of `diffString ? ... : ...` at line 19.
+      const weirdObj = {
+        asymmetricMatch: () => false,
+        $$typeof: Symbol.for('not.a.jest.matcher'),
+      };
+      let caughtMessage = '';
+      try {
+        // ObjectsEqual(42, weirdObj): isPrimitive(42)=true → 42 === weirdObj → false → pass=false
+        // diff(weirdObj, 42): weirdObj has asymmetricMatch, $$typeof !== jest marker → returns undefined
+        // diffString is undefined (falsy) → FALSE branch of diffString ? covered
+        expect(42).toEqualParsedQuery(<any>weirdObj);
+      } catch (e: any) {
+        caughtMessage = String(e.message ?? e);
+      }
+      expect(caughtMessage.length).toBeGreaterThan(0);
+      expect(caughtMessage).toContain('Expected');
+    },
+  );
 
   it('toEqualParsedQueryIgnoring: covers line 48 FALSE when diff returns undefined', ({ expect }) => {
     // Same as above but for toEqualParsedQueryIgnoring
@@ -210,7 +216,7 @@ describe('toEqualParsedQuery - diffString undefined branch via asymmetric matche
     };
     let caughtMessage = '';
     try {
-      expect(42).toEqualParsedQueryIgnoring(() => false, [], weirdObj as any);
+      expect(42).toEqualParsedQueryIgnoring(() => false, [], <any>weirdObj);
     } catch (e: any) {
       caughtMessage = String(e.message ?? e);
     }

@@ -56,7 +56,7 @@ export const triplesBlock: SparqlRule<'triplesBlock', PatternBgp> = <const>{
         if (F.isTripleCollection(triple)) {
           SUBRULE(graphNodePath, triple);
           // A top level tripleCollection block means that it is not used as the subject of another triple
-          //   (if it were, the grammar would have set it as the subject of the next triple instead of a standalone item).
+          // (if it were, the grammar would have set it as the subject of the next triple instead of a standalone item).
           F.printFilter(triple, () => {
             PRINT_WORD('.');
             NEW_LINE();

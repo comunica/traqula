@@ -430,17 +430,19 @@ describe('queryProjectionIsGood - line 128 FALSE branch', () => {
     const subquery = {
       type: 'query',
       subType: 'select',
-      variables: [ F.termVariable('y', noLoc) ],  // projects ?y, NOT ?x
+      // Projects ?y, NOT ?x
+      variables: [ F.termVariable('y', noLoc) ],
     };
     const outerQuery = {
-      variables: [ patternBind ],  // (expr AS ?x)
+      // (expr AS ?x)
+      variables: [ patternBind ],
       solutionModifiers: {},
       where: {
         type: 'group',
         patterns: [ subquery ],
       },
     };
-    // subqueryIds = {'y'}, selectBoundedVars = {'x'}, no conflict → no throw
+    // SubqueryIds = {'y'}, selectBoundedVars = {'x'}, no conflict → no throw
     expect(() => queryProjectionIsGood(<any>outerQuery)).not.toThrow();
   });
 });

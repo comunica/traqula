@@ -179,7 +179,6 @@ describe('extra generator-sparql-1-2 coverage (reifier without id)', () => {
   const parser = new Parser({
     lexerConfig: { positionTracking: 'full' },
     defaultContext: { astFactory: F },
-    parseMode: new Set([ 'canParseVars', 'canCreateBlankNodes' ]),
   });
 
   beforeEach(() => {

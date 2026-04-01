@@ -20,7 +20,7 @@ describe('algebra-sparql-1-2 extra coverage', () => {
     it('translates a directional language-tagged literal with ltr direction', ({ expect }) => {
       // Covers toAlgebra12.ts line 51: creates literal with { language, direction }
       const F = new AstFactory();
-      const parser = new Parser({ defaultContext: { astFactory: F } });
+      const parser = new Parser({ defaultContext: { astFactory: F }});
       const ast = parser.parse('SELECT * WHERE { ?s ?p "hello"@en--ltr }');
       const algebra = toAlgebra(ast);
       expect(algebra).toBeDefined();
@@ -29,7 +29,7 @@ describe('algebra-sparql-1-2 extra coverage', () => {
     it('translates a directional language-tagged literal with rtl direction', ({ expect }) => {
       // Covers toAlgebra12.ts line 51: creates literal with { language, direction }
       const F = new AstFactory();
-      const parser = new Parser({ defaultContext: { astFactory: F } });
+      const parser = new Parser({ defaultContext: { astFactory: F }});
       const ast = parser.parse('SELECT * WHERE { ?s ?p "مرحبا"@ar--rtl }');
       const algebra = toAlgebra(ast);
       expect(algebra).toBeDefined();

@@ -400,17 +400,20 @@ describe('astFactory', () => {
       expect(F.isExpressionAggregateDefault(opExpr)).toBe(false);
     });
 
-    it('isExpressionAggregateDefault returns false when expression[0] is a wildcard (line 158 false branch)', ({ expect }) => {
-      // Covers ExpressionFactory.ts line 158: !this.isOfType(expression[0], 'wildcard') is FALSE
-      // Need: type='expression', subType='operation', expression=[wildcard]
-      const wildcard = F.wildcard(noLoc);
-      const fakeOpWithWildcard = {
-        type: 'expression',
-        subType: 'operation',
-        expression: [ wildcard ],
-      };
-      expect(F.isExpressionAggregateDefault(<any>fakeOpWithWildcard)).toBe(false);
-    });
+    it(
+      'isExpressionAggregateDefault returns false when expression[0] is a wildcard (line 158 false branch)',
+      ({ expect }) => {
+        // Covers ExpressionFactory.ts line 158: !this.isOfType(expression[0], 'wildcard') is FALSE
+        // Need: type='expression', subType='operation', expression=[wildcard]
+        const wildcard = F.wildcard(noLoc);
+        const fakeOpWithWildcard = {
+          type: 'expression',
+          subType: 'operation',
+          expression: [ wildcard ],
+        };
+        expect(F.isExpressionAggregateDefault(<any>fakeOpWithWildcard)).toBe(false);
+      },
+    );
   });
 
   describe('pathFactory - PathNegatedElt creation (PathFactory.ts line 64)', () => {

@@ -31,8 +31,10 @@ describe('dynamicGenerator ENSURE already-ends-with and willPrint-starts-with (l
     const rule: GeneratorRule<GenerateContext, 'myRule', { val: string }, []> = {
       name: 'myRule',
       gImpl: ({ PRINT, ENSURE }) => (ast: { val: string }) => {
-        PRINT(' ');       // buffer ends with ' '
-        ENSURE(' ');      // already ends with ' ' → if block is SKIPPED (line 172 false branch)
+        // Buffer ends with ' '
+        PRINT(' ');
+        // Already ends with ' ' → if block is SKIPPED (line 172 false branch)
+        ENSURE(' ');
         PRINT(ast.val);
       },
     };
@@ -46,8 +48,10 @@ describe('dynamicGenerator ENSURE already-ends-with and willPrint-starts-with (l
     const rule: GeneratorRule<GenerateContext, 'myRule', { val: string }, []> = {
       name: 'myRule',
       gImpl: ({ PRINT, ENSURE }) => (ast: { val: string }) => {
-        ENSURE(' ');           // register to ensure a space before next PRINT
-        PRINT(' ' + ast.val); // willPrint starts with ' ' → skip pushing space
+        // Register to ensure a space before next PRINT
+        ENSURE(' ');
+        // WillPrint starts with ' ' → skip pushing space
+        PRINT(` ${ast.val}`);
       },
     };
     const gen = GeneratorBuilder.create(<const>[ rule ]).build();

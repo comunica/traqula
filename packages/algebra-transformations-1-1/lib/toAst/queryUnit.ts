@@ -239,7 +239,6 @@ export const putExtensionsInGroup: AstIndir<'putExtensionsInGroup', void, [Query
   fun: () => ({ astFactory: F }, result, extensions) => {
     const extensionEntries = Object.entries(extensions);
     if (extensionEntries.length > 0) {
-      /* v8 ignore next */
       result.where = result.where ?? F.patternGroup([], F.gen());
       for (const [ key, value ] of extensionEntries) {
         result.where.patterns.push(

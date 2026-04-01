@@ -251,14 +251,16 @@ describe('extra generator coverage', () => {
   describe('additiveExpression with numericLiteralPositive/Negative + multiplication (expression.ts:336-340)', () => {
     it('covers anonymous closure: numericLiteralPositive followed by multiplication', ({ expect }) => {
       // Covers expression.ts lines 336-340: the `leftInner => expressionOperation(...)` closure inside MANY2
-      // This closure is invoked when a signed numeric literal (+2) is followed by * or /
-      const result = autoGen('SELECT * WHERE { FILTER(1 + +2 * 3) }');
+      // MUST use "?x +2 * 3" (no space before +2, no preceding opPlus) so +2 is integerPositive
+      // triggering Alt 2 of MANY1 in additiveExpression, then MANY2 fires for "* 3"
+      const result = autoGen('SELECT * WHERE { FILTER(?x +2 * 3 > 0) }');
       expect(result).toBeDefined();
     });
 
     it('covers anonymous closure: numericLiteralNegative followed by division', ({ expect }) => {
       // Same closure path but with numericLiteralNegative and /
-      const result = autoGen('SELECT * WHERE { FILTER(1 + -2 / 3) }');
+      // "?x -2 / 3" — -2 is integerNegative, triggers Alt 2 of MANY1 in additiveExpression
+      const result = autoGen('SELECT * WHERE { FILTER(?x -2 / 3 > 0) }');
       expect(result).toBeDefined();
     });
   });

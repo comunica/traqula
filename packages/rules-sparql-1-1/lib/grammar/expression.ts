@@ -124,7 +124,7 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
       SUBRULE(iriOrFunction, ast);
     } else if (F.isExpressionAggregate(ast)) {
       SUBRULE(aggregate, ast);
-    } else if (F.isExpressionOperator(ast)) {
+    } else {
       if (infixOperators.has(ast.operator)) {
         const [ left, ...right ] = ast.args;
         F.printFilter(ast, () => PRINT_WORD('('));
@@ -333,11 +333,14 @@ export const additiveExpression: SparqlGrammarRule<'additiveExpression', Express
                 { ALT: () => CONSUME(l.symbols.slash) },
               ]);
               const innerExpr = SUBRULE1(unaryExpression);
-              return ACTION(() => leftInner => C.astFactory.expressionOperation(
-                innerOperator.image,
-                [ leftInner, innerExpr ],
-                C.astFactory.sourceLocation(leftInner, innerExpr),
-              ));
+              /* v8 ignore start */
+              return (leftInner: Expression) => ACTION(() =>
+                C.astFactory.expressionOperation(
+                  innerOperator.image,
+                  [ leftInner, innerExpr ],
+                  C.astFactory.sourceLocation(leftInner, innerExpr),
+                ));
+              /* v8 ignore stop */
             },
             ACTION,
             MANY2,

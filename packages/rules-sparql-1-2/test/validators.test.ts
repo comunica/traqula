@@ -214,3 +214,79 @@ describe('findPatternBoundedVars sparql-1-2 extra', () => {
     expect(vars.has('endpoint')).toBe(true);
   });
 });
+
+describe('findPatternBoundedVars (sparql-1-2) - additional branches', () => {
+  it('handles ASK query (line 36 FALSE branch: not select/describe)', ({ expect }) => {
+    // Covers validators.ts:36: F.isQuerySelect(iter) || F.isQueryDescribe(iter) FALSE branch
+    // When iter is an ASK query, neither isQuerySelect nor isQueryDescribe is true
+    const vars = new Set<string>();
+    const where = F.patternGroup([], noLoc);
+    const ask: any = {
+      type: 'query',
+      subType: 'ask',
+      context: [],
+      where,
+      solutionModifiers: {},
+      datasets: F.datasetClauses([], noLoc),
+      loc: noLoc,
+    };
+    findPatternBoundedVars(ask, vars);
+    // For ASK query, no variables should be added to boundedVars (falls into else → recurse(group))
+    expect(vars.size).toBe(0);
+  });
+
+  it('handles triple WITH annotations (line 72: for loop over annotations)', ({ expect }) => {
+    // Covers validators.ts:72: the for loop over iter.annotations when annotations is non-empty
+    const vars = new Set<string>();
+    const varS = F.termVariable('s', noLoc);
+    const varO = F.termVariable('o', noLoc);
+    const iri = F.termNamed(noLoc, 'http://p');
+    // Create a triple with an annotation: the annotation val is a term variable
+    const annotationVal = F.termVariable('ann', noLoc);
+    const triple = F.triple(varS, iri, varO, F.gen());
+    // Add annotation manually since we need a non-empty annotations array
+    (<any>triple).annotations = [{ val: annotationVal }];
+    findPatternBoundedVars(triple, vars);
+    expect(vars.has('ann')).toBe(true);
+  });
+
+  it('handles empty PatternValues (line 99: values.at(0) ?? {} branch)', ({ expect }) => {
+    // Covers validators.ts:99: iter.values.at(0) ?? {} when values is empty
+    const vars = new Set<string>();
+    const emptyValues = F.patternValues([], [], noLoc);
+    findPatternBoundedVars(emptyValues, vars);
+    expect(vars.size).toBe(0);
+  });
+});
+
+describe('findPatternBoundedVars (sparql-1-2) - path and annotation FALSE branch', () => {
+  it('handles triple WITHOUT annotations (line 72 ?? FALSE branch)', ({ expect }) => {
+    // Covers validators.ts:72: iter.annotations ?? [] when annotations is undefined/null
+    // Since F.triple() in SPARQL 1.2 always adds annotations:[], we must manually create
+    // a triple-like object with annotations=undefined to trigger the ?? fallback.
+    const vars = new Set<string>();
+    const varS = F.termVariable('s', noLoc);
+    const varO = F.termVariable('o', noLoc);
+    const iri = F.termNamed(noLoc, 'http://p');
+    // Create mock triple without annotations to trigger ?? [] false branch
+    const mockTriple = {
+      type: 'triple',
+      subject: varS,
+      predicate: iri,
+      object: varO,
+      // No annotations field → undefined → ?? [] false branch
+    };
+    findPatternBoundedVars(<any>mockTriple, vars);
+    expect(vars.has('s')).toBe(true);
+    expect(vars.has('o')).toBe(true);
+  });
+
+  it('handles Path iteration (line 80: for loop body for path items)', ({ expect }) => {
+    // Covers validators.ts:80: findPatternBoundedVars(item, ...) inside isPath branch
+    const vars = new Set<string>();
+    const path = F.path('/', [ F.termNamed(noLoc, 'http://p1'), F.termNamed(noLoc, 'http://p2') ], noLoc);
+    findPatternBoundedVars(path, vars);
+    // Path items are TermNamed nodes (not variables), so vars stays empty
+    expect(vars.size).toBe(0);
+  });
+});

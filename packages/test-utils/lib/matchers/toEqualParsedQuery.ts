@@ -16,7 +16,7 @@ expect.extend({
           return (
             `${this.utils.matcherHint('toEqualParsedQuery')
           }\n\n${
-          diffString && diffString.includes('- Expect') ?
+          diffString ?
             `Difference:\n\n${diffString}` :
             `Expected: ${this.utils.printExpected(expected)}\n` +
             `Received: ${this.utils.printReceived(received)}`}`
@@ -45,7 +45,7 @@ expect.extend({
           return (
           `${this.utils.matcherHint('toEqualParsedQuery')
           }\n\n${
-            diffString && diffString.includes('- Expect') ?
+            diffString ?
               `Difference:\n\n${diffString}` :
               `Expected: ${this.utils.printExpected(expected)}\n` +
               `Received: ${this.utils.printReceived(received)}`}`

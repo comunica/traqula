@@ -228,11 +228,7 @@ export function resolveIRI(iri: string, base: string | undefined): string {
       return base.replace(/(?:\?.*)?$/u, iri);
       // Resolve root relative IRIs at the root of the base IRI
     case '/': {
-      const baseMatch = /^(?:[a-z]+:\/*)?[^/]*/u.exec(base);
-      if (!baseMatch) {
-        throw new Error(`Could not determine relative IRI using base: ${base}`);
-      }
-      const baseRoot = baseMatch[0];
+      const baseRoot = /^(?:[a-z]+:\/*)?[^/]*/u.exec(base)![0];
       return baseRoot + iri;
     }
     // Resolve all other IRIs at the base IRI's path

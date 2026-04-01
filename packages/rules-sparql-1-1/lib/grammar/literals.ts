@@ -12,27 +12,18 @@ import type {
 } from '../Sparql11types.js';
 import { CommonIRIs } from '../utils.js';
 
+const escapeMap: Record<string, string> = {
+  '\t': '\\t',
+  '\n': '\\n',
+  '\r': '\\r',
+  '\b': '\\b',
+  '\f': '\\f',
+  '"': '\\"',
+  '\\': '\\\\',
+};
+
 export function stringEscapedLexical(str: string): string {
-  const lexical = str.replaceAll(/["\\\t\n\r\b\f]/gu, (char) => {
-    switch (char) {
-      case '\t':
-        return '\\t';
-      case '\n':
-        return '\\n';
-      case '\r':
-        return '\\r';
-      case '\b':
-        return '\\b';
-      case '\f':
-        return '\\f';
-      case '"':
-        return '\\"';
-      case '\\':
-        return '\\\\';
-      default:
-        return char;
-    }
-  });
+  const lexical = str.replaceAll(/["\\\t\n\r\b\f]/gu, char => escapeMap[char]);
   return `"${lexical}"`;
 }
 

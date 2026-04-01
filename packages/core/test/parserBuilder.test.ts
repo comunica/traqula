@@ -103,6 +103,17 @@ describe('parserBuilder', () => {
       expect(() => (<any> builder).defaultErrorHandler('hello world', [ mockError ])).toThrow(/\^/u);
     });
 
+    it('omits column pointer when token has no column info (branch 239:b1)', ({ expect }) => {
+      // Covers parserBuilder.ts branch 239:b1 — columnIdx is undefined
+      const builder = ParserBuilder.create(<const>[ numRule ]);
+      const mockError = {
+        token: { startLine: 1, image: 'x' },
+        message: 'unexpected token',
+      };
+      // Should throw Parse error but WITHOUT a '^' column pointer since startColumn is undefined
+      expect(() => (<any>builder).defaultErrorHandler('hello world', [ mockError ])).toThrow(/Parse error/u);
+    });
+
     it('calls the custom errorHandler instead of the default one when provided', ({ expect }) => {
       const errors: unknown[] = [];
       const parser = ParserBuilder.create(<const>[ numRule ]).build({

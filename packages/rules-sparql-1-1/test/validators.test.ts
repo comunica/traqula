@@ -369,3 +369,78 @@ describe('checkNote13 - second bounded vars check', () => {
       .toThrowError(/Variable used to bind is already bound/u);
   });
 });
+
+describe('findPatternBoundedVars - additional branches', () => {
+  it('handles empty PatternValues (values.at(0) ?? {} branch, line 172)', ({ expect }) => {
+    // Covers validation/validators.ts line 172: op.values.at(0) ?? {}
+    // When values array is empty, at(0) returns undefined, ?? {} gives {}, loop is skipped
+    const vars = new Set<string>();
+    const emptyValues = F.patternValues([], [], noLoc);
+    findPatternBoundedVars(emptyValues, vars);
+    expect(vars.size).toBe(0);
+  });
+});
+
+describe('queryProjectionIsGood - subquery wildcard and PatternBind branches (lines 125-128)', () => {
+  it('handles subquery with wildcard projection (F.isWildcard(v) branch)', ({ expect }) => {
+    // Covers validators.ts lines 125-128: F.isTerm(v) is FALSE, F.isWildcard(v) is TRUE
+    // Subquery that projects a wildcard (*): sub.variables = [Wildcard]
+    const subquery = {
+      type: 'query',
+      subType: 'select',
+      variables: [ F.wildcard(noLoc) ],
+    };
+    const outerQuery = {
+      variables: [ F.termVariable('x', noLoc) ],
+      solutionModifiers: {},
+      where: {
+        type: 'group',
+        patterns: [ subquery ],
+      },
+    };
+    expect(() => queryProjectionIsGood(<any>outerQuery)).not.toThrow();
+  });
+
+  it('handles subquery with PatternBind projection (v.variable.value branch)', ({ expect }) => {
+    // Covers validators.ts lines 125-128: F.isTerm(v) is FALSE, F.isWildcard(v) is FALSE
+    // Subquery that projects a PatternBind (?expr AS ?y): v.variable.value is used
+    const patternBind = { expression: F.termVariable('x', noLoc), variable: F.termVariable('y', noLoc) };
+    const subquery = {
+      type: 'query',
+      subType: 'select',
+      variables: [ patternBind ],
+    };
+    const outerQuery = {
+      variables: [ F.termVariable('x', noLoc) ],
+      solutionModifiers: {},
+      where: {
+        type: 'group',
+        patterns: [ subquery ],
+      },
+    };
+    expect(() => queryProjectionIsGood(<any>outerQuery)).not.toThrow();
+  });
+});
+
+describe('queryProjectionIsGood - line 128 FALSE branch', () => {
+  it('does not throw when AS variable does not conflict with subquery (line 128 FALSE)', ({ expect }) => {
+    // Covers validation/validators.ts line 128 FALSE branch:
+    // subqueryIds.has(selectedVarId) is FALSE when outer AS variable is NOT in subquery projection
+    const patternBind = { expression: F.termLiteral(noLoc, '1'), variable: F.termVariable('x', noLoc) };
+    const subquery = {
+      type: 'query',
+      subType: 'select',
+      variables: [ F.termVariable('y', noLoc) ],  // projects ?y, NOT ?x
+    };
+    const outerQuery = {
+      variables: [ patternBind ],  // (expr AS ?x)
+      solutionModifiers: {},
+      where: {
+        type: 'group',
+        patterns: [ subquery ],
+      },
+    };
+    // subqueryIds = {'y'}, selectBoundedVars = {'x'}, no conflict → no throw
+    expect(() => queryProjectionIsGood(<any>outerQuery)).not.toThrow();
+  });
+});

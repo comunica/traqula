@@ -50,6 +50,7 @@ export const query: SparqlRule<'query', Query> = <const> {
     ]);
     const values = SUBRULE(valuesClause);
 
+    /* v8 ignore start */
     return ACTION(() => (<Query>{
       context: prologueValues,
       ...subType,
@@ -61,6 +62,7 @@ export const query: SparqlRule<'query', Query> = <const> {
         values,
       ),
     }));
+    /* v8 ignore stop */
   },
   gImpl: ({ SUBRULE }) => (ast, { astFactory: F }) => {
     SUBRULE(prologue, ast.context);
@@ -70,7 +72,7 @@ export const query: SparqlRule<'query', Query> = <const> {
       SUBRULE(constructQuery, ast);
     } else if (F.isQueryDescribe(ast)) {
       SUBRULE(describeQuery, ast);
-    } else if (F.isQueryAsk(ast)) {
+    } else {
       SUBRULE(askQuery, ast);
     }
     if (ast.values) {

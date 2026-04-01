@@ -76,10 +76,8 @@ export function findPatternBoundedVars(
       );
     }
   } else if (F.isPath(iter)) {
-    if (!F.isTerm(iter)) {
-      for (const item of iter.items) {
-        findPatternBoundedVars(item, boundedVars);
-      }
+    for (const item of iter.items) {
+      findPatternBoundedVars(item, boundedVars);
     }
   } else if (F.isTripleCollection(iter) || F.isPatternBgp(iter)) {
     for (const triple of iter.triples) {

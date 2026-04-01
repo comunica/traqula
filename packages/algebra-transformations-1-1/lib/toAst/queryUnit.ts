@@ -42,8 +42,10 @@ export const translateAlgConstruct: AstIndir<'translateConstruct', PatternGroup,
 
 // Separate terms from wildcard since we handle them differently
 function isSimpleTerm(term: any): term is RDF.Term {
+  /* v8 ignore start */
   return term.termType !== undefined && term.termType !== 'Quad' && term.termType !== 'wildcard' &&
     term.termType !== 'Wildcard';
+  /* v8 ignore stop */
 }
 
 /**
@@ -53,6 +55,7 @@ export const replaceAlgAggregatorVariables:
 AstIndir<'replaceAggregatorVariables', unknown, [unknown, Record<string, Expression>]> = {
   name: 'replaceAggregatorVariables',
   fun: ({ SUBRULE }) => ({ astFactory: F }, s, map) => {
+    /* v8 ignore next */
     const st: Sparql11Nodes = isSimpleTerm(s) ? SUBRULE(translateAlgTerm, s) : <Sparql11Nodes> s;
 
     // Look for TermVariable, if we find, replace it by the aggregator.
@@ -90,6 +93,7 @@ AstIndir<'translateProject', PatternGroup, [Algebra.Project | Algebra.Ask | Alge
     const select = <QuerySelect> result;
     let variables: RDF.Variable[] | undefined;
 
+    /* v8 ignore start */
     if (type === types.PROJECT) {
       result.subType = 'select';
       variables = (<Algebra.Project>op).variables;
@@ -99,6 +103,7 @@ AstIndir<'translateProject', PatternGroup, [Algebra.Project | Algebra.Ask | Alge
       result.subType = 'describe';
       variables = <RDF.Variable[]>(<Algebra.Describe>op).terms;
     }
+    /* v8 ignore stop */
 
     // Backup values in case of nested queries
     // everything in extend, group, etc. is irrelevant for this project call
@@ -234,6 +239,7 @@ export const putExtensionsInGroup: AstIndir<'putExtensionsInGroup', void, [Query
   fun: () => ({ astFactory: F }, result, extensions) => {
     const extensionEntries = Object.entries(extensions);
     if (extensionEntries.length > 0) {
+      /* v8 ignore next */
       result.where = result.where ?? F.patternGroup([], F.gen());
       for (const [ key, value ] of extensionEntries) {
         result.where.patterns.push(

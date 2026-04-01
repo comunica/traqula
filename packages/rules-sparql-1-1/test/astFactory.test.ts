@@ -399,6 +399,37 @@ describe('astFactory', () => {
       const opExpr = F.expressionOperation('+', [ varX ], noLoc);
       expect(F.isExpressionAggregateDefault(opExpr)).toBe(false);
     });
+
+    it('isExpressionAggregateDefault returns false when expression[0] is a wildcard (line 158 false branch)', ({ expect }) => {
+      // Covers ExpressionFactory.ts line 158: !this.isOfType(expression[0], 'wildcard') is FALSE
+      // Need: type='expression', subType='operation', expression=[wildcard]
+      const wildcard = F.wildcard(noLoc);
+      const fakeOpWithWildcard = {
+        type: 'expression',
+        subType: 'operation',
+        expression: [ wildcard ],
+      };
+      expect(F.isExpressionAggregateDefault(<any>fakeOpWithWildcard)).toBe(false);
+    });
+  });
+
+  describe('pathFactory - PathNegatedElt creation (PathFactory.ts line 64)', () => {
+    it('creates PathNegatedElt when subType is ^ with a non-pure path item (TermIri)', ({ expect }) => {
+      // Covers PathFactory.ts line 64: return { ...base, subType, items } satisfies PathNegatedElt
+      // Triggered when subType='^', items.length=1, and !isPathPure(items[0])
+      // TermIri is NOT a PathPure (type='term', not 'path'), so condition is true
+      const iri = F.termNamed(noLoc, 'http://example.org/p');
+      const result = F.path('^', [ iri ], noLoc);
+      expect(result).toBeDefined();
+      expect(result.subType).toBe('^');
+    });
+
+    it('isPathNegatedElt returns true for a PathNegatedElt (PathFactory.ts line 97 true branch)', ({ expect }) => {
+      // Covers PathFactory.ts line 97: !this.isPathPure(casted.items[0]) TRUE branch
+      const iri = F.termNamed(noLoc, 'http://example.org/p');
+      const negElt = F.path('^', [ iri ], noLoc);
+      expect(F.isPathNegatedElt(negElt)).toBe(true);
+    });
   });
 
   describe('solutionModifiersFactory - type guards', () => {
@@ -441,6 +472,17 @@ describe('astFactory', () => {
       const delWhere = F.updateOperationDeleteWhere([ quads ], noLoc);
       expect(delWhere.subType).toBe('deletewhere');
       expect(F.isUpdateOperationDeleteWhere(delWhere)).toBe(true);
+    });
+
+    it('creates modify operation with undefined insert and delete (lines 264-265)', ({ expect }) => {
+      // Covers UpdateOperationFactory.ts lines 264-265: insert ?? [] and delete ?? []
+      const where = F.patternGroup([], noLoc);
+      const datasets = F.datasetClauses([], noLoc);
+      const modify = F.updateOperationModify(noLoc, undefined, undefined, where, datasets);
+      expect(modify.subType).toBe('modify');
+      expect(modify.insert).toEqual([]);
+      expect(modify.delete).toEqual([]);
+      expect(F.isUpdateOperationModify(modify)).toBe(true);
     });
   });
 

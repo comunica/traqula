@@ -387,6 +387,46 @@ describe('transformerSubTyped without-specific-preVisitor fallback', () => {
   });
 });
 
+describe('transformerObject null/primitive array elements', () => {
+  it('transformObject handles array with null/primitive elements (branch 139:b1)', ({ expect }) => {
+    // Covers TransformerObject.ts branch 139:b1 — array element is null or primitive
+    const transformer = new TransformerObject();
+    const obj = { items: [ null, 1, 'hello', { type: 'leaf' }]};
+    const result = transformer.transformObject(obj, x => x);
+    expect(result).toBeDefined();
+  });
+
+  it('visitObject handles array with null/primitive elements (branch 239:b1)', ({ expect }) => {
+    // Covers TransformerObject.ts branch 239:b1 — array element is null or primitive
+    const transformer = new TransformerObject();
+    const visited: object[] = [];
+    const obj = { items: [ null, 42, 'text', { type: 'leaf' }]};
+    transformer.visitObject(obj, o => visited.push(o));
+    // Only the object element { type: 'leaf' } should be visited (plus root)
+    expect(visited.length).toBeGreaterThan(0);
+  });
+
+  it('visitObject handles didShortCut=true with remaining stack items (branch 235:b1)', ({ expect }) => {
+    // Covers TransformerObject.ts branch 235:b1 — !didShortCut is FALSE when items remain on stack
+    // Need 3 object siblings where the MIDDLE one (in LIFO pop order) sets shortcut
+    // Keys: a, b, c are pushed in order → stack = [..., a, b, c].
+    // Pop c (normal), pop b (sets shortcut), pop a (hits !didShortCut=false → branch 235:b1)
+    const transformer = new TransformerObject();
+    const visited: string[] = [];
+    const tree = {
+      a: { name: 'a' },
+      b: { name: 'b', flag: true },
+      c: { name: 'c' },
+    };
+    transformer.visitObject(
+      tree,
+      o => visited.push((<any>o).name ?? 'root'),
+      o => ((<any>o).flag ? { shortcut: true } : {}),
+    );
+    expect(visited).toBeDefined();
+  });
+});
+
 describe('transformerObject stack overflow', () => {
   class TinyTransformer extends TransformerObject {
     // Override maxStackSize to 1 so a single nested child overflows

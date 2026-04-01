@@ -1,0 +1,224 @@
+yarn run v1.22.22
+$ vitest test --run
+[33mTesting types with tsc and vue-tsc is an experimental feature.
+Breaking changes might not follow SemVer, please pin Vitest's version when using it.[39m
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/IdeaProjects/Traqula2[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+ [32m✓[39m engines/parser-sparql-1-1/test/extraCoverage.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 125[2mms[22m[39m
+ [32m✓[39m engines/generator-sparql-1-1/test/statics.test.ts [2m([22m[2m206 tests[22m[2m)[22m[33m 742[2mms[22m[39m
+[90mstderr[2m | packages/core/test/builders.test.ts[2m > [22m[2mlexerBuilder runtime coverage[2m > [22m[2mbuilds a working lexer
+[22m[39mWarning: Warning: No LINE_BREAKS Found.
+	This Lexer has been defined to track line and column information,
+	But none of the Token Types can be identified as matching a line terminator.
+	See https://chevrotain.io/docs/guide/resolving_lexer_errors.html#LINE_BREAKS 
+	for details.
+
+ [32m✓[39m packages/core/test/builders.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 91[2mms[22m[39m
+ [32m✓[39m engines/algebra-sparql-1-2/test/extraCoverage.test.ts [2m([22m[2m3 tests[22m[2m)[22m[33m 577[2mms[22m[39m
+       [33m[2m✓[22m[39m translates a directional language-tagged literal with ltr direction [33m 412[2mms[22m[39m
+ [32m✓[39m engines/generator-sparql-1-2/test/statics.test.ts [2m([22m[2m317 tests[22m[2m)[22m[33m 1060[2mms[22m[39m
+ [32m✓[39m engines/algebra-sparql-1-1/test/algebra.test.ts [2m([22m[2m439 tests[22m[2m)[22m[33m 919[2mms[22m[39m
+ [32m✓[39m engines/parser-sparql-1-1/test/dynamicParserCoverage.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 115[2mms[22m[39m
+ [32m✓[39m engines/algebra-sparql-1-1/test/generateJson.test.ts [2m([22m[2m877 tests[22m[2m | [22m[33m438 skipped[39m[2m)[22m[33m 955[2mms[22m[39m
+ [32m✓[39m engines/algebra-sparql-1-1/test/recurse.test.ts [2m([22m[2m664 tests[22m[2m)[22m[33m 1423[2mms[22m[39m
+ [32m✓[39m engines/parser-sparql-1-1/test/statics.test.ts [2m([22m[2m283 tests[22m[2m | [22m[33m18 skipped[39m[2m)[22m[33m 1884[2mms[22m[39m
+ [32m✓[39m engines/generator-sparql-1-1/test/extraCoverage.test.ts [2m([22m[2m42 tests[22m[2m)[22m[32m 100[2mms[22m[39m
+ [32m✓[39m engines/parser-sparql-1-1-adjust/test/statics.test.ts [2m([22m[2m282 tests[22m[2m | [22m[33m18 skipped[39m[2m)[22m[33m 1969[2mms[22m[39m
+ [32m✓[39m engines/algebra-sparql-1-1/test/extraCoverage.test.ts [2m([22m[2m50 tests[22m[2m)[22m[32m 89[2mms[22m[39m
+ [32m✓[39m packages/core/test/parserBuilder.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 36[2mms[22m[39m
+ [32m✓[39m engines/algebra-sparql-1-2/test/algebra.test.ts [2m([22m[2m844 tests[22m[2m)[22m[33m 1653[2mms[22m[39m
+ [32m✓[39m packages/core/test/transformer.test.ts [2m([22m[2m32 tests[22m[2m)[22m[32m 42[2mms[22m[39m
+ [32m✓[39m packages/test-utils/test/matchers.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 44[2mms[22m[39m
+ [32m✓[39m engines/generator-sparql-1-2/test/integration.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 62[2mms[22m[39m
+ [32m✓[39m engines/generator-sparql-1-2/test/extraCoverage.test.ts [2m([22m[2m12 tests[22m[2m)[22m[32m 45[2mms[22m[39m
+ [32m✓[39m packages/core/test/extraCoverage.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m packages/core/test/indirBuilder.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m packages/rules-sparql-1-1/test/validators.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m engines/generator-sparql-1-2/test/autoGenWComments.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32m✓[39m packages/core/test/AstCoreFactory.test.ts [2m([22m[2m16 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m engines/parser-sparql-1-2/test/extraCoverage.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32m✓[39m engines/generator-sparql-1-1/test/autoGenWComments.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32m✓[39m engines/generator-sparql-1-1/test/integration.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32m✓[39m packages/rules-sparql-1-1/test/lexer.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m packages/rules-sparql-1-1/test/astFactory.test.ts [2m([22m[2m59 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32m✓[39m packages/core/test/lexerBuilder.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m packages/core/test/generatorBuilder/generatorBuilder.types.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 2[2mms[22m[39m
+ [32m✓[39m packages/rules-sparql-1-1/test/utils.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m engines/algebra-sparql-1-1/test/sparql.test.ts [2m([22m[2m854 tests[22m[2m)[22m[33m 2768[2mms[22m[39m
+ [32m✓[39m packages/core/test/grammar-builder/parserBuilder.types.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 4[2mms[22m[39m
+ [32m✓[39m packages/rules-sparql-1-2/test/validators.test.ts [2m([22m[2m25 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [2m[90m↓[39m[22m engines/algebra-sparql-1-2/test/generateJson.test.ts [2m([22m[2m404 tests[22m[2m | [22m[33m404 skipped[39m[2m)[22m
+ [32m✓[39m engines/parser-sparql-1-2/test/statics.test.ts [2m([22m[2m454 tests[22m[2m | [22m[33m18 skipped[39m[2m)[22m[33m 3867[2mms[22m[39m
+ [32m✓[39m engines/algebra-sparql-1-2/test/sparql.test.ts [2m([22m[2m1572 tests[22m[2m)[22m[33m 3090[2mms[22m[39m
+ [32m✓[39m [44m[1m TS [22m[49m packages/core/test/generatorBuilder/generatorBuilder.types.test.ts [2m([22m[2m1 test[22m[2m)[22m
+ [32m✓[39m [44m[1m TS [22m[49m packages/core/test/grammar-builder/parserBuilder.types.test.ts [2m([22m[2m1 test[22m[2m)[22m
+
+[2m Test Files [22m [1m[32m39 passed[39m[22m[2m | [22m[33m1 skipped[39m[90m (40)[39m
+[2m      Tests [22m [1m[32m6703 passed[39m[22m[2m | [22m[33m842 skipped[39m[2m | [22m[90m54 todo[39m[90m (7599)[39m
+[2mType Errors [22m [2mno errors[22m
+[2m   Start at [22m 17:14:59
+[2m   Duration [22m 5.95s[2m (transform 7.11s, setup 0ms, import 31.49s, tests 21.89s, environment 7ms, typecheck 97ms)[22m
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   99.85 |    98.84 |   99.85 |    99.9 |                   
+ ...sparql-1-1/lib |     100 |      100 |     100 |     100 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  toAlgebra.ts     |     100 |      100 |     100 |     100 |                   
+  toAst.ts         |     100 |      100 |     100 |     100 |                   
+ ...sparql-1-2/lib |     100 |      100 |     100 |     100 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  toAlgebra12.ts   |     100 |      100 |     100 |     100 |                   
+  toAst12.ts       |     100 |      100 |     100 |     100 |                   
+ ...sparql-1-1/lib |     100 |      100 |     100 |     100 |                   
+  index.ts         |     100 |      100 |     100 |     100 |                   
+ ...sparql-1-2/lib |     100 |      100 |     100 |     100 |                   
+  index.ts         |     100 |      100 |     100 |     100 |                   
+ ...1-1-adjust/lib |     100 |      100 |     100 |     100 |                   
+  Parser.ts        |     100 |      100 |     100 |     100 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+ ...sparql-1-1/lib |     100 |      100 |     100 |     100 |                   
+  Parser.ts        |     100 |      100 |     100 |     100 |                   
+  ...sionParser.ts |     100 |      100 |     100 |     100 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  ...ListParser.ts |     100 |      100 |     100 |     100 |                   
+  ...UnitParser.ts |     100 |      100 |     100 |     100 |                   
+  ...lectParser.ts |     100 |      100 |     100 |     100 |                   
+  ...lockParser.ts |     100 |      100 |     100 |     100 |                   
+  ...serBuilder.ts |     100 |      100 |     100 |     100 |                   
+  ...difyParser.ts |     100 |      100 |     100 |     100 |                   
+  ...UnitParser.ts |     100 |      100 |     100 |     100 |                   
+ ...sparql-1-2/lib |     100 |      100 |     100 |     100 |                   
+  Parser.ts        |     100 |      100 |     100 |     100 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+ ...ations-1-1/lib |    99.6 |    99.09 |     100 |   99.59 |                   
+  algebra.ts       |     100 |      100 |     100 |     100 |                   
+  ...braFactory.ts |     100 |      100 |     100 |     100 |                   
+  canonicalizer.ts |     100 |      100 |     100 |     100 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  util.ts          |   98.86 |    98.33 |     100 |   98.85 | 234               
+ .../lib/toAlgebra |   99.81 |    98.52 |     100 |    99.8 |                   
+  aggregate.ts     |     100 |      100 |     100 |     100 |                   
+  core.ts          |     100 |      100 |     100 |     100 |                   
+  general.ts       |     100 |      100 |     100 |     100 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  path.ts          |     100 |      100 |     100 |     100 |                   
+  patterns.ts      |     100 |    98.43 |     100 |     100 | 252               
+  toAlgebra.ts     |     100 |      100 |     100 |     100 |                   
+  tripleAndQuad.ts |    98.7 |    93.65 |     100 |   98.66 | 90                
+  updates.ts       |     100 |      100 |     100 |     100 |                   
+ ...-1-1/lib/toAst |   99.48 |    96.73 |     100 |   99.47 |                   
+  core.ts          |     100 |      100 |     100 |     100 |                   
+  expression.ts    |     100 |      100 |     100 |     100 |                   
+  general.ts       |     100 |      100 |     100 |     100 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  path.ts          |     100 |      100 |     100 |     100 |                   
+  pattern.ts       |     100 |      100 |     100 |     100 |                   
+  quads.ts         |     100 |      100 |     100 |     100 |                   
+  queryUnit.ts     |   97.56 |     87.5 |     100 |    97.5 | 166-169           
+  toAst.ts         |     100 |      100 |     100 |     100 |                   
+  updateUnit.ts    |     100 |     97.4 |     100 |     100 | 75,114            
+ ...ations-1-2/lib |     100 |      100 |     100 |     100 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  toAlgebra12.ts   |     100 |      100 |     100 |     100 |                   
+  toAst12.ts       |     100 |      100 |     100 |     100 |                   
+  types.ts         |     100 |      100 |     100 |     100 |                   
+ ...chevrotain/lib |       0 |        0 |       0 |       0 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+ packages/core/lib |     100 |      100 |     100 |     100 |                   
+  ...oreFactory.ts |     100 |      100 |     100 |     100 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  types.ts         |       0 |        0 |       0 |       0 |                   
+  utils.ts         |     100 |      100 |     100 |     100 |                   
+ ...erator-builder |     100 |      100 |     100 |     100 |                   
+  builderTypes.ts  |       0 |        0 |       0 |       0 |                   
+  ...cGenerator.ts |     100 |      100 |     100 |     100 |                   
+  ...torBuilder.ts |     100 |      100 |     100 |     100 |                   
+  ...ratorTypes.ts |       0 |        0 |       0 |       0 |                   
+ ...ection-builder |     100 |      100 |     100 |     100 |                   
+  IndirBuilder.ts  |     100 |      100 |     100 |     100 |                   
+  ...Indirected.ts |     100 |      100 |     100 |     100 |                   
+  helpers.ts       |     100 |      100 |     100 |     100 |                   
+ .../lexer-builder |     100 |      100 |     100 |     100 |                   
+  LexerBuilder.ts  |     100 |      100 |     100 |     100 |                   
+ ...parser-builder |     100 |      100 |     100 |     100 |                   
+  builderTypes.ts  |       0 |        0 |       0 |       0 |                   
+  dynamicParser.ts |     100 |      100 |     100 |     100 |                   
+  parserBuilder.ts |     100 |      100 |     100 |     100 |                   
+  ruleDefTypes.ts  |       0 |        0 |       0 |       0 |                   
+ ...b/transformers |     100 |      100 |     100 |     100 |                   
+  ...rmerObject.ts |     100 |      100 |     100 |     100 |                   
+  ...erSubTyped.ts |     100 |      100 |     100 |     100 |                   
+  ...ormerTyped.ts |     100 |      100 |     100 |     100 |                   
+ ...1-1-adjust/lib |     100 |      100 |     100 |     100 |                   
+  grammar.ts       |     100 |      100 |     100 |     100 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  lexer.ts         |     100 |      100 |     100 |     100 |                   
+ ...sparql-1-1/lib |     100 |      100 |     100 |     100 |                   
+  ...arqlParser.ts |     100 |      100 |     100 |     100 |                   
+  Sparql11types.ts |       0 |        0 |       0 |       0 |                   
+  astFactory.ts    |     100 |      100 |     100 |     100 |                   
+  ...ionHelpers.ts |     100 |      100 |     100 |     100 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  ...elperTypes.ts |       0 |        0 |       0 |       0 |                   
+  utils.ts         |     100 |      100 |     100 |     100 |                   
+ .../factoryMixins |     100 |     96.1 |     100 |     100 |                   
+  ...extFactory.ts |     100 |      100 |     100 |     100 |                   
+  ...ionFactory.ts |     100 |      100 |     100 |     100 |                   
+  ...RefFactory.ts |     100 |      100 |     100 |     100 |                   
+  PathFactory.ts   |     100 |    93.02 |     100 |     100 | 62,97             
+  ...ernfactory.ts |     100 |      100 |     100 |     100 |                   
+  QueryFactory.ts  |     100 |      100 |     100 |     100 |                   
+  ...ersFactory.ts |     100 |      100 |     100 |     100 |                   
+  TermFactory.ts   |     100 |      100 |     100 |     100 |                   
+  ...ionFactory.ts |     100 |      100 |     100 |     100 |                   
+  mixins.ts        |     100 |      100 |     100 |     100 |                   
+ ...-1/lib/grammar |   99.85 |    99.47 |   99.69 |     100 |                   
+  builtIn.ts       |     100 |      100 |     100 |     100 |                   
+  dataSetClause.ts |     100 |      100 |     100 |     100 |                   
+  expression.ts    |   99.15 |      100 |   98.34 |     100 |                   
+  general.ts       |     100 |      100 |     100 |     100 |                   
+  index.ts         |     100 |      100 |     100 |     100 |                   
+  literals.ts      |     100 |      100 |     100 |     100 |                   
+  propertyPaths.ts |     100 |      100 |     100 |     100 |                   
+  queryUnit.ts     |   99.52 |      100 |   98.79 |     100 |                   
+  ...onModifier.ts |     100 |      100 |     100 |     100 |                   
+  tripleBlock.ts   |     100 |    96.72 |     100 |     100 | 63,124            
+  updateUnit.ts    |     100 |      100 |     100 |     100 |                   
+  whereClause.ts   |     100 |      100 |     100 |     100 |                   
+ ...-1-1/lib/lexer |     100 |      100 |     100 |     100 |                   
+  BuiltInCalls.ts  |     100 |      100 |     100 |     100 |                   
+  graph.ts         |     100 |      100 |     100 |     100 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  lexer.ts         |     100 |      100 |     100 |     100 |                   
+  lexerPatterns.ts |     100 |      100 |     100 |     100 |                   
+  symbols.ts       |     100 |      100 |     100 |     100 |                   
+  terminals.ts     |     100 |      100 |     100 |     100 |                   
+ ...lib/validation |     100 |      100 |     100 |     100 |                   
+  validators.ts    |     100 |      100 |     100 |     100 |                   
+ ...sparql-1-2/lib |     100 |      100 |     100 |     100 |                   
+  AstFactory.ts    |     100 |      100 |     100 |     100 |                   
+  grammar.ts       |     100 |      100 |     100 |     100 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  lexer.ts         |     100 |      100 |     100 |     100 |                   
+  parserUtils.ts   |     100 |      100 |     100 |     100 |                   
+  ...elperTypes.ts |       0 |        0 |       0 |       0 |                   
+  sparql12Types.ts |       0 |        0 |       0 |       0 |                   
+  validators.ts    |     100 |      100 |     100 |     100 |                   
+ ...test-utils/lib |     100 |      100 |     100 |     100 |                   
+  ...1NotesTest.ts |     100 |      100 |     100 |     100 |                   
+  fileUtils.ts     |     100 |      100 |     100 |     100 |                   
+  index.ts         |       0 |        0 |       0 |       0 |                   
+ ...lib/generators |     100 |    89.28 |     100 |     100 |                   
+  ...Generators.ts |     100 |       85 |     100 |     100 | 50,76-92          
+  generators.ts    |     100 |      100 |     100 |     100 |                   
+  utils.ts         |     100 |      100 |     100 |     100 |                   
+ ...s/lib/matchers |     100 |      100 |     100 |     100 |                   
+  ...arsedQuery.ts |     100 |      100 |     100 |     100 |                   
+  vitest.ts        |       0 |        0 |       0 |       0 |                   
+-------------------|---------|----------|---------|---------|-------------------
+Done in 6.42s.

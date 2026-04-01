@@ -93,6 +93,22 @@ describe('extra parser coverage', () => {
       expect(result).toBeDefined();
       expect(result.type).toBe('query');
     });
+
+    it('parses FILTER with numericLiteralPositive followed by multiply (expression.ts fn85/fn86)', ({ expect }) => {
+      // Covers expression.ts line 336: the ACTION callback and inner arrow function in MANY2
+      // Triggered by: numericLiteralPositive (+2) followed by * (multiplicative operator)
+      // MANY2 iterates once for the "* 3" part after "+2"
+      const result = parser.parse('SELECT * WHERE { ?s ?p ?o FILTER(?x + +2 * 3 > 0) }');
+      expect(result).toBeDefined();
+      expect(result.type).toBe('query');
+    });
+
+    it('parses FILTER with numericLiteralPositive followed by divide (expression.ts fn85/fn86 via slash)', ({ expect }) => {
+      // Also covers expression.ts line 336 via / operator
+      const result = parser.parse('SELECT * WHERE { ?s ?p ?o FILTER(?x + +4 / 2 > 0) }');
+      expect(result).toBeDefined();
+      expect(result.type).toBe('query');
+    });
   });
 
   describe('unaryExpression UPLUS (expression.ts line 398)', () => {
@@ -238,6 +254,27 @@ describe('extra parser coverage', () => {
       const result = parser.parse('DELETE { ?s ?p ?o } WHERE { ?s ?p ?o }');
       expect(result).toBeDefined();
       expect(result.type).toBe('update');
+    });
+  });
+
+  describe('additiveExpression MANY2 loop closure (expression.ts:337)', () => {
+    it('parses FILTER with numericLiteralPositive followed by * operator', ({ expect }) => {
+      // Covers expression.ts:337: the (leftInner) => ACTION(() => expressionOperation(...)) lambda
+      // inside the MANY2 loop of additiveExpression.
+      // The MANY2 path is triggered when a numericLiteralPositive/Negative (+N or -N)
+      // is followed by * or / (multiplicative operator).
+      // FILTER(?x + +2 * 3 > 0): '+2' is numericLiteralPositive, '* 3' triggers MANY2
+      const result = parser.parse('SELECT * WHERE { FILTER(?x + +2 * 3 > 0) }');
+      expect(result).toBeDefined();
+      expect(result.type).toBe('query');
+    });
+
+    it('parses FILTER with numericLiteralNegative followed by / operator', ({ expect }) => {
+      // Covers expression.ts:337: the (leftInner) => ACTION(() => expressionOperation(...)) lambda
+      // '-3' is numericLiteralNegative, '/ ?y' triggers MANY2
+      const result = parser.parse('SELECT * WHERE { FILTER(?x + -3 / ?y > 0) }');
+      expect(result).toBeDefined();
+      expect(result.type).toBe('query');
     });
   });
 });

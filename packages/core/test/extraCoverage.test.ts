@@ -7,13 +7,6 @@ type GenerateContext = { origSource: string };
 describe('dynamicGenerator newLine with existing newline in buffer (lines 225-226)', () => {
   it('adjusts indentation when buffer already ends with a bare newline', ({ expect }) => {
     // Covers dynamicGenerator.ts lines 225-226: the branch where temp ends with \n[ \t]*
-    // To trigger this:
-    //   1. PRINT something that ends with '\n' (no trailing spaces) into the buffer
-    //   2. Then call NEW_LINE() - pruneEndingBlanks puts back the string without \n, but
-    //      the element BEFORE that in the buffer ends with '\n'.
-    //   Strategy: PRINT('A'), NEW_LINE() → buffer = ['A\n'] (indent=0),
-    //   then PRINT('\n'), NEW_LINE() → pruneEndingBlanks pops '\n' (not all-space), pushes '',
-    //   while-loop pops '', then 'A\n'; 'A\n' has '\n' → \n[ \t]*$ matches → lines 225-226!
     const rule: GeneratorRule<GenerateContext, 'myRule', { val: string }, []> = {
       name: 'myRule',
       gImpl: ({ PRINT, NEW_LINE }) => (ast: { val: string }) => {
@@ -32,10 +25,40 @@ describe('dynamicGenerator newLine with existing newline in buffer (lines 225-22
   });
 });
 
+describe('dynamicGenerator ENSURE already-ends-with and willPrint-starts-with (lines 172-174)', () => {
+  it('skips ensure when buffer already ends with the desired string (line 172 false branch)', ({ expect }) => {
+    // Covers line 172: !this.doesEndWith(toEnsure) is FALSE (already ends with it)
+    const rule: GeneratorRule<GenerateContext, 'myRule', { val: string }, []> = {
+      name: 'myRule',
+      gImpl: ({ PRINT, ENSURE }) => (ast: { val: string }) => {
+        PRINT(' ');       // buffer ends with ' '
+        ENSURE(' ');      // already ends with ' ' → if block is SKIPPED (line 172 false branch)
+        PRINT(ast.val);
+      },
+    };
+    const gen = GeneratorBuilder.create(<const>[ rule ]).build();
+    const result = gen.myRule({ val: 'test' }, { origSource: '' });
+    expect(result).toContain('test');
+  });
+
+  it('skips pushing when willPrint starts with ensured string (line 174 false branch)', ({ expect }) => {
+    // Covers line 174: willPrint.startsWith(toEnsure) is TRUE → do NOT push the ensured string
+    const rule: GeneratorRule<GenerateContext, 'myRule', { val: string }, []> = {
+      name: 'myRule',
+      gImpl: ({ PRINT, ENSURE }) => (ast: { val: string }) => {
+        ENSURE(' ');           // register to ensure a space before next PRINT
+        PRINT(' ' + ast.val); // willPrint starts with ' ' → skip pushing space
+      },
+    };
+    const gen = GeneratorBuilder.create(<const>[ rule ]).build();
+    const result = gen.myRule({ val: 'test' }, { origSource: '' });
+    expect(result).toContain('test');
+  });
+});
+
 describe('parserBuilder.ts line 239 (columnIdx undefined branch)', () => {
   it('builds error without column indicator when token has no column info', ({ expect }) => {
     // Covers parserBuilder.ts line 239: if (columnIdx !== undefined) false branch
-    // Using positionTracking: 'onlyOffset' means tokens have line but not column info
     const Num = createToken({ name: 'Num', pattern: /\d+/u });
     const Word = createToken({ name: 'Word', pattern: /[a-z]+/u });
     const numOnlyRule: ParserRule<Record<string, never>, 'numOnly', string, []> = {

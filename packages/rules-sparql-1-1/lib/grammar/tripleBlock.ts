@@ -55,17 +55,12 @@ export const triplesBlock: SparqlRule<'triplesBlock', PatternBgp> = <const>{
         const nextTriple = ast.triples.at(index + 1);
         if (F.isTripleCollection(triple)) {
           SUBRULE(graphNodePath, triple);
-          // A top level tripleCollection block means that it is either not used in a triple
-          //   - or is the subject of a triple. In case it is the subject,
-          //   the identifier of the block will be the subject of the next triple and that subject is not materialized.
-          const isSubjectOfTriple = nextTriple?.type === 'triple' &&
-            F.isSourceLocationNoMaterialize(nextTriple.subject.loc);
-          if (!isSubjectOfTriple) {
-            F.printFilter(triple, () => {
-              PRINT_WORD('.');
-              NEW_LINE();
-            });
-          }
+          // A top level tripleCollection block means that it is not used as the subject of another triple
+          //   (if it were, the grammar would have set it as the subject of the next triple instead of a standalone item).
+          F.printFilter(triple, () => {
+            PRINT_WORD('.');
+            NEW_LINE();
+          });
         } else {
           // Subject
           SUBRULE(graphNodePath, triple.subject);
@@ -120,10 +115,8 @@ SparqlGrammarRule<T, BasicGraphPattern> {
         );
         // Only the first occurrence of a subject is actually materialized.
         return ACTION(() => {
-          if (res.length > 0) {
-            res[0].subject = subject;
-            res[0].loc = C.astFactory.sourceLocation(subject, res[0]);
-          }
+          res[0].subject = subject;
+          res[0].loc = C.astFactory.sourceLocation(subject, res[0]);
           return res;
         });
       } },
@@ -338,7 +331,7 @@ function collectionImpl<T extends string>(name: T, allowPaths: boolean): SparqlR
       // Only every 2 triple is relevant. The odd triples are linking triples.
       for (const [ idx, triple ] of ast.triples.entries()) {
         if (idx % 2 === 0) {
-          SUBRULE(allowPaths ? graphNodePath : graphNode, triple.object);
+          SUBRULE(graphNodePath, triple.object);
         }
       }
       F.printFilter(ast, () => PRINT_WORD(')'));
@@ -360,8 +353,8 @@ function triplesNodeImpl<T extends string>(name: T, allowPaths: boolean): Sparql
       { ALT: () => SUBRULE(allowPaths ? blankNodePropertyListPath : blankNodePropertyList) },
     ]),
     gImpl: ({ SUBRULE }) => ast => ast.subType === 'list' ?
-      SUBRULE(allowPaths ? collectionPath : collection, ast) :
-      SUBRULE(allowPaths ? blankNodePropertyListPath : blankNodePropertyList, ast),
+      SUBRULE(collectionPath, ast) :
+      SUBRULE(blankNodePropertyListPath, ast),
   };
 }
 export const triplesNode = triplesNodeImpl('triplesNode', false);

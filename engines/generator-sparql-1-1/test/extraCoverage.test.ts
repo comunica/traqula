@@ -52,6 +52,14 @@ describe('extra generator coverage', () => {
       expect(result).toContain('DISTINCT');
       expect(result).toContain('<http://ex.org/func>');
     });
+
+    it('throws when DISTINCT is used in function call outside aggregate context (expression.ts:452)', ({ expect }) => {
+      // Covers expression.ts line 452: throw when DISTINCT is used without canParseAggregate
+      expect(() =>
+        parser.parse(
+          'SELECT * WHERE { FILTER(<http://ex.org/func>(DISTINCT ?x)) }',
+        )).toThrow(/DISTINCT implies/u);
+    });
   });
 
   describe('update gImpl with multiple operations', () => {
@@ -228,9 +236,56 @@ describe('extra generator coverage', () => {
 
   describe('unaryExpression gImpl with UPLUS (expression.ts:398)', () => {
     it('generates unary plus operator', ({ expect }) => {
-      // Covers expression.ts:398: operator.image === '+' → 'UPLUS' in gImpl
+      // Covers expression.ts:398: operator.image === '+' → 'UPLUS' in gImpl (TRUE branch)
       const result = autoGen('SELECT * WHERE { FILTER(+?x > 0) }');
       expect(result).toContain('+');
+    });
+
+    it('generates unary minus operator (UMINUS, expression.ts:398 FALSE branch)', ({ expect }) => {
+      // Covers expression.ts:398: operator.image !== '+' → 'UMINUS' in gImpl (FALSE branch)
+      const result = autoGen('SELECT * WHERE { FILTER(-?x < 0) }');
+      expect(result).toContain('-');
+    });
+  });
+
+  describe('additiveExpression with numericLiteralPositive/Negative + multiplication (expression.ts:336-340)', () => {
+    it('covers anonymous closure: numericLiteralPositive followed by multiplication', ({ expect }) => {
+      // Covers expression.ts lines 336-340: the `leftInner => expressionOperation(...)` closure inside MANY2
+      // This closure is invoked when a signed numeric literal (+2) is followed by * or /
+      const result = autoGen('SELECT * WHERE { FILTER(1 + +2 * 3) }');
+      expect(result).toBeDefined();
+    });
+
+    it('covers anonymous closure: numericLiteralNegative followed by division', ({ expect }) => {
+      // Same closure path but with numericLiteralNegative and /
+      const result = autoGen('SELECT * WHERE { FILTER(1 + -2 / 3) }');
+      expect(result).toBeDefined();
+    });
+  });
+
+  describe('rdfLiteral gImpl with newline in literal string (literals.ts:33)', () => {
+    it('generates a literal containing a newline character', ({ expect }) => {
+      // Covers literals.ts:33 branch: the rdfLiteral gImpl generates the string with escape
+      const result = autoGen('SELECT * WHERE { ?s ?p "line1\\nline2" }');
+      expect(result).toContain('"');
+    });
+  });
+
+  describe('tripleBlock lastInList branch (tripleBlock.ts:323)', () => {
+    it('generates a collection with multiple items (lastInList TRUE branch)', ({ expect }) => {
+      // Covers tripleBlock.ts:323: if (lastInList) - TRUE when this IS the last item in a list
+      const result = autoGen('SELECT * WHERE { ?s <http://p> (<http://a>) }');
+      expect(result).toContain('(');
+      expect(result).toContain(')');
+    });
+
+    it('generates collection as subject (isSubjectOfTriple FALSE branch, tripleBlock.ts:63)', ({ expect }) => {
+      // Covers tripleBlock.ts:63: if (!isSubjectOfTriple) FALSE branch
+      // When a tripleCollection is the subject of a triple, the dot is NOT printed
+      const result = autoGen('SELECT * WHERE { (<http://a>) <http://p> ?o }');
+      expect(result).toContain('(');
+      expect(result).toContain(')');
+      expect(result).toContain('<http://p>');
     });
   });
 

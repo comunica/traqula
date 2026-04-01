@@ -282,4 +282,28 @@ describe('extra parser coverage', () => {
       expect(result.type).toBe('query');
     });
   });
+
+  describe('queryUnit rule (direct invocation via raw parser)', () => {
+    // The Parser.parse() method always calls queryOrUpdate, never queryUnit.
+    // To cover the query rule's ACTION callback, we need to call queryUnit directly.
+    const rawParser = sparql11ParserBuilder.build({
+      tokenVocabulary: lex.sparql11LexerBuilder.tokenVocabulary,
+    });
+
+    it('parses a SELECT query via queryUnit (no VALUES clause) - covers if(values) false branch', ({ expect }) => {
+      const context = completeParseContext({ astFactory: F });
+      const result = rawParser.queryUnit('SELECT * WHERE { ?s ?p ?o }', context);
+      expect(result).toBeDefined();
+      expect(result.type).toBe('query');
+      expect((<any>result).values).toBeUndefined();
+    });
+
+    it('parses a SELECT query via queryUnit with VALUES clause - covers if(values) true branch', ({ expect }) => {
+      const context = completeParseContext({ astFactory: F });
+      const result = rawParser.queryUnit('SELECT * WHERE { ?s ?p ?o } VALUES ?x { <http://ex> }', context);
+      expect(result).toBeDefined();
+      expect(result.type).toBe('query');
+      expect((<any>result).values).toBeDefined();
+    });
+  });
 });

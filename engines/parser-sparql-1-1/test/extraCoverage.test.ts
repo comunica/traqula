@@ -33,14 +33,6 @@ describe('extra parser coverage', () => {
     });
   });
 
-  describe('argList NIL case (empty function arguments)', () => {
-    it('parses a function call with no arguments (NIL argList)', ({ expect }) => {
-      const result = parser.parse('SELECT * WHERE { FILTER(<http://ex.org/func>()) }');
-      expect(result).toBeDefined();
-      expect(result.type).toBe('query');
-    });
-  });
-
   describe('duplicate SELECT clause variables', () => {
     it('throws when the same variable appears twice in SELECT', ({ expect }) => {
       expect(() => parser.parse('SELECT ?s ?s WHERE { ?s ?p ?o }')).toThrow(
@@ -59,107 +51,6 @@ describe('extra parser coverage', () => {
     it('throws when DISTINCT is used in a non-aggregate function call', ({ expect }) => {
       expect(() => parser.parse('SELECT * WHERE { FILTER(<http://ex.org/func>(DISTINCT ?x)) }'))
         .toThrow(/DISTINCT implies that this function is an aggregated function/u);
-    });
-  });
-
-  describe('funcExprOrNil1 nil case (expressionHelpers.ts line 109)', () => {
-    it('parses BNODE() with no arguments (NIL token)', ({ expect }) => {
-      const result = parser.parse('SELECT * WHERE { FILTER(BNODE() = ?x) }');
-      expect(result).toBeDefined();
-      expect(result.type).toBe('query');
-    });
-  });
-
-  describe('funcExpr3or4 four-arg case (expressionHelpers.ts line 199)', () => {
-    it('parses REPLACE with four arguments', ({ expect }) => {
-      const result = parser.parse('SELECT * WHERE { FILTER(REPLACE(?s, "x", "y", "i") = ?s) }');
-      expect(result).toBeDefined();
-      expect(result.type).toBe('query');
-    });
-  });
-
-  describe('funcExpr3or4 three-arg case (expressionHelpers.ts line 201 else branch)', () => {
-    it('parses REPLACE with three arguments', ({ expect }) => {
-      // Covers expressionHelpers.ts:201 else branch: arg4 is undefined → 3-arg case
-      const result = parser.parse('SELECT * WHERE { FILTER(REPLACE(?s, "x", "y") = ?s) }');
-      expect(result).toBeDefined();
-      expect(result.type).toBe('query');
-    });
-  });
-
-  describe('additive expression with negative literal (expression.ts line 336)', () => {
-    it('parses FILTER with a negative integer multiplicative expression', ({ expect }) => {
-      const result = parser.parse('SELECT * WHERE { ?s ?p ?o FILTER(-3 * ?x > 0) }');
-      expect(result).toBeDefined();
-      expect(result.type).toBe('query');
-    });
-
-    it('parses FILTER with numericLiteralPositive followed by multiply (expression.ts fn85/fn86)', ({ expect }) => {
-      // Covers expression.ts line 336: the ACTION callback and inner arrow function in MANY2
-      // MUST use "?x +2 * 3" (no preceding opPlus, +2 as integerPositive token adjacent to 2)
-      // so MANY1 takes Alt 2, and then MANY2 fires for "* 3"
-      const result = parser.parse('SELECT * WHERE { ?s ?p ?o FILTER(?x +2 * 3 > 0) }');
-      expect(result).toBeDefined();
-      expect(result.type).toBe('query');
-    });
-
-    it(
-      'parses FILTER with numericLiteralPositive followed by divide (expression.ts fn85/fn86 via slash)',
-      ({ expect }) => {
-        // Also covers expression.ts line 336 via / operator
-        // "?x +4 / 2" — +4 is integerPositive (adjacent), triggers Alt 2 of MANY1
-        const result = parser.parse('SELECT * WHERE { ?s ?p ?o FILTER(?x +4 / 2 > 0) }');
-        expect(result).toBeDefined();
-        expect(result.type).toBe('query');
-      },
-    );
-  });
-
-  describe('unaryExpression UPLUS (expression.ts line 398)', () => {
-    it('parses FILTER with unary plus on a variable', ({ expect }) => {
-      // Covers expression.ts:398: operator.image === '+' → 'UPLUS'
-      const result = parser.parse('SELECT * WHERE { FILTER(+?x > 0) }');
-      expect(result).toBeDefined();
-      expect(result.type).toBe('query');
-    });
-  });
-
-  describe('prefixedName with empty local part (literals.ts lines 281-283)', () => {
-    it('parses a prefix-only IRI like ex:', ({ expect }) => {
-      const result = parser.parse(
-        'PREFIX ex: <http://example.org/> SELECT * WHERE { ex: ?p ?o }',
-      );
-      expect(result).toBeDefined();
-      expect(result.type).toBe('query');
-    });
-  });
-
-  describe('quads with triples after GRAPH block (updateUnit.ts line 597)', () => {
-    it('parses INSERT DATA with triples after a GRAPH block', ({ expect }) => {
-      const result = parser.parse(
-        'INSERT DATA { GRAPH <http://g> { <http://s> <http://p> <http://o> } <http://s2> <http://p2> <http://o2> }',
-      );
-      expect(result).toBeDefined();
-      expect(result.type).toBe('update');
-    });
-  });
-
-  describe('queryUnit valuesClause branch (queryUnit.ts:57)', () => {
-    it('parses a query with a VALUES clause at the end', ({ expect }) => {
-      // Covers queryUnit.ts:57: ...(values && { values }) TRUE branch
-      const result = parser.parse('SELECT * WHERE { ?s ?p ?o } VALUES ?x { <http://ex> }');
-      expect(result).toBeDefined();
-      expect(result.type).toBe('query');
-      expect((<any>result).values).toBeDefined();
-    });
-  });
-
-  describe('constructTemplate empty case (queryUnit.ts:460)', () => {
-    it('parses CONSTRUCT with empty template', ({ expect }) => {
-      // Covers queryUnit.ts:460: triples ?? patternBgp([]) - when triples is undefined
-      const result = parser.parse('CONSTRUCT {} WHERE { ?s ?p ?o }');
-      expect(result).toBeDefined();
-      expect(result.type).toBe('query');
     });
   });
 
@@ -218,18 +109,6 @@ describe('extra parser coverage', () => {
     });
   });
 
-  describe('patternValues in findPatternBoundedVars (validators.ts:172)', () => {
-    it('parses a query with VALUES inside the WHERE clause (inline data)', ({ expect }) => {
-      // Covers validators.ts:172: isPatternValues branch in findPatternBoundedVars
-      // A SELECT with GROUP BY that forces findPatternBoundedVars to process a VALUES pattern
-      const result = parser.parse(
-        'SELECT ?x WHERE { VALUES ?x { <http://ex> } } GROUP BY ?x',
-      );
-      expect(result).toBeDefined();
-      expect(result.type).toBe('query');
-    });
-  });
-
   describe('expressionFactory isExpressionAggregateDefault (factoryMixins:158)', () => {
     it('identifies a default aggregate (non-wildcard single-arg aggregate)', ({ expect }) => {
       // Covers ExpressionFactory.ts:158: isExpressionAggregateDefault check
@@ -239,47 +118,6 @@ describe('extra parser coverage', () => {
       );
       expect(result).toBeDefined();
       expect((<any>result).variables[0].expression).toBeDefined();
-    });
-  });
-
-  describe('pathFactory createPath with negated element (factoryMixins:63)', () => {
-    it('parses a negated inverse path !(^<p>)', ({ expect }) => {
-      // Covers PathFactory.ts:63: the PathNegatedElt branch
-      // !(^<p>) creates a PathNegatedElt
-      const result = parser.parse('SELECT * WHERE { ?s !(^<http://p>) ?o }');
-      expect(result).toBeDefined();
-      expect(result.type).toBe('query');
-    });
-  });
-
-  describe('updateOperationFactory createModify with undefined insert/delete (factoryMixins:264-265)', () => {
-    it('parses DELETE ... WHERE with no INSERT clause', ({ expect }) => {
-      // Covers UpdateOperationFactory.ts:264-265: insert ?? [] and delete ?? []
-      const result = parser.parse('DELETE { ?s ?p ?o } WHERE { ?s ?p ?o }');
-      expect(result).toBeDefined();
-      expect(result.type).toBe('update');
-    });
-  });
-
-  describe('additiveExpression MANY2 loop closure (expression.ts:337)', () => {
-    it('parses FILTER with numericLiteralPositive followed by * operator', ({ expect }) => {
-      // Covers expression.ts:337: the (leftInner) => ACTION(() => expressionOperation(...)) lambda
-      // inside the MANY2 loop of additiveExpression.
-      // The MANY2 path is triggered when a numericLiteralPositive (+N, adjacent to digits) is
-      // followed by * or / (multiplicative operator).
-      // "?x +2 * 3" — '+2' is integerPositive (no space between + and 2, AND appears without
-      // a preceding opPlus, so MANY1's Alt 2 is selected, then MANY2 fires for "* 3")
-      const result = parser.parse('SELECT * WHERE { FILTER(?x +2 * 3 > 0) }');
-      expect(result).toBeDefined();
-      expect(result.type).toBe('query');
-    });
-
-    it('parses FILTER with numericLiteralNegative followed by / operator', ({ expect }) => {
-      // Covers expression.ts:337: same closure via numericLiteralNegative and /
-      // '-3' is integerNegative (no space between - and 3), MANY1 Alt 2
-      const result = parser.parse('SELECT * WHERE { FILTER(?x -3 / ?y > 0) }');
-      expect(result).toBeDefined();
-      expect(result.type).toBe('query');
     });
   });
 

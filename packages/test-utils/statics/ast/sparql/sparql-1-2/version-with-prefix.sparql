@@ -1,0 +1,1 @@
+VERSION "1.1" PREFIX ex: <http://example.org/> SELECT * WHERE { ?s ?p ?o }

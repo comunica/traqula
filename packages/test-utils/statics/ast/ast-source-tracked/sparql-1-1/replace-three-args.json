@@ -1,0 +1,120 @@
+{
+  "context": [],
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "filter",
+        "expression": {
+          "type": "expression",
+          "subType": "operation",
+          "operator": "=",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "operation",
+              "operator": "replace",
+              "args": [
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "s",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 32,
+                    "end": 34
+                  }
+                },
+                {
+                  "type": "term",
+                  "subType": "literal",
+                  "value": "x",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 36,
+                    "end": 39
+                  }
+                },
+                {
+                  "type": "term",
+                  "subType": "literal",
+                  "value": "y",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 41,
+                    "end": 44
+                  }
+                }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 24,
+                "end": 45
+              }
+            },
+            {
+              "type": "term",
+              "subType": "variable",
+              "value": "s",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 48,
+                "end": 50
+              }
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 23,
+            "end": 51
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 17,
+          "end": 51
+        }
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 15,
+      "end": 53
+    }
+  },
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "wildcard",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 7,
+        "end": 8
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "inlinedSource",
+    "newSource": "SELECT * WHERE { FILTER(REPLACE(?s, \"x\", \"y\") = ?s) }",
+    "start": 0,
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 53
+    },
+    "startOnNew": 0,
+    "endOnNew": 53
+  },
+  "type": "query"
+}

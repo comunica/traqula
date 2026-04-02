@@ -1,0 +1,40 @@
+{
+  "type": "update",
+  "updates": [
+    {
+      "context": [],
+      "operation": {
+        "type": "updateOperation",
+        "subType": "drop",
+        "silent": false,
+        "destination": {
+          "type": "graphRef",
+          "subType": "named",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 5,
+            "end": 10
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 0,
+          "end": 10
+        }
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "inlinedSource",
+    "newSource": "DROP NAMED",
+    "start": 0,
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 10
+    },
+    "startOnNew": 0,
+    "endOnNew": 10
+  }
+}

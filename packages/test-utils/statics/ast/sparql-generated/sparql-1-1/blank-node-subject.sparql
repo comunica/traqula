@@ -1,0 +1,3 @@
+SELECT * WHERE {
+  _:b1 ?p ?o .
+}

@@ -1,0 +1,1 @@
+SELECT * WHERE { ?s ?p ?o . FILTER ( ( ( ?x + ( "4"^^<http://www.w3.org/2001/XMLSchema#integer> / "2"^^<http://www.w3.org/2001/XMLSchema#integer> ) ) > "0"^^<http://www.w3.org/2001/XMLSchema#integer> ) ) }

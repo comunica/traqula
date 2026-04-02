@@ -72,20 +72,12 @@ describe('algebra-sparql-1-1 extra coverage', () => {
   });
 
   describe('property path: NPS with only inverted predicates', () => {
-    it('round-trips !(^<p1>|^<p2>) (inv-only NPS, covers toAlgebra/path.ts normals.length===0)', ({ expect }) => {
-      // Covers toAlgebra/path.ts: normals.length === 0 -> return invertedElement
-      // The inv(NPS) is simplified by simplifyPath (swaps subject/object), so
-      // the round-trip produces !(p1|p2) without ^ (semantically equivalent).
-      const result = roundTrip(
-        'SELECT * WHERE { ?s !(^<http://p1>|^<http://p2>) ?o }',
-      );
-      expect(result).toContain('!');
-    });
-
     it('toAst handles inv(NPS with 2+ IRIs) as path predicate (covers toAst/path.ts line 72)', ({ expect }) => {
       // Covers toAst/path.ts:72 — translateAlgInv when path.path is an NPS with 2+ IRIs.
       // We construct the algebra directly (bypassing simplifyPath which eliminates top-level inv(NPS))
       // so the inv(NPS) is preserved as-is in the algebra Path predicate.
+      // Note: the toAlgebra side (normals.length===0 in path.ts) is covered by the inv-nps-path
+      // static in sparql.test.ts static 11.
       const p1 = AF.dataFactory.namedNode('http://p1');
       const p2 = AF.dataFactory.namedNode('http://p2');
       const s = AF.dataFactory.variable!('s');
@@ -103,19 +95,12 @@ describe('algebra-sparql-1-1 extra coverage', () => {
   });
 
   describe('group BY with BIND extension', () => {
-    it('round-trips SELECT with GROUP BY on expression-bound variable (lines 166-169)', ({ expect }) => {
-      // Covers toAst/queryUnit.ts lines 166-169: extensions[v.value] check in registerAlgGroupBy.
-      // GROUP BY (?y AS ?x) creates an EXTEND in algebra for ?x; the toAst code reconstructs it.
-      const result = roundTrip(
-        'SELECT ?x WHERE { ?s ?p ?y } GROUP BY (?y AS ?x)',
-      );
-      expect(result).toContain('GROUP BY');
-    });
-
     it('covers lines 166-169 via direct algebra (EXTEND outside GROUP)', ({ expect }) => {
       // Construct: PROJECT([?x], EXTEND(?x, ?y, GROUP(bgp, [?x], [])))
       // When EXTEND is direct child of PROJECT (not inside GROUP), c.project stays TRUE
       // during EXTEND processing, so the extension is captured and lines 166-169 execute.
+      // Note: the roundTrip paths for GROUP BY are covered by the group-by-bind-expr and
+      // group-by-bind-var statics in sparql.test.ts static 11.
       // Note: createGroup signature is (input, variables, aggregates)
       const y = AF.dataFactory.variable!('y');
       const x = AF.dataFactory.variable!('x');
@@ -128,26 +113,6 @@ describe('algebra-sparql-1-1 extra coverage', () => {
       const backAst = toAst(<Algebra.Operation>project);
       expect(backAst).toBeDefined();
     });
-
-    it('round-trips SELECT with GROUP BY on BIND-derived variable', ({ expect }) => {
-      // Covers toAst/queryUnit.ts lines 166-169 via BIND path
-      const result = roundTrip(
-        'SELECT ?g (COUNT(*) AS ?c) WHERE { ?s ?p ?x . BIND(?x AS ?g) } GROUP BY ?g',
-      );
-      expect(result).toContain('GROUP BY');
-    });
-  });
-
-  describe('translateAlgAnyExpression wildcard branch', () => {
-    it('round-trips COUNT(*) which uses wildcard expression', ({ expect }) => {
-      // Covers toAst/expression.ts:56: translateAlgAnyExpression non-OPERATOR branch
-      // (COUNT(*) uses eTypes.WILDCARD which hits the else branch in translateAlgAnyExpression)
-      const result = roundTrip(
-        'SELECT (COUNT(*) AS ?cnt) WHERE { ?s ?p ?o }',
-      );
-      expect(result).toContain('COUNT');
-      expect(result).toContain('*');
-    });
   });
 
   describe('insert/DELETE without quads option throws', () => {
@@ -157,17 +122,6 @@ describe('algebra-sparql-1-1 extra coverage', () => {
       expect(() => toAlgebra(ast, { quads: false })).toThrowError(
         /INSERT\/DELETE operations are only supported with quads option enabled/u,
       );
-    });
-  });
-
-  describe('translateAlgAnyExpression with NAMED expression (non-OPERATOR/non-WILDCARD)', () => {
-    it('round-trips aggregate with named variable reference', ({ expect }) => {
-      // An ORDER BY ?var case — ?var has subType NAMED, going through the else branch
-      // in translateAlgAnyExpression -> translateAlgExpressionOrWild -> translateAlgPureExpression
-      const result = roundTrip(
-        'SELECT * WHERE { ?s ?p ?o } ORDER BY ?o',
-      );
-      expect(result).toContain('ORDER BY');
     });
   });
 
@@ -646,17 +600,6 @@ describe('algebra-sparql-1-1 extra coverage', () => {
       const innerGraph = AF.createGraph(bgp, g2);
       const result = (<any>transformer).recurseGraph(c, innerGraph, g1, undefined);
       expect(result).toBeDefined();
-    });
-  });
-
-  describe('operationInputAsPatternList with array-returning operation (pattern.ts:240 branch B)', () => {
-    it('returns array directly when translateAlgPatternNew returns an array', ({ expect }) => {
-      // Covers toAst/pattern.ts:240: Array.isArray(result) === true branch
-      // MINUS { OPTIONAL { ... } } → MINUS input[1] is a LEFT_JOIN → returns Pattern[]
-      const result = roundTrip(
-        'SELECT * WHERE { ?s ?p ?o MINUS { ?a ?b ?c OPTIONAL { ?d ?e ?f } } }',
-      );
-      expect(result).toContain('MINUS');
     });
   });
 

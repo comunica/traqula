@@ -26,7 +26,7 @@ describe('extra generator coverage', () => {
       expect(result).toContain('<http://ex.org/func>');
     });
 
-    it('throws when DISTINCT is used in function call outside aggregate context (expression.ts:452)', ({ expect }) => {
+    it('throws when DISTINCT is used in function call outside aggregate context', ({ expect }) => {
       // Covers expression.ts line 452: throw when DISTINCT is used without canParseAggregate
       expect(() =>
         parser.parse(
@@ -35,7 +35,7 @@ describe('extra generator coverage', () => {
     });
   });
 
-  describe('groupOrUnionGraphPattern gImpl with non-union pattern (whereClause line 499)', () => {
+  describe('groupOrUnionGraphPattern gImpl with non-union pattern', () => {
     it('generates a single group via graphPatternNotTriples rule', ({ expect }) => {
       const rawGenerator = sparql11GeneratorBuilder.build();
       const context = completeGeneratorContext({ astFactory: F });
@@ -114,7 +114,7 @@ describe('extra generator coverage', () => {
     });
   });
 
-  describe('iriOrFunction gImpl with TermNamed (expression.ts line 466)', () => {
+  describe('iriOrFunction gImpl with TermNamed', () => {
     it('generates a bare IRI via iriOrFunction rule directly', ({ expect }) => {
       const rawGenerator = sparql11GeneratorBuilder.build();
       const context = completeGeneratorContext({ astFactory: F });
@@ -124,7 +124,7 @@ describe('extra generator coverage', () => {
     });
   });
 
-  describe('rdfLiteral gImpl with non-materialized type (literals.ts line 79)', () => {
+  describe('rdfLiteral gImpl with non-materialized type', () => {
     it('generates a typed literal where the type IRI is dematerialized (prints raw value)', ({ expect }) => {
       const rawGenerator = sparql11GeneratorBuilder.build();
       const context = completeGeneratorContext({ astFactory: F });
@@ -136,7 +136,7 @@ describe('extra generator coverage', () => {
     });
   });
 
-  describe('queryOrUpdate gImpl for update branch (index.ts:79)', () => {
+  describe('queryOrUpdate gImpl for update branch', () => {
     it('generates an update via the queryOrUpdate gImpl', ({ expect }) => {
       // Covers index.ts:79 else branch: F.isQuery is false → SUBRULE(update, ast)
       const rawGenerator = sparql11GeneratorBuilder.build();

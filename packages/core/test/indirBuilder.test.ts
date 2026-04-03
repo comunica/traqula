@@ -23,9 +23,7 @@ describe('indirBuilder', () => {
         fun: () => _ctx => 'a-dup',
       };
       const builder = IndirBuilder.create([ ruleA ]);
-      expect(() => builder.addRuleRedundant(ruleADup)).toThrow(
-        'Function ruleA already exists in the builder',
-      );
+      expect(() => builder.addRuleRedundant(ruleADup)).toThrow('Function ruleA already exists in the builder');
     });
   });
 

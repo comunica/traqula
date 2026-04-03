@@ -4,36 +4,32 @@ import type { GeneratorRule, ParserRule } from '../lib/index.js';
 
 type GenerateContext = { origSource: string };
 
-describe('dynamicGenerator newLine with existing newline in buffer (lines 225-226)', () => {
+describe('dynamicGenerator newLine with existing newline in buffer', () => {
   it('adjusts indentation when buffer already ends with a bare newline', ({ expect }) => {
-    // Covers dynamicGenerator.ts lines 225-226: the branch where temp ends with \n[ \t]*
     const rule: GeneratorRule<GenerateContext, 'myRule', { val: string }, []> = {
       name: 'myRule',
       gImpl: ({ PRINT, NEW_LINE }) => (ast: { val: string }) => {
         PRINT(ast.val);
         NEW_LINE();
-        // Explicitly print a newline to trigger lines 225-226 on the next NEW_LINE call
         PRINT('\n');
         NEW_LINE();
       },
     };
     const gen = GeneratorBuilder.create(<const>[ rule ]).build();
     const result = gen.myRule({ val: 'test' }, { origSource: '' });
-    // The result should contain the value and newlines
     expect(result).toContain('test');
     expect(result).toContain('\n');
   });
 });
 
-describe('dynamicGenerator ENSURE already-ends-with and willPrint-starts-with (lines 172-174)', () => {
-  it('skips ensure when buffer already ends with the desired string (line 172 false branch)', ({ expect }) => {
-    // Covers line 172: !this.doesEndWith(toEnsure) is FALSE (already ends with it)
+describe('dynamicGenerator ENSURE already-ends-with and willPrint-starts-with', () => {
+  it('skips ensure when buffer already ends with the desired string', ({ expect }) => {
     const rule: GeneratorRule<GenerateContext, 'myRule', { val: string }, []> = {
       name: 'myRule',
       gImpl: ({ PRINT, ENSURE }) => (ast: { val: string }) => {
         // Buffer ends with ' '
         PRINT(' ');
-        // Already ends with ' ' → if block is SKIPPED (line 172 false branch)
+        // Already ends with ' ' → if block is SKIPPED
         ENSURE(' ');
         PRINT(ast.val);
       },
@@ -44,7 +40,6 @@ describe('dynamicGenerator ENSURE already-ends-with and willPrint-starts-with (l
   });
 
   it('skips pushing when willPrint starts with ensured string (line 174 false branch)', ({ expect }) => {
-    // Covers line 174: willPrint.startsWith(toEnsure) is TRUE → do NOT push the ensured string
     const rule: GeneratorRule<GenerateContext, 'myRule', { val: string }, []> = {
       name: 'myRule',
       gImpl: ({ PRINT, ENSURE }) => (ast: { val: string }) => {
@@ -62,7 +57,6 @@ describe('dynamicGenerator ENSURE already-ends-with and willPrint-starts-with (l
 
 describe('parserBuilder.ts line 239 (columnIdx undefined branch)', () => {
   it('builds error without column indicator when token has no column info', ({ expect }) => {
-    // Covers parserBuilder.ts line 239: if (columnIdx !== undefined) false branch
     const Num = createToken({ name: 'Num', pattern: /\d+/u });
     const Word = createToken({ name: 'Word', pattern: /[a-z]+/u });
     const numOnlyRule: ParserRule<Record<string, never>, 'numOnly', string, []> = {

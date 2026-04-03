@@ -7,7 +7,7 @@ import { toAlgebra, toAst } from '../lib/index.js';
 describe('algebra-sparql-1-2 extra coverage', () => {
   const AF = new AlgebraFactory();
 
-  describe('toAst (lines 21-23)', () => {
+  describe('toAst', () => {
     it('converts a simple projection to sparql 1.2 ast', ({ expect }) => {
       const op = AF.createProject(AF.createBgp([]), []);
       const result = toAst(op);
@@ -16,7 +16,7 @@ describe('algebra-sparql-1-2 extra coverage', () => {
     });
   });
 
-  describe('toAlgebra12.ts directional literal (line 51)', () => {
+  describe('toAlgebra12.ts directional literal', () => {
     it('translates a directional language-tagged literal with ltr direction', ({ expect }) => {
       // Covers toAlgebra12.ts line 51: creates literal with { language, direction }
       const F = new AstFactory();

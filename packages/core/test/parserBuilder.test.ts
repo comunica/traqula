@@ -2,10 +2,6 @@ import { describe, it } from 'vitest';
 import { ParserBuilder, createToken } from '../lib/index.js';
 import type { ParserRule } from '../lib/index.js';
 
-// ---------------------------------------------------------------------------
-// Minimal token / rule helpers used across tests
-// ---------------------------------------------------------------------------
-
 const Num = createToken({ name: 'Num', pattern: /\d+/u });
 
 const numRule: ParserRule<Record<string, never>, 'num', string, []> = {
@@ -26,9 +22,7 @@ describe('parserBuilder', () => {
         impl: ({ CONSUME }) => _ctx => `${CONSUME(Num).image}-dup`,
       };
       const builder = ParserBuilder.create(<const>[ numRule ]);
-      expect(() => builder.addRuleRedundant(numRuleDup)).toThrow(
-        'Rule num already exists in the builder',
-      );
+      expect(() => builder.addRuleRedundant(numRuleDup)).toThrow('Rule num already exists in the builder');
     });
   });
 
@@ -49,9 +43,7 @@ describe('parserBuilder', () => {
       };
       const builder1 = ParserBuilder.create(<const>[ numRule ]);
       const builder2 = ParserBuilder.create(<const>[ numRuleAlt ]);
-      expect(() => builder1.merge(<any>builder2, [])).toThrow(
-        'Rule with name "num" already exists in the builder',
-      );
+      expect(() => builder1.merge(<any>builder2, [])).toThrow('Rule with name "num" already exists in the builder');
     });
 
     it('does not throw when an overriding rule covers the conflict', ({ expect }) => {
@@ -92,7 +84,7 @@ describe('parserBuilder', () => {
       expect(() => (<any>parser).num('abc', {})).toThrow(/Parse error/u);
     });
 
-    it('includes column pointer in error when token has column info (branch 239:1)', ({ expect }) => {
+    it('includes column pointer in error when token has column info', ({ expect }) => {
       // Call defaultErrorHandler on the builder instance directly (it's a private method on ParserBuilder).
       // Provides a mock error token with startLine + startColumn defined → branch 239:1 TRUE.
       const builder = ParserBuilder.create(<const>[ numRule ]);
@@ -103,7 +95,7 @@ describe('parserBuilder', () => {
       expect(() => (<any> builder).defaultErrorHandler('hello world', [ mockError ])).toThrow(/\^/u);
     });
 
-    it('omits column pointer when token has no column info (branch 239:b1)', ({ expect }) => {
+    it('omits column pointer when token has no column info', ({ expect }) => {
       // Covers parserBuilder.ts branch 239:b1 — columnIdx is undefined
       const builder = ParserBuilder.create(<const>[ numRule ]);
       const mockError = {

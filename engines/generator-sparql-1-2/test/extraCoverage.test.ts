@@ -10,10 +10,8 @@ describe('extra generator-sparql-1-2 coverage', () => {
     F.resetBlankNodeCounter();
   });
 
-  describe('reifiedTriple gImpl with path predicate (grammar.ts:433)', () => {
-    it('generates a reified triple with path predicate via direct AST construction (grammar.ts:433)', ({ expect }) => {
-      // Covers grammar.ts:433: F.isPathPure(triple.predicate) is TRUE
-      // Construct a reified triple with a path predicate directly since the parser doesn't allow it
+  describe('reifiedTriple gImpl with path predicate', () => {
+    it('generates a reified triple with path predicate via direct AST construction', ({ expect }) => {
       const rawGenerator = sparql12GeneratorBuilder.build();
       const context = completeGeneratorContext({ astFactory: F });
       const s = F.termVariable('s', F.gen());
@@ -26,7 +24,7 @@ describe('extra generator-sparql-1-2 coverage', () => {
     });
   });
 
-  describe('generateTriplesBlock separator logic (grammar.ts lines 773, 776-777)', () => {
+  describe('generateTriplesBlock separator logic', () => {
     it('generates comma separator for same subject and predicate (different objects)', ({ expect }) => {
       const bgp = F.patternBgp([
         F.triple(

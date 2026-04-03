@@ -10,7 +10,7 @@ describe('extra parser-sparql-1-2 coverage', () => {
     F.resetBlankNodeCounter();
   });
 
-  describe('reifier without canCreateBlankNodes (grammar.ts line 142)', () => {
+  describe('reifier without canCreateBlankNodes', () => {
     it('throws when bare ~ reifier is used without canCreateBlankNodes in parse mode', ({ expect }) => {
       expect(() =>
         parser.parse(
@@ -20,7 +20,7 @@ describe('extra parser-sparql-1-2 coverage', () => {
     });
   });
 
-  describe('reifiedTriple without canCreateBlankNodes (grammar.ts line 415)', () => {
+  describe('reifiedTriple without canCreateBlankNodes', () => {
     it('throws when reified triple has no reifier and canCreateBlankNodes is absent', ({ expect }) => {
       expect(() =>
         parser.parse(
@@ -30,7 +30,7 @@ describe('extra parser-sparql-1-2 coverage', () => {
     });
   });
 
-  describe('tripleTermData with a shortcut predicate (grammar.ts line 536)', () => {
+  describe('tripleTermData with a shortcut predicate', () => {
     it('parses triple term data with a as predicate in VALUES clause', ({ expect }) => {
       const result = parser.parse(
         'SELECT * WHERE {} VALUES ?x { <<( <http://s> a <http://o> )>> }',
@@ -40,7 +40,7 @@ describe('extra parser-sparql-1-2 coverage', () => {
     });
   });
 
-  describe('parsePath returning iri (branch 310:1)', () => {
+  describe('parsePath returning iri', () => {
     it('parsePath returns iri directly for named node input', ({ expect }) => {
       const result = parser.parsePath('<http://example.org/pred>');
       expect(result).toBeDefined();
@@ -48,9 +48,8 @@ describe('extra parser-sparql-1-2 coverage', () => {
     });
   });
 
-  describe('skipValidation in SPARQL 1.2 update (parserUtils.ts:13)', () => {
+  describe('skipValidation in SPARQL 1.2 update', () => {
     it('skips validation when skipValidation is explicitly true', ({ expect }) => {
-      // Covers parserUtils.ts:14: context.skipValidation ?? false → TRUE (defined) branch
       const result = parser.parse(
         'INSERT DATA { <http://s> <http://p> <http://o> }',
         { skipValidation: true },

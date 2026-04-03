@@ -361,8 +361,7 @@ describe('transformerSubTyped without-specific-preVisitor fallback', () => {
     expect(result).toBe(root);
   });
 
-  it('transformNodeSpecific uses specific preVisitor when present (branch 77:1)', ({ expect }) => {
-    // Covers TransformerSubTyped branch 77:1 — ogPreVisit IS found from nodeSpecificCallBacks
+  it('transformNodeSpecific uses specific preVisitor when present', ({ expect }) => {
     const root: Cat = { type: 'cat', subType: 'small', size: 1 };
     const result = <Cat> transformer.transformNodeSpecific(
       root,
@@ -373,8 +372,7 @@ describe('transformerSubTyped without-specific-preVisitor fallback', () => {
     expect(result).toBe(root);
   });
 
-  it('visitNodeSpecific uses specific preVisitor when present (branch 140:1)', ({ expect }) => {
-    // Covers TransformerSubTyped branch 140:1 — ogPreVisit IS found from nodeSpecificCallBacks
+  it('visitNodeSpecific uses specific preVisitor when present', ({ expect }) => {
     const visited: string[] = [];
     const root: Cat = { type: 'cat', subType: 'small', size: 1 };
     transformer.visitNodeSpecific(
@@ -388,29 +386,22 @@ describe('transformerSubTyped without-specific-preVisitor fallback', () => {
 });
 
 describe('transformerObject null/primitive array elements', () => {
-  it('transformObject handles array with null/primitive elements (branch 139:b1)', ({ expect }) => {
-    // Covers TransformerObject.ts branch 139:b1 — array element is null or primitive
+  it('transformObject handles array with null/primitive elements', ({ expect }) => {
     const transformer = new TransformerObject();
     const obj = { items: [ null, 1, 'hello', { type: 'leaf' }]};
     const result = transformer.transformObject(obj, x => x);
     expect(result).toBeDefined();
   });
 
-  it('visitObject handles array with null/primitive elements (branch 239:b1)', ({ expect }) => {
-    // Covers TransformerObject.ts branch 239:b1 — array element is null or primitive
+  it('visitObject handles array with null/primitive elements', ({ expect }) => {
     const transformer = new TransformerObject();
     const visited: object[] = [];
     const obj = { items: [ null, 42, 'text', { type: 'leaf' }]};
     transformer.visitObject(obj, o => visited.push(o));
-    // Only the object element { type: 'leaf' } should be visited (plus root)
     expect(visited.length).toBeGreaterThan(0);
   });
 
-  it('visitObject handles didShortCut=true with remaining stack items (branch 235:b1)', ({ expect }) => {
-    // Covers TransformerObject.ts branch 235:b1 — !didShortCut is FALSE when items remain on stack
-    // Need 3 object siblings where the MIDDLE one (in LIFO pop order) sets shortcut
-    // Keys: a, b, c are pushed in order → stack = [..., a, b, c].
-    // Pop c (normal), pop b (sets shortcut), pop a (hits !didShortCut=false → branch 235:b1)
+  it('visitObject handles didShortCut=true with remaining stack items', ({ expect }) => {
     const transformer = new TransformerObject();
     const visited: string[] = [];
     const tree = {
@@ -429,17 +420,16 @@ describe('transformerObject null/primitive array elements', () => {
 
 describe('transformerObject stack overflow', () => {
   class TinyTransformer extends TransformerObject {
-    // Override maxStackSize to 1 so a single nested child overflows
     protected override readonly maxStackSize = 1;
   }
 
-  it('transformObject throws when stack overflows (line 196)', ({ expect }) => {
+  it('transformObject throws when stack overflows', ({ expect }) => {
     const tiny = new TinyTransformer();
     const nested = { a: { b: 'deep' }};
     expect(() => tiny.transformObject(nested, x => x)).toThrow(/Transform object stack overflowed/u);
   });
 
-  it('visitObject throws when stack overflows (line 276)', ({ expect }) => {
+  it('visitObject throws when stack overflows', ({ expect }) => {
     const tiny = new TinyTransformer();
     const nested = { a: { b: 'deep' }};
     expect(() => tiny.visitObject(nested, () => {})).toThrow(/Transform object stack overflowed/u);
@@ -449,8 +439,7 @@ describe('transformerObject stack overflow', () => {
 describe('transformerObject array with null/primitive elements', () => {
   const transformer = new TransformerObject();
 
-  it('transformObject skips null/primitive values in arrays (line 139 false branch)', ({ expect }) => {
-    // Covers TransformerObject.ts line 139: val !== null && typeof val === 'object' → false for null/primitives
+  it('transformObject skips null/primitive values in arrays', ({ expect }) => {
     const visited: string[] = [];
     const obj = { arr: [ null, 42, 'hello', { name: 'real' }]};
     transformer.transformObject(obj, (copy) => {
@@ -462,8 +451,7 @@ describe('transformerObject array with null/primitive elements', () => {
     expect(visited).toContain('real');
   });
 
-  it('visitObject skips null/primitive values in arrays (line 239 false branch)', ({ expect }) => {
-    // Covers TransformerObject.ts line 239: val !== null && typeof val === 'object' → false for null/primitives
+  it('visitObject skips null/primitive values in arrays', ({ expect }) => {
     const visited: any[] = [];
     const obj = { arr: [ null, 42, 'hello', { name: 'real' }]};
     transformer.visitObject(obj, (item) => {
@@ -473,10 +461,7 @@ describe('transformerObject array with null/primitive elements', () => {
     expect(visitedNames).toContain('real');
   });
 
-  it('visitObject visits remaining stack items after a shortcut (line 235 false branch)', ({ expect }) => {
-    // Covers TransformerObject.ts line 235: if (!didShortCut) → false when didShortCut=true
-    // When object 'b' at the TOP of the stack has shortcut set, 'a' at the bottom is still popped
-    // with didShortCut=true → the false branch of line 235 is taken for 'a'
+  it('visitObject visits remaining stack items after a shortcut', ({ expect }) => {
     const visited: string[] = [];
     const tree = { a: { name: 'a' }, b: { name: 'b', c: { name: 'c' }}};
     transformer.visitObject(

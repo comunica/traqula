@@ -34,14 +34,12 @@ describe('algebra-sparql-1-1 extra coverage', () => {
 
   describe('algebraFactory edge cases', () => {
     it('createTerm handles $-prefixed variable syntax', ({ expect }) => {
-      // Covers algebraFactory.ts line 263: str.startsWith('$')
       const term = AF.createTerm('$myVar');
       expect(term.termType).toBe('Variable');
       expect(term.value).toBe('myVar');
     });
 
     it('createJoin with flatten=false preserves nesting', ({ expect }) => {
-      // Covers algebraFactory.ts flattenMulti with flatten=false (line 352)
       const bgp1 = AF.createBgp([]);
       const bgp2 = AF.createBgp([]);
       const innerJoin = AF.createJoin([ bgp1, bgp2 ], true);
@@ -62,7 +60,6 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     });
 
     it('createBoundAggregate wraps aggregate expression with variable', ({ expect }) => {
-      // Covers algebraFactory.ts lines 42-49
       const variable = AF.dataFactory.variable!('myVar');
       const expression = AF.createWildcardExpression();
       const bound = AF.createBoundAggregate(variable, 'count', expression, false);
@@ -72,12 +69,7 @@ describe('algebra-sparql-1-1 extra coverage', () => {
   });
 
   describe('property path: NPS with only inverted predicates', () => {
-    it('toAst handles inv(NPS with 2+ IRIs) as path predicate (covers toAst/path.ts line 72)', ({ expect }) => {
-      // Covers toAst/path.ts:72 — translateAlgInv when path.path is an NPS with 2+ IRIs.
-      // We construct the algebra directly (bypassing simplifyPath which eliminates top-level inv(NPS))
-      // so the inv(NPS) is preserved as-is in the algebra Path predicate.
-      // Note: the toAlgebra side (normals.length===0 in path.ts) is covered by the inv-nps-path
-      // static in sparql.test.ts static 11.
+    it('toAst handles inv(NPS with 2+ IRIs) as path predicate', ({ expect }) => {
       const p1 = AF.dataFactory.namedNode('http://p1');
       const p2 = AF.dataFactory.namedNode('http://p2');
       const s = AF.dataFactory.variable!('s');
@@ -95,7 +87,7 @@ describe('algebra-sparql-1-1 extra coverage', () => {
   });
 
   describe('group BY with BIND extension', () => {
-    it('covers lines 166-169 via direct algebra (EXTEND outside GROUP)', ({ expect }) => {
+    it('eXTEND outside GROUP', ({ expect }) => {
       // Construct: PROJECT([?x], EXTEND(?x, ?y, GROUP(bgp, [?x], [])))
       // When EXTEND is direct child of PROJECT (not inside GROUP), c.project stays TRUE
       // during EXTEND processing, so the extension is captured and lines 166-169 execute.
@@ -117,7 +109,6 @@ describe('algebra-sparql-1-1 extra coverage', () => {
 
   describe('insert/DELETE without quads option throws', () => {
     it('toAlgebra throws when INSERT DATA is converted without quads option', ({ expect }) => {
-      // Covers toAlgebra/updates.ts:93: !useQuads throws for INSERT/DELETE
       const ast = parser.parse('INSERT DATA { <http://s> <http://p> <http://o> }');
       expect(() => toAlgebra(ast, { quads: false })).toThrowError(
         /INSERT\/DELETE operations are only supported with quads option enabled/u,
@@ -149,7 +140,6 @@ describe('algebra-sparql-1-1 extra coverage', () => {
 
   describe('algebraUtils.inScopeVariables with PATH', () => {
     it('extracts variables from PATH operations', ({ expect }) => {
-      // Covers util.ts lines 364-381: PATH visitor in inScopeVariables
       const ast = parser.parse('SELECT * WHERE { ?s <http://p>* ?o }');
       const algebra = toAlgebra(ast);
       const variables = algebraUtils.inScopeVariables(algebra);
@@ -160,7 +150,6 @@ describe('algebra-sparql-1-1 extra coverage', () => {
 
   describe('algebraFactory flattenMulti with matching subType (branch 359)', () => {
     it('flattens a Multi operation when child has the same type and subType', ({ expect }) => {
-      // Covers algebraFactory.ts line 359: !subType is false, but subType === child.subType is true
       const child = { type: 'alt', subType: 'testSub', input: []};
       const outer = { type: 'alt', subType: 'testSub', input: [ child ]};
       const result = (<any>AF).flattenMulti(outer, true);
@@ -171,7 +160,6 @@ describe('algebra-sparql-1-1 extra coverage', () => {
 
   describe('algebraUtils.inScopeVariables with PATTERN graph as Variable (util.ts:333)', () => {
     it('extracts graph variable from PATTERN with variable graph', ({ expect }) => {
-      // Covers util.ts line 333: quad.graph.termType === 'Variable'
       const s = AF.dataFactory.namedNode('http://s');
       const p = AF.dataFactory.namedNode('http://p');
       const o = AF.dataFactory.namedNode('http://o');
@@ -184,8 +172,6 @@ describe('algebra-sparql-1-1 extra coverage', () => {
 
   describe('algebraUtils.inScopeVariables with PATTERN graph as Quad (util.ts:337)', () => {
     it('handles PATTERN with nested quad as graph term', ({ expect }) => {
-      // Covers util.ts line 337: quad.graph.termType === 'Quad'
-      // Must NOT wrap in PROJECT (which stops recursion before PATTERN visitor runs)
       const innerObj = AF.dataFactory.variable!('innerObj');
       const inner = AF.dataFactory.quad(
         AF.dataFactory.namedNode('http://s'),
@@ -202,7 +188,6 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     });
 
     it('handles PATTERN with nested quad as subject (util.ts:317)', ({ expect }) => {
-      // Covers util.ts line 317: quad.subject.termType === 'Quad' in recurseTerm
       const innerSubjectVar = AF.dataFactory.variable!('subjectVar');
       const innerQuad = AF.dataFactory.quad(
         innerSubjectVar,
@@ -218,7 +203,6 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     });
 
     it('handles PATTERN with nested quad as predicate (util.ts:323)', ({ expect }) => {
-      // Covers util.ts line 323: quad.predicate.termType === 'Quad' in recurseTerm
       const innerPredVar = AF.dataFactory.variable!('predVar');
       const innerQuad = AF.dataFactory.quad(
         innerPredVar,
@@ -234,7 +218,6 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     });
 
     it('handles PATTERN with nested quad as object (util.ts:329)', ({ expect }) => {
-      // Covers util.ts line 329: quad.object.termType === 'Quad' in recurseTerm
       const innerObjVar2 = AF.dataFactory.variable!('objVar2');
       const innerQuad = AF.dataFactory.quad(
         innerObjVar2,
@@ -252,8 +235,6 @@ describe('algebra-sparql-1-1 extra coverage', () => {
 
   describe('algebraUtils.inScopeVariables with PATH having quad subject (util.ts:367)', () => {
     it('handles PATH with nested quad as subject', ({ expect }) => {
-      // Covers util.ts line 367: op.subject.termType === 'Quad'
-      // Must NOT wrap in PROJECT (which stops recursion before PATH visitor runs)
       const innerVar = AF.dataFactory.variable!('innerVar');
       const innerQuad = AF.dataFactory.quad(
         innerVar,
@@ -291,9 +272,8 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     });
   });
 
-  describe('algebraUtils.inScopeVariables with PATH having quad graph (util.ts:379)', () => {
+  describe('algebraUtils.inScopeVariables with PATH having quad graph', () => {
     it('handles PATH with nested quad as graph', ({ expect }) => {
-      // Covers util.ts line 379: op.graph.termType === 'Quad'
       const innerVar = AF.dataFactory.variable!('innerGraphVar');
       const innerQuad = AF.dataFactory.quad(
         innerVar,
@@ -312,7 +292,7 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     });
   });
 
-  describe('createAlgebraContext with prefixes (toAlgebra/core.ts:39)', () => {
+  describe('createAlgebraContext with prefixes', () => {
     it('passes prefixes to the algebra context', ({ expect }) => {
       // Covers toAlgebra/core.ts:39: config.prefixes ? { ...config.prefixes } : {}
       const ast = parser.parse('PREFIX ex: <http://example.org/> SELECT * WHERE { ex:s ex:p ex:o }');
@@ -321,7 +301,7 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     });
   });
 
-  describe('translateTerm with unexpected term type (toAlgebra/general.ts:61)', () => {
+  describe('translateTerm with unexpected term type', () => {
     it('throws when given an unrecognised term subType', ({ expect }) => {
       // Covers toAlgebra/general.ts:61: throw new Error('Unexpected term')
       const transformer = toAlgebra11Builder.build();
@@ -331,7 +311,7 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     });
   });
 
-  describe('generateFreshVar with collision (toAlgebra/general.ts:215)', () => {
+  describe('generateFreshVar with collision', () => {
     it('skips colliding variable names in generateFreshVar', ({ expect }) => {
       // Covers toAlgebra/general.ts:215: while (c.variables.has(newVar)) loop
       const transformer = toAlgebra11Builder.build();
@@ -343,9 +323,8 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     });
   });
 
-  describe('mINUS in GRAPH (toAlgebra/tripleAndQuad.ts:139-140)', () => {
+  describe('mINUS in GRAPH', () => {
     it('round-trips a GRAPH with MINUS inside using quads mode', ({ expect }) => {
-      // Covers tripleAndQuad.ts lines 139-140: MINUS type with graph variable in recurseGraph
       const result = roundTripQuads(
         'SELECT * WHERE { GRAPH ?g { ?s ?p ?o MINUS { ?s ?p ?o } } }',
       );
@@ -353,7 +332,7 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     });
   });
 
-  describe('recurseGraph variable replacement (toAlgebra/tripleAndQuad.ts:153)', () => {
+  describe('recurseGraph variable replacement', () => {
     it('replaces variables inside recurseGraph when extend variable matches graph var', ({ expect }) => {
       // Covers tripleAndQuad.ts line 153: algOp[castedKey] = replacement
       // EXTEND with its variable equal to the graph variable, inside a subquery that doesn't project it.
@@ -367,9 +346,8 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     });
   });
 
-  describe('translateQuad with path predicate (toAlgebra/tripleAndQuad.ts:166)', () => {
+  describe('translateQuad with path predicate', () => {
     it('throws when translateQuad is called with a path predicate', ({ expect }) => {
-      // Covers tripleAndQuad.ts line 166: throw new Error('Trying to translate property path to quad.')
       const transformer = toAlgebra11Builder.build();
       const c = createAlgebraContext({});
       const s = AF.dataFactory.namedNode('http://s');
@@ -381,7 +359,7 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     });
   });
 
-  describe('translateUpdate with unknown operation (toAlgebra/updates.ts:80)', () => {
+  describe('translateUpdate with unknown operation', () => {
     it('throws when translateUpdate is called with an unknown update type', ({ expect }) => {
       // Covers toAlgebra/updates.ts:80: throw new Error('Unknown update type')
       const transformer = toAlgebra11Builder.build();
@@ -392,9 +370,8 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     });
   });
 
-  describe('translateAlgAnyExpression with non-OPERATOR expression (toAst/expression.ts:56)', () => {
+  describe('translateAlgAnyExpression with non-OPERATOR expression', () => {
     it('handles wildcard expression via the else branch (FALSE branch of OPERATOR check)', ({ expect }) => {
-      // Covers toAst/expression.ts:56: translateAlgAnyExpression FALSE branch (non-OPERATOR)
       const transformer = toAst11Builder.build();
       const c = createAstContext();
       const wildcardExpr = AF.createWildcardExpression();
@@ -416,7 +393,7 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     });
   });
 
-  describe('translateAlgTerm with invalid term type (toAst/general.ts:43)', () => {
+  describe('translateAlgTerm with invalid term type', () => {
     it('throws on an unrecognised term type', ({ expect }) => {
       // Covers toAst/general.ts:43: throw new Error('invalid term type')
       const transformer = toAst11Builder.build();
@@ -426,7 +403,7 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     });
   });
 
-  describe('translateAlgPathComponent with unknown path type (toAst/path.ts:30)', () => {
+  describe('translateAlgPathComponent with unknown path type', () => {
     it('throws on an unrecognised path type', ({ expect }) => {
       // Covers toAst/path.ts:30: throw new Error('Unknown Path type')
       const transformer = toAst11Builder.build();
@@ -436,7 +413,7 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     });
   });
 
-  describe('translateAlgPatternIntoGroup with unknown operation type (toAst/pattern.ts:46)', () => {
+  describe('translateAlgPatternIntoGroup with unknown operation type', () => {
     it('throws on an unrecognised operation type', ({ expect }) => {
       // Covers toAst/pattern.ts:46: throw new Error('Unknown Operation type')
       const transformer = toAst11Builder.build();
@@ -446,7 +423,7 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     });
   });
 
-  describe('translateAlgSinglePattern with PATTERN type (toAst/pattern.ts:62)', () => {
+  describe('translateAlgSinglePattern with PATTERN type', () => {
     it('wraps a PATTERN in a patternBgp', ({ expect }) => {
       // Covers toAst/pattern.ts:62: case types.PATTERN → F.patternBgp
       const transformer = toAst11Builder.build();
@@ -460,7 +437,7 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     });
   });
 
-  describe('dELETE WHERE round-trip (toAst/updateUnit.ts:160)', () => {
+  describe('dELETE WHERE round-trip', () => {
     it('converts delete-only algebra to deletewhere when patterns contain variables', ({ expect }) => {
       // Covers toAst/updateUnit.ts:160: asCasted.subType = 'deletewhere'
       // DELETE without WHERE and with variables in delete patterns triggers line 160.
@@ -475,8 +452,8 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     });
   });
 
-  describe('translateAlgCompositeUpdate with NOP (updateUnit.ts:75)', () => {
-    it('covers the NOP true branch in composite update map (line 75)', ({ expect }) => {
+  describe('translateAlgCompositeUpdate with NOP', () => {
+    it('covers the NOP true branch in composite update map', ({ expect }) => {
       // Covers toAst/updateUnit.ts line 75: update.type === Types.NOP ? undefined
       // Composite update that includes a NOP operation maps it to undefined
       const nop = AF.createNop();
@@ -486,7 +463,7 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     });
   });
 
-  describe('convertAlgUpdatePatterns with undefined input (toAst/updateUnit.ts:274)', () => {
+  describe('convertAlgUpdatePatterns with undefined input', () => {
     it('returns empty array when patterns is falsy', ({ expect }) => {
       // Covers toAst/updateUnit.ts:274: if (!patterns) { return []; }
       const transformer = toAst11Builder.build();
@@ -519,7 +496,7 @@ describe('algebra-sparql-1-1 extra coverage', () => {
         )).toThrow(/Unexpected item/u);
     });
 
-    it('throws on completely unknown top-level path subType (line 106)', ({ expect }) => {
+    it('throws on completely unknown top-level path subType', ({ expect }) => {
       // Covers toAlgebra/path.ts line 106: catch-all throw for unhandled path types
       const transformer = toAlgebra11Builder.build();
       expect(() =>
@@ -530,7 +507,7 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     });
   });
 
-  describe('toAlgebra/patterns.ts: throw for unknown expression type (line 66)', () => {
+  describe('toAlgebra/patterns.ts: throw for unknown expression type', () => {
     it('throws on completely unknown expression type', ({ expect }) => {
       // Covers toAlgebra/patterns.ts line 66: catch-all throw for unhandled expression types
       const transformer = toAlgebra11Builder.build();
@@ -542,7 +519,7 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     });
   });
 
-  describe('toAlgebra/patterns.ts: throw for unexpected pattern (line 149)', () => {
+  describe('toAlgebra/patterns.ts: throw for unexpected pattern', () => {
     it('throws on unexpected pattern subType', ({ expect }) => {
       // Covers toAlgebra/patterns.ts line 149: catch-all throw for unhandled pattern subTypes
       const transformer = toAlgebra11Builder.build();
@@ -554,7 +531,7 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     });
   });
 
-  describe('simplifiedJoin with empty BGP as G (patterns.ts:247-249)', () => {
+  describe('simplifiedJoin with empty BGP as G', () => {
     it('covers the G=emptyBGP branch: G is replaced by A when G is an empty BGP', ({ expect }) => {
       // Covers toAlgebra/patterns.ts line 247-249: else if (G.type === BGP && G.patterns.length === 0) → G = A
       // This requires G to be an empty BGP AND A to be a non-BGP operation
@@ -574,7 +551,7 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     });
   });
 
-  describe('toAlgebra/tripleAndQuad.ts: throw for nested GRAPH with replacement (lines 84-86)', () => {
+  describe('toAlgebra/tripleAndQuad.ts: throw for nested GRAPH with replacement', () => {
     it('throws when recurseGraph encounters nested GRAPH with replacement set', ({ expect }) => {
       // Covers tripleAndQuad.ts lines 84-87: throw for nested GRAPH + replacement via direct call
       const transformer = toAlgebra11Builder.build();
@@ -603,7 +580,7 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     });
   });
 
-  describe('recurseGraph BGP subject/predicate replacement (tripleAndQuad.ts:97,100)', () => {
+  describe('recurseGraph BGP subject/predicate replacement', () => {
     it('replaces subject and predicate equal to graph variable when replacement is set', ({ expect }) => {
       // Covers tripleAndQuad.ts lines 97 and 100: BGP quad subject/predicate is replaced
       // when the inner subquery PROJECT does not project the graph variable ?g.
@@ -616,7 +593,7 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     });
   });
 
-  describe('recurseGraph PATH subject/object replacement (tripleAndQuad.ts:113-117)', () => {
+  describe('recurseGraph PATH subject/object replacement', () => {
     it('replaces PATH subject/object equal to graph variable when replacement is set', ({ expect }) => {
       // Covers tripleAndQuad.ts lines 113-117: PATH subject and object replaced
       // when the inner subquery PROJECT does not project the graph variable ?g.
@@ -628,7 +605,7 @@ describe('algebra-sparql-1-1 extra coverage', () => {
       expect(algebra).toBeDefined();
     });
 
-    it('directly tests PATH graph replacement: false branch (line 120 false, non-default graph)', ({ expect }) => {
+    it('directly tests PATH graph replacement: false branch', ({ expect }) => {
       // Covers tripleAndQuad.ts line 120: FALSE branch of if (algOp.graph.termType === 'DefaultGraph')
       // When PATH already has a non-default named graph, we do NOT replace algOp.graph
       const transformer = toAlgebra11Builder.build();
@@ -688,10 +665,8 @@ describe('algebra-sparql-1-1 extra coverage', () => {
   });
 });
 
-describe('algebraGenerators filter (algebraGenerators.ts:91)', () => {
-  it('skips files when filter returns false (continue statement, line 91)', ({ expect }) => {
-    // Covers algebraGenerators.ts line 91: the `continue` statement when filter returns false
-    // Providing a filter that returns false for ALL files → no tests yielded
+describe('algebraGenerators filter', () => {
+  it('skips files when filter returns false', ({ expect }) => {
     const tests = [ ...sparqlAlgebraNegativeTests('sparql-1.1-negative', () => false) ];
     expect(tests).toHaveLength(0);
   });

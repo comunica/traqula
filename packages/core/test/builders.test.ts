@@ -310,7 +310,7 @@ describe('dynamicGenerator runtime coverage', () => {
     const genCallMissing: GeneratorRule<GenerateContext, 'genCallMissing', { val: string }, []> = {
       name: 'genCallMissing',
       gImpl: ({ SUBRULE }) => (ast: { val: string }) => {
-        SUBRULE(genWord, <any>{ word: ast.val });
+        SUBRULE(genWord, { word: ast.val });
       },
     };
     const gen = GeneratorBuilder.create(<const>[ genCallMissing ]).build();
@@ -374,7 +374,7 @@ describe('lexerBuilder runtime coverage', () => {
   it('throws on missing tokens for moveBefore and moveAfter', ({ expect }) => {
     const builder = LexerBuilder.create().add(tokA, tokB);
     // MoveBefore with not-found 'before' token
-    expect(() => (<any> builder).moveBefore(tokC, tokA)).toThrowError(/BeforeToken not found/u);
+    expect(() => (<any> builder).moveBefore(<any> tokC, tokA)).toThrowError(/BeforeToken not found/u);
     // MoveAfter with not-found 'token to move'
     expect(() => (<any> builder).moveAfter(tokA, tokC)).toThrowError(/Token not found/u);
   });

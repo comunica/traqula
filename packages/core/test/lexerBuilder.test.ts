@@ -56,9 +56,7 @@ describe('lexerBuilder', () => {
       const builder1 = LexerBuilder.create().add(TokenA);
       const TokenADup = createToken({ name: 'TokenA', pattern: /A/u });
       const builder2 = LexerBuilder.create().add(TokenADup);
-      expect(() => (<any>builder1).merge(builder2)).toThrow(
-        'Token with name TokenA already exists',
-      );
+      expect(() => (<any>builder1).merge(builder2)).toThrow('Token with name TokenA already exists');
     });
 
     it('does not throw when an overwrite entry covers the conflicting token', ({ expect }) => {

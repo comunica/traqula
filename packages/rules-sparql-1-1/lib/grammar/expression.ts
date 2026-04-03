@@ -125,6 +125,7 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
     } else if (F.isExpressionAggregate(ast)) {
       SUBRULE(aggregate, ast);
     } else if (infixOperators.has(ast.operator)) {
+      // We know it will be expressionOperator
       const [ left, ...right ] = ast.args;
       F.printFilter(ast, () => PRINT_WORD('('));
       SUBRULE(expression, left);

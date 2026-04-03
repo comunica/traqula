@@ -41,10 +41,7 @@ function buildAndRun(rules: ParserRule<Record<string, never>, any, any, any>[], 
   return (<any>parser)[startRule](input, {});
 }
 
-// ---------------------------------------------------------------------------
-// CONSUME4-9
-// ---------------------------------------------------------------------------
-describe('dynamicParser – CONSUME4-9', () => {
+describe('dynamicParser – CONSUME', () => {
   const tenConsumeRule: ParserRule<Record<string, never>, 'tenConsume', string[], []> = {
     name: 'tenConsume',
     impl: ({ CONSUME, CONSUME1, CONSUME2, CONSUME3, CONSUME4, CONSUME5, CONSUME6, CONSUME7, CONSUME8, CONSUME9 }) =>
@@ -53,22 +50,16 @@ describe('dynamicParser – CONSUME4-9', () => {
         CONSUME1(B).image,
         CONSUME2(C).image,
         CONSUME3(D).image,
-        // Covers line 46
         CONSUME4(E).image,
-        // Covers line 47
         CONSUME5(F).image,
-        // Covers line 48
         CONSUME6(G).image,
-        // Covers line 49
         CONSUME7(H).image,
-        // Covers line 50
         CONSUME8(I).image,
-        // Covers line 51
         CONSUME9(J).image,
       ],
   };
 
-  it('covers CONSUME4-9 variants', ({ expect }) => {
+  it('covers CONSUME variants', ({ expect }) => {
     const result = buildAndRun([ tenConsumeRule ], 'a b c d e f g h i j', 'tenConsume');
     expect(result).toEqual([ 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j' ]);
   });
@@ -77,7 +68,7 @@ describe('dynamicParser – CONSUME4-9', () => {
 // ---------------------------------------------------------------------------
 // OPTION5-9
 // ---------------------------------------------------------------------------
-describe('dynamicParser – OPTION5-9', () => {
+describe('dynamicParser – OPTION', () => {
   // Each OPTION variant tries to consume a token; with empty input none fire.
   const tenOptionRule: ParserRule<Record<string, never>, 'tenOption', number, []> = {
     name: 'tenOption',
@@ -125,27 +116,22 @@ describe('dynamicParser – OPTION5-9', () => {
           CONSUME4(E);
           count++;
         });
-        // Covers line 57
         OPTION5(() => {
           CONSUME5(F);
           count++;
         });
-        // Covers line 58
         OPTION6(() => {
           CONSUME6(G);
           count++;
         });
-        // Covers line 59
         OPTION7(() => {
           CONSUME7(H);
           count++;
         });
-        // Covers line 60
         OPTION8(() => {
           CONSUME8(I);
           count++;
         });
-        // Covers line 61
         OPTION9(() => {
           CONSUME9(J);
           count++;
@@ -154,21 +140,18 @@ describe('dynamicParser – OPTION5-9', () => {
       },
   };
 
-  it('covers OPTION5-9 variants with no matching tokens (count=0)', ({ expect }) => {
+  it('covers OPTION ariants with no matching tokens (count=0)', ({ expect }) => {
     const result = buildAndRun([ tenOptionRule ], '', 'tenOption');
     expect(result).toBe(0);
   });
 
-  it('covers OPTION5-9 variants with all matching tokens (count=10)', ({ expect }) => {
+  it('covers OPTION variants with all matching tokens (count=10)', ({ expect }) => {
     const result = buildAndRun([ tenOptionRule ], 'a b c d e f g h i j', 'tenOption');
     expect(result).toBe(10);
   });
 });
 
-// ---------------------------------------------------------------------------
-// OR5-9
-// ---------------------------------------------------------------------------
-describe('dynamicParser – OR5-9', () => {
+describe('dynamicParser – OR', () => {
   const tenOrRule: ParserRule<Record<string, never>, 'tenOr', string, []> = {
     name: 'tenOr',
     impl: ({ CONSUME, OR, OR1, OR2, OR3, OR4, OR5, OR6, OR7, OR8, OR9 }) =>
@@ -178,13 +161,12 @@ describe('dynamicParser – OR5-9', () => {
             OR3([{ ALT: () => OR4([{ ALT: () =>
               OR5([{ ALT: () => OR6([{ ALT: () =>
                 OR7([{ ALT: () => OR8([{ ALT: () =>
-                  // Covers OR5-9
                   OR9([{ ALT: () => CONSUME(A).image }]),
                 }]) }]) }]) }]) }]) }]) }]) }]) },
         ]),
   };
 
-  it('covers OR5-9 variants', ({ expect }) => {
+  it('covers OR variants', ({ expect }) => {
     const result = buildAndRun([ tenOrRule ], 'a', 'tenOr');
     expect(result).toBe('a');
   });
@@ -193,8 +175,7 @@ describe('dynamicParser – OR5-9', () => {
 // ---------------------------------------------------------------------------
 // MANY5-9
 // ---------------------------------------------------------------------------
-describe('dynamicParser – MANY5-9', () => {
-  // Each MANY variant consumes its own token; with empty input, all run 0 times.
+describe('dynamicParser – MANY', () => {
   const tenManyRule: ParserRule<Record<string, never>, 'tenMany', number, []> = {
     name: 'tenMany',
     impl: ({
@@ -241,27 +222,22 @@ describe('dynamicParser – MANY5-9', () => {
           CONSUME4(E);
           count++;
         });
-        // Covers line 77
         MANY5(() => {
           CONSUME5(F);
           count++;
         });
-        // Covers line 78
         MANY6(() => {
           CONSUME6(G);
           count++;
         });
-        // Covers line 79
         MANY7(() => {
           CONSUME7(H);
           count++;
         });
-        // Covers line 80
         MANY8(() => {
           CONSUME8(I);
           count++;
         });
-        // Covers line 81
         MANY9(() => {
           CONSUME9(J);
           count++;
@@ -270,20 +246,17 @@ describe('dynamicParser – MANY5-9', () => {
       },
   };
 
-  it('covers MANY5-9 variants with no input (count=0)', ({ expect }) => {
+  it('covers MANY variants with no input (count=0)', ({ expect }) => {
     const result = buildAndRun([ tenManyRule ], '', 'tenMany');
     expect(result).toBe(0);
   });
 
-  it('covers MANY5-9 variants with full input', ({ expect }) => {
+  it('covers MANY variants with full input', ({ expect }) => {
     const result = buildAndRun([ tenManyRule ], 'a b c d e f g h i j', 'tenMany');
     expect(result).toBe(10);
   });
 });
 
-// ---------------------------------------------------------------------------
-// MANY_SEP (line 82) and MANY_SEP1-9 (lines 83-91)
-// ---------------------------------------------------------------------------
 describe('dynamicParser – MANY_SEP0-9', () => {
   const tenManySepRule: ParserRule<Record<string, never>, 'tenManySep', number, []> = {
     name: 'tenManySep',
@@ -311,52 +284,42 @@ describe('dynamicParser – MANY_SEP0-9', () => {
     }) =>
       () => {
         let count = 0;
-        // Covers line 82
         MANY_SEP({ SEP: COMMA, DEF: () => {
           CONSUME(A);
           count++;
         } });
-        // Covers line 83
         MANY_SEP1({ SEP: COMMA, DEF: () => {
           CONSUME1(B);
           count++;
         } });
-        // Covers line 84
         MANY_SEP2({ SEP: COMMA, DEF: () => {
           CONSUME2(C);
           count++;
         } });
-        // Covers line 85
         MANY_SEP3({ SEP: COMMA, DEF: () => {
           CONSUME3(D);
           count++;
         } });
-        // Covers line 86
         MANY_SEP4({ SEP: COMMA, DEF: () => {
           CONSUME4(E);
           count++;
         } });
-        // Covers line 87
         MANY_SEP5({ SEP: COMMA, DEF: () => {
           CONSUME5(F);
           count++;
         } });
-        // Covers line 88
         MANY_SEP6({ SEP: COMMA, DEF: () => {
           CONSUME6(G);
           count++;
         } });
-        // Covers line 89
         MANY_SEP7({ SEP: COMMA, DEF: () => {
           CONSUME7(H);
           count++;
         } });
-        // Covers line 90
         MANY_SEP8({ SEP: COMMA, DEF: () => {
           CONSUME8(I);
           count++;
         } });
-        // Covers line 91
         MANY_SEP9({ SEP: COMMA, DEF: () => {
           CONSUME9(J);
           count++;
@@ -371,9 +334,6 @@ describe('dynamicParser – MANY_SEP0-9', () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// AT_LEAST_ONE1-9 (lines 93-101)
-// ---------------------------------------------------------------------------
 describe('dynamicParser – AT_LEAST_ONE1-9', () => {
   const nineAtLeastOneRule: ParserRule<Record<string, never>, 'nineAtLeastOne', number, []> = {
     name: 'nineAtLeastOne',
@@ -405,47 +365,38 @@ describe('dynamicParser – AT_LEAST_ONE1-9', () => {
           CONSUME(A);
           count++;
         });
-        // Covers line 93
         AT_LEAST_ONE1(() => {
           CONSUME1(B);
           count++;
         });
-        // Covers line 94
         AT_LEAST_ONE2(() => {
           CONSUME2(C);
           count++;
         });
-        // Covers line 95
         AT_LEAST_ONE3(() => {
           CONSUME3(D);
           count++;
         });
-        // Covers line 96
         AT_LEAST_ONE4(() => {
           CONSUME4(E);
           count++;
         });
-        // Covers line 97
         AT_LEAST_ONE5(() => {
           CONSUME5(F);
           count++;
         });
-        // Covers line 98
         AT_LEAST_ONE6(() => {
           CONSUME6(G);
           count++;
         });
-        // Covers line 99
         AT_LEAST_ONE7(() => {
           CONSUME7(H);
           count++;
         });
-        // Covers line 100
         AT_LEAST_ONE8(() => {
           CONSUME8(I);
           count++;
         });
-        // Covers line 101
         AT_LEAST_ONE9(() => {
           CONSUME9(J);
           count++;
@@ -460,9 +411,6 @@ describe('dynamicParser – AT_LEAST_ONE1-9', () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// AT_LEAST_ONE_SEP1-9 (lines 103-111)
-// ---------------------------------------------------------------------------
 describe('dynamicParser – AT_LEAST_ONE_SEP1-9', () => {
   const nineAtLeastOneSepRule: ParserRule<Record<string, never>, 'nineAtLeastOneSep', number, []> = {
     name: 'nineAtLeastOneSep',
@@ -485,39 +433,30 @@ describe('dynamicParser – AT_LEAST_ONE_SEP1-9', () => {
           CONSUME(A);
           count++;
         } });
-        // Covers line 103
         AT_LEAST_ONE_SEP1({ SEP: COMMA, DEF: () => {
           count++;
         } });
-        // Covers line 104
         AT_LEAST_ONE_SEP2({ SEP: COMMA, DEF: () => {
           count++;
         } });
-        // Covers line 105
         AT_LEAST_ONE_SEP3({ SEP: COMMA, DEF: () => {
           count++;
         } });
-        // Covers line 106
         AT_LEAST_ONE_SEP4({ SEP: COMMA, DEF: () => {
           count++;
         } });
-        // Covers line 107
         AT_LEAST_ONE_SEP5({ SEP: COMMA, DEF: () => {
           count++;
         } });
-        // Covers line 108
         AT_LEAST_ONE_SEP6({ SEP: COMMA, DEF: () => {
           count++;
         } });
-        // Covers line 109
         AT_LEAST_ONE_SEP7({ SEP: COMMA, DEF: () => {
           count++;
         } });
-        // Covers line 110
         AT_LEAST_ONE_SEP8({ SEP: COMMA, DEF: () => {
           count++;
         } });
-        // Covers line 111
         AT_LEAST_ONE_SEP9({ SEP: COMMA, DEF: () => {
           count++;
         } });
@@ -531,9 +470,6 @@ describe('dynamicParser – AT_LEAST_ONE_SEP1-9', () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// BACKTRACK (lines 113-114)
-// ---------------------------------------------------------------------------
 describe('dynamicParser – BACKTRACK', () => {
   // A rule that uses BACKTRACK to distinguish two alternatives
   const ruleA: ParserRule<Record<string, never>, 'ruleA', string, []> = {
@@ -546,7 +482,6 @@ describe('dynamicParser – BACKTRACK', () => {
     impl: ({ CONSUME, BACKTRACK, OR }) => () =>
       OR([
         {
-          // Covers lines 113-114
           GATE: BACKTRACK(ruleA),
           ALT: () => CONSUME(A).image,
         },
@@ -560,9 +495,6 @@ describe('dynamicParser – BACKTRACK', () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// SUBRULE5-9 (lines 120-124)
-// ---------------------------------------------------------------------------
 describe('dynamicParser – SUBRULE5-9', () => {
   const innerRule: ParserRule<Record<string, never>, 'inner', string, []> = {
     name: 'inner',
@@ -578,15 +510,10 @@ describe('dynamicParser – SUBRULE5-9', () => {
         SUBRULE2(innerRule),
         SUBRULE3(innerRule),
         SUBRULE4(innerRule),
-        // Covers line 120
         SUBRULE5(innerRule),
-        // Covers line 121
         SUBRULE6(innerRule),
-        // Covers line 122
         SUBRULE7(innerRule),
-        // Covers line 123
         SUBRULE8(innerRule),
-        // Covers line 124
         SUBRULE9(innerRule),
       ],
   };

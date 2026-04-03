@@ -47,34 +47,24 @@ describe('extra parser coverage', () => {
     });
   });
 
-  describe('distinct in non-aggregate function call', () => {
-    it('throws when DISTINCT is used in a non-aggregate function call', ({ expect }) => {
-      expect(() => parser.parse('SELECT * WHERE { FILTER(<http://ex.org/func>(DISTINCT ?x)) }'))
-        .toThrow(/DISTINCT implies that this function is an aggregated function/u);
-    });
+  it('throws when DISTINCT is used in a non-aggregate function call', ({ expect }) => {
+    expect(() => parser.parse('SELECT * WHERE { FILTER(<http://ex.org/func>(DISTINCT ?x)) }'))
+      .toThrow(/DISTINCT implies that this function is an aggregated function/u);
   });
 
-  describe('aggregate outside SELECT context (builtIn.ts:280)', () => {
-    it('throws when aggregate is used in a FILTER', ({ expect }) => {
-      // Covers builtIn.ts:280: !canParseAggregate → throw
-      expect(() => parser.parse('SELECT * WHERE { FILTER(COUNT(?s) > 0) }'))
-        .toThrow(/Aggregates are only allowed in SELECT, HAVING, and ORDER BY clauses/u);
-    });
+  it('throws when aggregate is used in a FILTER', ({ expect }) => {
+    expect(() => parser.parse('SELECT * WHERE { FILTER(COUNT(?s) > 0) }'))
+      .toThrow(/Aggregates are only allowed in SELECT, HAVING, and ORDER BY clauses/u);
   });
 
-  describe('aggregate inside an aggregate (builtIn.ts:283)', () => {
-    it('throws when an aggregate contains another aggregate', ({ expect }) => {
-      // Covers builtIn.ts:283: inAggregate → throw
-      expect(() => parser.parse(
-        'SELECT (SUM(COUNT(?s)) AS ?c) WHERE { ?s ?p ?o }',
-        { parseMode: new Set([ 'canParseVars', 'canCreateBlankNodes', 'canParseAggregate' ]) },
-      )).toThrow(/An aggregate function is not allowed within an aggregate function/u);
-    });
+  it('throws when an aggregate contains another aggregate', ({ expect }) => {
+    expect(() => parser.parse(
+      'SELECT (SUM(COUNT(?s)) AS ?c) WHERE { ?s ?p ?o }',
+    )).toThrow(/An aggregate function is not allowed within an aggregate function/u);
   });
 
-  describe('skipValidation in queryOrUpdate (index.ts:79)', () => {
+  describe('skipValidation in queryOrUpdate', () => {
     it('skips blank node re-use validation when skipValidation is true', ({ expect }) => {
-      // Covers index.ts:79: if (!C.skipValidation) → false branch when skipValidation=true
       const result = parser.parse(
         'INSERT DATA { _:b1 <http://p> <http://o> } ; INSERT DATA { _:b1 <http://p2> <http://o2> }',
         { skipValidation: true },
@@ -84,37 +74,29 @@ describe('extra parser coverage', () => {
     });
   });
 
-  describe('updateUnit skipValidation (updateUnit.ts:76)', () => {
+  describe('updateUnit skipValidation', () => {
     it('skips validation when parsing an update directly with skipValidation', ({ expect }) => {
-      // Covers updateUnit.ts:76: if (!C.skipValidation) → false branch
       const rawParser = sparql11ParserBuilder.build({
         tokenVocabulary: lex.sparql11LexerBuilder.tokenVocabulary,
       });
-      const context = completeParseContext({
-        astFactory: F,
-        parseMode: new Set([ 'canCreateBlankNodes' ]),
-        skipValidation: true,
-      });
+      const context = completeParseContext({ skipValidation: true });
       const result = rawParser.updateUnit('INSERT DATA { <http://s> <http://p> <http://o> }', context);
       expect(result).toBeDefined();
     });
   });
 
-  describe('subquery variable collision (validators.ts:125-128)', () => {
+  describe('subquery variable collision', () => {
     it('throws when AS target variable conflicts with a subquery variable', ({ expect }) => {
-      // Covers validators.ts lines 125-128: subquery variable collision check
       expect(() => parser.parse(
         'SELECT (?x AS ?y) WHERE { SELECT ?y WHERE { ?y ?p ?o } }',
       )).toThrow(/Target id of 'AS' \(\?y\) already used in subquery/u);
     });
   });
 
-  describe('expressionFactory isExpressionAggregateDefault (factoryMixins:158)', () => {
+  describe('expressionFactory isExpressionAggregateDefault', () => {
     it('identifies a default aggregate (non-wildcard single-arg aggregate)', ({ expect }) => {
-      // Covers ExpressionFactory.ts:158: isExpressionAggregateDefault check
       const result = parser.parse(
         'SELECT (SUM(?x) AS ?s) WHERE { ?s ?p ?x }',
-        { parseMode: new Set([ 'canParseVars', 'canCreateBlankNodes', 'canParseAggregate' ]) },
       );
       expect(result).toBeDefined();
       expect((<any>result).variables[0].expression).toBeDefined();
@@ -122,8 +104,6 @@ describe('extra parser coverage', () => {
   });
 
   describe('queryUnit rule (direct invocation via raw parser)', () => {
-    // The Parser.parse() method always calls queryOrUpdate, never queryUnit.
-    // To cover the query rule's ACTION callback, we need to call queryUnit directly.
     const rawParser = sparql11ParserBuilder.build({
       tokenVocabulary: lex.sparql11LexerBuilder.tokenVocabulary,
     });

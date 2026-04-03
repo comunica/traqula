@@ -102,7 +102,6 @@ describe('toEqualParsedQuery matchers', () => {
   });
 
   it('triggers pass message when using .not on a passing match', ({ expect }) => {
-    // These cover the pass=true message lambdas in both matchers
     expect(() => expect({ a: 1 }).not.toEqualParsedQuery({ a: 1 })).toThrowError();
     expect(() =>
       expect({ a: 1 }).not.toEqualParsedQueryIgnoring(() => false, [], { a: 1 })).toThrowError();
@@ -123,7 +122,6 @@ describe('toEqualParsedQuery matchers', () => {
         (<{ value?: unknown }> other).value === 'http://other.org/',
     };
     expect(() => expect(term).toEqualParsedQuery(otherTerm)).toThrowError();
-    // Cover isTerm(expected) branch: received is NOT a term, expected IS a term
     const plainObj = { value: 'http://other.org/' };
     expect(() => expect(plainObj).toEqualParsedQuery(term)).toThrowError();
   });
@@ -133,10 +131,6 @@ describe('toEqualParsedQuery - diffString falsy branch (lines 19, 48)', () => {
   it(
     'toEqualParsedQuery: covers FALSE diffString branch when diff returns null (same reference, false equals)',
     ({ expect }) => {
-      // Covers toEqualParsedQuery.ts line 19 FALSE branch of `diffString ?`:
-      // diff(a, a) returns null when comparing same reference — but objectsEqual can return false
-      // if the object has a custom equals() that always returns false.
-      // When diffString is null, the fallback Expected:/Received: text is shown.
       const weirdObj = { termType: 'NamedNode', value: 'x', equals: () => false };
       let caughtMessage = '';
       try {
@@ -173,7 +167,6 @@ describe('toEqualParsedQuery - diffString falsy branch (lines 19, 48)', () => {
   });
 
   it('toEqualParsedQueryIgnoring: covers TRUE diffString branch', ({ expect }) => {
-    // Covers toEqualParsedQuery.ts line 48 TRUE branch of `diffString ?`
     let caughtMessage = '';
     try {
       expect({ a: 1, b: 2 }).toEqualParsedQueryIgnoring(() => false, [], { a: 1, b: 9 });

@@ -36,12 +36,6 @@ export default config([
       'ts/no-unsafe-argument': 'off',
       'ts/no-unsafe-assignment': 'off',
 
-      // Allow lowercase v8/c8/istanbul coverage ignore directives
-      'capitalized-comments': [ 'error', 'always', {
-        ignoreConsecutiveComments: true,
-        ignorePattern: 'v8 ignore|c8 ignore|istanbul ignore',
-      }],
-
       'ts/no-require-imports': [ 'error', { allow: [
         'process/',
         'is-stream',

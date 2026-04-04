@@ -289,7 +289,7 @@ GROUP BY ( ?y AS ?x )`);
       const deletePattern = AF.createPattern(s, p, o, AF.dataFactory.defaultGraph());
       const deleteInsert = AF.createDeleteInsert([ deletePattern ]);
       const result = toAst(<Algebra.Operation>deleteInsert);
-      expect(result).toBeDefined();
+      expect(result).toMatchObject({ updates: [{ operation: { subType: 'deletewhere' }}]});
     });
   });
 
@@ -298,7 +298,7 @@ GROUP BY ( ?y AS ?x )`);
       const nop = AF.createNop();
       const compositeUpdate = AF.createCompositeUpdate([ nop ]);
       const result = toAst(<Algebra.Operation>compositeUpdate);
-      expect(result).toBeDefined();
+      expect(result).toMatchObject({ updates: [{ operation: undefined }]});
     });
   });
 
@@ -403,7 +403,10 @@ GROUP BY ( ?y AS ?x )`);
       // Inner GRAPH wrapping BGP — when recurseGraph receives this with no replacement, hits line 89
       const innerGraph = AF.createGraph(bgp, g2);
       const result = transformer.recurseGraph(c, innerGraph, g1, undefined);
-      expect(result).toBeDefined();
+      expect(result).toMatchObject({
+        patterns: [],
+        type: 'bgp',
+      });
     });
   });
 
@@ -415,7 +418,7 @@ GROUP BY ( ?y AS ?x )`);
         parser.parse('SELECT * WHERE { GRAPH ?g { SELECT ?o WHERE { ?g ?g ?o . } } }'),
         { quads: true },
       );
-      expect(algebra).toBeDefined();
+      expect(algebra).toMatchObject({ input: { input: { patterns: [{ graph: { value: 'g' }}]}}});
     });
   });
 
@@ -427,12 +430,13 @@ GROUP BY ( ?y AS ?x )`);
         parser.parse('SELECT * WHERE { GRAPH ?g { SELECT ?o WHERE { ?g (<http://p>/<http://q>) ?g . } } }'),
         { quads: true },
       );
-      expect(algebra).toBeDefined();
+      expect(algebra).toMatchObject({ input: { input: { patterns: [
+        { graph: { value: 'g' }},
+        { graph: { value: 'g' }},
+      ]}}});
     });
 
     it('directly tests PATH graph replacement: false branch', ({ expect }) => {
-      // Covers tripleAndQuad.ts line 120: FALSE branch of if (algOp.graph.termType === 'DefaultGraph')
-      // When PATH already has a non-default named graph, we do NOT replace algOp.graph
       const transformer = toAlgebra11Builder.build();
       const c = createAlgebraContext({ quads: true });
       const g = AF.dataFactory.variable!('g');
@@ -444,32 +448,29 @@ GROUP BY ( ?y AS ?x )`);
         AF.dataFactory.variable!('o'),
         namedGraph,
       );
-      // Call recurseGraph: since graph is not DefaultGraph, line 120 FALSE branch is taken
-      const result = (<any>transformer).recurseGraph(c, path, g, undefined);
-      expect((result).graph).toBe(namedGraph);
+      const result = <Algebra.Pattern> transformer.recurseGraph(c, path, g, undefined);
+      expect(result.graph).toBe(namedGraph);
     });
 
     it('directly tests PATH graph replacement: both subject and object replaced', ({ expect }) => {
-      // Direct test to cover lines 113-117: use transformer.recurseGraph directly
-      // with a PATH where subject and object equal the graph variable
       const transformer = toAlgebra11Builder.build();
       const c = createAlgebraContext({ quads: true });
       const g = AF.dataFactory.variable!('g');
       const replacement = AF.dataFactory.variable!('__replacement__');
-      // Test 1: both subject and object = graph variable → both replaced (lines 115-117 TRUE + lines 118-120 TRUE)
+      // Test 1: both subject and object = graph variable → both replaced
       const path1 = AF.createPath(g, AF.createLink(AF.dataFactory.namedNode('http://p')), g);
       const result1 = <Algebra.Pattern> transformer.recurseGraph(c, path1, g, replacement);
       expect(result1.subject).toBe(replacement);
       expect(result1.object).toBe(replacement);
 
-      // Test 2: subject = other, object = graph var → only object replaced (line 115 FALSE, line 118 TRUE)
+      // Test 2: subject = other, object = graph var → only object replaced
       const other = AF.dataFactory.namedNode('http://other');
       const path2 = AF.createPath(other, AF.createLink(AF.dataFactory.namedNode('http://p')), g);
       const result2 = <Algebra.Pattern> transformer.recurseGraph(c, path2, g, replacement);
       expect(result2.subject).toBe(other);
       expect(result2.object).toBe(replacement);
 
-      // Test 3: subject = graph var, object = other → only subject replaced (line 115 TRUE, line 118 FALSE)
+      // Test 3: subject = graph var, object = other → only subject replaced
       const path3 = AF.createPath(g, AF.createLink(AF.dataFactory.namedNode('http://p')), other);
       const result3 = <Algebra.Pattern> transformer.recurseGraph(c, path3, g, replacement);
       expect(result3.subject).toBe(replacement);
@@ -503,7 +504,7 @@ describe('algebraGenerators false branches', () => {
   });
 });
 
-describe('patterns.ts line 250: simplifiedJoin with empty BGP after non-BGP', () => {
+describe('patterns.ts: simplifiedJoin with empty BGP after non-BGP', () => {
   const F = new AstFactory();
   const parser = new Parser({ defaultContext: { astFactory: F }});
 
@@ -511,12 +512,15 @@ describe('patterns.ts line 250: simplifiedJoin with empty BGP after non-BGP', ()
     F.resetBlankNodeCounter();
   });
 
-  it('empty group after MINUS covers simplifiedJoin line 250 true branch', ({ expect }) => {
+  it('empty group after MINUS covers simplifiedJoin', ({ expect }) => {
     // For this to trigger, G must be non-BGP (e.g., a Join from MINUS) AND A must be empty BGP.
     // "MINUS { ?x ?y ?z } {}" → MINUS creates a non-BGP result, then {} creates empty BGP.
     const ast = parser.parse('SELECT * WHERE { ?s ?p ?o MINUS { ?x ?y ?z } {} }');
     const algebra = toAlgebra(ast);
-    expect(algebra).toBeDefined();
+    expect(algebra).toMatchObject({ type: 'project', input: {
+      type: 'minus',
+      input: [{ type: 'bgp' }, { type: 'bgp' }],
+    }});
   });
 });
 
@@ -551,7 +555,7 @@ describe('queryUnit.ts (toAst): registerGroupBy direct call', () => {
     transformer.registerGroupBy(c, result, extensions);
     expect(result.solutionModifiers.group).toBeDefined();
     expect(result.solutionModifiers.group.groupings[0]).toHaveProperty('variable');
-    // The extension should have been consumed (deleted)
+    // The extension is consumed (deleted)
     expect(extensions.x).toBeUndefined();
   });
 
@@ -576,24 +580,16 @@ describe('queryUnit.ts (toAst): registerGroupBy direct call', () => {
     const c = createAstContext();
     // Pass a value with termType='Quad' to replaceAggregatorVariables
     const quadLike = { termType: 'Quad', value: 'fake', subject: {}, predicate: {}, object: {}, graph: {}};
-    const result = (transformer).replaceAggregatorVariables(c, quadLike, {});
-    expect(result).toBeDefined();
+    const result = transformer.replaceAggregatorVariables(c, quadLike, {});
+    expect(result).toMatchObject(quadLike);
   });
 
   it('replaceAggregatorVariables with wildcard termType covers isSimpleTerm wildcard FALSE branch', ({ expect }) => {
     const transformer = toAst11Builder.build();
     const c = createAstContext();
     const wildcardLike = { termType: 'wildcard', value: '*' };
-    const result = (transformer).replaceAggregatorVariables(c, wildcardLike, {});
-    expect(result).toBeDefined();
-  });
-
-  it('replaceAggregatorVariables with Wildcard termType covers isSimpleTerm Wildcard FALSE branch', ({ expect }) => {
-    const transformer = toAst11Builder.build();
-    const c = createAstContext();
-    const wildcardLike = { termType: 'Wildcard', value: '*' };
-    const result = (transformer).replaceAggregatorVariables(c, wildcardLike, {});
-    expect(result).toBeDefined();
+    const result = transformer.replaceAggregatorVariables(c, wildcardLike, {});
+    expect(result).toMatchObject(wildcardLike);
   });
 
   it('replaceAggregatorVariables with RDF Variable covers isSimpleTerm TRUE branch', ({ expect }) => {
@@ -603,7 +599,7 @@ describe('queryUnit.ts (toAst): registerGroupBy direct call', () => {
     // TermType = 'Variable'
     const rdfVar = AF.dataFactory.variable!('x');
     const result = (transformer).replaceAggregatorVariables(c, rdfVar, {});
-    expect(result).toBeDefined();
+    expect(result).toMatchObject(rdfVar);
   });
 
   it('translateAlgProject with DESCRIBE type (DESCRIBE branch) - round-trip', ({ expect }) => {
@@ -611,8 +607,7 @@ describe('queryUnit.ts (toAst): registerGroupBy direct call', () => {
     const ast = parser.parse('DESCRIBE <http://example.org/s> WHERE { ?s ?p ?o }');
     const algebra = toAlgebra(ast);
     const backAst = toAst(algebra);
-    expect(backAst).toBeDefined();
-    expect(backAst.type).toBe('query');
+    expect(backAst).toMatchObject(F.forcedAutoGenTree(ast));
   });
 
   it('translateAlgProject with DESCRIBE type (direct algebra)', ({ expect }) => {

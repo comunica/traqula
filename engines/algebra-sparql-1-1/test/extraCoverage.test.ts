@@ -45,8 +45,9 @@ describe('algebra-sparql-1-1 extra coverage', () => {
       );
       const backAst = toAst(<Algebra.Operation> selectOp);
       const result = generator.generate(F.forcedAutoGenTree(backAst));
-      expect(result).toContain('!');
-      expect(result).toContain('^');
+      expect(result).toBe(`SELECT ?s ?o WHERE {
+  ?s (!(^<http://p1>|^<http://p2>)) ?o .
+}`);
     });
   });
 
@@ -61,7 +62,11 @@ describe('algebra-sparql-1-1 extra coverage', () => {
       const extend = AF.createExtend(group, x, AF.createTermExpression(y));
       const project = AF.createProject(extend, [ x ]);
       const backAst = toAst(<Algebra.Operation>project);
-      expect(backAst).toBeDefined();
+      const result = generator.generate(F.forcedAutoGenTree(backAst));
+      expect(result).toBe(`SELECT ?x WHERE {
+  ?s ?p ?y .
+}
+GROUP BY ( ?y AS ?x )`);
     });
   });
 
@@ -78,16 +83,49 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     it('generates unique vars when blank node name collides with existing variable', ({ expect }) => {
       const ast = parser.parse('SELECT ?e_b0 WHERE { _:b0 ?p ?e_b0 }');
       const result = toAlgebra(ast, { blankToVariable: true });
-      expect(result).toBeDefined();
+      expect(result).toMatchObject({
+        input: {
+          patterns: [
+            {
+              graph: {
+                termType: 'DefaultGraph',
+                value: '',
+              },
+              object: {
+                termType: 'Variable',
+                value: 'e_b0',
+              },
+              predicate: {
+                termType: 'Variable',
+                value: 'p',
+              },
+              subject: {
+                termType: 'Variable',
+                value: 'e_b00',
+              },
+              termType: 'Quad',
+              type: 'pattern',
+              value: '',
+            },
+          ],
+          type: 'bgp',
+        },
+        type: 'project',
+      });
     });
   });
 
   describe('recurseGraph EXTEND handling', () => {
     it('handles GRAPH with BIND that shadows graph variable name', ({ expect }) => {
+      // TODO: I actually feel like this is wrong. It relates to our graph issues in Comunica
       const result = roundTrip(
         'SELECT * WHERE { GRAPH ?g { ?s <http://p> ?o BIND(?o AS ?g) } }',
       );
-      expect(result).toBeDefined();
+      expect(result).toBe(`SELECT ( ?o AS ?g ) ?o ?s WHERE {
+  GRAPH ?g {
+    ?s <http://p> ?o .
+  }
+}`);
     });
   });
 
@@ -96,8 +134,7 @@ describe('algebra-sparql-1-1 extra coverage', () => {
       const ast = parser.parse('SELECT * WHERE { ?s <http://p>* ?o }');
       const algebra = toAlgebra(ast);
       const variables = algebraUtils.inScopeVariables(algebra);
-      expect(variables.map(v => v.value)).toContain('s');
-      expect(variables.map(v => v.value)).toContain('o');
+      expect(variables.map(v => v.value)).toMatchObject([ 'o', 's' ]);
     });
   });
 
@@ -105,7 +142,11 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     it('passes prefixes to the algebra context', ({ expect }) => {
       const ast = parser.parse('PREFIX ex: <http://example.org/> SELECT * WHERE { ex:s ex:p ex:o }');
       const result = toAlgebra(ast, { prefixes: { ex: 'http://example.org/' }});
-      expect(result).toBeDefined();
+      expect(result).toMatchObject({
+        input: { patterns: [{ subject: {
+          value: 'http://example.org/s',
+        }}]},
+      });
     });
   });
 
@@ -133,7 +174,14 @@ describe('algebra-sparql-1-1 extra coverage', () => {
       const result = roundTripQuads(
         'SELECT * WHERE { GRAPH ?g { ?s ?p ?o MINUS { ?s ?p ?o } } }',
       );
-      expect(result).toBeDefined();
+      expect(result).toBe(`SELECT ?g ?o ?p ?s WHERE {
+  GRAPH ?g {
+    ?s ?p ?o .
+    MINUS {
+      ?s ?p ?o .
+    }
+  }
+}`);
     });
   });
 
@@ -143,7 +191,9 @@ describe('algebra-sparql-1-1 extra coverage', () => {
         parser.parse('SELECT * WHERE { GRAPH ?g { SELECT ?o WHERE { ?s ?p ?o . BIND(?o AS ?g) } } }'),
         { quads: true },
       );
-      expect(algebra).toBeDefined();
+      expect(algebra).toMatchObject({
+        input: { input: { input: { patterns: [{ graph: { value: 'g' }}]}}},
+      });
     });
   });
 
@@ -164,7 +214,6 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     it('throws when translateUpdate is called with an unknown update type', ({ expect }) => {
       const transformer = toAlgebra11Builder.build();
       const c = createAlgebraContext({});
-      c.useQuads = true;
       expect(() => transformer.translateSingleUpdate(c, <any>{ type: 'updateOperation', subType: 'UNKNOWN' }))
         .toThrow(/Unknown update type/u);
     });
@@ -176,11 +225,10 @@ describe('algebra-sparql-1-1 extra coverage', () => {
       const c = createAstContext();
       const wildcardExpr = AF.createWildcardExpression();
       const result = transformer.translateAnyExpression(c, wildcardExpr);
-      expect(result).toBeDefined();
+      expect(result).toMatchObject({ type: 'wildcard' });
     });
 
     it('handles operator expression via the TRUE branch', ({ expect }) => {
-      // Covers toAst/expression.ts:56: translateAlgAnyExpression TRUE branch (OPERATOR)
       const transformer = toAst11Builder.build();
       const c = createAstContext();
       const x = AF.dataFactory.variable!('x');
@@ -189,13 +237,12 @@ describe('algebra-sparql-1-1 extra coverage', () => {
       const termY = AF.createTermExpression(y);
       const operatorExpr = AF.createOperatorExpression('>', [ termX, termY ]);
       const result = transformer.translateAnyExpression(c, operatorExpr);
-      expect(result).toBeDefined();
+      expect(result).toMatchObject({ operator: '>' });
     });
   });
 
   describe('translateAlgTerm with invalid term type', () => {
     it('throws on an unrecognised term type', ({ expect }) => {
-      // Covers toAst/general.ts:43: throw new Error('invalid term type')
       const transformer = toAst11Builder.build();
       const c = createAstContext();
       const fakeTerm = <any>{ termType: 'DefaultGraph', value: '' };
@@ -230,7 +277,7 @@ describe('algebra-sparql-1-1 extra coverage', () => {
       const o = AF.dataFactory.namedNode('http://o');
       const pattern = AF.createPattern(s, p, o);
       const result = transformer.translateSinglePattern(c, pattern);
-      expect(result).toBeDefined();
+      expect(result).toMatchObject({ subType: 'bgp', triples: [{}]});
     });
   });
 

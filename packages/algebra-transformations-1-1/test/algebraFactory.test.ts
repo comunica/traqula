@@ -1,5 +1,5 @@
-import { AlgebraFactory, algebraUtils } from '@traqula/algebra-transformations-1-1';
 import { describe, it } from 'vitest';
+import { isTriple, AlgebraFactory, algebraUtils } from '../lib/index.js';
 
 describe('algebraFactory edge cases', () => {
   const AF = new AlgebraFactory();
@@ -179,5 +179,38 @@ describe('algebraFactory edge cases', () => {
       const variables = algebraUtils.inScopeVariables(path);
       expect(variables.map(v => v.value)).toContain('innerGraphVar');
     });
+  });
+});
+
+describe('algebraUtils utility functions', () => {
+  it('resolveIRI returns absolute IRIs unchanged', ({ expect }) => {
+    expect(algebraUtils.resolveIRI('http://example.org/foo', 'http://base.org/')).toBe('http://example.org/foo');
+    expect(algebraUtils.resolveIRI('urn:example:foo', 'http://base.org/')).toBe('urn:example:foo');
+  });
+
+  it('resolveIRI resolves empty relative IRI to base', ({ expect }) => {
+    expect(algebraUtils.resolveIRI('', 'http://base.org/')).toBe('http://base.org/');
+  });
+
+  it('resolveIRI throws when no base is set and IRI is relative', ({ expect }) => {
+    expect(() => algebraUtils.resolveIRI('relative/path', undefined))
+      .toThrowError(/Cannot resolve relative IRI/u);
+  });
+
+  it('resolveIRI resolves query string relative IRI', ({ expect }) => {
+    const result = algebraUtils.resolveIRI('?query=1', 'http://base.org/path');
+    expect(result).toBe('http://base.org/path?query=1');
+  });
+
+  it('resolveIRI resolves root-relative IRI', ({ expect }) => {
+    const result = algebraUtils.resolveIRI('/root/path', 'http://base.org/some/path');
+    expect(result).toBe('http://base.org/root/path');
+  });
+
+  it('isTriple identifies quad-like objects', ({ expect }) => {
+    const triple = { subject: {}, predicate: {}, object: {}};
+    expect(isTriple(triple)).toBeTruthy();
+    expect(isTriple({ subject: {}})).toBeFalsy();
+    expect(isTriple({})).toBeFalsy();
   });
 });

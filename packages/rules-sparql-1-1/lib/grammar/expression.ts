@@ -124,42 +124,41 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
       SUBRULE(iriOrFunction, ast);
     } else if (F.isExpressionAggregate(ast)) {
       SUBRULE(aggregate, ast);
-    } else if (F.isExpressionOperator(ast)) {
-      if (infixOperators.has(ast.operator)) {
-        const [ left, ...right ] = ast.args;
-        F.printFilter(ast, () => PRINT_WORD('('));
-        SUBRULE(expression, left);
-        F.printFilter(ast, () => {
-          if (ast.operator === 'notin') {
-            PRINT_WORD('NOT IN');
-          } else if (ast.operator === 'in') {
-            PRINT_WORD('IN');
-          } else {
-            PRINT_WORD(ast.operator.toUpperCase());
-          }
-        });
-        if (right.length === 1 && optimizedBracketsInfixOperator.has(ast.operator)) {
-          SUBRULE(expression, right[0]);
+    } else if (infixOperators.has(ast.operator)) {
+      // We know it will be expressionOperator
+      const [ left, ...right ] = ast.args;
+      F.printFilter(ast, () => PRINT_WORD('('));
+      SUBRULE(expression, left);
+      F.printFilter(ast, () => {
+        if (ast.operator === 'notin') {
+          PRINT_WORD('NOT IN');
+        } else if (ast.operator === 'in') {
+          PRINT_WORD('IN');
         } else {
-          SUBRULE(argList, F.wrap({ args: right, distinct: false }, ast.loc));
+          PRINT_WORD(ast.operator.toUpperCase());
         }
-        F.printFilter(ast, () => PRINT_WORD(')'));
-      } else if (typeof prefixOperator[ast.operator] === 'string') {
-        const [ expr ] = <[Expression]>ast.args;
-        F.printFilter(ast, () => PRINT_WORD(prefixOperator[ast.operator] || ast.operator.toUpperCase()));
-        SUBRULE(expression, expr);
+      });
+      if (right.length === 1 && optimizedBracketsInfixOperator.has(ast.operator)) {
+        SUBRULE(expression, right[0]);
       } else {
-        F.printFilter(ast, () => PRINT_WORD(ast.operator.toUpperCase(), '('));
-        const [ head, ...tail ] = ast.args;
-        if (head) {
-          SUBRULE(expression, head);
-        }
-        for (const arg of tail) {
-          F.printFilter(ast, () => PRINT_WORD(','));
-          SUBRULE(expression, arg);
-        }
-        F.printFilter(ast, () => PRINT_WORD(')'));
+        SUBRULE(argList, F.wrap({ args: right, distinct: false }, ast.loc));
       }
+      F.printFilter(ast, () => PRINT_WORD(')'));
+    } else if (typeof prefixOperator[ast.operator] === 'string') {
+      const [ expr ] = <[Expression]>ast.args;
+      F.printFilter(ast, () => PRINT_WORD(prefixOperator[ast.operator] || ast.operator.toUpperCase()));
+      SUBRULE(expression, expr);
+    } else {
+      F.printFilter(ast, () => PRINT_WORD(ast.operator.toUpperCase(), '('));
+      const [ head, ...tail ] = ast.args;
+      if (head) {
+        SUBRULE(expression, head);
+      }
+      for (const arg of tail) {
+        F.printFilter(ast, () => PRINT_WORD(','));
+        SUBRULE(expression, arg);
+      }
+      F.printFilter(ast, () => PRINT_WORD(')'));
     }
   },
 };
@@ -333,11 +332,12 @@ export const additiveExpression: SparqlGrammarRule<'additiveExpression', Express
                 { ALT: () => CONSUME(l.symbols.slash) },
               ]);
               const innerExpr = SUBRULE1(unaryExpression);
-              return ACTION(() => leftInner => C.astFactory.expressionOperation(
-                innerOperator.image,
-                [ leftInner, innerExpr ],
-                C.astFactory.sourceLocation(leftInner, innerExpr),
-              ));
+              return (leftInner: Expression) => ACTION(() =>
+                C.astFactory.expressionOperation(
+                  innerOperator.image,
+                  [ leftInner, innerExpr ],
+                  C.astFactory.sourceLocation(leftInner, innerExpr),
+                ));
             },
             ACTION,
             MANY2,

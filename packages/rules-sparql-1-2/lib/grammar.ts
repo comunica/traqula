@@ -85,7 +85,7 @@ export const prologue: SparqlRule<'prologue', ContextDefinition[]> = {
         SUBRULE(S11.baseDecl, context);
       } else if (F.isContextDefinitionPrefix(context)) {
         SUBRULE(S11.prefixDecl, context);
-      } else if (F.isContextDefinitionVersion(context)) {
+      } else {
         SUBRULE(versionDecl, context);
       }
     }
@@ -717,7 +717,7 @@ export const unaryExpression: SparqlGrammarRule<(typeof S11.unaryExpression)['na
       ]);
       const expr = SUBRULE2(primaryExpression);
       return ACTION(() => C.astFactory.expressionOperation(
-        operator.image === '!' ? '!' : (operator.image === '+' ? 'UPLUS' : 'UMINUS'),
+        operator.image === '+' ? 'UPLUS' : 'UMINUS',
         [ <T11.Expression> expr ],
         C.astFactory.sourceLocation(operator, expr),
       ));

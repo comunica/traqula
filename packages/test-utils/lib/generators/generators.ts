@@ -75,22 +75,20 @@ export function* negativeTest(
 ): Generator<NegativeTest> {
   const astDir = getStaticFilePath('ast');
   const sparqlGeneratedDir = join(astDir, 'sparql', type);
-  const statics = readdirSync(sparqlGeneratedDir);
+  const statics = readdirSync(sparqlGeneratedDir).filter(f => f.endsWith('.sparql'));
   for (const file of statics) {
-    if (file.endsWith('.sparql')) {
-      if (filter && !filter(file.replace('.sparql', ''))) {
-        continue;
-      }
-      const name = file.replace(/\.sparql$/u, '');
-      yield {
-        name,
-        statics: async() => {
-          const query = await readFile(join(sparqlGeneratedDir, file));
-          return {
-            query,
-          };
-        },
-      };
+    if (filter && !filter(file.replace('.sparql', ''))) {
+      continue;
     }
+    const name = file.replace(/\.sparql$/u, '');
+    yield {
+      name,
+      statics: async() => {
+        const query = await readFile(join(sparqlGeneratedDir, file));
+        return {
+          query,
+        };
+      },
+    };
   }
 }

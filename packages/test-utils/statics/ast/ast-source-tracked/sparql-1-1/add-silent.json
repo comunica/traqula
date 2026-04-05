@@ -1,0 +1,69 @@
+{
+  "type": "update",
+  "updates": [
+    {
+      "context": [],
+      "operation": {
+        "type": "updateOperation",
+        "subType": "add",
+        "silent": true,
+        "source": {
+          "type": "graphRef",
+          "subType": "specific",
+          "graph": {
+            "type": "term",
+            "subType": "namedNode",
+            "value": "http://g1",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 11,
+              "end": 22
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 11,
+            "end": 22
+          }
+        },
+        "destination": {
+          "type": "graphRef",
+          "subType": "specific",
+          "graph": {
+            "type": "term",
+            "subType": "namedNode",
+            "value": "http://g2",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 26,
+              "end": 37
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 26,
+            "end": 37
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 0,
+          "end": 37
+        }
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "inlinedSource",
+    "newSource": "ADD SILENT <http://g1> TO <http://g2>",
+    "start": 0,
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 37
+    },
+    "startOnNew": 0,
+    "endOnNew": 37
+  }
+}

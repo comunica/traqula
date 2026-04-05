@@ -1,0 +1,89 @@
+{
+  "context": [],
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "filter",
+        "expression": {
+          "type": "expression",
+          "subType": "operation",
+          "operator": "=",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "operation",
+              "operator": "bnode",
+              "args": [],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 24,
+                "end": 31
+              }
+            },
+            {
+              "type": "term",
+              "subType": "variable",
+              "value": "x",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 34,
+                "end": 36
+              }
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 23,
+            "end": 37
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 17,
+          "end": 37
+        }
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 15,
+      "end": 39
+    }
+  },
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "wildcard",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 7,
+        "end": 8
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "inlinedSource",
+    "newSource": "SELECT * WHERE { FILTER(BNODE() = ?x) }",
+    "start": 0,
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 39
+    },
+    "startOnNew": 0,
+    "endOnNew": 39
+  },
+  "type": "query"
+}

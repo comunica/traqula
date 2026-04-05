@@ -95,7 +95,7 @@ AstIndir<'translateProject', PatternGroup, [Algebra.Project | Algebra.Ask | Alge
       variables = (<Algebra.Project>op).variables;
     } else if (type === types.ASK) {
       result.subType = 'ask';
-    } else if (type === types.DESCRIBE) {
+    } else {
       result.subType = 'describe';
       variables = <RDF.Variable[]>(<Algebra.Describe>op).terms;
     }

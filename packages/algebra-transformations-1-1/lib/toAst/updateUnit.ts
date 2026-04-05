@@ -110,18 +110,13 @@ export const translateAlgDeleteInsert: AstIndir<'translateDeleteInsert', LikeMod
       update.where = SUBRULE(algWrapInPatternGroup, result);
       // Graph might not be applied yet since there was no project
       // this can only happen if there was a single graph
-      if (graphs.length > 0) {
-        if (graphs.length === 1) {
-          // Ignore if default graph
-          if (graphs.at(0)?.value !== '') {
-            update.where.patterns = [
-              F.patternGraph(<RdfTermToAst<typeof graphs[0]>>
-                SUBRULE(translateAlgTerm, graphs[0]), update.where.patterns, F.gen()),
-            ];
-          }
-        } else {
-          throw new Error('This is unexpected and might indicate an error in graph handling for updates.');
-        }
+      // Ignore if default graph
+      if (graphs.length === 1 &&
+        graphs.at(0)?.value !== '') {
+        update.where.patterns = [
+          F.patternGraph(<RdfTermToAst<typeof graphs[0]>>
+              SUBRULE(translateAlgTerm, graphs[0]), update.where.patterns, F.gen()),
+        ];
       }
     }
 

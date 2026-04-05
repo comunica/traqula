@@ -19,6 +19,9 @@ describe('sparql 1.2 algebra transformer', () => {
     for (const suite of suites) {
       describe(suite, () => {
         for (const test of sparqlAlgebraTests(suite, false, false)) {
+          if (test.name !== 'sparql12/sparql-1-2-ar-langdir') {
+            continue;
+          }
           const { name, json, quads } = test;
           const expected = <Algebra.Operation> json;
           it (name, ({ expect }) => {

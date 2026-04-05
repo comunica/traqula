@@ -1,0 +1,141 @@
+{
+  "context": [],
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "tripleCollection",
+              "subType": "blankNodeProperties",
+              "identifier": {
+                "type": "term",
+                "subType": "blankNode",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                },
+                "label": "g_0"
+              },
+              "triples": [
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_0"
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "http://p",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 19,
+                      "end": 29
+                    }
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "variable",
+                    "value": "o",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 30,
+                      "end": 32
+                    }
+                  },
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 19,
+                    "end": 32
+                  }
+                }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 17,
+                "end": 34
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "http://p2",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 35,
+                "end": 46
+              }
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "o2",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 47,
+                "end": 50
+              }
+            },
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 17,
+              "end": 50
+            }
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 17,
+          "end": 50
+        }
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 15,
+      "end": 52
+    }
+  },
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "wildcard",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 7,
+        "end": 8
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "inlinedSource",
+    "newSource": "SELECT * WHERE { [ <http://p> ?o ] <http://p2> ?o2 }",
+    "start": 0,
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 52
+    },
+    "startOnNew": 0,
+    "endOnNew": 52
+  },
+  "type": "query"
+}

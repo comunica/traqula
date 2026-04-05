@@ -93,6 +93,7 @@ export const expressionParserBuilder = ParserBuilder.create(rulesNoBuiltIn)
     gram.aggregateGroup_concat,
     gram.aggregate,
     gram.iri,
+    gram.iriFull,
     gram.prefixedName,
     gram.argList,
     gram.string,

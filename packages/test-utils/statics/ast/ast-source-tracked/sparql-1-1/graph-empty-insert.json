@@ -1,0 +1,58 @@
+{
+  "type": "update",
+  "updates": [
+    {
+      "context": [],
+      "operation": {
+        "type": "updateOperation",
+        "subType": "insertdata",
+        "data": [
+          {
+            "type": "graph",
+            "graph": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "http://g",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 20,
+                "end": 30
+              }
+            },
+            "triples": {
+              "type": "pattern",
+              "subType": "bgp",
+              "triples": [],
+              "loc": {
+                "sourceLocationType": "noMaterialize"
+              }
+            },
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 14,
+              "end": 34
+            }
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 0,
+          "end": 36
+        }
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "inlinedSource",
+    "newSource": "INSERT DATA { GRAPH <http://g> { } }",
+    "start": 0,
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 36
+    },
+    "startOnNew": 0,
+    "endOnNew": 36
+  }
+}

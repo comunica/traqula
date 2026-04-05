@@ -1,0 +1,1 @@
+BASE <http://base.example.org/> SELECT * WHERE { ?s ?p ?o . }

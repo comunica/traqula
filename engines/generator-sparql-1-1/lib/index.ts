@@ -118,3 +118,5 @@ export class Generator {
     return this.generator.path(ast, completeGeneratorContext({ ...this.defaultContext, ...context }), undefined).trim();
   }
 }
+
+export * from './cli.js';

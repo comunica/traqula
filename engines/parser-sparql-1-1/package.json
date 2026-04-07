@@ -23,10 +23,16 @@
     }
   },
   "main": "dist/esm/lib/index.js",
+  "bin": {
+    "traqula-parser-sparql-1-1": "dist/esm/bin/traqula-parser-sparql-1-1.js"
+  },
   "publishConfig": {
     "access": "public"
   },
   "files": [
+    "dist/*/bin/**/*.d.ts",
+    "dist/*/bin/**/*.js",
+    "dist/*/bin/**/*.js.map",
     "dist/*/lib/**/*.d.ts",
     "dist/*/lib/**/*.js",
     "dist/*/lib/**/*.js.map",
@@ -50,11 +56,14 @@
     "spec:earl": "yarn spec:earl:base-1-0 && yarn spec:earl:query && yarn spec:earl:update"
   },
   "dependencies": {
+    "@traqula/cli-utils": "^1.0.4",
     "@traqula/core": "^1.0.3",
-    "@traqula/rules-sparql-1-1": "^1.0.4"
+    "@traqula/rules-sparql-1-1": "^1.0.4",
+    "commander": "^14.0.3"
   },
   "devDependencies": {
     "@traqula/test-utils": "^1.0.4",
+    "@types/node": "^24.3.1",
     "@types/sparqljs": "^3.1.12",
     "rdf-data-factory": "^2.0.1",
     "rdf-test-suite": "^2.0.0",

@@ -127,7 +127,7 @@ describe('toEqualParsedQuery matchers', () => {
   });
 });
 
-describe('toEqualParsedQuery - diffString falsy branch (lines 19, 48)', () => {
+describe('toEqualParsedQuery - diffString falsy branch', () => {
   it(
     'toEqualParsedQuery: covers FALSE diffString branch when diff returns null (same reference, false equals)',
     ({ expect }) => {
@@ -144,7 +144,6 @@ describe('toEqualParsedQuery - diffString falsy branch (lines 19, 48)', () => {
   );
 
   it('toEqualParsedQueryIgnoring: covers FALSE diffString branch', ({ expect }) => {
-    // Covers toEqualParsedQuery.ts line 48 FALSE branch of `diffString ?`
     const weirdObj = { termType: 'NamedNode', value: 'x', equals: () => false };
     let caughtMessage = '';
     try {
@@ -156,7 +155,6 @@ describe('toEqualParsedQuery - diffString falsy branch (lines 19, 48)', () => {
   });
 
   it('toEqualParsedQuery: covers TRUE diffString branch (normal diff)', ({ expect }) => {
-    // Covers toEqualParsedQuery.ts line 19 TRUE branch of `diffString ?`
     let caughtMessage = '';
     try {
       expect({ a: 1, b: 2 }).toEqualParsedQuery({ a: 1, b: 9 });
@@ -178,30 +176,23 @@ describe('toEqualParsedQuery - diffString falsy branch (lines 19, 48)', () => {
 });
 
 describe('toEqualParsedQuery - diffString undefined branch via asymmetric matcher (lines 19, 48)', () => {
-  it(
-    'toEqualParsedQuery: covers line 19 FALSE when diff returns undefined (non-jest asymmetricMatch)',
-    ({ expect }) => {
-      // When diff(a, b) returns undefined (non-jest asymmetric matcher), diffString is falsy.
-      // This covers the FALSE branch of `diffString ? ... : ...` at line 19.
-      const weirdObj = {
-        asymmetricMatch: () => false,
-        $$typeof: Symbol.for('not.a.jest.matcher'),
-      };
-      let caughtMessage = '';
-      try {
-        // ObjectsEqual(42, weirdObj): isPrimitive(42)=true -> 42 === weirdObj -> false -> pass=false
-        // diff(weirdObj, 42): weirdObj has asymmetricMatch, $$typeof !== jest marker -> returns undefined
-        // diffString is undefined (falsy) -> FALSE branch of diffString ? covered
-        expect(42).toEqualParsedQuery(<any>weirdObj);
-      } catch (e: any) {
-        caughtMessage = String(e.message ?? e);
-      }
-      expect(caughtMessage.length).toBeGreaterThan(0);
-      expect(caughtMessage).toContain('Expected');
-    },
-  );
+  it('toEqualParsedQuery: diff returns undefined (non-jest asymmetricMatch)', ({ expect }) => {
+    // When diff(a, b) returns undefined (non-jest asymmetric matcher), diffString is falsy.
+    const weirdObj = {
+      asymmetricMatch: () => false,
+      $$typeof: Symbol.for('not.a.jest.matcher'),
+    };
+    let caughtMessage = '';
+    try {
+      expect(42).toEqualParsedQuery(<any>weirdObj);
+    } catch (e: any) {
+      caughtMessage = String(e.message ?? e);
+    }
+    expect(caughtMessage.length).toBeGreaterThan(0);
+    expect(caughtMessage).toContain('Expected');
+  });
 
-  it('toEqualParsedQueryIgnoring: covers line 48 FALSE when diff returns undefined', ({ expect }) => {
+  it('toEqualParsedQueryIgnoring: diff returns undefined', ({ expect }) => {
     // Same as above but for toEqualParsedQueryIgnoring
     const weirdObj = {
       asymmetricMatch: () => false,

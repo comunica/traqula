@@ -1,0 +1,1 @@
+SELECT ?s (<http://ex.org/func>(DISTINCT ?o) as ?x) WHERE { ?s ?p ?o } GROUP BY ?s

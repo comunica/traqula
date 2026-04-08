@@ -1,0 +1,171 @@
+{
+  "context": [],
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "s",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 60,
+                "end": 62
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "variable",
+              "value": "p",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 63,
+                "end": 65
+              }
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "o",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 66,
+                "end": 68
+              }
+            },
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 60,
+              "end": 68
+            }
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 60,
+          "end": 68
+        }
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 58,
+      "end": 70
+    }
+  },
+  "solutionModifiers": {
+    "group": {
+      "type": "solutionModifier",
+      "subType": "group",
+      "groupings": [
+        {
+          "type": "term",
+          "subType": "variable",
+          "value": "s",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 80,
+            "end": 82
+          }
+        }
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 71,
+        "end": 82
+      }
+    }
+  },
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "term",
+      "subType": "variable",
+      "value": "s",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 7,
+        "end": 9
+      }
+    },
+    {
+      "type": "pattern",
+      "subType": "bind",
+      "expression": {
+        "type": "expression",
+        "subType": "functionCall",
+        "function": {
+          "type": "term",
+          "subType": "namedNode",
+          "value": "http://ex.org/func",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 11,
+            "end": 31
+          }
+        },
+        "args": [
+          {
+            "type": "term",
+            "subType": "variable",
+            "value": "o",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 41,
+              "end": 43
+            }
+          }
+        ],
+        "distinct": true,
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 11,
+          "end": 44
+        }
+      },
+      "variable": {
+        "type": "term",
+        "subType": "variable",
+        "value": "x",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 48,
+          "end": 50
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 10,
+        "end": 51
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "inlinedSource",
+    "newSource": "SELECT ?s (<http://ex.org/func>(DISTINCT ?o) as ?x) WHERE { ?s ?p ?o } GROUP BY ?s\n",
+    "start": 0,
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 82
+    },
+    "startOnNew": 0,
+    "endOnNew": 82
+  },
+  "type": "query"
+}

@@ -16,18 +16,7 @@ describe('extra generator coverage', () => {
   });
 
   describe('argList gImpl with DISTINCT', () => {
-    it('generates DISTINCT keyword in function call arguments', ({ expect }) => {
-      const ast = parser.parse(
-        'SELECT * WHERE { FILTER(<http://ex.org/func>(DISTINCT ?x)) }',
-        { parseMode: new Set([ 'canParseVars', 'canCreateBlankNodes', 'canParseAggregate' ]) },
-      );
-      const result = generator.generate(F.forcedAutoGenTree(ast));
-      expect(result).toContain('DISTINCT');
-      expect(result).toContain('<http://ex.org/func>');
-    });
-
     it('throws when DISTINCT is used in function call outside aggregate context', ({ expect }) => {
-      // Covers expression.ts line 452: throw when DISTINCT is used without canParseAggregate
       expect(() =>
         parser.parse(
           'SELECT * WHERE { FILTER(<http://ex.org/func>(DISTINCT ?x)) }',
@@ -51,8 +40,10 @@ describe('extra generator coverage', () => {
       ], F.gen());
 
       const result = rawGenerator.graphPatternNotTriples(patternGroup, context);
-      expect(result).toContain('?s');
-      expect(result).toContain('?p');
+      expect(result).toBe(` {
+  ?s ?p ?o .
+}
+`);
     });
   });
 

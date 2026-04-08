@@ -250,6 +250,7 @@ export function resolveIRI(iri: string, base: string | undefined): string {
   }
 }
 
+// TODO: find a cleaner way
 /**
  * Outputs a JSON object corresponding to the input algebra-like.
  */

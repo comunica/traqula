@@ -1,4 +1,4 @@
-import { Canonicalizer, algebraUtils } from '@traqula/algebra-transformations-1-1';
+import { Canonicalizer, algebraUtils } from '@traqula/algebra-transformations-1-2';
 import type { Algebra } from '@traqula/algebra-transformations-1-2';
 import { Generator as Generator12 } from '@traqula/generator-sparql-1-2';
 import { Parser as Parser12 } from '@traqula/parser-sparql-1-2';
@@ -19,9 +19,6 @@ describe('sparql 1.2 algebra transformer', () => {
     for (const suite of suites) {
       describe(suite, () => {
         for (const test of sparqlAlgebraTests(suite, false, false)) {
-          if (test.name !== 'sparql12/sparql-1-2-ar-langdir') {
-            continue;
-          }
           const { name, json, quads } = test;
           const expected = <Algebra.Operation> json;
           it (name, ({ expect }) => {

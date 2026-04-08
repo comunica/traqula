@@ -6,7 +6,7 @@ describe('astCoreFactory', () => {
     it('gen() creates autoGenerate location', ({ expect }) => {
       const factory = new AstCoreFactory();
       const loc = factory.gen();
-      expect(loc.sourceLocationType).toBe('autoGenerate');
+      expect(loc).toMatchObject({ sourceLocationType: 'autoGenerate' });
     });
 
     it('sourceLocation creates source location when tracking enabled', ({ expect }) => {
@@ -20,11 +20,7 @@ describe('astCoreFactory', () => {
       const factory = new AstCoreFactory({ tracksSourceLocation: true });
       const loc = factory.sourceLocationStringReplace('new content', 5, 15);
       expect(factory.isSourceLocationStringReplace(loc)).toBe(true);
-      if (factory.isSourceLocationStringReplace(loc)) {
-        expect(loc.newSource).toBe('new content');
-        expect(loc.start).toBe(5);
-        expect(loc.end).toBe(15);
-      }
+      expect(loc).toMatchObject({ start: 5, end: 15, newSource: 'new content' });
     });
 
     it('sourceLocationStringReplace returns gen() when tracking disabled', ({ expect }) => {
@@ -37,26 +33,23 @@ describe('astCoreFactory', () => {
       const factory = new AstCoreFactory({ tracksSourceLocation: true });
       const loc = factory.sourceLocationNodeReplace(0, 10);
       expect(factory.isSourceLocationNodeReplace(loc)).toBe(true);
-      expect(loc.start).toBe(0);
-      expect(loc.end).toBe(10);
+      expect(loc).toMatchObject({ start: 0, end: 10 });
     });
 
     it('sourceLocationNodeReplace with SourceLocationSource argument', ({ expect }) => {
       const factory = new AstCoreFactory({ tracksSourceLocation: true });
       const sourceLoc = factory.sourceLocationSource(5, 25);
-      if (factory.isSourceLocationSource(sourceLoc)) {
-        const loc = factory.sourceLocationNodeReplace(sourceLoc);
-        expect(factory.isSourceLocationNodeReplace(loc)).toBe(true);
-      }
+      expect(factory.isSourceLocationSource(sourceLoc)).toBe(true);
+      const loc = factory.sourceLocationNodeReplace(sourceLoc);
+      expect(factory.isSourceLocationNodeReplace(loc)).toBe(true);
     });
 
     it('sourceLocationNodeReplaceUnsafe handles SourceLocationSource', ({ expect }) => {
       const factory = new AstCoreFactory({ tracksSourceLocation: true });
       const sourceLoc = factory.sourceLocationSource(0, 10);
-      if (factory.isSourceLocationSource(sourceLoc)) {
-        const loc = factory.sourceLocationNodeReplaceUnsafe(sourceLoc);
-        expect(factory.isSourceLocationNodeReplace(loc)).toBe(true);
-      }
+      expect(factory.isSourceLocationSource(sourceLoc)).toBe(true);
+      const loc = factory.sourceLocationNodeReplaceUnsafe(sourceLoc);
+      expect(factory.isSourceLocationNodeReplace(loc)).toBe(true);
     });
 
     it('sourceLocationNodeReplaceUnsafe throws for unsupported types', ({ expect }) => {
@@ -69,7 +62,6 @@ describe('astCoreFactory', () => {
     it('sourceLocationInlinedSource creates inlined source location', ({ expect }) => {
       const factory = new AstCoreFactory({ tracksSourceLocation: true });
       const innerLoc = factory.sourceLocationSource(0, 10);
-      // SourceLocationInlinedSource(newSource, subLoc, start, end, startOnNew?, endOnNew?)
       const loc = factory.sourceLocationInlinedSource('inline source', innerLoc, 5, 15);
       expect(factory.isSourceLocationInlinedSource(loc)).toBe(true);
     });

@@ -189,9 +189,9 @@ describe('toEqualParsedQuery - diffString undefined branch via asymmetric matche
       };
       let caughtMessage = '';
       try {
-        // ObjectsEqual(42, weirdObj): isPrimitive(42)=true → 42 === weirdObj → false → pass=false
-        // diff(weirdObj, 42): weirdObj has asymmetricMatch, $$typeof !== jest marker → returns undefined
-        // diffString is undefined (falsy) → FALSE branch of diffString ? covered
+        // ObjectsEqual(42, weirdObj): isPrimitive(42)=true -> 42 === weirdObj -> false -> pass=false
+        // diff(weirdObj, 42): weirdObj has asymmetricMatch, $$typeof !== jest marker -> returns undefined
+        // diffString is undefined (falsy) -> FALSE branch of diffString ? covered
         expect(42).toEqualParsedQuery(<any>weirdObj);
       } catch (e: any) {
         caughtMessage = String(e.message ?? e);

@@ -272,8 +272,8 @@ describe('dynamicGenerator runtime coverage', () => {
   it('x PRINT_WORD and PRINT_WORDS ensure surrounding spaces', ({ expect }) => {
     const gen = GeneratorBuilder.create(<const>[ genWord, genWords ]).build();
     // PRINT_WORD prints space before and after, but trailing ensure is deferred and may not resolve
-    expect(gen.genWord({ word: 'hello' }, { origSource: '' })).toBe(' hello');
-    expect(gen.genWords({ words: [ 'a', 'b' ]}, { origSource: '' })).toBe(' a b');
+    expect(gen.genWord({ word: 'hello' }, { origSource: '' })).toBe(' hello ');
+    expect(gen.genWords({ words: [ 'a', 'b' ]}, { origSource: '' })).toBe(' a b ');
   });
 
   it('x ENSURE and ENSURE_EITHER insert characters if missing', ({ expect }) => {
@@ -300,10 +300,11 @@ describe('dynamicGenerator runtime coverage', () => {
       gImpl: ({ PRINT, NEW_LINE }) => (ast: { val: string }) => {
         PRINT(ast.val);
         NEW_LINE({ force: true });
+        NEW_LINE({ force: true });
       },
     };
     const gen = GeneratorBuilder.create(<const>[ genForceNewLine ]).build();
-    expect(gen.genForceNewLine({ val: 'hi' }, { origSource: '' })).toBe('hi\n');
+    expect(gen.genForceNewLine({ val: 'hi' }, { origSource: '' })).toBe('hi\n\n');
   });
 
   it('x SUBRULE throws when rule not found in generator', ({ expect }) => {

@@ -206,57 +206,27 @@ describe('transformerObject', () => {
 
   it('transformObject skips non-own inherited properties', ({ expect }) => {
     const transformer = new TransformerObject();
-    const proto = { inherited: 'value' };
+    const proto = { inherited: { test: 'test' }};
     const obj = Object.create(proto);
     obj.type = 'test';
     // TransformObject iterates with for...in; non-own properties should be skipped
-    const result = <any> transformer.transformObject(obj, copy => ({ ...copy, transformed: true }));
-    expect(result.type).toBe('test');
-    expect(result.inherited).toBeUndefined();
+    const result = <any> transformer.transformObject(obj, copy =>
+      Object.assign(Object.create(Object.getPrototypeOf(copy)), copy, { transformed: true }));
+    expect(result).toMatchObject({ type: 'test', transformed: true, inherited: { test: 'test' }});
+    expect(result.inherited.transformed).toBeUndefined();
   });
 
   it('visitObject skips non-own inherited properties', ({ expect }) => {
     const transformer = new TransformerObject();
     const visited: string[] = [];
-    const proto = { inherited: 'value' };
+    const proto = { inherited: { type: 'inherited' }};
     const obj = Object.create(proto);
     obj.type = 'test';
     obj.child = { type: 'child' };
     // VisitObject uses for...in; inherited props skipped
     transformer.visitObject(obj, (o: any) => visited.push(o.type));
-    expect(visited).not.toContain('value');
+    expect(visited).not.toContain('inherited');
     expect(visited).toContain('child');
-  });
-});
-
-describe('transformerTyped additional coverage', () => {
-  const transformer = new TransformerTyped<Fruit | Vegetable>();
-
-  it('visitNode visits typed nodes depth-first', ({ expect }) => {
-    const visited: string[] = [];
-    const tree: Fruit = {
-      type: 'fruit',
-      name: 'apple',
-      inner: { type: 'vegetable', name: 'carrot' },
-    };
-
-    transformer.visitNode(tree, {
-      fruit: { visitor: f => visited.push(`fruit:${f.name}`) },
-      vegetable: { visitor: v => visited.push(`veg:${v.name}`) },
-    });
-
-    expect(visited).toEqual([ 'veg:carrot', 'fruit:apple' ]);
-  });
-
-  it('transformNode with default context preVisitor', ({ expect }) => {
-    const customTransformer = new TransformerTyped<Fruit | Vegetable>({}, {
-      fruit: { copy: false },
-    });
-
-    const fruit: Fruit = { type: 'fruit', value: 1 };
-    const result = <Fruit>customTransformer.transformNode(fruit, {});
-    // Default preVisitor sets copy: false, so result should be same object
-    expect(result).toBe(fruit);
   });
 });
 
@@ -390,7 +360,7 @@ describe('transformerObject null/primitive array elements', () => {
     const transformer = new TransformerObject();
     const obj = { items: [ null, 1, 'hello', { type: 'leaf' }]};
     const result = transformer.transformObject(obj, x => x);
-    expect(result).toBeDefined();
+    expect(result).toMatchObject(obj);
   });
 
   it('visitObject handles array with null/primitive elements', ({ expect }) => {

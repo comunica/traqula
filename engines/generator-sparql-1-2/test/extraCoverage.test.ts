@@ -19,7 +19,7 @@ describe('extra generator-sparql-1-2 coverage', () => {
       const o = F.termVariable('o', F.gen());
       const reifiedTriple = F.tripleCollectionReifiedTriple(F.gen(), s, <any>pathPred, o);
       const result = rawGenerator.reifiedTriple(reifiedTriple, context);
-      expect(result).toBe(` << ?s (<http://p>*) ?o >>`);
+      expect(result).toBe(` << ?s (<http://p>*) ?o >> `);
     });
   });
 

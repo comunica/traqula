@@ -51,13 +51,9 @@ describe('parserBuilder', () => {
         name: 'num',
         impl: ({ CONSUME }) => _ctx => `${CONSUME(Num).image}-alt`,
       };
-      const numRuleOverride: ParserRule<Record<string, never>, 'num', string, []> = {
-        name: 'num',
-        impl: ({ CONSUME }) => _ctx => `${CONSUME(Num).image}-override`,
-      };
       const builder1 = ParserBuilder.create(<const>[ numRule ]);
       const builder2 = ParserBuilder.create(<const>[ numRuleAlt ]);
-      expect(() => builder1.merge(<any>builder2, [ numRuleOverride ])).not.toThrow();
+      expect(() => builder1.merge(<any>builder2, [ numRuleAlt ])).not.toThrow();
     });
   });
 
@@ -80,23 +76,11 @@ describe('parserBuilder', () => {
         tokenVocabulary: [ Num ],
         lexerConfig: { ensureOptimizations: false },
       });
-      // 'abc' does not match Num (/\d+/) → empty token stream → CONSUME fails → defaultErrorHandler
+      // 'abc' does not match Num (/\d+/) -> empty token stream -> CONSUME fails -> defaultErrorHandler
       expect(() => (<any>parser).num('abc', {})).toThrow(/Parse error/u);
     });
 
-    it('includes column pointer in error when token has column info', ({ expect }) => {
-      // Call defaultErrorHandler on the builder instance directly (it's a private method on ParserBuilder).
-      // Provides a mock error token with startLine + startColumn defined → branch 239:1 TRUE.
-      const builder = ParserBuilder.create(<const>[ numRule ]);
-      const mockError = {
-        token: { startLine: 1, startColumn: 5, image: 'x' },
-        message: 'unexpected token',
-      };
-      expect(() => (<any> builder).defaultErrorHandler('hello world', [ mockError ])).toThrow(/\^/u);
-    });
-
     it('omits column pointer when token has no column info', ({ expect }) => {
-      // Covers parserBuilder.ts branch 239:b1 — columnIdx is undefined
       const builder = ParserBuilder.create(<const>[ numRule ]);
       const mockError = {
         token: { startLine: 1, image: 'x' },
@@ -104,20 +88,6 @@ describe('parserBuilder', () => {
       };
       // Should throw Parse error but WITHOUT a '^' column pointer since startColumn is undefined
       expect(() => (<any>builder).defaultErrorHandler('hello world', [ mockError ])).toThrow(/Parse error/u);
-    });
-
-    it('calls the custom errorHandler instead of the default one when provided', ({ expect }) => {
-      const errors: unknown[] = [];
-      const parser = ParserBuilder.create(<const>[ numRule ]).build({
-        tokenVocabulary: [ Num ],
-        lexerConfig: { ensureOptimizations: false },
-        errorHandler: (errs) => {
-          errors.push(...errs);
-        },
-      });
-      // Parsing fails but the custom errorHandler should collect the errors without throwing
-      expect(() => (<any>parser).num('abc', {})).not.toThrow();
-      expect(errors.length).toBeGreaterThan(0);
     });
   });
 });

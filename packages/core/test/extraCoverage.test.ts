@@ -17,8 +17,7 @@ describe('dynamicGenerator newLine with existing newline in buffer', () => {
     };
     const gen = GeneratorBuilder.create(<const>[ rule ]).build();
     const result = gen.myRule({ val: 'test' }, { origSource: '' });
-    expect(result).toContain('test');
-    expect(result).toContain('\n');
+    expect(result).toBe('test\n\n');
   });
 });
 
@@ -29,14 +28,14 @@ describe('dynamicGenerator ENSURE already-ends-with and willPrint-starts-with', 
       gImpl: ({ PRINT, ENSURE }) => (ast: { val: string }) => {
         // Buffer ends with ' '
         PRINT(' ');
-        // Already ends with ' ' → if block is SKIPPED
+        // Already ends with ' ' -> if block is SKIPPED
         ENSURE(' ');
         PRINT(ast.val);
       },
     };
     const gen = GeneratorBuilder.create(<const>[ rule ]).build();
     const result = gen.myRule({ val: 'test' }, { origSource: '' });
-    expect(result).toContain('test');
+    expect(result).toBe(' test');
   });
 
   it('skips pushing when willPrint starts with ensured string (line 174 false branch)', ({ expect }) => {
@@ -45,17 +44,17 @@ describe('dynamicGenerator ENSURE already-ends-with and willPrint-starts-with', 
       gImpl: ({ PRINT, ENSURE }) => (ast: { val: string }) => {
         // Register to ensure a space before next PRINT
         ENSURE(' ');
-        // WillPrint starts with ' ' → skip pushing space
+        // WillPrint starts with ' ' -> skip pushing space
         PRINT(` ${ast.val}`);
       },
     };
     const gen = GeneratorBuilder.create(<const>[ rule ]).build();
     const result = gen.myRule({ val: 'test' }, { origSource: '' });
-    expect(result).toContain('test');
+    expect(result).toBe(' test');
   });
 });
 
-describe('parserBuilder.ts line 239 (columnIdx undefined branch)', () => {
+describe('parserBuilder.ts', () => {
   it('builds error without column indicator when token has no column info', ({ expect }) => {
     const Num = createToken({ name: 'Num', pattern: /\d+/u });
     const Word = createToken({ name: 'Word', pattern: /[a-z]+/u });
@@ -67,7 +66,7 @@ describe('parserBuilder.ts line 239 (columnIdx undefined branch)', () => {
       tokenVocabulary: [ Num, Word ],
       lexerConfig: { ensureOptimizations: false, positionTracking: 'onlyOffset' },
     });
-    // 'hello' lexes as Word; parser expects Num → parse error
+    // 'hello' lexes as Word; parser expects Num -> parse error
     // With onlyOffset tracking, token has startLine but not startColumn
     expect(() => (<any>parser).numOnly('hello', {})).toThrow(/Parse error/u);
   });

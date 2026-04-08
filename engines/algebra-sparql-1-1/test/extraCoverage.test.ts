@@ -376,7 +376,7 @@ GROUP BY ( ?y AS ?x )`);
         AF.dataFactory.variable!('o'),
       ) ]);
       const filterOp = AF.createFilter(innerBgp, filterExpr);
-      // G = emptyBGP, A = FILTER → G.type === BGP && G.patterns.length === 0 → G = A
+      // G = emptyBGP, A = FILTER -> G.type === BGP && G.patterns.length === 0 -> G = A
       const result = transformer.simplifiedJoin(c, emptyBgp, filterOp);
       expect(result).toBe(filterOp);
     });
@@ -457,20 +457,20 @@ GROUP BY ( ?y AS ?x )`);
       const c = createAlgebraContext({ quads: true });
       const g = AF.dataFactory.variable!('g');
       const replacement = AF.dataFactory.variable!('__replacement__');
-      // Test 1: both subject and object = graph variable → both replaced
+      // Test 1: both subject and object = graph variable -> both replaced
       const path1 = AF.createPath(g, AF.createLink(AF.dataFactory.namedNode('http://p')), g);
       const result1 = <Algebra.Pattern> transformer.recurseGraph(c, path1, g, replacement);
       expect(result1.subject).toBe(replacement);
       expect(result1.object).toBe(replacement);
 
-      // Test 2: subject = other, object = graph var → only object replaced
+      // Test 2: subject = other, object = graph var -> only object replaced
       const other = AF.dataFactory.namedNode('http://other');
       const path2 = AF.createPath(other, AF.createLink(AF.dataFactory.namedNode('http://p')), g);
       const result2 = <Algebra.Pattern> transformer.recurseGraph(c, path2, g, replacement);
       expect(result2.subject).toBe(other);
       expect(result2.object).toBe(replacement);
 
-      // Test 3: subject = graph var, object = other → only subject replaced
+      // Test 3: subject = graph var, object = other -> only subject replaced
       const path3 = AF.createPath(g, AF.createLink(AF.dataFactory.namedNode('http://p')), other);
       const result3 = <Algebra.Pattern> transformer.recurseGraph(c, path3, g, replacement);
       expect(result3.subject).toBe(replacement);
@@ -514,7 +514,7 @@ describe('patterns.ts: simplifiedJoin with empty BGP after non-BGP', () => {
 
   it('empty group after MINUS covers simplifiedJoin', ({ expect }) => {
     // For this to trigger, G must be non-BGP (e.g., a Join from MINUS) AND A must be empty BGP.
-    // "MINUS { ?x ?y ?z } {}" → MINUS creates a non-BGP result, then {} creates empty BGP.
+    // "MINUS { ?x ?y ?z } {}" -> MINUS creates a non-BGP result, then {} creates empty BGP.
     const ast = parser.parse('SELECT * WHERE { ?s ?p ?o MINUS { ?x ?y ?z } {} }');
     const algebra = toAlgebra(ast);
     expect(algebra).toMatchObject({ type: 'project', input: {
@@ -593,7 +593,7 @@ describe('queryUnit.ts (toAst): registerGroupBy direct call', () => {
   });
 
   it('replaceAggregatorVariables with RDF Variable covers isSimpleTerm TRUE branch', ({ expect }) => {
-    // An RDF.Variable has termType='Variable', satisfying isSimpleTerm → TRUE branch taken
+    // An RDF.Variable has termType='Variable', satisfying isSimpleTerm -> TRUE branch taken
     const transformer = toAst11Builder.build();
     const c = createAstContext();
     // TermType = 'Variable'

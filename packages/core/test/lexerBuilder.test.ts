@@ -32,7 +32,7 @@ describe('lexerBuilder', () => {
   describe('moveBefore', () => {
     it('throws BeforeToken not found when the anchor token is not in the list', ({ expect }) => {
       const builder = LexerBuilder.create().add(TokenA, TokenB);
-      // TokenC is not in the builder → beforeIndex = indexOf(TokenC) + 0 = -1
+      // TokenC is not in the builder -> beforeIndex = indexOf(TokenC) + 0 = -1
       expect(() => (<any>builder).moveBefore(TokenC, TokenA)).toThrow('BeforeToken not found');
     });
 

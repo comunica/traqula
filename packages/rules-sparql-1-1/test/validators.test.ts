@@ -364,7 +364,7 @@ describe('checkNote13 - second bounded vars check', () => {
       variable: varX,
       expression: F.termLiteral(noLoc, '2'),
     };
-    // Second loop: values adds 'x', then bind sees 'x' already bound → L214
+    // Second loop: values adds 'x', then bind sees 'x' already bound -> L214
     expect(() => checkNote13(<any>[ valuesPattern, bind ]))
       .toThrowError(/Variable used to bind is already bound/u);
   });
@@ -442,7 +442,7 @@ describe('queryProjectionIsGood - line 128 FALSE branch', () => {
         patterns: [ subquery ],
       },
     };
-    // SubqueryIds = {'y'}, selectBoundedVars = {'x'}, no conflict → no throw
+    // SubqueryIds = {'y'}, selectBoundedVars = {'x'}, no conflict -> no throw
     expect(() => queryProjectionIsGood(<any>outerQuery)).not.toThrow();
   });
 });

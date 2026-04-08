@@ -235,7 +235,7 @@ describe('findPatternBoundedVars (sparql-1-2) - additional branches', () => {
       loc: noLoc,
     };
     findPatternBoundedVars(ask, vars);
-    // For ASK query, no variables should be added to boundedVars (falls into else → recurse(group))
+    // For ASK query, no variables should be added to boundedVars (falls into else -> recurse(group))
     expect(vars.size).toBe(0);
   });
 
@@ -278,7 +278,7 @@ describe('findPatternBoundedVars (sparql-1-2) - path and annotation FALSE branch
       subject: varS,
       predicate: iri,
       object: varO,
-      // No annotations field → undefined → ?? [] false branch
+      // No annotations field -> undefined -> ?? [] false branch
     };
     findPatternBoundedVars(mockTriple, vars);
     expect(vars.has('s')).toBe(true);

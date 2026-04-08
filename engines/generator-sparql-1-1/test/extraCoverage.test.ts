@@ -127,7 +127,7 @@ describe('extra generator coverage', () => {
       const typeIri = F.dematerialized(F.termNamed(F.gen(), 'http://www.w3.org/2001/XMLSchema#integer'));
       const lit = F.termLiteral(F.gen(), '42', typeIri);
       const result = rawGenerator.rdfLiteral(lit, context);
-      expect(result).toBe(' 42');
+      expect(result).toBe(' 42 ');
     });
   });
 });

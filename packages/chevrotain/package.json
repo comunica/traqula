@@ -41,7 +41,7 @@
     "build:transpile": "node \"../../node_modules/esbuild/bin/esbuild\" --format=cjs --target=es2022 --bundle --log-level=error --outfile=dist/cjs/lib/index.js lib/index.ts"
   },
   "dependencies": {
-    "chevrotain": "^12.0.0"
+    "chevrotain": "^11.2.0"
   },
   "devDependencies": {
     "esbuild": "^0.28.0"

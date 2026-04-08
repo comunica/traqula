@@ -1,6 +1,18 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.0.5"></a>
+## [v1.0.5](https://github.com/comunica/traqula/compare/v1.0.4...v1.0.5) - 2026-04-08
+
+* [Fix: Add gram.iriFull to the expressionParserBuilder (#119)](https://github.com/comunica/traqula/commit/49e6e6fb92a022fb00228ce1a128472fed811761)
+* [Chore: Simplify if/ if-else statements to fallback to if / else (#119)](https://github.com/comunica/traqula/commit/49e6e6fb92a022fb00228ce1a128472fed811761)
+* [Fix: ensure the algebra transformations encode language direction (#119)](https://github.com/comunica/traqula/commit/49e6e6fb92a022fb00228ce1a128472fed811761)
+* [Fix: generator calling ENSURE should be cleared at the end of a generation (#119)](https://github.com/comunica/traqula/commit/49e6e6fb92a022fb00228ce1a128472fed811761)
+* [Fix: test coverage collection (#119)](https://github.com/comunica/traqula/commit/49e6e6fb92a022fb00228ce1a128472fed811761)
+* [Tests: 100% coverage (#119)](https://github.com/comunica/traqula/commit/49e6e6fb92a022fb00228ce1a128472fed811761)
+* [Update dependency esbuild to ^0.28.0](https://github.com/comunica/traqula/commit/900c3bef5b3576d286cde32f286f11cd6659a888)
+* [Update actions/deploy-pages action to v5](https://github.com/comunica/traqula/commit/44b1b15897fca9e3003d2f8186ae2f7b3c454a5a)
+
 <a name="v1.0.4"></a>
 ## [v1.0.4](https://github.com/comunica/traqula/compare/v1.0.3...v1.0.4) - 2026-03-25
 

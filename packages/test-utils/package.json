@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "rdf-data-factory": "^2.0.1",
-    "vitest": "^4.0.18"
+    "vitest": "^4.1.3"
   },
   "devDependencies": {
     "@rdfjs/types": "^2.0.0"

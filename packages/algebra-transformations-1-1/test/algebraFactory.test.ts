@@ -6,8 +6,7 @@ describe('algebraFactory edge cases', () => {
 
   it('createTerm handles $-prefixed variable syntax', ({ expect }) => {
     const term = AF.createTerm('$myVar');
-    expect(term.termType).toBe('Variable');
-    expect(term.value).toBe('myVar');
+    expect(term).toMatchObject({ termType: 'Variable', value: 'myVar' });
   });
 
   it('createJoin with flatten=false preserves nesting', ({ expect }) => {
@@ -15,13 +14,11 @@ describe('algebraFactory edge cases', () => {
     const bgp2 = AF.createBgp([]);
     const innerJoin = AF.createJoin([ bgp1, bgp2 ], true);
     const outerJoin = AF.createJoin([ innerJoin, bgp2 ], false);
-    // Without flatten, the outer join keeps the inner join as a nested child
     expect(outerJoin.input).toHaveLength(2);
     expect(outerJoin.input[0].type).toBe('join');
   });
 
   it('createAlt with flatten=false preserves nesting', ({ expect }) => {
-    // Covers flattenMulti(false) branch via createAlt
     const bgp1 = AF.createBgp([]);
     const bgp2 = AF.createBgp([]);
     const innerAlt = AF.createAlt([ bgp1, bgp2 ], true);
@@ -34,8 +31,7 @@ describe('algebraFactory edge cases', () => {
     const variable = AF.dataFactory.variable!('myVar');
     const expression = AF.createWildcardExpression();
     const bound = AF.createBoundAggregate(variable, 'count', expression, false);
-    expect(bound.variable).toBe(variable);
-    expect(bound.type).toBe('expression');
+    expect(bound).toMatchObject({ variable, type: 'expression' });
   });
 
   describe('algebraFactory flattenMulti with matching subType', () => {
@@ -56,7 +52,7 @@ describe('algebraFactory edge cases', () => {
       const g = AF.dataFactory.variable!('g');
       const pattern = AF.createPattern(s, p, o, g);
       const variables = algebraUtils.inScopeVariables(AF.createProject(pattern, [ g ]));
-      expect(variables.map(v => v.value)).toContain('g');
+      expect(variables.map(v => v.value)).toMatchObject([ 'g' ]);
     });
   });
 
@@ -74,7 +70,7 @@ describe('algebraFactory edge cases', () => {
       const o = AF.dataFactory.namedNode('http://o');
       const pattern = AF.createPattern(s, p, o, inner);
       const variables = algebraUtils.inScopeVariables(pattern);
-      expect(variables.map(v => v.value)).toContain('innerObj');
+      expect(variables.map(v => v.value)).toMatchObject([ 'innerObj' ]);
     });
 
     it('handles PATTERN with nested quad as subject', ({ expect }) => {
@@ -89,7 +85,7 @@ describe('algebraFactory edge cases', () => {
       const o = AF.dataFactory.namedNode('http://o');
       const pattern = AF.createPattern(innerQuad, p, o);
       const variables = algebraUtils.inScopeVariables(pattern);
-      expect(variables.map(v => v.value)).toContain('subjectVar');
+      expect(variables.map(v => v.value)).toMatchObject([ 'subjectVar' ]);
     });
 
     it('handles PATTERN with nested quad as predicate', ({ expect }) => {
@@ -104,7 +100,7 @@ describe('algebraFactory edge cases', () => {
       const o = AF.dataFactory.namedNode('http://o');
       const pattern = AF.createPattern(s, innerQuad, o);
       const variables = algebraUtils.inScopeVariables(pattern);
-      expect(variables.map(v => v.value)).toContain('predVar');
+      expect(variables.map(v => v.value)).toMatchObject([ 'predVar' ]);
     });
 
     it('handles PATTERN with nested quad as object', ({ expect }) => {
@@ -119,7 +115,7 @@ describe('algebraFactory edge cases', () => {
       const p = AF.dataFactory.namedNode('http://p');
       const pattern = AF.createPattern(s, p, innerQuad);
       const variables = algebraUtils.inScopeVariables(pattern);
-      expect(variables.map(v => v.value)).toContain('objVar2');
+      expect(variables.map(v => v.value)).toMatchObject([ 'objVar2' ]);
     });
   });
 
@@ -138,7 +134,7 @@ describe('algebraFactory edge cases', () => {
         AF.dataFactory.variable!('o'),
       );
       const variables = algebraUtils.inScopeVariables(path);
-      expect(variables.map(v => v.value)).toContain('innerVar');
+      expect(variables.map(v => v.value)).toMatchObject([ 'innerVar', 'o' ]);
     });
   });
 
@@ -157,7 +153,7 @@ describe('algebraFactory edge cases', () => {
         innerQuad,
       );
       const variables = algebraUtils.inScopeVariables(path);
-      expect(variables.map(v => v.value)).toContain('innerObjVar');
+      expect(variables.map(v => v.value)).toMatchObject([ 'innerObjVar' ]);
     });
   });
 
@@ -177,7 +173,7 @@ describe('algebraFactory edge cases', () => {
         innerQuad,
       );
       const variables = algebraUtils.inScopeVariables(path);
-      expect(variables.map(v => v.value)).toContain('innerGraphVar');
+      expect(variables.map(v => v.value)).toMatchObject([ 'innerGraphVar' ]);
     });
   });
 });

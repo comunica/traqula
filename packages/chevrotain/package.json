@@ -38,12 +38,14 @@
   "scripts": {
     "build": "yarn build:ts && yarn build:transpile",
     "build:ts": "node \"../../node_modules/typescript/bin/tsc\" -b",
-    "build:transpile": "node \"../../node_modules/esbuild/bin/esbuild\" --format=cjs --target=es2022 --bundle --log-level=error --outfile=dist/cjs/lib/index.js lib/index.ts"
-  },
-  "dependencies": {
-    "chevrotain": "^11.2.0"
+    "build:bundle-types": "node \"../../node_modules/.bin/dts-bundle-generator\" -o dist/esm/lib/index.d.ts --project tsconfig.dts.json --no-check --external-inlines chevrotain @chevrotain/types -- lib/index.ts",
+    "build:transpile-cjs": "node \"../../node_modules/esbuild/bin/esbuild\" --format=cjs --target=es2022 --bundle --log-level=error --outfile=dist/cjs/lib/index.js lib/index.ts",
+    "build:transpile-esm": "node \"../../node_modules/esbuild/bin/esbuild\" --format=esm --target=es2022 --bundle --log-level=error --outfile=dist/esm/lib/index.js lib/index.ts",
+    "build:transpile": "yarn build:bundle-types && yarn build:transpile-cjs && yarn build:transpile-esm"
   },
   "devDependencies": {
+    "chevrotain": "^11.2.0",
+    "dts-bundle-generator": "^9.5.1",
     "esbuild": "^0.28.0"
   }
 }

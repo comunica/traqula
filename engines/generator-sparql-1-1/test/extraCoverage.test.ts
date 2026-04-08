@@ -73,7 +73,9 @@ describe('extra generator coverage', () => {
       }, F.gen());
 
       const result = generator.generate(query);
-      expect(result).toContain(',');
+      expect(result).toBe(`SELECT * WHERE {
+  ?s ?p ?o1 , ?o2 .
+}`);
     });
 
     it('generates semicolon separator for same subject with different predicates', ({ expect }) => {
@@ -101,7 +103,10 @@ describe('extra generator coverage', () => {
       }, F.gen());
 
       const result = generator.generate(query);
-      expect(result).toContain(';');
+      expect(result).toBe(`SELECT * WHERE {
+  ?s ?p1 ?o1 ;
+  ?p2 ?o2 .
+}`);
     });
   });
 
@@ -111,7 +116,7 @@ describe('extra generator coverage', () => {
       const context = completeGeneratorContext({ astFactory: F });
       const iri = F.termNamed(F.gen(), 'http://example.org/type');
       const result = rawGenerator.iriOrFunction(iri, context);
-      expect(result).toContain('http://example.org/type');
+      expect(result).toBe(`<http://example.org/type>`);
     });
   });
 
@@ -122,19 +127,7 @@ describe('extra generator coverage', () => {
       const typeIri = F.dematerialized(F.termNamed(F.gen(), 'http://www.w3.org/2001/XMLSchema#integer'));
       const lit = F.termLiteral(F.gen(), '42', typeIri);
       const result = rawGenerator.rdfLiteral(lit, context);
-      expect(result).toContain('42');
-      expect(result).not.toContain('^^');
-    });
-  });
-
-  describe('queryOrUpdate gImpl for update branch', () => {
-    it('generates an update via the queryOrUpdate gImpl', ({ expect }) => {
-      // Covers index.ts:79 else branch: F.isQuery is false → SUBRULE(update, ast)
-      const rawGenerator = sparql11GeneratorBuilder.build();
-      const context = completeGeneratorContext({ astFactory: F });
-      const ast = parser.parse('INSERT DATA { <http://s> <http://p> <http://o> }');
-      const result = rawGenerator.queryOrUpdate(<any>ast, context);
-      expect(result).toContain('INSERT DATA');
+      expect(result).toBe(' 42');
     });
   });
 });

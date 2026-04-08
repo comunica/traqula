@@ -1,16 +1,16 @@
 import type { QueryDescribe, SolutionModifierGroupBind } from '@traqula/rules-sparql-1-1';
 import { describe, it } from 'vitest';
-import {
-  AstFactory,
-  findPatternBoundedVars,
-  langTagHasCorrectRange,
-} from '../lib/index.js';
 import type {
   Annotation,
   TripleNesting,
   Pattern,
 } from '../lib/index.js';
-import { completeParseContext } from '../lib/parserUtils.js';
+import {
+  AstFactory,
+  findPatternBoundedVars,
+  langTagHasCorrectRange,
+  completeParseContext,
+} from '../lib/index.js';
 
 const F = new AstFactory();
 const noLoc = F.gen();
@@ -53,7 +53,6 @@ describe('langTagHasCorrectRange', () => {
 
 describe('completeParseContext', () => {
   it('uses provided parseMode when explicitly supplied', ({ expect }) => {
-    // Covers parserUtils.ts:13: context.parseMode ? new Set(context.parseMode) - TRUE branch
     const ctx = completeParseContext({ parseMode: new Set([ 'canParseVars' ]) });
     expect(ctx.parseMode.has('canParseVars')).toBe(true);
     expect(ctx.parseMode.has('canCreateBlankNodes')).toBe(false);
@@ -108,7 +107,7 @@ describe('findPatternBoundedVars (sparql-1-2)', () => {
     expect(vars).toBeDefined();
   });
 
-  it('handles a describe query (validators.ts:36 isQueryDescribe branch)', ({ expect }) => {
+  it('handles a describe query', ({ expect }) => {
     const describeQuery = <QueryDescribe> <unknown> {
       type: 'query',
       subType: 'describe',
@@ -122,8 +121,7 @@ describe('findPatternBoundedVars (sparql-1-2)', () => {
     expect(vars.has('s')).toBe(true);
   });
 
-  it('extracts variables from PatternValues (validators.ts:99)', ({ expect }) => {
-    // Covers validators.ts:99: isPatternValues branch
+  it('extracts variables from PatternValues', ({ expect }) => {
     const values = F.patternValues(
       [ F.termVariable('x', noLoc) ],
       [{ x: F.termNamed(noLoc, 'http://ex') }],
@@ -131,11 +129,10 @@ describe('findPatternBoundedVars (sparql-1-2)', () => {
     );
     const vars = new Set<string>();
     findPatternBoundedVars(values, vars);
-    expect(vars.has('x')).toBe(true);
+    expect([ ...vars ]).toMatchObject([ 'x' ]);
   });
 
-  it('processes triple with annotations (validators.ts:72)', ({ expect }) => {
-    // Covers validators.ts:72: for (const annotation of iter.annotations ?? [])
+  it('processes triple with annotations', ({ expect }) => {
     const varS = F.termVariable('s', noLoc);
     const predP = F.termNamed(noLoc, 'http://p');
     const varO = F.termVariable('o', noLoc);
@@ -151,12 +148,10 @@ describe('findPatternBoundedVars (sparql-1-2)', () => {
     };
     const vars = new Set<string>();
     findPatternBoundedVars(triple, vars);
-    expect(vars.has('s')).toBe(true);
-    expect(vars.has('o')).toBe(true);
+    expect([ ...vars ]).toMatchObject([ 's', 'o' ]);
   });
 
-  it('processes a pure path via isPath branch (validators.ts:79)', ({ expect }) => {
-    // Covers validators.ts:79: isPath branch with !isTerm = true (pure path, not a term)
+  it('processes a pure path via isPath branch', ({ expect }) => {
     const namedNode = F.termNamed(noLoc, 'http://p');
     const pathAlt = F.path('|', [ namedNode ], noLoc);
     const vars = new Set<string>();
@@ -179,7 +174,7 @@ describe('findPatternBoundedVars (sparql-1-2)', () => {
     const service = F.patternService(varEndpoint, [], false, noLoc);
     const vars = new Set<string>();
     findPatternBoundedVars(service, vars);
-    expect(vars.has('endpoint')).toBe(true);
+    expect([ ...vars ]).toMatchObject([ 'endpoint' ]);
   });
 });
 
@@ -200,7 +195,7 @@ describe('findPatternBoundedVars sparql-1-2 extra', () => {
     }, noLoc);
     const vars = new Set<string>();
     findPatternBoundedVars(query, vars);
-    expect(vars.has('x')).toBe(true);
+    expect([ ...vars ]).toMatchObject([ 'x' ]);
   });
 
   it('extracts service name variable from service pattern', ({ expect }) => {
@@ -217,12 +212,12 @@ describe('findPatternBoundedVars sparql-1-2 extra', () => {
     const service = F.patternService(varEndpoint, [], false, noLoc);
     const vars = new Set<string>();
     findPatternBoundedVars(service, vars);
-    expect(vars.has('endpoint')).toBe(true);
+    expect([ ...vars ]).toMatchObject([ 'endpoint' ]);
   });
 });
 
 describe('findPatternBoundedVars (sparql-1-2) - additional branches', () => {
-  it('handles ASK query (line 36 FALSE branch: not select/describe)', ({ expect }) => {
+  it('handles ASK query', ({ expect }) => {
     const vars = new Set<string>();
     const where = F.patternGroup([], noLoc);
     const ask: any = {
@@ -239,8 +234,7 @@ describe('findPatternBoundedVars (sparql-1-2) - additional branches', () => {
     expect(vars.size).toBe(0);
   });
 
-  it('handles triple WITH annotations (line 72: for loop over annotations)', ({ expect }) => {
-    // Covers validators.ts:72: the for loop over iter.annotations when annotations is non-empty
+  it('handles triple WITH annotations', ({ expect }) => {
     const vars = new Set<string>();
     const varS = F.termVariable('s', noLoc);
     const varO = F.termVariable('o', noLoc);
@@ -251,11 +245,10 @@ describe('findPatternBoundedVars (sparql-1-2) - additional branches', () => {
     // Add annotation manually since we need a non-empty annotations array
     (triple).annotations = [ <Annotation> { val: annotationVal } ];
     findPatternBoundedVars(triple, vars);
-    expect(vars.has('ann')).toBe(true);
+    expect([ ...vars ]).toMatchObject([ 's', 'o', 'ann' ]);
   });
 
-  it('handles empty PatternValues (line 99: values.at(0) ?? {} branch)', ({ expect }) => {
-    // Covers validators.ts:99: iter.values.at(0) ?? {} when values is empty
+  it('handles empty PatternValues', ({ expect }) => {
     const vars = new Set<string>();
     const emptyValues = F.patternValues([], [], noLoc);
     findPatternBoundedVars(emptyValues, vars);
@@ -265,7 +258,6 @@ describe('findPatternBoundedVars (sparql-1-2) - additional branches', () => {
 
 describe('findPatternBoundedVars (sparql-1-2) - path and annotation FALSE branch', () => {
   it('handles triple WITHOUT annotations', ({ expect }) => {
-    // Covers validators.ts:72: iter.annotations ?? [] when annotations is undefined/null
     // Since F.triple() in SPARQL 1.2 always adds annotations:[], we must manually create
     // a triple-like object with annotations=undefined to trigger the ?? fallback.
     const vars = new Set<string>();
@@ -281,8 +273,7 @@ describe('findPatternBoundedVars (sparql-1-2) - path and annotation FALSE branch
       // No annotations field -> undefined -> ?? [] false branch
     };
     findPatternBoundedVars(mockTriple, vars);
-    expect(vars.has('s')).toBe(true);
-    expect(vars.has('o')).toBe(true);
+    expect([ ...vars ]).toMatchObject([ 's', 'o' ]);
   });
 
   it('handles Path iteration', ({ expect }) => {

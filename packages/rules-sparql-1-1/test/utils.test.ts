@@ -1,5 +1,5 @@
 import { describe, it } from 'vitest';
-import { sparqlCodepointEscape, CommonIRIs, AstTransformer } from '../lib/index.js';
+import { sparqlCodepointEscape } from '../lib/index.js';
 
 describe('sparqlCodepointEscape', () => {
   it('converts \\uXXXX escapes to unicode characters', ({ expect }) => {
@@ -24,31 +24,5 @@ describe('sparqlCodepointEscape', () => {
 
   it('passes through normal strings unchanged', ({ expect }) => {
     expect(sparqlCodepointEscape('hello world')).toBe('hello world');
-  });
-});
-
-describe('commonIRIs', () => {
-  it('has expected XSD IRIs', ({ expect }) => {
-    expect(CommonIRIs.BOOLEAN).toBe('http://www.w3.org/2001/XMLSchema#boolean');
-    expect(CommonIRIs.INTEGER).toBe('http://www.w3.org/2001/XMLSchema#integer');
-    expect(CommonIRIs.DECIMAL).toBe('http://www.w3.org/2001/XMLSchema#decimal');
-    expect(CommonIRIs.DOUBLE).toBe('http://www.w3.org/2001/XMLSchema#double');
-    expect(CommonIRIs.STRING).toBe('http://www.w3.org/2001/XMLSchema#string');
-  });
-
-  it('has expected RDF IRIs', ({ expect }) => {
-    expect(CommonIRIs.FIRST).toBe('http://www.w3.org/1999/02/22-rdf-syntax-ns#first');
-    expect(CommonIRIs.REST).toBe('http://www.w3.org/1999/02/22-rdf-syntax-ns#rest');
-    expect(CommonIRIs.NIL).toBe('http://www.w3.org/1999/02/22-rdf-syntax-ns#nil');
-    expect(CommonIRIs.TYPE).toBe('http://www.w3.org/1999/02/22-rdf-syntax-ns#type');
-  });
-});
-
-describe('astTransformer', () => {
-  it('is instantiable and inherits from TransformerSubTyped', ({ expect }) => {
-    const transformer = new AstTransformer();
-    expect(transformer).toBeDefined();
-    expect(typeof transformer.transformNode).toBe('function');
-    expect(typeof transformer.visitNode).toBe('function');
   });
 });

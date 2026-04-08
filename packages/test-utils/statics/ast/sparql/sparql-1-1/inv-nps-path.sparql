@@ -1,0 +1,1 @@
+SELECT * WHERE { ?s !(^<http://p1>|^<http://p2>) ?o }

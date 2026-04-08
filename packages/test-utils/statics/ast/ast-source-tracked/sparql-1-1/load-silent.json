@@ -1,0 +1,41 @@
+{
+  "type": "update",
+  "updates": [
+    {
+      "context": [],
+      "operation": {
+        "type": "updateOperation",
+        "subType": "load",
+        "silent": true,
+        "source": {
+          "type": "term",
+          "subType": "namedNode",
+          "value": "http://ex.org/",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 12,
+            "end": 28
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 0,
+          "end": 28
+        }
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "inlinedSource",
+    "newSource": "LOAD SILENT <http://ex.org/>",
+    "start": 0,
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 28
+    },
+    "startOnNew": 0,
+    "endOnNew": 28
+  }
+}

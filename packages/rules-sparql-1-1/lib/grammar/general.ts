@@ -31,7 +31,7 @@ export const prologue: SparqlRule<'prologue', ContextDefinition[]> = <const> {
     for (const context of ast) {
       if (F.isContextDefinitionBase(context)) {
         SUBRULE(baseDecl, context);
-      } else if (F.isContextDefinitionPrefix(context)) {
+      } else {
         SUBRULE(prefixDecl, context);
       }
     }
@@ -159,7 +159,7 @@ export const graphTerm: SparqlRule<'graphTerm', GraphTerm> = <const> {
       SUBRULE(iri, ast);
     } else if (F.isTermLiteral(ast)) {
       SUBRULE(rdfLiteral, ast);
-    } else if (F.isTermBlank(ast)) {
+    } else {
       SUBRULE(blankNode, ast);
     }
   },

@@ -52,7 +52,8 @@ export function PathFactoryMixin<TBase extends Constructor<AstCoreFactory>>(Base
           subType,
         } satisfies PropertyPathChain;
       }
-      if ((subType === '?' || subType === '*' || subType === '+' || subType === '^') && items.length === 1) {
+      if ((subType === '?' || subType === '*' || subType === '+' ||
+        (subType === '^' && this.isPathPure(items[0]))) && items.length === 1) {
         return {
           ...base,
           subType,
@@ -93,7 +94,7 @@ export function PathFactoryMixin<TBase extends Constructor<AstCoreFactory>>(Base
     public isPathNegatedElt(obj: object): obj is RawNegatedElt {
       const casted: { items?: unknown } = obj;
       return this.isOfSubType(obj, nodeType, '^') && Array.isArray(casted.items) && casted.items.length === 1 &&
-        typeof casted.items[0] === 'object' && (casted.items[0] ?? false) && !this.isPathPure(casted.items[0]);
+        casted.items[0] !== null && typeof casted.items[0] === 'object' && !this.isPathPure(casted.items[0]);
     }
 
     public isPathNegated(obj: object): obj is SubTyped<NodeType, '!'> {

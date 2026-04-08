@@ -1,0 +1,1 @@
+SELECT * WHERE { FILTER ( ( REPLACE( ?s , "x" , "y" , "i" ) = ?s ) ) }

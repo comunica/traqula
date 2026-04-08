@@ -364,7 +364,7 @@ function insertDeleteDelWhere<T extends string>(
           PRINT_ON_EMPTY('INSERT DATA ');
         } else if (subType === 'deletedata') {
           PRINT_ON_EMPTY('DELETE DATA ');
-        } else if (subType === 'deletewhere') {
+        } else {
           PRINT_ON_EMPTY('DELETE WHERE ');
         }
         C[traqulaIndentation] += indentInc;
@@ -561,7 +561,7 @@ export const graphRefAll: SparqlRule<'graphRefAll', GraphRef> = <const> {
       F.printFilter(ast, () => PRINT_WORD('DEFAULT'));
     } else if (F.isGraphRefNamed(ast)) {
       F.printFilter(ast, () => PRINT_WORD('NAMED'));
-    } else if (F.isGraphRefAll(ast)) {
+    } else {
       F.printFilter(ast, () => PRINT_WORD('ALL'));
     }
   },

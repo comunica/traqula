@@ -1,0 +1,156 @@
+{
+  "context": [],
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "filter",
+        "expression": {
+          "type": "expression",
+          "subType": "operation",
+          "operator": ">",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "operation",
+              "operator": "-",
+              "args": [
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "x",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 24,
+                    "end": 26
+                  }
+                },
+                {
+                  "type": "expression",
+                  "subType": "operation",
+                  "operator": "/",
+                  "args": [
+                    {
+                      "type": "term",
+                      "subType": "literal",
+                      "value": "2",
+                      "langOrIri": {
+                        "type": "term",
+                        "subType": "namedNode",
+                        "value": "http://www.w3.org/2001/XMLSchema#integer",
+                        "loc": {
+                          "sourceLocationType": "noMaterialize"
+                        }
+                      },
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 27,
+                        "end": 29
+                      }
+                    },
+                    {
+                      "type": "term",
+                      "subType": "literal",
+                      "value": "3",
+                      "langOrIri": {
+                        "type": "term",
+                        "subType": "namedNode",
+                        "value": "http://www.w3.org/2001/XMLSchema#integer",
+                        "loc": {
+                          "sourceLocationType": "noMaterialize"
+                        }
+                      },
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 32,
+                        "end": 33
+                      }
+                    }
+                  ],
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 27,
+                    "end": 33
+                  }
+                }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 24,
+                "end": 33
+              }
+            },
+            {
+              "type": "term",
+              "subType": "literal",
+              "value": "0",
+              "langOrIri": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "http://www.w3.org/2001/XMLSchema#integer",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 36,
+                "end": 37
+              }
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 23,
+            "end": 38
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 17,
+          "end": 38
+        }
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 15,
+      "end": 40
+    }
+  },
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "wildcard",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 7,
+        "end": 8
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "inlinedSource",
+    "newSource": "SELECT * WHERE { FILTER(?x -2 / 3 > 0) }",
+    "start": 0,
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 40
+    },
+    "startOnNew": 0,
+    "endOnNew": 40
+  },
+  "type": "query"
+}

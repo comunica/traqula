@@ -1,0 +1,4 @@
+SELECT * WHERE {
+  << <http://s> <http://p> <http://o> ~ _:g_0 >> .
+  _:g_0 <http://pred> ?obj .
+}

@@ -1,0 +1,1 @@
+SELECT * WHERE { ( <http://a><http://b> ) <http://p> ?o . }

@@ -50,17 +50,22 @@ export const query: SparqlRule<'query', Query> = <const> {
     ]);
     const values = SUBRULE(valuesClause);
 
-    return ACTION(() => (<Query>{
-      context: prologueValues,
-      ...subType,
-      type: 'query',
-      ...(values && { values }),
-      loc: C.astFactory.sourceLocation(
-        prologueValues.at(0),
-        subType,
-        values,
-      ),
-    }));
+    return ACTION(() => {
+      const q = <Query> {
+        context: prologueValues,
+        ...subType,
+        type: 'query',
+        loc: C.astFactory.sourceLocation(
+          prologueValues.at(0),
+          subType,
+          values,
+        ),
+      };
+      if (values) {
+        q.values = values;
+      }
+      return q;
+    });
   },
   gImpl: ({ SUBRULE }) => (ast, { astFactory: F }) => {
     SUBRULE(prologue, ast.context);
@@ -70,7 +75,7 @@ export const query: SparqlRule<'query', Query> = <const> {
       SUBRULE(constructQuery, ast);
     } else if (F.isQueryDescribe(ast)) {
       SUBRULE(describeQuery, ast);
-    } else if (F.isQueryAsk(ast)) {
+    } else {
       SUBRULE(askQuery, ast);
     }
     if (ast.values) {

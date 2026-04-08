@@ -1,0 +1,1 @@
+SELECT * WHERE { FILTER(?x -2 / 3 > 0) }

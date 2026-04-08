@@ -33,6 +33,7 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
       this[<keyof (typeof this)> rule.name] =
         <any> ((input: any, context: Context & { origSource: string; offset?: number }, args: any) => {
           this.stringBuilder.length = 0;
+          this.toEnsure.length = 0;
           this.origSource = context.origSource;
           this.generatedUntil = context?.offset ?? 0;
           this.setContext(context);
@@ -40,6 +41,7 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
           this.subrule(rule, input, args);
 
           this.catchup(this.origSource.length);
+          this.handeEnsured('');
 
           return this.stringBuilder.join('');
         });
@@ -197,7 +199,7 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
     while (/^[ \t]*$/u.test(temp) && this.stringBuilder.length > 0) {
       temp = this.stringBuilder.pop() + temp;
     }
-    this.print(temp.trimEnd());
+    this.print(temp.replace(/[\t ]*$/u, ''));
   }
 
   protected readonly newLine: RuleDefArg['NEW_LINE'] = (arg) => {

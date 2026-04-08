@@ -1,4 +1,4 @@
-import { Canonicalizer, algebraUtils } from '@traqula/algebra-transformations-1-1';
+import { Canonicalizer, algebraUtils } from '@traqula/algebra-transformations-1-2';
 import type { Algebra } from '@traqula/algebra-transformations-1-2';
 import { Generator as Generator12 } from '@traqula/generator-sparql-1-2';
 import { Parser as Parser12 } from '@traqula/parser-sparql-1-2';

@@ -234,10 +234,7 @@ export const operationAlgInputAsPatternList: AstIndir<'operationInputAsPatternLi
   name: 'operationInputAsPatternList',
   fun: ({ SUBRULE }) => (_, input) => {
     const result = SUBRULE(translateAlgPatternNew, input);
-    // If (result && F.isPatternGroup(result)) {
-    //   return result.patterns;
-    // }
-    return result ? (Array.isArray(result) ? result : [ result ]) : [];
+    return Array.isArray(result) ? result : [ result ];
   },
 };
 

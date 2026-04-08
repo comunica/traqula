@@ -7,14 +7,21 @@ import type { AstIndir } from './types.js';
 export const translateAlgTerm12: AstIndir<(typeof translateAlgTerm)['name'], Term, [RDF.Term]> = {
   name: 'translateTerm',
   fun: s => (c, term) => {
+    const { SUBRULE } = s;
+    const { astFactory: F } = c;
     if (term.termType === 'Quad') {
-      const { SUBRULE } = s;
-      const { astFactory: F } = c;
       return F.termTriple(
         SUBRULE(translateAlgTerm, term.subject),
         <TermIri | TermVariable> SUBRULE(translateAlgTerm, term.predicate),
         SUBRULE(translateAlgTerm, term.object),
         F.gen(),
+      );
+    }
+    if (term.termType === 'Literal' && term.direction !== undefined) {
+      return F.termLiteral(
+        F.gen(),
+        term.value,
+        `${term.language}--${term.direction}`,
       );
     }
     return translateAlgTerm.fun(s)(c, term);

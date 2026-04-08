@@ -85,21 +85,19 @@ export function* sparqlAlgebraNegativeTests(
   const astDir = getStaticFilePath('algebra');
   const sparqlDir = join(astDir, 'sparql', suite);
   const statics = readdirSync(sparqlDir);
-  for (const file of statics) {
-    if (file.endsWith('.sparql')) {
-      if (filter && !filter(file.replace('.sparql', ''))) {
-        continue;
-      }
-      const name = file.replace(/\.sparql$/u, '');
-      yield {
-        name,
-        statics: async() => {
-          const query = await readFile(join(sparqlDir, file));
-          return {
-            query,
-          };
-        },
-      };
+  for (const file of statics.filter(f => f.endsWith('.sparql'))) {
+    if (filter && !filter(file.replace('.sparql', ''))) {
+      continue;
     }
+    const name = file.replace(/\.sparql$/u, '');
+    yield {
+      name,
+      statics: async() => {
+        const query = await readFile(join(sparqlDir, file));
+        return {
+          query,
+        };
+      },
+    };
   }
 }

@@ -97,6 +97,8 @@ describe('a SPARQL 1.1 parser', () => {
   it('expression parser builder builds without errors', () => {
     expressionParserBuilder.build({
       tokenVocabulary: lex.sparql11LexerBuilder.tokenVocabulary,
+      lexerConfig: { skipValidations: false, ensureOptimizations: true },
+      parserConfig: { skipValidations: false },
     });
   });
 

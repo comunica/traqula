@@ -98,8 +98,7 @@ describe('extra parser coverage', () => {
       const result = parser.parse(
         'SELECT (SUM(?x) AS ?s) WHERE { ?s ?p ?x }',
       );
-      expect(result).toBeDefined();
-      expect((<any>result).variables[0].expression).toBeDefined();
+      expect(result).toMatchObject({ subType: 'select', variables: [{ expression: { aggregation: 'sum' }}]});
     });
   });
 
@@ -111,17 +110,14 @@ describe('extra parser coverage', () => {
     it('parses a SELECT query via queryUnit (no VALUES clause) - covers if(values) false branch', ({ expect }) => {
       const context = completeParseContext({ astFactory: F });
       const result = rawParser.queryUnit('SELECT * WHERE { ?s ?p ?o }', context);
-      expect(result).toBeDefined();
-      expect(result.type).toBe('query');
+      expect(result).toMatchObject({ type: 'query', subType: 'select' });
       expect((<any>result).values).toBeUndefined();
     });
 
     it('parses a SELECT query via queryUnit with VALUES clause - covers if(values) true branch', ({ expect }) => {
       const context = completeParseContext({ astFactory: F });
       const result = rawParser.queryUnit('SELECT * WHERE { ?s ?p ?o } VALUES ?x { <http://ex> }', context);
-      expect(result).toBeDefined();
-      expect(result.type).toBe('query');
-      expect((<any>result).values).toBeDefined();
+      expect(result).toMatchObject({ subType: 'select', values: { type: 'pattern', subType: 'values', values: [{ x: { value: 'http://ex' }}]}});
     });
   });
 });

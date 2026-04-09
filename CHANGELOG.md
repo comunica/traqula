@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.0.6-alpha.0"></a>
+## [v1.0.6-alpha.0](https://github.com/comunica/traqula/compare/v1.0.5...v1.0.6-alpha.0) - 2026-04-09
+
+* [Chore/fix security issues - lodash (#120)](https://github.com/comunica/traqula/commit/5b79fe82cf58336e6d79a27cf32098d06abb7e0d)
+* [Chore: add node 24 to CI matrix](https://github.com/comunica/traqula/commit/89ecd5165d7e043b6f79766c34d1a57bdc595123)
+
 <a name="v1.0.5"></a>
 ## [v1.0.5](https://github.com/comunica/traqula/compare/v1.0.4...v1.0.5) - 2026-04-08
 

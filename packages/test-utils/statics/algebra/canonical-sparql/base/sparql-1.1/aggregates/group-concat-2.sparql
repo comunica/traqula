@@ -1,0 +1,9 @@
+SELECT ( COUNT( * ) AS ?c ) WHERE {
+  {
+    SELECT ?p ( GROUP_CONCAT( ?o ;SEPARATOR=" " ) AS ?g ) WHERE {
+      _:g_0 ?p ?o .
+    }
+    GROUP BY ?p
+  }
+  FILTER ( ( ( ( ?p = <http://www.example.org/p1> ) && ( ( ?g = "1 22"^^<http://www.w3.org/2001/XMLSchema#string> ) || ( ?g = "22 1"^^<http://www.w3.org/2001/XMLSchema#string> ) ) ) || ( ( ?p = <http://www.example.org/p2> ) && ( ( ( ( ( ( ?g = "aaa bb c"^^<http://www.w3.org/2001/XMLSchema#string> ) || ( ?g = "aaa c bb"^^<http://www.w3.org/2001/XMLSchema#string> ) ) || ( ?g = "bb aaa c"^^<http://www.w3.org/2001/XMLSchema#string> ) ) || ( ?g = "bb c aaa"^^<http://www.w3.org/2001/XMLSchema#string> ) ) || ( ?g = "c aaa bb"^^<http://www.w3.org/2001/XMLSchema#string> ) ) || ( ?g = "c bb aaa"^^<http://www.w3.org/2001/XMLSchema#string> ) ) ) ) )
+}

@@ -1,0 +1,9 @@
+SELECT ?s ?o1 ?o2 WHERE {
+  ?s ?p1 ?o1 .
+  OPTIONAL {
+    ?s <http://xmlns.com/foaf/0.1/knows> ?o2 .
+  }
+  VALUES ?o2 {
+    <http://example.org/b>
+  }
+}

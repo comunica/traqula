@@ -1,0 +1,7 @@
+SELECT ?p ?s WHERE {
+  GRAPH <http://iam.ucdavis.edu> {
+    SERVICE <http://localhost:3030/experts/sparql> {
+      ?s ?p "foo"^^<http://www.w3.org/2001/XMLSchema#string> .
+    }
+  }
+}

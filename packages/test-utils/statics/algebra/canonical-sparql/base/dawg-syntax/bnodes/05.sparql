@@ -1,0 +1,4 @@
+SELECT * WHERE {
+  _:e_a <http://example.org/ns#p1> <http://example.org/ns#q1> .
+  _:e_a <http://example.org/ns#p2> <http://example.org/ns#q2> .
+}

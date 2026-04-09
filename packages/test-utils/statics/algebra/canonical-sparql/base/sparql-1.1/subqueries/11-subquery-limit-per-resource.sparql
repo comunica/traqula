@@ -1,0 +1,12 @@
+SELECT ?L WHERE {
+  _:g_0 <http://www.w3.org/2000/01/rdf-schema#label> ?L .
+  ?O <http://www.example.orghasItem> _:g_0 .
+  {
+    SELECT DISTINCT ?O WHERE {
+      ?O <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.example.orgOrder> .
+    }
+    ORDER BY ASC ( ?O )
+    LIMIT 2
+  }
+}
+ORDER BY ASC ( ?L )

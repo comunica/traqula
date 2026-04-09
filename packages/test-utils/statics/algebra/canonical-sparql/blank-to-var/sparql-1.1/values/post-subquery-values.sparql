@@ -1,0 +1,8 @@
+SELECT ?s ?o WHERE {
+  SELECT ?o ?p ?s WHERE {
+    ?s ?p ?o .
+    VALUES ?o {
+      <http://example.org/b>
+    }
+  }
+}

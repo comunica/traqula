@@ -1,0 +1,7 @@
+SELECT ?s ?p ?o ?z WHERE {
+  {
+    ?s ?p ?o .
+    BIND( ( ?o + "1"^^<http://www.w3.org/2001/XMLSchema#integer> ) AS ?z )
+  }
+  FILTER ( ( ?z = "3"^^<http://www.w3.org/2001/XMLSchema#integer> ) )
+}

@@ -1,0 +1,7 @@
+SELECT ?w ( SAMPLE( ?v ) AS ?S ) WHERE {
+  ?s <http://example/p> ?v .
+  OPTIONAL {
+    ?s <http://example/q> ?w .
+  }
+}
+GROUP BY ?w

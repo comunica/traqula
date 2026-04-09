@@ -1,0 +1,5 @@
+SELECT ?s ( AVG( ?o ) AS ?avg ) WHERE {
+  ?s ?p ?o .
+}
+GROUP BY ?s
+HAVING ( AVG( ?o ) <= "2.0"^^<http://www.w3.org/2001/XMLSchema#decimal> )

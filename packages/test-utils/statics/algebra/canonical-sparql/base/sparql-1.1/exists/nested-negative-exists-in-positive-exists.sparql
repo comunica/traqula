@@ -1,0 +1,13 @@
+SELECT ?p ?s WHERE {
+  ?s ?p <http://www.example.org/o> .
+  FILTER ( EXISTS {
+    {
+      ?s ?p <http://www.example.org/o1> .
+      FILTER ( NOT EXISTS {
+        ?s ?p <http://www.example.org/o2> .
+      }
+      )
+    }
+  }
+  )
+}

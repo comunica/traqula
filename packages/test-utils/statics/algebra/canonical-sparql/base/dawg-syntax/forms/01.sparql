@@ -1,0 +1,11 @@
+SELECT ?b ?pa ?x ?y WHERE {
+  _:g_0 ?x ?y .
+  _:g_1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> _:g_0 .
+  _:g_1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+  _:g_2 ?pa ?b .
+  _:g_3 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> _:g_2 .
+  _:g_3 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:g_4 .
+  _:g_4 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> "57"^^<http://www.w3.org/2001/XMLSchema#integer> .
+  _:g_4 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+  _:g_1 <http://example.org/ns#p> _:g_3 .
+}

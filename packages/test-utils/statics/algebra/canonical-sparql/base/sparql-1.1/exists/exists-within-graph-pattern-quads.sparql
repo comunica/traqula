@@ -1,0 +1,11 @@
+SELECT ?p ?s WHERE {
+  GRAPH <http://www.example.org/graph> {
+    {
+      ?s ?p <http://www.example.org/o1> .
+      FILTER ( EXISTS {
+        ?s ?p <http://www.example.org/o2> .
+      }
+      )
+    }
+  }
+}

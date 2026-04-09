@@ -1,0 +1,4 @@
+SELECT ?t WHERE {
+  ?t <http://example.com/ns#source> <http://example.com/ns#g> .
+  FILTER ( ( ( ( ISTRIPLE( ?t ) && ( SUBJECT( ?t ) = <http://example.com/ns#s> ) ) && ( PREDICATE( ?t ) = <http://example.com/ns#p> ) ) && ( OBJECT( ?t ) = <http://example.com/ns#o> ) ) )
+}

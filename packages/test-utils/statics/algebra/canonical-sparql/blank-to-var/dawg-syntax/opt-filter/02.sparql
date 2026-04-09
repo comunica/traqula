@@ -1,0 +1,7 @@
+SELECT ?v ?w ?x ?y WHERE {
+  ?x <http://example/p> ?v .
+  OPTIONAL {
+    ?y <http://example/q> ?w .
+    FILTER ( ( ( ?v = "2"^^<http://www.w3.org/2001/XMLSchema#integer> ) && ( ?w = "3"^^<http://www.w3.org/2001/XMLSchema#integer> ) ) )
+  }
+}

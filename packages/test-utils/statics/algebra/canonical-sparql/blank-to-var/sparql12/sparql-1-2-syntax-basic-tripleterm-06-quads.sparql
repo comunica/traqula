@@ -1,0 +1,5 @@
+CONSTRUCT {
+  <http://example.com/ns#s> <http://example.com/ns#q> <<( <http://example.com/ns#s> <http://example.com/ns#p> <http://example.com/ns#o> )>> .
+}
+WHERE {
+}

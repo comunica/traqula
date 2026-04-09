@@ -1,0 +1,27 @@
+SELECT DISTINCT ?s1 ?s2 WHERE {
+  ?s2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example/Set> .
+  ?s1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example/Set> .
+  MINUS {
+    {
+      ?s1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example/Set> .
+      ?s2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example/Set> .
+      ?s1 <http://example/member> ?x .
+      FILTER ( NOT EXISTS {
+        ?s2 <http://example/member> ?x .
+      }
+      )
+    }
+  }
+  MINUS {
+    {
+      ?s1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example/Set> .
+      ?s2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example/Set> .
+      ?s2 <http://example/member> ?x .
+      FILTER ( NOT EXISTS {
+        ?s1 <http://example/member> ?x .
+      }
+      )
+    }
+  }
+  FILTER ( ( STR( ?s1 ) < STR( ?s2 ) ) )
+}

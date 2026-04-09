@@ -1,0 +1,5 @@
+SELECT ( COUNT( * ) AS ?count ) WHERE {
+  GRAPH ?g {
+    ?s ?p ?o .
+  }
+}

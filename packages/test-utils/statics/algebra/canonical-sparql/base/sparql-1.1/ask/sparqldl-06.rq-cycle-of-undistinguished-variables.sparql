@@ -1,0 +1,6 @@
+ASK WHERE {
+  <http://example.org/test#a> <http://example.org/test#p> _:e_aa .
+  _:e_aa <http://example.org/test#r> _:e_dd .
+  _:e_dd <http://example.org/test#t> _:e_bb .
+  _:e_bb <http://example.org/test#s> <http://example.org/test#a> .
+}

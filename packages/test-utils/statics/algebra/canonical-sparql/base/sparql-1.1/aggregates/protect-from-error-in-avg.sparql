@@ -1,0 +1,4 @@
+SELECT ?g ( AVG( IF( ISNUMERIC( ?p ) , ?p , COALESCE( <http://www.w3.org/2001/XMLSchema#double> ( ?p ) , "0"^^<http://www.w3.org/2001/XMLSchema#integer> ) ) ) AS ?avg ) WHERE {
+  ?g <http://example.com/data/#p> ?p .
+}
+GROUP BY ?g

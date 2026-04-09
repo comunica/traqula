@@ -1,0 +1,4 @@
+SELECT ?X ?Y WHERE {
+  ?X (<http://xmlns.com/foaf/0.1/knows>*) ?Y .
+}
+ORDER BY ASC ( ?X ) ASC ( ?Y )

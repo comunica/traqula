@@ -1,0 +1,5 @@
+SELECT ?s1 ?s2 ( BNODE( ?s1 ) AS ?b1 ) ( BNODE( ?s2 ) AS ?b2 ) WHERE {
+  ?a <http://example.org/str> ?s1 .
+  ?b <http://example.org/str> ?s2 .
+  FILTER ( ( ( ( ?a = <http://example.org/s1> ) || ( ?a = <http://example.org/s3> ) ) && ( ( ?b = <http://example.org/s1> ) || ( ?b = <http://example.org/s3> ) ) ) )
+}

@@ -1,0 +1,3 @@
+SELECT ?x WHERE {
+  <http://www.example.org/instance#a> ((<http://www.example.org/schema#p1>/<http://www.example.org/schema#p2>)+) ?x .
+}

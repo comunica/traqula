@@ -17,7 +17,7 @@ export const translateAlgTerm12: AstIndir<(typeof translateAlgTerm)['name'], Ter
         F.gen(),
       );
     }
-    if (term.termType === 'Literal' && term.direction !== undefined) {
+    if (term.termType === 'Literal' && term.direction) {
       return F.termLiteral(
         F.gen(),
         term.value,

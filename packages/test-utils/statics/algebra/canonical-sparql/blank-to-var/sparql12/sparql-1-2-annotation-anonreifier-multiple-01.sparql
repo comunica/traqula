@@ -1,0 +1,7 @@
+SELECT ?o ?s ?Z1 ?Z2 WHERE {
+  ?s <http://example.com/ns#p> ?o .
+  ?g_70 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s <http://example.com/ns#p> ?o )>> .
+  ?g_70 <http://example.com/ns#r1> ?Z1 .
+  ?g_71 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s <http://example.com/ns#p> ?o )>> .
+  ?g_71 <http://example.com/ns#r2> ?Z2 .
+}

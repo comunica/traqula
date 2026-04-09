@@ -1,0 +1,12 @@
+SELECT ?C ?R WHERE {
+  _:g_264 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#x> ?R <http://example.com/ns#z> )>> .
+  _:g_265 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> ?C )>> .
+  _:g_264 <http://example.com/ns#p> _:g_265 .
+  _:g_266 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#x> ?R <http://example.com/ns#z> )>> .
+  _:g_268 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> _:g_267 )>> .
+  _:g_269 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( _:g_266 <http://example.com/ns#p> _:g_268 )>> .
+  _:g_271 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( _:g_270 ?R <http://example.com/ns#z> )>> .
+  _:g_273 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> _:g_272 )>> .
+  _:g_274 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( _:g_271 <http://example.com/ns#p> _:g_273 )>> .
+  _:g_269 <http://example.com/ns#q> _:g_274 .
+}

@@ -68,7 +68,7 @@
         "type": "path",
         "subject": {
           "termType": "Variable",
-          "value": "g_0"
+          "value": "g_131"
         },
         "predicate": {
           "type": "alt",
@@ -118,7 +118,7 @@
             },
             "object": {
               "termType": "Variable",
-              "value": "g_0"
+              "value": "g_131"
             },
             "graph": {
               "termType": "DefaultGraph",

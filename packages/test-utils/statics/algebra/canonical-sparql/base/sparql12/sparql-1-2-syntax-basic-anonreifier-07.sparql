@@ -1,0 +1,12 @@
+CONSTRUCT {
+  _:g_164 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s ?p ?o )>> .
+  _:g_164 ?q ?z .
+  _:g_165 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s ?p ?o )>> .
+  ?a ?b _:g_165 .
+}
+WHERE {
+  _:g_164 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s ?p ?o )>> .
+  _:g_164 ?q ?z .
+  _:g_165 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s ?p ?o )>> .
+  ?a ?b _:g_165 .
+}

@@ -1,0 +1,4 @@
+SELECT ?o ?p ?s WHERE {
+  ?s ?p ?o .
+}
+ORDER BY DESC ( <http://example.org/ns#func> ( ?s , ?o ) )

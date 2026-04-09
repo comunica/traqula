@@ -1,0 +1,11 @@
+SELECT ?C ?R WHERE {
+  ?g_257 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#x> ?R <http://example.com/ns#z> )>> .
+  ?e_bnode <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> ?C )>> .
+  ?g_257 <http://example.com/ns#p> ?e_bnode .
+  ?g_258 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#x> ?R <http://example.com/ns#z> )>> .
+  ?e_bnode <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?g_258 <http://example.com/ns#p> <<( <http://example.com/ns#a> <http://example.com/ns#b> ?g_259 )>> )>> .
+  <http://example.com/ns#iri> <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?g_260 ?R <http://example.com/ns#z> )>> .
+  ?g_262 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> ?g_261 )>> .
+  ?g_263 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#iri> <http://example.com/ns#p> ?g_262 )>> .
+  ?e_bnode <http://example.com/ns#q> ?g_263 .
+}

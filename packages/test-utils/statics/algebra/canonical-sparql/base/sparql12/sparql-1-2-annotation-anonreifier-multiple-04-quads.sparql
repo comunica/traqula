@@ -1,0 +1,18 @@
+CONSTRUCT {
+  ?s ?p ?o .
+  _:g_92 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s ?p ?o )>> .
+  _:g_92 <http://example.com/ns#r1> ?Z1 .
+  _:g_93 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s ?p ?o )>> .
+  _:g_93 <http://example.com/ns#r2> ?Z2 .
+  _:g_94 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s ?p ?o )>> .
+  _:g_94 <http://example.com/ns#r3> ?Z3 .
+}
+WHERE {
+  ?s ?p ?o .
+  _:g_92 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s ?p ?o )>> .
+  _:g_92 <http://example.com/ns#r1> ?Z1 .
+  _:g_93 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s ?p ?o )>> .
+  _:g_93 <http://example.com/ns#r2> ?Z2 .
+  _:g_94 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s ?p ?o )>> .
+  _:g_94 <http://example.com/ns#r3> ?Z3 .
+}

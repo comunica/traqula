@@ -1,0 +1,10 @@
+INSERT {
+  ?S ?P <<( <http://example.com/ns#a> <http://example.com/ns#b> ?O )>> .
+  _:g_450 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?S ?P <<( <http://example.com/ns#a> <http://example.com/ns#b> ?O )>> )>> .
+  _:g_450 ?Y ?Z .
+}
+WHERE {
+  ?S ?P <<( <http://example.com/ns#a> <http://example.com/ns#b> ?O )>> .
+  _:g_451 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?S ?P <<( <http://example.com/ns#a> <http://example.com/ns#b> ?O )>> )>> .
+  _:g_451 ?Y ?Z .
+}

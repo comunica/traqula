@@ -1,0 +1,3 @@
+SELECT ?p ?s WHERE {
+  ?s ?p "hello"@en .
+}

@@ -1,0 +1,12 @@
+SELECT ?C ?R WHERE {
+  ?g_275 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#x> ?R <http://example.com/ns#z> )>> .
+  ?g_276 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> ?C )>> .
+  ?g_275 <http://example.com/ns#p> ?g_276 .
+  ?g_277 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#x> ?R <http://example.com/ns#z> )>> .
+  ?g_279 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> ?g_278 )>> .
+  ?g_280 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?g_277 <http://example.com/ns#p> ?g_279 )>> .
+  ?g_282 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?g_281 ?R <http://example.com/ns#z> )>> .
+  ?g_284 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> ?g_283 )>> .
+  ?g_285 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?g_282 <http://example.com/ns#p> ?g_284 )>> .
+  ?g_280 <http://example.com/ns#q> ?g_285 .
+}

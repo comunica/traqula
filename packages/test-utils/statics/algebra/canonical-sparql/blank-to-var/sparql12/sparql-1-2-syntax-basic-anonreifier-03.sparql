@@ -1,0 +1,4 @@
+SELECT ?o ?p ?s ?Y ?Z WHERE {
+  ?g_151 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s ?p ?o )>> .
+  ?g_151 ?Y ?Z .
+}

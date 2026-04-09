@@ -1,0 +1,5 @@
+SELECT ?x WHERE {
+  <http://www.example.org/instance#a> <http://www.example.org/schema#p1> ?var0 .
+  ?var0 <http://www.example.org/schema#p2> ?var1 .
+  ?var1 <http://www.example.org/schema#p3> ?x .
+}

@@ -1,0 +1,3 @@
+DESCRIBE ?x WHERE {
+  ?x <http://xmlns.com/foaf/0.1/mbox> <mailto:alice@org> .
+}

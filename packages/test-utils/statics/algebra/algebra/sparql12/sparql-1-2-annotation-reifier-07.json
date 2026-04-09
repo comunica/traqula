@@ -68,7 +68,7 @@
         "type": "path",
         "subject": {
           "termType": "BlankNode",
-          "value": "g_0"
+          "value": "g_130"
         },
         "predicate": {
           "type": "alt",
@@ -118,7 +118,7 @@
             },
             "object": {
               "termType": "BlankNode",
-              "value": "g_0"
+              "value": "g_130"
             },
             "graph": {
               "termType": "DefaultGraph",

@@ -1,0 +1,5 @@
+SELECT ?b ?b0 ?b1 WHERE {
+  ?e_b <http://example.org/ns#p> ?b .
+  ?e_b <http://example.org/ns#p> ?b0 .
+  ?e_b0 <http://example.org/ns#p> ?b1 .
+}

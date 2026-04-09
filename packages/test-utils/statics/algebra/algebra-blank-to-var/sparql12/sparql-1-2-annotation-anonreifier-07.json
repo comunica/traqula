@@ -31,7 +31,7 @@
             "termType": "Quad",
             "subject": {
               "termType": "Variable",
-              "value": "g_0"
+              "value": "g_54"
             },
             "predicate": {
               "termType": "NamedNode",
@@ -68,7 +68,7 @@
         "type": "path",
         "subject": {
           "termType": "Variable",
-          "value": "g_1"
+          "value": "g_55"
         },
         "predicate": {
           "type": "alt",
@@ -110,7 +110,7 @@
             "termType": "Quad",
             "subject": {
               "termType": "Variable",
-              "value": "g_0"
+              "value": "g_54"
             },
             "predicate": {
               "termType": "NamedNode",
@@ -118,7 +118,7 @@
             },
             "object": {
               "termType": "Variable",
-              "value": "g_1"
+              "value": "g_55"
             },
             "graph": {
               "termType": "DefaultGraph",

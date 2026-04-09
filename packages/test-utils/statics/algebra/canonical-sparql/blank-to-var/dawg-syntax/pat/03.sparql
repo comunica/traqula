@@ -1,0 +1,12 @@
+SELECT ?a WHERE {
+  OPTIONAL {
+    <http://example.org/ns#x> <http://example.org/ns#y> <http://example.org/ns#z> .
+  }
+  ?a <http://example.org/ns#b> <http://example.org/ns#c> .
+  {
+    <http://example.org/ns#x1> <http://example.org/ns#y1> <http://example.org/ns#z1> .
+  }
+  UNION {
+    <http://example.org/ns#x2> <http://example.org/ns#y2> <http://example.org/ns#z2> .
+  }
+}

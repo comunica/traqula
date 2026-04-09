@@ -1,0 +1,3 @@
+SELECT * WHERE {
+  <<( ?g_234 <http://example.com/ns#p> ?g_235 )>> <http://example.com/ns#q> <http://example.com/ns#z> .
+}

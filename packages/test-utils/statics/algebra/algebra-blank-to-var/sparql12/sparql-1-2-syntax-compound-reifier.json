@@ -155,7 +155,7 @@
           },
           "object": {
             "termType": "Variable",
-            "value": "g_0"
+            "value": "g_317"
           },
           "graph": {
             "termType": "DefaultGraph",
@@ -219,7 +219,7 @@
           "termType": "Quad",
           "subject": {
             "termType": "Variable",
-            "value": "g_1"
+            "value": "g_318"
           },
           "predicate": {
             "termType": "Variable",
@@ -263,7 +263,7 @@
           },
           "object": {
             "termType": "Variable",
-            "value": "g_2"
+            "value": "g_319"
           },
           "graph": {
             "termType": "DefaultGraph",

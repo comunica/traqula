@@ -1,0 +1,9 @@
+SELECT ?x ?p WHERE {
+  GRAPH ?g {
+    {
+      SELECT ?g ?p ?x WHERE {
+        ?x ?p ?g .
+      }
+    }
+  }
+}

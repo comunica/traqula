@@ -1,0 +1,4 @@
+SELECT * WHERE {
+  <http://example.com/ns#iri> <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?g_226 <http://example.com/ns#p> ?g_227 )>> .
+  <http://example.com/ns#iri> <http://example.com/ns#q> <http://example.com/ns#z> .
+}

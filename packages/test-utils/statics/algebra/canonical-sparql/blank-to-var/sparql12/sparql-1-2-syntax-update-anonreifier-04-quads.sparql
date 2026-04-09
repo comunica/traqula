@@ -1,0 +1,14 @@
+INSERT {
+  _:g_414 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> <http://example.com/ns#c> )>> .
+  _:g_414 ?P <http://example.com/ns#o2> .
+  _:g_415 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( _:g_414 ?P <http://example.com/ns#o2> )>> .
+  _:g_416 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#s1> <http://example.com/ns#p1> ?Z )>> .
+  _:g_415 ?Y _:g_416 .
+}
+WHERE {
+  ?g_417 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> <http://example.com/ns#c> )>> .
+  ?g_417 ?P <http://example.com/ns#o1> .
+  ?g_418 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?g_417 ?P <http://example.com/ns#o1> )>> .
+  ?g_419 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#s1> <http://example.com/ns#p1> ?Z )>> .
+  ?g_418 ?Y ?g_419 .
+}

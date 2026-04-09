@@ -1,0 +1,5 @@
+SELECT ?o ?p ?s WHERE {
+  ?s ?p ?o .
+}
+ORDER BY ASC ( ?o )
+OFFSET 3

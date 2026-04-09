@@ -2,6 +2,7 @@ import type { Algebra } from '@traqula/algebra-transformations-1-1';
 import { Canonicalizer, algebraUtils } from '@traqula/algebra-transformations-1-1';
 import { Generator as Generator11 } from '@traqula/generator-sparql-1-1';
 import { Parser as Parser11 } from '@traqula/parser-sparql-1-1';
+import { AstFactory } from '@traqula/rules-sparql-1-1';
 import { positiveTest, sparqlAlgebraTests } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
 import { toAlgebra, toAst } from '../lib/index.js';
@@ -32,6 +33,28 @@ describe('sparql algebra 1.1 output', () => {
           });
         }
       });
+    }
+  });
+
+  describe('sparqlAlgebraTests Canonical SPARQL', () => {
+    const astFactory = new AstFactory();
+    for (const suite of suites) {
+      for (const blankToVariable of [ true, false ]) {
+        describe(`${suite}${blankToVariable ? ' with blank to var' : ''}`, () => {
+          for (const test of sparqlAlgebraTests(suite, blankToVariable, true)) {
+            const { name, quads, canonicalSparql, sparql } = test;
+            it (name, ({ expect }) => {
+              astFactory.resetBlankNodeCounter();
+              const algebra = toAlgebra(
+                parser.parse(sparql, { astFactory }),
+                { quads, blankToVariable },
+              );
+              const canonical = generator.generate(toAst(algebra));
+              expect(canonical.trim()).toEqual(canonicalSparql.trim());
+            });
+          }
+        });
+      }
     }
   });
 

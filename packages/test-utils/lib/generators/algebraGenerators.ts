@@ -9,18 +9,21 @@ const rootDir = getStaticFilePath('algebra');
 const rootSparql = join(rootDir, 'sparql');
 const rootJson = join(rootDir, 'algebra');
 const rootJsonBlankToVariable = join(rootDir, 'algebra-blank-to-var');
+const rootCanonicalSparql = join(rootDir, 'canonical-sparql', 'base');
+const rootCanonicalSparqlBlankToVar = join(rootDir, 'canonical-sparql', 'blank-to-var');
 
 export interface algebraTestGen {
   name: string;
   json: unknown;
   quads: boolean;
   sparql: string | undefined;
+  canonicalSparql: string | undefined;
 }
 
 export type AlgebraTestSuite = 'dawg-syntax' | 'sparql-1.1' | 'sparql11-query' | 'sparql12';
 
 export function sparqlAlgebraTests(suites: AlgebraTestSuite, blankToVariable: boolean, getSPARQL: true):
-Generator<algebraTestGen & { sparql: string }>;
+Generator<algebraTestGen & { sparql: string; canonicalSparql: string }>;
 export function sparqlAlgebraTests(suites: AlgebraTestSuite, blankToVariable: boolean, getSPARQL: boolean):
 Generator<algebraTestGen>;
 export function* sparqlAlgebraTests(suite: AlgebraTestSuite, blankToVariable: boolean, getSPARQL: boolean):
@@ -36,10 +39,15 @@ Generator<algebraTestGen> {
     } else {
       const name = relativePath.replace(/\.json$/u, '');
       const sparqlPath = join(rootSparql, relativePath.replace(/\.json/u, '.sparql'));
+      const canonicalSparqlPath = join(
+        blankToVariable ? rootCanonicalSparqlBlankToVar : rootCanonicalSparql,
+        relativePath.replace(/\.json/u, '.sparql'),
+      );
       yield {
         name,
         json: JSON.parse(readFileSync(absolutePath)),
         sparql: getSPARQL ? readFileSync(sparqlPath, 'utf8') : undefined,
+        canonicalSparql: getSPARQL ? readFileSync(canonicalSparqlPath, 'utf-8') : undefined,
         quads: name.endsWith('-quads'),
       };
     }

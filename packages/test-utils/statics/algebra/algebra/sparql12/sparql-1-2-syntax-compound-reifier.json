@@ -155,7 +155,7 @@
           },
           "object": {
             "termType": "BlankNode",
-            "value": "g_0"
+            "value": "g_314"
           },
           "graph": {
             "termType": "DefaultGraph",
@@ -219,7 +219,7 @@
           "termType": "Quad",
           "subject": {
             "termType": "BlankNode",
-            "value": "g_1"
+            "value": "g_315"
           },
           "predicate": {
             "termType": "Variable",
@@ -263,7 +263,7 @@
           },
           "object": {
             "termType": "BlankNode",
-            "value": "g_2"
+            "value": "g_316"
           },
           "graph": {
             "termType": "DefaultGraph",

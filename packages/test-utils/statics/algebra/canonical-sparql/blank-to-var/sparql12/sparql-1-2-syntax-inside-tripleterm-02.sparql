@@ -1,0 +1,7 @@
+SELECT ?S1 ?S2 WHERE {
+  ?g_370 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <<( ?S1 <http://example.com/ns#p> <http://example.com/ns#o1> )>> .
+  ?g_370 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> ?g_371 .
+  ?g_371 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <<( ?S2 <http://example.com/ns#p> <http://example.com/ns#o2> )>> .
+  ?g_371 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+  ?g_370 <http://example.com/ns#q> "123"^^<http://www.w3.org/2001/XMLSchema#integer> .
+}

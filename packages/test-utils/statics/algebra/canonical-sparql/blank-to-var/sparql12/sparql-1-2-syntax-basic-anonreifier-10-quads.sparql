@@ -1,0 +1,4 @@
+SELECT ?s WHERE {
+  ?g_178 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s <http://example.com/ns#p2> <http://example.com/ns#o2> )>> .
+  ?g_179 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#s> <http://example.com/ns#p> ?g_178 )>> .
+}

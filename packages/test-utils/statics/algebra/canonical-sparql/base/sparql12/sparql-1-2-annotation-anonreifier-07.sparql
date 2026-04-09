@@ -1,0 +1,6 @@
+SELECT ?o ?p ?s WHERE {
+  ?s ?p ?o .
+  _:g_52 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s ?p ?o )>> .
+  _:g_53 (<http://example.com/ns#p1>|<http://example.com/ns#p2>) "ABC"^^<http://www.w3.org/2001/XMLSchema#string> .
+  _:g_52 <http://example.com/ns#r> _:g_53 .
+}

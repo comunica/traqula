@@ -1,0 +1,7 @@
+SELECT ?S WHERE {
+  _:g_378 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?S <http://example.com/ns#p> <http://example.com/ns#o> )>> .
+  _:g_378 <http://example.com/ns#r> <http://example.com/ns#z> .
+  _:g_379 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?S <http://example.com/ns#p> <http://example.com/ns#o> )>> .
+  _:g_380 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( _:g_379 <http://example.com/ns#r> <http://example.com/ns#z> )>> .
+  _:g_380 <http://example.com/ns#q> "1"^^<http://www.w3.org/2001/XMLSchema#integer> .
+}

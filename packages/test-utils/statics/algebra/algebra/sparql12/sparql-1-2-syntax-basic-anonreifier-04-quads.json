@@ -8,7 +8,7 @@
         "termType": "Quad",
         "subject": {
           "termType": "BlankNode",
-          "value": "g_152"
+          "value": "g_0"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -52,7 +52,7 @@
         },
         "object": {
           "termType": "BlankNode",
-          "value": "g_152"
+          "value": "g_0"
         },
         "graph": {
           "termType": "DefaultGraph",

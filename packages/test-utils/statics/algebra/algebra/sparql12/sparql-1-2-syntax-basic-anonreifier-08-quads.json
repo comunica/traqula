@@ -8,7 +8,7 @@
         "termType": "Quad",
         "subject": {
           "termType": "BlankNode",
-          "value": "g_168"
+          "value": "g_0"
         },
         "predicate": {
           "termType": "NamedNode",

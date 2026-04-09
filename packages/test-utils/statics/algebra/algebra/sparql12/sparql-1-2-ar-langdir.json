@@ -17,6 +17,7 @@
         "object": {
           "termType": "Literal",
           "value": "مرحبا",
+          "direction": "rtl",
           "language": "ar",
           "datatype": {
             "termType": "NamedNode",

@@ -8,7 +8,7 @@
         "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "g_381"
+          "value": "g_0"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -44,7 +44,7 @@
         "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "g_381"
+          "value": "g_0"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -64,7 +64,7 @@
         "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "g_382"
+          "value": "g_1"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -100,7 +100,7 @@
         "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "g_383"
+          "value": "g_2"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -111,7 +111,7 @@
           "termType": "Quad",
           "subject": {
             "termType": "Variable",
-            "value": "g_382"
+            "value": "g_1"
           },
           "predicate": {
             "termType": "NamedNode",
@@ -136,7 +136,7 @@
         "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "g_383"
+          "value": "g_2"
         },
         "predicate": {
           "termType": "NamedNode",

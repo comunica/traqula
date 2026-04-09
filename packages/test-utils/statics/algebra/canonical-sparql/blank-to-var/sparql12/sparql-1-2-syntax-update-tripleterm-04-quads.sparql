@@ -1,10 +1,10 @@
 INSERT {
   <http://example.com/ns#s> ?P <<( <http://example.com/ns#a> <http://example.com/ns#b> <http://example.com/ns#c> )>> .
-  _:g_448 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#s> ?P <<( <http://example.com/ns#a> <http://example.com/ns#b> <http://example.com/ns#c> )>> )>> .
-  _:g_448 ?Y <<( <http://example.com/ns#s1> <http://example.com/ns#p1> ?Z )>> .
+  _:g_0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#s> ?P <<( <http://example.com/ns#a> <http://example.com/ns#b> <http://example.com/ns#c> )>> )>> .
+  _:g_0 ?Y <<( <http://example.com/ns#s1> <http://example.com/ns#p1> ?Z )>> .
 }
 WHERE {
   ?s ?P <<( <http://example.com/ns#a> <http://example.com/ns#b> <http://example.com/ns#c> )>> .
-  ?g_449 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s ?P <<( <http://example.com/ns#a> <http://example.com/ns#b> <http://example.com/ns#c> )>> )>> .
-  ?g_449 ?Y <<( <http://example.com/ns#s1> <http://example.com/ns#p1> ?Z )>> .
+  ?g_1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s ?P <<( <http://example.com/ns#a> <http://example.com/ns#b> <http://example.com/ns#c> )>> )>> .
+  ?g_1 ?Y <<( <http://example.com/ns#s1> <http://example.com/ns#p1> ?Z )>> .
 }

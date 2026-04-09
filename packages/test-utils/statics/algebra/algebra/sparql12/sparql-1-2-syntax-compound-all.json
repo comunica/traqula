@@ -8,7 +8,7 @@
         "termType": "Quad",
         "subject": {
           "termType": "BlankNode",
-          "value": "g_250"
+          "value": "g_0"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -80,7 +80,7 @@
         "termType": "Quad",
         "subject": {
           "termType": "BlankNode",
-          "value": "g_250"
+          "value": "g_0"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -100,7 +100,7 @@
         "termType": "Quad",
         "subject": {
           "termType": "BlankNode",
-          "value": "g_251"
+          "value": "g_1"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -147,7 +147,7 @@
           "termType": "Quad",
           "subject": {
             "termType": "BlankNode",
-            "value": "g_251"
+            "value": "g_1"
           },
           "predicate": {
             "termType": "NamedNode",
@@ -166,7 +166,7 @@
             },
             "object": {
               "termType": "BlankNode",
-              "value": "g_252"
+              "value": "g_2"
             },
             "graph": {
               "termType": "DefaultGraph",
@@ -199,7 +199,7 @@
           "termType": "Quad",
           "subject": {
             "termType": "BlankNode",
-            "value": "g_253"
+            "value": "g_3"
           },
           "predicate": {
             "termType": "Variable",
@@ -224,7 +224,7 @@
         "termType": "Quad",
         "subject": {
           "termType": "BlankNode",
-          "value": "g_255"
+          "value": "g_5"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -243,7 +243,7 @@
           },
           "object": {
             "termType": "BlankNode",
-            "value": "g_254"
+            "value": "g_4"
           },
           "graph": {
             "termType": "DefaultGraph",
@@ -260,7 +260,7 @@
         "termType": "Quad",
         "subject": {
           "termType": "BlankNode",
-          "value": "g_256"
+          "value": "g_6"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -279,7 +279,7 @@
           },
           "object": {
             "termType": "BlankNode",
-            "value": "g_255"
+            "value": "g_5"
           },
           "graph": {
             "termType": "DefaultGraph",
@@ -304,7 +304,7 @@
         },
         "object": {
           "termType": "BlankNode",
-          "value": "g_256"
+          "value": "g_6"
         },
         "graph": {
           "termType": "DefaultGraph",

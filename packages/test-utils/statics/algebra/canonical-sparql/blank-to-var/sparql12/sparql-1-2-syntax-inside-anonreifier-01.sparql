@@ -1,5 +1,5 @@
 SELECT ?P ?Q WHERE {
-  ?g_331 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#s> ?P <http://example.com/ns#o> )>> .
-  ?g_330 ?Q ?g_331 .
-  ?g_330 <http://example.com/ns#b> <http://example.com/ns#c> .
+  ?g_1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#s> ?P <http://example.com/ns#o> )>> .
+  ?g_0 ?Q ?g_1 .
+  ?g_0 <http://example.com/ns#b> <http://example.com/ns#c> .
 }

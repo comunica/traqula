@@ -1,7 +1,7 @@
 SELECT ?q ?z WHERE {
-  _:g_30 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> <http://example.com/ns#c> )>> .
-  <http://example.com/ns#s> <http://example.com/ns#p> _:g_30 .
-  _:g_31 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#s> <http://example.com/ns#p> _:g_30 )>> .
-  _:g_32 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#s1> <http://example.com/ns#p1> ?z )>> .
-  _:g_31 ?q _:g_32 .
+  _:g_0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> <http://example.com/ns#c> )>> .
+  <http://example.com/ns#s> <http://example.com/ns#p> _:g_0 .
+  _:g_1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#s> <http://example.com/ns#p> _:g_0 )>> .
+  _:g_2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#s1> <http://example.com/ns#p1> ?z )>> .
+  _:g_1 ?q _:g_2 .
 }

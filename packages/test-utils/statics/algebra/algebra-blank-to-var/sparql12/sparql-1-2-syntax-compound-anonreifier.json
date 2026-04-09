@@ -8,7 +8,7 @@
         "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "g_297"
+          "value": "g_0"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -44,7 +44,7 @@
         "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "g_298"
+          "value": "g_1"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -80,7 +80,7 @@
         "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "g_297"
+          "value": "g_0"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -88,7 +88,7 @@
         },
         "object": {
           "termType": "Variable",
-          "value": "g_298"
+          "value": "g_1"
         },
         "graph": {
           "termType": "DefaultGraph",
@@ -100,7 +100,7 @@
         "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "g_299"
+          "value": "g_2"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -136,7 +136,7 @@
         "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "g_301"
+          "value": "g_4"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -155,7 +155,7 @@
           },
           "object": {
             "termType": "Variable",
-            "value": "g_300"
+            "value": "g_3"
           },
           "graph": {
             "termType": "DefaultGraph",
@@ -172,7 +172,7 @@
         "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "g_302"
+          "value": "g_5"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -183,7 +183,7 @@
           "termType": "Quad",
           "subject": {
             "termType": "Variable",
-            "value": "g_299"
+            "value": "g_2"
           },
           "predicate": {
             "termType": "NamedNode",
@@ -191,7 +191,7 @@
           },
           "object": {
             "termType": "Variable",
-            "value": "g_301"
+            "value": "g_4"
           },
           "graph": {
             "termType": "DefaultGraph",
@@ -208,7 +208,7 @@
         "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "g_304"
+          "value": "g_7"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -219,7 +219,7 @@
           "termType": "Quad",
           "subject": {
             "termType": "Variable",
-            "value": "g_303"
+            "value": "g_6"
           },
           "predicate": {
             "termType": "Variable",
@@ -244,7 +244,7 @@
         "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "g_306"
+          "value": "g_9"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -263,7 +263,7 @@
           },
           "object": {
             "termType": "Variable",
-            "value": "g_305"
+            "value": "g_8"
           },
           "graph": {
             "termType": "DefaultGraph",
@@ -280,7 +280,7 @@
         "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "g_307"
+          "value": "g_10"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -291,7 +291,7 @@
           "termType": "Quad",
           "subject": {
             "termType": "Variable",
-            "value": "g_304"
+            "value": "g_7"
           },
           "predicate": {
             "termType": "NamedNode",
@@ -299,7 +299,7 @@
           },
           "object": {
             "termType": "Variable",
-            "value": "g_306"
+            "value": "g_9"
           },
           "graph": {
             "termType": "DefaultGraph",
@@ -316,7 +316,7 @@
         "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "g_302"
+          "value": "g_5"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -324,7 +324,7 @@
         },
         "object": {
           "termType": "Variable",
-          "value": "g_307"
+          "value": "g_10"
         },
         "graph": {
           "termType": "DefaultGraph",

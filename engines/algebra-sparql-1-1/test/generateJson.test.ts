@@ -1,13 +1,12 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join, sep } from 'node:path';
-import { toAst } from '@traqula/algebra-sparql-1-2';
 import { algebraUtils } from '@traqula/algebra-transformations-1-1';
 import { Generator } from '@traqula/generator-sparql-1-1';
 import { Parser } from '@traqula/parser-sparql-1-1';
 import { AstFactory } from '@traqula/rules-sparql-1-1';
 import { sparqlQueries, getStaticFilePath } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
-import { toAlgebra } from '../lib/index.js';
+import { toAlgebra, toAst } from '../lib/index.js';
 import { suites } from './algebra.test.js';
 
 // WARNING: use this script with caution!

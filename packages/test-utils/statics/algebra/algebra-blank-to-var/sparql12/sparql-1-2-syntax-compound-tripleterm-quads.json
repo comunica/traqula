@@ -74,7 +74,7 @@
             },
             "object": {
               "termType": "Variable",
-              "value": "g_321"
+              "value": "g_0"
             },
             "graph": {
               "termType": "DefaultGraph",

@@ -1,12 +1,12 @@
 SELECT ?C ?R WHERE {
-  ?g_297 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#x> ?R <http://example.com/ns#z> )>> .
-  ?g_298 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> ?C )>> .
-  ?g_297 <http://example.com/ns#p> ?g_298 .
-  ?g_299 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#x> ?R <http://example.com/ns#z> )>> .
-  ?g_301 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> ?g_300 )>> .
-  ?g_302 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?g_299 <http://example.com/ns#p> ?g_301 )>> .
-  ?g_304 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?g_303 ?R <http://example.com/ns#z> )>> .
-  ?g_306 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> ?g_305 )>> .
-  ?g_307 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?g_304 <http://example.com/ns#p> ?g_306 )>> .
-  ?g_302 <http://example.com/ns#q> ?g_307 .
+  ?g_0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#x> ?R <http://example.com/ns#z> )>> .
+  ?g_1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> ?C )>> .
+  ?g_0 <http://example.com/ns#p> ?g_1 .
+  ?g_2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#x> ?R <http://example.com/ns#z> )>> .
+  ?g_4 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> ?g_3 )>> .
+  ?g_5 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?g_2 <http://example.com/ns#p> ?g_4 )>> .
+  ?g_7 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?g_6 ?R <http://example.com/ns#z> )>> .
+  ?g_9 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> ?g_8 )>> .
+  ?g_10 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?g_7 <http://example.com/ns#p> ?g_9 )>> .
+  ?g_5 <http://example.com/ns#q> ?g_10 .
 }

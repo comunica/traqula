@@ -58,7 +58,7 @@
       "termType": "Quad",
       "subject": {
         "termType": "BlankNode",
-        "value": "g_59"
+        "value": "g_0"
       },
       "predicate": {
         "termType": "NamedNode",
@@ -94,7 +94,7 @@
       "termType": "Quad",
       "subject": {
         "termType": "BlankNode",
-        "value": "g_59"
+        "value": "g_0"
       },
       "predicate": {
         "termType": "NamedNode",

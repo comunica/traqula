@@ -1,4 +1,4 @@
 SELECT ?P ?Q WHERE {
-  ?g_361 ?Q <<( <http://example.com/ns#s> ?P <http://example.com/ns#o> )>> .
-  ?g_361 <http://example.com/ns#b> <http://example.com/ns#c> .
+  ?g_0 ?Q <<( <http://example.com/ns#s> ?P <http://example.com/ns#o> )>> .
+  ?g_0 <http://example.com/ns#b> <http://example.com/ns#c> .
 }

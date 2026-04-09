@@ -1,12 +1,12 @@
 INSERT {
   <http://example.com/ns#iri> <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> ?O )>> .
   ?S ?P <http://example.com/ns#iri> .
-  _:g_438 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?S ?P <http://example.com/ns#iri> )>> .
-  _:g_438 ?Y ?Z .
+  _:g_0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?S ?P <http://example.com/ns#iri> )>> .
+  _:g_0 ?Y ?Z .
 }
 WHERE {
   <http://example.com/ns#iri> <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> ?O )>> .
   ?S ?P <http://example.com/ns#iri> .
-  _:g_439 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?S ?P <http://example.com/ns#iri> )>> .
-  _:g_439 ?Y ?Z .
+  _:g_1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?S ?P <http://example.com/ns#iri> )>> .
+  _:g_1 ?Y ?Z .
 }

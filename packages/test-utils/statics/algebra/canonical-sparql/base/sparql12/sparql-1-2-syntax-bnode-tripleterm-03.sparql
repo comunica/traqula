@@ -1,3 +1,3 @@
 SELECT * WHERE {
-  <<( _:g_232 <http://example.com/ns#p> _:g_233 )>> <http://example.com/ns#q> <http://example.com/ns#z> .
+  <<( _:g_0 <http://example.com/ns#p> _:g_1 )>> <http://example.com/ns#q> <http://example.com/ns#z> .
 }

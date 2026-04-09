@@ -1,12 +1,12 @@
 INSERT {
-  _:g_420 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> ?O )>> .
-  ?S ?P _:g_420 .
-  _:g_421 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?S ?P _:g_420 )>> .
-  _:g_421 ?Y ?Z .
+  _:g_0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> ?O )>> .
+  ?S ?P _:g_0 .
+  _:g_1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?S ?P _:g_0 )>> .
+  _:g_1 ?Y ?Z .
 }
 WHERE {
-  _:g_422 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> ?O )>> .
-  ?S ?P _:g_422 .
-  _:g_423 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?S ?P _:g_422 )>> .
-  _:g_423 ?Y ?Z .
+  _:g_2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> ?O )>> .
+  ?S ?P _:g_2 .
+  _:g_3 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?S ?P _:g_2 )>> .
+  _:g_3 ?Y ?Z .
 }

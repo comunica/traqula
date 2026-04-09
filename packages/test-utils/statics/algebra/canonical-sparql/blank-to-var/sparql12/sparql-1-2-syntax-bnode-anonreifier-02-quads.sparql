@@ -1,4 +1,4 @@
 SELECT * WHERE {
-  ?g_205 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#s> <http://example.com/ns#p> ?e_a )>> .
-  ?g_205 <http://example.com/ns#q> "456"^^<http://www.w3.org/2001/XMLSchema#integer> .
+  ?g_0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#s> <http://example.com/ns#p> ?e_a )>> .
+  ?g_0 <http://example.com/ns#q> "456"^^<http://www.w3.org/2001/XMLSchema#integer> .
 }

@@ -1,7 +1,7 @@
 SELECT ?q ?z WHERE {
-  ?g_33 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> <http://example.com/ns#c> )>> .
-  <http://example.com/ns#s> <http://example.com/ns#p> ?g_33 .
-  ?g_34 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#s> <http://example.com/ns#p> ?g_33 )>> .
-  ?g_35 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#s1> <http://example.com/ns#p1> ?z )>> .
-  ?g_34 ?q ?g_35 .
+  ?g_0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#a> <http://example.com/ns#b> <http://example.com/ns#c> )>> .
+  <http://example.com/ns#s> <http://example.com/ns#p> ?g_0 .
+  ?g_1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#s> <http://example.com/ns#p> ?g_0 )>> .
+  ?g_2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( <http://example.com/ns#s1> <http://example.com/ns#p1> ?z )>> .
+  ?g_1 ?q ?g_2 .
 }

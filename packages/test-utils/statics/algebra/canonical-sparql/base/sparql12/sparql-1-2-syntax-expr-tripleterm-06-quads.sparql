@@ -2,10 +2,10 @@ CONSTRUCT {
   ?t <http://example.com/ns#graph> ?g .
 }
 WHERE {
-  {
-    GRAPH ?g {
+  GRAPH ?g {
+    {
       ?s ?p ?o .
+      BIND( <<( ?s ?p ?o )>> AS ?t )
     }
-    BIND( <<( ?s ?p ?o )>> AS ?t )
   }
 }

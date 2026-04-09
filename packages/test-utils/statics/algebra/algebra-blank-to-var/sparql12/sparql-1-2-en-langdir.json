@@ -17,6 +17,7 @@
         "object": {
           "termType": "Literal",
           "value": "hello",
+          "direction": "ltr",
           "language": "en",
           "datatype": {
             "termType": "NamedNode",

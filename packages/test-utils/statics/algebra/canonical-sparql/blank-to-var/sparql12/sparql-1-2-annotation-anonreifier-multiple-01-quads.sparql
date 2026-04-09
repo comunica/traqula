@@ -1,7 +1,7 @@
 SELECT ?o ?s ?Z1 ?Z2 WHERE {
   ?s <http://example.com/ns#p> ?o .
-  ?g_66 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s <http://example.com/ns#p> ?o )>> .
-  ?g_66 <http://example.com/ns#r1> ?Z1 .
-  ?g_67 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s <http://example.com/ns#p> ?o )>> .
-  ?g_67 <http://example.com/ns#r2> ?Z2 .
+  ?g_0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s <http://example.com/ns#p> ?o )>> .
+  ?g_0 <http://example.com/ns#r1> ?Z1 .
+  ?g_1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s <http://example.com/ns#p> ?o )>> .
+  ?g_1 <http://example.com/ns#r2> ?Z2 .
 }

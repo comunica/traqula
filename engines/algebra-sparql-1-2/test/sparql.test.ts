@@ -2,6 +2,7 @@ import { Canonicalizer, algebraUtils } from '@traqula/algebra-transformations-1-
 import type { Algebra } from '@traqula/algebra-transformations-1-2';
 import { Generator as Generator12 } from '@traqula/generator-sparql-1-2';
 import { Parser as Parser12 } from '@traqula/parser-sparql-1-2';
+import { AstFactory } from '@traqula/rules-sparql-1-2';
 import { positiveTest, sparqlAlgebraTests } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
 import { toAst, toAlgebra } from '../lib/index.js';
@@ -32,6 +33,28 @@ describe('sparql 1.2 algebra transformer', () => {
           });
         }
       });
+    }
+  });
+
+  describe('sparqlAlgebraTests Canonical SPARQL', () => {
+    const astFactory = new AstFactory();
+    for (const suite of suites) {
+      for (const blankToVariable of [ true, false ]) {
+        describe(`${suite}${blankToVariable ? ' with blank to var' : ''}`, () => {
+          for (const test of sparqlAlgebraTests(suite, blankToVariable, true)) {
+            const { name, quads, canonicalSparql, sparql } = test;
+            it (name, ({ expect }) => {
+              astFactory.resetBlankNodeCounter();
+              const parsedAst = parser.parse(sparql, { astFactory });
+              const algebra = toAlgebra(parsedAst, { quads, blankToVariable });
+              // Console.log(JSON.stringify(algebra, null, 2));
+              const genAst = toAst(algebra);
+              const canonical = generator.generate(genAst);
+              expect(canonical.trim()).toEqual(canonicalSparql.trim());
+            });
+          }
+        });
+      }
     }
   });
 

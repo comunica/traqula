@@ -1,9 +1,9 @@
 SELECT ?o ?p ?s ?Z1 ?Z2 ?Z3 WHERE {
   ?s ?p ?o .
-  _:g_78 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s ?p ?o )>> .
-  _:g_78 <http://example.com/ns#r1> ?Z1 .
-  _:g_79 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s ?p ?o )>> .
-  _:g_79 <http://example.com/ns#r2> ?Z2 .
-  _:g_80 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s ?p ?o )>> .
-  _:g_80 <http://example.com/ns#r3> ?Z3 .
+  _:g_0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s ?p ?o )>> .
+  _:g_0 <http://example.com/ns#r1> ?Z1 .
+  _:g_1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s ?p ?o )>> .
+  _:g_1 <http://example.com/ns#r2> ?Z2 .
+  _:g_2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#reifies> <<( ?s ?p ?o )>> .
+  _:g_2 <http://example.com/ns#r3> ?Z3 .
 }

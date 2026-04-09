@@ -8,7 +8,7 @@
         "termType": "Quad",
         "subject": {
           "termType": "Variable",
-          "value": "g_147"
+          "value": "g_0"
         },
         "predicate": {
           "termType": "NamedNode",
@@ -56,7 +56,7 @@
         },
         "object": {
           "termType": "Variable",
-          "value": "g_147"
+          "value": "g_0"
         },
         "graph": {
           "termType": "DefaultGraph",

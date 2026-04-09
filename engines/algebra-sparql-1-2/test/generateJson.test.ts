@@ -3,6 +3,7 @@ import { join, sep } from 'node:path';
 import { algebraUtils } from '@traqula/algebra-transformations-1-1';
 import { Generator } from '@traqula/generator-sparql-1-2';
 import { Parser } from '@traqula/parser-sparql-1-2';
+import { AstFactory } from '@traqula/rules-sparql-1-2';
 import { type AlgebraTestSuite, sparqlQueries } from '@traqula/test-utils';
 import { getStaticFilePath } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
@@ -22,13 +23,15 @@ const canonicalSparqlBlankToVar = join(rootDir, 'canonical-sparql', 'blank-to-va
 const suites: AlgebraTestSuite[] = [ 'sparql12' ];
 
 describe.skip('algebra 1.2 test generate', () => {
+  const astFactory = new AstFactory();
   for (const suite of suites) {
     describe(suite, () => {
       for (const { query, name } of sparqlQueries(suite)) {
         for (const blankToVariable of [ false, true ]) {
           it(`${name} - blankToVar: ${blankToVariable}`, ({ expect }) => {
             expect(() => {
-              const ast = parser.parse(query);
+              astFactory.resetBlankNodeCounter();
+              const ast = parser.parse(query, { astFactory });
               const algebra = algebraUtils.objectify(toAlgebra(ast, {
                 quads: name.endsWith('-quads'),
                 blankToVariable,

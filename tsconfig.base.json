@@ -4,14 +4,12 @@
     "composite": false,
     "target": "es2022",
     "lib": [
-      "es2022",
-      "dom",
-      "esnext.disposable"
+      "es2022"
     ],
     "rootDir": ".",
     "module": "NodeNext",
     "moduleResolution": "nodenext",
-    "types": ["vitest/globals"],
+    "types": ["vitest/globals", "node"],
     "strict": true,
     "strictFunctionTypes": true,
     "strictPropertyInitialization": false,
@@ -22,7 +20,6 @@
     "removeComments": false,
     "sourceMap": true,
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true
+    "esModuleInterop": true
   }
 }

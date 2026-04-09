@@ -17,12 +17,12 @@
     "strictPropertyInitialization": false,
     "noImplicitOverride": true,
     "declaration": true,
-    "downlevelIteration": true,
     "inlineSources": true,
     "preserveConstEnums": true,
     "removeComments": false,
     "sourceMap": true,
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "skipLibCheck": true
   }
 }

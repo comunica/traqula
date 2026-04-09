@@ -1,7 +1,7 @@
 {
   "name": "@traqula/algebra-transformations-1-2",
   "type": "module",
-  "version": "1.0.6-alpha.0",
+  "version": "1.0.6-alpha.1",
   "description": "Rules for converting SPARQL 1.2 Traqula AST to SPARQL 1.1 (=1.2) algebra",
   "author": "Jitse De Smet",
   "lsd:module": true,

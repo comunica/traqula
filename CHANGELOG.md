@@ -1,14 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-<a name="v1.0.6-alpha.1"></a>
-## [v1.0.6-alpha.1](https://github.com/comunica/traqula/compare/v1.0.6-alpha.0...v1.0.6-alpha.1) - 2026-04-09
+<a name="v1.0.6"></a>
+## [v1.0.6](https://github.com/comunica/traqula/compare/v1.0.5...v1.0.6) - 2026-04-09
 
 * [Test: add canonical SPARQL tests (#121)](https://github.com/comunica/traqula/commit/54f24160553cd8a7c4cf9cde47d7a3681f3218d6)
-
-<a name="v1.0.6-alpha.0"></a>
-## [v1.0.6-alpha.0](https://github.com/comunica/traqula/compare/v1.0.5...v1.0.6-alpha.0) - 2026-04-09
-
 * [Chore/fix security issues - lodash (#120)](https://github.com/comunica/traqula/commit/5b79fe82cf58336e6d79a27cf32098d06abb7e0d)
 * [Chore: add node 24 to CI matrix](https://github.com/comunica/traqula/commit/89ecd5165d7e043b6f79766c34d1a57bdc595123)
 

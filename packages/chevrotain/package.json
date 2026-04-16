@@ -1,7 +1,7 @@
 {
   "name": "@traqula/chevrotain",
   "type": "module",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Bundled Chevrotain re-export for Traqula",
   "lsd:module": true,
   "license": "Apache-2.0",

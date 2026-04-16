@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.0.7"></a>
+## [v1.0.7](https://github.com/comunica/traqula/compare/v1.0.6...v1.0.7) - 2026-04-16
+
+* [Fix: tsbuild should not build @traqula/chevrotain](https://github.com/comunica/traqula/commit/7baa5948c07ae20cffa9bd61d44cbf806a55a5f1)
+* [Add values many one test](https://github.com/comunica/traqula/commit/d7045a3cdbb6083d106644deed37a63149a2c987)
+* [Update actions/upload-pages-artifact action to v5](https://github.com/comunica/traqula/commit/107c1ba82de01b610e68aecd96e8c4f9ed699c40)
+* [Update dependency minimatch to v10 (#125)](https://github.com/comunica/traqula/commit/6cf51073d7ae68760e7f46e24c51e68e660e0492)
+* [Chore: upgrade ts (#122)](https://github.com/comunica/traqula/commit/9d7c4ff5fb2ab89dfcebbb1531d6ec26cb52a2c0)
+* [Update dependency axios to v1.15.0 (#123)](https://github.com/comunica/traqula/commit/efb0c47bde83a89b66717c6d9e778b890b6442d9)
+
 <a name="v1.0.6"></a>
 ## [v1.0.6](https://github.com/comunica/traqula/compare/v1.0.5...v1.0.6) - 2026-04-09
 

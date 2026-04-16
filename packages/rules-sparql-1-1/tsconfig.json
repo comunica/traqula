@@ -7,8 +7,7 @@
     "outDir": "dist/esm"
   },
   "references": [
-    { "path": "../core" },
-    { "path": "../chevrotain" }
+    { "path": "../core" }
   ],
   "include": ["lib/**/*.ts", "test/**/*.ts"],
   "exclude": ["dist/**"]

@@ -10,9 +10,10 @@
   ],
   "scripts": {
     "bench": "vitest bench --run",
-    "build": "yarn build:ts && yarn build:transpile && yarn build:cjs",
+    "build": "yarn build:chevrotain && yarn build:ts && yarn build:transpile && yarn build:cjs",
+    "build:chevrotain": "yarn workspace @traqula/chevrotain build",
     "build:ts": "tsc -b",
-    "build:transpile": "lerna run build:transpile",
+    "build:transpile": "lerna run build:transpile --ignore @traqula/chevrotain",
     "build:cjs": "tsc -b tsconfig.cjs.json",
     "clean": "git clean -dfx",
     "depcheck": "lerna exec --concurrency 1 -- depcheck --ignores=\"vitest,esbuild,dts-bundle-generator\"",

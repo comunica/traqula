@@ -165,37 +165,35 @@
   dependencies:
     buffer "^6.0.3"
 
-"@chevrotain/cst-dts-gen@11.2.0":
-  version "11.2.0"
-  resolved "https://registry.yarnpkg.com/@chevrotain/cst-dts-gen/-/cst-dts-gen-11.2.0.tgz#a822e406c03d8222aa5ff0b75c5db692a4dca169"
-  integrity sha512-ssJFvn/UXhQQeICw3SR/fZPmYVj+JM2mP+Lx7bZ51cOeHaMWOKp3AUMuyM3QR82aFFXTfcAp67P5GpPjGmbZWQ==
+"@chevrotain/cst-dts-gen@12.0.0":
+  version "12.0.0"
+  resolved "https://registry.yarnpkg.com/@chevrotain/cst-dts-gen/-/cst-dts-gen-12.0.0.tgz#ec068e1e83c5fdad69d81773556cae97f0b5dcdb"
+  integrity sha512-fSL4KXjTl7cDgf0B5Rip9Q05BOrYvkJV/RrBTE/bKDN096E4hN/ySpcBK5B24T76dlQ2i32Zc3PAE27jFnFrKg==
   dependencies:
-    "@chevrotain/gast" "11.2.0"
-    "@chevrotain/types" "11.2.0"
-    lodash-es "4.17.23"
+    "@chevrotain/gast" "12.0.0"
+    "@chevrotain/types" "12.0.0"
 
-"@chevrotain/gast@11.2.0":
-  version "11.2.0"
-  resolved "https://registry.yarnpkg.com/@chevrotain/gast/-/gast-11.2.0.tgz#0f585b5a0d93354c1a0a732397de386c5f90cf23"
-  integrity sha512-c+KoD6eSI1xjAZZoNUW+V0l13UEn+a4ShmUrjIKs1BeEWCji0Kwhmqn5FSx1K4BhWL7IQKlV7wLR4r8lLArORQ==
+"@chevrotain/gast@12.0.0":
+  version "12.0.0"
+  resolved "https://registry.yarnpkg.com/@chevrotain/gast/-/gast-12.0.0.tgz#0e0cbf8eee01c7a4449b9caf19e5f3834dba2c35"
+  integrity sha512-1ne/m3XsIT8aEdrvT33so0GUC+wkctpUPK6zU9IlOyJLUbR0rg4G7ZiApiJbggpgPir9ERy3FRjT6T7lpgetnQ==
   dependencies:
-    "@chevrotain/types" "11.2.0"
-    lodash-es "4.17.23"
+    "@chevrotain/types" "12.0.0"
 
-"@chevrotain/regexp-to-ast@11.2.0":
-  version "11.2.0"
-  resolved "https://registry.yarnpkg.com/@chevrotain/regexp-to-ast/-/regexp-to-ast-11.2.0.tgz#304ed85f50247183a0a8d43c4d217e76ffc87dbb"
-  integrity sha512-lG73pBFqbXODTbXhdZwv0oyUaI+3Irm+uOv5/W79lI3g5hasYaJnVJOm3H2NkhA0Ef4XLBU4Scr7TJDJwgFkAw==
+"@chevrotain/regexp-to-ast@12.0.0":
+  version "12.0.0"
+  resolved "https://registry.yarnpkg.com/@chevrotain/regexp-to-ast/-/regexp-to-ast-12.0.0.tgz#a90bc4b4f5337a883a88dddd0cca7c38cfe66a7a"
+  integrity sha512-p+EW9MaJwgaHguhoqwOtx/FwuGr+DnNn857sXWOi/mClXIkPGl3rn7hGNWvo31HA3vyeQxjqe+H36yZJwYU8cA==
 
-"@chevrotain/types@11.2.0":
-  version "11.2.0"
-  resolved "https://registry.yarnpkg.com/@chevrotain/types/-/types-11.2.0.tgz#420bc7f64417d64797fafc742902945289fc1fbd"
-  integrity sha512-vBMSj/lz/LqolbGQEHB0tlpW5BnljHVtp+kzjQfQU+5BtGMTuZCPVgaAjtKvQYXnHb/8i/02Kii00y0tsuwfsw==
+"@chevrotain/types@12.0.0":
+  version "12.0.0"
+  resolved "https://registry.yarnpkg.com/@chevrotain/types/-/types-12.0.0.tgz#a762b5c2b4f07496b56c93c30ce224b3637cc2c8"
+  integrity sha512-S+04vjFQKeuYw0/eW3U52LkAHQsB1ASxsPGsLPUyQgrZ2iNNibQrsidruDzjEX2JYfespXMG0eZmXlhA6z7nWA==
 
-"@chevrotain/utils@11.2.0":
-  version "11.2.0"
-  resolved "https://registry.yarnpkg.com/@chevrotain/utils/-/utils-11.2.0.tgz#49db06fc0dc4dc6a3ade80339dffd33d3072bc24"
-  integrity sha512-+7whECg4yNWHottjvr2To2BRxL4XJVjIyyv5J4+bJ0iMOVU8j/8n1qPDLZS/90W/BObDR8VNL46lFbzY/Hosmw==
+"@chevrotain/utils@12.0.0":
+  version "12.0.0"
+  resolved "https://registry.yarnpkg.com/@chevrotain/utils/-/utils-12.0.0.tgz#9aab2055df43d0bb55919eaca76a9cda45e52b89"
+  integrity sha512-lB59uJoaGIfOOL9knQqQRfhl9g7x8/wqFkp13zTdkRu1huG9kg6IJs1O8hqj9rs6h7orGxHJUKb+mX3rPbWGhA==
 
 "@emnapi/core@1.9.1":
   version "1.9.1"
@@ -2596,17 +2594,16 @@ chardet@^2.1.0:
   resolved "https://registry.yarnpkg.com/chardet/-/chardet-2.1.0.tgz#1007f441a1ae9f9199a4a67f6e978fb0aa9aa3fe"
   integrity sha512-bNFETTG/pM5ryzQ9Ad0lJOTa6HWD/YsScAR3EnCPZRPlQh77JocYktSHOUHelyhm8IARL+o4c4F1bP5KVOjiRA==
 
-chevrotain@^11.2.0:
-  version "11.2.0"
-  resolved "https://registry.yarnpkg.com/chevrotain/-/chevrotain-11.2.0.tgz#4cf01bb93b4e41deceda966179c2447182131bc2"
-  integrity sha512-mHCHTxM51nCklUw9RzRVc0DLjAh/SAUPM4k/zMInlTIo25ldWXOZoPt7XEIk/LwoT4lFVmJcu9g5MHtx371x3A==
+chevrotain@^12.0.0:
+  version "12.0.0"
+  resolved "https://registry.yarnpkg.com/chevrotain/-/chevrotain-12.0.0.tgz#8ebefe0a0516b1b314a8d9c7f4e948a509098d1c"
+  integrity sha512-csJvb+6kEiQaqo1woTdSAuOWdN0WTLIydkKrBnS+V5gZz0oqBrp4kQ35519QgK6TpBThiG3V1vNSHlIkv4AglQ==
   dependencies:
-    "@chevrotain/cst-dts-gen" "11.2.0"
-    "@chevrotain/gast" "11.2.0"
-    "@chevrotain/regexp-to-ast" "11.2.0"
-    "@chevrotain/types" "11.2.0"
-    "@chevrotain/utils" "11.2.0"
-    lodash-es "4.17.23"
+    "@chevrotain/cst-dts-gen" "12.0.0"
+    "@chevrotain/gast" "12.0.0"
+    "@chevrotain/regexp-to-ast" "12.0.0"
+    "@chevrotain/types" "12.0.0"
+    "@chevrotain/utils" "12.0.0"
 
 chownr@^3.0.0:
   version "3.0.0"
@@ -5465,7 +5462,7 @@ locate-path@^6.0.0:
   dependencies:
     p-locate "^5.0.0"
 
-lodash-es@4.17.23, lodash-es@4.18.1:
+lodash-es@4.18.1:
   version "4.18.1"
   resolved "https://registry.yarnpkg.com/lodash-es/-/lodash-es-4.18.1.tgz#b962eeb80d9d983a900bf342961fb7418ca10b1d"
   integrity sha512-J8xewKD/Gk22OZbhpOVSwcs60zhd95ESDwezOFuA3/099925PdHJ7OFHNTGtajL3AlZkykD32HykiMo+BIBI8A==

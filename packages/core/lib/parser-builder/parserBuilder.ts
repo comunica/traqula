@@ -167,6 +167,17 @@ Names,
       <unknown> this;
   }
 
+  public deleteMany<U extends Names>(...ruleNames: U[]):
+  ParserBuilder<Context, Exclude<Names, U>, {[K in Exclude<Names, U>]:
+    RuleDefs[K] extends ParserRule<Context, K> ? RuleDefs[K] : never }> {
+    for (const ruleName of ruleNames) {
+      delete this.rules[ruleName];
+    }
+    return <ParserBuilder<Context, Exclude<Names, U>, {[K in Exclude<Names, U>]:
+      RuleDefs[K] extends ParserRule<Context, K> ? RuleDefs[K] : never }>>
+      <unknown> this;
+  }
+
   public getRule<U extends Names>(ruleName: U): RuleDefs[U] extends ParserRule<any, U, infer RT, infer PT> ?
     ParserRule<Context, U, RT, PT> : never {
     return <any> this.rules[ruleName];

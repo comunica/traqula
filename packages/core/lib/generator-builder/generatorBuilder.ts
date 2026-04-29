@@ -150,6 +150,17 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
       <unknown> this;
   }
 
+  public deleteMany<U extends Names>(...ruleNames: U[]):
+  GeneratorBuilder<Context, Exclude<Names, U>, {[K in Exclude<Names, U>]:
+    RuleDefs[K] extends GeneratorRule<Context, K> ? RuleDefs[K] : never }> {
+    for (const name of ruleNames) {
+      delete this.rules[name];
+    }
+    return <GeneratorBuilder<Context, Exclude<Names, U>, {[K in Exclude<Names, U>]:
+      RuleDefs[K] extends GeneratorRule<Context, K> ? RuleDefs[K] : never }>>
+      <unknown> this;
+  }
+
   public getRule<U extends Names>(ruleName: U): RuleDefs[U] extends GeneratorRule<any, U, infer RT, infer PT> ?
     GeneratorRule<Context, U, RT, PT> : never {
     return <any> this.rules[ruleName];

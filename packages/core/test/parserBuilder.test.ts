@@ -9,6 +9,11 @@ const numRule: ParserRule<Record<string, never>, 'num', string, []> = {
   impl: ({ CONSUME }) => _ctx => CONSUME(Num).image,
 };
 
+const numRuleA: ParserRule<Record<string, never>, 'numA', string, []> = {
+  name: 'numA',
+  impl: ({ CONSUME }) => _ctx => CONSUME(Num).image,
+};
+
 describe('parserBuilder', () => {
   describe('addRuleRedundant', () => {
     it('is idempotent when the exact same rule object is added again', ({ expect }) => {
@@ -32,6 +37,23 @@ describe('parserBuilder', () => {
       const smaller = builder.deleteRule('num');
       // The private rules record should no longer contain 'num'
       expect((<any>smaller).rules.num).toBeUndefined();
+    });
+
+    it('removes the named rule from the builder bis', ({ expect }) => {
+      const builder = ParserBuilder.create(<const>[ numRule ]);
+      const smaller = builder.deleteMany('num');
+      // The private rules record should no longer contain 'num'
+      expect((<any>smaller).rules.num).toBeUndefined();
+    });
+
+    it('removes the named rules from the builder', ({ expect }) => {
+      const builder = ParserBuilder.create(<const>[ numRule, numRuleA ]);
+      expect((<any>builder).rules.num).toBeDefined();
+      expect((<any>builder).rules.numA).toBeDefined();
+      const smaller = builder.deleteMany('num', 'numA');
+      // The private rules record should no longer contain 'num'
+      expect((<any>smaller).rules.num).toBeUndefined();
+      expect((<any>smaller).rules.numA).toBeUndefined();
     });
   });
 

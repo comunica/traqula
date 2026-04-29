@@ -148,6 +148,26 @@ describe('core builders runtime coverage', () => {
     expect(merged.emit({ value: 'Y' }, { origSource: '' })).toBe('override:Y');
   });
 
+  it('generatorBuilder removes the named rule from the builder bis', ({ expect }) => {
+    const ruleA: GeneratorRule<GenerateContext, 'ruleA'> = { name: 'ruleA', gImpl: () => () => 'a' };
+    const builder = GeneratorBuilder.create(<const>[ ruleA ]);
+    const smaller = builder.deleteMany('ruleA');
+    // The private rules record should no longer contain 'num'
+    expect((<any>smaller).rules.ruleA).toBeUndefined();
+  });
+
+  it('generatorBuilder removes the named rules from the builder', ({ expect }) => {
+    const ruleA: GeneratorRule<GenerateContext, 'ruleA'> = { name: 'ruleA', gImpl: () => () => 'a' };
+    const ruleB: GeneratorRule<GenerateContext, 'ruleB'> = { name: 'ruleB', gImpl: () => () => 'b' };
+    const builder = GeneratorBuilder.create(<const>[ ruleA, ruleB ]);
+    expect((<any>builder).rules.ruleA).toBeDefined();
+    expect((<any>builder).rules.ruleB).toBeDefined();
+    const smaller = builder.deleteMany('ruleA', 'ruleB');
+    // The private rules record should no longer contain 'num'
+    expect((<any>smaller).rules.rulA).toBeUndefined();
+    expect((<any>smaller).rules.ruleB).toBeUndefined();
+  });
+
   it('indirBuilder supports add/patch/delete and duplicate guarding', ({ expect }) => {
     const indir = IndirBuilder
       .create(<const>[ leaf ])

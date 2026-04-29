@@ -39,6 +39,29 @@ describe('indirBuilder', () => {
       const built = <any>smaller.build();
       expect(built.ruleA).toBeUndefined();
     });
+
+    it('removes the named rule from the builder bis', ({ expect }) => {
+      const ruleA: IndirDef<Record<string, never>, 'ruleA', string, []> =
+        { name: 'ruleA', fun: () => () => 'a' };
+      const builder = IndirBuilder.create(<const>[ ruleA ]);
+      const smaller = builder.deleteMany('ruleA');
+      // The private rules record should no longer contain 'num'
+      expect((<any>smaller).rules.ruleA).toBeUndefined();
+    });
+
+    it('removes the named rules from the builder', ({ expect }) => {
+      const ruleA: IndirDef<Record<string, never>, 'ruleA', string, []> =
+        { name: 'ruleA', fun: () => () => 'a' };
+      const ruleB: IndirDef<Record<string, never>, 'ruleB', string, []> =
+        { name: 'ruleB', fun: () => () => 'b' };
+      const builder = IndirBuilder.create(<const>[ ruleA, ruleB ]);
+      expect((<any>builder).rules.ruleA).toBeDefined();
+      expect((<any>builder).rules.ruleB).toBeDefined();
+      const smaller = builder.deleteMany('ruleA', 'ruleB');
+      // The private rules record should no longer contain 'num'
+      expect((<any>smaller).rules.ruleA).toBeUndefined();
+      expect((<any>smaller).rules.ruleB).toBeUndefined();
+    });
   });
 
   describe('dynamicIndirect subrule error', () => {

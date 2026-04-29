@@ -131,6 +131,17 @@ export class IndirBuilder<Context, Names extends string, RuleDefs extends Indire
       <unknown> this;
   }
 
+  public deleteMany<U extends Names>(...ruleNames: U[]):
+  IndirBuilder<Context, Exclude<Names, U>, {[K in Exclude<Names, U>]:
+    RuleDefs[K] extends IndirDef<Context, K> ? RuleDefs[K] : never }> {
+    for (const name of ruleNames) {
+      delete this.rules[name];
+    }
+    return <IndirBuilder<Context, Exclude<Names, U>, {[K in Exclude<Names, U>]:
+      RuleDefs[K] extends IndirDef<Context, K> ? RuleDefs[K] : never }>>
+      <unknown> this;
+  }
+
   public getRule<U extends Names>(ruleName: U): RuleDefs[U] extends IndirDef<any, U, infer RT, infer PT> ?
     IndirDef<Context, U, RT, PT> : never {
     return <any> this.rules[ruleName];

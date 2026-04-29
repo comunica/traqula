@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.1.0"></a>
+## [v1.1.0](https://github.com/comunica/traqula/compare/v1.0.7...v1.1.0) - 2026-04-29
+
+* [Feat: add builder function deleteMany](https://github.com/comunica/traqula/commit/a6257109edaf3d527776bdc80118c580994d3df0)
+* [Update dependency axios to v1.15.2 (#127)](https://github.com/comunica/traqula/commit/74e1f8e4de6a5d01a5089db185279c7ca2f54c6b)
+* [Update dependency axios to v1.15.1 (#126)](https://github.com/comunica/traqula/commit/846a973feb66969e0ba0d7281e0aa0a8955ba665)
+
 <a name="v1.0.7"></a>
 ## [v1.0.7](https://github.com/comunica/traqula/compare/v1.0.6...v1.0.7) - 2026-04-16
 

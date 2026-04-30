@@ -12,7 +12,7 @@ LexerBuilder expose various functions to facilitate this behavior:
 * **create**: Start by creating a copy of the other LexerBuilder
 * **merge**: Append the tokens of another LexerBuilder to this one, filtering duplicate registers of the same LexerToken (by reference) and throwing if a non-resolvable duplicate token name is registered.
 * **addBefore / addAfter**: Add a list of tokens before or after an existing token in the builder.
-* **delete**: delete a token that exists within th builder (by reference).
+* **delete**: delete a token that exists within the builder (by reference).
 
 > [!warning]
 > It is essential that you DO NOT manipulate the LexerBuilder created by another,
@@ -56,7 +56,7 @@ The ParserBuilder has a few functions that facilitate parser modification:
 ## Building the parser
 
 What remains is to create the modified parser.
-This can be done in [the same way as when creating a parser form skratch](./create-parser.md#build-parser).
+This can be done in [the same way as when creating a parser from scratch](./create-parser.md#build-parser).
 
 > [!important]
 > When exposing your parser, note that the parser is not all that counts.

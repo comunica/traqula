@@ -50,6 +50,12 @@ import { IndirBuilder } from '@traqula/core';
 
 import type * as T12 from '@traqula/rules-sparql-1-2';
 
+/**
+ * Pre-configured {@link IndirBuilder} for translating SPARQL 1.2 AST to SPARQL Algebra.
+ * Extends the SPARQL 1.1 algebra builder with SPARQL 1.2 specific transformations
+ * (e.g. triple terms, reified triples).
+ * Use {@link IndirBuilder.create | IndirBuilder.create(toAlgebra12Builder)} to extend it.
+ */
 export const toAlgebra12Builder = IndirBuilder
   .create(toAlgebra11Builder)
   .widenContext<AlgebraContext>()

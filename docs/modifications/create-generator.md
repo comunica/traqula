@@ -1,11 +1,11 @@
 # Create Generator
 
 This documentation details the creation of a generator and thereby assumes you have read
-[how to create a parser](./create-parser.md) and [Traqula's expected AST structur](../usage/AST-structure.md).
+[how to create a parser](./create-parser.md) and [Traqula's expected AST structure](../usage/AST-structure.md).
 
 ## GeneratorRules
 
-Traqula provides a framework to create a generator through `@tarqula/core`, further facilitating round tripping generation when following the assumptions we put on the AST and the correct invocation of `printFilter`.
+Traqula provides a framework to create a generator through `@traqula/core`, further facilitating round tripping generation when following the assumptions we put on the AST and the correct invocation of `printFilter`.
 
 A generator is constructed similarly to a parser by defining may GeneratorRules and linking them together through a builder.
 A generatorRule is an object having a `name` and an implementation `gImpl`.

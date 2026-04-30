@@ -30,13 +30,13 @@ yarn add @traqula/generator-sparql-1-1
 Either through ESM import:
 
 ```javascript
-import { Generator } from 'engines/generator-sparql-1-1';
+import { Generator } from '@traqula/generator-sparql-1-1';
 ```
 
 _or_ CJS require:
 
 ```javascript
-const Generator = require('engines/generator-sparql-1-1').Generator;
+const Generator = require('@traqula/generator-sparql-1-1').Generator;
 ```
 
 ## Usage
@@ -44,8 +44,8 @@ const Generator = require('engines/generator-sparql-1-1').Generator;
 This package contains a `Generator` that is able to generate SPARQL 1.1 queries:
 
 ```typescript
-import { Parser } from 'parser/generator-sparql-1-1';
-import { Generator } from 'engines/generator-sparql-1-1';
+import { Parser } from '@traqula/parser-sparql-1-1';
+import { Generator } from '@traqula/generator-sparql-1-1';
 const query = `SELECT * WHERE { ?s ?p ?o }`
 const parser = new Parser();
 const ast = parser.parse(query)

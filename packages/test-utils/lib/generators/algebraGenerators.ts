@@ -22,6 +22,13 @@ export interface algebraTestGen {
 
 export type AlgebraTestSuite = 'dawg-syntax' | 'sparql-1.1' | 'sparql11-query' | 'sparql12';
 
+/**
+ * Yields algebra-level test cases from the static test fixtures.
+ * Each test provides a SPARQL query, expected algebra JSON, and optionally a canonical SPARQL string.
+ * @param suite - The test suite to iterate.
+ * @param blankToVariable - Whether to use the blank-to-variable fixture variant.
+ * @param getSPARQL - Whether to load the SPARQL and canonical SPARQL strings.
+ */
 export function sparqlAlgebraTests(suites: AlgebraTestSuite, blankToVariable: boolean, getSPARQL: true):
 Generator<algebraTestGen & { sparql: string; canonicalSparql: string }>;
 export function sparqlAlgebraTests(suites: AlgebraTestSuite, blankToVariable: boolean, getSPARQL: boolean):
@@ -60,6 +67,10 @@ Generator<algebraTestGen> {
 }
 
 type GenQuery = { query: string; name: string };
+/**
+ * Yields raw SPARQL query strings from the static test fixtures for a given suite.
+ * @param suite - The test suite to iterate.
+ */
 export function* sparqlQueries(suite: AlgebraTestSuite): Generator<GenQuery> {
   function* subGen(relativePath: string): Generator<GenQuery> {
     const absolutePath = join(rootSparql, relativePath);
@@ -86,6 +97,12 @@ export function* sparqlQueries(suite: AlgebraTestSuite): Generator<GenQuery> {
 
 export type NegativeAlgebraSuite = 'sparql-1.1-negative' | 'sparql-1.2-negative';
 
+/**
+ * Yields test cases for negative (invalid) algebra-level tests.
+ * Each test provides a SPARQL query that should fail during algebra transformation.
+ * @param suite - The negative test suite to iterate.
+ * @param filter - Optional filter predicate applied to the test file name.
+ */
 export function* sparqlAlgebraNegativeTests(
   suite: NegativeAlgebraSuite,
   filter?: (name: string) => boolean,

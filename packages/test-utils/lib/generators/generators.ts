@@ -15,6 +15,13 @@ interface PositiveTest {
   }>;
 }
 
+/**
+ * Yields test cases for positive SPARQL parser tests.
+ * Each test provides the query string, expected ASTs (with and without source tracking),
+ * and auto-generated query strings (pretty-printed and compact).
+ * @param type - The test suite to use.
+ * @param filter - Optional filter predicate applied to the test file name (without extension).
+ */
 export function* positiveTest(
   type: 'paths' | 'sparql-1-1' | 'sparql-1-2',
   filter?: (name: string) => boolean,
@@ -69,6 +76,12 @@ export interface NegativeTest {
   }>;
 }
 
+/**
+ * Yields test cases for negative (invalid) SPARQL parser tests.
+ * Each test provides a query string that should fail to parse.
+ * @param type - The test suite to use.
+ * @param filter - Optional filter predicate applied to the test file name (without extension).
+ */
 export function* negativeTest(
   type: 'sparql-1-1-invalid' | 'sparql-1-2-invalid',
   filter?: (name: string) => boolean,

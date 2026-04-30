@@ -168,7 +168,7 @@ C[traqulaIndentation] += 2;
 The generator builder can significantly help you with creating a round tripping parser.
 Basically what that allows you to do is to keep information that the AST finds 'unimportant' within the generated string.
 Take for example capitalization and spaces in the sparql spec.
-Both are ignored in the AST, but if you want to generate the same string out of your AST, yuo need to store them somewhere.
+Both are ignored in the AST, but if you want to generate the same string out of your AST, you need to store them somewhere.
 Traqula helps you store this information using it's `Node` `Localization`.
 
 Localization basically allows you to remember what _portion of the original string_ a node represents.

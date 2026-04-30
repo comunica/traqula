@@ -29,11 +29,21 @@ function listToRuleDefMap<T extends readonly ParserRule[]>(rules: T): ParseRules
   return <ParseRulesToObject<T>>newRules;
 }
 
+/**
+ * Configuration for {@link ParserBuilder.build}. Specifies the token vocabulary,
+ * optional Chevrotain parser/lexer configuration, and optional hooks for
+ * preprocessing input or handling parse errors.
+ */
 export interface ParserBuildArgs {
+  /** The complete token vocabulary the parser and lexer should recognize. */
   tokenVocabulary: readonly TokenType[];
+  /** Optional Chevrotain parser configuration (e.g., `maxLookahead`). */
   parserConfig?: IParserConfig;
+  /** Optional Chevrotain lexer configuration (e.g., `positionTracking`). */
   lexerConfig?: ILexerConfig;
+  /** Optional function to preprocess the input string before lexing. */
   queryPreProcessor?: (input: string) => string;
+  /** Optional custom error handler. If omitted, a default handler throws on the first error. */
   errorHandler?: (errors: IRecognitionException[]) => void;
 }
 
@@ -69,6 +79,11 @@ export class ParserBuilder<Context, Names extends string, RuleDefs extends Parse
     this.rules = startRules;
   }
 
+  /**
+   * Narrow the builder's context type parameter to a more specific subtype.
+   * This is a zero-cost type-level operation — the builder instance is returned as-is
+   * but with updated type parameters.
+   */
   public widenContext<NewContext extends Context>(): ParserBuilder<
     NewContext,
 Names,
@@ -79,6 +94,12 @@ Names,
     return <any> this;
   }
 
+  /**
+   * Update the type signatures (return types and/or parameter types) of existing rules
+   * without changing their implementations. Use this when a patched rule changes the types
+   * flowing through downstream rules that don't need new implementations.
+   * This is a zero-cost type-level operation.
+   */
   public typePatch<Patch extends {[Key in Names]?: [any] | [any, any[]]}>():
   ParserBuilder<Context, Names, {[Key in Names]: Key extends keyof Patch ? (
     Patch[Key] extends [any, any[]] ? ParserRule<Context, Key, Patch[Key][0], Patch[Key][1]> : (
@@ -138,6 +159,12 @@ Names,
     return this.addRuleRedundant(rule);
   }
 
+  /**
+   * Add multiple rules at once using rest parameters.
+   * Provides better TypeScript type inference than calling {@link addRule} in a loop,
+   * but avoid passing too many rules at once as this can cause TypeScript compilation slowdowns.
+   * TypeScript errors if any rule name conflicts with an existing one.
+   */
   public addMany<U extends readonly ParserRule<Context>[]>(
     ...rules: CheckOverlap<ParseNamesFromList<U>, Names, U>
   ): ParserBuilder<
@@ -167,6 +194,10 @@ Names,
       <unknown> this;
   }
 
+  /**
+   * Delete multiple rules by name in a single call.
+   * @param ruleNames - Names of the rules to delete.
+   */
   public deleteMany<U extends Names>(...ruleNames: U[]):
   ParserBuilder<Context, Exclude<Names, U>, {[K in Exclude<Names, U>]:
     RuleDefs[K] extends ParserRule<Context, K> ? RuleDefs[K] : never }> {
@@ -178,6 +209,11 @@ Names,
       <unknown> this;
   }
 
+  /**
+   * Retrieve a grammar rule definition by its name.
+   * Useful for inspecting or wrapping existing rules when extending a parser.
+   * @param ruleName - The name of the rule, type-checked against the builder's known rule names.
+   */
   public getRule<U extends Names>(ruleName: U): RuleDefs[U] extends ParserRule<any, U, infer RT, infer PT> ?
     ParserRule<Context, U, RT, PT> : never {
     return <any> this.rules[ruleName];
@@ -255,6 +291,12 @@ ${errorLine}`);
     throw new Error(messageBuilder.join(''));
   }
 
+  /**
+   * Construct a self-sufficient parser from the registered rules and token vocabulary.
+   * Building a parser is expensive (Chevrotain performs grammar recording), so the result
+   * should be reused across parse calls.
+   * @returns An object with a method for each registered rule name.
+   */
   public build({
     tokenVocabulary,
     parserConfig = {},

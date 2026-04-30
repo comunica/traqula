@@ -5,6 +5,11 @@ import { createAstContext, translateAlgTerm12 } from '@traqula/algebra-transform
 import { IndirBuilder } from '@traqula/core';
 import type { SparqlQuery } from '@traqula/rules-sparql-1-2';
 
+/**
+ * Pre-configured {@link IndirBuilder} for translating SPARQL 1.2 Algebra back to SPARQL 1.2 AST.
+ * Extends the SPARQL 1.1 algebra-to-AST builder with SPARQL 1.2 transformations.
+ * Use {@link IndirBuilder.create | IndirBuilder.create(toAst12Builder)} to extend it.
+ */
 export const toAst12Builder = IndirBuilder
   .create(toAst11Builder)
   .widenContext<AstContext>()

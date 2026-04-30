@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": ".",
+    "outDir": "dist/esm"
+  },
+  "references": [
+    { "path": "../chevrotain/tsconfig.lib.json" }
+  ],
+  "include": ["lib/**/*.ts"],
+  "exclude": ["dist/**"]
+}

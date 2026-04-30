@@ -1,6 +1,8 @@
 {
   "extends": "./tsconfig.base.json",
   "references": [
+    { "path": "packages/chevrotain" },
+
     { "path": "packages/algebra-transformations-1-1" },
     { "path": "packages/algebra-transformations-1-2" },
     { "path": "packages/core" },

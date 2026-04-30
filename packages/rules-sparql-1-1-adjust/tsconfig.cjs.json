@@ -3,7 +3,7 @@
   "compilerOptions": {
     "composite": false,
     "module": "CommonJS",
-    "moduleResolution": "nodenext",
+    "moduleResolution": "bundler",
     "declaration": false,
     "outDir": "dist/cjs"
   }

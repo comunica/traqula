@@ -5,6 +5,11 @@ import { gram, lex as l, MinimalSparqlParser, sparqlCodepointEscape } from '@tra
 import { queryUnitParserBuilder } from './queryUnitParser.js';
 import { updateParserBuilder } from './updateUnitParser.js';
 
+/**
+ * Pre-configured {@link ParserBuilder} for SPARQL 1.1 that combines query and update grammar rules.
+ * Use {@link ParserBuilder.create | ParserBuilder.create(sparql11ParserBuilder)} to extend it
+ * with additional rules.
+ */
 export const sparql11ParserBuilder = ParserBuilder.create(queryUnitParserBuilder)
   .merge(updateParserBuilder, <const> [])
   .addRule(gram.queryOrUpdate);
@@ -12,7 +17,7 @@ export const sparql11ParserBuilder = ParserBuilder.create(queryUnitParserBuilder
 export type SparqlParser = ReturnType<typeof sparql11ParserBuilder.build>;
 
 /**
- * Generator that can generate a SPARQL 1.1 AST given a SPARQL 1.1 string.
+ * Parser that can parse a SPARQL 1.1 string into a SPARQL 1.1 AST.
  */
 export class Parser extends MinimalSparqlParser<T11.SparqlQuery> {
   public constructor(

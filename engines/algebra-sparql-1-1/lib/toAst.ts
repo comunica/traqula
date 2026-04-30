@@ -87,6 +87,11 @@ import {
 import { IndirBuilder } from '@traqula/core';
 import type { SparqlQuery } from '@traqula/rules-sparql-1-1';
 
+/**
+ * Pre-configured {@link IndirBuilder} for translating SPARQL 1.1 Algebra back to SPARQL 1.1 AST.
+ * Combines all SPARQL 1.1 algebra-to-AST transformation definitions.
+ * Use {@link IndirBuilder.create | IndirBuilder.create(toAst11Builder)} to extend it.
+ */
 export const toAst11Builder = IndirBuilder
   .create(<const> [ resetContext, registerProjection ])
   .addMany(

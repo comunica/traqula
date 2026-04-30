@@ -11,6 +11,12 @@ import type {
 import { completeParseContext, copyParseContext, gram as S12, lex as l12 } from '@traqula/rules-sparql-1-2';
 import type * as T12 from '@traqula/rules-sparql-1-2';
 
+/**
+ * Pre-configured {@link ParserBuilder} for SPARQL 1.2, extending the SPARQL 1.1 parser builder
+ * with SPARQL 1.2 grammar rules (e.g. reified triples, triple terms, VERSION declaration).
+ * Use {@link ParserBuilder.create | ParserBuilder.create(sparql12ParserBuilder)} to extend it
+ * with additional rules.
+ */
 export const sparql12ParserBuilder = ParserBuilder.create(sparql11ParserBuilder)
   .widenContext<T12.SparqlContext>()
   .typePatch<{
@@ -266,7 +272,7 @@ export const sparql12ParserBuilder = ParserBuilder.create(sparql11ParserBuilder)
 export type SparqlParser = ReturnType<typeof sparql12ParserBuilder.build>;
 
 /**
- * Generator that can generate a SPARQL 1.2 AST given a SPARQL 1.2 string.
+ * Parser that can parse a SPARQL 1.2 string into a SPARQL 1.2 AST.
  */
 export class Parser {
   private readonly parser: SparqlParser;

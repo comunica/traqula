@@ -11,7 +11,7 @@
 [![npm version](https://badge.fury.io/js/@traqula%2Fparser-sparql-1-2.svg)](https://www.npmjs.com/package/@traqula/parser-sparql-1-2)
 
 Traqula Sparql 1.2 is a [SPARQL 1.2](https://www.w3.org/TR/sparql12-query/#grammar) query parser for TypeScript.
-It is a grammar extension of [Traqula engine-sparql-1-1](https://github.com/comunica/traqula/tree/main/engines/engine-sparql-1-1)
+It is a grammar extension of [Traqula parser-sparql-1-1](https://github.com/comunica/traqula/tree/main/engines/parser-sparql-1-1)
 
 ## Installation
 
@@ -48,5 +48,5 @@ const parser = new Parser();
 const abstractSyntaxTree = parser.parse('SELECT * { ?s ?p ?o }');
 ```
 
-This parser is a simple grammar extension to the [engine-sparql-1-1](https://github.com/comunica/traqula/tree/main/engines/engine-sparql-1-1).
+This parser is a simple grammar extension to the [parser-sparql-1-1](https://github.com/comunica/traqula/tree/main/engines/parser-sparql-1-1).
 As such, most, if not all, documentation of that parser holds for this one too.

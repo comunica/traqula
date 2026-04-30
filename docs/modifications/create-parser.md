@@ -1,7 +1,7 @@
 # Create Parser
 
 Traqula provides a generic core to create a modular [LL(K)-grammar](https://chevrotain.io/docs/features/llk.html) parser
-([read our paper for full details](TODO: link)).
+([read our paper for full details](https://jitsedesmet.be/article/traqula/)).
 Typically, modularity is provided on Parser granularity, allowing you to create a parser by extending an existing parser.
 This kind of extension is similar to how Object-Oriented programming languages allow you to create a class by extending another
 (see: [Chevrotain](https://chevrotain.io/docs/features/grammar_inheritance.html), [ANTLR4](https://chevrotain.io/docs/features/grammar_inheritance.html)).

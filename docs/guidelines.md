@@ -243,8 +243,59 @@ When developing a modified parser or generator:
 3. **Reuse parser instances.** Building a parser is expensive due to Chevrotain's grammar recording.
    Create the parser once and reuse it across test cases.
 
+## Working with IndirBuilder
+
+`IndirBuilder` (indirection builder) lets you compose transformation logic
+the same way `ParserBuilder` and `GeneratorBuilder` compose grammar rules.
+Use it when defining custom AST-to-algebra transformations.
+
+```typescript
+import { IndirBuilder, type IndirDef } from '@traqula/core';
+import { toAlgebra12Builder } from '@traqula/algebra-sparql-1-2';
+
+// Define a custom transformation
+const myTransform: IndirDef<MyCtx, 'myTransform', OutputType, [InputType]> = {
+  name: 'myTransform',
+  fun: ({ SUBRULE }) => (context, input) => {
+    // Transform input to output
+    return transformedResult;
+  },
+};
+
+// Copy and extend
+const myAlgebraBuilder = IndirBuilder.create(toAlgebra12Builder)
+  .addRule(myTransform);
+```
+
+### Merging IndirBuilders
+
+Use `merge()` to combine independent transformation sets:
+
+```typescript
+const combined = IndirBuilder.create(builderA)
+  .merge(builderB, { onConflict: 'override' });
+```
+
+The `onConflict` parameter controls what happens when both builders define the same rule:
+- `'override'` — the merged-in builder's rule takes precedence
+- `'throw'` — an error is thrown on conflict (default behavior)
+
+If both builders share the exact same reference for a rule, the merge proceeds without conflict.
+
+For more details on creating transformers, see [create a transformer](modifications/create-transformer.md)
+and [modify a transformer](modifications/modify-transformer.md).
+
 ## Naming Conventions
 
 - **Rule names**: Start with a lowercase letter (e.g., `'myCustomRule'`, `'shaclRuleBlock'`).
 - **Token names**: Start with an uppercase letter (e.g., `'MyKeyword'`, `'TransitiveKeyword'`).
 - **Use string literal types**: The `name` field should be a specific string literal, not just `string`.
+
+## See Also
+
+- [Design decisions](design.md) — rationale behind key architectural choices
+- [AST structure](usage/AST-structure.md) — how AST nodes and source locations work
+- [Create a parser](modifications/create-parser.md) — step-by-step guide
+- [Create a generator](modifications/create-generator.md) — how to build a generator
+- [Create a transformer](modifications/create-transformer.md) — how to build AST-to-algebra transformers
+- [API documentation (TypeDoc)](https://comunica.github.io/traqula/) — auto-generated API docs

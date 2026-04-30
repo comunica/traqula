@@ -2,12 +2,11 @@
 
 [![npm version](https://badge.fury.io/js/@traqula%2Fchevrotain.svg)](https://www.npmjs.com/package/@traqula/chevrotain)
 
-Exports the [Chevrotain](https://chevrotain.io/docs/) package and tries to bundle a CJS version too.
-This is NOT a redistribution of Chevrotain, not should a project outside of Traqula depend on this.
+Exports the [Chevrotain](https://chevrotain.io/docs/) package and bundles a CJS version.
+This is NOT a redistribution of Chevrotain, nor should a project outside of Traqula depend on this.
 
-The reason for exporting is so the transpiled versions of the traqula packages use the same version of Chevrotain (instead of copying).
-I copied the licence of Chevrotain just to be sure :)
-So this part is APACHE 2.0 licenced!
+The reason for this package is so the transpiled versions of the Traqula packages use the same Chevrotain version (instead of duplicating it).
+The Chevrotain licence (APACHE 2.0) is included.
 
 ## Installation
 
@@ -20,3 +19,8 @@ or
 ```bash
 yarn add @traqula/chevrotain
 ```
+
+> [!note]
+> This package is an internal dependency of `@traqula/core`. You typically don't need to install it directly.
+> If you need Chevrotain types (e.g. `IRecognitionException`, `TokenType`), import them from this package
+> to ensure version consistency with Traqula.

@@ -1,11 +1,10 @@
 {
-  "extends": "./tsconfig.json",
+  "extends": "./tsconfig.lib.json",
   "compilerOptions": {
     "composite": false,
     "module": "CommonJS",
     "moduleResolution": "bundler",
     "declaration": false,
-    "outDir": "dist/cjs",
-    "skipLibCheck": true
+    "outDir": "dist/cjs"
   }
 }

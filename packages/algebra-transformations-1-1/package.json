@@ -38,6 +38,9 @@
     "build:ts": "node \"../../node_modules/typescript/bin/tsc\" -b",
     "build:cjs": "node \"../../node_modules/typescript/bin/tsc\" -b tsconfig.cjs.json"
   },
+  "peerDependencies": {
+    "@rdfjs/types": "^2.0.0"
+  },
   "dependencies": {
     "@traqula/core": "^1.1.0",
     "@traqula/rules-sparql-1-1": "^1.1.0",
@@ -45,8 +48,5 @@
     "rdf-data-factory": "^2.0.1",
     "rdf-isomorphic": "^2.0.0",
     "rdf-string": "^2.0.0"
-  },
-  "devDependencies": {
-    "@rdfjs/types": "^2.0.1"
   }
 }

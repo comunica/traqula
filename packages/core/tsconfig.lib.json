@@ -6,8 +6,8 @@
     "outDir": "dist/esm"
   },
   "references": [
-    { "path": "../chevrotain" }
+    { "path": "../chevrotain/tsconfig.lib.json" }
   ],
-  "include": ["lib/**/*.ts", "test/**/*.ts"],
+  "include": ["lib/**/*.ts"],
   "exclude": ["dist/**"]
 }

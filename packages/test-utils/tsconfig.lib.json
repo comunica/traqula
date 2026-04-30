@@ -3,11 +3,9 @@
   "compilerOptions": {
     "composite": true,
     "rootDir": ".",
+    "declaration": true,
     "outDir": "dist/esm"
   },
-  "references": [
-    { "path": "../chevrotain" }
-  ],
-  "include": ["lib/**/*.ts", "test/**/*.ts"],
+  "include": ["lib/**/*.ts"],
   "exclude": ["dist/**"]
 }

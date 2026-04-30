@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": ".",
+    "declaration": true,
+    "outDir": "dist/esm"
+  },
+  "references": [
+    { "path": "../../packages/core/tsconfig.lib.json" },
+    { "path": "../../packages/algebra-transformations-1-1/tsconfig.lib.json" },
+    { "path": "../../packages/rules-sparql-1-1/tsconfig.lib.json" }
+  ],
+  "include": ["lib/**/*.ts"],
+  "exclude": ["dist/**"]
+}

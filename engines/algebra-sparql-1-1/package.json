@@ -38,6 +38,9 @@
     "build:ts": "node \"../../node_modules/typescript/bin/tsc\" -b",
     "build:cjs": "node \"../../node_modules/typescript/bin/tsc\" -b tsconfig.cjs.json"
   },
+  "peerDependencies": {
+    "@rdfjs/types": "^2.0.0"
+  },
   "dependencies": {
     "@traqula/algebra-transformations-1-1": "^1.1.0",
     "@traqula/core": "^1.1.0",

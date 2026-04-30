@@ -68,14 +68,10 @@ function objectsEqual(
   }
 
   if (isTerm(received)) {
-    // eslint-disable-next-line ts/ban-ts-comment
-    // @ts-expect-error TS2345
-    return received.equals(expected);
+    return received.equals(<{ termType: unknown } | undefined | null>expected);
   }
   if (isTerm(expected)) {
-    // eslint-disable-next-line ts/ban-ts-comment
-    // @ts-expect-error TS2345
-    return expected.equals(received);
+    return expected.equals(<{ termType: unknown } | undefined | null>received);
   }
   //  York
   // test
@@ -96,26 +92,24 @@ function objectsEqual(
     if (expected === undefined || expected === null || isPrimitive(expected) || Array.isArray(expected)) {
       return false;
     }
-    const keys_first = Object.keys(received);
-    const receivedMatches = selector(received);
+    const receivedObj = <Record<string, unknown>>received;
+    const expectedObj = <Record<string, unknown>>expected;
+    const keys_first = Object.keys(receivedObj);
+    const receivedMatches = selector(receivedObj);
 
     for (const key of keys_first) {
       if (receivedMatches && ignoreKeys.includes(key)) {
         continue;
       }
-      // eslint-disable-next-line ts/ban-ts-comment
-      // @ts-expect-error TS7053
-      if (!objectsEqual(received[key], expected[key], selector, ignoreKeys)) {
+      if (!objectsEqual(receivedObj[key], expectedObj[key], selector, ignoreKeys)) {
         return false;
       }
     }
 
     // We do this to make sure that we are not missing keys in the received object
-    const keys_second = Object.keys(expected);
+    const keys_second = Object.keys(expectedObj);
     for (const key of keys_second) {
-      // eslint-disable-next-line ts/ban-ts-comment
-      // @ts-expect-error TS7053
-      if (!objectsEqual(received[key], expected[key], selector, ignoreKeys)) {
+      if (!objectsEqual(receivedObj[key], expectedObj[key], selector, ignoreKeys)) {
         return false;
       }
     }

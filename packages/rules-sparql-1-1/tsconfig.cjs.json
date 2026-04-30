@@ -3,9 +3,8 @@
   "compilerOptions": {
     "composite": false,
     "module": "CommonJS",
-    "moduleResolution": "bundler",
+    "moduleResolution": "nodenext",
     "declaration": false,
-    "outDir": "dist/cjs",
-    "skipLibCheck": true
+    "outDir": "dist/cjs"
   }
 }

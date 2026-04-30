@@ -19,8 +19,3 @@ or
 ```bash
 yarn add @traqula/chevrotain
 ```
-
-> [!note]
-> This package is an internal dependency of `@traqula/core`. You typically don't need to install it directly.
-> If you need Chevrotain types (e.g. `IRecognitionException`, `TokenType`), import them from this package
-> to ensure version consistency with Traqula.

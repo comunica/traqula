@@ -36,6 +36,17 @@ export interface SelectiveTraversalContext<Nodes> {
   shortcut?: boolean;
 }
 
+/**
+ * Base transformer class for recursively visiting and transforming object trees.
+ * Operates on plain JavaScript objects without requiring specific type structure.
+ *
+ * Uses an iterative (stack-based) algorithm instead of recursion to handle deep trees safely.
+ * Both {@link transformObject} and {@link visitObject} traverse depth-first, processing
+ * deeper objects before their parents (post-order).
+ *
+ * For type-aware traversal based on `type` and `subType` fields,
+ * see {@link TransformerTyped} and {@link TransformerSubTyped}.
+ */
 export class TransformerObject {
   protected maxStackSize = 1_000_000;
   /**

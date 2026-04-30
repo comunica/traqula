@@ -1,11 +1,11 @@
 ### Round Tripping
 
-We decided to implement round tripping by creating a `location` field for eachAST node.
+We decided to implement round tripping by creating a `location` field for each AST node.
 The location indicates a source string and a start and end index of the string representation of that AST node within the source string.
 To reduce string repetitions, an undefined source string means this node shares the same source string as its parent.
 
 We considered round tripping where spaces and special cases were captured as part of a round tripping type (RTT) field in each AST,
-but that solution was not maintainable. The issue was that some strings are not materialized in teh AST such as an empty group: `{  {  } . } }.`
+but that solution was not maintainable. The issue was that some strings are not materialized in the AST such as an empty group: `{  {  } . } }.`
 Tracking this as part of the AST creates a complex 'ownership' problem.
 Additionally capturing the complexity of all edge-cases proved to be difficult on a grammar basis, as such, reasoning over code became a nightmare.
 Lastly, capturing round tripping info in your AST types creates for a strongly types AST, but that comes with a maintainability tradeoff.

@@ -49,4 +49,4 @@ const abstractSyntaxTree = generator.generate(abstractSyntaxTree);
 ```
 
 Note that a single generator cannot generate multiple queries in parallel.
-The generator is constructed as a simple extansion of the existing [SPARQL 1.1 generator](../generator-sparql-1-1), the documentation of that generator thus also holds for this one.
+The generator is constructed as a simple extension of the existing [SPARQL 1.1 generator](../generator-sparql-1-1), the documentation of that generator thus also holds for this one.

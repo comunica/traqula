@@ -4,7 +4,7 @@ import { gram, completeGeneratorContext } from '@traqula/rules-sparql-1-1';
 
 /**
  * Pre-configured {@link GeneratorBuilder} for SPARQL 1.1 that composes all SPARQL 1.1 generator rules.
- * Use {@link GeneratorBuilder.create | GeneratorBuilder.create(sparql11GeneratorBuilder)} to extend it.
+ * Use {@link GeneratorBuilder.create GeneratorBuilder.create(sparql11GeneratorBuilder)} to extend it.
  */
 export const sparql11GeneratorBuilder = GeneratorBuilder.create(<const> [
   gram.queryOrUpdate,

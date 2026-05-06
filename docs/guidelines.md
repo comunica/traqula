@@ -1,7 +1,7 @@
 # Guidelines for Dependent Projects
 
 This guide provides best practices for projects that extend Traqula's parsers, generators, or transformers.
-For a real-world example, see [shacl-rules-parser](https://github.com/jitsedesmet/shacl-rules-parser),
+For a real-world example, see the internal [SPARQL 1.2 parser](../packages/rules-sparql-1-2), the [SPARQL 1.2 + lateral parser](https://github.com/jitsedesmet/demo-mixed-composability/blob/main/src/lib/traqula/lateral/implementation.ts), or the [shacl-rules-parser](https://github.com/jitsedesmet/shacl-rules-parser),
 which extends Traqula's SPARQL 1.2 parser with custom grammar.
 
 ## Always Type Your Grammar Rules
@@ -50,21 +50,6 @@ const myIndirDef: IndirDef<MyContext, 'myFunction', number, [number]> = {
 };
 ```
 
-> [!important]
-> When defining a rule as an object literal, use the `<const>` assertion or `satisfies` keyword
-> to preserve the string literal type of the `name` field:
-> ```typescript
-> const myRule = <const> {
->   name: 'myRule',
->   impl: /* ... */
-> };
-> // or
-> const myRule = {
->   name: 'myRule',
->   impl: /* ... */
-> } satisfies ParserRule<MyContext, 'myRule', MyReturnType>;
-> ```
-
 ## Use `addMany` for Batch Rule Registration
 
 When adding multiple rules to a builder, prefer `addMany()` over chaining individual `addRule()` calls.
@@ -79,7 +64,7 @@ const builder = ParserBuilder
 
 // ⚠️ Acceptable for small additions, but can cause excessive type inference with many rules
 const builder = ParserBuilder
-  .create(existingBuilder)
+  .create(existingBuilder
   .addRule(ruleA)
   .addRule(ruleB)
   .addRule(ruleC)
@@ -88,8 +73,9 @@ const builder = ParserBuilder
 
 > [!warning]
 > Do not pass too many rules to a single `.create()` or `.addMany()` call.
-> When the number of rules grows large, TypeScript's type checker may struggle with the deeply nested
-> mapped types, producing cryptic errors similar to those you'd see with duplicate rule names.
+> When the number of rules grows large,
+> TypeScript's type checker may struggle with the deeply nested mapped types,
+> producing cryptic errors similar to those you'd see with duplicate rule names.
 > In such cases, split into multiple `.addMany()` calls.
 
 The same guidance applies to `GeneratorBuilder.addMany()` and `IndirBuilder.addMany()`.
@@ -117,11 +103,11 @@ The same applies to `LexerBuilder.create(existingLexerBuilder)`,
 
 These three methods serve different purposes when modifying an inherited grammar:
 
-| Method | When to use |
-|--------|-------------|
-| `patchRule(rule)` | Replace the **implementation** of an existing rule. The new rule must have the same name. |
+| Method               | When to use                                                                                                                                    |
+|----------------------|------------------------------------------------------------------------------------------------------------------------------------------------|
+| `patchRule(rule)`    | Replace the **implementation** of an existing rule. The new rule must have the same name.                                                      |
 | `typePatch<{...}>()` | Update **only the type signature** of rules whose return types or parameters changed due to upstream patches. No implementation change needed. |
-| `deleteRule(name)` | Remove a rule entirely. Use when a patched grammar makes certain parent rules unreachable. |
+| `deleteRule(name)`   | Remove a rule entirely. Use when a patched grammar makes certain parent rules unreachable.                                                     |
 
 Example workflow when restricting a grammar:
 

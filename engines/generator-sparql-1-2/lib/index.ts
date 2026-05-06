@@ -8,7 +8,7 @@ import type * as T12 from '@traqula/rules-sparql-1-2';
 /**
  * Pre-configured {@link GeneratorBuilder} for SPARQL 1.2, extending the SPARQL 1.1 generator builder
  * with SPARQL 1.2 generation rules (e.g. triple terms, reified triples, VERSION declaration).
- * Use {@link GeneratorBuilder.create | GeneratorBuilder.create(sparql12GeneratorBuilder)} to extend it.
+ * Use {@link GeneratorBuilder.create GeneratorBuilder.create(sparql12GeneratorBuilder)} to extend it.
  */
 export const sparql12GeneratorBuilder =
   GeneratorBuilder.create(sparql11GeneratorBuilder)

@@ -7,7 +7,7 @@ import { updateParserBuilder } from './updateUnitParser.js';
 
 /**
  * Pre-configured {@link ParserBuilder} for SPARQL 1.1 that combines query and update grammar rules.
- * Use {@link ParserBuilder.create | ParserBuilder.create(sparql11ParserBuilder)} to extend it
+ * Use {@link ParserBuilder.create ParserBuilder.create(sparql11ParserBuilder)} to extend it
  * with additional rules.
  */
 export const sparql11ParserBuilder = ParserBuilder.create(queryUnitParserBuilder)

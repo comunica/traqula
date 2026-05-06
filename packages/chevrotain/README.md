@@ -5,8 +5,10 @@
 Exports the [Chevrotain](https://chevrotain.io/docs/) package and bundles a CJS version.
 This is NOT a redistribution of Chevrotain, nor should a project outside of Traqula depend on this.
 
-The reason for this package is so the transpiled versions of the Traqula packages use the same Chevrotain version (instead of duplicating it).
+The reason for this package is so the transpiled versions of the Traqula packages
+use the same Chevrotain version (instead of duplicating it), adding CJS support since Chevrotain is ESM only.
 The Chevrotain licence (APACHE 2.0) is included.
+The package is licenced as such since I am unsure how licencing works in the case of re-packaging.
 
 ## Installation
 

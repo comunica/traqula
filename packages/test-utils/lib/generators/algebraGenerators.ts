@@ -29,9 +29,9 @@ export type AlgebraTestSuite = 'dawg-syntax' | 'sparql-1.1' | 'sparql11-query' |
  * @param blankToVariable - Whether to use the blank-to-variable fixture variant.
  * @param getSPARQL - Whether to load the SPARQL and canonical SPARQL strings.
  */
-export function sparqlAlgebraTests(suites: AlgebraTestSuite, blankToVariable: boolean, getSPARQL: true):
+export function sparqlAlgebraTests(suite: AlgebraTestSuite, blankToVariable: boolean, getSPARQL: true):
 Generator<algebraTestGen & { sparql: string; canonicalSparql: string }>;
-export function sparqlAlgebraTests(suites: AlgebraTestSuite, blankToVariable: boolean, getSPARQL: boolean):
+export function sparqlAlgebraTests(suite: AlgebraTestSuite, blankToVariable: boolean, getSPARQL: boolean):
 Generator<algebraTestGen>;
 export function* sparqlAlgebraTests(suite: AlgebraTestSuite, blankToVariable: boolean, getSPARQL: boolean):
 Generator<algebraTestGen> {

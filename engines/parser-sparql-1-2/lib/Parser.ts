@@ -14,7 +14,7 @@ import type * as T12 from '@traqula/rules-sparql-1-2';
 /**
  * Pre-configured {@link ParserBuilder} for SPARQL 1.2, extending the SPARQL 1.1 parser builder
  * with SPARQL 1.2 grammar rules (e.g. reified triples, triple terms, VERSION declaration).
- * Use {@link ParserBuilder.create | ParserBuilder.create(sparql12ParserBuilder)} to extend it
+ * Use {@link ParserBuilder.create ParserBuilder.create(sparql12ParserBuilder)} to extend it
  * with additional rules.
  */
 export const sparql12ParserBuilder = ParserBuilder.create(sparql11ParserBuilder)

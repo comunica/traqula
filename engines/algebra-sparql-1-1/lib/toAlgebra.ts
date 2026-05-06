@@ -42,7 +42,7 @@ import type { SparqlQuery } from '@traqula/rules-sparql-1-1';
 /**
  * Pre-configured {@link IndirBuilder} for translating SPARQL 1.1 AST to SPARQL Algebra.
  * Combines all SPARQL 1.1 algebra transformation definitions.
- * Use {@link IndirBuilder.create | IndirBuilder.create(toAlgebra11Builder)} to extend it.
+ * Use {@link IndirBuilder.create IndirBuilder.create(toAlgebra11Builder)} to extend it.
  */
 export const toAlgebra11Builder = IndirBuilder
   .create(<const> [

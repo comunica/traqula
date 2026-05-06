@@ -1,0 +1,16 @@
+// See https://containers.dev/implementors/json_reference/ for configuration reference
+{
+  "name": "Untitled Node.js project",
+  "build": {
+      "dockerfile": "Dockerfile"
+  },
+  "mounts": [
+    "source=${localWorkspaceFolder}/.devcontainer/.copilot,target=/home/node/.copilot/,type=bind",
+  ],
+  "remoteUser": "node",
+  "customizations" : {
+    "jetbrains" : {
+      "backend" : "WebStorm"
+    }
+  }
+}

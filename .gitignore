@@ -2,6 +2,7 @@ node_modules
 coverage
 .idea
 out
+.devcontainer
 .yarn
 .rdf-test-suite-cache
 .eslintcache

@@ -313,6 +313,7 @@ export const inlineData: SparqlRule<'inlineData', PatternValues> = <const> {
           F.printFilter(ast, () => PRINT_WORD('UNDEF'));
         } else {
           SUBRULE(graphNodePath, mapping[var_]);
+          F.printFilter(ast, () => PRINT_WORD(''));
         }
       }
       F.printFilter(ast, () => {

@@ -1,0 +1,8 @@
+DELETE {
+  GRAPH <urn:one:graph> {
+    ?s <foo:bar> ?o .
+  }
+}
+USING <urn:another:graph> USING NAMED <urn:anamed:graph> WHERE {
+  ?s <foo:bar> ?o .
+}

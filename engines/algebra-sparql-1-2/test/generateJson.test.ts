@@ -27,43 +27,46 @@ describe.skip('algebra 1.2 test generate', () => {
   for (const suite of suites) {
     describe(suite, () => {
       for (const { query, name } of sparqlQueries(suite)) {
-        for (const blankToVariable of [ false, true ]) {
-          it(`${name} - blankToVar: ${blankToVariable}`, ({ expect }) => {
-            expect(() => {
-              astFactory.resetBlankNodeCounter();
-              const ast = parser.parse(query, { astFactory });
-              const algebra = algebraUtils.objectify(toAlgebra(ast, {
-                quads: name.endsWith('-quads'),
-                blankToVariable,
-              }));
-              const canonicalString = generator.generate(toAst(algebra));
+        for (const quads of [ false, true ]) {
+          for (const blankToVariable of [ false, true ]) {
+            const suffix = quads ? '-quads' : '';
+            it(`${name}${suffix} - blankToVar: ${blankToVariable}`, ({ expect }) => {
+              expect(() => {
+                astFactory.resetBlankNodeCounter();
+                const ast = parser.parse(query, { astFactory });
+                const algebra = algebraUtils.objectify(toAlgebra(ast, {
+                  quads,
+                  blankToVariable,
+                }));
+                const canonicalString = generator.generate(toAst(algebra));
 
-              const algebraFileName = `${name}.json`;
-              let newPath = blankToVariable ? rootJsonBlankToVariable : rootJson;
-              let newPathCanonical = blankToVariable ? canonicalSparqlBlankToVar : canonicalSparqlBase;
-              for (const piece of name.split(sep).slice(0, -1)) {
-                newPath = join(newPath, piece);
-                if (!existsSync(newPath)) {
-                  mkdirSync(newPath);
+                const algebraFileName = `${name}${suffix}.json`;
+                let newPath = blankToVariable ? rootJsonBlankToVariable : rootJson;
+                let newPathCanonical = blankToVariable ? canonicalSparqlBlankToVar : canonicalSparqlBase;
+                for (const piece of name.split(sep).slice(0, -1)) {
+                  newPath = join(newPath, piece);
+                  if (!existsSync(newPath)) {
+                    mkdirSync(newPath);
+                  }
                 }
-              }
-              for (const piece of name.split(sep).slice(0, -1)) {
-                newPathCanonical = join(newPathCanonical, piece);
-                if (!existsSync(newPathCanonical)) {
-                  mkdirSync(newPathCanonical);
+                for (const piece of name.split(sep).slice(0, -1)) {
+                  newPathCanonical = join(newPathCanonical, piece);
+                  if (!existsSync(newPathCanonical)) {
+                    mkdirSync(newPathCanonical);
+                  }
                 }
-              }
 
-              writeFileSync(
-                join(blankToVariable ? rootJsonBlankToVariable : rootJson, algebraFileName),
-                JSON.stringify(algebra, null, 2),
-              );
-              writeFileSync(
-                join(blankToVariable ? canonicalSparqlBlankToVar : canonicalSparqlBase, `${name}.sparql`),
-                canonicalString,
-              );
-            }).not.toThrow();
-          });
+                writeFileSync(
+                  join(blankToVariable ? rootJsonBlankToVariable : rootJson, algebraFileName),
+                  JSON.stringify(algebra, null, 2),
+                );
+                writeFileSync(
+                  join(blankToVariable ? canonicalSparqlBlankToVar : canonicalSparqlBase, `${name}${suffix}.sparql`),
+                  canonicalString,
+                );
+              }).not.toThrow();
+            });
+          }
         }
       }
     });

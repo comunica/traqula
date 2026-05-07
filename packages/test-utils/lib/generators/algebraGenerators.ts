@@ -1,5 +1,5 @@
 /* eslint-disable import/no-nodejs-modules */
-import { lstatSync, readdirSync } from 'node:fs';
+import { existsSync, lstatSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { readFile, readFileSync } from '../fileUtils.js';
 import type { NegativeTest } from './generators.js';
@@ -25,6 +25,8 @@ export type AlgebraTestSuite = 'dawg-syntax' | 'sparql-1.1' | 'sparql11-query' |
 /**
  * Yields algebra-level test cases from the static test fixtures.
  * Each test provides a SPARQL query, expected algebra JSON, and optionally a canonical SPARQL string.
+ * For each unique base test name, yields both a `quads: false` and a `quads: true` variant
+ * when the corresponding expected algebra fixture exists.
  * @param suite - The test suite to iterate.
  * @param blankToVariable - Whether to use the blank-to-variable fixture variant.
  * @param getSPARQL - Whether to load the SPARQL and canonical SPARQL strings.
@@ -35,34 +37,57 @@ export function sparqlAlgebraTests(suite: AlgebraTestSuite, blankToVariable: boo
 Generator<algebraTestGen>;
 export function* sparqlAlgebraTests(suite: AlgebraTestSuite, blankToVariable: boolean, getSPARQL: boolean):
 Generator<algebraTestGen> {
-  // Relative path starting from roots declared above.
-  function* subGen(relativePath: string): Generator<algebraTestGen> {
-    const absolutePath = join(blankToVariable ? rootJsonBlankToVariable : rootJson, relativePath);
+  const jsonRoot = blankToVariable ? rootJsonBlankToVariable : rootJson;
+  const canonicalRoot = blankToVariable ? rootCanonicalSparqlBlankToVar : rootCanonicalSparql;
+
+  // Collect all unique base names (relative paths without `-quads` suffix and `.json` extension)
+  // that have a base (non-quads) JSON file
+  function collectBaseNames(relativePath: string, result: Set<string>): void {
+    const absolutePath = join(jsonRoot, relativePath);
     if (lstatSync(absolutePath).isDirectory()) {
-      // Recursion
       for (const sub of readdirSync(absolutePath)) {
-        yield* subGen(join(relativePath, sub));
+        collectBaseNames(join(relativePath, sub), result);
       }
-    } else {
-      const name = relativePath.replace(/\.json$/u, '');
-      const sparqlPath = join(rootSparql, relativePath.replace(/\.json/u, '.sparql'));
-      const canonicalSparqlPath = join(
-        blankToVariable ? rootCanonicalSparqlBlankToVar : rootCanonicalSparql,
-        relativePath.replace(/\.json/u, '.sparql'),
-      );
+    } else if (!relativePath.endsWith('-quads.json')) {
+      result.add(relativePath.replace(/\.json$/u, ''));
+    }
+  }
+
+  function* yieldForBase(baseName: string): Generator<algebraTestGen> {
+    const quadsJsonPath = join(jsonRoot, `${baseName}-quads.json`);
+    const sparqlPath = join(rootSparql, `${baseName}.sparql`);
+    const canonicalPath = join(canonicalRoot, `${baseName}.sparql`);
+
+    // Yield quads: false variant (base JSON always exists since collectBaseNames filters for it)
+    yield {
+      name: baseName,
+      json: JSON.parse(readFileSync(join(jsonRoot, `${baseName}.json`))),
+      quads: false,
+      sparql: getSPARQL ? readFileSync(sparqlPath, 'utf-8') : undefined,
+      canonicalSparql: getSPARQL ? readFileSync(canonicalPath, 'utf-8') : undefined,
+    };
+
+    // Yield quads: true variant if the quads JSON exists
+    if (existsSync(quadsJsonPath)) {
+      const canonicalQuadsPath = join(canonicalRoot, `${baseName}-quads.sparql`);
       yield {
-        name,
-        json: JSON.parse(readFileSync(absolutePath)),
-        sparql: getSPARQL ? readFileSync(sparqlPath, 'utf8') : undefined,
-        canonicalSparql: getSPARQL ? readFileSync(canonicalSparqlPath, 'utf-8') : undefined,
-        quads: name.endsWith('-quads'),
+        name: `${baseName}-quads`,
+        json: JSON.parse(readFileSync(quadsJsonPath)),
+        quads: true,
+        sparql: getSPARQL ? readFileSync(sparqlPath, 'utf-8') : undefined,
+        canonicalSparql: getSPARQL ? readFileSync(canonicalQuadsPath, 'utf-8') : undefined,
       };
     }
   }
 
-  const subfolders = readdirSync(blankToVariable ? rootJsonBlankToVariable : rootJson);
+  const subfolders = readdirSync(jsonRoot);
   if (subfolders.includes(suite)) {
-    yield* subGen(suite);
+    const baseNames = new Set<string>();
+    collectBaseNames(suite, baseNames);
+    const sorted = [ ...baseNames ].sort();
+    for (const baseName of sorted) {
+      yield* yieldForBase(baseName);
+    }
   }
 }
 

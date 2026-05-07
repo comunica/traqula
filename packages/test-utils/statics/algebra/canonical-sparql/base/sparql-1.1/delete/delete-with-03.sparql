@@ -1,0 +1,13 @@
+DELETE {
+  GRAPH <http://example.org/g2> {
+    ?s ?p ?o .
+  }
+}
+WHERE {
+  GRAPH <http://example.org/g2> {
+    GRAPH <http://example.org/g1> {
+      <http://example.org/a> <http://xmlns.com/foaf/0.1/knows> ?s .
+      ?s ?p ?o .
+    }
+  }
+}

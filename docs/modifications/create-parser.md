@@ -1,7 +1,7 @@
 # Create Parser
 
 Traqula provides a generic core to create a modular [LL(K)-grammar](https://chevrotain.io/docs/features/llk.html) parser
-([read our paper for full details](TODO: link)).
+([read our paper for full details](https://traqula-resource.jitsedesmet.be/)).
 Typically, modularity is provided on Parser granularity, allowing you to create a parser by extending an existing parser.
 This kind of extension is similar to how Object-Oriented programming languages allow you to create a class by extending another
 (see: [Chevrotain](https://chevrotain.io/docs/features/grammar_inheritance.html), [ANTLR4](https://chevrotain.io/docs/features/grammar_inheritance.html)).
@@ -13,7 +13,7 @@ Traqula takes the modularity to the level of grammar rules, allowing you to crea
 
 ## Chevrotain
 
-Since Traqula starts from Chevrotain, it is important to know that all Chevrorain's documentation is relevant for Traqula to. We will however highlight some core functions:
+Since Traqula starts from Chevrotain, it is important to know that all Chevrotain's documentation is relevant for Traqula too. We will however highlight some core functions:
 
 1. **CONSUME(x)**: Consume a given lexer token.
 2. **OPTION(x)**: optionally parse the following
@@ -38,11 +38,11 @@ When providing the same argument to for example `CONSUME`, Chevrotain requires y
 To create a lexer, one simply defines a [token](https://chevrotain.io/docs/tutorial/step1_lexing.html#our-first-token) using `createToken` from `@traqula/core`,
 which is a smart typed wrapper around the version Chevrotain provides.
 
-We define a token that parser 'test' in a case-insensitive way:
+We define a token that parses 'test' in a case-insensitive way:
 
 ```typescript
 import {createToken} from "@traqula/core";
-// We recommend using cpaitalized names for tokens.
+// We recommend using capitalized names for tokens.
 const testToken = createToken({ name: 'Test', pattern: /TEST/i });
 const wordToken = createToken({ name: 'Word', pattern: /[a-z]+/i });
 ```
@@ -59,7 +59,7 @@ However: LexerBuilders function as an arrayBuilder where the lexer will lex toke
 ```typescript
 // Move the testToken before the wordToken in our array.
 myLexerBuilder.moveBefore(wordToken, testToken)
-// Alternitavely:
+// Alternatively:
 const myOtherLexerBuilder = LexerBuilder.create().add(testToken, wordToken);
 ```
 

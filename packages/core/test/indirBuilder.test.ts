@@ -79,4 +79,71 @@ describe('indirBuilder', () => {
       expect(() => built.ruleA({})).toThrow('Rule ruleB not found');
     });
   });
+
+  describe('merge', () => {
+    it('merges two builders with non-overlapping rules', ({ expect }) => {
+      const ruleA: IndirDef<Record<string, never>, 'ruleA', string, []> = {
+        name: 'ruleA',
+        fun: () => _ctx => 'a',
+      };
+      const ruleB: IndirDef<Record<string, never>, 'ruleB', string, []> = {
+        name: 'ruleB',
+        fun: () => _ctx => 'b',
+      };
+      const builderA = IndirBuilder.create([ ruleA ]);
+      const builderB = IndirBuilder.create([ ruleB ]);
+      const merged = builderA.merge(builderB, <const> []);
+      const built = <any>merged.build();
+      expect(built.ruleA({})).toBe('a');
+      expect(built.ruleB({})).toBe('b');
+    });
+
+    it('merges without error when both builders share the same rule reference', ({ expect }) => {
+      const ruleA: IndirDef<Record<string, never>, 'ruleA', string, []> = {
+        name: 'ruleA',
+        fun: () => _ctx => 'a',
+      };
+      const builderA = IndirBuilder.create([ ruleA ]);
+      const builderB = IndirBuilder.create([ ruleA ]);
+      const merged = builderA.merge(builderB, <const> []);
+      const built = <any>merged.build();
+      expect(built.ruleA({})).toBe('a');
+    });
+
+    it('uses the override when conflicting rules are provided', ({ expect }) => {
+      const ruleA1: IndirDef<Record<string, never>, 'ruleA', string, []> = {
+        name: 'ruleA',
+        fun: () => _ctx => 'a1',
+      };
+      const ruleA2: IndirDef<Record<string, never>, 'ruleA', string, []> = {
+        name: 'ruleA',
+        fun: () => _ctx => 'a2',
+      };
+      const override: IndirDef<Record<string, never>, 'ruleA', string, []> = {
+        name: 'ruleA',
+        fun: () => _ctx => 'override',
+      };
+      const builderA = IndirBuilder.create([ ruleA1 ]);
+      const builderB = IndirBuilder.create([ ruleA2 ]);
+      const merged = builderA.merge(builderB, <const> [ override ]);
+      const built = <any>merged.build();
+      expect(built.ruleA({})).toBe('override');
+    });
+
+    it('throws when conflicting rules have no override', ({ expect }) => {
+      const ruleA1: IndirDef<Record<string, never>, 'ruleA', string, []> = {
+        name: 'ruleA',
+        fun: () => _ctx => 'a1',
+      };
+      const ruleA2: IndirDef<Record<string, never>, 'ruleA', string, []> = {
+        name: 'ruleA',
+        fun: () => _ctx => 'a2',
+      };
+      const builderA = IndirBuilder.create([ ruleA1 ]);
+      const builderB = IndirBuilder.create([ ruleA2 ]);
+      expect(() => builderA.merge(builderB, <const> [])).toThrow(
+        'Function with name "ruleA" already exists in the builder, specify an override to resolve conflict',
+      );
+    });
+  });
 });

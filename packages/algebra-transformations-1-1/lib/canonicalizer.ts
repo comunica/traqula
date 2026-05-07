@@ -4,6 +4,11 @@ import * as Algebra from './algebra.js';
 import * as util from './util.js';
 import { AlgebraFactory } from './index.js';
 
+/**
+ * Utility for canonicalizing SPARQL Algebra operations by replacing blank node
+ * and variable names with deterministic generated names.
+ * Useful for comparing algebra representations in tests.
+ */
 export class Canonicalizer {
   public constructor() {
     this.blankId = 0;

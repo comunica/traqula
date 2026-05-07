@@ -6,6 +6,19 @@ import type {
 import type { DefaultNodePreVisitor, Safeness, SafeWrap } from './TransformerTyped.js';
 import { TransformerTyped } from './TransformerTyped.js';
 
+/**
+ * Most specific AST transformer that dispatches visit and transform callbacks
+ * based on both the `type` and `subType` fields of {@link SubTyped} nodes.
+ *
+ * Extends {@link TransformerTyped} with an additional dispatch level. When a callback
+ * is registered for a specific `(type, subType)` pair, it takes precedence over
+ * the type-only callback from {@link TransformerTyped.transformNode}.
+ *
+ * This is the recommended transformer for SPARQL ASTs where nodes have both
+ * type and subType discriminators (e.g., `{ type: 'term', subType: 'literal' }`).
+ *
+ * @typeParam Nodes - Union type of all node types this transformer handles.
+ */
 export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<Nodes> {
   public constructor(
     defaultContext: TransformContext = {},

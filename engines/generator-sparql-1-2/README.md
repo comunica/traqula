@@ -44,8 +44,12 @@ const Generator = require('@traqula/generator-sparql-1-2').Generator;
 This package contains a `Generator` that is able to generate SPARQL 1.2 queries:
 
 ```typescript
+import { Parser } from '@traqula/parser-sparql-1-2';
+const parser = new Parser();
+const ast = parser.parse('SELECT * WHERE { ?s ?p ?o }');
+
 const generator = new Generator();
-const abstractSyntaxTree = generator.generate(abstractSyntaxTree);
+const queryString = generator.generate(ast);
 ```
 
 Note that a single generator cannot generate multiple queries in parallel.

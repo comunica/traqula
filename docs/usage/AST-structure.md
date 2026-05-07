@@ -17,11 +17,17 @@ This information is then used by the Traqula core generator to enable round-trip
 
 There are six kinds of source location information:
 1. **SourceLocationSource**: Relate the node to the source through a character range.
+   Used by the parser to indicate where in the input string this node came from.
 2. **SourceLocationInlinedSource**: Add a new source indicating what part of the new source this node represents and what part of the original source is replaced by this new source.
-3. **SourceLocationNoMaterialize**: Indicate this node and it's children are not represented in the query, but merely provide additional usability to the AST consumers.
-4. **SourceLocationStringReplace**: Indicate this node and it's children can be represented using a specified string instead of the specified range of characters in the original string.
+   Useful when you want to inject a new string fragment as a replacement for part of the original query.
+3. **SourceLocationNoMaterialize**: Indicate this node and its children are not represented in the query, but merely provide additional usability to the AST consumers.
+   For example, implicit default graph patterns have no textual representation but are present in the AST for semantic completeness.
+4. **SourceLocationStringReplace**: Indicate this node and its children can be represented using a specified string instead of the specified range of characters in the original string.
+   Useful when you want to replace a subtree with a known string without re-generating it.
 5. **SourceLocationNodeReplace**: Indicate you wish the generator to auto generate the AST node as a replacement of the specified range.
+   The generator will produce fresh output for this node, but will use the original source for siblings.
 6. **SourceLocationNodeAutoGenerate**: Indicate you wish the generator to auto generate the string for this node and do not relate it to the source string (since you likely don't have it).
+   This is the most common location type for newly created AST nodes.
 
 In order to support round tripping, the AST tree structure has the following restrictions regarding the ranges:
 1. The source related ranges of descendents of a node that relates itself to a source using some range, should be contained within that node. Concretely: if a node says it represents range x-y, it's descendants must represent subranges of x-y.
@@ -106,3 +112,11 @@ SELECT * {
 }
 `
 ```
+
+## See Also
+
+- [Design decisions — Round Tripping](../design.md#round-tripping) — rationale behind the source location approach
+- [Guidelines for dependent projects](../guidelines.md) — best practices for extending Traqula
+- [Create a parser](../modifications/create-parser.md) — step-by-step parser creation
+- [Create a generator](../modifications/create-generator.md) — how to build a round-tripping generator
+- [API documentation (TypeDoc)](https://comunica.github.io/traqula/) — auto-generated API docs

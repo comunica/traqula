@@ -2,12 +2,38 @@ import type { Typed } from '../types.js';
 import type { TransformContext, VisitContext } from './TransformerObject.js';
 import { TransformerObject } from './TransformerObject.js';
 
+/**
+ * Controls whether transform callbacks receive fully typed nodes (`'unsafe'`) or
+ * nodes where all fields are `unknown` (`'safe'`). Using `'safe'` (the default)
+ * forces explicit type narrowing, reducing the risk of incorrect assumptions.
+ */
 export type Safeness = 'safe' | 'unsafe';
+/**
+ * Conditionally wraps an object type: in `'safe'` mode, all fields become `unknown`;
+ * in `'unsafe'` mode, the original types are preserved.
+ */
 export type SafeWrap<Safe extends Safeness, obj extends object> =
   Safe extends 'safe' ? {[key in keyof obj]: unknown } : obj;
 
+/**
+ * Default pre-visitor configuration per node type. Provides default {@link TransformContext}
+ * values that apply when no explicit preVisitor is given for a node type.
+ */
 export type DefaultNodePreVisitor<Nodes extends Typed> = {[T in Nodes['type']]?: TransformContext };
 
+/**
+ * Type-aware AST transformer that dispatches visit and transform callbacks
+ * based on the `type` field of {@link Typed} nodes.
+ *
+ * Extends {@link TransformerObject} with node-type-specific dispatch, so you can
+ * register handlers per node type rather than filtering manually.
+ *
+ * For even more specific dispatch based on both `type` and `subType`,
+ * see {@link TransformerSubTyped}.
+ *
+ * @typeParam Nodes - Union type of all node types this transformer handles.
+ *   Each member must extend {@link Typed}.
+ */
 export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
   public constructor(
     defaultContext: TransformContext = {},

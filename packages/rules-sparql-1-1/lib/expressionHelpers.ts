@@ -18,6 +18,11 @@ export type ExpressionFunctionX<U extends Expression[]> = ExpressionOperation & 
 export type RuleDefExpressionFunctionX<T extends string, U extends Expression[]>
   = SparqlGrammarRule<T, ExpressionFunctionX<U>>;
 
+/**
+ * Create a grammar rule for a SPARQL built-in function that takes exactly one expression argument.
+ * The rule name is derived from the token name (uncapitalized).
+ * @param func - The lexer token for the built-in function keyword.
+ */
 export function funcExpr1<T extends string>(func: TokenType & { name: T }):
 RuleDefExpressionFunctionX<Uncapitalize<T>, [Expression]> {
   return {
@@ -33,6 +38,10 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, [Expression]> {
   };
 }
 
+/**
+ * Create a grammar rule for a SPARQL built-in function that takes exactly two expression arguments.
+ * @param func - The lexer token for the built-in function keyword.
+ */
 export function funcExpr2<T extends string>(func: TokenType & { name: T }):
 RuleDefExpressionFunctionX<Uncapitalize<T>, [Expression, Expression]> {
   return {
@@ -50,6 +59,10 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, [Expression, Expression]> {
   };
 }
 
+/**
+ * Create a grammar rule for a SPARQL built-in function that takes exactly three expression arguments.
+ * @param func - The lexer token for the built-in function keyword.
+ */
 export function funcExpr3<T extends string>(func: TokenType & { name: T }):
 RuleDefExpressionFunctionX<Uncapitalize<T>, [Expression, Expression, Expression]> {
   return {
@@ -74,6 +87,10 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, [Expression, Expression, Expression]
   };
 }
 
+/**
+ * Create a grammar rule for a SPARQL built-in function that takes exactly one variable argument.
+ * @param func - The lexer token for the built-in function keyword.
+ */
 export function funcVar1<T extends string>(func: TokenType & { name: T }):
 RuleDefExpressionFunctionX<Uncapitalize<T>, [TermVariable]> {
   return {
@@ -89,6 +106,11 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, [TermVariable]> {
   };
 }
 
+/**
+ * Create a grammar rule for a SPARQL built-in function that takes zero or one expression argument.
+ * Supports both `FUNC(expr)` and `FUNC NIL` syntax.
+ * @param func - The lexer token for the built-in function keyword.
+ */
 export function funcExprOrNil1<T extends string>(func: TokenType & { name: T }):
 RuleDefExpressionFunctionX<Uncapitalize<T>, [] | [Expression]> {
   return {
@@ -113,6 +135,10 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, [] | [Expression]> {
   };
 }
 
+/**
+ * Create a grammar rule for a SPARQL built-in function that takes no arguments (NIL syntax only).
+ * @param func - The lexer token for the built-in function keyword.
+ */
 export function funcNil1<T extends string>(func: TokenType & { name: T }):
 RuleDefExpressionFunctionX<Uncapitalize<T>, []> {
   return {
@@ -126,6 +152,10 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, []> {
   };
 }
 
+/**
+ * Create a grammar rule for a SPARQL built-in function that takes an expression list argument.
+ * @param func - The lexer token for the built-in function keyword.
+ */
 export function funcExprList1<T extends string>(func: TokenType & { name: T }):
 RuleDefExpressionFunctionX<Uncapitalize<T>, Expression[]> {
   return {
@@ -139,6 +169,10 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, Expression[]> {
   };
 }
 
+/**
+ * Create a grammar rule for a SPARQL built-in function that takes two or three expression arguments.
+ * @param func - The lexer token for the built-in function keyword.
+ */
 export function funcExpr2or3<T extends string>(func: TokenType & { name: T }):
 RuleDefExpressionFunctionX<Uncapitalize<T>, [Expression, Expression] | [Expression, Expression, Expression]> {
   return {
@@ -164,6 +198,10 @@ RuleDefExpressionFunctionX<Uncapitalize<T>, [Expression, Expression] | [Expressi
   };
 }
 
+/**
+ * Create a grammar rule for a SPARQL built-in function that takes three or four expression arguments.
+ * @param func - The lexer token for the built-in function keyword.
+ */
 export function funcExpr3or4<T extends string>(func: TokenType & { name: T }):
 RuleDefExpressionFunctionX<
   Uncapitalize<T>,
@@ -205,6 +243,11 @@ RuleDefExpressionFunctionX<
   };
 }
 
+/**
+ * Create a grammar rule for a SPARQL built-in function that takes a GroupGraphPattern argument
+ * (e.g. EXISTS, NOT EXISTS).
+ * @param func - The lexer token for the built-in function keyword.
+ */
 export function funcGroupGraphPattern<T extends string>(func: TokenType & { name: T }):
 SparqlGrammarRule<Uncapitalize<T>, ExpressionPatternOperation> {
   return {
@@ -223,6 +266,11 @@ SparqlGrammarRule<Uncapitalize<T>, ExpressionPatternOperation> {
 
 export type RuleDefExpressionAggregatorX<T extends string> = SparqlGrammarRule<T, ExpressionAggregateDefault>;
 
+/**
+ * Create a grammar rule for a SPARQL aggregate function (e.g. SUM, AVG, MIN, MAX)
+ * that takes a single expression with an optional DISTINCT modifier.
+ * @param func - The lexer token for the aggregate function keyword.
+ */
 export function baseAggregateFunc<T extends string>(func: TokenType & { name: T }):
 RuleDefExpressionAggregatorX<Uncapitalize<T>> {
   return {

@@ -28,6 +28,11 @@ export function sparqlCodepointEscape(input: string): string {
   return sanitizedInput;
 }
 
+/**
+ * Common IRI constants used across SPARQL parsing and generation.
+ * Includes XSD datatypes (BOOLEAN, INTEGER, DECIMAL, DOUBLE, STRING)
+ * and RDF vocabulary (FIRST, REST, NIL, TYPE).
+ */
 export enum CommonIRIs {
   // XSD
   BOOLEAN = 'http://www.w3.org/2001/XMLSchema#boolean',
@@ -42,4 +47,16 @@ export enum CommonIRIs {
   TYPE = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type',
 }
 
+/**
+ * A {@link TransformerSubTyped} specialized for the SPARQL 1.1 AST node types.
+ * Provides a type-safe visitor/transformer that dispatches based on node `type` and `subType` fields.
+ *
+ * @example
+ * ```typescript
+ * const transformer = new AstTransformer();
+ * transformer.transformNodeSpecific<'safe', typeof ast>(ast, {
+ *   query: { select: (node) => { ... } },
+ * });
+ * ```
+ */
 export class AstTransformer extends TransformerSubTyped<Sparql11Nodes> {}

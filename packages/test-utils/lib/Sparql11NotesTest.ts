@@ -7,6 +7,12 @@ interface Parser {
   parse: (query: string, context?: { prefixes?: Record<string, string>; baseIRI?: string }) => unknown;
 }
 
+/**
+ * Register a suite of parser tests derived from the notes and errata of the SPARQL 1.1 specification.
+ * Tests cover error handling, blank node reuse validation, VALUES cardinality, and more.
+ * @param parser - A parser instance with a `parse` method.
+ * @param _DF - A DataFactory instance (currently unused, reserved for future tests).
+ */
 export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQuad>): void {
   function testErroneousQuery(query: string, _errorMsg: string): TestFunction<object> {
     return ({ expect }) => {

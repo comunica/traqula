@@ -9,6 +9,11 @@ interface Parser<ParseRet> {
   path: (input: string, context: SparqlContext) => TermIri | Path;
 }
 
+/**
+ * Create a complete {@link SparqlContext} by filling in default values for any missing fields.
+ * @param context - Partial context to complete.
+ * @returns A fully populated SparqlContext.
+ */
 export function completeParseContext(
   context: Partial<SparqlContext>,
 ): SparqlContext {
@@ -21,6 +26,11 @@ export function completeParseContext(
   };
 }
 
+/**
+ * Create a complete {@link SparqlGeneratorContext} by filling in default values for any missing fields.
+ * @param context - Partial generator context to complete.
+ * @returns A fully populated SparqlGeneratorContext.
+ */
 export function completeGeneratorContext(
   context: Partial<SparqlGeneratorContext & { offset?: number }>,
 ): SparqlGeneratorContext & { offset?: number } {
@@ -34,6 +44,12 @@ export function completeGeneratorContext(
   };
 }
 
+/**
+ * Create a shallow copy of a parse/generator context so that mutations
+ * (e.g. adding prefixes during parsing) do not affect the original.
+ * @param context - The context to copy.
+ * @returns A new context with cloned `prefixes` and `parseMode`.
+ */
 export function copyParseContext<T extends
 Partial<SparqlContext & SparqlGeneratorContext & { origSource: string; offset?: number }>>(
   context: T,
@@ -45,6 +61,11 @@ Partial<SparqlContext & SparqlGeneratorContext & { origSource: string; offset?: 
   };
 }
 
+/**
+ * Base class for SPARQL parsers that provides {@link parse} and {@link parsePath} methods.
+ * Engines typically extend this class to create pre-configured parser instances.
+ * @typeParam ParseRet - The AST return type (e.g. `SparqlQuery`).
+ */
 export class MinimalSparqlParser<ParseRet extends Localized> {
   protected readonly defaultContext: SparqlContext;
   protected readonly coreTransformer = new TransformerObject();

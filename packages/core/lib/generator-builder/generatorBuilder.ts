@@ -15,6 +15,14 @@ function listToRuleDefMap<T extends readonly GeneratorRule[]>(rules: T): GenRule
   return <GenRulesToObject<T>>newRules;
 }
 
+/**
+ * Builder for composing modular code generators from rule definitions.
+ * Mirrors the {@link ParserBuilder} API but targets code generation (AST → string)
+ * instead of parsing (string → AST).
+ *
+ * Builders mutate internal state and return `this`.
+ * Always start by copying an existing builder with `GeneratorBuilder.create(existingBuilder)`.
+ */
 export class GeneratorBuilder<Context, Names extends string, RuleDefs extends GenRuleMap<Names>> {
   /**
    * Create a GeneratorBuilder from some initial grammar rules or an existing GeneratorBuilder.
@@ -49,6 +57,11 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
     this.rules = startRules;
   }
 
+  /**
+   * Narrow the builder's context type parameter to a more specific subtype.
+   * This is a zero-cost type-level operation — the builder instance is returned as-is
+   * but with updated type parameters.
+   */
   public widenContext<NewContext extends Context>(): GeneratorBuilder<
     NewContext,
     Names,
@@ -60,6 +73,12 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
     return <any> this;
   }
 
+  /**
+   * Update the type signatures (return types and/or parameter types) of existing rules
+   * without changing their implementations. Use this when a patched rule changes the types
+   * flowing through downstream rules that don't need new implementations.
+   * This is a zero-cost type-level operation.
+   */
   public typePatch<Patch extends {[Key in Names]?: [any] | [any, any[]]}>():
   GeneratorBuilder<Context, Names, {[Key in Names]: Key extends keyof Patch ? (
     Patch[Key] extends [any, any[]] ? GeneratorRule<Context, Key, Patch[Key][0], Patch[Key][1]> : (
@@ -121,6 +140,12 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
     return this.addRuleRedundant(rule);
   }
 
+  /**
+   * Add multiple rules at once using rest parameters.
+   * Provides better TypeScript type inference than calling {@link addRule} in a loop,
+   * but avoid passing too many rules at once as this can cause TypeScript compilation slowdowns.
+   * TypeScript errors if any rule name conflicts with an existing one.
+   */
   public addMany<U extends readonly GeneratorRule<Context>[]>(
     ...rules: CheckOverlap<ParseNamesFromList<U>, Names, U>
   ): GeneratorBuilder<
@@ -150,6 +175,10 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
       <unknown> this;
   }
 
+  /**
+   * Delete multiple rules by name in a single call.
+   * @param ruleNames - Names of the rules to delete.
+   */
   public deleteMany<U extends Names>(...ruleNames: U[]):
   GeneratorBuilder<Context, Exclude<Names, U>, {[K in Exclude<Names, U>]:
     RuleDefs[K] extends GeneratorRule<Context, K> ? RuleDefs[K] : never }> {
@@ -161,6 +190,11 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
       <unknown> this;
   }
 
+  /**
+   * Retrieve a generator rule definition by its name.
+   * Useful for inspecting or wrapping existing rules when extending a generator.
+   * @param ruleName - The name of the rule, type-checked against the builder's known rule names.
+   */
   public getRule<U extends Names>(ruleName: U): RuleDefs[U] extends GeneratorRule<any, U, infer RT, infer PT> ?
     GeneratorRule<Context, U, RT, PT> : never {
     return <any> this.rules[ruleName];
@@ -222,6 +256,10 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
     return <any> <unknown> this;
   }
 
+  /**
+   * Construct a generator from the registered rules.
+   * @returns An object with a method for each registered rule name.
+   */
   public build(): GeneratorFromRules<Context, Names, RuleDefs> {
     return <GeneratorFromRules<Context, Names, RuleDefs>> new DynamicGenerator(this.rules);
   }

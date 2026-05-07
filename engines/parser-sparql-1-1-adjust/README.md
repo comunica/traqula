@@ -11,7 +11,7 @@
 [![npm version](https://badge.fury.io/js/@traqula%2Fparser-sparql-1-1-adjust.svg)](https://www.npmjs.com/package/@traqula/parser-sparql-1-1-adjust)
 
 Traqula Sparql 1.1 Adjust is a [SPARQL 1.1](https://www.w3.org/TR/sparql11-query/#grammar) query parser that also parses the [builtin function ADJUST](https://github.com/w3c/sparql-dev/blob/main/SEP/SEP-0002/sep-0002.md) for TypeScript.
-Simple grammar extension of [Traqula engine-sparql-1-1](https://github.com/comunica/traqula/tree/main/engines/parser-sparql-1-1)
+Simple grammar extension of [Traqula parser-sparql-1-1](https://github.com/comunica/traqula/tree/main/engines/parser-sparql-1-1)
 
 ## Installation
 
@@ -52,5 +52,5 @@ SELECT ?s ?p (ADJUST(?o, "-PT10H"^^<http://www.w3.org/2001/XMLSchema#dayTimeDura
 `);
 ```
 
-This parser is a simple grammar extension to the [engine-sparql-1-1](https://github.com/comunica/traqula/tree/main/engines/engine-sparql-1-1).
+This parser is a simple grammar extension to the [parser-sparql-1-1](https://github.com/comunica/traqula/tree/main/engines/parser-sparql-1-1).
 As such, most, if not all, documentation of that parser holds for this one too.

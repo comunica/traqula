@@ -12,6 +12,11 @@ function known<T extends A.Operation = A.Operation>(
   return <any> x;
 }
 
+/**
+ * Factory for creating SPARQL Algebra operation objects.
+ * Provides methods for every algebra operation type defined in
+ * [SPARQL 1.1 Algebra](https://www.w3.org/TR/sparql11-query/#sparqlAlgebra).
+ */
 export class AlgebraFactory {
   public dataFactory: RDF.DataFactory<RDF.BaseQuad, RDF.BaseQuad>;
   public stringType: RDF.NamedNode;

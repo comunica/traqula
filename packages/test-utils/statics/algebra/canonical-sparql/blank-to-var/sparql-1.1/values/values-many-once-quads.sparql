@@ -1,0 +1,5 @@
+SELECT ?y ?z WHERE {
+  VALUES( ?y ?z ){
+    ( <http://example.com/ns#a><http://example.com/ns#b> )
+  }
+}

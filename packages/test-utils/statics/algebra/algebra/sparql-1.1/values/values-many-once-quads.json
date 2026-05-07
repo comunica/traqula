@@ -1,0 +1,38 @@
+{
+  "type": "project",
+  "input": {
+    "type": "values",
+    "variables": [
+      {
+        "termType": "Variable",
+        "value": "y"
+      },
+      {
+        "termType": "Variable",
+        "value": "z"
+      }
+    ],
+    "bindings": [
+      {
+        "y": {
+          "termType": "NamedNode",
+          "value": "http://example.com/ns#a"
+        },
+        "z": {
+          "termType": "NamedNode",
+          "value": "http://example.com/ns#b"
+        }
+      }
+    ]
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "y"
+    },
+    {
+      "termType": "Variable",
+      "value": "z"
+    }
+  ]
+}

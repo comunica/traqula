@@ -1,0 +1,4 @@
+SELECT ?X WHERE {
+  <http://example.org/A0> ((<http://example.org/P>*)*) ?X .
+}
+ORDER BY ASC ( ?X )

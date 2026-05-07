@@ -1,0 +1,7 @@
+SELECT ?o ?o1 WHERE {
+  {
+    <http://www.example.orgs> <http://www.example.orgp> ?o .
+    BIND( ( "1"^^<http://www.w3.org/2001/XMLSchema#integer> + ?o ) AS ?o1 )
+  }
+  <http://www.example.orgs> <http://www.example.orgq> ?o1 .
+}

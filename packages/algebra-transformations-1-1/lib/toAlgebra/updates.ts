@@ -89,6 +89,8 @@ Algebra.Update,
 > = {
   name: 'translateInsertDelete',
   fun: ({ SUBRULE }) => ({ algebraFactory: AF, astFactory: F, useQuads }, op) => {
+    // `useQuads: false` is supported in update queries,
+    // but within the target, the quad push down is still performed.
     const deleteTriples: Algebra.Pattern[] = [];
     const insertTriples: Algebra.Pattern[] = [];
     let where: Algebra.Operation | undefined;

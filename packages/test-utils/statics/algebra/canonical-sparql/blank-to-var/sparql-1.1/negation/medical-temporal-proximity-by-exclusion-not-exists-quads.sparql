@@ -1,0 +1,13 @@
+SELECT ?exam ?date WHERE {
+  ?exam <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2009/sparql/docs/tests/data-sparql11/negation#PhysicalExamination> .
+  ?exam <http://purl.org/dc/elements/1.1/date> ?date .
+  ?exam <http://www.w3.org/2009/sparql/docs/tests/data-sparql11/negation#precedes> <http://www.w3.org/2009/sparql/docs/tests/data-sparql11/negation#operation1> .
+  ?op <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2009/sparql/docs/tests/data-sparql11/negation#SurgicalProcedure> .
+  ?op <http://purl.org/dc/elements/1.1/date> ?opDT .
+  FILTER ( NOT EXISTS {
+    ?otherExam <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/2009/sparql/docs/tests/data-sparql11/negation#PhysicalExamination> .
+    ?otherExam <http://www.w3.org/2009/sparql/docs/tests/data-sparql11/negation#follows> ?exam .
+    ?otherExam <http://www.w3.org/2009/sparql/docs/tests/data-sparql11/negation#precedes> <http://www.w3.org/2009/sparql/docs/tests/data-sparql11/negation#operation1> .
+  }
+  )
+}

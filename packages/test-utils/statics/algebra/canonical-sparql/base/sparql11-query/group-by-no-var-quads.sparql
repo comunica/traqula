@@ -1,0 +1,5 @@
+SELECT ( MAX( ?y ) AS ?yy ) WHERE {
+  ?x ?y ?z .
+  BIND( STR( ?x ) AS ?var1 )
+}
+GROUP BY ?var1

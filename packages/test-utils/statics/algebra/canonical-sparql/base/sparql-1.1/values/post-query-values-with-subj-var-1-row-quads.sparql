@@ -1,0 +1,7 @@
+SELECT ?book ?title ?price WHERE {
+  ?book <http://purl.org/dc/elements/1.1/title> ?title .
+  ?book <http://example.org/ns#price> ?price .
+  VALUES ?book {
+    <http://example.org/book/book1>
+  }
+}

@@ -1,0 +1,6 @@
+SELECT ?prefLabel ?uri WHERE {
+  ?uri <http://www.w3.org/2004/02/skos/core#prefLabel> ?prefLabel .
+  MINUS {
+    ?uri <http://www.w3.org/2004/02/skos/core#broader> <https://test.com/> .
+  }
+}

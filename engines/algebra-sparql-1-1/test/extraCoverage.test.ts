@@ -76,16 +76,14 @@ GROUP BY ( ?y AS ?x )`);
       const result = algebraUtils.objectify(toAlgebra(ast, { quads: false }));
       expect(result).toMatchObject({
         type: 'deleteinsert',
-        insert: [
-          {
-            type: 'pattern',
-            termType: 'Quad',
-            subject: { termType: 'NamedNode', value: 'http://s' },
-            predicate: { termType: 'NamedNode', value: 'http://p' },
-            object: { termType: 'NamedNode', value: 'http://o' },
-            graph: { termType: 'DefaultGraph', value: '' },
-          },
-        ],
+        insert: [{
+          type: 'pattern',
+          termType: 'Quad',
+          subject: { termType: 'NamedNode', value: 'http://s' },
+          predicate: { termType: 'NamedNode', value: 'http://p' },
+          object: { termType: 'NamedNode', value: 'http://o' },
+          graph: { termType: 'DefaultGraph', value: '' },
+        }],
       });
     });
   });

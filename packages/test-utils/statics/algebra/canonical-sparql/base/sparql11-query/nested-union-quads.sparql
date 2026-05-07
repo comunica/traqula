@@ -1,0 +1,20 @@
+SELECT ?label ?Label ?pLabel ?s WHERE {
+  {
+    ?s <http://xlabelA> ?pLabel .
+    {
+      ?s <http://xlabelC> ?Label .
+    }
+    UNION {
+      ?s <http://xlabelD> ?label .
+    }
+  }
+  UNION {
+    ?s <http://xlabelB> ?pLabel .
+    {
+      ?s <http://xlabelC> ?Label .
+    }
+    UNION {
+      ?s <http://xlabelD> ?label .
+    }
+  }
+}

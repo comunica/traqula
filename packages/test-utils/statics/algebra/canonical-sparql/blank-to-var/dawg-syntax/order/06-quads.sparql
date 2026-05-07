@@ -1,0 +1,4 @@
+SELECT ?o ?p ?s WHERE {
+  ?s ?p ?o .
+}
+ORDER BY DESC ( ( ?o + "57"^^<http://www.w3.org/2001/XMLSchema#integer> ) ) ASC ( <http://example.org/ns#func2> ( ?o ) ) ASC ( ?s )

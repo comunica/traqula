@@ -1,0 +1,4 @@
+SELECT ?o ?p ?s WHERE {
+  ?s ?p ?o .
+  FILTER ( ( ?o NOT IN ( "1"^^<http://www.w3.org/2001/XMLSchema#integer> , "2"^^<http://www.w3.org/2001/XMLSchema#integer> , ( ?s + "57"^^<http://www.w3.org/2001/XMLSchema#integer> ) ) ) )
+}

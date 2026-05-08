@@ -157,9 +157,7 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
   protected readonly catchup: RuleDefArg['CATCHUP'] = (until) => {
     const start = this.generatedUntil;
     if (start < until) {
-      const sliced = this.origSource.slice(start, until);
-      this.handeEnsured(sliced);
-      this.stringBuilder.push(sliced);
+      this.print(this.origSource.slice(start, until));
     }
     this.generatedUntil = Math.max(this.generatedUntil, until);
   };
@@ -175,7 +173,7 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
   }
 
   protected readonly print: RuleDefArg['PRINT'] = (...args) => {
-    const joined = args.length === 1 ? args[0] : args.join('');
+    const joined = args.join('');
     this.handeEnsured(joined);
     this.stringBuilder.push(joined);
   };
@@ -215,38 +213,13 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
   protected readonly ensureEither: RuleDefArg['ENSURE_EITHER'] = (...args) => {
     if (args.length === 1) {
       this.ensure(args[0]);
-    } else if (args.length > 1) {
-      let alreadyMatched = false;
-      for (const arg of args) {
-        if (this.doesEndWith(arg)) {
-          alreadyMatched = true;
-          break;
+    } else if (args.length > 1 &&
+      !args.some(subStr => this.doesEndWith(subStr))) {
+      this.toEnsure.push((willPrint) => {
+        if (!args.some(subStr => willPrint.startsWith(subStr)) && !args.some(subStr => this.doesEndWith(subStr))) {
+          this.stringBuilder.push(args[0]);
         }
-      }
-      if (!alreadyMatched) {
-        const firstArg = args[0];
-        this.toEnsure.push((willPrint) => {
-          let startsMatch = false;
-          for (const arg of args) {
-            if (willPrint.startsWith(arg)) {
-              startsMatch = true;
-              break;
-            }
-          }
-          if (!startsMatch) {
-            let endsMatch = false;
-            for (const arg of args) {
-              if (this.doesEndWith(arg)) {
-                endsMatch = true;
-                break;
-              }
-            }
-            if (!endsMatch) {
-              this.stringBuilder.push(firstArg);
-            }
-          }
-        });
-      }
+      });
     }
   };
 
@@ -256,9 +229,7 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
     while (DynamicGenerator.BLANK_LINE_RE.test(temp) && sb.length > 0) {
       temp = sb.pop() + temp;
     }
-    const pruned = temp.replace(DynamicGenerator.TRAILING_BLANKS_RE, '');
-    this.handeEnsured(pruned);
-    sb.push(pruned);
+    this.print(temp.replace(DynamicGenerator.TRAILING_BLANKS_RE, ''));
   }
 
   protected readonly newLine: RuleDefArg['NEW_LINE'] = (arg) => {
@@ -269,8 +240,7 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
       if (newlineAlternative !== undefined &&
         // If we force, it means we would print \n no matter. - otherwise check whether we have printed the char
         (force || (this.stringBuilder.at(-1) !== newlineAlternative))) {
-        this.handeEnsured(newlineAlternative);
-        this.stringBuilder.push(newlineAlternative);
+        this.print(newlineAlternative);
       }
       return;
     }
@@ -286,8 +256,7 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
       if (DynamicGenerator.NEWLINE_TRAILING_RE.test(temp)) {
         // Pointer is on empty newline -> set correct indentation
         temp = temp.replace(DynamicGenerator.NEWLINE_TRAILING_RE, `\n${' '.repeat(indentation)}`);
-        this.handeEnsured(temp);
-        sb.push(temp);
+        this.print(temp);
       } else {
         // Pointer not on empty newline, print newline.
         this.print(temp, '\n', ' '.repeat(indentation));

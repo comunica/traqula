@@ -66,51 +66,27 @@ export class AstCoreFactory implements AstCoreFactoryArgs {
       return this.cachedAutoGen;
     }
 
-    // Inline filter to avoid allocating intermediate arrays
-    let firstValid: IToken | Localized | undefined;
-    let lastValid: IToken | Localized | undefined;
-    let firstIsLocalized = false;
-    let lastIsLocalized = false;
-    let hasAnyElement = false;
-    let hasFiltered = false;
-
-    for (const x of elements) {
-      if (x === undefined) {
-        continue;
-      }
-      hasAnyElement = true;
-      const localized = this.isLocalized(x);
-      if (!localized ||
-        x.loc.sourceLocationType === 'source' ||
-        x.loc.sourceLocationType === 'stringReplace' ||
-        x.loc.sourceLocationType === 'nodeReplace') {
-        if (!hasFiltered) {
-          firstValid = x;
-          firstIsLocalized = localized;
-          hasFiltered = true;
-        }
-        lastValid = x;
-        lastIsLocalized = localized;
-      }
-    }
-
-    if (!hasAnyElement) {
+    const pureElements = elements.filter(x => x !== undefined);
+    if (pureElements.length === 0) {
       return this.cachedNoMat;
     }
-    if (!hasFiltered) {
+
+    const filtered = pureElements.filter(element =>
+      !this.isLocalized(element) || this.isSourceLocationSource(element.loc) ||
+      this.isSourceLocationStringReplace(element.loc) || this.isSourceLocationNodeReplace(element.loc));
+    if (filtered.length === 0) {
       return this.cachedAutoGen;
     }
-
-    const first = firstValid!;
-    const last = lastValid!;
+    const first = filtered.at(0)!;
+    const last = filtered.at(-1)!;
     return {
       sourceLocationType: 'source',
-      start: firstIsLocalized ?
-          (<SourceLocationSource | SourceLocationStringReplace> (<Localized> first).loc).start :
-          (<IToken> first).startOffset,
-      end: lastIsLocalized ?
-          (<SourceLocationSource | SourceLocationStringReplace> (<Localized> last).loc).end :
-          ((<IToken> last).endOffset! + 1),
+      start: this.isLocalized(first) ?
+          (<SourceLocationSource | SourceLocationStringReplace> first.loc).start :
+        first.startOffset,
+      end: this.isLocalized(last) ?
+          (<SourceLocationSource | SourceLocationStringReplace> last.loc).end :
+          (last.endOffset! + 1),
     };
   }
 

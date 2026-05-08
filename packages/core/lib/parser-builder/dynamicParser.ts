@@ -33,11 +33,25 @@ export class DynamicParser<Context, Names extends string, RuleDefs extends Parse
     this.performSelfAnalysis();
   }
 
+  // Reusable ARGS wrapper to avoid allocating { ARGS: [...] } on every SUBRULE call
+  private readonly subruleArgs: { ARGS: unknown[] } = { ARGS: []};
+
   private constructSelfRef(): CstDef {
+    const subruleArgs = this.subruleArgs;
     const subRuleImpl = (chevrotainSubrule: typeof this.SUBRULE): CstDef['SUBRULE'] =>
-      ((cstDef, ...arg) =>
-        chevrotainSubrule(<any> this[<keyof (typeof this)>cstDef.name], <any>{ ARGS: [ this.context, ...arg ]})
-      ) satisfies CstDef['SUBRULE'];
+      ((cstDef, ...arg) => {
+        const argsArr = subruleArgs.ARGS;
+        argsArr[0] = this.context;
+        let i = 1;
+        for (const a of arg) {
+          argsArr[i++] = a;
+        }
+        argsArr.length = 1 + arg.length;
+        return chevrotainSubrule(
+          <any> this[<keyof (typeof this)>cstDef.name],
+          <any> subruleArgs,
+        );
+      }) satisfies CstDef['SUBRULE'];
     return {
       CONSUME: (tokenType, option) => this.CONSUME(tokenType, option),
       CONSUME1: (tokenType, option) => this.CONSUME1(tokenType, option),

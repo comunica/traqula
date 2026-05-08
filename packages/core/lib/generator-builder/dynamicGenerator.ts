@@ -35,6 +35,8 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
 
   // Cached RuleDefArg to avoid allocating a new object on every subrule call
   private readonly cachedRuleDefArg: RuleDefArg;
+  // Cache gImpl results per rule to avoid creating a new closure on every subrule call
+  private readonly gImplCache = new Map<string, (...args: any[]) => void>();
 
   public constructor(protected rules: RuleDefs) {
     this.cachedRuleDefArg = {
@@ -81,12 +83,18 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
   }
 
   protected readonly subrule: RuleDefArg['SUBRULE'] = (cstDef, ast, ...arg) => {
-    const def = this.rules[<Names> cstDef.name];
-    if (!def) {
-      throw new Error(`Rule ${cstDef.name} not found`);
+    const name = <Names> cstDef.name;
+    let impl = this.gImplCache.get(name);
+    if (!impl) {
+      const def = this.rules[name];
+      if (!def) {
+        throw new Error(`Rule ${cstDef.name} not found`);
+      }
+      impl = def.gImpl(this.cachedRuleDefArg);
+      this.gImplCache.set(name, impl);
     }
 
-    const generate = (): void => def.gImpl(this.cachedRuleDefArg)(ast, this.getSafeContext(), ...arg);
+    const generate = (): void => impl(ast, this.getSafeContext(), ...arg);
 
     if (this.factory.isLocalized(ast)) {
       this.handleLoc(ast, generate);
@@ -97,6 +105,13 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
 
   protected readonly handleLoc: RuleDefArg['HANDLE_LOC'] = (localized, handle) => {
     const loc = localized.loc;
+    // SOURCE is the most common case during normal parsing — check it first
+    if (loc.sourceLocationType === SOURCE_LOC_SOURCE) {
+      this.catchup(loc.start);
+      const ret = handle();
+      this.catchup(loc.end);
+      return ret;
+    }
     if (loc.sourceLocationType === SOURCE_LOC_NO_MATERIALIZE) {
       return;
     }
@@ -110,12 +125,6 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
       this.catchup(loc.start);
       this.generatedUntil = loc.end;
       return handle();
-    }
-    if (loc.sourceLocationType === SOURCE_LOC_SOURCE) {
-      this.catchup(loc.start);
-      const ret = handle();
-      this.catchup(loc.end);
-      return ret;
     }
     if (loc.sourceLocationType === SOURCE_LOC_INLINED_SOURCE && this.handledInlineSource !== loc) {
       // Idempotence: calling handleLoc on the same AST multiple times should be the same as doing it once.

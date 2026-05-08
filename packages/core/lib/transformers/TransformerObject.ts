@@ -99,7 +99,7 @@ export class TransformerObject {
   public transformObject(
     startObject: object,
     mapper: (copy: object, orig: object) => unknown,
-    preVisitor: (orig: object) => TransformContext = () => ({}),
+    preVisitor: (orig: object) => TransformContext = () => EMPTY_VISIT_CONTEXT,
   ): unknown {
     const defaults = this.defaultContext;
     const defaultCopyFlag = defaults.copy ?? true;
@@ -221,7 +221,7 @@ export class TransformerObject {
   public visitObject(
     startObject: object,
     visitor: (orig: object) => void,
-    preVisitor: (orig: object) => VisitContext = () => ({}),
+    preVisitor: (orig: object) => VisitContext = () => EMPTY_VISIT_CONTEXT,
   ): void {
     const defaults = this.defaultContext;
     const defaultContinues = defaults.continue ?? true;

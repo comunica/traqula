@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://example.org/",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 11,
           "end": 32
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 0,
         "end": 32
       }
@@ -37,7 +37,7 @@
               "subType": "namedNode",
               "value": "",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 50,
                 "end": 53
               },
@@ -48,7 +48,7 @@
               "subType": "variable",
               "value": "p",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 54,
                 "end": 56
               }
@@ -58,27 +58,27 @@
               "subType": "variable",
               "value": "o",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 57,
                 "end": 59
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 50,
               "end": 59
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 50,
           "end": 59
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 48,
       "end": 61
     }
@@ -88,26 +88,26 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "variables": [
     {
       "type": "wildcard",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 40,
         "end": 41
       }
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX ex: <http://example.org/> SELECT * WHERE { ex: ?p ?o }",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 61
     },

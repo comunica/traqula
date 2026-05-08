@@ -18,7 +18,7 @@
               "subType": "variable",
               "value": "a",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 25,
                 "end": 27
               }
@@ -32,18 +32,18 @@
                 "subType": "namedNode",
                 "value": "http://www.w3.org/2001/XMLSchema#integer",
                 "loc": {
-                  "sourceLocationType": 2
+                  "sourceLocationType": "noMaterialize"
                 }
               },
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 27,
                 "end": 29
               }
             }
           ],
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 25,
             "end": 29
           }
@@ -53,20 +53,20 @@
           "subType": "variable",
           "value": "b",
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 33,
             "end": 35
           }
         },
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 19,
           "end": 36
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 15,
       "end": 38
     }
@@ -76,26 +76,26 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "variables": [
     {
       "type": "wildcard",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 7,
         "end": 8
       }
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "SELECT * WHERE {\n  BIND (?a-1 AS ?b)\n}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 38
     },

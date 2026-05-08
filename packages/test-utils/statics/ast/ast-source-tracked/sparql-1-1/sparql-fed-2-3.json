@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://xmlns.com/foaf/0.1/",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 15,
           "end": 43
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 0,
         "end": 43
       }
@@ -35,7 +35,7 @@
           "subType": "namedNode",
           "value": "http://people.example.org/sparql",
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 82,
             "end": 116
           }
@@ -52,7 +52,7 @@
                   "subType": "namedNode",
                   "value": "http://example.org/people15",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 124,
                     "end": 153
                   }
@@ -62,7 +62,7 @@
                   "subType": "namedNode",
                   "value": "name",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 154,
                     "end": 163
                   },
@@ -73,34 +73,34 @@
                   "subType": "variable",
                   "value": "name",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 164,
                     "end": 169
                   }
                 },
                 "loc": {
-                  "sourceLocationType": 0,
+                  "sourceLocationType": "source",
                   "start": 124,
                   "end": 169
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 124,
               "end": 171
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 67,
           "end": 173
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 63,
       "end": 175
     }
@@ -110,7 +110,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "variables": [
@@ -119,19 +119,19 @@
       "subType": "variable",
       "value": "name",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 51,
         "end": 56
       }
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX foaf:   <http://xmlns.com/foaf/0.1/>\nSELECT ?name\nWHERE\n{\n  SERVICE SILENT <http://people.example.org/sparql> { \n    <http://example.org/people15> foaf:name ?name . }\n}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 175
     },

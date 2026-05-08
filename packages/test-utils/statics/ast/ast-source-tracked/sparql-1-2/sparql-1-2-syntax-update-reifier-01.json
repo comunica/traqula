@@ -12,13 +12,13 @@
             "subType": "namedNode",
             "value": "http://example.com/ns#",
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 9,
               "end": 33
             }
           },
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 0,
             "end": 33
           }
@@ -43,7 +43,7 @@
                       "subType": "namedNode",
                       "value": "a",
                       "loc": {
-                        "sourceLocationType": 0,
+                        "sourceLocationType": "source",
                         "start": 56,
                         "end": 58
                       },
@@ -54,7 +54,7 @@
                       "subType": "namedNode",
                       "value": "b",
                       "loc": {
-                        "sourceLocationType": 0,
+                        "sourceLocationType": "source",
                         "start": 59,
                         "end": 61
                       },
@@ -65,7 +65,7 @@
                       "subType": "namedNode",
                       "value": "c",
                       "loc": {
-                        "sourceLocationType": 0,
+                        "sourceLocationType": "source",
                         "start": 62,
                         "end": 64
                       },
@@ -73,7 +73,7 @@
                     },
                     "annotations": [],
                     "loc": {
-                      "sourceLocationType": 0,
+                      "sourceLocationType": "source",
                       "start": 56,
                       "end": 64
                     }
@@ -84,14 +84,14 @@
                   "subType": "namedNode",
                   "value": "iri",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 67,
                     "end": 71
                   },
                   "prefix": ""
                 },
                 "loc": {
-                  "sourceLocationType": 0,
+                  "sourceLocationType": "source",
                   "start": 53,
                   "end": 74
                 }
@@ -103,7 +103,7 @@
                   "subType": "namedNode",
                   "value": "iri",
                   "loc": {
-                    "sourceLocationType": 2
+                    "sourceLocationType": "noMaterialize"
                   },
                   "prefix": ""
                 },
@@ -112,7 +112,7 @@
                   "subType": "namedNode",
                   "value": "p",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 75,
                     "end": 77
                   },
@@ -123,7 +123,7 @@
                   "subType": "namedNode",
                   "value": "o",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 78,
                     "end": 80
                   },
@@ -131,21 +131,21 @@
                 },
                 "annotations": [],
                 "loc": {
-                  "sourceLocationType": 0,
+                  "sourceLocationType": "source",
                   "start": 75,
                   "end": 80
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 53,
               "end": 82
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 35,
           "end": 84
         }
@@ -153,12 +153,12 @@
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX : <http://example.com/ns#>\n\nINSERT DATA {\n    << :a :b :c ~ :iri >> :p :o .\n}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 84
     },

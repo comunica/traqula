@@ -6,14 +6,14 @@
     "subType": "bgp",
     "triples": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "datasets": {
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "where": {
@@ -31,7 +31,7 @@
               "subType": "variable",
               "value": "s",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 21,
                 "end": 23
               }
@@ -41,7 +41,7 @@
               "subType": "variable",
               "value": "p",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 24,
                 "end": 26
               }
@@ -51,39 +51,39 @@
               "subType": "variable",
               "value": "o",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 27,
                 "end": 29
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 21,
               "end": 29
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 21,
           "end": 29
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 19,
       "end": 31
     }
   },
   "solutionModifiers": {},
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "CONSTRUCT {} WHERE { ?s ?p ?o }\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 31
     },

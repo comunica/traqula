@@ -16,7 +16,7 @@
               "subType": "variable",
               "value": "president",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 42,
                 "end": 52
               }
@@ -26,7 +26,7 @@
               "subType": "namedNode",
               "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 53,
                 "end": 102
               }
@@ -36,13 +36,13 @@
               "subType": "namedNode",
               "value": "http://dbpedia.org/ontology/President",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 103,
                 "end": 142
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 42,
               "end": 142
             }
@@ -54,7 +54,7 @@
               "subType": "variable",
               "value": "president",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 148,
                 "end": 158
               }
@@ -64,7 +64,7 @@
               "subType": "namedNode",
               "value": "http://dbpedia.org/ontology/nationality",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 159,
                 "end": 200
               }
@@ -74,13 +74,13 @@
               "subType": "namedNode",
               "value": "http://dbpedia.org/resource/United_States",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 201,
                 "end": 244
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 148,
               "end": 244
             }
@@ -92,7 +92,7 @@
               "subType": "variable",
               "value": "president",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 250,
                 "end": 260
               }
@@ -102,7 +102,7 @@
               "subType": "namedNode",
               "value": "http://dbpedia.org/ontology/party",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 261,
                 "end": 296
               }
@@ -112,13 +112,13 @@
               "subType": "variable",
               "value": "party",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 297,
                 "end": 303
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 250,
               "end": 303
             }
@@ -130,7 +130,7 @@
               "subType": "variable",
               "value": "x",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 309,
                 "end": 311
               }
@@ -140,7 +140,7 @@
               "subType": "namedNode",
               "value": "http://data.nytimes.com/elements/topicPage",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 312,
                 "end": 356
               }
@@ -150,13 +150,13 @@
               "subType": "variable",
               "value": "page",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 357,
                 "end": 362
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 309,
               "end": 362
             }
@@ -168,7 +168,7 @@
               "subType": "variable",
               "value": "x",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 368,
                 "end": 370
               }
@@ -178,7 +178,7 @@
               "subType": "namedNode",
               "value": "http://www.w3.org/2002/07/owl#sameAs",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 371,
                 "end": 409
               }
@@ -188,27 +188,27 @@
               "subType": "variable",
               "value": "president",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 410,
                 "end": 420
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 368,
               "end": 420
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 42,
           "end": 422
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 37,
       "end": 424
     }
@@ -218,7 +218,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "variables": [
@@ -227,7 +227,7 @@
       "subType": "variable",
       "value": "president",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 7,
         "end": 17
       }
@@ -237,7 +237,7 @@
       "subType": "variable",
       "value": "party",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 18,
         "end": 24
       }
@@ -247,19 +247,19 @@
       "subType": "variable",
       "value": "page",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 25,
         "end": 30
       }
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "SELECT ?president ?party ?page WHERE {\n   ?president <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/President> .\n   ?president <http://dbpedia.org/ontology/nationality> <http://dbpedia.org/resource/United_States> .\n   ?president <http://dbpedia.org/ontology/party> ?party .\n   ?x <http://data.nytimes.com/elements/topicPage> ?page .\n   ?x <http://www.w3.org/2002/07/owl#sameAs> ?president .\n}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 424
     },

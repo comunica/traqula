@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 13,
           "end": 58
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 0,
         "end": 58
       }
@@ -29,13 +29,13 @@
         "subType": "namedNode",
         "value": "http://www.w3.org/2000/01/rdf-schema#",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 72,
           "end": 111
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 59,
         "end": 111
       }
@@ -57,7 +57,7 @@
               "subType": "namedNode",
               "value": "http://example/thing",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 127,
                 "end": 149
               }
@@ -65,7 +65,7 @@
             "predicate": {
               "type": "path",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 150,
                 "end": 175
               },
@@ -75,7 +75,7 @@
                   "subType": "namedNode",
                   "value": "type",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 150,
                     "end": 158
                   },
@@ -84,7 +84,7 @@
                 {
                   "type": "path",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 159,
                     "end": 175
                   },
@@ -94,7 +94,7 @@
                       "subType": "namedNode",
                       "value": "subClassOf",
                       "loc": {
-                        "sourceLocationType": 0,
+                        "sourceLocationType": "source",
                         "start": 159,
                         "end": 174
                       },
@@ -111,27 +111,27 @@
               "subType": "variable",
               "value": "type",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 176,
                 "end": 181
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 127,
               "end": 181
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 127,
           "end": 181
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 125,
       "end": 183
     }
@@ -141,26 +141,26 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "variables": [
     {
       "type": "wildcard",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 121,
         "end": 122
       }
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n  SELECT *\n  { <http://example/thing> rdf:type/rdfs:subClassOf* ?type }\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 183
     },

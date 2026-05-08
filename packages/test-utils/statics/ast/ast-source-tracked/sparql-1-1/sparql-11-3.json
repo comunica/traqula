@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://data.example/",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 9,
           "end": 31
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 0,
         "end": 31
       }
@@ -37,7 +37,7 @@
               "subType": "variable",
               "value": "x",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 72,
                 "end": 74
               }
@@ -47,7 +47,7 @@
               "subType": "namedNode",
               "value": "size",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 75,
                 "end": 80
               },
@@ -58,27 +58,27 @@
               "subType": "variable",
               "value": "size",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 81,
                 "end": 86
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 72,
               "end": 86
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 72,
           "end": 86
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 68,
       "end": 88
     }
@@ -93,14 +93,14 @@
           "subType": "variable",
           "value": "x",
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 98,
             "end": 100
           }
         }
       ],
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 89,
         "end": 100
       }
@@ -120,7 +120,7 @@
               "aggregation": "avg",
               "distinct": false,
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 108,
                 "end": 118
               },
@@ -130,7 +130,7 @@
                   "subType": "variable",
                   "value": "size",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 112,
                     "end": 117
                   }
@@ -146,25 +146,25 @@
                 "subType": "namedNode",
                 "value": "http://www.w3.org/2001/XMLSchema#integer",
                 "loc": {
-                  "sourceLocationType": 2
+                  "sourceLocationType": "noMaterialize"
                 }
               },
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 121,
                 "end": 123
               }
             }
           ],
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 107,
             "end": 124
           }
         }
       ],
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 101,
         "end": 124
       }
@@ -174,7 +174,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "variables": [
@@ -187,7 +187,7 @@
         "aggregation": "avg",
         "distinct": false,
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 40,
           "end": 50
         },
@@ -197,7 +197,7 @@
             "subType": "variable",
             "value": "size",
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 44,
               "end": 49
             }
@@ -209,25 +209,25 @@
         "subType": "variable",
         "value": "asize",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 54,
           "end": 60
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 39,
         "end": 61
       }
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX : <http://data.example/>\nSELECT (AVG(?size) AS ?asize)\nWHERE {\n  ?x :size ?size\n}\nGROUP BY ?x\nHAVING(AVG(?size) > 10)\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 124
     },

@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://xmlns.com/foaf/0.1/",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 13,
           "end": 41
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 0,
         "end": 41
       }
@@ -29,13 +29,13 @@
         "subType": "namedNode",
         "value": "http://example.org/functions#",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 55,
           "end": 86
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 42,
         "end": 86
       }
@@ -57,7 +57,7 @@
               "subType": "variable",
               "value": "x",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 112,
                 "end": 114
               }
@@ -67,7 +67,7 @@
               "subType": "namedNode",
               "value": "name",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 115,
                 "end": 124
               },
@@ -78,13 +78,13 @@
               "subType": "variable",
               "value": "name",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 126,
                 "end": 131
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 112,
               "end": 131
             }
@@ -96,7 +96,7 @@
               "subType": "variable",
               "value": "x",
               "loc": {
-                "sourceLocationType": 2
+                "sourceLocationType": "noMaterialize"
               }
             },
             "predicate": {
@@ -104,7 +104,7 @@
               "subType": "namedNode",
               "value": "empId",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 145,
                 "end": 155
               },
@@ -115,20 +115,20 @@
               "subType": "variable",
               "value": "id",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 158,
                 "end": 161
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 145,
               "end": 161
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 112,
           "end": 163
         }
@@ -144,7 +144,7 @@
             "subType": "namedNode",
             "value": "even",
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 180,
               "end": 189
             },
@@ -156,7 +156,7 @@
               "subType": "variable",
               "value": "id",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 190,
                 "end": 193
               }
@@ -164,20 +164,20 @@
           ],
           "distinct": false,
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 179,
             "end": 195
           }
         },
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 172,
           "end": 195
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 110,
       "end": 197
     }
@@ -187,7 +187,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "variables": [
@@ -196,7 +196,7 @@
       "subType": "variable",
       "value": "name",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 94,
         "end": 99
       }
@@ -206,19 +206,19 @@
       "subType": "variable",
       "value": "id",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 100,
         "end": 103
       }
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\nPREFIX func: <http://example.org/functions#>\nSELECT ?name ?id\nWHERE { ?x foaf:name  ?name ;\n           func:empId   ?id .\n        FILTER (func:even(?id)) }\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 197
     },

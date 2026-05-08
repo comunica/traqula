@@ -11,7 +11,7 @@
           "type": "graphRef",
           "subType": "default",
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 4,
             "end": 11
           }
@@ -24,19 +24,19 @@
             "subType": "namedNode",
             "value": "http://example.org/named",
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 15,
               "end": 41
             }
           },
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 15,
             "end": 41
           }
         },
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 0,
           "end": 41
         }
@@ -44,12 +44,12 @@
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "ADD DEFAULT TO <http://example.org/named>\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 41
     },

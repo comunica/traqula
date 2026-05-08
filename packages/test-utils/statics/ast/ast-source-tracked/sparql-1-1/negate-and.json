@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://www.w3.org/2002/07/owl#",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 12,
           "end": 44
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 0,
         "end": 44
       }
@@ -41,7 +41,7 @@
                   "subType": "variable",
                   "value": "c",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 69,
                     "end": 71
                   }
@@ -51,7 +51,7 @@
                   "subType": "namedNode",
                   "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 72,
                     "end": 73
                   }
@@ -61,28 +61,28 @@
                   "subType": "namedNode",
                   "value": "Class",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 74,
                     "end": 83
                   },
                   "prefix": "owl"
                 },
                 "loc": {
-                  "sourceLocationType": 0,
+                  "sourceLocationType": "source",
                   "start": 69,
                   "end": 83
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 69,
               "end": 85
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 67,
           "end": 87
         }
@@ -110,14 +110,14 @@
                       "subType": "variable",
                       "value": "c",
                       "loc": {
-                        "sourceLocationType": 0,
+                        "sourceLocationType": "source",
                         "start": 110,
                         "end": 112
                       }
                     }
                   ],
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 104,
                     "end": 113
                   }
@@ -137,14 +137,14 @@
                           "subType": "variable",
                           "value": "c",
                           "loc": {
-                            "sourceLocationType": 0,
+                            "sourceLocationType": "source",
                             "start": 129,
                             "end": 131
                           }
                         }
                       ],
                       "loc": {
-                        "sourceLocationType": 0,
+                        "sourceLocationType": "source",
                         "start": 125,
                         "end": 132
                       }
@@ -154,7 +154,7 @@
                       "subType": "literal",
                       "value": "^toto",
                       "loc": {
-                        "sourceLocationType": 0,
+                        "sourceLocationType": "source",
                         "start": 134,
                         "end": 141
                       }
@@ -164,41 +164,41 @@
                       "subType": "literal",
                       "value": "i",
                       "loc": {
-                        "sourceLocationType": 0,
+                        "sourceLocationType": "source",
                         "start": 142,
                         "end": 145
                       }
                     }
                   ],
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 117,
                     "end": 147
                   }
                 }
               ],
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 103,
                 "end": 148
               }
             }
           ],
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 99,
             "end": 150
           }
         },
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 92,
           "end": 150
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 61,
       "end": 152
     }
@@ -209,7 +209,7 @@
       "subType": "limitOffset",
       "limit": 10,
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 153,
         "end": 161
       }
@@ -219,26 +219,26 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "variables": [
     {
       "type": "wildcard",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 53,
         "end": 54
       }
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX owl: <http://www.w3.org/2002/07/owl#>\n\nselect *\nwhere {\n    { ?c a owl:Class . }\n    FILTER ( ! (BOUND(?c) && ( REGEX(str(?c), \"^toto\",\"i\"))) )\n}\nlimit 10\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 161
     },

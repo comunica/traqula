@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://xmlns.com/foaf/0.1/",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 13,
           "end": 41
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 0,
         "end": 41
       }
@@ -37,7 +37,7 @@
               "subType": "variable",
               "value": "x",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 64,
                 "end": 66
               }
@@ -47,7 +47,7 @@
               "subType": "namedNode",
               "value": "name",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 67,
                 "end": 76
               },
@@ -58,20 +58,20 @@
               "subType": "variable",
               "value": "name",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 78,
                 "end": 83
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 64,
               "end": 83
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 64,
           "end": 83
         }
@@ -89,7 +89,7 @@
               "subType": "variable",
               "value": "name",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 106,
                 "end": 111
               }
@@ -99,7 +99,7 @@
               "subType": "literal",
               "value": "^ali",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 113,
                 "end": 119
               }
@@ -109,27 +109,27 @@
               "subType": "literal",
               "value": "i",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 121,
                 "end": 124
               }
             }
           ],
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 100,
             "end": 125
           }
         },
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 93,
           "end": 125
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 62,
       "end": 127
     }
@@ -139,7 +139,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "variables": [
@@ -148,19 +148,19 @@
       "subType": "variable",
       "value": "name",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 49,
         "end": 54
       }
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\nSELECT ?name\n WHERE { ?x foaf:name  ?name\n         FILTER regex(?name, \"^ali\", \"i\") }\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 127
     },

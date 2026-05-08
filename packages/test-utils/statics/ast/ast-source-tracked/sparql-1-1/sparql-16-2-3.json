@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://xmlns.com/foaf/0.1/",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 13,
           "end": 41
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 0,
         "end": 41
       }
@@ -29,13 +29,13 @@
         "subType": "namedNode",
         "value": "http://example.org/stats#",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 55,
           "end": 82
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 42,
         "end": 82
       }
@@ -52,7 +52,7 @@
           "type": "term",
           "subType": "blankNode",
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 96,
             "end": 98
           },
@@ -63,7 +63,7 @@
           "subType": "namedNode",
           "value": "name",
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 99,
             "end": 108
           },
@@ -74,20 +74,20 @@
           "subType": "variable",
           "value": "name",
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 109,
             "end": 114
           }
         },
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 96,
           "end": 114
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 96,
       "end": 114
     }
@@ -96,7 +96,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "where": {
@@ -113,7 +113,7 @@
               "type": "term",
               "subType": "blankNode",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 125,
                 "end": 127
               },
@@ -124,7 +124,7 @@
               "subType": "namedNode",
               "value": "name",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 128,
                 "end": 137
               },
@@ -135,13 +135,13 @@
               "subType": "variable",
               "value": "name",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 138,
                 "end": 143
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 125,
               "end": 143
             }
@@ -152,7 +152,7 @@
               "type": "term",
               "subType": "blankNode",
               "loc": {
-                "sourceLocationType": 2
+                "sourceLocationType": "noMaterialize"
               },
               "label": "g_1"
             },
@@ -161,7 +161,7 @@
               "subType": "namedNode",
               "value": "hits",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 151,
                 "end": 160
               },
@@ -172,27 +172,27 @@
               "subType": "variable",
               "value": "hits",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 161,
                 "end": 166
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 151,
               "end": 166
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 125,
           "end": 168
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 123,
       "end": 170
     }
@@ -203,7 +203,7 @@
       "subType": "limitOffset",
       "limit": 2,
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 192,
         "end": 199
       }
@@ -218,33 +218,33 @@
             "subType": "variable",
             "value": "hits",
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 184,
               "end": 191
             }
           },
           "descending": true,
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 180,
             "end": 191
           }
         }
       ],
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 171,
         "end": 191
       }
     }
   },
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\nPREFIX site: <http://example.org/stats#>\n\nCONSTRUCT { [] foaf:name ?name }\nWHERE\n{ [] foaf:name ?name ;\n     site:hits ?hits .\n}\nORDER BY desc(?hits)\nLIMIT 2\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 199
     },

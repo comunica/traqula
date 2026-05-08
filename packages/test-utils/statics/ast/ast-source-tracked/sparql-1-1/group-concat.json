@@ -16,7 +16,7 @@
               "subType": "variable",
               "value": "s",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 157,
                 "end": 159
               }
@@ -26,7 +26,7 @@
               "subType": "variable",
               "value": "p",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 160,
                 "end": 162
               }
@@ -36,27 +36,27 @@
               "subType": "variable",
               "value": "c",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 163,
                 "end": 165
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 157,
               "end": 165
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 157,
           "end": 165
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 153,
       "end": 167
     }
@@ -71,14 +71,14 @@
           "subType": "variable",
           "value": "s",
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 177,
             "end": 179
           }
         }
       ],
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 168,
         "end": 179
       }
@@ -88,7 +88,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "variables": [
@@ -97,7 +97,7 @@
       "subType": "variable",
       "value": "s",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 7,
         "end": 9
       }
@@ -111,7 +111,7 @@
         "aggregation": "group_concat",
         "distinct": false,
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 11,
           "end": 27
         },
@@ -121,7 +121,7 @@
             "subType": "variable",
             "value": "p",
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 24,
               "end": 26
             }
@@ -134,13 +134,13 @@
         "subType": "variable",
         "value": "plist",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 31,
           "end": 37
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 10,
         "end": 38
       }
@@ -154,7 +154,7 @@
         "aggregation": "group_concat",
         "distinct": true,
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 40,
           "end": 85
         },
@@ -164,7 +164,7 @@
             "subType": "variable",
             "value": "p",
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 62,
               "end": 64
             }
@@ -177,13 +177,13 @@
         "subType": "variable",
         "value": "plist2",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 89,
           "end": 96
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 39,
         "end": 97
       }
@@ -197,7 +197,7 @@
         "aggregation": "group_concat",
         "distinct": true,
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 99,
           "end": 140
         },
@@ -207,7 +207,7 @@
             "subType": "variable",
             "value": "p",
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 121,
               "end": 123
             }
@@ -220,25 +220,25 @@
         "subType": "variable",
         "value": "plist3",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 144,
           "end": 151
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 98,
         "end": 152
       }
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "SELECT ?s (GROUP_CONCAT(?p) AS ?plist) (GROUP_CONCAT(DISTINCT ?p; SEPARATOR = \",\\\"/\") AS ?plist2) (GROUP_CONCAT(DISTINCT ?p; SEPARATOR = \"\") AS ?plist3)\n{\n  ?s ?p ?c\n}\nGROUP BY ?s\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 179
     },

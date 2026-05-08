@@ -23,7 +23,7 @@
                     "subType": "variable",
                     "value": "x",
                     "loc": {
-                      "sourceLocationType": 0,
+                      "sourceLocationType": "source",
                       "start": 42,
                       "end": 44
                     }
@@ -33,7 +33,7 @@
                     "subType": "variable",
                     "value": "p",
                     "loc": {
-                      "sourceLocationType": 0,
+                      "sourceLocationType": "source",
                       "start": 45,
                       "end": 47
                     }
@@ -43,27 +43,27 @@
                     "subType": "variable",
                     "value": "y",
                     "loc": {
-                      "sourceLocationType": 0,
+                      "sourceLocationType": "source",
                       "start": 48,
                       "end": 50
                     }
                   },
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 42,
                     "end": 50
                   }
                 }
               ],
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 42,
                 "end": 51
               }
             }
           ],
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 40,
             "end": 53
           }
@@ -72,7 +72,7 @@
           "type": "datasetClauses",
           "clauses": [],
           "loc": {
-            "sourceLocationType": 2
+            "sourceLocationType": "noMaterialize"
           }
         },
         "context": [],
@@ -83,7 +83,7 @@
             "subType": "variable",
             "value": "x",
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 25,
               "end": 27
             }
@@ -93,7 +93,7 @@
             "subType": "variable",
             "value": "p",
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 28,
               "end": 30
             }
@@ -103,21 +103,21 @@
             "subType": "variable",
             "value": "y",
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 31,
               "end": 33
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 18,
           "end": 53
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 16,
       "end": 55
     }
@@ -127,7 +127,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "variables": [
@@ -136,19 +136,19 @@
       "subType": "variable",
       "value": "x",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 7,
         "end": 9
       }
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "SELECT ?x WHERE { SELECT ?x ?p ?y WHERE { ?x ?p ?y. } }\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 55
     },

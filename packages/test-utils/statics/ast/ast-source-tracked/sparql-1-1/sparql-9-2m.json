@@ -8,13 +8,13 @@
         "subType": "namedNode",
         "value": "http://example.org/",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 5,
           "end": 26
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 0,
         "end": 26
       }
@@ -28,13 +28,13 @@
         "subType": "namedNode",
         "value": "http://example.org/#",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 38,
           "end": 60
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 27,
         "end": 60
       }
@@ -56,7 +56,7 @@
               "subType": "variable",
               "value": "ancestor",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 76,
                 "end": 85
               }
@@ -64,7 +64,7 @@
             "predicate": {
               "type": "path",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 87,
                 "end": 112
               },
@@ -72,7 +72,7 @@
                 {
                   "type": "path",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 87,
                     "end": 110
                   },
@@ -82,7 +82,7 @@
                       "subType": "namedNode",
                       "value": "motherOf",
                       "loc": {
-                        "sourceLocationType": 0,
+                        "sourceLocationType": "source",
                         "start": 87,
                         "end": 98
                       },
@@ -93,7 +93,7 @@
                       "subType": "namedNode",
                       "value": "fatherOf",
                       "loc": {
-                        "sourceLocationType": 0,
+                        "sourceLocationType": "source",
                         "start": 99,
                         "end": 110
                       },
@@ -110,27 +110,27 @@
               "subType": "namedNode",
               "value": "#me",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 113,
                 "end": 118
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 76,
               "end": 118
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 76,
           "end": 118
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 74,
       "end": 120
     }
@@ -140,26 +140,26 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "variables": [
     {
       "type": "wildcard",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 70,
         "end": 71
       }
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "BASE <http://example.org/>\nPREFIX ex: <http://example.org/#>\n  SELECT *\n  { ?ancestor (ex:motherOf|ex:fatherOf)+ <#me> }\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 120
     },

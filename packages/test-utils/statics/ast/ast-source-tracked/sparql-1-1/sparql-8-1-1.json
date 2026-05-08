@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 16,
           "end": 61
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 0,
         "end": 61
       }
@@ -29,13 +29,13 @@
         "subType": "namedNode",
         "value": "http://xmlns.com/foaf/0.1/",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 79,
           "end": 107
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 63,
         "end": 107
       }
@@ -57,7 +57,7 @@
               "subType": "variable",
               "value": "person",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 138,
                 "end": 145
               }
@@ -67,7 +67,7 @@
               "subType": "namedNode",
               "value": "type",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 146,
                 "end": 154
               },
@@ -78,21 +78,21 @@
               "subType": "namedNode",
               "value": "Person",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 156,
                 "end": 167
               },
               "prefix": "foaf"
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 138,
               "end": 167
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 138,
           "end": 169
         }
@@ -119,7 +119,7 @@
                       "subType": "variable",
                       "value": "person",
                       "loc": {
-                        "sourceLocationType": 0,
+                        "sourceLocationType": "source",
                         "start": 194,
                         "end": 201
                       }
@@ -129,7 +129,7 @@
                       "subType": "namedNode",
                       "value": "name",
                       "loc": {
-                        "sourceLocationType": 0,
+                        "sourceLocationType": "source",
                         "start": 202,
                         "end": 211
                       },
@@ -140,46 +140,46 @@
                       "subType": "variable",
                       "value": "name",
                       "loc": {
-                        "sourceLocationType": 0,
+                        "sourceLocationType": "source",
                         "start": 212,
                         "end": 217
                       }
                     },
                     "loc": {
-                      "sourceLocationType": 0,
+                      "sourceLocationType": "source",
                       "start": 194,
                       "end": 217
                     }
                   }
                 ],
                 "loc": {
-                  "sourceLocationType": 0,
+                  "sourceLocationType": "source",
                   "start": 194,
                   "end": 217
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 192,
               "end": 219
             }
           },
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 181,
             "end": 219
           }
         },
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 174,
           "end": 219
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 132,
       "end": 221
     }
@@ -189,7 +189,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "variables": [
@@ -198,19 +198,19 @@
       "subType": "variable",
       "value": "person",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 117,
         "end": 124
       }
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX  rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#> \nPREFIX  foaf:   <http://xmlns.com/foaf/0.1/> \n\nSELECT ?person\nWHERE \n{\n    ?person rdf:type  foaf:Person .\n    FILTER NOT EXISTS { ?person foaf:name ?name }\n}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 221
     },

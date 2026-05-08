@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://xmlns.com/foaf/0.1/",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 13,
           "end": 41
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 0,
         "end": 41
       }
@@ -37,7 +37,7 @@
               "subType": "variable",
               "value": "x",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 71,
                 "end": 73
               }
@@ -47,7 +47,7 @@
               "subType": "namedNode",
               "value": "name",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 74,
                 "end": 83
               },
@@ -58,13 +58,13 @@
               "subType": "variable",
               "value": "name1",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 85,
                 "end": 91
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 71,
               "end": 91
             }
@@ -76,7 +76,7 @@
               "subType": "variable",
               "value": "x",
               "loc": {
-                "sourceLocationType": 2
+                "sourceLocationType": "noMaterialize"
               }
             },
             "predicate": {
@@ -84,7 +84,7 @@
               "subType": "namedNode",
               "value": "mbox",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 102,
                 "end": 111
               },
@@ -95,13 +95,13 @@
               "subType": "variable",
               "value": "mbox1",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 113,
                 "end": 119
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 102,
               "end": 119
             }
@@ -113,7 +113,7 @@
               "subType": "variable",
               "value": "y",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 131,
                 "end": 133
               }
@@ -123,7 +123,7 @@
               "subType": "namedNode",
               "value": "name",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 134,
                 "end": 143
               },
@@ -134,13 +134,13 @@
               "subType": "variable",
               "value": "name2",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 145,
                 "end": 151
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 131,
               "end": 151
             }
@@ -152,7 +152,7 @@
               "subType": "variable",
               "value": "y",
               "loc": {
-                "sourceLocationType": 2
+                "sourceLocationType": "noMaterialize"
               }
             },
             "predicate": {
@@ -160,7 +160,7 @@
               "subType": "namedNode",
               "value": "mbox",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 163,
                 "end": 172
               },
@@ -171,20 +171,20 @@
               "subType": "variable",
               "value": "mbox2",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 174,
                 "end": 180
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 163,
               "end": 180
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 71,
           "end": 182
         }
@@ -207,7 +207,7 @@
                   "subType": "variable",
                   "value": "mbox1",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 209,
                     "end": 215
                   }
@@ -217,14 +217,14 @@
                   "subType": "variable",
                   "value": "mbox2",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 217,
                     "end": 223
                   }
                 }
               ],
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 200,
                 "end": 224
               }
@@ -244,7 +244,7 @@
                       "subType": "variable",
                       "value": "name1",
                       "loc": {
-                        "sourceLocationType": 0,
+                        "sourceLocationType": "source",
                         "start": 238,
                         "end": 244
                       }
@@ -254,41 +254,41 @@
                       "subType": "variable",
                       "value": "name2",
                       "loc": {
-                        "sourceLocationType": 0,
+                        "sourceLocationType": "source",
                         "start": 246,
                         "end": 252
                       }
                     }
                   ],
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 229,
                     "end": 253
                   }
                 }
               ],
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 228,
                 "end": 253
               }
             }
           ],
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 199,
             "end": 254
           }
         },
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 192,
           "end": 254
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 69,
       "end": 262
     }
@@ -298,7 +298,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "variables": [
@@ -307,7 +307,7 @@
       "subType": "variable",
       "value": "name1",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 49,
         "end": 55
       }
@@ -317,19 +317,19 @@
       "subType": "variable",
       "value": "name2",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 56,
         "end": 62
       }
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\nSELECT ?name1 ?name2\nWHERE { ?x foaf:name  ?name1 ;\n        foaf:mbox  ?mbox1 .\n         ?y foaf:name  ?name2 ;\n         foaf:mbox  ?mbox2 .\n         FILTER (sameTerm(?mbox1, ?mbox2) && !sameTerm(?name1, ?name2))\n      } \n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 262
     },

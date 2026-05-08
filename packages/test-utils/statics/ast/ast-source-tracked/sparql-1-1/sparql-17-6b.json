@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://example.org/geo#",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 13,
           "end": 38
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 0,
         "end": 38
       }
@@ -37,7 +37,7 @@
               "subType": "variable",
               "value": "a",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 65,
                 "end": 67
               }
@@ -47,7 +47,7 @@
               "subType": "namedNode",
               "value": "placeName",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 68,
                 "end": 82
               },
@@ -58,13 +58,13 @@
               "subType": "literal",
               "value": "Grenoble",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 83,
                 "end": 93
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 65,
               "end": 93
             }
@@ -76,7 +76,7 @@
               "subType": "variable",
               "value": "a",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 104,
                 "end": 106
               }
@@ -86,7 +86,7 @@
               "subType": "namedNode",
               "value": "locationX",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 107,
                 "end": 121
               },
@@ -97,13 +97,13 @@
               "subType": "variable",
               "value": "axLoc",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 122,
                 "end": 128
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 104,
               "end": 128
             }
@@ -115,7 +115,7 @@
               "subType": "variable",
               "value": "a",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 139,
                 "end": 141
               }
@@ -125,7 +125,7 @@
               "subType": "namedNode",
               "value": "locationY",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 142,
                 "end": 156
               },
@@ -136,13 +136,13 @@
               "subType": "variable",
               "value": "ayLoc",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 157,
                 "end": 163
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 139,
               "end": 163
             }
@@ -154,7 +154,7 @@
               "subType": "variable",
               "value": "b",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 175,
                 "end": 177
               }
@@ -164,7 +164,7 @@
               "subType": "namedNode",
               "value": "placeName",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 178,
                 "end": 192
               },
@@ -175,13 +175,13 @@
               "subType": "variable",
               "value": "neighbor",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 193,
                 "end": 202
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 175,
               "end": 202
             }
@@ -193,7 +193,7 @@
               "subType": "variable",
               "value": "b",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 213,
                 "end": 215
               }
@@ -203,7 +203,7 @@
               "subType": "namedNode",
               "value": "locationX",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 216,
                 "end": 230
               },
@@ -214,13 +214,13 @@
               "subType": "variable",
               "value": "bxLoc",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 231,
                 "end": 237
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 213,
               "end": 237
             }
@@ -232,7 +232,7 @@
               "subType": "variable",
               "value": "b",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 248,
                 "end": 250
               }
@@ -242,7 +242,7 @@
               "subType": "namedNode",
               "value": "locationY",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 251,
                 "end": 265
               },
@@ -253,20 +253,20 @@
               "subType": "variable",
               "value": "byLoc",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 266,
                 "end": 272
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 248,
               "end": 272
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 65,
           "end": 274
         }
@@ -287,7 +287,7 @@
                 "subType": "namedNode",
                 "value": "distance",
                 "loc": {
-                  "sourceLocationType": 0,
+                  "sourceLocationType": "source",
                   "start": 293,
                   "end": 306
                 },
@@ -299,7 +299,7 @@
                   "subType": "variable",
                   "value": "axLoc",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 307,
                     "end": 313
                   }
@@ -309,7 +309,7 @@
                   "subType": "variable",
                   "value": "ayLoc",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 315,
                     "end": 321
                   }
@@ -319,7 +319,7 @@
                   "subType": "variable",
                   "value": "bxLoc",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 323,
                     "end": 329
                   }
@@ -329,7 +329,7 @@
                   "subType": "variable",
                   "value": "byLoc",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 331,
                     "end": 337
                   }
@@ -337,7 +337,7 @@
               ],
               "distinct": false,
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 293,
                 "end": 338
               }
@@ -351,31 +351,31 @@
                 "subType": "namedNode",
                 "value": "http://www.w3.org/2001/XMLSchema#integer",
                 "loc": {
-                  "sourceLocationType": 2
+                  "sourceLocationType": "noMaterialize"
                 }
               },
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 341,
                 "end": 343
               }
             }
           ],
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 291,
             "end": 345
           }
         },
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 284,
           "end": 345
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 63,
       "end": 355
     }
@@ -385,7 +385,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "variables": [
@@ -394,19 +394,19 @@
       "subType": "variable",
       "value": "neighbor",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 47,
         "end": 56
       }
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX aGeo: <http://example.org/geo#>\n\nSELECT ?neighbor\nWHERE { ?a aGeo:placeName \"Grenoble\" .\n        ?a aGeo:locationX ?axLoc .\n        ?a aGeo:locationY ?ayLoc .\n\n        ?b aGeo:placeName ?neighbor .\n        ?b aGeo:locationX ?bxLoc .\n        ?b aGeo:locationY ?byLoc .\n\n        FILTER ( aGeo:distance(?axLoc, ?ayLoc, ?bxLoc, ?byLoc) < 10 ) .\n      }\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 355
     },

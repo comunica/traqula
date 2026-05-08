@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://xmlns.com/foaf/0.1/",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 15,
           "end": 43
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 0,
         "end": 43
       }
@@ -37,7 +37,7 @@
               "subType": "variable",
               "value": "s",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 58,
                 "end": 60
               }
@@ -47,7 +47,7 @@
               "subType": "namedNode",
               "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 61,
                 "end": 62
               }
@@ -57,21 +57,21 @@
               "subType": "namedNode",
               "value": "Person",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 63,
                 "end": 74
               },
               "prefix": "foaf"
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 58,
               "end": 74
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 58,
           "end": 76
         }
@@ -85,7 +85,7 @@
           "subType": "namedNode",
           "value": "http://example.org/sparql",
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 87,
             "end": 114
           }
@@ -102,7 +102,7 @@
                   "subType": "variable",
                   "value": "s",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 116,
                     "end": 118
                   }
@@ -112,7 +112,7 @@
                   "subType": "namedNode",
                   "value": "knows",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 119,
                     "end": 129
                   },
@@ -123,34 +123,34 @@
                   "subType": "variable",
                   "value": "o",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 130,
                     "end": 132
                   }
                 },
                 "loc": {
-                  "sourceLocationType": 0,
+                  "sourceLocationType": "source",
                   "start": 116,
                   "end": 132
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 116,
               "end": 132
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 79,
           "end": 134
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 54,
       "end": 136
     }
@@ -160,7 +160,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "variables": [
@@ -169,19 +169,19 @@
       "subType": "variable",
       "value": "s",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 51,
         "end": 53
       }
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX foaf:   <http://xmlns.com/foaf/0.1/>\nSELECT ?s\n{\n  ?s a foaf:Person .\n  SERVICE <http://example.org/sparql> {?s foaf:knows ?o }\n}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 136
     },

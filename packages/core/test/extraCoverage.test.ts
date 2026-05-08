@@ -75,7 +75,7 @@ describe('parserBuilder.ts', () => {
 describe('astCoreFactory.isSourceLocation', () => {
   it('returns true for objects with sourceLocationType', ({ expect }) => {
     const factory = new AstCoreFactory();
-    expect(factory.isSourceLocation({ sourceLocationType: 0 })).toBe(true);
+    expect(factory.isSourceLocation({ sourceLocationType: 'source' })).toBe(true);
   });
   it('returns false for objects without sourceLocationType', ({ expect }) => {
     const factory = new AstCoreFactory();

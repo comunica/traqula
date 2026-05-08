@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://example/",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 13,
           "end": 30
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 2,
         "end": 30
       }
@@ -37,7 +37,7 @@
               "subType": "namedNode",
               "value": "order",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 69,
                 "end": 75
               },
@@ -46,7 +46,7 @@
             "predicate": {
               "type": "path",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 76,
                 "end": 88
               },
@@ -56,7 +56,7 @@
                   "subType": "namedNode",
                   "value": "item",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 76,
                     "end": 81
                   },
@@ -67,7 +67,7 @@
                   "subType": "namedNode",
                   "value": "price",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 82,
                     "end": 88
                   },
@@ -81,27 +81,27 @@
               "subType": "variable",
               "value": "x",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 89,
                 "end": 91
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 69,
               "end": 91
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 69,
           "end": 91
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 62,
       "end": 95
     }
@@ -111,7 +111,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "variables": [
@@ -124,7 +124,7 @@
         "aggregation": "sum",
         "distinct": false,
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 41,
           "end": 48
         },
@@ -134,7 +134,7 @@
             "subType": "variable",
             "value": "x",
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 45,
               "end": 47
             }
@@ -146,25 +146,25 @@
         "subType": "variable",
         "value": "total",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 52,
           "end": 58
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 40,
         "end": 59
       }
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "  PREFIX :   <http://example/>\n  SELECT (sum(?x) AS ?total)\n  { \n    :order :item/:price ?x\n  }\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 2,
       "end": 95
     },

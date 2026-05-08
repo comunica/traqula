@@ -6,7 +6,7 @@
     "subType": "group",
     "patterns": [],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 16,
       "end": 18
     }
@@ -16,7 +16,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "variables": [
@@ -25,19 +25,19 @@
       "subType": "variable",
       "value": "x",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 7,
         "end": 9
       }
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "SELECT ?x\nWHERE {}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 18
     },

@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://example/",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 9,
           "end": 26
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 0,
         "end": 26
       }
@@ -29,13 +29,13 @@
         "subType": "namedNode",
         "value": "http://www.w3.org/2001/XMLSchema#",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 42,
           "end": 77
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 27,
         "end": 77
       }
@@ -55,7 +55,7 @@
             "subType": "variable",
             "value": "v",
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 105,
               "end": 107
             }
@@ -72,11 +72,11 @@
                 "subType": "namedNode",
                 "value": "http://www.w3.org/2001/XMLSchema#boolean",
                 "loc": {
-                  "sourceLocationType": 2
+                  "sourceLocationType": "noMaterialize"
                 }
               },
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 110,
                 "end": 114
               }
@@ -92,11 +92,11 @@
                 "subType": "namedNode",
                 "value": "http://www.w3.org/2001/XMLSchema#integer",
                 "loc": {
-                  "sourceLocationType": 2
+                  "sourceLocationType": "noMaterialize"
                 }
               },
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 115,
                 "end": 116
               }
@@ -108,7 +108,7 @@
               "subType": "literal",
               "value": "a",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 117,
                 "end": 120
               }
@@ -124,11 +124,11 @@
                 "subType": "namedNode",
                 "value": "http://www.w3.org/2001/XMLSchema#boolean",
                 "loc": {
-                  "sourceLocationType": 2
+                  "sourceLocationType": "noMaterialize"
                 }
               },
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 121,
                 "end": 126
               }
@@ -144,11 +144,11 @@
                 "subType": "namedNode",
                 "value": "http://www.w3.org/2001/XMLSchema#integer",
                 "loc": {
-                  "sourceLocationType": 2
+                  "sourceLocationType": "noMaterialize"
                 }
               },
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 127,
                 "end": 128
               }
@@ -160,7 +160,7 @@
               "subType": "literal",
               "value": "",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 129,
                 "end": 131
               }
@@ -173,7 +173,7 @@
               "value": "a",
               "langOrIri": "en",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 132,
                 "end": 138
               }
@@ -189,14 +189,14 @@
                 "subType": "namedNode",
                 "value": "boolean",
                 "loc": {
-                  "sourceLocationType": 0,
+                  "sourceLocationType": "source",
                   "start": 144,
                   "end": 155
                 },
                 "prefix": "xsd"
               },
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 139,
                 "end": 155
               }
@@ -212,14 +212,14 @@
                 "subType": "namedNode",
                 "value": "dateTime",
                 "loc": {
-                  "sourceLocationType": 0,
+                  "sourceLocationType": "source",
                   "start": 180,
                   "end": 192
                 },
                 "prefix": "xsd"
               },
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 156,
                 "end": 192
               }
@@ -231,7 +231,7 @@
               "subType": "namedNode",
               "value": "a",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 193,
                 "end": 195
               },
@@ -240,7 +240,7 @@
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 98,
           "end": 197
         }
@@ -263,21 +263,21 @@
                   "subType": "variable",
                   "value": "v",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 207,
                     "end": 209
                   }
                 }
               ],
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 206,
                 "end": 209
               }
             }
           ],
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 205,
             "end": 209
           }
@@ -287,20 +287,20 @@
           "subType": "variable",
           "value": "ebv",
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 213,
             "end": 217
           }
         },
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 200,
           "end": 218
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 94,
       "end": 220
     }
@@ -310,7 +310,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "variables": [
@@ -319,7 +319,7 @@
       "subType": "variable",
       "value": "v",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 86,
         "end": 88
       }
@@ -329,19 +329,19 @@
       "subType": "variable",
       "value": "ebv",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 89,
         "end": 93
       }
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX : <http://example/>\nPREFIX xsd:    <http://www.w3.org/2001/XMLSchema#>\n\nSELECT ?v ?ebv {\n  VALUES ?v { true 1 \"a\" false 0 \"\" \"a\"@en \"z\"^^xsd:boolean \"2020-01-01T00:00:00Z\"^^xsd:dateTime :a }\n  BIND(!!?v AS ?ebv)\n}",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 220
     },

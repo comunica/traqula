@@ -11,13 +11,13 @@
           "type": "graphRef",
           "subType": "named",
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 5,
             "end": 10
           }
         },
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 0,
           "end": 10
         }
@@ -25,12 +25,12 @@
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "DROP NAMED",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 10
     },

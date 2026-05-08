@@ -18,7 +18,7 @@
                   "subType": "namedNode",
                   "value": "http://example/book1",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 14,
                     "end": 36
                   }
@@ -28,7 +28,7 @@
                   "subType": "namedNode",
                   "value": "urn:label",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 37,
                     "end": 48
                   }
@@ -38,27 +38,27 @@
                   "subType": "literal",
                   "value": "A new book",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 49,
                     "end": 61
                   }
                 },
                 "loc": {
-                  "sourceLocationType": 0,
+                  "sourceLocationType": "source",
                   "start": 14,
                   "end": 61
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 14,
               "end": 63
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 0,
           "end": 64
         }
@@ -75,13 +75,13 @@
             "subType": "namedNode",
             "value": "urn:a",
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 77,
               "end": 84
             }
           },
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 67,
             "end": 84
           }
@@ -90,12 +90,12 @@
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "INSERT DATA { <http://example/book1> <urn:label> \"A new book\" .} ; PREFIX a: <urn:a>\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 84
     },

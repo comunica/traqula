@@ -1,12 +1,5 @@
 import { AstCoreFactory } from '../AstCoreFactory.js';
 import type { SourceLocationInlinedSource } from '../types.js';
-import {
-  SOURCE_LOC_SOURCE,
-  SOURCE_LOC_INLINED_SOURCE,
-  SOURCE_LOC_NO_MATERIALIZE,
-  SOURCE_LOC_STRING_REPLACE,
-  SOURCE_LOC_NODE_REPLACE,
-} from '../types.js';
 import { traqulaIndentation, traqulaNewlineAlternative } from '../utils.js';
 import type { GenRuleMap } from './builderTypes.js';
 import type { GeneratorRule, RuleDefArg } from './generatorTypes.js';
@@ -106,27 +99,27 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
   protected readonly handleLoc: RuleDefArg['HANDLE_LOC'] = (localized, handle) => {
     const loc = localized.loc;
     // SOURCE is the most common case during normal parsing — check it first
-    if (loc.sourceLocationType === SOURCE_LOC_SOURCE) {
+    if (loc.sourceLocationType === 'source') {
       this.catchup(loc.start);
       const ret = handle();
       this.catchup(loc.end);
       return ret;
     }
-    if (loc.sourceLocationType === SOURCE_LOC_NO_MATERIALIZE) {
+    if (loc.sourceLocationType === 'noMaterialize') {
       return;
     }
-    if (loc.sourceLocationType === SOURCE_LOC_STRING_REPLACE) {
+    if (loc.sourceLocationType === 'stringReplace') {
       this.catchup(loc.start);
       this.print(loc.newSource);
       this.generatedUntil = loc.end;
       return;
     }
-    if (loc.sourceLocationType === SOURCE_LOC_NODE_REPLACE) {
+    if (loc.sourceLocationType === 'nodeReplace') {
       this.catchup(loc.start);
       this.generatedUntil = loc.end;
       return handle();
     }
-    if (loc.sourceLocationType === SOURCE_LOC_INLINED_SOURCE && this.handledInlineSource !== loc) {
+    if (loc.sourceLocationType === 'inlinedSource' && this.handledInlineSource !== loc) {
       // Idempotence: calling handleLoc on the same AST multiple times should be the same as doing it once.
       this.handledInlineSource = loc;
       // Like normal, catch up until the start of what this node represents.

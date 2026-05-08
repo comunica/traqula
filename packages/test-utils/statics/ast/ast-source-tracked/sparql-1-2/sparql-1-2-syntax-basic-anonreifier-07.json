@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://example.com/ns#",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 9,
           "end": 33
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 0,
         "end": 33
       }
@@ -37,7 +37,7 @@
               "subType": "variable",
               "value": "s",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 58,
                 "end": 60
               }
@@ -47,7 +47,7 @@
               "subType": "variable",
               "value": "p",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 61,
                 "end": 63
               }
@@ -57,14 +57,14 @@
               "subType": "variable",
               "value": "o",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 64,
                 "end": 66
               }
             },
             "annotations": [],
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 58,
               "end": 66
             }
@@ -74,12 +74,12 @@
           "type": "term",
           "subType": "blankNode",
           "loc": {
-            "sourceLocationType": 2
+            "sourceLocationType": "noMaterialize"
           },
           "label": "g_0"
         },
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 56,
           "end": 69
         }
@@ -90,7 +90,7 @@
           "type": "term",
           "subType": "blankNode",
           "loc": {
-            "sourceLocationType": 2
+            "sourceLocationType": "noMaterialize"
           },
           "label": "g_0"
         },
@@ -99,7 +99,7 @@
           "subType": "variable",
           "value": "q",
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 70,
             "end": 72
           }
@@ -109,14 +109,14 @@
           "subType": "variable",
           "value": "z",
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 73,
             "end": 75
           }
         },
         "annotations": [],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 70,
           "end": 75
         }
@@ -128,7 +128,7 @@
           "subType": "variable",
           "value": "a",
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 81,
             "end": 83
           }
@@ -138,7 +138,7 @@
           "subType": "variable",
           "value": "b",
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 84,
             "end": 86
           }
@@ -154,7 +154,7 @@
                 "subType": "variable",
                 "value": "s",
                 "loc": {
-                  "sourceLocationType": 0,
+                  "sourceLocationType": "source",
                   "start": 89,
                   "end": 91
                 }
@@ -164,7 +164,7 @@
                 "subType": "variable",
                 "value": "p",
                 "loc": {
-                  "sourceLocationType": 0,
+                  "sourceLocationType": "source",
                   "start": 92,
                   "end": 94
                 }
@@ -174,14 +174,14 @@
                 "subType": "variable",
                 "value": "o",
                 "loc": {
-                  "sourceLocationType": 0,
+                  "sourceLocationType": "source",
                   "start": 95,
                   "end": 97
                 }
               },
               "annotations": [],
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 89,
                 "end": 97
               }
@@ -191,26 +191,26 @@
             "type": "term",
             "subType": "blankNode",
             "loc": {
-              "sourceLocationType": 2
+              "sourceLocationType": "noMaterialize"
             },
             "label": "g_1"
           },
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 87,
             "end": 100
           }
         },
         "annotations": [],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 81,
           "end": 100
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 56,
       "end": 102
     }
@@ -219,7 +219,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "where": {
@@ -241,7 +241,7 @@
                   "subType": "variable",
                   "value": "s",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 58,
                     "end": 60
                   }
@@ -251,7 +251,7 @@
                   "subType": "variable",
                   "value": "p",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 61,
                     "end": 63
                   }
@@ -261,14 +261,14 @@
                   "subType": "variable",
                   "value": "o",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 64,
                     "end": 66
                   }
                 },
                 "annotations": [],
                 "loc": {
-                  "sourceLocationType": 0,
+                  "sourceLocationType": "source",
                   "start": 58,
                   "end": 66
                 }
@@ -278,12 +278,12 @@
               "type": "term",
               "subType": "blankNode",
               "loc": {
-                "sourceLocationType": 2
+                "sourceLocationType": "noMaterialize"
               },
               "label": "g_0"
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 56,
               "end": 69
             }
@@ -294,7 +294,7 @@
               "type": "term",
               "subType": "blankNode",
               "loc": {
-                "sourceLocationType": 2
+                "sourceLocationType": "noMaterialize"
               },
               "label": "g_0"
             },
@@ -303,7 +303,7 @@
               "subType": "variable",
               "value": "q",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 70,
                 "end": 72
               }
@@ -313,14 +313,14 @@
               "subType": "variable",
               "value": "z",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 73,
                 "end": 75
               }
             },
             "annotations": [],
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 70,
               "end": 75
             }
@@ -332,7 +332,7 @@
               "subType": "variable",
               "value": "a",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 81,
                 "end": 83
               }
@@ -342,7 +342,7 @@
               "subType": "variable",
               "value": "b",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 84,
                 "end": 86
               }
@@ -358,7 +358,7 @@
                     "subType": "variable",
                     "value": "s",
                     "loc": {
-                      "sourceLocationType": 0,
+                      "sourceLocationType": "source",
                       "start": 89,
                       "end": 91
                     }
@@ -368,7 +368,7 @@
                     "subType": "variable",
                     "value": "p",
                     "loc": {
-                      "sourceLocationType": 0,
+                      "sourceLocationType": "source",
                       "start": 92,
                       "end": 94
                     }
@@ -378,14 +378,14 @@
                     "subType": "variable",
                     "value": "o",
                     "loc": {
-                      "sourceLocationType": 0,
+                      "sourceLocationType": "source",
                       "start": 95,
                       "end": 97
                     }
                   },
                   "annotations": [],
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 89,
                     "end": 97
                   }
@@ -395,43 +395,43 @@
                 "type": "term",
                 "subType": "blankNode",
                 "loc": {
-                  "sourceLocationType": 2
+                  "sourceLocationType": "noMaterialize"
                 },
                 "label": "g_1"
               },
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 87,
                 "end": 100
               }
             },
             "annotations": [],
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 81,
               "end": 100
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 56,
           "end": 102
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "solutionModifiers": {},
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX : <http://example.com/ns#>\n\nCONSTRUCT WHERE {\n   <<?s ?p ?o >> ?q ?z .\n   ?a ?b <<?s ?p ?o >> .\n}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 104
     },

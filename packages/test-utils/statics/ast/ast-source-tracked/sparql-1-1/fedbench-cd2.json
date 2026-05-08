@@ -16,7 +16,7 @@
               "subType": "namedNode",
               "value": "http://dbpedia.org/resource/Barack_Obama",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 32,
                 "end": 74
               }
@@ -26,7 +26,7 @@
               "subType": "namedNode",
               "value": "http://dbpedia.org/ontology/party",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 75,
                 "end": 110
               }
@@ -36,13 +36,13 @@
               "subType": "variable",
               "value": "party",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 111,
                 "end": 117
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 32,
               "end": 117
             }
@@ -54,7 +54,7 @@
               "subType": "variable",
               "value": "x",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 123,
                 "end": 125
               }
@@ -64,7 +64,7 @@
               "subType": "namedNode",
               "value": "http://data.nytimes.com/elements/topicPage",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 126,
                 "end": 170
               }
@@ -74,13 +74,13 @@
               "subType": "variable",
               "value": "page",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 171,
                 "end": 176
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 123,
               "end": 176
             }
@@ -92,7 +92,7 @@
               "subType": "variable",
               "value": "x",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 182,
                 "end": 184
               }
@@ -102,7 +102,7 @@
               "subType": "namedNode",
               "value": "http://www.w3.org/2002/07/owl#sameAs",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 185,
                 "end": 223
               }
@@ -112,27 +112,27 @@
               "subType": "namedNode",
               "value": "http://dbpedia.org/resource/Barack_Obama",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 224,
                 "end": 266
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 182,
               "end": 266
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 32,
           "end": 268
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 27,
       "end": 270
     }
@@ -142,7 +142,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "variables": [
@@ -151,7 +151,7 @@
       "subType": "variable",
       "value": "party",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 7,
         "end": 13
       }
@@ -161,19 +161,19 @@
       "subType": "variable",
       "value": "page",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 14,
         "end": 19
       }
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "SELECT ?party ?page  WHERE {\n   <http://dbpedia.org/resource/Barack_Obama> <http://dbpedia.org/ontology/party> ?party .\n   ?x <http://data.nytimes.com/elements/topicPage> ?page .\n   ?x <http://www.w3.org/2002/07/owl#sameAs> <http://dbpedia.org/resource/Barack_Obama> .\n}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 270
     },

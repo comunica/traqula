@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://example.org/WMterms#",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 15,
           "end": 44
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 0,
         "end": 44
       }
@@ -29,13 +29,13 @@
         "subType": "namedNode",
         "value": "http://example.org/types#",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 60,
           "end": 87
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 45,
         "end": 87
       }
@@ -57,7 +57,7 @@
               "subType": "variable",
               "value": "a",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 121,
                 "end": 123
               }
@@ -67,7 +67,7 @@
               "subType": "namedNode",
               "value": "label",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 125,
                 "end": 131
               },
@@ -78,13 +78,13 @@
               "subType": "variable",
               "value": "aLabel",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 139,
                 "end": 146
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 121,
               "end": 146
             }
@@ -96,7 +96,7 @@
               "subType": "variable",
               "value": "a",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 157,
                 "end": 159
               }
@@ -106,7 +106,7 @@
               "subType": "namedNode",
               "value": "weight",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 161,
                 "end": 168
               },
@@ -117,13 +117,13 @@
               "subType": "variable",
               "value": "aWeight",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 175,
                 "end": 183
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 157,
               "end": 183
             }
@@ -135,7 +135,7 @@
               "subType": "variable",
               "value": "a",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 194,
                 "end": 196
               }
@@ -145,7 +145,7 @@
               "subType": "namedNode",
               "value": "displacement",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 198,
                 "end": 211
               },
@@ -156,13 +156,13 @@
               "subType": "variable",
               "value": "aDisp",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 212,
                 "end": 218
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 194,
               "end": 218
             }
@@ -174,7 +174,7 @@
               "subType": "variable",
               "value": "b",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 230,
                 "end": 232
               }
@@ -184,7 +184,7 @@
               "subType": "namedNode",
               "value": "label",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 234,
                 "end": 240
               },
@@ -195,13 +195,13 @@
               "subType": "variable",
               "value": "bLabel",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 248,
                 "end": 255
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 230,
               "end": 255
             }
@@ -213,7 +213,7 @@
               "subType": "variable",
               "value": "b",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 266,
                 "end": 268
               }
@@ -223,7 +223,7 @@
               "subType": "namedNode",
               "value": "weight",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 270,
                 "end": 277
               },
@@ -234,13 +234,13 @@
               "subType": "variable",
               "value": "bWeight",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 284,
                 "end": 292
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 266,
               "end": 292
             }
@@ -252,7 +252,7 @@
               "subType": "variable",
               "value": "b",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 303,
                 "end": 305
               }
@@ -262,7 +262,7 @@
               "subType": "namedNode",
               "value": "displacement",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 307,
                 "end": 320
               },
@@ -273,20 +273,20 @@
               "subType": "variable",
               "value": "bDisp",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 321,
                 "end": 327
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 303,
               "end": 327
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 121,
           "end": 329
         }
@@ -309,7 +309,7 @@
                   "subType": "variable",
                   "value": "aWeight",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 357,
                     "end": 365
                   }
@@ -319,14 +319,14 @@
                   "subType": "variable",
                   "value": "bWeight",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 367,
                     "end": 375
                   }
                 }
               ],
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 348,
                 "end": 376
               }
@@ -346,7 +346,7 @@
                       "subType": "variable",
                       "value": "aDisp",
                       "loc": {
-                        "sourceLocationType": 0,
+                        "sourceLocationType": "source",
                         "start": 390,
                         "end": 396
                       }
@@ -356,41 +356,41 @@
                       "subType": "variable",
                       "value": "bDisp",
                       "loc": {
-                        "sourceLocationType": 0,
+                        "sourceLocationType": "source",
                         "start": 398,
                         "end": 404
                       }
                     }
                   ],
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 381,
                     "end": 405
                   }
                 }
               ],
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 380,
                 "end": 405
               }
             }
           ],
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 346,
             "end": 406
           }
         },
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 339,
           "end": 406
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 119,
       "end": 408
     }
@@ -400,7 +400,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "variables": [
@@ -409,7 +409,7 @@
       "subType": "variable",
       "value": "aLabel1",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 96,
         "end": 104
       }
@@ -419,19 +419,19 @@
       "subType": "variable",
       "value": "bLabel",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 105,
         "end": 112
       }
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX  :      <http://example.org/WMterms#>\nPREFIX  t:     <http://example.org/types#>\n\nSELECT ?aLabel1 ?bLabel\nWHERE { ?a  :label        ?aLabel .\n        ?a  :weight       ?aWeight .\n        ?a  :displacement ?aDisp .\n\n        ?b  :label        ?bLabel .\n        ?b  :weight       ?bWeight .\n        ?b  :displacement ?bDisp .\n\n        FILTER ( sameTerm(?aWeight, ?bWeight) && !sameTerm(?aDisp, ?bDisp)) }\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 408
     },

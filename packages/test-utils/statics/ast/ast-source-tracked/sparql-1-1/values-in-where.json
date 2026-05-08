@@ -14,7 +14,7 @@
             "subType": "variable",
             "value": "x",
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 25,
               "end": 27
             }
@@ -27,7 +27,7 @@
               "subType": "namedNode",
               "value": "http://ex",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 30,
                 "end": 41
               }
@@ -35,14 +35,14 @@
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 18,
           "end": 43
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 16,
       "end": 45
     }
@@ -57,14 +57,14 @@
           "subType": "variable",
           "value": "x",
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 55,
             "end": 57
           }
         }
       ],
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 46,
         "end": 57
       }
@@ -74,7 +74,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "variables": [
@@ -83,19 +83,19 @@
       "subType": "variable",
       "value": "x",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 7,
         "end": 9
       }
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "SELECT ?x WHERE { VALUES ?x { <http://ex> } } GROUP BY ?x",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 57
     },

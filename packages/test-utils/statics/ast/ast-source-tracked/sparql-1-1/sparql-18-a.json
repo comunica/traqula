@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://dbpedia.org/owl/#",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 19,
           "end": 45
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 0,
         "end": 45
       }
@@ -29,13 +29,13 @@
         "subType": "namedNode",
         "value": "http://www.w3.org/2000/01/rdf-schema#",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 58,
           "end": 97
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 46,
         "end": 97
       }
@@ -57,7 +57,7 @@
               "subType": "variable",
               "value": "movie",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 122,
                 "end": 128
               }
@@ -67,7 +67,7 @@
               "subType": "namedNode",
               "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 129,
                 "end": 130
               }
@@ -77,14 +77,14 @@
               "subType": "namedNode",
               "value": "Film",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 131,
                 "end": 147
               },
               "prefix": "dbpedia-owl"
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 122,
               "end": 147
             }
@@ -96,7 +96,7 @@
               "subType": "variable",
               "value": "movie",
               "loc": {
-                "sourceLocationType": 2
+                "sourceLocationType": "noMaterialize"
               }
             },
             "predicate": {
@@ -104,7 +104,7 @@
               "subType": "namedNode",
               "value": "starring",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 154,
                 "end": 174
               },
@@ -117,7 +117,7 @@
                 "type": "term",
                 "subType": "blankNode",
                 "loc": {
-                  "sourceLocationType": 2
+                  "sourceLocationType": "noMaterialize"
                 },
                 "label": "g_0"
               },
@@ -128,7 +128,7 @@
                     "type": "term",
                     "subType": "blankNode",
                     "loc": {
-                      "sourceLocationType": 2
+                      "sourceLocationType": "noMaterialize"
                     },
                     "label": "g_0"
                   },
@@ -137,7 +137,7 @@
                     "subType": "namedNode",
                     "value": "label",
                     "loc": {
-                      "sourceLocationType": 0,
+                      "sourceLocationType": "source",
                       "start": 183,
                       "end": 193
                     },
@@ -149,13 +149,13 @@
                     "value": "Brad Pitt",
                     "langOrIri": "en",
                     "loc": {
-                      "sourceLocationType": 0,
+                      "sourceLocationType": "source",
                       "start": 194,
                       "end": 208
                     }
                   },
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 183,
                     "end": 208
                   }
@@ -166,14 +166,14 @@
                     "type": "term",
                     "subType": "blankNode",
                     "loc": {
-                      "sourceLocationType": 2
+                      "sourceLocationType": "noMaterialize"
                     },
                     "label": "g_0"
                   },
                   "predicate": {
                     "type": "path",
                     "loc": {
-                      "sourceLocationType": 0,
+                      "sourceLocationType": "source",
                       "start": 217,
                       "end": 238
                     },
@@ -183,7 +183,7 @@
                         "subType": "namedNode",
                         "value": "starring",
                         "loc": {
-                          "sourceLocationType": 0,
+                          "sourceLocationType": "source",
                           "start": 218,
                           "end": 238
                         },
@@ -197,40 +197,40 @@
                     "subType": "variable",
                     "value": "otherMovie",
                     "loc": {
-                      "sourceLocationType": 0,
+                      "sourceLocationType": "source",
                       "start": 239,
                       "end": 250
                     }
                   },
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 217,
                     "end": 250
                   }
                 }
               ],
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 175,
                 "end": 256
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 154,
               "end": 256
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 122,
           "end": 258
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 118,
       "end": 260
     }
@@ -240,7 +240,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "variables": [
@@ -249,19 +249,19 @@
       "subType": "variable",
       "value": "movie",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 105,
         "end": 111
       }
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX dbpedia-owl:<http://dbpedia.org/owl/#>\nPREFIX rdfs:<http://www.w3.org/2000/01/rdf-schema#>\nSELECT ?movie\nWHERE {\n  ?movie a dbpedia-owl:Film ;\n    dbpedia-owl:starring [\n      rdfs:label \"Brad Pitt\"@en ;\n      ^dbpedia-owl:starring ?otherMovie\n    ] .\n}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 260
     },

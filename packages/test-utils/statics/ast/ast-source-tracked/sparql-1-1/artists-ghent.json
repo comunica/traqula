@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://www.w3.org/2000/01/rdf-schema#",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 13,
           "end": 52
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 0,
         "end": 52
       }
@@ -29,13 +29,13 @@
         "subType": "namedNode",
         "value": "http://dbpedia.org/resource/",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 69,
           "end": 99
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 53,
         "end": 99
       }
@@ -49,13 +49,13 @@
         "subType": "namedNode",
         "value": "http://dbpedia.org/ontology/",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 120,
           "end": 150
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 100,
         "end": 150
       }
@@ -73,7 +73,7 @@
           "subType": "variable",
           "value": "person",
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 166,
             "end": 173
           }
@@ -83,7 +83,7 @@
           "subType": "namedNode",
           "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 174,
             "end": 175
           }
@@ -93,14 +93,14 @@
           "subType": "namedNode",
           "value": "Artist",
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 176,
             "end": 194
           },
           "prefix": "dbpedia-owl"
         },
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 166,
           "end": 194
         }
@@ -112,7 +112,7 @@
           "subType": "variable",
           "value": "person",
           "loc": {
-            "sourceLocationType": 2
+            "sourceLocationType": "noMaterialize"
           }
         },
         "predicate": {
@@ -120,7 +120,7 @@
           "subType": "namedNode",
           "value": "label",
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 206,
             "end": 216
           },
@@ -131,13 +131,13 @@
           "subType": "variable",
           "value": "name",
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 217,
             "end": 222
           }
         },
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 206,
           "end": 222
         }
@@ -149,7 +149,7 @@
           "subType": "variable",
           "value": "person",
           "loc": {
-            "sourceLocationType": 2
+            "sourceLocationType": "noMaterialize"
           }
         },
         "predicate": {
@@ -157,7 +157,7 @@
           "subType": "namedNode",
           "value": "birthPlace",
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 234,
             "end": 256
           },
@@ -168,20 +168,20 @@
           "subType": "variable",
           "value": "city",
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 257,
             "end": 262
           }
         },
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 234,
           "end": 262
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 166,
       "end": 263
     }
@@ -190,7 +190,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "where": {
@@ -208,7 +208,7 @@
               "subType": "variable",
               "value": "person",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 276,
                 "end": 283
               }
@@ -218,7 +218,7 @@
               "subType": "namedNode",
               "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 284,
                 "end": 285
               }
@@ -228,14 +228,14 @@
               "subType": "namedNode",
               "value": "Artist",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 286,
                 "end": 304
               },
               "prefix": "dbpedia-owl"
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 276,
               "end": 304
             }
@@ -247,7 +247,7 @@
               "subType": "variable",
               "value": "person",
               "loc": {
-                "sourceLocationType": 2
+                "sourceLocationType": "noMaterialize"
               }
             },
             "predicate": {
@@ -255,7 +255,7 @@
               "subType": "namedNode",
               "value": "label",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 316,
                 "end": 326
               },
@@ -266,13 +266,13 @@
               "subType": "variable",
               "value": "name",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 327,
                 "end": 332
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 316,
               "end": 332
             }
@@ -284,7 +284,7 @@
               "subType": "variable",
               "value": "person",
               "loc": {
-                "sourceLocationType": 2
+                "sourceLocationType": "noMaterialize"
               }
             },
             "predicate": {
@@ -292,7 +292,7 @@
               "subType": "namedNode",
               "value": "birthPlace",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 344,
                 "end": 366
               },
@@ -303,13 +303,13 @@
               "subType": "variable",
               "value": "city",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 367,
                 "end": 372
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 344,
               "end": 372
             }
@@ -321,7 +321,7 @@
               "subType": "variable",
               "value": "city",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 376,
                 "end": 381
               }
@@ -331,7 +331,7 @@
               "subType": "namedNode",
               "value": "label",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 382,
                 "end": 392
               },
@@ -342,13 +342,13 @@
               "subType": "variable",
               "value": "cityName",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 393,
                 "end": 402
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 376,
               "end": 402
             }
@@ -360,7 +360,7 @@
               "subType": "variable",
               "value": "city",
               "loc": {
-                "sourceLocationType": 2
+                "sourceLocationType": "noMaterialize"
               }
             },
             "predicate": {
@@ -368,7 +368,7 @@
               "subType": "namedNode",
               "value": "label",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 412,
                 "end": 422
               },
@@ -380,13 +380,13 @@
               "value": "Ghent",
               "langOrIri": "en",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 423,
                 "end": 433
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 412,
               "end": 433
             }
@@ -398,7 +398,7 @@
               "subType": "variable",
               "value": "city",
               "loc": {
-                "sourceLocationType": 2
+                "sourceLocationType": "noMaterialize"
               }
             },
             "predicate": {
@@ -406,7 +406,7 @@
               "subType": "namedNode",
               "value": "country",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 443,
                 "end": 462
               },
@@ -417,13 +417,13 @@
               "subType": "variable",
               "value": "country",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 463,
                 "end": 471
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 443,
               "end": 471
             }
@@ -435,7 +435,7 @@
               "subType": "variable",
               "value": "country",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 475,
                 "end": 483
               }
@@ -445,7 +445,7 @@
               "subType": "namedNode",
               "value": "label",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 484,
                 "end": 494
               },
@@ -457,39 +457,39 @@
               "value": "Belgium",
               "langOrIri": "en",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 495,
                 "end": 507
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 475,
               "end": 507
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 276,
           "end": 508
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 272,
       "end": 510
     }
   },
   "solutionModifiers": {},
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX dbpedia: <http://dbpedia.org/resource/>\nPREFIX dbpedia-owl: <http://dbpedia.org/ontology/>\n\nCONSTRUCT {\n  ?person a dbpedia-owl:Artist;\n          rdfs:label ?name;\n          dbpedia-owl:birthPlace ?city.\n}\nWHERE {\n  ?person a dbpedia-owl:Artist;\n          rdfs:label ?name;\n          dbpedia-owl:birthPlace ?city.\n  ?city rdfs:label ?cityName;\n        rdfs:label \"Ghent\"@en;\n        dbpedia-owl:country ?country.\n  ?country rdfs:label \"Belgium\"@en.\n}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 510
     },

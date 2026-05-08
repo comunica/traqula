@@ -12,7 +12,7 @@
           "subType": "namedNode",
           "value": "http://www.w3.org/TR/skos-reference/skos.rdf",
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 5,
             "end": 51
           }
@@ -25,19 +25,19 @@
             "subType": "namedNode",
             "value": "urn:namespaces:skos",
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 63,
               "end": 84
             }
           },
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 57,
             "end": 84
           }
         },
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 0,
           "end": 84
         }
@@ -45,12 +45,12 @@
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "LOAD <http://www.w3.org/TR/skos-reference/skos.rdf> INTO GRAPH <urn:namespaces:skos>\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 84
     },

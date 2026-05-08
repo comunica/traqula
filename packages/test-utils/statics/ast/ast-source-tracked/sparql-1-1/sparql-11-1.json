@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://books.example/",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 9,
           "end": 32
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 0,
         "end": 32
       }
@@ -37,7 +37,7 @@
               "subType": "variable",
               "value": "org",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 80,
                 "end": 84
               }
@@ -47,7 +47,7 @@
               "subType": "namedNode",
               "value": "affiliates",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 85,
                 "end": 96
               },
@@ -58,13 +58,13 @@
               "subType": "variable",
               "value": "auth",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 97,
                 "end": 102
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 80,
               "end": 102
             }
@@ -76,7 +76,7 @@
               "subType": "variable",
               "value": "auth",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 107,
                 "end": 112
               }
@@ -86,7 +86,7 @@
               "subType": "namedNode",
               "value": "writesBook",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 113,
                 "end": 124
               },
@@ -97,13 +97,13 @@
               "subType": "variable",
               "value": "book",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 125,
                 "end": 130
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 107,
               "end": 130
             }
@@ -115,7 +115,7 @@
               "subType": "variable",
               "value": "book",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 135,
                 "end": 140
               }
@@ -125,7 +125,7 @@
               "subType": "namedNode",
               "value": "price",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 141,
                 "end": 147
               },
@@ -136,27 +136,27 @@
               "subType": "variable",
               "value": "lprice",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 148,
                 "end": 155
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 135,
               "end": 155
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 80,
           "end": 157
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 76,
       "end": 159
     }
@@ -171,14 +171,14 @@
           "subType": "variable",
           "value": "org",
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 169,
             "end": 173
           }
         }
       ],
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 160,
         "end": 173
       }
@@ -198,7 +198,7 @@
               "aggregation": "sum",
               "distinct": false,
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 182,
                 "end": 194
               },
@@ -208,7 +208,7 @@
                   "subType": "variable",
                   "value": "lprice",
                   "loc": {
-                    "sourceLocationType": 0,
+                    "sourceLocationType": "source",
                     "start": 186,
                     "end": 193
                   }
@@ -224,25 +224,25 @@
                 "subType": "namedNode",
                 "value": "http://www.w3.org/2001/XMLSchema#integer",
                 "loc": {
-                  "sourceLocationType": 2
+                  "sourceLocationType": "noMaterialize"
                 }
               },
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 197,
                 "end": 199
               }
             }
           ],
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 181,
             "end": 200
           }
         }
       ],
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 174,
         "end": 200
       }
@@ -252,7 +252,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "variables": [
@@ -265,7 +265,7 @@
         "aggregation": "sum",
         "distinct": false,
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 41,
           "end": 53
         },
@@ -275,7 +275,7 @@
             "subType": "variable",
             "value": "lprice",
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 45,
               "end": 52
             }
@@ -287,25 +287,25 @@
         "subType": "variable",
         "value": "totalPrice",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 57,
           "end": 68
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 40,
         "end": 69
       }
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX : <http://books.example/>\nSELECT (SUM(?lprice) AS ?totalPrice)\nWHERE {\n  ?org :affiliates ?auth .\n  ?auth :writesBook ?book .\n  ?book :price ?lprice .\n}\nGROUP BY ?org\nHAVING (SUM(?lprice) > 10)\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 200
     },

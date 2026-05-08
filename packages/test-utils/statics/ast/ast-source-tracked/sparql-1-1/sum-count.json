@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 12,
           "end": 57
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 0,
         "end": 57
       }
@@ -37,7 +37,7 @@
               "subType": "variable",
               "value": "a",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 141,
                 "end": 143
               }
@@ -47,7 +47,7 @@
               "subType": "namedNode",
               "value": "value",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 144,
                 "end": 153
               },
@@ -58,27 +58,27 @@
               "subType": "variable",
               "value": "val",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 154,
                 "end": 158
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 141,
               "end": 158
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 141,
           "end": 160
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 137,
       "end": 162
     }
@@ -93,14 +93,14 @@
           "subType": "variable",
           "value": "a",
           "loc": {
-            "sourceLocationType": 0,
+            "sourceLocationType": "source",
             "start": 172,
             "end": 174
           }
         }
       ],
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 163,
         "end": 174
       }
@@ -110,7 +110,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "variables": [
@@ -123,7 +123,7 @@
         "aggregation": "sum",
         "distinct": false,
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 66,
           "end": 75
         },
@@ -133,7 +133,7 @@
             "subType": "variable",
             "value": "val",
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 70,
               "end": 74
             }
@@ -145,13 +145,13 @@
         "subType": "variable",
         "value": "sum",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 79,
           "end": 83
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 65,
         "end": 84
       }
@@ -165,7 +165,7 @@
         "aggregation": "count",
         "distinct": false,
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 86,
           "end": 95
         },
@@ -175,7 +175,7 @@
             "subType": "variable",
             "value": "a",
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 92,
               "end": 94
             }
@@ -187,13 +187,13 @@
         "subType": "variable",
         "value": "count",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 99,
           "end": 105
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 85,
         "end": 106
       }
@@ -207,7 +207,7 @@
         "aggregation": "count",
         "distinct": false,
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 108,
           "end": 116
         },
@@ -215,7 +215,7 @@
           {
             "type": "wildcard",
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 114,
               "end": 115
             }
@@ -227,25 +227,25 @@
         "subType": "variable",
         "value": "countAll",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 120,
           "end": 129
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 107,
         "end": 130
       }
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nSELECT (SUM(?val) AS ?sum) (COUNT(?a) AS ?count) (COUNT(*) AS ?countAll)\nWHERE {\n  ?a rdf:value ?val .\n} GROUP BY ?a\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 174
     },

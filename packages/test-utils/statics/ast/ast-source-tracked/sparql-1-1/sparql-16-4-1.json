@@ -7,7 +7,7 @@
       "subType": "namedNode",
       "value": "http://example.org/",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 9,
         "end": 30
       }
@@ -17,17 +17,17 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "solutionModifiers": {},
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "DESCRIBE <http://example.org/>\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 30
     },

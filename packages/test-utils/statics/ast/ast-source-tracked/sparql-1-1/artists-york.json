@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://dbpedia.org/ontology/",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 20,
           "end": 50
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 0,
         "end": 50
       }
@@ -37,7 +37,7 @@
               "subType": "variable",
               "value": "p",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 76,
                 "end": 78
               }
@@ -47,7 +47,7 @@
               "subType": "namedNode",
               "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 79,
                 "end": 80
               }
@@ -57,14 +57,14 @@
               "subType": "namedNode",
               "value": "Artist",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 81,
                 "end": 99
               },
               "prefix": "dbpedia-owl"
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 76,
               "end": 99
             }
@@ -76,7 +76,7 @@
               "subType": "variable",
               "value": "p",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 105,
                 "end": 107
               }
@@ -86,7 +86,7 @@
               "subType": "namedNode",
               "value": "birthPlace",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 108,
                 "end": 130
               },
@@ -97,13 +97,13 @@
               "subType": "variable",
               "value": "c",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 131,
                 "end": 133
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 105,
               "end": 133
             }
@@ -115,7 +115,7 @@
               "subType": "variable",
               "value": "c",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 139,
                 "end": 141
               }
@@ -125,7 +125,7 @@
               "subType": "namedNode",
               "value": "http://xmlns.com/foaf/0.1/name",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 142,
                 "end": 174
               }
@@ -136,27 +136,27 @@
               "value": "York",
               "langOrIri": "en",
               "loc": {
-                "sourceLocationType": 0,
+                "sourceLocationType": "source",
                 "start": 175,
                 "end": 184
               }
             },
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 139,
               "end": 184
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 76,
           "end": 185
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 70,
       "end": 187
     }
@@ -166,7 +166,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "variables": [
@@ -175,7 +175,7 @@
       "subType": "variable",
       "value": "p",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 58,
         "end": 60
       }
@@ -185,19 +185,19 @@
       "subType": "variable",
       "value": "c",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 61,
         "end": 63
       }
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX dbpedia-owl: <http://dbpedia.org/ontology/>\nSELECT ?p ?c WHERE {\n    ?p a dbpedia-owl:Artist.\n    ?p dbpedia-owl:birthPlace ?c.\n    ?c <http://xmlns.com/foaf/0.1/name> \"York\"@en.\n}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 187
     },

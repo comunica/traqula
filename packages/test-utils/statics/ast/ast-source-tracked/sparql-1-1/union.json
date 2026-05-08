@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://dbpedia.org/resource/",
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 16,
           "end": 46
         }
       },
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 0,
         "end": 46
       }
@@ -45,7 +45,7 @@
                       "subType": "namedNode",
                       "value": "Belgium",
                       "loc": {
-                        "sourceLocationType": 0,
+                        "sourceLocationType": "source",
                         "start": 73,
                         "end": 88
                       },
@@ -56,7 +56,7 @@
                       "subType": "namedNode",
                       "value": "http://www.w3.org/2000/01/rdf-schema#label",
                       "loc": {
-                        "sourceLocationType": 0,
+                        "sourceLocationType": "source",
                         "start": 89,
                         "end": 133
                       }
@@ -66,27 +66,27 @@
                       "subType": "variable",
                       "value": "label",
                       "loc": {
-                        "sourceLocationType": 0,
+                        "sourceLocationType": "source",
                         "start": 134,
                         "end": 140
                       }
                     },
                     "loc": {
-                      "sourceLocationType": 0,
+                      "sourceLocationType": "source",
                       "start": 73,
                       "end": 140
                     }
                   }
                 ],
                 "loc": {
-                  "sourceLocationType": 0,
+                  "sourceLocationType": "source",
                   "start": 73,
                   "end": 141
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 71,
               "end": 143
             }
@@ -106,7 +106,7 @@
                       "subType": "namedNode",
                       "value": "Belgium",
                       "loc": {
-                        "sourceLocationType": 0,
+                        "sourceLocationType": "source",
                         "start": 156,
                         "end": 171
                       },
@@ -117,7 +117,7 @@
                       "subType": "namedNode",
                       "value": "http://dbpedia.org/property/commonName",
                       "loc": {
-                        "sourceLocationType": 0,
+                        "sourceLocationType": "source",
                         "start": 172,
                         "end": 212
                       }
@@ -127,27 +127,27 @@
                       "subType": "variable",
                       "value": "label",
                       "loc": {
-                        "sourceLocationType": 0,
+                        "sourceLocationType": "source",
                         "start": 217,
                         "end": 223
                       }
                     },
                     "loc": {
-                      "sourceLocationType": 0,
+                      "sourceLocationType": "source",
                       "start": 156,
                       "end": 223
                     }
                   }
                 ],
                 "loc": {
-                  "sourceLocationType": 0,
+                  "sourceLocationType": "source",
                   "start": 156,
                   "end": 224
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 154,
               "end": 226
             }
@@ -167,7 +167,7 @@
                       "subType": "namedNode",
                       "value": "Belgium",
                       "loc": {
-                        "sourceLocationType": 0,
+                        "sourceLocationType": "source",
                         "start": 239,
                         "end": 254
                       },
@@ -178,7 +178,7 @@
                       "subType": "namedNode",
                       "value": "http://xmlns.com/foaf/0.1/name",
                       "loc": {
-                        "sourceLocationType": 0,
+                        "sourceLocationType": "source",
                         "start": 255,
                         "end": 287
                       }
@@ -188,41 +188,41 @@
                       "subType": "variable",
                       "value": "label",
                       "loc": {
-                        "sourceLocationType": 0,
+                        "sourceLocationType": "source",
                         "start": 300,
                         "end": 306
                       }
                     },
                     "loc": {
-                      "sourceLocationType": 0,
+                      "sourceLocationType": "source",
                       "start": 239,
                       "end": 306
                     }
                   }
                 ],
                 "loc": {
-                  "sourceLocationType": 0,
+                  "sourceLocationType": "source",
                   "start": 239,
                   "end": 307
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": 0,
+              "sourceLocationType": "source",
               "start": 237,
               "end": 309
             }
           }
         ],
         "loc": {
-          "sourceLocationType": 0,
+          "sourceLocationType": "source",
           "start": 71,
           "end": 309
         }
       }
     ],
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 67,
       "end": 311
     }
@@ -232,7 +232,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": 2
+      "sourceLocationType": "noMaterialize"
     }
   },
   "variables": [
@@ -241,19 +241,19 @@
       "subType": "variable",
       "value": "label",
       "loc": {
-        "sourceLocationType": 0,
+        "sourceLocationType": "source",
         "start": 54,
         "end": 60
       }
     }
   ],
   "loc": {
-    "sourceLocationType": 1,
+    "sourceLocationType": "inlinedSource",
     "newSource": "PREFIX dbpedia: <http://dbpedia.org/resource/>\nSELECT ?label WHERE {\n  { dbpedia:Belgium <http://www.w3.org/2000/01/rdf-schema#label> ?label. }\n  UNION\n  { dbpedia:Belgium <http://dbpedia.org/property/commonName>     ?label. }\n  UNION\n  { dbpedia:Belgium <http://xmlns.com/foaf/0.1/name>             ?label. }\n}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": 0,
+      "sourceLocationType": "source",
       "start": 0,
       "end": 311
     },

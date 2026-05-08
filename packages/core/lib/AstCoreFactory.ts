@@ -77,6 +77,8 @@ export class AstCoreFactory implements AstCoreFactoryArgs {
     // Inline filter to avoid allocating intermediate arrays
     let firstValid: IToken | Localized | undefined;
     let lastValid: IToken | Localized | undefined;
+    let firstIsLocalized = false;
+    let lastIsLocalized = false;
     let hasAnyElement = false;
     let hasFiltered = false;
 
@@ -85,15 +87,18 @@ export class AstCoreFactory implements AstCoreFactoryArgs {
         continue;
       }
       hasAnyElement = true;
-      if (!this.isLocalized(x) ||
+      const localized = this.isLocalized(x);
+      if (!localized ||
         x.loc.sourceLocationType === SOURCE_LOC_SOURCE ||
         x.loc.sourceLocationType === SOURCE_LOC_STRING_REPLACE ||
         x.loc.sourceLocationType === SOURCE_LOC_NODE_REPLACE) {
         if (!hasFiltered) {
           firstValid = x;
+          firstIsLocalized = localized;
           hasFiltered = true;
         }
         lastValid = x;
+        lastIsLocalized = localized;
       }
     }
 
@@ -108,12 +113,12 @@ export class AstCoreFactory implements AstCoreFactoryArgs {
     const last = lastValid!;
     return {
       sourceLocationType: SOURCE_LOC_SOURCE,
-      start: this.isLocalized(first) ?
-          (<SourceLocationSource | SourceLocationStringReplace> first.loc).start :
-        first.startOffset,
-      end: this.isLocalized(last) ?
-          (<SourceLocationSource | SourceLocationStringReplace> last.loc).end :
-          (last.endOffset! + 1),
+      start: firstIsLocalized ?
+          (<SourceLocationSource | SourceLocationStringReplace> (<Localized> first).loc).start :
+          (<IToken> first).startOffset,
+      end: lastIsLocalized ?
+          (<SourceLocationSource | SourceLocationStringReplace> (<Localized> last).loc).end :
+          ((<IToken> last).endOffset! + 1),
     };
   }
 

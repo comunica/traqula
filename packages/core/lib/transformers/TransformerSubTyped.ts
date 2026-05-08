@@ -3,6 +3,7 @@ import type {
   TransformContext,
   VisitContext,
 } from './TransformerObject.js';
+import { EMPTY_VISIT_CONTEXT } from './TransformerObject.js';
 import type { DefaultNodePreVisitor, Safeness, SafeWrap } from './TransformerTyped.js';
 import { TransformerTyped } from './TransformerTyped.js';
 
@@ -91,7 +92,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
           ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
         }
       }
-      return ogPreVisit ? ogPreVisit(casted) : {};
+      return ogPreVisit ? ogPreVisit(casted) : EMPTY_VISIT_CONTEXT;
     };
     return <any> this.transformObject(startObject, transformWrapper, preVisitWrapper);
   }
@@ -154,7 +155,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
           ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
         }
       }
-      return ogPreVisit ? ogPreVisit(casted) : {};
+      return ogPreVisit ? ogPreVisit(casted) : EMPTY_VISIT_CONTEXT;
     };
     this.visitObject(startObject, visitWrapper, preVisitWrapper);
   }

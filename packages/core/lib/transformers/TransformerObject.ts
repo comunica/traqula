@@ -47,6 +47,12 @@ export interface SelectiveTraversalContext<Nodes> {
  * For type-aware traversal based on `type` and `subType` fields,
  * see {@link TransformerTyped} and {@link TransformerSubTyped}.
  */
+/**
+ * Shared frozen empty context to avoid allocating `{}` for every node
+ * that doesn't have a preVisitor during traversal.
+ */
+export const EMPTY_VISIT_CONTEXT: VisitContext = Object.freeze({});
+
 export class TransformerObject {
   protected maxStackSize = 1_000_000;
   /**

@@ -1,6 +1,6 @@
 import type { Typed } from '../types.js';
 import type { TransformContext, VisitContext } from './TransformerObject.js';
-import { TransformerObject } from './TransformerObject.js';
+import { EMPTY_VISIT_CONTEXT, TransformerObject } from './TransformerObject.js';
 
 /**
  * Controls whether transform callbacks receive fully typed nodes (`'unsafe'`) or
@@ -83,13 +83,17 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     const nodeDefaults = this.defaultNodePreVisitor;
     const preVisitWrapper = (curObject: object): VisitContext => {
       let ogPreVisit: ((node: any) => VisitContext) | undefined;
-      let nodeContext: VisitContext = {};
       const casted = <Typed<Nodes['type']>>curObject;
+      let nodeDefault: VisitContext | undefined;
       if (casted.type) {
         ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
-        nodeContext = nodeDefaults[casted.type] ?? nodeContext;
+        nodeDefault = nodeDefaults[casted.type];
       }
-      return ogPreVisit ? { ...nodeContext, ...ogPreVisit(casted) } : nodeContext;
+      if (ogPreVisit) {
+        const result = ogPreVisit(casted);
+        return nodeDefault ? { ...nodeDefault, ...result } : result;
+      }
+      return nodeDefault ?? EMPTY_VISIT_CONTEXT;
     };
     return <any> this.transformObject(startObject, transformWrapper, preVisitWrapper);
   }
@@ -128,13 +132,17 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     const nodeDefaults = this.defaultNodePreVisitor;
     const preVisitWrapper = (curObject: object): VisitContext => {
       let ogPreVisit: ((node: any) => VisitContext) | undefined;
-      let nodeContext: VisitContext = {};
       const casted = <Typed<Nodes['type']>>curObject;
+      let nodeDefault: VisitContext | undefined;
       if (casted.type) {
         ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
-        nodeContext = nodeDefaults[casted.type] ?? nodeContext;
+        nodeDefault = nodeDefaults[casted.type];
       }
-      return ogPreVisit ? { ...nodeContext, ...ogPreVisit(casted) } : nodeContext;
+      if (ogPreVisit) {
+        const result = ogPreVisit(casted);
+        return nodeDefault ? { ...nodeDefault, ...result } : result;
+      }
+      return nodeDefault ?? EMPTY_VISIT_CONTEXT;
     };
     return this.visitObject(startObject, visitorWrapper, preVisitWrapper);
   }

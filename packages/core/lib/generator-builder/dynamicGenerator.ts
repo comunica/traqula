@@ -179,8 +179,17 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
   };
 
   private doesEndWith(subsStr: string): boolean {
-    const len = subsStr.length;
     const sb = this.stringBuilder;
+    if (sb.length === 0) {
+      return false;
+    }
+    // Fast path: if last segment is long enough, no need to pop/merge
+    const last = sb.at(-1)!;
+    if (last.length >= subsStr.length) {
+      return last.endsWith(subsStr);
+    }
+    // Slow path: pop, merge, push back (compaction needed for correctness)
+    const len = subsStr.length;
     let temp = '';
     while (temp.length < len && sb.length > 0) {
       temp = sb.pop() + temp;
@@ -214,10 +223,9 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
       }
       if (!alreadyMatched) {
         const firstArg = args[0];
-        const argsCopy = [ ...args ];
         this.toEnsure.push((willPrint) => {
           let startsMatch = false;
-          for (const arg of argsCopy) {
+          for (const arg of args) {
             if (willPrint.startsWith(arg)) {
               startsMatch = true;
               break;
@@ -225,7 +233,7 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
           }
           if (!startsMatch) {
             let endsMatch = false;
-            for (const arg of argsCopy) {
+            for (const arg of args) {
               if (this.doesEndWith(arg)) {
                 endsMatch = true;
                 break;

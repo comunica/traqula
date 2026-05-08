@@ -152,16 +152,56 @@ Measured with `yarn bench` before any optimizations (best-of-two runs):
 
 ---
 
+## Optimization Batch 5: Build Caching & Stack Index Optimization
+
+**Commit:** `91bf1e2`
+
+### Changes
+
+1. **`IndirBuilder.build()` result caching** — The `build()` method now caches its result (`DynamicIndirect` instance). Repeated calls return the same instance unless rules are mutated (`patchRule`, `addRule`, `deleteRule`, `addMany`, `deleteMany`, `merge` all invalidate the cache). This eliminates the primary bottleneck in `toAlgebra()`: every call to `toAlgebra()` previously constructed a new `DynamicIndirect` with ~30 closures. With caching, the construction happens once and is reused across all subsequent calls.
+
+2. **Manual stack indexing in `TransformerObject`** — Replaced `.at(-1)` / `.push()` / `.pop()` in the inner `handleMapper()` and `handleVisitor()` loops with manual top-index tracking (`mapperTop`, `visitorTop`). This avoids:
+   - `.at(-1)` function call overhead (bounds checking + index conversion) per inner-loop iteration
+   - Array length mutation from `push()`/`pop()` — V8 can now keep arrays at stable length
+   - These inner loops execute thousands of times per transformation
+
+### Measurements after Batch 5
+
+| Benchmark | Hz | vs baseline lib | Change from baseline |
+|-----------|-----|------------------|-----------------------|
+| traqula parse 1.1 (large objectList) | 233 | 6.05x vs sparqljs | ↑ 4% ratio |
+| traqula parse 1.1 (general queries) | 110 | 5.5x vs sparqljs | ↑ 3% ratio |
+| traqula no-source tracking | 230 | — | — |
+| traqula parse 1.2 no source tracking | 120 | 5.8x vs sparqljs | — |
+| traqula parse 1.2 with source tracking | 102 | — | — |
+| visit all traqula | **11,180** | **3.30x** vs sparqlAlgebra | **↑ 31% ratio** |
+| mapOperation | **5,160** | **1.57x** vs sparqlAlgebra | **↑ 15% ratio** |
+| traqula toAlgebra 1.1 | **83** (mean 12.0ms) | **4.61x** vs sparqlAlgebra | **↑ 48% ratio** |
+| traqula toAlgebra 1.2 | 80 | 4.4x vs sparqlAlgebra | ↑ 7% ratio |
+
+**Key insight:** The build caching is the most impactful single optimization. `toAlgebra()` previously paid the cost of constructing 30 closures on every call. With the module-level `toAlgebra11Builder` singleton, `build()` now returns a cached instance, eliminating ~3,000 closure allocations per benchmark iteration. The toAlgebra 1.1 ratio improved from 3.11x to 4.61x (48% improvement). The stack indexing optimization further improved `visit all` by making the inner traversal loops ~37% faster than baseline (8,129 → 11,180 hz).
+
+---
+
 ## Summary of All Optimizations
 
 ### Ratio improvements (vs sparqlAlgebra / sparqljs)
 
 | Metric | Baseline | After all optimizations | Improvement |
 |--------|----------|------------------------|-------------|
-| visit all vs sparqlAlgebra | 2.51x | **3.17–3.71x** | **+26–48%** |
-| mapOperation vs sparqlAlgebra | 1.37x | **1.48–1.60x** | **+8–17%** |
-| toAlgebra 1.1 vs sparqlAlgebra | 3.11x | **3.30–3.99x** | **+6–28%** |
-| parse 1.1 (large) vs sparqljs | 5.79x | **5.56–7.04x** | **+0–22%** |
+| visit all vs sparqlAlgebra | 2.51x | **3.25–3.43x** | **+29–37%** |
+| mapOperation vs sparqlAlgebra | 1.37x | **1.54–1.65x** | **+12–20%** |
+| toAlgebra 1.1 vs sparqlAlgebra | 3.11x | **3.57–4.61x** | **+15–48%** |
+| parse 1.1 (large) vs sparqljs | 5.79x | **5.72–6.14x** | **+0–6%** |
+
+### Absolute performance improvements
+
+| Metric | Baseline Hz | After optimizations Hz | Improvement |
+|--------|------------|----------------------|-------------|
+| visit all traqula | 8,129 | ~11,200 | **+38%** |
+| mapOperation | 4,557 | ~5,150 | **+13%** |
+| traqula toAlgebra 1.1 | 71.4 (14.0ms mean) | ~83 (12.0ms mean) | **+16%** |
+| traqula parse 1.1 (large) | 201 | ~230 | **+14%** |
 
 ### Techniques applied
 
@@ -176,3 +216,5 @@ Measured with `yarn bench` before any optimizations (best-of-two runs):
 | Static regex patterns | Avoids regex re-compilation in hot loops |
 | Hot-path branch ordering | Most common case checked first |
 | Skip unnecessary spreads | Avoids object allocation when result is identity |
+| Build result caching | Avoids recreating DynamicIndirect per call |
+| Manual stack indexing | Avoids `.at(-1)`/`.push()`/`.pop()` overhead in tight loops |

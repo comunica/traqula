@@ -124,14 +124,15 @@ export class TransformerObject {
     const mapperOrigStack: object[] = [];
     const mapperParent: object[] = [];
     const mapperParentKey: string[] = [];
+    let mapperTop = 0;
 
     function handleMapper(): void {
-      while (stack.length === handleMapperOnLen.at(-1)) {
-        handleMapperOnLen.pop();
-        const copyToMap = mapperCopyStack.pop()!;
-        const origToMap = mapperOrigStack.pop()!;
-        const parent = <Record<string, unknown>> mapperParent.pop()!;
-        const parentKey = mapperParentKey.pop()!;
+      while (mapperTop > 0 && stack.length === handleMapperOnLen[mapperTop - 1]) {
+        mapperTop--;
+        const copyToMap = mapperCopyStack[mapperTop];
+        const origToMap = mapperOrigStack[mapperTop];
+        const parent = <Record<string, unknown>> mapperParent[mapperTop];
+        const parentKey = mapperParentKey[mapperTop];
         parent[parentKey] = mapper(copyToMap, origToMap);
       }
     }
@@ -145,11 +146,12 @@ export class TransformerObject {
       if (!didShortCut) {
         if (Array.isArray(curObject)) {
           const newArr = [ ...curObject ];
-          handleMapperOnLen.push(stack.length);
-          mapperCopyStack.push(newArr);
-          mapperOrigStack.push(curObject);
-          mapperParent.push(curParent);
-          mapperParentKey.push(curKey);
+          handleMapperOnLen[mapperTop] = stack.length;
+          mapperCopyStack[mapperTop] = newArr;
+          mapperOrigStack[mapperTop] = curObject;
+          mapperParent[mapperTop] = curParent;
+          mapperParentKey[mapperTop] = curKey;
+          mapperTop++;
 
           for (let index = curObject.length - 1; index >= 0; index--) {
             const val = <unknown> curObject[index];
@@ -174,11 +176,12 @@ export class TransformerObject {
         const copy = copyFlag ? this.cloneObj(curObject) : curObject;
 
         // Register that you want to be visited
-        handleMapperOnLen.push(stack.length);
-        mapperCopyStack.push(copy);
-        mapperOrigStack.push(curObject);
-        mapperParent.push(curParent);
-        mapperParentKey.push(curKey);
+        handleMapperOnLen[mapperTop] = stack.length;
+        mapperCopyStack[mapperTop] = copy;
+        mapperOrigStack[mapperTop] = curObject;
+        mapperParent[mapperTop] = curParent;
+        mapperParentKey[mapperTop] = curKey;
+        mapperTop++;
 
         // Extend stack if needed. When shortcutted, should still unwind the stack, but no longer add to it.
         if (continues && !didShortCut) {
@@ -235,11 +238,12 @@ export class TransformerObject {
     // When the stack is done preVisiting things above this lengths, visit the bellow
     const handleVisitorOnLen: number[] = [];
     const visitorStack: object[] = [];
+    let visitorTop = 0;
 
     function handleVisitor(): void {
-      while (stack.length === handleVisitorOnLen.at(-1)) {
-        handleVisitorOnLen.pop();
-        const toVisit = visitorStack.pop()!;
+      while (visitorTop > 0 && stack.length === handleVisitorOnLen[visitorTop - 1]) {
+        visitorTop--;
+        const toVisit = visitorStack[visitorTop];
         visitor(toVisit);
       }
     }
@@ -266,8 +270,9 @@ export class TransformerObject {
         const ignoreKeys = context.ignoreKeys ?? defaultIgnoreKeys;
 
         // Register that you want to be visited
-        handleVisitorOnLen.push(stack.length);
-        visitorStack.push(curObject);
+        handleVisitorOnLen[visitorTop] = stack.length;
+        visitorStack[visitorTop] = curObject;
+        visitorTop++;
 
         // Extend stack if needed. When shortcutted, should still unwind the stack, but no longer add to it.
         if (continues && !didShortCut) {

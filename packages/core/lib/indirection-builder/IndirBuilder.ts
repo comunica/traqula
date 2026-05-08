@@ -41,6 +41,8 @@ export class IndirBuilder<Context, Names extends string, RuleDefs extends Indire
   }
 
   private rules: RuleDefs;
+  // Cached build result — invalidated when rules change
+  private _cachedBuild: DynamicIndirect<Context, Names, RuleDefs> | undefined;
 
   private constructor(startRules: RuleDefs) {
     this.rules = startRules;
@@ -91,6 +93,7 @@ export class IndirBuilder<Context, Names extends string, RuleDefs extends Indire
       IndirDef<Context, Key, RET, ARGS> : (RuleDefs[Key] extends IndirDef<Context, Key> ? RuleDefs[Key] : never) }>>
       <unknown> this;
     self.rules[patch.name] = <any> patch;
+    self._cachedBuild = undefined;
     return self;
   }
 
@@ -111,6 +114,7 @@ export class IndirBuilder<Context, Names extends string, RuleDefs extends Indire
       throw new Error(`Function ${rule.name} already exists in the builder`);
     }
     rules[rule.name] = rule;
+    self._cachedBuild = undefined;
     return self;
   }
 
@@ -145,6 +149,7 @@ export class IndirBuilder<Context, Names extends string, RuleDefs extends Indire
     }
   > {
     this.rules = { ...this.rules, ...listToIndirectionMap(rules) };
+    this._cachedBuild = undefined;
     return <any> <unknown> this;
   }
 
@@ -155,6 +160,7 @@ export class IndirBuilder<Context, Names extends string, RuleDefs extends Indire
   IndirBuilder<Context, Exclude<Names, U>, {[K in Exclude<Names, U>]:
     RuleDefs[K] extends IndirDef<Context, K> ? RuleDefs[K] : never }> {
     delete this.rules[ruleName];
+    this._cachedBuild = undefined;
     return <IndirBuilder<Context, Exclude<Names, U>, {[K in Exclude<Names, U>]:
       RuleDefs[K] extends IndirDef<Context, K> ? RuleDefs[K] : never }>>
       <unknown> this;
@@ -170,6 +176,7 @@ export class IndirBuilder<Context, Names extends string, RuleDefs extends Indire
     for (const name of ruleNames) {
       delete this.rules[name];
     }
+    this._cachedBuild = undefined;
     return <IndirBuilder<Context, Exclude<Names, U>, {[K in Exclude<Names, U>]:
       RuleDefs[K] extends IndirDef<Context, K> ? RuleDefs[K] : never }>>
       <unknown> this;
@@ -236,14 +243,20 @@ export class IndirBuilder<Context, Names extends string, RuleDefs extends Indire
     }
 
     this.rules = <any> <unknown> otherRules;
+    this._cachedBuild = undefined;
     return <any> <unknown> this;
   }
 
   /**
    * Construct an indirection object from the registered definitions.
+   * The result is cached — repeated calls return the same instance unless
+   * rules have been modified since the last build.
    * @returns An object with a method for each registered indirection name.
    */
   public build(): IndirectObjFromIndirDefs<Context, Names, RuleDefs> {
-    return <IndirectObjFromIndirDefs<Context, Names, RuleDefs>> new DynamicIndirect(this.rules);
+    if (!this._cachedBuild) {
+      this._cachedBuild = new DynamicIndirect(this.rules);
+    }
+    return <IndirectObjFromIndirDefs<Context, Names, RuleDefs>> this._cachedBuild;
   }
 }

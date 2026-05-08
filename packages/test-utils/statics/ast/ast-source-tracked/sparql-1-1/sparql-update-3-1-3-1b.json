@@ -12,13 +12,13 @@
             "subType": "namedNode",
             "value": "http://xmlns.com/foaf/0.1/",
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 14,
               "end": 42
             }
           },
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 0,
             "end": 42
           }
@@ -40,7 +40,7 @@
                   "subType": "variable",
                   "value": "person",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 85,
                     "end": 92
                   }
@@ -50,7 +50,7 @@
                   "subType": "variable",
                   "value": "property",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 93,
                     "end": 102
                   }
@@ -60,20 +60,20 @@
                   "subType": "variable",
                   "value": "value",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 103,
                     "end": 109
                   }
                 },
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 85,
                   "end": 109
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 85,
               "end": 109
             }
@@ -84,7 +84,7 @@
           "subType": "namedNode",
           "value": "http://example/addresses",
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 49,
             "end": 75
           }
@@ -104,7 +104,7 @@
                     "subType": "variable",
                     "value": "person",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 121,
                       "end": 128
                     }
@@ -114,7 +114,7 @@
                     "subType": "variable",
                     "value": "property",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 129,
                       "end": 138
                     }
@@ -124,13 +124,13 @@
                     "subType": "variable",
                     "value": "value",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 139,
                       "end": 145
                     }
                   },
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 121,
                     "end": 145
                   }
@@ -142,7 +142,7 @@
                     "subType": "variable",
                     "value": "person",
                     "loc": {
-                      "sourceLocationType": "noMaterialize"
+                      "sourceLocationType": 2
                     }
                   },
                   "predicate": {
@@ -150,7 +150,7 @@
                     "subType": "namedNode",
                     "value": "givenName",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 148,
                       "end": 162
                     },
@@ -161,27 +161,27 @@
                     "subType": "literal",
                     "value": "Fred",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 163,
                       "end": 169
                     }
                   },
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 148,
                     "end": 169
                   }
                 }
               ],
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 121,
                 "end": 169
               }
             }
           ],
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 119,
             "end": 171
           }
@@ -190,11 +190,11 @@
           "type": "datasetClauses",
           "clauses": [],
           "loc": {
-            "sourceLocationType": "noMaterialize"
+            "sourceLocationType": 2
           }
         },
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 44,
           "end": 171
         }
@@ -202,12 +202,12 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "PREFIX foaf:  <http://xmlns.com/foaf/0.1/>\n\nWITH <http://example/addresses>\nDELETE { ?person ?property ?value } \nWHERE { ?person ?property ?value ; foaf:givenName 'Fred' } \n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 171
     },

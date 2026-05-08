@@ -12,13 +12,13 @@
             "subType": "namedNode",
             "value": "urn:a",
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 10,
               "end": 17
             }
           },
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 0,
             "end": 17
           }
@@ -27,12 +27,12 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "PREFIX a: <urn:a>\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 17
     },

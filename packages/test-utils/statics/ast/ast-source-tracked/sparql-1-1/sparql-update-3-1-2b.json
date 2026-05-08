@@ -12,13 +12,13 @@
             "subType": "namedNode",
             "value": "http://purl.org/dc/elements/1.1/",
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 11,
               "end": 45
             }
           },
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 0,
             "end": 45
           }
@@ -35,7 +35,7 @@
               "subType": "namedNode",
               "value": "http://example/bookStore",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 66,
                 "end": 92
               }
@@ -51,7 +51,7 @@
                     "subType": "namedNode",
                     "value": "http://example/book1",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 95,
                       "end": 117
                     }
@@ -61,7 +61,7 @@
                     "subType": "namedNode",
                     "value": "title",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 119,
                       "end": 127
                     },
@@ -72,33 +72,33 @@
                     "subType": "literal",
                     "value": "Fundamentals of Compiler Desing",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 129,
                       "end": 162
                     }
                   },
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 95,
                     "end": 162
                   }
                 }
               ],
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 95,
                 "end": 162
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 60,
               "end": 164
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 46,
           "end": 166
         }
@@ -117,7 +117,7 @@
               "subType": "namedNode",
               "value": "http://example/bookStore",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 190,
                 "end": 216
               }
@@ -133,7 +133,7 @@
                     "subType": "namedNode",
                     "value": "http://example/book1",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 219,
                       "end": 241
                     }
@@ -143,7 +143,7 @@
                     "subType": "namedNode",
                     "value": "title",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 243,
                       "end": 251
                     },
@@ -154,33 +154,33 @@
                     "subType": "literal",
                     "value": "Fundamentals of Compiler Design",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 253,
                       "end": 286
                     }
                   },
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 219,
                     "end": 286
                   }
                 }
               ],
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 219,
                 "end": 286
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 184,
               "end": 288
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 170,
           "end": 290
         }
@@ -188,12 +188,12 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "PREFIX dc: <http://purl.org/dc/elements/1.1/>\nDELETE DATA\n{ GRAPH <http://example/bookStore> { <http://example/book1>  dc:title  \"Fundamentals of Compiler Desing\" } } ;\n\nINSERT DATA\n{ GRAPH <http://example/bookStore> { <http://example/book1>  dc:title  \"Fundamentals of Compiler Design\" } }\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 290
     },

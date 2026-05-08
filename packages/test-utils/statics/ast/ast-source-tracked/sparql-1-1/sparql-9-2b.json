@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://example/",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 13,
           "end": 30
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 0,
         "end": 30
       }
@@ -29,13 +29,13 @@
         "subType": "namedNode",
         "value": "http://purl.org/dc/elements/1.1/",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 44,
           "end": 78
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 31,
         "end": 78
       }
@@ -49,13 +49,13 @@
         "subType": "namedNode",
         "value": "http://www.w3.org/2000/01/rdf-schema#",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 92,
           "end": 131
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 79,
         "end": 131
       }
@@ -77,7 +77,7 @@
               "subType": "namedNode",
               "value": "book1",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 145,
                 "end": 151
               },
@@ -86,7 +86,7 @@
             "predicate": {
               "type": "path",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 152,
                 "end": 238
               },
@@ -96,7 +96,7 @@
                   "subType": "namedNode",
                   "value": "http://purl.org/dc/elements/1.1/title",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 152,
                     "end": 191
                   }
@@ -106,7 +106,7 @@
                   "subType": "namedNode",
                   "value": "http://www.w3.org/2000/01/rdf-schema#label",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 194,
                     "end": 238
                   }
@@ -119,27 +119,27 @@
               "subType": "variable",
               "value": "displayString",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 239,
                 "end": 253
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 145,
               "end": 253
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 145,
           "end": 253
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 143,
       "end": 255
     }
@@ -149,26 +149,26 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": "noMaterialize"
+      "sourceLocationType": 2
     }
   },
   "variables": [
     {
       "type": "wildcard",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 139,
         "end": 140
       }
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "PREFIX :     <http://example/>\nPREFIX dc:   <http://purl.org/dc/elements/1.1/>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nSELECT *\n  { :book1 <http://purl.org/dc/elements/1.1/title> | <http://www.w3.org/2000/01/rdf-schema#label> ?displayString }\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 255
     },

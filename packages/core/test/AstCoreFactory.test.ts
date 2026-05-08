@@ -1,12 +1,12 @@
 import { describe, it } from 'vitest';
-import { AstCoreFactory } from '../lib/index.js';
+import { AstCoreFactory, SOURCE_LOC_AUTO_GENERATE } from '../lib/index.js';
 
 describe('astCoreFactory', () => {
   describe('source location management', () => {
     it('gen() creates autoGenerate location', ({ expect }) => {
       const factory = new AstCoreFactory();
       const loc = factory.gen();
-      expect(loc).toMatchObject({ sourceLocationType: 'autoGenerate' });
+      expect(loc).toMatchObject({ sourceLocationType: SOURCE_LOC_AUTO_GENERATE });
     });
 
     it('sourceLocation creates source location when tracking enabled', ({ expect }) => {

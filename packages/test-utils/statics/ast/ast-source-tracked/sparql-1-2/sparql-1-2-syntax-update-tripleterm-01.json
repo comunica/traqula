@@ -12,13 +12,13 @@
             "subType": "namedNode",
             "value": "http://example.com/ns#",
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 9,
               "end": 33
             }
           },
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 0,
             "end": 33
           }
@@ -39,7 +39,7 @@
                   "subType": "namedNode",
                   "value": "s",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 53,
                     "end": 55
                   },
@@ -50,7 +50,7 @@
                   "subType": "namedNode",
                   "value": "p",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 56,
                     "end": 58
                   },
@@ -64,7 +64,7 @@
                     "subType": "namedNode",
                     "value": "a",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 63,
                       "end": 65
                     },
@@ -75,7 +75,7 @@
                     "subType": "namedNode",
                     "value": "b",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 66,
                       "end": 68
                     },
@@ -86,35 +86,35 @@
                     "subType": "namedNode",
                     "value": "c",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 69,
                       "end": 71
                     },
                     "prefix": ""
                   },
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 59,
                     "end": 75
                   }
                 },
                 "annotations": [],
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 53,
                   "end": 75
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 53,
               "end": 77
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 35,
           "end": 79
         }
@@ -122,12 +122,12 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "PREFIX : <http://example.com/ns#>\n\nINSERT DATA {\n    :s :p <<( :a :b :c )>> .\n}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 79
     },

@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://xmlns.com/foaf/0.1/",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 13,
           "end": 41
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 0,
         "end": 41
       }
@@ -37,7 +37,7 @@
               "subType": "variable",
               "value": "x",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 110,
                 "end": 112
               }
@@ -47,7 +47,7 @@
               "subType": "namedNode",
               "value": "name",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 113,
                 "end": 122
               },
@@ -58,27 +58,27 @@
               "subType": "variable",
               "value": "name",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 123,
                 "end": 128
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 110,
               "end": 128
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 110,
           "end": 128
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 108,
       "end": 130
     }
@@ -94,7 +94,7 @@
           "subType": "namedNode",
           "value": "http://example.org/foaf/aliceFoaf",
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 64,
             "end": 99
           }
@@ -102,7 +102,7 @@
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 56,
       "end": 99
     }
@@ -113,19 +113,19 @@
       "subType": "variable",
       "value": "name",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 50,
         "end": 55
       }
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\nSELECT  ?name\nFROM    <http://example.org/foaf/aliceFoaf>\nWHERE   { ?x foaf:name ?name }\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 130
     },

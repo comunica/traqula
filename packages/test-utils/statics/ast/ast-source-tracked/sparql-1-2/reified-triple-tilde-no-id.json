@@ -20,7 +20,7 @@
                   "subType": "namedNode",
                   "value": "http://s",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 20,
                     "end": 30
                   }
@@ -30,7 +30,7 @@
                   "subType": "namedNode",
                   "value": "http://p",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 31,
                     "end": 41
                   }
@@ -40,14 +40,14 @@
                   "subType": "namedNode",
                   "value": "http://o",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 42,
                     "end": 52
                   }
                 },
                 "annotations": [],
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 20,
                   "end": 52
                 }
@@ -57,12 +57,12 @@
               "type": "term",
               "subType": "blankNode",
               "loc": {
-                "sourceLocationType": "noMaterialize"
+                "sourceLocationType": 2
               },
               "label": "g_0"
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 17,
               "end": 57
             }
@@ -73,7 +73,7 @@
               "type": "term",
               "subType": "blankNode",
               "loc": {
-                "sourceLocationType": "noMaterialize"
+                "sourceLocationType": 2
               },
               "label": "g_0"
             },
@@ -82,7 +82,7 @@
               "subType": "namedNode",
               "value": "http://pred",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 58,
                 "end": 71
               }
@@ -92,28 +92,28 @@
               "subType": "variable",
               "value": "obj",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 72,
                 "end": 76
               }
             },
             "annotations": [],
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 58,
               "end": 76
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 17,
           "end": 76
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 15,
       "end": 78
     }
@@ -123,26 +123,26 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": "noMaterialize"
+      "sourceLocationType": 2
     }
   },
   "variables": [
     {
       "type": "wildcard",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 7,
         "end": 8
       }
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "SELECT * WHERE { << <http://s> <http://p> <http://o> ~ >> <http://pred> ?obj }",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 78
     },

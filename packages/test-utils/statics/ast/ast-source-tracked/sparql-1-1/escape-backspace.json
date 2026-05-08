@@ -16,7 +16,7 @@
               "subType": "variable",
               "value": "s",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 17,
                 "end": 19
               }
@@ -26,7 +26,7 @@
               "subType": "variable",
               "value": "p",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 20,
                 "end": 22
               }
@@ -36,27 +36,27 @@
               "subType": "literal",
               "value": "\b",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 23,
                 "end": 27
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 17,
               "end": 27
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 17,
           "end": 27
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 15,
       "end": 29
     }
@@ -66,26 +66,26 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": "noMaterialize"
+      "sourceLocationType": 2
     }
   },
   "variables": [
     {
       "type": "wildcard",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 7,
         "end": 8
       }
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "SELECT * WHERE { ?s ?p \"\\b\" }",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 29
     },

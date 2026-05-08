@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://purl.org/dc/elements/1.0/",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 14,
           "end": 48
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 0,
         "end": 48
       }
@@ -29,13 +29,13 @@
         "subType": "namedNode",
         "value": "http://purl.org/dc/elements/1.1/",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 63,
           "end": 97
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 49,
         "end": 97
       }
@@ -65,7 +65,7 @@
                       "subType": "variable",
                       "value": "book",
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 132,
                         "end": 137
                       }
@@ -75,7 +75,7 @@
                       "subType": "namedNode",
                       "value": "title",
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 138,
                         "end": 148
                       },
@@ -86,13 +86,13 @@
                       "subType": "variable",
                       "value": "title",
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 149,
                         "end": 155
                       }
                     },
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 132,
                       "end": 155
                     }
@@ -104,7 +104,7 @@
                       "subType": "variable",
                       "value": "book",
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 159,
                         "end": 164
                       }
@@ -114,7 +114,7 @@
                       "subType": "namedNode",
                       "value": "creator",
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 165,
                         "end": 177
                       },
@@ -125,27 +125,27 @@
                       "subType": "variable",
                       "value": "author",
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 178,
                         "end": 185
                       }
                     },
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 159,
                       "end": 185
                     }
                   }
                 ],
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 132,
                   "end": 157
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 130,
               "end": 187
             }
@@ -165,7 +165,7 @@
                       "subType": "variable",
                       "value": "book",
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 214,
                         "end": 219
                       }
@@ -175,7 +175,7 @@
                       "subType": "namedNode",
                       "value": "title",
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 220,
                         "end": 230
                       },
@@ -186,13 +186,13 @@
                       "subType": "variable",
                       "value": "title",
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 231,
                         "end": 237
                       }
                     },
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 214,
                       "end": 237
                     }
@@ -204,7 +204,7 @@
                       "subType": "variable",
                       "value": "book",
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 241,
                         "end": 246
                       }
@@ -214,7 +214,7 @@
                       "subType": "namedNode",
                       "value": "creator",
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 247,
                         "end": 259
                       },
@@ -225,41 +225,41 @@
                       "subType": "variable",
                       "value": "author",
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 260,
                         "end": 267
                       }
                     },
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 241,
                       "end": 267
                     }
                   }
                 ],
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 214,
                   "end": 239
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 212,
               "end": 269
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 130,
           "end": 269
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 128,
       "end": 278
     }
@@ -269,7 +269,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": "noMaterialize"
+      "sourceLocationType": 2
     }
   },
   "variables": [
@@ -278,7 +278,7 @@
       "subType": "variable",
       "value": "title",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 106,
         "end": 112
       }
@@ -288,19 +288,19 @@
       "subType": "variable",
       "value": "author",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 113,
         "end": 120
       }
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "PREFIX dc10:  <http://purl.org/dc/elements/1.0/>\nPREFIX dc11:  <http://purl.org/dc/elements/1.1/>\n\nSELECT ?title ?author\nWHERE  { { ?book dc10:title ?title .  ?book dc10:creator ?author }\n         UNION\n         { ?book dc11:title ?title .  ?book dc11:creator ?author }\n       }\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 278
     },

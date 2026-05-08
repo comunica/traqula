@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://example.com/ns#",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 9,
           "end": 33
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 0,
         "end": 33
       }
@@ -33,7 +33,7 @@
           "subType": "namedNode",
           "value": "s",
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 47,
             "end": 49
           },
@@ -44,7 +44,7 @@
           "subType": "namedNode",
           "value": "q",
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 50,
             "end": 52
           },
@@ -58,7 +58,7 @@
             "subType": "namedNode",
             "value": "s",
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 56,
               "end": 58
             },
@@ -69,7 +69,7 @@
             "subType": "namedNode",
             "value": "p",
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 59,
               "end": 61
             },
@@ -80,28 +80,28 @@
             "subType": "namedNode",
             "value": "o",
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 62,
               "end": 64
             },
             "prefix": ""
           },
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 53,
             "end": 68
           }
         },
         "annotations": [],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 47,
           "end": 68
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 47,
       "end": 68
     }
@@ -110,7 +110,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": "noMaterialize"
+      "sourceLocationType": 2
     }
   },
   "where": {
@@ -118,19 +118,19 @@
     "subType": "group",
     "patterns": [],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 77,
       "end": 79
     }
   },
   "solutionModifiers": {},
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "PREFIX : <http://example.com/ns#>\n\nCONSTRUCT { :s :q <<(:s :p :o )>> }\nWHERE {}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 79
     },

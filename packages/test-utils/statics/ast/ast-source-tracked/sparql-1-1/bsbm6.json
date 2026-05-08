@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://www.w3.org/2000/01/rdf-schema#",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 13,
           "end": 52
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 0,
         "end": 52
       }
@@ -29,13 +29,13 @@
         "subType": "namedNode",
         "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 65,
           "end": 110
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 53,
         "end": 110
       }
@@ -49,13 +49,13 @@
         "subType": "namedNode",
         "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 124,
           "end": 184
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 111,
         "end": 184
       }
@@ -77,7 +77,7 @@
               "subType": "variable",
               "value": "product",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 218,
                 "end": 226
               }
@@ -87,7 +87,7 @@
               "subType": "namedNode",
               "value": "label",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 227,
                 "end": 237
               },
@@ -98,13 +98,13 @@
               "subType": "variable",
               "value": "label",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 238,
                 "end": 244
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 218,
               "end": 244
             }
@@ -116,7 +116,7 @@
               "subType": "variable",
               "value": "product",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 251,
                 "end": 259
               }
@@ -126,7 +126,7 @@
               "subType": "namedNode",
               "value": "type",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 260,
                 "end": 268
               },
@@ -137,21 +137,21 @@
               "subType": "namedNode",
               "value": "Product",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 269,
                 "end": 281
               },
               "prefix": "bsbm"
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 251,
               "end": 281
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 218,
           "end": 283
         }
@@ -169,7 +169,7 @@
               "subType": "variable",
               "value": "label",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 298,
                 "end": 304
               }
@@ -179,27 +179,27 @@
               "subType": "literal",
               "value": "word",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 306,
                 "end": 312
               }
             }
           ],
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 292,
             "end": 313
           }
         },
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 285,
           "end": 313
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 215,
       "end": 315
     }
@@ -209,7 +209,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": "noMaterialize"
+      "sourceLocationType": 2
     }
   },
   "variables": [
@@ -218,7 +218,7 @@
       "subType": "variable",
       "value": "product",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 193,
         "end": 201
       }
@@ -228,19 +228,19 @@
       "subType": "variable",
       "value": "label",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 202,
         "end": 208
       }
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nPREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>\n\nSELECT ?product ?label\nWHERE {\n\t?product rdfs:label ?label .\n    ?product rdf:type bsbm:Product .\n\tFILTER regex(?label, \"word\")\n}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 315
     },

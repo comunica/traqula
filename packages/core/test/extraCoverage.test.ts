@@ -1,5 +1,5 @@
 import { describe, it } from 'vitest';
-import { createToken, GeneratorBuilder, ParserBuilder } from '../lib/index.js';
+import { AstCoreFactory, createToken, GeneratorBuilder, ParserBuilder } from '../lib/index.js';
 import type { GeneratorRule, ParserRule } from '../lib/index.js';
 
 type GenerateContext = { origSource: string };
@@ -69,5 +69,31 @@ describe('parserBuilder.ts', () => {
     // 'hello' lexes as Word; parser expects Num -> parse error
     // With onlyOffset tracking, token has startLine but not startColumn
     expect(() => (<any>parser).numOnly('hello', {})).toThrow(/Parse error/u);
+  });
+});
+
+describe('astCoreFactory.isSourceLocation', () => {
+  it('returns true for objects with sourceLocationType', ({ expect }) => {
+    const factory = new AstCoreFactory();
+    expect(factory.isSourceLocation({ sourceLocationType: 0 })).toBe(true);
+  });
+  it('returns false for objects without sourceLocationType', ({ expect }) => {
+    const factory = new AstCoreFactory();
+    expect(factory.isSourceLocation({})).toBe(false);
+  });
+});
+
+describe('dynamicGenerator ENSURE_EITHER with zero args', () => {
+  it('does nothing when called with no arguments', ({ expect }) => {
+    const rule: GeneratorRule<GenerateContext, 'myRule', { val: string }, []> = {
+      name: 'myRule',
+      gImpl: ({ PRINT, ENSURE_EITHER }) => (ast: { val: string }) => {
+        PRINT(ast.val);
+        ENSURE_EITHER();
+      },
+    };
+    const gen = GeneratorBuilder.create(<const>[ rule ]).build();
+    const result = gen.myRule({ val: 'hello' }, { origSource: '' });
+    expect(result).toBe('hello');
   });
 });

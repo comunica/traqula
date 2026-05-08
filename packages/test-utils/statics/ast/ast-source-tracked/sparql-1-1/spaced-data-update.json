@@ -18,7 +18,7 @@
                   "subType": "namedNode",
                   "value": "http://example.org/subject",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 68,
                     "end": 96
                   }
@@ -28,7 +28,7 @@
                   "subType": "namedNode",
                   "value": "http://example.org/predicate",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 97,
                     "end": 127
                   }
@@ -38,27 +38,27 @@
                   "subType": "literal",
                   "value": "object",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 128,
                     "end": 136
                   }
                 },
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 68,
                   "end": 136
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 68,
               "end": 138
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 48,
           "end": 140
         }
@@ -81,7 +81,7 @@
                   "subType": "namedNode",
                   "value": "http://example.org/subject",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 158,
                     "end": 186
                   }
@@ -91,7 +91,7 @@
                   "subType": "namedNode",
                   "value": "http://example.org/predicate",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 187,
                     "end": 217
                   }
@@ -101,27 +101,27 @@
                   "subType": "literal",
                   "value": "object",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 218,
                     "end": 226
                   }
                 },
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 158,
                   "end": 226
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 158,
               "end": 228
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 142,
           "end": 230
         }
@@ -144,7 +144,7 @@
                   "subType": "namedNode",
                   "value": "http://example.org/subject",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 249,
                     "end": 277
                   }
@@ -154,7 +154,7 @@
                   "subType": "namedNode",
                   "value": "http://example.org/predicate",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 278,
                     "end": 308
                   }
@@ -164,27 +164,27 @@
                   "subType": "variable",
                   "value": "o",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 309,
                     "end": 311
                   }
                 },
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 249,
                   "end": 311
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 249,
               "end": 313
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 232,
           "end": 315
         }
@@ -195,12 +195,12 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "# Basically tests Note 7 of the SPARQL 1.1 spec\nINsert     Data {\n  <http://example.org/subject> <http://example.org/predicate> \"object\" .\n};\nDelete\nData {\n  <http://example.org/subject> <http://example.org/predicate> \"object\" .\n};\nDeLete WHERE {\n  <http://example.org/subject> <http://example.org/predicate> ?o .\n};",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 48,
       "end": 315
     },

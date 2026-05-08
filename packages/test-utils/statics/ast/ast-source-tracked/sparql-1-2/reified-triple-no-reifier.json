@@ -20,7 +20,7 @@
                   "subType": "variable",
                   "value": "s",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 20,
                     "end": 22
                   }
@@ -30,7 +30,7 @@
                   "subType": "variable",
                   "value": "p",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 23,
                     "end": 25
                   }
@@ -40,14 +40,14 @@
                   "subType": "variable",
                   "value": "o",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 26,
                     "end": 28
                   }
                 },
                 "annotations": [],
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 20,
                   "end": 28
                 }
@@ -57,12 +57,12 @@
               "type": "term",
               "subType": "blankNode",
               "loc": {
-                "sourceLocationType": "noMaterialize"
+                "sourceLocationType": 2
               },
               "label": "g_0"
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 17,
               "end": 31
             }
@@ -73,7 +73,7 @@
               "type": "term",
               "subType": "blankNode",
               "loc": {
-                "sourceLocationType": "noMaterialize"
+                "sourceLocationType": 2
               },
               "label": "g_0"
             },
@@ -82,7 +82,7 @@
               "subType": "variable",
               "value": "pred",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 32,
                 "end": 37
               }
@@ -92,28 +92,28 @@
               "subType": "variable",
               "value": "obj",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 38,
                 "end": 42
               }
             },
             "annotations": [],
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 32,
               "end": 42
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 17,
           "end": 42
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 15,
       "end": 44
     }
@@ -123,26 +123,26 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": "noMaterialize"
+      "sourceLocationType": 2
     }
   },
   "variables": [
     {
       "type": "wildcard",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 7,
         "end": 8
       }
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "SELECT * WHERE { << ?s ?p ?o >> ?pred ?obj }",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 44
     },

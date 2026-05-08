@@ -16,7 +16,7 @@
               "subType": "variable",
               "value": "s",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 60,
                 "end": 62
               }
@@ -26,7 +26,7 @@
               "subType": "variable",
               "value": "p",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 63,
                 "end": 65
               }
@@ -36,27 +36,27 @@
               "subType": "variable",
               "value": "o",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 66,
                 "end": 68
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 60,
               "end": 68
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 60,
           "end": 68
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 58,
       "end": 70
     }
@@ -71,14 +71,14 @@
           "subType": "variable",
           "value": "s",
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 80,
             "end": 82
           }
         }
       ],
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 71,
         "end": 82
       }
@@ -88,7 +88,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": "noMaterialize"
+      "sourceLocationType": 2
     }
   },
   "variables": [
@@ -97,7 +97,7 @@
       "subType": "variable",
       "value": "s",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 7,
         "end": 9
       }
@@ -113,7 +113,7 @@
           "subType": "namedNode",
           "value": "http://ex.org/func",
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 11,
             "end": 31
           }
@@ -124,7 +124,7 @@
             "subType": "variable",
             "value": "o",
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 41,
               "end": 43
             }
@@ -132,7 +132,7 @@
         ],
         "distinct": true,
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 11,
           "end": 44
         }
@@ -142,25 +142,25 @@
         "subType": "variable",
         "value": "x",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 48,
           "end": 50
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 10,
         "end": 51
       }
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "SELECT ?s (<http://ex.org/func>(DISTINCT ?o) as ?x) WHERE { ?s ?p ?o } GROUP BY ?s\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 82
     },

@@ -12,7 +12,7 @@
           "subType": "variable",
           "value": "s",
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 15,
             "end": 17
           }
@@ -22,7 +22,7 @@
           "subType": "namedNode",
           "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 18,
             "end": 19
           }
@@ -32,13 +32,13 @@
           "subType": "namedNode",
           "value": "http://example.org/ExampleThing",
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 20,
             "end": 53
           }
         },
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 15,
           "end": 53
         }
@@ -50,7 +50,7 @@
           "subType": "variable",
           "value": "s",
           "loc": {
-            "sourceLocationType": "noMaterialize"
+            "sourceLocationType": 2
           }
         },
         "predicate": {
@@ -58,7 +58,7 @@
           "subType": "namedNode",
           "value": "http://example.org/hasvalue",
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 60,
             "end": 89
           }
@@ -68,13 +68,13 @@
           "subType": "literal",
           "value": "value",
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 90,
             "end": 97
           }
         },
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 60,
           "end": 97
         }
@@ -86,7 +86,7 @@
           "subType": "variable",
           "value": "s",
           "loc": {
-            "sourceLocationType": "noMaterialize"
+            "sourceLocationType": 2
           }
         },
         "predicate": {
@@ -94,7 +94,7 @@
           "subType": "variable",
           "value": "p",
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 104,
             "end": 106
           }
@@ -104,20 +104,20 @@
           "subType": "variable",
           "value": "o",
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 107,
             "end": 109
           }
         },
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 104,
           "end": 109
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 15,
       "end": 114
     }
@@ -126,7 +126,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": "noMaterialize"
+      "sourceLocationType": 2
     }
   },
   "where": {
@@ -144,7 +144,7 @@
               "subType": "variable",
               "value": "s",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 125,
                 "end": 127
               }
@@ -154,7 +154,7 @@
               "subType": "variable",
               "value": "p",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 128,
                 "end": 130
               }
@@ -164,39 +164,39 @@
               "subType": "variable",
               "value": "o",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 131,
                 "end": 133
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 125,
               "end": 133
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 125,
           "end": 133
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 123,
       "end": 135
     }
   },
   "solutionModifiers": {},
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "CONSTRUCT { \n  ?s a <http://example.org/ExampleThing>;\n     <http://example.org/hasvalue> \"value\";\n     ?p ?o;\n  .\n} WHERE { ?s ?p ?o }\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 135
     },

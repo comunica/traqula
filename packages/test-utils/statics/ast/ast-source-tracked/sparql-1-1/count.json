@@ -16,7 +16,7 @@
               "type": "term",
               "subType": "blankNode",
               "loc": {
-                "sourceLocationType": "noMaterialize"
+                "sourceLocationType": 2
               },
               "label": "g_0"
             },
@@ -27,7 +27,7 @@
                   "type": "term",
                   "subType": "blankNode",
                   "loc": {
-                    "sourceLocationType": "noMaterialize"
+                    "sourceLocationType": 2
                   },
                   "label": "g_0"
                 },
@@ -36,7 +36,7 @@
                   "subType": "variable",
                   "value": "p",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 33,
                     "end": 35
                   }
@@ -45,35 +45,35 @@
                   "type": "term",
                   "subType": "blankNode",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 36,
                     "end": 38
                   },
                   "label": "g_1"
                 },
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 33,
                   "end": 38
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 31,
               "end": 40
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 31,
           "end": 41
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 27,
       "end": 43
     }
@@ -83,7 +83,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": "noMaterialize"
+      "sourceLocationType": 2
     }
   },
   "variables": [
@@ -92,7 +92,7 @@
       "subType": "variable",
       "value": "p",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 7,
         "end": 9
       }
@@ -106,7 +106,7 @@
         "aggregation": "count",
         "distinct": false,
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 11,
           "end": 19
         },
@@ -114,7 +114,7 @@
           {
             "type": "wildcard",
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 17,
               "end": 18
             }
@@ -126,25 +126,25 @@
         "subType": "variable",
         "value": "n",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 23,
           "end": 25
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 10,
         "end": 26
       }
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "select ?p (count(*) as ?n) {\n  [ ?p [] ].\n}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 43
     },

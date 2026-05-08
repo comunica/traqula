@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://www.example.org/",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 9,
           "end": 34
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 0,
         "end": 34
       }
@@ -37,7 +37,7 @@
               "subType": "variable",
               "value": "company",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 99,
                 "end": 107
               }
@@ -47,7 +47,7 @@
               "subType": "namedNode",
               "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 108,
                 "end": 109
               }
@@ -57,14 +57,14 @@
               "subType": "namedNode",
               "value": "Company",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 110,
                 "end": 118
               },
               "prefix": ""
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 99,
               "end": 118
             }
@@ -76,7 +76,7 @@
               "subType": "variable",
               "value": "company",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 125,
                 "end": 133
               }
@@ -86,7 +86,7 @@
               "subType": "namedNode",
               "value": "hasKey",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 134,
                 "end": 141
               },
@@ -97,27 +97,27 @@
               "subType": "variable",
               "value": "key",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 142,
                 "end": 146
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 125,
               "end": 146
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 99,
           "end": 147
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 93,
       "end": 149
     }
@@ -132,14 +132,14 @@
           "subType": "variable",
           "value": "company",
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 159,
             "end": 167
           }
         }
       ],
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 150,
         "end": 167
       }
@@ -154,21 +154,21 @@
             "subType": "variable",
             "value": "company",
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 177,
               "end": 185
             }
           },
           "descending": false,
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 177,
             "end": 185
           }
         }
       ],
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 168,
         "end": 185
       }
@@ -178,7 +178,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": "noMaterialize"
+      "sourceLocationType": 2
     }
   },
   "variables": [
@@ -187,7 +187,7 @@
       "subType": "variable",
       "value": "company",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 42,
         "end": 50
       }
@@ -201,7 +201,7 @@
         "aggregation": "count",
         "distinct": true,
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 52,
           "end": 72
         },
@@ -211,7 +211,7 @@
             "subType": "variable",
             "value": "key",
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 67,
               "end": 71
             }
@@ -223,25 +223,25 @@
         "subType": "variable",
         "value": "keyCount",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 76,
           "end": 85
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 51,
         "end": 86
       }
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "PREFIX : <http://www.example.org/>\nSELECT ?company (COUNT(DISTINCT ?key) AS ?keyCount) WHERE {\n    ?company a :Company .\n    ?company :hasKey ?key.\n}\nGROUP BY ?company\nORDER BY ?company\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 185
     },

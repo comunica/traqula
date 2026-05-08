@@ -12,13 +12,13 @@
             "subType": "namedNode",
             "value": "http://xmlns.com/foaf/0.1/",
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 14,
               "end": 42
             }
           },
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 0,
             "end": 42
           }
@@ -35,7 +35,7 @@
               "subType": "namedNode",
               "value": "http://example.com/names",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 67,
                 "end": 93
               }
@@ -51,7 +51,7 @@
                     "subType": "variable",
                     "value": "person",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 100,
                       "end": 107
                     }
@@ -61,7 +61,7 @@
                     "subType": "namedNode",
                     "value": "givenName",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 108,
                       "end": 122
                     },
@@ -72,13 +72,13 @@
                     "subType": "literal",
                     "value": "Fred",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 123,
                       "end": 129
                     }
                   },
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 100,
                     "end": 129
                   }
@@ -90,7 +90,7 @@
                     "subType": "variable",
                     "value": "person",
                     "loc": {
-                      "sourceLocationType": "noMaterialize"
+                      "sourceLocationType": 2
                     }
                   },
                   "predicate": {
@@ -98,7 +98,7 @@
                     "subType": "variable",
                     "value": "property1",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 144,
                       "end": 154
                     }
@@ -108,26 +108,26 @@
                     "subType": "variable",
                     "value": "value1",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 155,
                       "end": 162
                     }
                   },
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 144,
                     "end": 162
                   }
                 }
               ],
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 100,
                 "end": 162
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 61,
               "end": 166
             }
@@ -139,7 +139,7 @@
               "subType": "namedNode",
               "value": "http://example.com/addresses",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 175,
                 "end": 205
               }
@@ -155,7 +155,7 @@
                     "subType": "variable",
                     "value": "person",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 212,
                       "end": 219
                     }
@@ -165,7 +165,7 @@
                     "subType": "variable",
                     "value": "property2",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 220,
                       "end": 230
                     }
@@ -175,33 +175,33 @@
                     "subType": "variable",
                     "value": "value2",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 231,
                       "end": 238
                     }
                   },
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 212,
                     "end": 238
                   }
                 }
               ],
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 212,
                 "end": 238
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 169,
               "end": 242
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 44,
           "end": 244
         }
@@ -209,12 +209,12 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "PREFIX foaf:  <http://xmlns.com/foaf/0.1/>\n\nDELETE WHERE {\n  GRAPH <http://example.com/names> {\n    ?person foaf:givenName 'Fred' ;\n            ?property1 ?value1\n  }\n  GRAPH <http://example.com/addresses> {\n    ?person ?property2 ?value2\n  }\n}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 244
     },

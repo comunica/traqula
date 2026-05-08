@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://example.org/",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 9,
           "end": 30
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 0,
         "end": 30
       }
@@ -37,7 +37,7 @@
               "subType": "namedNode",
               "value": "A0",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 49,
                 "end": 52
               },
@@ -46,7 +46,7 @@
             "predicate": {
               "type": "path",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 55,
                 "end": 61
               },
@@ -54,7 +54,7 @@
                 {
                   "type": "path",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 55,
                     "end": 59
                   },
@@ -64,7 +64,7 @@
                       "subType": "namedNode",
                       "value": "P",
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 55,
                         "end": 57
                       },
@@ -81,27 +81,27 @@
               "subType": "variable",
               "value": "X",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 62,
                 "end": 64
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 49,
               "end": 64
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 49,
           "end": 64
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 47,
       "end": 66
     }
@@ -117,21 +117,21 @@
             "subType": "variable",
             "value": "X",
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 76,
               "end": 78
             }
           },
           "descending": false,
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 76,
             "end": 78
           }
         }
       ],
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 67,
         "end": 78
       }
@@ -141,7 +141,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": "noMaterialize"
+      "sourceLocationType": 2
     }
   },
   "variables": [
@@ -150,19 +150,19 @@
       "subType": "variable",
       "value": "X",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 38,
         "end": 40
       }
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "prefix : <http://example.org/>\nselect ?X where { :A0 ((:P)*)* ?X }\norder by ?X\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 78
     },

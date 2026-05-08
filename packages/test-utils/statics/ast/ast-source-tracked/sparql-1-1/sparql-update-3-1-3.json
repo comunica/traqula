@@ -12,13 +12,13 @@
             "subType": "namedNode",
             "value": "http://xmlns.com/foaf/0.1/",
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 14,
               "end": 42
             }
           },
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 0,
             "end": 42
           }
@@ -39,7 +39,7 @@
                   "subType": "variable",
                   "value": "person",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 126,
                     "end": 133
                   }
@@ -49,7 +49,7 @@
                   "subType": "namedNode",
                   "value": "givenName",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 134,
                     "end": 148
                   },
@@ -60,20 +60,20 @@
                   "subType": "literal",
                   "value": "William",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 149,
                     "end": 158
                   }
                 },
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 126,
                   "end": 158
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 126,
               "end": 158
             }
@@ -91,7 +91,7 @@
                   "subType": "variable",
                   "value": "person",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 85,
                     "end": 92
                   }
@@ -101,7 +101,7 @@
                   "subType": "namedNode",
                   "value": "givenName",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 93,
                     "end": 107
                   },
@@ -112,20 +112,20 @@
                   "subType": "literal",
                   "value": "Bill",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 108,
                     "end": 114
                   }
                 },
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 85,
                   "end": 114
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 85,
               "end": 114
             }
@@ -136,7 +136,7 @@
           "subType": "namedNode",
           "value": "http://example/addresses",
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 49,
             "end": 75
           }
@@ -156,7 +156,7 @@
                     "subType": "variable",
                     "value": "person",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 171,
                       "end": 178
                     }
@@ -166,7 +166,7 @@
                     "subType": "namedNode",
                     "value": "givenName",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 179,
                       "end": 193
                     },
@@ -177,27 +177,27 @@
                     "subType": "literal",
                     "value": "Bill",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 194,
                       "end": 200
                     }
                   },
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 171,
                     "end": 200
                   }
                 }
               ],
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 171,
                 "end": 200
               }
             }
           ],
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 169,
             "end": 204
           }
@@ -206,11 +206,11 @@
           "type": "datasetClauses",
           "clauses": [],
           "loc": {
-            "sourceLocationType": "noMaterialize"
+            "sourceLocationType": 2
           }
         },
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 44,
           "end": 204
         }
@@ -218,12 +218,12 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "PREFIX foaf:  <http://xmlns.com/foaf/0.1/>\n\nWITH <http://example/addresses>\nDELETE { ?person foaf:givenName 'Bill' }\nINSERT { ?person foaf:givenName 'William' }\nWHERE\n  { ?person foaf:givenName 'Bill'\n  }\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 204
     },

@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://rdfs.org/ns/void#",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 14,
           "end": 40
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 0,
         "end": 40
       }
@@ -29,13 +29,13 @@
         "subType": "namedNode",
         "value": "http://purl.org/dc/elements/1.1/",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 55,
           "end": 89
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 41,
         "end": 89
       }
@@ -49,13 +49,13 @@
         "subType": "namedNode",
         "value": "http://usefulinc.com/ns/doap#",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 104,
           "end": 135
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 90,
         "end": 135
       }
@@ -77,7 +77,7 @@
               "subType": "variable",
               "value": "p",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 221,
                 "end": 223
               }
@@ -87,7 +87,7 @@
               "subType": "namedNode",
               "value": "subject",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 224,
                 "end": 234
               },
@@ -98,13 +98,13 @@
               "subType": "variable",
               "value": "projectSubject",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 235,
                 "end": 250
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 221,
               "end": 250
             }
@@ -116,7 +116,7 @@
               "subType": "variable",
               "value": "p",
               "loc": {
-                "sourceLocationType": "noMaterialize"
+                "sourceLocationType": 2
               }
             },
             "predicate": {
@@ -124,7 +124,7 @@
               "subType": "namedNode",
               "value": "sparqlEndpoint",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 258,
                 "end": 277
               },
@@ -135,20 +135,20 @@
               "subType": "variable",
               "value": "service",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 278,
                 "end": 286
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 258,
               "end": 286
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 221,
           "end": 288
         }
@@ -166,7 +166,7 @@
               "subType": "variable",
               "value": "projectSubject",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 307,
                 "end": 322
               }
@@ -176,20 +176,20 @@
               "subType": "literal",
               "value": "remote",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 324,
                 "end": 332
               }
             }
           ],
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 301,
             "end": 333
           }
         },
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 294,
           "end": 333
         }
@@ -203,7 +203,7 @@
           "subType": "variable",
           "value": "service",
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 378,
             "end": 386
           }
@@ -220,7 +220,7 @@
                   "subType": "variable",
                   "value": "project",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 394,
                     "end": 402
                   }
@@ -230,7 +230,7 @@
                   "subType": "namedNode",
                   "value": "name",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 404,
                     "end": 413
                   },
@@ -241,34 +241,34 @@
                   "subType": "variable",
                   "value": "projectName",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 414,
                     "end": 426
                   }
                 },
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 394,
                   "end": 426
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 394,
               "end": 428
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 370,
           "end": 430
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 173,
       "end": 433
     }
@@ -278,7 +278,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": "noMaterialize"
+      "sourceLocationType": 2
     }
   },
   "variables": [
@@ -287,7 +287,7 @@
       "subType": "variable",
       "value": "service",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 145,
         "end": 153
       }
@@ -297,19 +297,19 @@
       "subType": "variable",
       "value": "projectName",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 154,
         "end": 166
       }
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "PREFIX  void: <http://rdfs.org/ns/void#>\nPREFIX  dc:   <http://purl.org/dc/elements/1.1/>\nPREFIX  doap: <http://usefulinc.com/ns/doap#> \n\nSELECT ?service ?projectName\nWHERE {\n  # Find the service with subject \"remote\".\n  ?p dc:subject ?projectSubject ;\n     void:sparqlEndpoint ?service .\n     FILTER regex(?projectSubject, \"remote\")\n\n  # Query that service projects.\n  SERVICE ?service {\n     ?project  doap:name ?projectName . } \n}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 433
     },

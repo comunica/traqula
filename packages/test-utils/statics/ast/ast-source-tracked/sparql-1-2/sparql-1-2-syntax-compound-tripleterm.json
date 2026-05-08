@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://example.com/ns#",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 9,
           "end": 33
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 0,
         "end": 33
       }
@@ -37,7 +37,7 @@
               "subType": "variable",
               "value": "s",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 49,
                 "end": 51
               }
@@ -47,7 +47,7 @@
               "subType": "namedNode",
               "value": "p",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 52,
                 "end": 54
               },
@@ -61,7 +61,7 @@
                 "subType": "namedNode",
                 "value": "a",
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 58,
                   "end": 60
                 },
@@ -72,7 +72,7 @@
                 "subType": "namedNode",
                 "value": "b",
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 61,
                   "end": 63
                 },
@@ -83,20 +83,20 @@
                 "subType": "variable",
                 "value": "C",
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 64,
                   "end": 66
                 }
               },
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 55,
                 "end": 70
               }
             },
             "annotations": [],
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 49,
               "end": 70
             }
@@ -108,7 +108,7 @@
               "subType": "variable",
               "value": "s",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 75,
                 "end": 77
               }
@@ -118,7 +118,7 @@
               "subType": "namedNode",
               "value": "q",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 83,
                 "end": 85
               },
@@ -132,7 +132,7 @@
                 "subType": "variable",
                 "value": "s1",
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 92,
                   "end": 95
                 }
@@ -142,7 +142,7 @@
                 "subType": "namedNode",
                 "value": "p",
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 96,
                   "end": 98
                 },
@@ -156,7 +156,7 @@
                   "subType": "namedNode",
                   "value": "a",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 102,
                     "end": 104
                   },
@@ -167,7 +167,7 @@
                   "subType": "namedNode",
                   "value": "b",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 105,
                     "end": 107
                   },
@@ -177,41 +177,41 @@
                   "type": "term",
                   "subType": "blankNode",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 108,
                     "end": 110
                   },
                   "label": "g_0"
                 },
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 99,
                   "end": 114
                 }
               },
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 88,
                 "end": 118
               }
             },
             "annotations": [],
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 75,
               "end": 118
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 49,
           "end": 120
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 44,
       "end": 122
     }
@@ -221,26 +221,26 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": "noMaterialize"
+      "sourceLocationType": 2
     }
   },
   "variables": [
     {
       "type": "wildcard",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 42,
         "end": 43
       }
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "PREFIX : <http://example.com/ns#>\n\nSELECT * {\n\n  ?s :p <<(:a :b ?C )>> .\n  ?s\n     :q\n  <<( ?s1 :p <<(:a :b [] )>> )>> .\n}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 122
     },

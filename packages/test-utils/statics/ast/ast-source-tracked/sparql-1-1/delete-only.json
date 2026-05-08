@@ -19,7 +19,7 @@
                   "subType": "variable",
                   "value": "s",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 9,
                     "end": 11
                   }
@@ -29,7 +29,7 @@
                   "subType": "variable",
                   "value": "p",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 12,
                     "end": 14
                   }
@@ -39,20 +39,20 @@
                   "subType": "variable",
                   "value": "o",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 15,
                     "end": 17
                   }
                 },
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 9,
                   "end": 17
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 9,
               "end": 17
             }
@@ -73,7 +73,7 @@
                     "subType": "variable",
                     "value": "s",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 28,
                       "end": 30
                     }
@@ -83,7 +83,7 @@
                     "subType": "variable",
                     "value": "p",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 31,
                       "end": 33
                     }
@@ -93,27 +93,27 @@
                     "subType": "variable",
                     "value": "o",
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 34,
                       "end": 36
                     }
                   },
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 28,
                     "end": 36
                   }
                 }
               ],
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 28,
                 "end": 36
               }
             }
           ],
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 26,
             "end": 38
           }
@@ -122,11 +122,11 @@
           "type": "datasetClauses",
           "clauses": [],
           "loc": {
-            "sourceLocationType": "noMaterialize"
+            "sourceLocationType": 2
           }
         },
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 0,
           "end": 38
         }
@@ -134,12 +134,12 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "DELETE { ?s ?p ?o } WHERE { ?s ?p ?o }",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 38
     },

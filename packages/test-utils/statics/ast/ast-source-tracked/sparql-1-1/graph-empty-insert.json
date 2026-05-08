@@ -14,7 +14,7 @@
               "subType": "namedNode",
               "value": "http://g",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 20,
                 "end": 30
               }
@@ -24,18 +24,18 @@
               "subType": "bgp",
               "triples": [],
               "loc": {
-                "sourceLocationType": "noMaterialize"
+                "sourceLocationType": 2
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 14,
               "end": 34
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 0,
           "end": 36
         }
@@ -43,12 +43,12 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "INSERT DATA { GRAPH <http://g> { } }",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 36
     },

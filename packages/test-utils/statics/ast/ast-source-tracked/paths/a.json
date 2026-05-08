@@ -3,12 +3,12 @@
   "subType": "namedNode",
   "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "a\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 1
     },

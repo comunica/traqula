@@ -16,7 +16,7 @@
               "subType": "variable",
               "value": "p",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 22,
                 "end": 24
               }
@@ -26,7 +26,7 @@
               "subType": "namedNode",
               "value": "http://xmlns.com/foaf/0.1/name",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 25,
                 "end": 57
               }
@@ -37,27 +37,27 @@
               "value": "York\ntest",
               "langOrIri": "en",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 58,
                 "end": 73
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 22,
               "end": 73
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 22,
           "end": 74
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 16,
       "end": 76
     }
@@ -67,7 +67,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": "noMaterialize"
+      "sourceLocationType": 2
     }
   },
   "variables": [
@@ -76,19 +76,19 @@
       "subType": "variable",
       "value": "p",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 7,
         "end": 9
       }
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "SELECT ?p WHERE {\n    ?p <http://xmlns.com/foaf/0.1/name> \"York\\ntest\"@en.\n}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 76
     },

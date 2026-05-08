@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://example.org/foaf/",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 15,
           "end": 41
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 0,
         "end": 41
       }
@@ -29,13 +29,13 @@
         "subType": "namedNode",
         "value": "http://xmlns.com/foaf/0.1/",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 57,
           "end": 85
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 42,
         "end": 85
       }
@@ -49,13 +49,13 @@
         "subType": "namedNode",
         "value": "http://www.w3.org/2000/01/rdf-schema#",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 101,
           "end": 140
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 86,
         "end": 140
       }
@@ -74,7 +74,7 @@
           "subType": "namedNode",
           "value": "aliceFoaf",
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 274,
             "end": 288
           },
@@ -92,7 +92,7 @@
                   "subType": "variable",
                   "value": "alice",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 297,
                     "end": 303
                   }
@@ -102,7 +102,7 @@
                   "subType": "namedNode",
                   "value": "mbox",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 304,
                     "end": 313
                   },
@@ -113,13 +113,13 @@
                   "subType": "namedNode",
                   "value": "mailto:alice@work.example",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 314,
                     "end": 341
                   }
                 },
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 297,
                   "end": 341
                 }
@@ -131,7 +131,7 @@
                   "subType": "variable",
                   "value": "alice",
                   "loc": {
-                    "sourceLocationType": "noMaterialize"
+                    "sourceLocationType": 2
                   }
                 },
                 "predicate": {
@@ -139,7 +139,7 @@
                   "subType": "namedNode",
                   "value": "knows",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 355,
                     "end": 365
                   },
@@ -150,13 +150,13 @@
                   "subType": "variable",
                   "value": "whom",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 366,
                     "end": 371
                   }
                 },
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 355,
                   "end": 371
                 }
@@ -168,7 +168,7 @@
                   "subType": "variable",
                   "value": "whom",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 378,
                     "end": 383
                   }
@@ -178,7 +178,7 @@
                   "subType": "namedNode",
                   "value": "mbox",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 385,
                     "end": 394
                   },
@@ -189,13 +189,13 @@
                   "subType": "variable",
                   "value": "mbox",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 395,
                     "end": 400
                   }
                 },
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 378,
                   "end": 400
                 }
@@ -207,7 +207,7 @@
                   "subType": "variable",
                   "value": "whom",
                   "loc": {
-                    "sourceLocationType": "noMaterialize"
+                    "sourceLocationType": 2
                   }
                 },
                 "predicate": {
@@ -215,7 +215,7 @@
                   "subType": "namedNode",
                   "value": "seeAlso",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 414,
                     "end": 426
                   },
@@ -226,13 +226,13 @@
                   "subType": "variable",
                   "value": "ppd",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 427,
                     "end": 431
                   }
                 },
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 414,
                   "end": 431
                 }
@@ -244,7 +244,7 @@
                   "subType": "variable",
                   "value": "ppd",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 438,
                     "end": 442
                   }
@@ -254,7 +254,7 @@
                   "subType": "namedNode",
                   "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 444,
                     "end": 445
                   }
@@ -264,28 +264,28 @@
                   "subType": "namedNode",
                   "value": "PersonalProfileDocument",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 446,
                     "end": 474
                   },
                   "prefix": "foaf"
                 },
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 438,
                   "end": 474
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 297,
               "end": 476
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 268,
           "end": 480
         }
@@ -298,7 +298,7 @@
           "subType": "variable",
           "value": "ppd",
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 491,
             "end": 495
           }
@@ -315,7 +315,7 @@
                   "subType": "variable",
                   "value": "w",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 506,
                     "end": 508
                   }
@@ -325,7 +325,7 @@
                   "subType": "namedNode",
                   "value": "mbox",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 509,
                     "end": 518
                   },
@@ -336,13 +336,13 @@
                   "subType": "variable",
                   "value": "mbox",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 519,
                     "end": 524
                   }
                 },
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 506,
                   "end": 524
                 }
@@ -354,7 +354,7 @@
                   "subType": "variable",
                   "value": "w",
                   "loc": {
-                    "sourceLocationType": "noMaterialize"
+                    "sourceLocationType": 2
                   }
                 },
                 "predicate": {
@@ -362,7 +362,7 @@
                   "subType": "namedNode",
                   "value": "nick",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 536,
                     "end": 545
                   },
@@ -373,34 +373,34 @@
                   "subType": "variable",
                   "value": "nick",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 546,
                     "end": 551
                   }
                 },
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 536,
                   "end": 551
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 506,
               "end": 551
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 485,
           "end": 555
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 264,
       "end": 557
     }
@@ -416,7 +416,7 @@
           "subType": "namedNode",
           "value": "http://example.org/foaf/aliceFoaf",
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 177,
             "end": 212
           }
@@ -429,7 +429,7 @@
           "subType": "namedNode",
           "value": "http://example.org/foaf/bobFoaf",
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 224,
             "end": 257
           }
@@ -437,7 +437,7 @@
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 166,
       "end": 257
     }
@@ -448,7 +448,7 @@
       "subType": "variable",
       "value": "mbox",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 149,
         "end": 154
       }
@@ -458,7 +458,7 @@
       "subType": "variable",
       "value": "nick",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 155,
         "end": 160
       }
@@ -468,19 +468,19 @@
       "subType": "variable",
       "value": "ppd",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 161,
         "end": 165
       }
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "PREFIX  data:  <http://example.org/foaf/>\nPREFIX  foaf:  <http://xmlns.com/foaf/0.1/>\nPREFIX  rdfs:  <http://www.w3.org/2000/01/rdf-schema#>\n\nSELECT ?mbox ?nick ?ppd\nFROM NAMED <http://example.org/foaf/aliceFoaf>\nFROM NAMED <http://example.org/foaf/bobFoaf>\nWHERE\n{\n  GRAPH data:aliceFoaf\n  {\n    ?alice foaf:mbox <mailto:alice@work.example> ;\n           foaf:knows ?whom .\n    ?whom  foaf:mbox ?mbox ;\n           rdfs:seeAlso ?ppd .\n    ?ppd  a foaf:PersonalProfileDocument .\n  } .\n  GRAPH ?ppd\n  {\n      ?w foaf:mbox ?mbox ;\n         foaf:nick ?nick\n  }\n}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 557
     },

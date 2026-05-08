@@ -176,14 +176,12 @@ export class TransformerObject {
 
         // Extend stack if needed. When shortcutted, should still unwind the stack, but no longer add to it.
         if (continues && !didShortCut) {
-          for (const key in copy) {
-            if (!Object.hasOwn(copy, key)) {
-              continue;
-            }
+          const keys = Object.keys(copy);
+          for (const key of keys) {
             const val = (<Record<string, unknown>> copy)[key];
 
             // If shallow copy required, do
-            const onlyShallow = shallowKeys && shallowKeys?.has(key);
+            const onlyShallow = shallowKeys && shallowKeys.has(key);
             if (onlyShallow) {
               // Do not add stack entry - assign straight away
               (<Record<string, unknown>> copy)[key] = this.cloneObj(val);
@@ -267,10 +265,8 @@ export class TransformerObject {
 
         // Extend stack if needed. When shortcutted, should still unwind the stack, but no longer add to it.
         if (continues && !didShortCut) {
-          for (const key in curObject) {
-            if (!Object.hasOwn(curObject, key)) {
-              continue;
-            }
+          const keys = Object.keys(curObject);
+          for (const key of keys) {
             if (ignoreKeys && ignoreKeys.has(key)) {
               continue;
             }

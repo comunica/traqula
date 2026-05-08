@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://example.com/ns#",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 9,
           "end": 33
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 0,
         "end": 33
       }
@@ -39,7 +39,7 @@
                 "type": "term",
                 "subType": "blankNode",
                 "loc": {
-                  "sourceLocationType": "noMaterialize"
+                  "sourceLocationType": 2
                 },
                 "label": "g_0"
               },
@@ -50,7 +50,7 @@
                     "type": "term",
                     "subType": "blankNode",
                     "loc": {
-                      "sourceLocationType": "noMaterialize"
+                      "sourceLocationType": 2
                     },
                     "label": "g_0"
                   },
@@ -59,7 +59,7 @@
                     "subType": "namedNode",
                     "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
                     "loc": {
-                      "sourceLocationType": "noMaterialize"
+                      "sourceLocationType": 2
                     }
                   },
                   "object": {
@@ -70,7 +70,7 @@
                       "subType": "variable",
                       "value": "S1",
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 53,
                         "end": 56
                       }
@@ -80,7 +80,7 @@
                       "subType": "namedNode",
                       "value": "p",
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 57,
                         "end": 59
                       },
@@ -91,21 +91,21 @@
                       "subType": "namedNode",
                       "value": "o1",
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 60,
                         "end": 63
                       },
                       "prefix": ""
                     },
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 50,
                       "end": 66
                     }
                   },
                   "annotations": [],
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 50,
                     "end": 66
                   }
@@ -116,7 +116,7 @@
                     "type": "term",
                     "subType": "blankNode",
                     "loc": {
-                      "sourceLocationType": "noMaterialize"
+                      "sourceLocationType": 2
                     },
                     "label": "g_0"
                   },
@@ -125,20 +125,20 @@
                     "subType": "namedNode",
                     "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
                     "loc": {
-                      "sourceLocationType": "noMaterialize"
+                      "sourceLocationType": 2
                     }
                   },
                   "object": {
                     "type": "term",
                     "subType": "blankNode",
                     "loc": {
-                      "sourceLocationType": "noMaterialize"
+                      "sourceLocationType": 2
                     },
                     "label": "g_1"
                   },
                   "annotations": [],
                   "loc": {
-                    "sourceLocationType": "autoGenerate"
+                    "sourceLocationType": 5
                   }
                 },
                 {
@@ -147,7 +147,7 @@
                     "type": "term",
                     "subType": "blankNode",
                     "loc": {
-                      "sourceLocationType": "noMaterialize"
+                      "sourceLocationType": 2
                     },
                     "label": "g_1"
                   },
@@ -156,7 +156,7 @@
                     "subType": "namedNode",
                     "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
                     "loc": {
-                      "sourceLocationType": "noMaterialize"
+                      "sourceLocationType": 2
                     }
                   },
                   "object": {
@@ -167,7 +167,7 @@
                       "subType": "variable",
                       "value": "S2",
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 70,
                         "end": 73
                       }
@@ -177,7 +177,7 @@
                       "subType": "namedNode",
                       "value": "p",
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 74,
                         "end": 76
                       },
@@ -188,21 +188,21 @@
                       "subType": "namedNode",
                       "value": "o2",
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 77,
                         "end": 80
                       },
                       "prefix": ""
                     },
                     "loc": {
-                      "sourceLocationType": "source",
+                      "sourceLocationType": 0,
                       "start": 67,
                       "end": 83
                     }
                   },
                   "annotations": [],
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 67,
                     "end": 83
                   }
@@ -213,7 +213,7 @@
                     "type": "term",
                     "subType": "blankNode",
                     "loc": {
-                      "sourceLocationType": "noMaterialize"
+                      "sourceLocationType": 2
                     },
                     "label": "g_1"
                   },
@@ -222,7 +222,7 @@
                     "subType": "namedNode",
                     "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
                     "loc": {
-                      "sourceLocationType": "noMaterialize"
+                      "sourceLocationType": 2
                     }
                   },
                   "object": {
@@ -230,17 +230,17 @@
                     "subType": "namedNode",
                     "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil",
                     "loc": {
-                      "sourceLocationType": "noMaterialize"
+                      "sourceLocationType": 2
                     }
                   },
                   "annotations": [],
                   "loc": {
-                    "sourceLocationType": "autoGenerate"
+                    "sourceLocationType": 5
                   }
                 }
               ],
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 48,
                 "end": 85
               }
@@ -250,7 +250,7 @@
               "subType": "namedNode",
               "value": "q",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 87,
                 "end": 89
               },
@@ -265,32 +265,32 @@
                 "subType": "namedNode",
                 "value": "http://www.w3.org/2001/XMLSchema#integer",
                 "loc": {
-                  "sourceLocationType": "noMaterialize"
+                  "sourceLocationType": 2
                 }
               },
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 90,
                 "end": 93
               }
             },
             "annotations": [],
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 48,
               "end": 93
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 48,
           "end": 95
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 44,
       "end": 97
     }
@@ -300,26 +300,26 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": "noMaterialize"
+      "sourceLocationType": 2
     }
   },
   "variables": [
     {
       "type": "wildcard",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 42,
         "end": 43
       }
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "PREFIX : <http://example.com/ns#>\n\nSELECT * {\n  ( <<(?S1 :p :o1)>> <<(?S2 :p :o2)>> )  :q 123 .\n}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 97
     },

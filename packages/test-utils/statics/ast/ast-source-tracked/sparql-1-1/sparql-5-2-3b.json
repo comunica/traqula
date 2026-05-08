@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://xmlns.com/foaf/0.1/",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 16,
           "end": 44
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 0,
         "end": 44
       }
@@ -37,7 +37,7 @@
               "subType": "variable",
               "value": "x",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 72,
                 "end": 74
               }
@@ -47,7 +47,7 @@
               "subType": "namedNode",
               "value": "name",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 75,
                 "end": 84
               },
@@ -58,20 +58,20 @@
               "subType": "variable",
               "value": "name",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 85,
                 "end": 90
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 72,
               "end": 90
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 72,
           "end": 92
         }
@@ -89,7 +89,7 @@
               "subType": "variable",
               "value": "name",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 106,
                 "end": 111
               }
@@ -99,20 +99,20 @@
               "subType": "literal",
               "value": "Smith",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 113,
                 "end": 120
               }
             }
           ],
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 100,
             "end": 121
           }
         },
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 93,
           "end": 121
         }
@@ -128,7 +128,7 @@
               "subType": "variable",
               "value": "x",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 126,
                 "end": 128
               }
@@ -138,7 +138,7 @@
               "subType": "namedNode",
               "value": "mbox",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 129,
                 "end": 138
               },
@@ -149,27 +149,27 @@
               "subType": "variable",
               "value": "mbox",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 139,
                 "end": 144
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 126,
               "end": 144
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 126,
           "end": 146
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 66,
       "end": 150
     }
@@ -179,7 +179,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": "noMaterialize"
+      "sourceLocationType": 2
     }
   },
   "variables": [
@@ -188,7 +188,7 @@
       "subType": "variable",
       "value": "name",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 52,
         "end": 57
       }
@@ -198,19 +198,19 @@
       "subType": "variable",
       "value": "mbox",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 58,
         "end": 63
       }
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "PREFIX foaf:    <http://xmlns.com/foaf/0.1/>\nSELECT ?name ?mbox\n  {\n    ?x foaf:name ?name . FILTER regex(?name, \"Smith\")\n    ?x foaf:mbox ?mbox .\n  }\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 150
     },

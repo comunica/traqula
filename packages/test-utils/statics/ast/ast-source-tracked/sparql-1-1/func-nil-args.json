@@ -16,7 +16,7 @@
             "subType": "namedNode",
             "value": "http://ex.org/func",
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 24,
               "end": 44
             }
@@ -24,20 +24,20 @@
           "args": [],
           "distinct": false,
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 23,
             "end": 47
           }
         },
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 17,
           "end": 47
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 15,
       "end": 49
     }
@@ -47,26 +47,26 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": "noMaterialize"
+      "sourceLocationType": 2
     }
   },
   "variables": [
     {
       "type": "wildcard",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 7,
         "end": 8
       }
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "SELECT * WHERE { FILTER(<http://ex.org/func>()) }",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 49
     },

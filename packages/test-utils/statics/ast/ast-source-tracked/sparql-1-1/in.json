@@ -16,7 +16,7 @@
               "subType": "variable",
               "value": "a",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 13,
                 "end": 15
               }
@@ -26,7 +26,7 @@
               "subType": "variable",
               "value": "b",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 16,
                 "end": 18
               }
@@ -36,20 +36,20 @@
               "subType": "variable",
               "value": "c",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 19,
                 "end": 21
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 13,
               "end": 21
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 13,
           "end": 22
         }
@@ -67,7 +67,7 @@
               "subType": "variable",
               "value": "a",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 33,
                 "end": 35
               }
@@ -81,11 +81,11 @@
                 "subType": "namedNode",
                 "value": "http://www.w3.org/2001/XMLSchema#integer",
                 "loc": {
-                  "sourceLocationType": "noMaterialize"
+                  "sourceLocationType": 2
                 }
               },
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 40,
                 "end": 41
               }
@@ -99,11 +99,11 @@
                 "subType": "namedNode",
                 "value": "http://www.w3.org/2001/XMLSchema#integer",
                 "loc": {
-                  "sourceLocationType": "noMaterialize"
+                  "sourceLocationType": 2
                 }
               },
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 43,
                 "end": 44
               }
@@ -117,24 +117,24 @@
                 "subType": "namedNode",
                 "value": "http://www.w3.org/2001/XMLSchema#integer",
                 "loc": {
-                  "sourceLocationType": "noMaterialize"
+                  "sourceLocationType": 2
                 }
               },
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 46,
                 "end": 47
               }
             }
           ],
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 32,
             "end": 49
           }
         },
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 25,
           "end": 49
         }
@@ -152,7 +152,7 @@
               "subType": "variable",
               "value": "c",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 60,
                 "end": 62
               }
@@ -166,11 +166,11 @@
                 "subType": "namedNode",
                 "value": "http://www.w3.org/2001/XMLSchema#integer",
                 "loc": {
-                  "sourceLocationType": "noMaterialize"
+                  "sourceLocationType": 2
                 }
               },
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 71,
                 "end": 72
               }
@@ -184,11 +184,11 @@
                 "subType": "namedNode",
                 "value": "http://www.w3.org/2001/XMLSchema#integer",
                 "loc": {
-                  "sourceLocationType": "noMaterialize"
+                  "sourceLocationType": 2
                 }
               },
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 74,
                 "end": 75
               }
@@ -202,24 +202,24 @@
                 "subType": "namedNode",
                 "value": "http://www.w3.org/2001/XMLSchema#integer",
                 "loc": {
-                  "sourceLocationType": "noMaterialize"
+                  "sourceLocationType": 2
                 }
               },
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 77,
                 "end": 78
               }
             }
           ],
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 59,
             "end": 80
           }
         },
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 52,
           "end": 80
         }
@@ -237,7 +237,7 @@
               "subType": "variable",
               "value": "a",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 91,
                 "end": 93
               }
@@ -251,24 +251,24 @@
                 "subType": "namedNode",
                 "value": "http://www.w3.org/2001/XMLSchema#integer",
                 "loc": {
-                  "sourceLocationType": "noMaterialize"
+                  "sourceLocationType": 2
                 }
               },
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 98,
                 "end": 99
               }
             }
           ],
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 90,
             "end": 101
           }
         },
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 83,
           "end": 101
         }
@@ -286,27 +286,27 @@
               "subType": "variable",
               "value": "c",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 112,
                 "end": 114
               }
             }
           ],
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 111,
             "end": 125
           }
         },
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 104,
           "end": 125
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 9,
       "end": 127
     }
@@ -316,26 +316,26 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": "noMaterialize"
+      "sourceLocationType": 2
     }
   },
   "variables": [
     {
       "type": "wildcard",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 7,
         "end": 8
       }
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "SELECT * {\n  ?a ?b ?c.\n  FILTER (?a IN (1, 2, 3))\n  FILTER (?c NOT IN (1, 2, 3))\n  FILTER (?a in (1))\n  FILTER (?c NOT IN ())\n}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 127
     },

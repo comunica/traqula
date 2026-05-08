@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://www.w3.org/2000/01/rdf-schema#",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 18,
           "end": 57
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 2,
         "end": 57
       }
@@ -29,13 +29,13 @@
         "subType": "namedNode",
         "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 77,
           "end": 122
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 61,
         "end": 122
       }
@@ -57,7 +57,7 @@
               "subType": "variable",
               "value": "x",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 150,
                 "end": 152
               }
@@ -65,7 +65,7 @@
             "predicate": {
               "type": "path",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 153,
                 "end": 178
               },
@@ -75,7 +75,7 @@
                   "subType": "namedNode",
                   "value": "type",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 153,
                     "end": 161
                   },
@@ -84,7 +84,7 @@
                 {
                   "type": "path",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 162,
                     "end": 178
                   },
@@ -94,7 +94,7 @@
                       "subType": "namedNode",
                       "value": "subClassOf",
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 162,
                         "end": 177
                       },
@@ -111,27 +111,27 @@
               "subType": "variable",
               "value": "type",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 179,
                 "end": 184
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 150,
               "end": 184
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 150,
           "end": 184
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 143,
       "end": 188
     }
@@ -141,7 +141,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": "noMaterialize"
+      "sourceLocationType": 2
     }
   },
   "variables": [
@@ -150,7 +150,7 @@
       "subType": "variable",
       "value": "x",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 132,
         "end": 134
       }
@@ -160,19 +160,19 @@
       "subType": "variable",
       "value": "type",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 135,
         "end": 140
       }
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "  PREFIX  rdfs:   <http://www.w3.org/2000/01/rdf-schema#> \n  PREFIX  rdf:    <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n  SELECT ?x ?type\n  { \n    ?x rdf:type/rdfs:subClassOf* ?type\n  }\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 2,
       "end": 188
     },

@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://purl.org/dc/elements/1.1/",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 13,
           "end": 47
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 0,
         "end": 47
       }
@@ -29,13 +29,13 @@
         "subType": "namedNode",
         "value": "http://example.org/ns#",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 61,
           "end": 85
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 48,
         "end": 85
       }
@@ -61,7 +61,7 @@
                   "subType": "variable",
                   "value": "x",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 114,
                     "end": 116
                   }
@@ -71,7 +71,7 @@
                   "subType": "namedNode",
                   "value": "price",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 117,
                     "end": 125
                   },
@@ -82,13 +82,13 @@
                   "subType": "variable",
                   "value": "p",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 126,
                     "end": 128
                   }
                 },
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 114,
                   "end": 128
                 }
@@ -100,7 +100,7 @@
                   "subType": "variable",
                   "value": "x",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 136,
                     "end": 138
                   }
@@ -110,7 +110,7 @@
                   "subType": "namedNode",
                   "value": "discount",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 139,
                     "end": 150
                   },
@@ -121,20 +121,20 @@
                   "subType": "variable",
                   "value": "discount",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 151,
                     "end": 160
                   }
                 },
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 136,
                   "end": 160
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 114,
               "end": 130
             }
@@ -152,7 +152,7 @@
                   "subType": "variable",
                   "value": "p",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 172,
                     "end": 174
                   }
@@ -171,11 +171,11 @@
                         "subType": "namedNode",
                         "value": "http://www.w3.org/2001/XMLSchema#integer",
                         "loc": {
-                          "sourceLocationType": "noMaterialize"
+                          "sourceLocationType": 2
                         }
                       },
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 176,
                         "end": 177
                       }
@@ -185,21 +185,21 @@
                       "subType": "variable",
                       "value": "discount",
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 178,
                         "end": 187
                       }
                     }
                   ],
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 175,
                     "end": 188
                   }
                 }
               ],
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 172,
                 "end": 188
               }
@@ -209,20 +209,20 @@
               "subType": "variable",
               "value": "price",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 192,
                 "end": 198
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 166,
               "end": 199
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 112,
           "end": 204
         }
@@ -242,7 +242,7 @@
                   "subType": "variable",
                   "value": "x",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 209,
                     "end": 211
                   }
@@ -252,7 +252,7 @@
                   "subType": "namedNode",
                   "value": "title",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 212,
                     "end": 220
                   },
@@ -263,27 +263,27 @@
                   "subType": "variable",
                   "value": "title",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 221,
                     "end": 227
                   }
                 },
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 209,
                   "end": 227
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 209,
               "end": 229
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 208,
           "end": 231
         }
@@ -301,7 +301,7 @@
               "subType": "variable",
               "value": "price",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 242,
                 "end": 248
               }
@@ -315,31 +315,31 @@
                 "subType": "namedNode",
                 "value": "http://www.w3.org/2001/XMLSchema#integer",
                 "loc": {
-                  "sourceLocationType": "noMaterialize"
+                  "sourceLocationType": 2
                 }
               },
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 251,
                 "end": 253
               }
             }
           ],
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 241,
             "end": 254
           }
         },
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 235,
           "end": 254
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 109,
       "end": 256
     }
@@ -349,7 +349,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": "noMaterialize"
+      "sourceLocationType": 2
     }
   },
   "variables": [
@@ -358,7 +358,7 @@
       "subType": "variable",
       "value": "title",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 95,
         "end": 101
       }
@@ -368,19 +368,19 @@
       "subType": "variable",
       "value": "price",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 102,
         "end": 108
       }
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "PREFIX  dc:  <http://purl.org/dc/elements/1.1/>\nPREFIX  ns:  <http://example.org/ns#>\n\nSELECT  ?title ?price\n{  { ?x ns:price ?p .\n     ?x ns:discount ?discount\n     BIND (?p*(1-?discount) AS ?price)\n   }\n   {?x dc:title ?title . }\n   FILTER(?price < 20)\n}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 256
     },

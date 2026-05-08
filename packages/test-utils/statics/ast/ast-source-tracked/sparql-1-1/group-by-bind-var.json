@@ -16,7 +16,7 @@
               "subType": "variable",
               "value": "s",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 35,
                 "end": 37
               }
@@ -26,7 +26,7 @@
               "subType": "variable",
               "value": "p",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 38,
                 "end": 40
               }
@@ -36,20 +36,20 @@
               "subType": "variable",
               "value": "x",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 41,
                 "end": 43
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 35,
               "end": 43
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 35,
           "end": 45
         }
@@ -62,7 +62,7 @@
           "subType": "variable",
           "value": "x",
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 51,
             "end": 53
           }
@@ -72,20 +72,20 @@
           "subType": "variable",
           "value": "g",
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 57,
             "end": 59
           }
         },
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 46,
           "end": 60
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 33,
       "end": 62
     }
@@ -100,14 +100,14 @@
           "subType": "variable",
           "value": "g",
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 72,
             "end": 74
           }
         }
       ],
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 63,
         "end": 74
       }
@@ -117,7 +117,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": "noMaterialize"
+      "sourceLocationType": 2
     }
   },
   "variables": [
@@ -126,7 +126,7 @@
       "subType": "variable",
       "value": "g",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 7,
         "end": 9
       }
@@ -140,7 +140,7 @@
         "aggregation": "count",
         "distinct": false,
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 11,
           "end": 19
         },
@@ -148,7 +148,7 @@
           {
             "type": "wildcard",
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 17,
               "end": 18
             }
@@ -160,25 +160,25 @@
         "subType": "variable",
         "value": "c",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 23,
           "end": 25
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 10,
         "end": 26
       }
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "SELECT ?g (COUNT(*) AS ?c) WHERE { ?s ?p ?x . BIND(?x AS ?g) } GROUP BY ?g",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 74
     },

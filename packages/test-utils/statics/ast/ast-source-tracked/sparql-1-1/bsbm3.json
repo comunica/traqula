@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 18,
           "end": 77
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 0,
         "end": 77
       }
@@ -29,13 +29,13 @@
         "subType": "namedNode",
         "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 91,
           "end": 151
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 78,
         "end": 151
       }
@@ -49,13 +49,13 @@
         "subType": "namedNode",
         "value": "http://www.w3.org/2000/01/rdf-schema#",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 165,
           "end": 204
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 152,
         "end": 204
       }
@@ -69,13 +69,13 @@
         "subType": "namedNode",
         "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 217,
           "end": 262
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 205,
         "end": 262
       }
@@ -97,7 +97,7 @@
               "subType": "variable",
               "value": "product",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 299,
                 "end": 307
               }
@@ -107,7 +107,7 @@
               "subType": "namedNode",
               "value": "label",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 308,
                 "end": 318
               },
@@ -118,20 +118,20 @@
               "subType": "variable",
               "value": "label",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 319,
                 "end": 325
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 299,
               "end": 325
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 299,
           "end": 327
         }
@@ -151,7 +151,7 @@
                   "subType": "variable",
                   "value": "product",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 351,
                     "end": 359
                   }
@@ -161,7 +161,7 @@
                   "subType": "namedNode",
                   "value": "productFeature",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 360,
                     "end": 379
                   },
@@ -172,13 +172,13 @@
                   "subType": "namedNode",
                   "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature1043",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 380,
                     "end": 457
                   }
                 },
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 351,
                   "end": 457
                 }
@@ -190,7 +190,7 @@
                   "subType": "variable",
                   "value": "product",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 468,
                     "end": 476
                   }
@@ -200,7 +200,7 @@
                   "subType": "namedNode",
                   "value": "label",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 477,
                     "end": 487
                   },
@@ -211,27 +211,27 @@
                   "subType": "variable",
                   "value": "testVar",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 488,
                     "end": 496
                   }
                 },
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 468,
                   "end": 496
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 351,
               "end": 459
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 332,
           "end": 498
         }
@@ -254,34 +254,34 @@
                   "subType": "variable",
                   "value": "testVar",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 518,
                     "end": 526
                   }
                 }
               ],
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 512,
                 "end": 527
               }
             }
           ],
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 510,
             "end": 528
           }
         },
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 503,
           "end": 528
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 293,
       "end": 531
     }
@@ -292,7 +292,7 @@
       "subType": "limitOffset",
       "limit": 10,
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 548,
         "end": 556
       }
@@ -307,21 +307,21 @@
             "subType": "variable",
             "value": "label",
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 541,
               "end": 547
             }
           },
           "descending": false,
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 541,
             "end": 547
           }
         }
       ],
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 532,
         "end": 547
       }
@@ -331,7 +331,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": "noMaterialize"
+      "sourceLocationType": 2
     }
   },
   "variables": [
@@ -340,7 +340,7 @@
       "subType": "variable",
       "value": "product",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 271,
         "end": 279
       }
@@ -350,19 +350,19 @@
       "subType": "variable",
       "value": "label",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 280,
         "end": 286
       }
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "PREFIX bsbm-inst: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/>\nPREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n\nSELECT ?product ?label\nWHERE {\n    ?product rdfs:label ?label .\n    OPTIONAL {\n        ?product bsbm:productFeature <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/ProductFeature1043> .\n        ?product rdfs:label ?testVar }\n    FILTER (!bound(?testVar)) \n}\nORDER BY ?label\nLIMIT 10\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 556
     },

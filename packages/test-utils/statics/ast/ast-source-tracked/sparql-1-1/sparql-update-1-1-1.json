@@ -12,13 +12,13 @@
             "subType": "namedNode",
             "value": "http://purl.org/dc/elements/1.1/",
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 11,
               "end": 45
             }
           },
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 0,
             "end": 45
           }
@@ -39,7 +39,7 @@
                   "subType": "namedNode",
                   "value": "http://example/egbook",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 55,
                     "end": 78
                   }
@@ -49,7 +49,7 @@
                   "subType": "namedNode",
                   "value": "title",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 79,
                     "end": 87
                   },
@@ -60,20 +60,20 @@
                   "subType": "literal",
                   "value": "This is an example title",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 89,
                     "end": 115
                   }
                 },
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 55,
                   "end": 115
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 55,
               "end": 115
             }
@@ -85,7 +85,7 @@
           "subType": "group",
           "patterns": [],
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 124,
             "end": 126
           }
@@ -94,11 +94,11 @@
           "type": "datasetClauses",
           "clauses": [],
           "loc": {
-            "sourceLocationType": "noMaterialize"
+            "sourceLocationType": 2
           }
         },
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 46,
           "end": 126
         }
@@ -106,12 +106,12 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "PREFIX dc: <http://purl.org/dc/elements/1.1/>\nINSERT { <http://example/egbook> dc:title  \"This is an example title\" } WHERE {}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 126
     },

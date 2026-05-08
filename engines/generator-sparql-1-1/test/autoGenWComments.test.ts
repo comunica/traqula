@@ -1,5 +1,5 @@
 import type { SourceLocationStringReplace } from '@traqula/core';
-import { traqulaIndentation, GeneratorBuilder } from '@traqula/core';
+import { traqulaIndentation, GeneratorBuilder, SOURCE_LOC_STRING_REPLACE } from '@traqula/core';
 import { Parser } from '@traqula/parser-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import { AstFactory, AstTransformer, completeGeneratorContext } from '@traqula/rules-sparql-1-1';
@@ -54,7 +54,7 @@ describe('autoGen query inserting comments', () => {
     const alteredAst = transformer.transformNodeSpecific<'unsafe', typeof ast>(ast, {}, {
       pattern: { values: { transform: (values) => {
         values.loc = {
-          sourceLocationType: 'stringReplace',
+          sourceLocationType: SOURCE_LOC_STRING_REPLACE,
           start: 0,
           end: 0,
           newSource: `# Self inserted comment\n${detailGenerator.inlineData(values, genContext).trim()}\n`,

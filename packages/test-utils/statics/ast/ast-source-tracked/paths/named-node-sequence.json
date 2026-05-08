@@ -1,12 +1,12 @@
 {
   "type": "path",
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "<http://example.org/a>/<http://example.org/b>\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 45
     },
@@ -19,7 +19,7 @@
       "subType": "namedNode",
       "value": "http://example.org/a",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 0,
         "end": 22
       }
@@ -29,7 +29,7 @@
       "subType": "namedNode",
       "value": "http://example.org/b",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 23,
         "end": 45
       }

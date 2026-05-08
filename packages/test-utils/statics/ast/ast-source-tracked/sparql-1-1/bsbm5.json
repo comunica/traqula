@@ -9,13 +9,13 @@
         "subType": "namedNode",
         "value": "http://www.w3.org/2000/01/rdf-schema#",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 13,
           "end": 52
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 0,
         "end": 52
       }
@@ -29,13 +29,13 @@
         "subType": "namedNode",
         "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 65,
           "end": 110
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 53,
         "end": 110
       }
@@ -49,13 +49,13 @@
         "subType": "namedNode",
         "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/",
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 124,
           "end": 184
         }
       },
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 111,
         "end": 184
       }
@@ -77,7 +77,7 @@
               "subType": "variable",
               "value": "product",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 235,
                 "end": 243
               }
@@ -87,7 +87,7 @@
               "subType": "namedNode",
               "value": "label",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 244,
                 "end": 254
               },
@@ -98,20 +98,20 @@
               "subType": "variable",
               "value": "productLabel",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 255,
                 "end": 268
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 235,
               "end": 268
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 235,
           "end": 270
         }
@@ -129,7 +129,7 @@
               "subType": "namedNode",
               "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer1/Product28",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 283,
                 "end": 369
               }
@@ -139,20 +139,20 @@
               "subType": "variable",
               "value": "product",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 373,
                 "end": 381
               }
             }
           ],
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 282,
             "end": 382
           }
         },
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 275,
           "end": 382
         }
@@ -168,7 +168,7 @@
               "subType": "namedNode",
               "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer1/Product28",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 384,
                 "end": 470
               }
@@ -178,7 +178,7 @@
               "subType": "namedNode",
               "value": "productFeature",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 471,
                 "end": 490
               },
@@ -189,13 +189,13 @@
               "subType": "variable",
               "value": "prodFeature",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 491,
                 "end": 503
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 384,
               "end": 503
             }
@@ -207,7 +207,7 @@
               "subType": "variable",
               "value": "product",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 507,
                 "end": 515
               }
@@ -217,7 +217,7 @@
               "subType": "namedNode",
               "value": "productFeature",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 516,
                 "end": 535
               },
@@ -228,13 +228,13 @@
               "subType": "variable",
               "value": "prodFeature",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 536,
                 "end": 548
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 507,
               "end": 548
             }
@@ -246,7 +246,7 @@
               "subType": "namedNode",
               "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer1/Product28",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 552,
                 "end": 638
               }
@@ -256,7 +256,7 @@
               "subType": "namedNode",
               "value": "productPropertyNumeric1",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 639,
                 "end": 667
               },
@@ -267,13 +267,13 @@
               "subType": "variable",
               "value": "origProperty1",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 668,
                 "end": 682
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 552,
               "end": 682
             }
@@ -285,7 +285,7 @@
               "subType": "variable",
               "value": "product",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 686,
                 "end": 694
               }
@@ -295,7 +295,7 @@
               "subType": "namedNode",
               "value": "productPropertyNumeric1",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 695,
                 "end": 723
               },
@@ -306,20 +306,20 @@
               "subType": "variable",
               "value": "simProperty1",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 724,
                 "end": 737
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 686,
               "end": 737
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 384,
           "end": 739
         }
@@ -342,7 +342,7 @@
                   "subType": "variable",
                   "value": "simProperty1",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 749,
                     "end": 762
                   }
@@ -357,7 +357,7 @@
                       "subType": "variable",
                       "value": "origProperty1",
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 766,
                         "end": 780
                       }
@@ -371,25 +371,25 @@
                         "subType": "namedNode",
                         "value": "http://www.w3.org/2001/XMLSchema#integer",
                         "loc": {
-                          "sourceLocationType": "noMaterialize"
+                          "sourceLocationType": 2
                         }
                       },
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 783,
                         "end": 786
                       }
                     }
                   ],
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 765,
                     "end": 787
                   }
                 }
               ],
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 749,
                 "end": 787
               }
@@ -404,7 +404,7 @@
                   "subType": "variable",
                   "value": "simProperty1",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 791,
                     "end": 804
                   }
@@ -419,7 +419,7 @@
                       "subType": "variable",
                       "value": "origProperty1",
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 808,
                         "end": 822
                       }
@@ -433,38 +433,38 @@
                         "subType": "namedNode",
                         "value": "http://www.w3.org/2001/XMLSchema#integer",
                         "loc": {
-                          "sourceLocationType": "noMaterialize"
+                          "sourceLocationType": 2
                         }
                       },
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 825,
                         "end": 828
                       }
                     }
                   ],
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 807,
                     "end": 829
                   }
                 }
               ],
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 791,
                 "end": 829
               }
             }
           ],
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 748,
             "end": 830
           }
         },
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 741,
           "end": 830
         }
@@ -480,7 +480,7 @@
               "subType": "namedNode",
               "value": "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer1/Product28",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 832,
                 "end": 918
               }
@@ -490,7 +490,7 @@
               "subType": "namedNode",
               "value": "productPropertyNumeric2",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 919,
                 "end": 947
               },
@@ -501,13 +501,13 @@
               "subType": "variable",
               "value": "origProperty2",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 948,
                 "end": 962
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 832,
               "end": 962
             }
@@ -519,7 +519,7 @@
               "subType": "variable",
               "value": "product",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 966,
                 "end": 974
               }
@@ -529,7 +529,7 @@
               "subType": "namedNode",
               "value": "productPropertyNumeric2",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 975,
                 "end": 1003
               },
@@ -540,20 +540,20 @@
               "subType": "variable",
               "value": "simProperty2",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 1004,
                 "end": 1017
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 966,
               "end": 1017
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 832,
           "end": 1019
         }
@@ -576,7 +576,7 @@
                   "subType": "variable",
                   "value": "simProperty2",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 1029,
                     "end": 1042
                   }
@@ -591,7 +591,7 @@
                       "subType": "variable",
                       "value": "origProperty2",
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 1046,
                         "end": 1060
                       }
@@ -605,25 +605,25 @@
                         "subType": "namedNode",
                         "value": "http://www.w3.org/2001/XMLSchema#integer",
                         "loc": {
-                          "sourceLocationType": "noMaterialize"
+                          "sourceLocationType": 2
                         }
                       },
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 1063,
                         "end": 1066
                       }
                     }
                   ],
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 1045,
                     "end": 1067
                   }
                 }
               ],
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 1029,
                 "end": 1067
               }
@@ -638,7 +638,7 @@
                   "subType": "variable",
                   "value": "simProperty2",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 1071,
                     "end": 1084
                   }
@@ -653,7 +653,7 @@
                       "subType": "variable",
                       "value": "origProperty2",
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 1088,
                         "end": 1102
                       }
@@ -667,45 +667,45 @@
                         "subType": "namedNode",
                         "value": "http://www.w3.org/2001/XMLSchema#integer",
                         "loc": {
-                          "sourceLocationType": "noMaterialize"
+                          "sourceLocationType": 2
                         }
                       },
                       "loc": {
-                        "sourceLocationType": "source",
+                        "sourceLocationType": 0,
                         "start": 1105,
                         "end": 1108
                       }
                     }
                   ],
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 1087,
                     "end": 1109
                   }
                 }
               ],
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 1071,
                 "end": 1109
               }
             }
           ],
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 1028,
             "end": 1110
           }
         },
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 1021,
           "end": 1110
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 231,
       "end": 1112
     }
@@ -716,7 +716,7 @@
       "subType": "limitOffset",
       "limit": 5,
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 1136,
         "end": 1143
       }
@@ -731,21 +731,21 @@
             "subType": "variable",
             "value": "productLabel",
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 1122,
               "end": 1135
             }
           },
           "descending": false,
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 1122,
             "end": 1135
           }
         }
       ],
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 1113,
         "end": 1135
       }
@@ -755,7 +755,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": "noMaterialize"
+      "sourceLocationType": 2
     }
   },
   "variables": [
@@ -764,7 +764,7 @@
       "subType": "variable",
       "value": "product",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 202,
         "end": 210
       }
@@ -774,7 +774,7 @@
       "subType": "variable",
       "value": "productLabel",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 211,
         "end": 224
       }
@@ -782,12 +782,12 @@
   ],
   "distinct": true,
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nPREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>\n\nSELECT DISTINCT ?product ?productLabel\nWHERE { \n\t?product rdfs:label ?productLabel .\n    FILTER (<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer1/Product28> != ?product)\n\t<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer1/Product28> bsbm:productFeature ?prodFeature .\n\t?product bsbm:productFeature ?prodFeature .\n\t<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer1/Product28> bsbm:productPropertyNumeric1 ?origProperty1 .\n\t?product bsbm:productPropertyNumeric1 ?simProperty1 .\n\tFILTER (?simProperty1 < (?origProperty1 + 120) && ?simProperty1 > (?origProperty1 - 120))\n\t<http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/dataFromProducer1/Product28> bsbm:productPropertyNumeric2 ?origProperty2 .\n\t?product bsbm:productPropertyNumeric2 ?simProperty2 .\n\tFILTER (?simProperty2 < (?origProperty2 + 170) && ?simProperty2 > (?origProperty2 - 170))\n}\nORDER BY ?productLabel\nLIMIT 5\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 1143
     },

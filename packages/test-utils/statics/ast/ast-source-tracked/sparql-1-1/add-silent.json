@@ -15,13 +15,13 @@
             "subType": "namedNode",
             "value": "http://g1",
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 11,
               "end": 22
             }
           },
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 11,
             "end": 22
           }
@@ -34,19 +34,19 @@
             "subType": "namedNode",
             "value": "http://g2",
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 26,
               "end": 37
             }
           },
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 26,
             "end": 37
           }
         },
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 0,
           "end": 37
         }
@@ -54,12 +54,12 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "ADD SILENT <http://g1> TO <http://g2>",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 37
     },

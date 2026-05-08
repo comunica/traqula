@@ -1,12 +1,12 @@
 {
   "type": "path",
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "ex:a|ex:b\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 9
     },
@@ -19,7 +19,7 @@
       "subType": "namedNode",
       "value": "a",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 0,
         "end": 4
       },
@@ -30,7 +30,7 @@
       "subType": "namedNode",
       "value": "b",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 5,
         "end": 9
       },

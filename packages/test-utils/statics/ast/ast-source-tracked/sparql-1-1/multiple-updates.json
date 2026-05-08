@@ -18,7 +18,7 @@
                   "subType": "namedNode",
                   "value": "http://s",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 14,
                     "end": 24
                   }
@@ -28,7 +28,7 @@
                   "subType": "namedNode",
                   "value": "http://p",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 25,
                     "end": 35
                   }
@@ -38,27 +38,27 @@
                   "subType": "namedNode",
                   "value": "http://o",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 36,
                     "end": 46
                   }
                 },
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 14,
                   "end": 46
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 14,
               "end": 46
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 0,
           "end": 48
         }
@@ -81,7 +81,7 @@
                   "subType": "namedNode",
                   "value": "http://s2",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 65,
                     "end": 76
                   }
@@ -91,7 +91,7 @@
                   "subType": "namedNode",
                   "value": "http://p2",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 77,
                     "end": 88
                   }
@@ -101,27 +101,27 @@
                   "subType": "namedNode",
                   "value": "http://o2",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 89,
                     "end": 100
                   }
                 },
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 65,
                   "end": 100
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 65,
               "end": 100
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 51,
           "end": 102
         }
@@ -129,12 +129,12 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "INSERT DATA { <http://s> <http://p> <http://o> } ; DELETE DATA { <http://s2> <http://p2> <http://o2> }",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 102
     },

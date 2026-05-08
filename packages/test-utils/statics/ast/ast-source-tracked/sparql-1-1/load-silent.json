@@ -12,13 +12,13 @@
           "subType": "namedNode",
           "value": "http://ex.org/",
           "loc": {
-            "sourceLocationType": "source",
+            "sourceLocationType": 0,
             "start": 12,
             "end": 28
           }
         },
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 0,
           "end": 28
         }
@@ -26,12 +26,12 @@
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "LOAD SILENT <http://ex.org/>",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 28
     },

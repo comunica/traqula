@@ -1,5 +1,12 @@
 import { AstCoreFactory } from '../AstCoreFactory.js';
 import type { SourceLocationInlinedSource } from '../types.js';
+import {
+  SOURCE_LOC_SOURCE,
+  SOURCE_LOC_INLINED_SOURCE,
+  SOURCE_LOC_NO_MATERIALIZE,
+  SOURCE_LOC_STRING_REPLACE,
+  SOURCE_LOC_NODE_REPLACE,
+} from '../types.js';
 import { traqulaIndentation, traqulaNewlineAlternative } from '../utils.js';
 import type { GenRuleMap } from './builderTypes.js';
 import type { GeneratorRule, RuleDefArg } from './generatorTypes.js';
@@ -26,7 +33,24 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
    */
   protected readonly stringBuilder: string[] = [];
 
+  // Cached RuleDefArg to avoid allocating a new object on every subrule call
+  private readonly cachedRuleDefArg: RuleDefArg;
+
   public constructor(protected rules: RuleDefs) {
+    this.cachedRuleDefArg = {
+      SUBRULE: this.subrule,
+      PRINT: this.print,
+      ENSURE: this.ensure,
+      ENSURE_EITHER: this.ensureEither,
+      NEW_LINE: this.newLine,
+      HANDLE_LOC: this.handleLoc,
+      CATCHUP: this.catchup,
+      PRINT_WORD: this.printWord,
+      PRINT_WORDS: this.printWords,
+      PRINT_ON_EMPTY: this.printOnEmpty,
+      PRINT_ON_OWN_LINE: this.printOnOwnLine,
+    };
+
     // eslint-disable-next-line ts/no-unnecessary-type-assertion
     for (const rule of <GeneratorRule[]> Object.values(rules)) {
       // Define function implementation
@@ -62,20 +86,7 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
       throw new Error(`Rule ${cstDef.name} not found`);
     }
 
-    const generate = (): void => def.gImpl({
-      SUBRULE: this.subrule,
-      PRINT: this.print,
-      ENSURE: this.ensure,
-      ENSURE_EITHER: this.ensureEither,
-      NEW_LINE: this.newLine,
-      HANDLE_LOC: this.handleLoc,
-      CATCHUP: this.catchup,
-
-      PRINT_WORD: this.printWord,
-      PRINT_WORDS: this.printWords,
-      PRINT_ON_EMPTY: this.printOnEmpty,
-      PRINT_ON_OWN_LINE: this.printOnOwnLine,
-    })(ast, this.getSafeContext(), ...arg);
+    const generate = (): void => def.gImpl(this.cachedRuleDefArg)(ast, this.getSafeContext(), ...arg);
 
     if (this.factory.isLocalized(ast)) {
       this.handleLoc(ast, generate);
@@ -85,86 +96,96 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
   };
 
   protected readonly handleLoc: RuleDefArg['HANDLE_LOC'] = (localized, handle) => {
-    if (this.factory.isSourceLocationNoMaterialize(localized.loc)) {
+    const loc = localized.loc;
+    if (loc.sourceLocationType === SOURCE_LOC_NO_MATERIALIZE) {
       return;
     }
-    if (this.factory.isSourceLocationStringReplace(localized.loc)) {
-      this.catchup(localized.loc.start);
-      this.print(localized.loc.newSource);
-      this.generatedUntil = localized.loc.end;
+    if (loc.sourceLocationType === SOURCE_LOC_STRING_REPLACE) {
+      this.catchup(loc.start);
+      this.print(loc.newSource);
+      this.generatedUntil = loc.end;
       return;
     }
-    if (this.factory.isSourceLocationNodeReplace(localized.loc)) {
-      this.catchup(localized.loc.start);
-      this.generatedUntil = localized.loc.end;
+    if (loc.sourceLocationType === SOURCE_LOC_NODE_REPLACE) {
+      this.catchup(loc.start);
+      this.generatedUntil = loc.end;
+      return handle();
     }
-    if (this.factory.isSourceLocationSource(localized.loc)) {
-      this.catchup(localized.loc.start);
+    if (loc.sourceLocationType === SOURCE_LOC_SOURCE) {
+      this.catchup(loc.start);
+      const ret = handle();
+      this.catchup(loc.end);
+      return ret;
     }
-    if (this.factory.isSourceLocationInlinedSource(localized.loc) && this.handledInlineSource !== localized.loc) {
+    if (loc.sourceLocationType === SOURCE_LOC_INLINED_SOURCE && this.handledInlineSource !== loc) {
       // Idempotence: calling handleLoc on the same AST multiple times should be the same as doing it once.
-      this.handledInlineSource = localized.loc;
+      this.handledInlineSource = loc;
       // Like normal, catch up until the start of what this node represents.
-      this.catchup(localized.loc.start);
+      this.catchup(loc.start);
       // Save pointer location of current source and register new source.
       const origSource = this.origSource;
       const origPointer = this.generatedUntil;
-      this.origSource = localized.loc.newSource;
+      this.origSource = loc.newSource;
       this.generatedUntil = 0;
       // Catchup the new source to where this node starts representing the source.
-      this.catchup(localized.loc.startOnNew);
+      this.catchup(loc.startOnNew);
 
-      const ret = this.handleLoc(localized.loc, handle);
+      const ret = this.handleLoc(loc, handle);
 
       // Catchup so the entire new source is generated outside what this node represents.
-      this.generatedUntil = localized.loc.endOnNew;
+      this.generatedUntil = loc.endOnNew;
       this.catchup(this.origSource.length);
       // Recover the original source and register that you generated the range of this node.
       this.origSource = origSource;
-      this.generatedUntil = Math.max(origPointer, localized.loc.end);
+      this.generatedUntil = Math.max(origPointer, loc.end);
       return ret;
     }
-    // If autoGenerate - do nothing
-
-    const ret = handle();
-
-    if (this.factory.isSourceLocationSource(localized.loc)) {
-      this.catchup(localized.loc.end);
-    }
-    return ret;
+    // AUTO_GENERATE or already-handled INLINED_SOURCE: just handle
+    return handle();
   };
 
   /**
    * Catchup until, excluding
    */
+  // Pre-compiled regex patterns to avoid re-creation in hot loops
+  private static readonly BLANK_LINE_RE = /^[ \t]*$/u;
+  private static readonly TRAILING_BLANKS_RE = /[\t ]*$/u;
+  private static readonly NEWLINE_TRAILING_RE = /\n[ \t]*$/u;
+
   protected readonly catchup: RuleDefArg['CATCHUP'] = (until) => {
     const start = this.generatedUntil;
     if (start < until) {
-      this.print(this.origSource.slice(start, until));
+      const sliced = this.origSource.slice(start, until);
+      this.handeEnsured(sliced);
+      this.stringBuilder.push(sliced);
     }
     this.generatedUntil = Math.max(this.generatedUntil, until);
   };
 
   private handeEnsured(toPrint: string): void {
-    for (const callBack of this.toEnsure) {
-      callBack(toPrint);
+    const toEnsure = this.toEnsure;
+    if (toEnsure.length > 0) {
+      for (const fn of toEnsure) {
+        fn(toPrint);
+      }
+      toEnsure.length = 0;
     }
-    this.toEnsure.length = 0;
   }
 
   protected readonly print: RuleDefArg['PRINT'] = (...args) => {
-    const joined = args.join('');
+    const joined = args.length === 1 ? args[0] : args.join('');
     this.handeEnsured(joined);
     this.stringBuilder.push(joined);
   };
 
   private doesEndWith(subsStr: string): boolean {
     const len = subsStr.length;
+    const sb = this.stringBuilder;
     let temp = '';
-    while (temp.length < len && this.stringBuilder.length > 0) {
-      temp = this.stringBuilder.pop() + temp;
+    while (temp.length < len && sb.length > 0) {
+      temp = sb.pop() + temp;
     }
-    this.stringBuilder.push(temp);
+    sb.push(temp);
     return temp.endsWith(subsStr);
   }
 
@@ -182,24 +203,52 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
 
   protected readonly ensureEither: RuleDefArg['ENSURE_EITHER'] = (...args) => {
     if (args.length === 1) {
-      this.ensure(...args);
-    } else if (args.length > 1 &&
-      // Not already matched?
-      !args.some(subStr => this.doesEndWith(subStr))) {
-      this.toEnsure.push((willPrint) => {
-        if (!args.some(subStr => willPrint.startsWith(subStr)) && !args.some(subStr => this.doesEndWith(subStr))) {
-          this.stringBuilder.push(args[0]);
+      this.ensure(args[0]);
+    } else if (args.length > 1) {
+      let alreadyMatched = false;
+      for (const arg of args) {
+        if (this.doesEndWith(arg)) {
+          alreadyMatched = true;
+          break;
         }
-      });
+      }
+      if (!alreadyMatched) {
+        const firstArg = args[0];
+        const argsCopy = [ ...args ];
+        this.toEnsure.push((willPrint) => {
+          let startsMatch = false;
+          for (const arg of argsCopy) {
+            if (willPrint.startsWith(arg)) {
+              startsMatch = true;
+              break;
+            }
+          }
+          if (!startsMatch) {
+            let endsMatch = false;
+            for (const arg of argsCopy) {
+              if (this.doesEndWith(arg)) {
+                endsMatch = true;
+                break;
+              }
+            }
+            if (!endsMatch) {
+              this.stringBuilder.push(firstArg);
+            }
+          }
+        });
+      }
     }
   };
 
   private pruneEndingBlanks(): void {
+    const sb = this.stringBuilder;
     let temp = '';
-    while (/^[ \t]*$/u.test(temp) && this.stringBuilder.length > 0) {
-      temp = this.stringBuilder.pop() + temp;
+    while (DynamicGenerator.BLANK_LINE_RE.test(temp) && sb.length > 0) {
+      temp = sb.pop() + temp;
     }
-    this.print(temp.replace(/[\t ]*$/u, ''));
+    const pruned = temp.replace(DynamicGenerator.TRAILING_BLANKS_RE, '');
+    this.handeEnsured(pruned);
+    sb.push(pruned);
   }
 
   protected readonly newLine: RuleDefArg['NEW_LINE'] = (arg) => {
@@ -210,7 +259,8 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
       if (newlineAlternative !== undefined &&
         // If we force, it means we would print \n no matter. - otherwise check whether we have printed the char
         (force || (this.stringBuilder.at(-1) !== newlineAlternative))) {
-        this.print(newlineAlternative);
+        this.handeEnsured(newlineAlternative);
+        this.stringBuilder.push(newlineAlternative);
       }
       return;
     }
@@ -218,14 +268,16 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
     if (force) {
       this.print('\n', ' '.repeat(indentation));
     } else {
+      const sb = this.stringBuilder;
       let temp = '';
-      while (!temp.includes('\n') && this.stringBuilder.length > 0) {
-        temp = this.stringBuilder.pop() + temp;
+      while (!temp.includes('\n') && sb.length > 0) {
+        temp = sb.pop() + temp;
       }
-      if (/\n[ \t]*$/u.test(temp)) {
+      if (DynamicGenerator.NEWLINE_TRAILING_RE.test(temp)) {
         // Pointer is on empty newline -> set correct indentation
-        temp = temp.replace(/\n[ \t]*$/u, `\n${' '.repeat(indentation)}`);
-        this.print(temp);
+        temp = temp.replace(DynamicGenerator.NEWLINE_TRAILING_RE, `\n${' '.repeat(indentation)}`);
+        this.handeEnsured(temp);
+        sb.push(temp);
       } else {
         // Pointer not on empty newline, print newline.
         this.print(temp, '\n', ' '.repeat(indentation));

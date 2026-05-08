@@ -16,7 +16,7 @@
               "subType": "variable",
               "value": "p",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 28,
                 "end": 30
               }
@@ -26,7 +26,7 @@
               "subType": "namedNode",
               "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 31,
                 "end": 32
               }
@@ -36,20 +36,20 @@
               "subType": "namedNode",
               "value": "http://dbpedia.org/ontology/Artist",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 33,
                 "end": 69
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 28,
               "end": 69
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 28,
           "end": 70
         }
@@ -69,7 +69,7 @@
                   "subType": "variable",
                   "value": "p",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 92,
                     "end": 94
                   }
@@ -79,7 +79,7 @@
                   "subType": "namedNode",
                   "value": "http://dbpedia.org/ontology/deathPlace",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 95,
                     "end": 135
                   }
@@ -89,27 +89,27 @@
                   "subType": "variable",
                   "value": "d",
                   "loc": {
-                    "sourceLocationType": "source",
+                    "sourceLocationType": 0,
                     "start": 136,
                     "end": 138
                   }
                 },
                 "loc": {
-                  "sourceLocationType": "source",
+                  "sourceLocationType": 0,
                   "start": 92,
                   "end": 138
                 }
               }
             ],
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 92,
               "end": 139
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 75,
           "end": 145
         }
@@ -125,7 +125,7 @@
               "subType": "variable",
               "value": "p",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 150,
                 "end": 152
               }
@@ -135,7 +135,7 @@
               "subType": "namedNode",
               "value": "http://dbpedia.org/ontology/birthPlace",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 153,
                 "end": 193
               }
@@ -145,13 +145,13 @@
               "subType": "variable",
               "value": "c",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 194,
                 "end": 196
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 150,
               "end": 196
             }
@@ -163,7 +163,7 @@
               "subType": "variable",
               "value": "c",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 202,
                 "end": 204
               }
@@ -173,7 +173,7 @@
               "subType": "namedNode",
               "value": "http://xmlns.com/foaf/0.1/name",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 205,
                 "end": 237
               }
@@ -184,27 +184,27 @@
               "value": "York",
               "langOrIri": "en",
               "loc": {
-                "sourceLocationType": "source",
+                "sourceLocationType": 0,
                 "start": 238,
                 "end": 247
               }
             },
             "loc": {
-              "sourceLocationType": "source",
+              "sourceLocationType": 0,
               "start": 202,
               "end": 247
             }
           }
         ],
         "loc": {
-          "sourceLocationType": "source",
+          "sourceLocationType": 0,
           "start": 150,
           "end": 248
         }
       }
     ],
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 22,
       "end": 250
     }
@@ -214,7 +214,7 @@
     "type": "datasetClauses",
     "clauses": [],
     "loc": {
-      "sourceLocationType": "noMaterialize"
+      "sourceLocationType": 2
     }
   },
   "variables": [
@@ -223,7 +223,7 @@
       "subType": "variable",
       "value": "p",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 7,
         "end": 9
       }
@@ -233,7 +233,7 @@
       "subType": "variable",
       "value": "c",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 10,
         "end": 12
       }
@@ -243,19 +243,19 @@
       "subType": "variable",
       "value": "d",
       "loc": {
-        "sourceLocationType": "source",
+        "sourceLocationType": 0,
         "start": 13,
         "end": 15
       }
     }
   ],
   "loc": {
-    "sourceLocationType": "inlinedSource",
+    "sourceLocationType": 1,
     "newSource": "SELECT ?p ?c ?d WHERE {\n    ?p a <http://dbpedia.org/ontology/Artist>.\n    OPTIONAL {\n      ?p <http://dbpedia.org/ontology/deathPlace> ?d.\n    }\n    ?p <http://dbpedia.org/ontology/birthPlace> ?c.\n    ?c <http://xmlns.com/foaf/0.1/name> \"York\"@en.\n}\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
-      "sourceLocationType": "source",
+      "sourceLocationType": 0,
       "start": 0,
       "end": 250
     },

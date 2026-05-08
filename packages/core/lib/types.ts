@@ -36,8 +36,19 @@ export interface Wrap<T> extends Localized {
  */
 export interface Node extends Localized, Typed {}
 
+/**
+ * Integer constants for sourceLocationType.
+ * V8 compares integers in O(1) vs strings in O(n), making type guards significantly faster.
+ */
+export const SOURCE_LOC_SOURCE = 0;
+export const SOURCE_LOC_INLINED_SOURCE = 1;
+export const SOURCE_LOC_NO_MATERIALIZE = 2;
+export const SOURCE_LOC_STRING_REPLACE = 3;
+export const SOURCE_LOC_NODE_REPLACE = 4;
+export const SOURCE_LOC_AUTO_GENERATE = 5;
+
 export interface SourceLocationBase {
-  sourceLocationType: string;
+  sourceLocationType: number;
 }
 
 /**
@@ -45,7 +56,7 @@ export interface SourceLocationBase {
  * the given range in the source string.
  */
 export interface SourceLocationSource extends SourceLocationBase {
-  sourceLocationType: 'source';
+  sourceLocationType: typeof SOURCE_LOC_SOURCE;
   start: number;
   end: number;
 }
@@ -56,7 +67,7 @@ export interface SourceLocationSource extends SourceLocationBase {
  * and the state of the generator catches up the new source until {@link startOnNew}.
  */
 export interface SourceLocationInlinedSource extends SourceLocationBase, Localized {
-  sourceLocationType: 'inlinedSource';
+  sourceLocationType: typeof SOURCE_LOC_INLINED_SOURCE;
   /**
    * The string that will be used as the source for this node and the descends of this node.
    * Note that the generator will print the characters from newSource[0] until start. Likewise for the suffix.
@@ -87,7 +98,7 @@ export interface SourceLocationInlinedSource extends SourceLocationBase, Localiz
  * When set to true, the node will not be printed, start and end are meaningless in this case.
  */
 export interface SourceLocationNoMaterialize extends SourceLocationBase {
-  sourceLocationType: 'noMaterialize';
+  sourceLocationType: typeof SOURCE_LOC_NO_MATERIALIZE;
 }
 
 /**
@@ -96,7 +107,7 @@ export interface SourceLocationNoMaterialize extends SourceLocationBase {
  * It means that this node should be generated, and that the source string from start to end has been changed.
  */
 export interface SourceLocationStringReplace extends SourceLocationBase {
-  sourceLocationType: 'stringReplace';
+  sourceLocationType: typeof SOURCE_LOC_STRING_REPLACE;
   /**
    * The string that will replace the given range in the original source.
    */
@@ -116,7 +127,7 @@ export interface SourceLocationStringReplace extends SourceLocationBase {
  * It means that this node should be generated, and that the source string from start to end has been changed.
  */
 export interface SourceLocationNodeReplace extends SourceLocationBase {
-  sourceLocationType: 'nodeReplace';
+  sourceLocationType: typeof SOURCE_LOC_NODE_REPLACE;
   /**
    * The start of the region in the original source string that this node replaces.
    */
@@ -130,7 +141,7 @@ export interface SourceLocationNodeReplace extends SourceLocationBase {
  * Must have an ancestor of type {@link SourceLocationNodeReplace}
  */
 export interface SourceLocationNodeAutoGenerate extends SourceLocationBase {
-  sourceLocationType: 'autoGenerate';
+  sourceLocationType: typeof SOURCE_LOC_AUTO_GENERATE;
 }
 
 export type SourceLocation =

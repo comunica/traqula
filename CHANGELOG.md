@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.1.1"></a>
+## [v1.1.1](https://github.com/comunica/traqula/compare/v1.1.0...v1.1.1) - 2026-05-09
+
+* [Fix: separate adjacent cells in VALUES data rows (#138)](https://github.com/comunica/traqula/commit/33f91da55e6fec7b4f1427a73ab011fb0b4b690d)
+* [Docs: increase documentation quality throughout (#130)](https://github.com/comunica/traqula/commit/1873a1b0260d6e9edb54ffa083b860e20fc57724)
+* [Chore: Update dependency tar to v7.5.14 (#135)](https://github.com/comunica/traqula/commit/7b13a53f71041a229813a72a0564ab3399d1317c)
+* [Chore: Update dependency ajv to v6.15.0 (#128)](https://github.com/comunica/traqula/commit/b369711c5ba3a744148d1f1b8aac46afd78a0c14)
+* [Chore: add devcontainer](https://github.com/comunica/traqula/commit/da88bb976bc46a78d3de6c0a9c66a58611913a93)
+* [Chore: Fix typo in README.md for SPARQL generator (#131)](https://github.com/comunica/traqula/commit/2f17f733c89222325eae742e7d19f3fdfcb9fab1)
+
 <a name="v1.1.0"></a>
 ## [v1.1.0](https://github.com/comunica/traqula/compare/v1.0.7...v1.1.0) - 2026-04-29
 

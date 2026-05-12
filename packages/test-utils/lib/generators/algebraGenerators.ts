@@ -25,6 +25,8 @@ export type AlgebraTestSuite = 'dawg-syntax' | 'sparql-1.1' | 'sparql11-query' |
 /**
  * Yields algebra-level test cases from the static test fixtures.
  * Each test provides a SPARQL query, expected algebra JSON, and optionally a canonical SPARQL string.
+ * For each unique base test name, yields both a `quads: false` and a `quads: true` variant
+ * when the corresponding expected algebra fixture exists.
  * @param suite - The test suite to iterate.
  * @param blankToVariable - Whether to use the blank-to-variable fixture variant.
  * @param getSPARQL - Whether to load the SPARQL and canonical SPARQL strings.
@@ -35,32 +37,41 @@ export function sparqlAlgebraTests(suite: AlgebraTestSuite, blankToVariable: boo
 Generator<algebraTestGen>;
 export function* sparqlAlgebraTests(suite: AlgebraTestSuite, blankToVariable: boolean, getSPARQL: boolean):
 Generator<algebraTestGen> {
+  const jsonRoot = blankToVariable ? rootJsonBlankToVariable : rootJson;
+
   // Relative path starting from roots declared above.
   function* subGen(relativePath: string): Generator<algebraTestGen> {
-    const absolutePath = join(blankToVariable ? rootJsonBlankToVariable : rootJson, relativePath);
+    const absolutePath = join(rootSparql, relativePath);
     if (lstatSync(absolutePath).isDirectory()) {
       // Recursion
       for (const sub of readdirSync(absolutePath)) {
+        // Relative path appended with sub
         yield* subGen(join(relativePath, sub));
       }
     } else {
-      const name = relativePath.replace(/\.json$/u, '');
-      const sparqlPath = join(rootSparql, relativePath.replace(/\.json/u, '.sparql'));
-      const canonicalSparqlPath = join(
-        blankToVariable ? rootCanonicalSparqlBlankToVar : rootCanonicalSparql,
-        relativePath.replace(/\.json/u, '.sparql'),
-      );
-      yield {
-        name,
-        json: JSON.parse(readFileSync(absolutePath)),
-        sparql: getSPARQL ? readFileSync(sparqlPath, 'utf8') : undefined,
-        canonicalSparql: getSPARQL ? readFileSync(canonicalSparqlPath, 'utf-8') : undefined,
-        quads: name.endsWith('-quads'),
-      };
+      // Emit tests
+      const baseName = relativePath.replace(/\.sparql$/u, '');
+
+      for (const suffix of [ '', '-quads' ]) {
+        const name = `${baseName}${suffix}`;
+        const jsonPath = join(jsonRoot, `${name}.json`);
+        const canonicalSparqlPath = join(
+          blankToVariable ? rootCanonicalSparqlBlankToVar : rootCanonicalSparql,
+            `${name}.sparql`,
+        );
+
+        yield {
+          name,
+          json: JSON.parse(readFileSync(jsonPath)),
+          sparql: getSPARQL ? readFileSync(absolutePath, 'utf8') : undefined,
+          canonicalSparql: getSPARQL ? readFileSync(canonicalSparqlPath, 'utf-8') : undefined,
+          quads: suffix === '-quads',
+        };
+      }
     }
   }
 
-  const subfolders = readdirSync(blankToVariable ? rootJsonBlankToVariable : rootJson);
+  const subfolders = readdirSync(rootSparql);
   if (subfolders.includes(suite)) {
     yield* subGen(suite);
   }

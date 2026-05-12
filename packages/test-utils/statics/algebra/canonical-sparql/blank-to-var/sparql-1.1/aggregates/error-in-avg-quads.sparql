@@ -1,0 +1,4 @@
+SELECT ?g ( AVG( ?p ) AS ?avg ) ( ( ( MIN( ?p ) + MAX( ?p ) ) / "2"^^<http://www.w3.org/2001/XMLSchema#integer> ) AS ?c ) WHERE {
+  ?g <http://example.com/data/#p> ?p .
+}
+GROUP BY ?g

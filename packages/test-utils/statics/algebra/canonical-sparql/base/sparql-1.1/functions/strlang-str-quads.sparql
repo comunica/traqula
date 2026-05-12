@@ -1,0 +1,4 @@
+SELECT ?s ( STRLANG( STR( ?str ) , "en-US"^^<http://www.w3.org/2001/XMLSchema#string> ) AS ?s2 ) WHERE {
+  ?s <http://example.org/str> ?str .
+  FILTER ( LANGMATCHES( LANG( ?str ) , "en"^^<http://www.w3.org/2001/XMLSchema#string> ) )
+}

@@ -19,12 +19,12 @@ describe('algebra output', () => {
     describe(suite, () => {
       for (const blankToVariable of [ true, false ]) {
         for (const test of sparqlAlgebraTests(suite, blankToVariable, true)) {
-          const { name, json, sparql: query } = test;
+          const { name, json, quads, sparql: query } = test;
           it(`${name}${blankToVariable ? ' (no blanks)' : ''}`, ({ expect }) => {
             const ast = parser.parse(query);
             const algebra = algebraUtils.objectify(
               toAlgebra(ast, {
-                quads: name.endsWith('-quads'),
+                quads,
                 blankToVariable,
               }),
             );

@@ -1,0 +1,3 @@
+SELECT ?t WHERE {
+  <http://example/a> ((<http://example/p>/<http://example/p>)?) ?t .
+}

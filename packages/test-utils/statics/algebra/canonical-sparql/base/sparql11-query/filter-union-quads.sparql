@@ -1,0 +1,8 @@
+SELECT ?this WHERE {
+  {
+    FILTER ( "false"^^<http://www.w3.org/2001/XMLSchema#boolean> )
+  }
+  UNION {
+    FILTER ( ( ?this = <http://example.org/InvalidResource> ) )
+  }
+}

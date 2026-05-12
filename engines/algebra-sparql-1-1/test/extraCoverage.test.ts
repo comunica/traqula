@@ -70,12 +70,21 @@ GROUP BY ( ?y AS ?x )`);
     });
   });
 
-  describe('insert/DELETE without quads option throws', () => {
-    it('toAlgebra throws when INSERT DATA is converted without quads option', ({ expect }) => {
+  describe('insert/DELETE without quads option works', () => {
+    it('toAlgebra succeeds when INSERT DATA is converted without quads option', ({ expect }) => {
       const ast = parser.parse('INSERT DATA { <http://s> <http://p> <http://o> }');
-      expect(() => toAlgebra(ast, { quads: false })).toThrowError(
-        /INSERT\/DELETE operations are only supported with quads option enabled/u,
-      );
+      const result = algebraUtils.objectify(toAlgebra(ast, { quads: false }));
+      expect(result).toMatchObject({
+        type: 'deleteinsert',
+        insert: [{
+          type: 'pattern',
+          termType: 'Quad',
+          subject: { termType: 'NamedNode', value: 'http://s' },
+          predicate: { termType: 'NamedNode', value: 'http://p' },
+          object: { termType: 'NamedNode', value: 'http://o' },
+          graph: { termType: 'DefaultGraph', value: '' },
+        }],
+      });
     });
   });
 

@@ -1,0 +1,10 @@
+SELECT ?n ?x WHERE {
+  ?x <http://example.com/p> ?n .
+  FILTER ( NOT EXISTS {
+    {
+      ?x <http://example.com/q> ?m .
+      FILTER ( ( ?n = ?m ) )
+    }
+  }
+  )
+}

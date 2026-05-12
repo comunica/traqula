@@ -1,0 +1,11 @@
+DELETE {
+  GRAPH <http://example/addresses> {
+    ?person ?property ?value .
+  }
+}
+WHERE {
+  GRAPH <http://example/addresses> {
+    ?person ?property ?value .
+    ?person <http://xmlns.com/foaf/0.1/givenName> "Fred"^^<http://www.w3.org/2001/XMLSchema#string> .
+  }
+}

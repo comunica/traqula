@@ -1,0 +1,6 @@
+CONSTRUCT {
+  _:e_s_b ?p _:e_o_b .
+}
+WHERE {
+  ?e_s_b ?p ?e_o_b .
+}

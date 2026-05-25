@@ -49,7 +49,7 @@
     "**/handlebars": "4.7.9",
     "**/lodash": "4.18.1",
     "**/lodash-es": "4.18.1",
-    "**/markdown-it": "14.1.1",
+    "**/markdown-it": "14.2.0",
     "**/picomatch": "4.0.4",
     "**/tar": "7.5.15",
     "@nx/devkit/minimatch": "10.2.5",

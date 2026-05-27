@@ -103,6 +103,7 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
         const usedvars = new Set<string>();
         getVariablesFromExpression(selectVar.expression, usedvars);
         for (const usedvar of usedvars) {
+          // If the var is created within the select, it is fine.
           if (asBoundVars.has(usedvar)) {
             continue;
           }
@@ -113,6 +114,7 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
         }
       }
       if (!F.isTerm(selectVar)) {
+        // Register a var is created by a bind
         asBoundVars.add(selectVar.variable.value);
       }
     }

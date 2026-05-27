@@ -90,6 +90,8 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
     // We have to check whether
     //  1. Variables used in projection are usable given the group by clause
     //  2. A selectCount will create an implicit group by clause.
+    // Variables bound by preceding (expr AS ?var) expressions are in scope for later expressions.
+    const asBoundVars = new Set<string>();
     for (const selectVar of variables) {
       if (F.isTerm(selectVar)) {
         if (!groupBy || !groupBy.groupings.map(groupvar => getExpressionId(groupvar))
@@ -101,11 +103,17 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
         const usedvars = new Set<string>();
         getVariablesFromExpression(selectVar.expression, usedvars);
         for (const usedvar of usedvars) {
+          if (asBoundVars.has(usedvar)) {
+            continue;
+          }
           if (!groupBy || !groupBy.groupings.map(groupVar => getExpressionId(groupVar))
             .includes(usedvar)) {
             throw new Error(`Use of ungrouped variable in projection of operation (?${usedvar})`);
           }
         }
+      }
+      if (!F.isTerm(selectVar)) {
+        asBoundVars.add(selectVar.variable.value);
       }
     }
   }

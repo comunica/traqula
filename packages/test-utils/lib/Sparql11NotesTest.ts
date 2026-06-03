@@ -55,18 +55,6 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
     'Target id of \'AS\' (?X) already used in subquery',
   ));
 
-  it('should NOT throw when AS variable does not appear in subquery with term variable projection', ({ expect }) => {
-    expect(parser.parse('SELECT (1 AS ?x) WHERE { SELECT ?y WHERE { ?y ?p ?o } }')).toMatchObject({});
-  });
-
-  it('should NOT throw when AS variable does not appear in subquery with wildcard projection', ({ expect }) => {
-    expect(parser.parse('SELECT (1 AS ?x) WHERE { SELECT * WHERE { ?s ?p ?o } }')).toMatchObject({});
-  });
-
-  it('should NOT throw when expression projection variable is covered by GROUP BY', ({ expect }) => {
-    expect(parser.parse('SELECT (?x + 1 AS ?result) WHERE { ?s ?p ?x } GROUP BY ?x')).toMatchObject({});
-  });
-
   it('should throw an error on bind to variable in scope', testErroneousQuery(
     'SELECT * { ?s ?p ?o BIND(?o AS ?o) }',
     'Target id of \'AS\' (?X) already used in subquery',

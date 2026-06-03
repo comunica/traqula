@@ -18,6 +18,7 @@ import type {
   GraphNode,
   GraphTerm,
   PatternBgp,
+  QuerySelect,
   Term,
   TermBlank,
   TermIri,
@@ -28,7 +29,7 @@ import type {
   TripleCollectionReifiedTriple,
   TripleNesting,
 } from './sparql12Types.js';
-import { langTagHasCorrectRange } from './validators.js';
+import { langTagHasCorrectRange, queryProjectionIsGood } from './validators.js';
 
 /**
  *[[7]](https://www.w3.org/TR/sparql12-query/#rVersionDecl)
@@ -44,6 +45,42 @@ export const versionDecl: SparqlRule<'versionDecl', ContextDefinitionVersion> = 
   gImpl: ({ PRINT_ON_OWN_LINE }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => {
       PRINT_ON_OWN_LINE('VERSION ', `${S11.stringEscapedLexical(ast.version)}`);
+    });
+  },
+};
+
+/**
+ * [[9]](https://www.w3.org/TR/sparql12-query/#rSelectQuery)
+ * (Validator has changed: https://github.com/w3c/sparql-query/pull/380)
+ */
+export const selectQuery: SparqlGrammarRule<'selectQuery', Omit<QuerySelect, 'type' | 'context' | 'values'>> = <const> {
+  name: 'selectQuery',
+  impl: ({ ACTION, SUBRULE }) => (C) => {
+    const selectVal = SUBRULE(S11.selectClause);
+    const from = SUBRULE(S11.datasetClauseStar);
+    const where = SUBRULE(S11.whereClause);
+    const modifiers = SUBRULE(S11.solutionModifier);
+
+    return ACTION(() => {
+      const ret = {
+        subType: 'select',
+        where: where.val,
+        solutionModifiers: modifiers,
+        datasets: from,
+        ...selectVal.val,
+        loc: C.astFactory.sourceLocation(
+          selectVal,
+          where,
+          modifiers.group,
+          modifiers.having,
+          modifiers.order,
+          modifiers.limitOffset,
+        ),
+      } satisfies RuleDefReturn<typeof selectQuery>;
+      if (!C.skipValidation) {
+        queryProjectionIsGood(ret);
+      }
+      return ret;
     });
   },
 };

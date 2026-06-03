@@ -19,7 +19,7 @@ const transformer = new AstTransformer();
 /**
  * Get all 'aggregate' rules from an expression
  */
-function getAggregatesOfExpression(expression: Expression): ExpressionAggregate[] {
+export function getAggregatesOfExpression(expression: Expression): ExpressionAggregate[] {
   if (F.isExpressionAggregate(expression)) {
     return [ expression ];
   }
@@ -36,7 +36,7 @@ function getAggregatesOfExpression(expression: Expression): ExpressionAggregate[
 /**
  * Return the variable value id of an expression if bounded
  */
-function getExpressionId(expression: SolutionModifierGroupBind | Expression | TermVariable): string | undefined {
+export function getExpressionId(expression: SolutionModifierGroupBind | Expression | TermVariable): string | undefined {
   // Check if grouping
   if (F.isTerm(expression) && F.isTermVariable(expression)) {
     return expression.value;
@@ -53,7 +53,7 @@ function getExpressionId(expression: SolutionModifierGroupBind | Expression | Te
 /**
  * Get all variables used in an expression
  */
-function getVariablesFromExpression(expression: Expression, variables: Set<string>): void {
+export function getVariablesFromExpression(expression: Expression, variables: Set<string>): void {
   if (F.isExpressionOperator(expression)) {
     for (const expr of expression.args) {
       getVariablesFromExpression(expr, variables);

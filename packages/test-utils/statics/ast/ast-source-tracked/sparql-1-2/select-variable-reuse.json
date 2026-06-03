@@ -1,0 +1,243 @@
+{
+  "context": [],
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "values",
+        "variables": [
+          {
+            "type": "term",
+            "subType": "variable",
+            "value": "v",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 76,
+              "end": 78
+            }
+          }
+        ],
+        "values": [
+          {
+            "v": {
+              "type": "term",
+              "subType": "literal",
+              "value": "0",
+              "langOrIri": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "http://www.w3.org/2001/XMLSchema#integer",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 81,
+                "end": 82
+              }
+            }
+          },
+          {
+            "v": {
+              "type": "term",
+              "subType": "literal",
+              "value": "1",
+              "langOrIri": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "http://www.w3.org/2001/XMLSchema#integer",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 83,
+                "end": 84
+              }
+            }
+          },
+          {
+            "v": {
+              "type": "term",
+              "subType": "literal",
+              "value": "2",
+              "langOrIri": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "http://www.w3.org/2001/XMLSchema#integer",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 85,
+                "end": 86
+              }
+            }
+          },
+          {
+            "v": {
+              "type": "term",
+              "subType": "literal",
+              "value": "3",
+              "langOrIri": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "http://www.w3.org/2001/XMLSchema#integer",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 87,
+                "end": 88
+              }
+            }
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 69,
+          "end": 90
+        }
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 65,
+      "end": 92
+    }
+  },
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "pattern",
+      "subType": "bind",
+      "expression": {
+        "type": "expression",
+        "subType": "aggregate",
+        "aggregation": "count",
+        "distinct": false,
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 8,
+          "end": 17
+        },
+        "expression": [
+          {
+            "type": "term",
+            "subType": "variable",
+            "value": "v",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 14,
+              "end": 16
+            }
+          }
+        ]
+      },
+      "variable": {
+        "type": "term",
+        "subType": "variable",
+        "value": "count",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 21,
+          "end": 27
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 7,
+        "end": 28
+      }
+    },
+    {
+      "type": "pattern",
+      "subType": "bind",
+      "expression": {
+        "type": "expression",
+        "subType": "operation",
+        "operator": "+",
+        "args": [
+          {
+            "type": "term",
+            "subType": "variable",
+            "value": "count",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 30,
+              "end": 36
+            }
+          },
+          {
+            "type": "term",
+            "subType": "literal",
+            "value": "1",
+            "langOrIri": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "http://www.w3.org/2001/XMLSchema#integer",
+              "loc": {
+                "sourceLocationType": "noMaterialize"
+              }
+            },
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 39,
+              "end": 40
+            }
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 30,
+          "end": 40
+        }
+      },
+      "variable": {
+        "type": "term",
+        "subType": "variable",
+        "value": "countPlusOne",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 44,
+          "end": 57
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 29,
+        "end": 58
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "inlinedSource",
+    "newSource": "SELECT (COUNT(?v) AS ?count) (?count + 1 AS ?countPlusOne) WHERE {\n  VALUES ?v { 0 1 2 3 }\n}",
+    "start": 0,
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 92
+    },
+    "startOnNew": 0,
+    "endOnNew": 92
+  },
+  "type": "query"
+}

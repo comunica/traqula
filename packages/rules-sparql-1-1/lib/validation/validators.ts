@@ -19,7 +19,7 @@ const transformer = new AstTransformer();
 /**
  * Get all 'aggregate' rules from an expression
  */
-function getAggregatesOfExpression(expression: Expression): ExpressionAggregate[] {
+export function getAggregatesOfExpression(expression: Expression): ExpressionAggregate[] {
   if (F.isExpressionAggregate(expression)) {
     return [ expression ];
   }
@@ -36,7 +36,7 @@ function getAggregatesOfExpression(expression: Expression): ExpressionAggregate[
 /**
  * Return the variable value id of an expression if bounded
  */
-function getExpressionId(expression: SolutionModifierGroupBind | Expression | TermVariable): string | undefined {
+export function getExpressionId(expression: SolutionModifierGroupBind | Expression | TermVariable): string | undefined {
   // Check if grouping
   if (F.isTerm(expression) && F.isTermVariable(expression)) {
     return expression.value;
@@ -53,7 +53,7 @@ function getExpressionId(expression: SolutionModifierGroupBind | Expression | Te
 /**
  * Get all variables used in an expression
  */
-function getVariablesFromExpression(expression: Expression, variables: Set<string>): void {
+export function getVariablesFromExpression(expression: Expression, variables: Set<string>): void {
   if (F.isExpressionOperator(expression)) {
     for (const expr of expression.args) {
       getVariablesFromExpression(expr, variables);
@@ -90,8 +90,6 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
     // We have to check whether
     //  1. Variables used in projection are usable given the group by clause
     //  2. A selectCount will create an implicit group by clause.
-    // Variables bound by preceding (expr AS ?var) expressions are in scope for later expressions.
-    const asBoundVars = new Set<string>();
     for (const selectVar of variables) {
       if (F.isTerm(selectVar)) {
         if (!groupBy || !groupBy.groupings.map(groupvar => getExpressionId(groupvar))
@@ -103,19 +101,11 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
         const usedvars = new Set<string>();
         getVariablesFromExpression(selectVar.expression, usedvars);
         for (const usedvar of usedvars) {
-          // If the var is created within the select, it is fine.
-          if (asBoundVars.has(usedvar)) {
-            continue;
-          }
           if (!groupBy || !groupBy.groupings.map(groupVar => getExpressionId(groupVar))
             .includes(usedvar)) {
             throw new Error(`Use of ungrouped variable in projection of operation (?${usedvar})`);
           }
         }
-      }
-      if (!F.isTerm(selectVar)) {
-        // Register a var is created by a bind
-        asBoundVars.add(selectVar.variable.value);
       }
     }
   }

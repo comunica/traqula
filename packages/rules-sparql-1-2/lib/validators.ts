@@ -1,10 +1,15 @@
+import { getAggregatesOfExpression, getExpressionId, getVariablesFromExpression } from '@traqula/rules-sparql-1-1';
+import type * as T11 from '@traqula/rules-sparql-1-1';
 import { AstFactory } from './AstFactory.js';
 import type {
   Path,
   Pattern,
+  PatternBind,
+  QuerySelect,
   SparqlQuery,
   Term,
   TermLiteral,
+  TermVariable,
   TripleCollection,
   TripleNesting,
   Wildcard,
@@ -101,6 +106,86 @@ export function findPatternBoundedVars(
     findPatternBoundedVars(iter.name, boundedVars);
     for (const pattern of iter.patterns) {
       findPatternBoundedVars(pattern, boundedVars);
+    }
+  }
+}
+
+/**
+ * Verify that the projected variables (select head) are allowed:
+ * - no group-by on select *
+ * - if group-by, selected variables need to be collected by the group-by
+ * - 'select ?var as ?other', ?other cannot be in scope
+ */
+export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where'>): void {
+  // NoGroupByOnWildcardSelect
+  if (query.variables.length === 1 && F.isWildcard(query.variables[0])) {
+    if (query.solutionModifiers.group !== undefined) {
+      throw new Error('GROUP BY not allowed with wildcard');
+    }
+    return;
+  }
+
+  // CannotProjectUngroupedVars - can be skipped if `SELECT *`
+  // Check for projection of ungrouped variable
+  // Check can be skipped in case of wildcard select.
+  const variables = <Exclude<typeof query.variables, [Wildcard]>> query.variables;
+  const hasCountAggregate = variables.flatMap(
+    varVal => F.isTerm(varVal) ? [] : getAggregatesOfExpression(<T11.Expression> varVal.expression),
+  ).some(agg => agg.aggregation === 'count' && !agg.expression.some(arg => F.isWildcard(arg)));
+  const groupBy = query.solutionModifiers.group;
+  if (hasCountAggregate || groupBy) {
+    // We have to check whether
+    //  1. Variables used in projection are usable given the group by clause
+    //  2. A selectCount will create an implicit group by clause.
+    // Variables bound by preceding (expr AS ?var) expressions are in scope for later expressions.
+    const asBoundVars = new Set<string>();
+    for (const selectVar of variables) {
+      if (F.isTerm(selectVar)) {
+        if (!groupBy || !groupBy.groupings.map(groupvar =>
+          getExpressionId(<T11.Expression | T11.SolutionModifierGroupBind> groupvar))
+          .includes((getExpressionId(selectVar)))) {
+          throw new Error('Variable not allowed in projection');
+        }
+      } else if (getAggregatesOfExpression(<T11.Expression> selectVar.expression).length === 0) {
+        // Current value binding does not use aggregates
+        const usedvars = new Set<string>();
+        getVariablesFromExpression(<T11.Expression> selectVar.expression, usedvars);
+        for (const usedvar of usedvars) {
+          // If the var is created within the select, it is fine.
+          if (asBoundVars.has(usedvar)) {
+            continue;
+          }
+          if (!groupBy || !groupBy.groupings.map(groupVar =>
+            getExpressionId(<T11.Expression | T11.SolutionModifierGroupBind>groupVar)).includes(usedvar)) {
+            throw new Error(`Use of ungrouped variable in projection of operation (?${usedvar})`);
+          }
+        }
+      }
+      if (!F.isTerm(selectVar)) {
+        // Register a var is created by a bind
+        asBoundVars.add(selectVar.variable.value);
+      }
+    }
+  }
+
+  // NOTE 12: Check if id of each AS-selected column is not yet bound by subquery
+  const subqueries = query.where.patterns.filter(pattern => pattern.type === 'query');
+  if (subqueries.length > 0) {
+    const selectBoundedVars = new Set<string>();
+    for (const variable of variables) {
+      if ('variable' in variable) {
+        selectBoundedVars.add(variable.variable.value);
+      }
+    }
+
+    // Look at in scope variables
+    const vars = subqueries.flatMap<TermVariable | PatternBind | Wildcard>(sub => sub.variables)
+      .map(v => F.isTerm(v) ? v.value : (F.isWildcard(v) ? '*' : v.variable.value));
+    const subqueryIds = new Set(vars);
+    for (const selectedVarId of selectBoundedVars) {
+      if (subqueryIds.has(selectedVarId)) {
+        throw new Error(`Target id of 'AS' (?${selectedVarId}) already used in subquery`);
+      }
     }
   }
 }

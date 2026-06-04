@@ -35,5 +35,7 @@ export const wsPattern = /[\u0009\u000A\u000D ]/;
 export const nilPattern = new RegExp(`\\((${wsPattern.source})*\\)`);
 export const anonPattern = new RegExp(`\\[(${wsPattern.source})*\\]`);
 export const commentPattern = /#[^\n]*\n/;
+// Pattern for the standalone comment token: matches to end of line OR end of input.
+export const commentTokenPattern = /#[^\n]*/;
 
 export const atLeastOneBlankPattern = new RegExp(`((${wsPattern.source}+)|(${commentPattern.source}))+`);

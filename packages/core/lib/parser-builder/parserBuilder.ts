@@ -327,6 +327,10 @@ ${errorLine}`);
         const processedInput = queryPreProcessor(input);
         const lexResult = lexer.tokenize(processedInput);
 
+        if (lexResult.errors.length > 0) {
+          throw new Error(lexResult.errors[0].message);
+        }
+
         // This also resets the parser
         parser.input = lexResult.tokens;
         parser.setContext(context);

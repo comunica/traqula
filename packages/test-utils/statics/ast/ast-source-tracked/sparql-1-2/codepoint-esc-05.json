@@ -18,7 +18,7 @@
               "loc": {
                 "sourceLocationType": "source",
                 "start": 53,
-                "end": 73
+                "end": 92
               }
             },
             "predicate": {
@@ -27,8 +27,8 @@
               "value": "p",
               "loc": {
                 "sourceLocationType": "source",
-                "start": 74,
-                "end": 76
+                "start": 93,
+                "end": 95
               }
             },
             "object": {
@@ -37,29 +37,29 @@
               "value": "o",
               "loc": {
                 "sourceLocationType": "source",
-                "start": 77,
-                "end": 79
+                "start": 96,
+                "end": 98
               }
             },
             "annotations": [],
             "loc": {
               "sourceLocationType": "source",
               "start": 53,
-              "end": 79
+              "end": 98
             }
           }
         ],
         "loc": {
           "sourceLocationType": "source",
           "start": 53,
-          "end": 81
+          "end": 100
         }
       }
     ],
     "loc": {
       "sourceLocationType": "source",
       "start": 39,
-      "end": 83
+      "end": 102
     }
   },
   "solutionModifiers": {},
@@ -88,10 +88,10 @@
     "loc": {
       "sourceLocationType": "source",
       "start": 30,
-      "end": 83
+      "end": 102
     },
     "startOnNew": 30,
-    "endOnNew": 83
+    "endOnNew": 102
   },
   "type": "query"
 }

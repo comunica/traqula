@@ -52,5 +52,12 @@ export type SparqlGrammarRule<
   ParamType extends any[] = [],
 > = ParserRule<SparqlContext, NameType, ReturnType, ParamType>;
 
-export type SparqlContext = T11.SparqlContext & { astFactory: AstFactory };
+export type SparqlContext = T11.SparqlContext & {
+  astFactory: AstFactory;
+  /**
+   * Function that decodes UCHAR codepoint escapes (\\uXXXX / \\UXXXXXXXX) within a string.
+   * In SPARQL 1.2 this is applied per-rule rather than as a query pre-processor.
+   */
+  codepointEscape: (input: string) => string;
+};
 export type SparqlGeneratorContext = T11.SparqlGeneratorContext & { astFactory: AstFactory };

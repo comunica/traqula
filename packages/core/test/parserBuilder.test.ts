@@ -93,13 +93,22 @@ describe('parserBuilder', () => {
   });
 
   describe('build – defaultErrorHandler', () => {
-    it('throws a "Parse error" when parsing fails and no custom errorHandler is set', ({ expect }) => {
+    it('throws a lexer error when the input cannot be tokenized', ({ expect }) => {
       const parser = ParserBuilder.create(<const>[ numRule ]).build({
         tokenVocabulary: [ Num ],
         lexerConfig: { ensureOptimizations: false },
       });
-      // 'abc' does not match Num (/\d+/) -> empty token stream -> CONSUME fails -> defaultErrorHandler
-      expect(() => (<any>parser).num('abc', {})).toThrow(/Parse error/u);
+      // 'abc' does not match Num (/\d+/) -> lexer error is thrown immediately
+      expect(() => (<any>parser).num('abc', {})).toThrow(/unexpected character/u);
+    });
+
+    it('throws a "Parse error" when parsing fails (tokens lex fine but grammar rejects them)', ({ expect }) => {
+      const parser = ParserBuilder.create(<const>[ numRule ]).build({
+        tokenVocabulary: [ Num ],
+        lexerConfig: { ensureOptimizations: false },
+      });
+      // '' produces zero tokens without lexer errors, but CONSUME(Num) fails -> defaultErrorHandler
+      expect(() => (<any>parser).num('', {})).toThrow(/Parse error/u);
     });
 
     it('omits column pointer when token has no column info', ({ expect }) => {

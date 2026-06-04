@@ -38,28 +38,28 @@
               "loc": {
                 "sourceLocationType": "source",
                 "start": 80,
-                "end": 85
+                "end": 108
               }
             },
             "annotations": [],
             "loc": {
               "sourceLocationType": "source",
               "start": 56,
-              "end": 85
+              "end": 108
             }
           }
         ],
         "loc": {
           "sourceLocationType": "source",
           "start": 56,
-          "end": 87
+          "end": 110
         }
       }
     ],
     "loc": {
       "sourceLocationType": "source",
       "start": 41,
-      "end": 89
+      "end": 112
     }
   },
   "solutionModifiers": {},
@@ -88,10 +88,10 @@
     "loc": {
       "sourceLocationType": "source",
       "start": 32,
-      "end": 89
+      "end": 112
     },
     "startOnNew": 32,
-    "endOnNew": 89
+    "endOnNew": 112
   },
   "type": "query"
 }

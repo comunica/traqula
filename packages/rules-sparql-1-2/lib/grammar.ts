@@ -709,7 +709,7 @@ export const rdfLiteral: SparqlGrammarRule<'rdfLiteral', RuleDefReturn<typeof S1
 export const string: SparqlGrammarRule<'string', T11.TermLiteralStr> = {
   name: 'string',
   impl: ({ ACTION, CONSUME, OR }) => (C) => {
-    const x = OR([
+    const tuple = OR([
       { ALT: () => {
         const token = CONSUME(l12.stringLiteral1);
         return <const>[ token, token.image.slice(1, -1) ];
@@ -728,12 +728,11 @@ export const string: SparqlGrammarRule<'string', T11.TermLiteralStr> = {
       } },
     ]);
     return ACTION(() => {
+      const [ token, raw ] = tuple;
       const F = C.astFactory;
       // Pass 1: Decode all UCHAR escape sequences (and reject surrogate code points).
-      const afterUchar = C.codepointEscape(x[1]);
+      const afterUchar = C.codepointEscape(raw);
       // Pass 2: Validate and decode ECHAR sequences in the UCHAR-decoded string.
-      // Using [\s\S]? so that a trailing lone backslash (no following char) is matched
-      // with an empty capture, triggering the error path.
       const ecmap: Record<string, string> = {
         t: '\t',
         n: '\n',
@@ -744,7 +743,7 @@ export const string: SparqlGrammarRule<'string', T11.TermLiteralStr> = {
         '\'': '\'',
         '\\': '\\',
       };
-      const value = afterUchar.replaceAll(/\\([\s\S]?)/gsu, (_, char: string) => {
+      const value = afterUchar.replaceAll(/\\(.?)/gsu, (_, char: string) => {
         if (!char) {
           throw new Error(`String literal ends with an unpaired backslash`);
         }
@@ -757,7 +756,7 @@ export const string: SparqlGrammarRule<'string', T11.TermLiteralStr> = {
       if (/[\uD800-\uDBFF](?:[^\uDC00-\uDFFF]|$)/u.test(value)) {
         throw new Error(`Invalid unicode codepoint of surrogate pair without corresponding codepoint`);
       }
-      return F.termLiteral(F.sourceLocation(x[0]), value);
+      return F.termLiteral(F.sourceLocation(token), value);
     });
   },
 };

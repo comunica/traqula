@@ -1,4 +1,4 @@
-/* eslint-disable require-unicode-regexp */
+/* eslint-disable require-unicode-regexp,no-control-regex */
 import { LexerBuilder, createToken } from '@traqula/core';
 import { lex as l11 } from '@traqula/rules-sparql-1-1';
 
@@ -35,13 +35,19 @@ export const LANG_DIR = createToken({
   label: 'LANG_DIR',
 });
 
-// UCHAR: \uXXXX or \UXXXXXXXX  (SPARQL 1.2 §19.2)
-// Used inside IRI references and string literals only.
+/**
+ * UCHAR: \uXXXX or \UXXXXXXXX  (SPARQL 1.2 §19.2)
+ * Used inside IRI references and string literals only.
+ */
 const ucharSource = /\\u[\dA-Fa-f]{4}|\\U[\dA-Fa-f]{8}/.source;
-// ECHAR source (same as sparql-1-1 echarPattern, without /u flag for compat with other patterns)
+/**
+ * ECHAR source !(same as sparql-1-1 echarPattern)
+ */
 const echarSource = /\\["'\\bfnrt]/.source;
-// Character class for valid IRI characters (excluding backslash to allow UCHAR alternation)
-// eslint-disable-next-line no-control-regex
+/**
+ * Character class for valid IRI characters (excluding backslash to allow UCHAR alternation)
+ * Same as SPARQL 1.1
+ */
 const iriCharSource = /[^\u0000-\u0020"<>\\^`{|}]/.source;
 
 /**
@@ -59,7 +65,7 @@ export const iriRef = createToken({
  */
 export const stringLiteral1 = createToken({
   name: 'StringLiteral1',
-  pattern: new RegExp(`'(([^\\u0027\\u005C\\u000A\\u000D])|(${echarSource})|(${ucharSource}))*'`),
+  pattern: new RegExp(`'(([^\\u0027\\u005C\\u000A\u000D])|(${echarSource})|(${ucharSource}))*'`),
 });
 
 /**
@@ -115,17 +121,10 @@ export const sparql12LexerBuilder = LexerBuilder
     buildInOBJECT,
   )
   .addBefore(l11.terminals.langTag, LANG_DIR)
-  .delete(l11.terminals.langTag)
+  .deleteToken(l11.terminals.langTag.name)
   // Replace IRI and string tokens with UCHAR-aware versions for SPARQL 1.2.
-  // We must delete the old token FIRST (removing its name from the type-level NAMES union),
-  // then add the new same-named token using an adjacent token as reference.
-  .delete(l11.terminals.iriRef)
-  .addBefore(l11.terminals.pNameNs, iriRef)
-  .delete(l11.terminals.stringLiteralLong1)
-  .addBefore(l11.terminals.stringLiteralLong2, stringLiteralLong1)
-  .delete(l11.terminals.stringLiteralLong2)
-  .addBefore(l11.terminals.stringLiteral1, stringLiteralLong2)
-  .delete(l11.terminals.stringLiteral1)
-  .addBefore(l11.terminals.stringLiteral2, stringLiteral1)
-  .delete(l11.terminals.stringLiteral2)
-  .addBefore(l11.terminals.ws, stringLiteral2);
+  .replace(iriRef)
+  .replace(stringLiteral1)
+  .replace(stringLiteral2)
+  .replace(stringLiteralLong1)
+  .replace(stringLiteralLong2);

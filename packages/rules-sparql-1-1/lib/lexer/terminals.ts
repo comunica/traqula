@@ -3,7 +3,7 @@ import { LexerBuilder, createToken } from '@traqula/core';
 import {
   anonPattern,
   blankNodeLabelPattern,
-  commentTokenPattern,
+  commentPattern,
   decimalNegativePattern,
   decimalPattern,
   decimalPositivePattern,
@@ -111,7 +111,7 @@ export const stringLiteralLong2 = createToken({ name: 'StringLiteralLong2', patt
  * https://www.w3.org/TR/sparql11-query/#rWS
  */
 export const ws = createToken({ name: 'Ws', pattern: wsPattern, group: Lexer.SKIPPED });
-export const comment = createToken({ name: 'Comment', pattern: commentTokenPattern, group: Lexer.SKIPPED });
+export const comment = createToken({ name: 'Comment', pattern: commentPattern, group: Lexer.SKIPPED });
 /**
  * [[161]](https://www.w3.org/TR/sparql11-query/#rNIL)
  */

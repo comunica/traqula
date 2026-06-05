@@ -1,7 +1,7 @@
 {
   "name": "@traqula/parser-sparql-1-1",
   "type": "module",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "SPARQL 1.1 parser",
   "lsd:module": true,
   "license": "MIT",
@@ -51,10 +51,10 @@
   },
   "dependencies": {
     "@traqula/core": "^1.1.1",
-    "@traqula/rules-sparql-1-1": "^1.1.1"
+    "@traqula/rules-sparql-1-1": "^1.1.2"
   },
   "devDependencies": {
-    "@traqula/test-utils": "^1.1.1",
+    "@traqula/test-utils": "^1.1.2",
     "@types/sparqljs": "^3.1.12",
     "rdf-data-factory": "^2.0.1",
     "rdf-test-suite": "^2.0.0",

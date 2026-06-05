@@ -1,6 +1,18 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.1.2"></a>
+## [v1.1.2](https://github.com/comunica/traqula/compare/v1.1.1...v1.1.2) - 2026-06-05
+
+* [feat: allow AS-bound variable references (#142)](https://github.com/comunica/traqula/commit/bbe54ebadce5f99b3a6297257a1b5c82bcff20a9)
+* [Add citation.cff](https://github.com/comunica/traqula/commit/d5c22968a67c8f6fdaa2c4587fc537bdc721d144)
+
+* [Chore: update dependency tar to v7.5.16 (#144)](https://github.com/comunica/traqula/commit/c8f6b87191526066da701b5743a75282b32a1d38)
+* [Chore: Update dependency markdown-it to v14.2.0 (#141)](https://github.com/comunica/traqula/commit/3cc4d5c353bf7a7e60dbd9f1130451a2e6d31d21)
+* [Chore: Update dependency axios to v1.16.1 (#140)](https://github.com/comunica/traqula/commit/afd9d97798ece27482d1671bd4f3c4088826e6b9)
+* [Chore: Update dependency axios to v1.16.0 (#132)](https://github.com/comunica/traqula/commit/fce3b123924afe4568771bcf9bf695baefcfa780)
+* [Chore: Update dependency tar to v7.5.15 (#139)](https://github.com/comunica/traqula/commit/80a0735eb9de86138e2648321464af7a90fe30a8)
+
 <a name="v1.1.1"></a>
 ## [v1.1.1](https://github.com/comunica/traqula/compare/v1.1.0...v1.1.1) - 2026-05-09
 

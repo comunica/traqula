@@ -218,9 +218,7 @@ export class IndirBuilder<Context, Names extends string, RuleDefs extends Indire
     const myRules: Record<string, IndirDef<Context>> = this.rules;
 
     for (const rule of Object.values(myRules)) {
-      if (otherRules[rule.name] === undefined) {
-        otherRules[rule.name] = rule;
-      } else {
+      if (Object.hasOwn(otherRules, rule.name)) {
         const existingRule = otherRules[rule.name];
         // If same rule, no issue, move on. Else
         if (existingRule !== rule) {
@@ -232,6 +230,8 @@ export class IndirBuilder<Context, Names extends string, RuleDefs extends Indire
             throw new Error(`Function with name "${rule.name}" already exists in the builder, specify an override to resolve conflict`);
           }
         }
+      } else {
+        otherRules[rule.name] = rule;
       }
     }
 

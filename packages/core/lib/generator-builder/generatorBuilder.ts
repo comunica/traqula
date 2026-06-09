@@ -235,9 +235,7 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
     const myRules: Record<string, GeneratorRule<Context>> = this.rules;
 
     for (const rule of Object.values(myRules)) {
-      if (otherRules[rule.name] === undefined) {
-        otherRules[rule.name] = rule;
-      } else {
+      if (Object.hasOwn(otherRules, rule.name)) {
         const existingRule = otherRules[rule.name];
         // If same rule, no issue, move on. Else
         if (existingRule !== rule) {
@@ -249,6 +247,8 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
             throw new Error(`Rule with name "${rule.name}" already exists in the GeneratorBuilder, specify an override to resolve conflict`);
           }
         }
+      } else {
+        otherRules[rule.name] = rule;
       }
     }
 

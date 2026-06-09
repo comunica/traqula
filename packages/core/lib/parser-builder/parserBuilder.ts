@@ -253,9 +253,7 @@ Names,
     const myRules: Record<string, ParserRule<Context>> = this.rules;
 
     for (const rule of Object.values(myRules)) {
-      if (otherRules[rule.name] === undefined) {
-        otherRules[rule.name] = rule;
-      } else {
+      if (Object.hasOwn(otherRules, rule.name)) {
         const existingRule = otherRules[rule.name];
         // If same rule, no issue, move on. Else
         if (existingRule !== rule) {
@@ -267,6 +265,8 @@ Names,
             throw new Error(`Rule with name "${rule.name}" already exists in the builder, specify an override to resolve conflict`);
           }
         }
+      } else {
+        otherRules[rule.name] = rule;
       }
     }
 

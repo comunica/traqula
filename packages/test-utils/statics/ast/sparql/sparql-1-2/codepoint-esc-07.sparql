@@ -1,0 +1,6 @@
+# Codepoint escape in a string
+
+SELECT * {
+  ## 'abc'
+  <http://example/abc> ?p '\U00000061\u0062\U00000063' .
+}

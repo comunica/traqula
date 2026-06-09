@@ -1,0 +1,5 @@
+# \u005C is the UCHAR for \ (backslash). After UCHAR decode the string ends
+# with a lone backslash, which is not a valid ECHAR sequence.
+SELECT * {
+    ?s ?p "test\u005C"
+}

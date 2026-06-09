@@ -3,7 +3,6 @@ import type { Patch, Wrap, ParserBuildArgs } from '@traqula/core';
 import { sparql11ParserBuilder } from '@traqula/parser-sparql-1-1';
 import {
   gram as g11,
-  sparqlCodepointEscape,
 } from '@traqula/rules-sparql-1-1';
 import type {
   TermIri,
@@ -268,6 +267,8 @@ export const sparql12ParserBuilder = ParserBuilder.create(sparql11ParserBuilder)
   .patchRule(S12.rdfLiteral)
   .patchRule(S12.unaryExpression)
   .patchRule(S12.prologue)
+  .patchRule(S12.string)
+  .patchRule(S12.iriFull)
   .deleteRule(g11.graphTerm.name);
 
 export type SparqlParser = ReturnType<typeof sparql12ParserBuilder.build>;
@@ -284,7 +285,6 @@ export class Parser {
   ) {
     this.parser = sparql12ParserBuilder.build({
       ...args,
-      queryPreProcessor: sparqlCodepointEscape,
       tokenVocabulary: l12.sparql12LexerBuilder.tokenVocabulary,
     });
     this.defaultContext = completeParseContext(args.defaultContext ?? {});

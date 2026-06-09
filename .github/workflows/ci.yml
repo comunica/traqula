@@ -56,7 +56,7 @@ jobs:
         uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.github_token }}
-          flag-name: run-${{ matrix.node-version }}
+          flag-name: run-${{ matrix.node-version }}-${{ matrix.os }}
           parallel: true
 
   coveralls:

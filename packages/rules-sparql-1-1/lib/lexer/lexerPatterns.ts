@@ -26,7 +26,7 @@ export const doublePositivePattern = new RegExp(`\\+${doublePattern.source}`);
 export const integerNegativePattern = new RegExp(`-${integerPattern.source}`);
 export const decimalNegativePattern = new RegExp(`-${decimalPattern.source}`);
 export const doubleNegativePattern = new RegExp(`-${doublePattern.source}`);
-export const echarPattern = /\\[\\"'bfnrt]/u;
+export const echarPattern = /\\["'\\bfnrt]/;
 export const stringLiteral1Pattern = new RegExp(`'(([^\\u0027\\u005C\\u000A\u000D])|(${echarPattern.source}))*'`);
 export const stringLiteral2Pattern = new RegExp(`"(([^\\u0022\\u005C\\u000A\\u000D])|(${echarPattern.source}))*"`);
 export const stringLiteralLong1Pattern = new RegExp(`'''(('|(''))?([^'\\\\]|(${echarPattern.source})))*'''`);
@@ -34,6 +34,6 @@ export const stringLiteralLong2Pattern = new RegExp(`"""(("|(""))?([^"\\\\]|(${e
 export const wsPattern = /[\u0009\u000A\u000D ]/;
 export const nilPattern = new RegExp(`\\((${wsPattern.source})*\\)`);
 export const anonPattern = new RegExp(`\\[(${wsPattern.source})*\\]`);
-export const commentPattern = /#[^\n]*\n/;
-
-export const atLeastOneBlankPattern = new RegExp(`((${wsPattern.source}+)|(${commentPattern.source}))+`);
+export const commentPattern = /#[^\n]*/;
+// Need to ensure the blank closes
+export const atLeastOneBlankPattern = new RegExp(`((${wsPattern.source}+)|(${commentPattern.source}\n))+`);

@@ -1,0 +1,1 @@
+SELECT * WHERE { <http://example/abc> ?p ?o . }

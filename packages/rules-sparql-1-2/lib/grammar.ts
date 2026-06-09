@@ -92,8 +92,8 @@ export const versionSpecifier: SparqlGrammarRule<'versionSpecifier', Wrap<string
   name: 'versionSpecifier',
   impl: ({ ACTION, CONSUME, OR }) => (C) => {
     const token = OR([
-      { ALT: () => CONSUME(l11.terminals.stringLiteral1) },
-      { ALT: () => CONSUME(l11.terminals.stringLiteral2) },
+      { ALT: () => CONSUME(l12.stringLiteral1) },
+      { ALT: () => CONSUME(l12.stringLiteral2) },
     ]);
     return ACTION(() => C.astFactory.wrap(token.image.slice(1, -1), C.astFactory.sourceLocation(token)));
   },
@@ -731,6 +731,88 @@ export const rdfLiteral: SparqlGrammarRule<'rdfLiteral', RuleDefReturn<typeof S1
         ));
       } },
     ])) ?? value;
+  },
+};
+
+/**
+ * OVERRIDING RULE: {@link S11.string}.
+ * [[155]](https://www.w3.org/TR/sparql12-query/#rString)
+ *
+ * Uses the SPARQL 1.2 string tokens (which include UCHAR in their patterns).
+ * Applies two-pass decoding per the SPARQL 1.2 spec: UCHAR first (via
+ * {@link SparqlContext.codepointEscape}), then ECHAR. This order ensures that
+ * `\\u0041` yields `\A` (→ invalid ECHAR) rather than `\u0041` (single-pass result).
+ */
+export const string: SparqlGrammarRule<'string', T11.TermLiteralStr> = {
+  name: 'string',
+  impl: ({ ACTION, CONSUME, OR }) => (C) => {
+    const tuple = OR([
+      { ALT: () => {
+        const token = CONSUME(l12.stringLiteral1);
+        return <const>[ token, token.image.slice(1, -1) ];
+      } },
+      { ALT: () => {
+        const token = CONSUME(l12.stringLiteral2);
+        return <const>[ token, token.image.slice(1, -1) ];
+      } },
+      { ALT: () => {
+        const token = CONSUME(l12.stringLiteralLong1);
+        return <const>[ token, token.image.slice(3, -3) ];
+      } },
+      { ALT: () => {
+        const token = CONSUME(l12.stringLiteralLong2);
+        return <const>[ token, token.image.slice(3, -3) ];
+      } },
+    ]);
+    return ACTION(() => {
+      const [ token, raw ] = tuple;
+      const F = C.astFactory;
+      // Pass 1: Decode all UCHAR escape sequences (and reject surrogate code points).
+      const afterUchar = C.codepointEscape(raw);
+      // Pass 2: Validate and decode ECHAR sequences in the UCHAR-decoded string.
+      const ecmap: Record<string, string> = {
+        t: '\t',
+        n: '\n',
+        r: '\r',
+        b: '\b',
+        f: '\f',
+        '"': '"',
+        '\'': '\'',
+        '\\': '\\',
+      };
+      const value = afterUchar.replaceAll(/\\(.?)/gsu, (_, char: string) => {
+        if (!char) {
+          throw new Error(`String literal ends with an unpaired backslash`);
+        }
+        if (!(char in ecmap)) {
+          throw new Error(`Invalid escape sequence \\${char} in string literal`);
+        }
+        return ecmap[char];
+      });
+      // Catch literal surrogate code units embedded directly in the query (not via \uXXXX).
+      if (/[\uD800-\uDBFF](?:[^\uDC00-\uDFFF]|$)/u.test(value)) {
+        throw new Error(`Invalid unicode codepoint of surrogate pair without corresponding codepoint`);
+      }
+      return F.termLiteral(F.sourceLocation(token), value);
+    });
+  },
+};
+
+/**
+ * OVERRIDING RULE: {@link S11.iriFull}.
+ * [[160]](https://www.w3.org/TR/sparql12-query/#rIRIREF)
+ *
+ * Uses the SPARQL 1.2 IRI token (which includes UCHAR in its pattern) and applies
+ * codepoint escape decoding via {@link SparqlContext.codepointEscape}.
+ */
+export const iriFull: SparqlGrammarRule<'iriFull', T11.TermIriFull> = {
+  name: 'iriFull',
+  impl: ({ ACTION, CONSUME }) => (C) => {
+    const iriToken = CONSUME(l12.iriRef);
+    return ACTION(() => {
+      const raw = iriToken.image.slice(1, -1);
+      return C.astFactory.termNamed(C.astFactory.sourceLocation(iriToken), C.codepointEscape(raw));
+    });
   },
 };
 

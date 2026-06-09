@@ -1,0 +1,97 @@
+{
+  "context": [],
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "http://example/abc",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 56,
+                "end": 76
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "variable",
+              "value": "p",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 77,
+                "end": 79
+              }
+            },
+            "object": {
+              "type": "term",
+              "subType": "literal",
+              "value": "abc",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 80,
+                "end": 108
+              }
+            },
+            "annotations": [],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 56,
+              "end": 108
+            }
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 56,
+          "end": 110
+        }
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 41,
+      "end": 112
+    }
+  },
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "wildcard",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 39,
+        "end": 40
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "inlinedSource",
+    "newSource": "# Codepoint escape in a string\n\nSELECT * {\n  ## \"abc\"\n  <http://example/abc> ?p \"\\U00000061\\u0062\\U00000063\" .\n}\n",
+    "start": 0,
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 32,
+      "end": 112
+    },
+    "startOnNew": 32,
+    "endOnNew": 112
+  },
+  "type": "query"
+}

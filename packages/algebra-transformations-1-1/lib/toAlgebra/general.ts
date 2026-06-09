@@ -25,7 +25,7 @@ export const translateNamed: AlgebraIndir<'translateNamed', RDF.NamedNode, [Term
   fun: () => ({ astFactory: F, currentPrefixes, currentBase, dataFactory }, term) => {
     let fullIri: string = term.value;
     if (F.isTermNamedPrefixed(term)) {
-      const expanded = Object.hasOwn(currentPrefixes, term.prefix) ? currentPrefixes[term.prefix] : undefined;
+      const expanded = currentPrefixes[term.prefix];
       if (!expanded) {
         throw new Error(`Unknown prefix: ${term.prefix}`);
       }

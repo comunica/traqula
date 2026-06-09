@@ -317,7 +317,7 @@ context: Partial<T12.SparqlContext> = {},
     if (this.defaultContext.astFactory.isPathPure(ast)) {
       return {
         ...ast,
-        prefixes: {},
+        prefixes: Object.create(null),
       };
     }
     return ast;

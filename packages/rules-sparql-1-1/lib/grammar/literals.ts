@@ -254,7 +254,7 @@ export const prefixedName: SparqlRule<'prefixedName', TermIriPrefixed> = <const>
   name: 'prefixedName',
   impl: ({ ACTION, CONSUME, OR }) => (C) => {
     function verifyPrefix(prefix: string): void {
-      if (!C.skipValidation && !Object.hasOwn(C.prefixes, prefix)) {
+      if (!C.skipValidation && C.prefixes[prefix] === undefined) {
         throw new Error(`Unknown prefix: ${prefix}`);
       }
     }

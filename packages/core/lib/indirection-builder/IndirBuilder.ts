@@ -214,11 +214,13 @@ export class IndirBuilder<Context, Names extends string, RuleDefs extends Indire
             ) }
     > {
     // Assume the other set is bigger than yours. So start from that one and add this one
-    const otherRules: Record<string, IndirDef<Context>> = { ...builder.rules };
+    const otherRules: Record<string, IndirDef<Context>> = Object.assign(Object.create(null), builder.rules);
     const myRules: Record<string, IndirDef<Context>> = this.rules;
 
     for (const rule of Object.values(myRules)) {
-      if (Object.hasOwn(otherRules, rule.name)) {
+      if (otherRules[rule.name] === undefined) {
+        otherRules[rule.name] = rule;
+      } else {
         const existingRule = otherRules[rule.name];
         // If same rule, no issue, move on. Else
         if (existingRule !== rule) {
@@ -230,8 +232,6 @@ export class IndirBuilder<Context, Names extends string, RuleDefs extends Indire
             throw new Error(`Function with name "${rule.name}" already exists in the builder, specify an override to resolve conflict`);
           }
         }
-      } else {
-        otherRules[rule.name] = rule;
       }
     }
 

@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.1.3"></a>
+## [v1.1.3](https://github.com/comunica/traqula/compare/v1.1.2...v1.1.3) - 2026-06-09
+
+* [Test: code point escape (#145)](https://github.com/comunica/traqula/commit/4bddbd6cb17bcbdfc05a19147e0fd4cda47b4104)
+
 <a name="v1.1.2"></a>
 ## [v1.1.2](https://github.com/comunica/traqula/compare/v1.1.1...v1.1.2) - 2026-06-05
 

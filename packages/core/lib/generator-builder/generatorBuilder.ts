@@ -8,7 +8,7 @@ import type { GeneratorRule } from './generatorTypes.js';
  * Converts a list of ruledefs to a record mapping a name to the corresponding ruledef.
  */
 function listToRuleDefMap<T extends readonly GeneratorRule[]>(rules: T): GenRulesToObject<T> {
-  const newRules: Record<string, GeneratorRule> = {};
+  const newRules: Record<string, GeneratorRule> = Object.create(null);
   for (const rule of rules) {
     newRules[rule.name] = rule;
   }
@@ -231,7 +231,8 @@ export class GeneratorBuilder<Context, Names extends string, RuleDefs extends Ge
             ) }
     > {
     // Assume the other grammar is bigger than yours. So start from that one and add this one
-    const otherRules: Record<string, GeneratorRule<Context>> = { ...GeneratorBuilder.rules };
+    const otherRules: Record<string, GeneratorRule<Context>> =
+      Object.assign(Object.create(null), GeneratorBuilder.rules);
     const myRules: Record<string, GeneratorRule<Context>> = this.rules;
 
     for (const rule of Object.values(myRules)) {

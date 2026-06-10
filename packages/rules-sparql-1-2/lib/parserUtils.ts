@@ -30,7 +30,7 @@ export function completeParseContext(
   return {
     astFactory: context.astFactory ?? new AstFactory({ tracksSourceLocation: false }),
     baseIRI: context.baseIRI,
-    prefixes: { ...context.prefixes },
+    prefixes: Object.assign(Object.create(null), context.prefixes),
     parseMode: context.parseMode ? new Set(context.parseMode) : new Set([ 'canParseVars', 'canCreateBlankNodes' ]),
     skipValidation: context.skipValidation ?? false,
     codepointEscape: context.codepointEscape ?? sparql12CodepointEscape,
@@ -56,7 +56,7 @@ Partial<SparqlContext & SparqlGeneratorContext & { origSource: string; offset?: 
 ): T {
   return {
     ...context,
-    prefixes: { ...context.prefixes },
+    prefixes: Object.assign(Object.create(null), context.prefixes),
     parseMode: new Set(context.parseMode),
   };
 }

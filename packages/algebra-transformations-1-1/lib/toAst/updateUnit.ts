@@ -268,7 +268,7 @@ export const convertAlgUpdatePatterns: AstIndir<'convertUpdatePatterns', Quads[]
     if (!patterns) {
       return [];
     }
-    const graphs: Record<string, Algebra.Pattern[]> = {};
+    const graphs: Record<string, Algebra.Pattern[]> = Object.create(null);
     for (const pattern of patterns) {
       const graph = pattern.graph.value;
       if (!graphs[graph]) {

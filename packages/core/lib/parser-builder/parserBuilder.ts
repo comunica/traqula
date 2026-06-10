@@ -22,7 +22,7 @@ import type { ParserRule } from './ruleDefTypes.js';
  * Converts a list of ruledefs to a record mapping a name to the corresponding ruledef.
  */
 function listToRuleDefMap<T extends readonly ParserRule[]>(rules: T): ParseRulesToObject<T> {
-  const newRules: Record<string, ParserRule> = {};
+  const newRules: Record<string, ParserRule> = Object.create(null);
   for (const rule of rules) {
     newRules[rule.name] = rule;
   }
@@ -249,7 +249,7 @@ Names,
             ) }
     > {
     // Assume the other grammar is bigger than yours. So start from that one and add this one
-    const otherRules: Record<string, ParserRule<Context>> = { ...builder.rules };
+    const otherRules: Record<string, ParserRule<Context>> = Object.assign(Object.create(null), builder.rules);
     const myRules: Record<string, ParserRule<Context>> = this.rules;
 
     for (const rule of Object.values(myRules)) {

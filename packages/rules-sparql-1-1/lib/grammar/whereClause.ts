@@ -351,7 +351,7 @@ export const inlineDataOneVar: SparqlGrammarRule<'inlineDataOneVar', PatternValu
     MANY(() => {
       const value = SUBRULE(dataBlockValue);
       ACTION(() => {
-        res.push({ [varVal.value]: value });
+        res.push(Object.assign(Object.create(null), { [varVal.value]: value }));
       });
     });
     const close = CONSUME(l.symbols.RCurly);
@@ -385,7 +385,7 @@ export const inlineDataFull: SparqlGrammarRule<'inlineDataFull', PatternValues> 
         CONSUME1(l.symbols.LCurly);
         MANY1(() => {
           CONSUME2(l.terminals.nil);
-          res.push({});
+          res.push(Object.create(null));
         });
         const close = CONSUME1(l.symbols.RCurly);
 
@@ -400,7 +400,7 @@ export const inlineDataFull: SparqlGrammarRule<'inlineDataFull', PatternValues> 
         CONSUME2(l.symbols.LCurly);
         MANY3(() => {
           let parsedValues = 0;
-          const currentRow: ValuePatternRow = {};
+          const currentRow: ValuePatternRow = Object.create(null);
           CONSUME2(l.symbols.LParen);
           MANY4(() => {
             ACTION(() => {

@@ -214,7 +214,7 @@ export class IndirBuilder<Context, Names extends string, RuleDefs extends Indire
             ) }
     > {
     // Assume the other set is bigger than yours. So start from that one and add this one
-    const otherRules: Record<string, IndirDef<Context>> = { ...builder.rules };
+    const otherRules: Record<string, IndirDef<Context>> = Object.assign(Object.create(null), builder.rules);
     const myRules: Record<string, IndirDef<Context>> = this.rules;
 
     for (const rule of Object.values(myRules)) {

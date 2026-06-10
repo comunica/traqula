@@ -120,4 +120,22 @@ describe('extra parser coverage', () => {
       expect(result).toMatchObject({ subType: 'select', values: { type: 'pattern', subType: 'values', values: [{ x: { value: 'http://ex' }}]}});
     });
   });
+
+  describe('prototype-key reserved-name bypass (security fix)', () => {
+    // Object.prototype property names like 'constructor', 'toString', '__proto__', etc.
+    // must not bypass the "Unknown prefix" guard even though they exist on plain {}.
+    const protoKeys = [ 'constructor', 'toString', 'hasOwnProperty', 'valueOf' ];
+
+    for (const key of protoKeys) {
+      it(`rejects undeclared prefix named '${key}'`, ({ expect }) => {
+        expect(() => parser.parse(`SELECT * WHERE { ?s ${key}:foo ?o }`))
+          .toThrow(/Unknown prefix/u);
+      });
+    }
+
+    it('accepts a declared prefix whose name is a prototype key', ({ expect }) => {
+      const result = parser.parse('PREFIX constructor: <http://ex.org/> SELECT * WHERE { ?s constructor:foo ?o }');
+      expect(result).toMatchObject({ type: 'query', subType: 'select' });
+    });
+  });
 });

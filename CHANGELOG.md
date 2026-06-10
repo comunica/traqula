@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.1.4"></a>
+## [v1.1.4](https://github.com/comunica/traqula/compare/v1.1.3...v1.1.4) - 2026-06-10
+
+* [Fix: reserved key (#147)](https://github.com/comunica/traqula/commit/476e96514b2f8d72e16de76c4659207d89e2ae2e)
+
 <a name="v1.1.3"></a>
 ## [v1.1.3](https://github.com/comunica/traqula/compare/v1.1.2...v1.1.3) - 2026-06-09
 

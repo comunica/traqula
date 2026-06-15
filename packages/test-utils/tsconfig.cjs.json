@@ -7,5 +7,6 @@
     "declaration": false,
     "outDir": "dist/cjs",
     "skipLibCheck": true
-  }
+  },
+  "exclude": ["dist/**", "lib/generators/utils.ts"]
 }

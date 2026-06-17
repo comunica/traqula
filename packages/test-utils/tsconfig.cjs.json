@@ -11,8 +11,6 @@
   "include": [
     "lib/**/*.ts"
   ],
-  "exclude": [
-    "dist/**",
-    "lib/index.ts"
-  ]
+  "exclude": ["dist/**", "lib/index.ts"]
+
 }

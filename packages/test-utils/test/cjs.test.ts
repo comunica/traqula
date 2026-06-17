@@ -28,4 +28,21 @@ describe('cjs build artifact', () => {
     expect(existsSync(staticsPath)).toBe(true);
     expect(staticsPath).toMatch(/statics$/u);
   });
+
+  it('the real CJS entry point (indexCjs.js) loads without throwing', () => {
+    const cjsRequire = createRequire(import.meta.url);
+
+    // The indexCjs.js entry point re-exports matchers/vitest.js which does `require("vitest")`.
+    // Vitest itself blocks CommonJS require() with a hard error:
+    //   "Vitest cannot be imported in a CommonJS module using require()"
+    // That restriction makes it impossible to load the full entry point via
+    // require() even inside a running vitest process.  We therefore verify the
+    // next-best thing: that the error thrown is specifically vitest's own guard
+    // (not a CJS parse failure caused by, e.g., leftover import.meta.url in the
+    // compiled output).  A CJS parse error would surface as a SyntaxError,
+    // whereas the vitest guard throws a plain Error with a recognisable message.
+    expect(() => cjsRequire('../dist/cjs/lib/indexCjs.js')).toThrow(
+      /Vitest cannot be imported in a CommonJS module/u,
+    );
+  });
 });

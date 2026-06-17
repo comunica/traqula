@@ -86,7 +86,6 @@ export default config([
     ignores: [
       'documentation',
       '**/*.mjs',
-      'packages/test-utils/scripts/**',
     ],
   },
 ], { disableJest: true });

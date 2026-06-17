@@ -38,6 +38,19 @@ let _staticsPath: string | undefined;
  * with their own `path.dirname(fileURLToPath(import.meta.url))` or `__dirname`
  * respectively, so this module contains no module-system-specific syntax and
  * compiles correctly under both `module: NodeNext` and `module: CommonJS`.
+ *
+ * Design note — eager-init vs lazy resolution:
+ * An alternative would be to resolve the statics path lazily inside
+ * getStaticFilePath() on first call (eliminating _initStaticsRoot and the
+ * entry-point coupling entirely).  Eager-init was chosen instead because lazy
+ * resolution cannot safely use import.meta.url in a CommonJS build, and
+ * __dirname is not available in an ESM build.  The entry-point side-effect
+ * approach lets this module stay free of module-system-specific syntax while
+ * still capturing the correct anchor directory at load time.  If you are
+ * considering switching to lazy init, raise it as a PR comment rather than
+ * implementing it unilaterally — the interaction with tree-shaking (see
+ * sideEffects in package.json) and the ESM module-eval order makes it a
+ * genuine architectural decision.
  * @internal
  */
 export function _initStaticsRoot(dir: string): void {

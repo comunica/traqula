@@ -46,11 +46,7 @@ let _staticsPath: string | undefined;
  * resolution cannot safely use import.meta.url in a CommonJS build, and
  * __dirname is not available in an ESM build.  The entry-point side-effect
  * approach lets this module stay free of module-system-specific syntax while
- * still capturing the correct anchor directory at load time.  If you are
- * considering switching to lazy init, raise it as a PR comment rather than
- * implementing it unilaterally — the interaction with tree-shaking (see
- * sideEffects in package.json) and the ESM module-eval order makes it a
- * genuine architectural decision.
+ * still capturing the correct anchor directory at load time.
  * @internal
  */
 export function _initStaticsRoot(dir: string): void {
@@ -64,7 +60,7 @@ export function _initStaticsRoot(dir: string): void {
  */
 export function getStaticFilePath(...paths: string[]): string {
   // Guard: entry point must call _initStaticsRoot() before this helper is used.
-  /* v8 ignore next 4 */
+  /* v8 ignore next 3 */
   if (!_staticsPath) {
     throw new Error('getStaticFilePath() called before the package entry point initialised the statics root');
   }

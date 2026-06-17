@@ -15,12 +15,13 @@ describe('cjs build artifact', () => {
   it('getStaticFilePath() returns an existing statics directory via the CJS dist', () => {
     const cjsRequire = createRequire(import.meta.url);
 
-    // Load only utils.js from the CJS dist (avoids the vitest import in matchers).
+    // Load only utils.js from the CJS dist (avoids the vitest import in matchers/vitest.js).
     const utils = <typeof import('../lib/generators/utils.js')>
       cjsRequire('../dist/cjs/lib/generators/utils.js');
 
-    // Simulate what index.cjs does at startup.
-    const indexCjsDir = path.dirname(fileURLToPath(new URL('../dist/cjs/lib/index.cjs', import.meta.url)));
+    // Simulate what dist/cjs/lib/indexCjs.js does at startup: call _initStaticsRoot with the
+    // directory of the CJS entry file so the walk-up finds the correct package root.
+    const indexCjsDir = path.dirname(fileURLToPath(new URL('../dist/cjs/lib/indexCjs.js', import.meta.url)));
     utils._initStaticsRoot(indexCjsDir);
 
     const staticsPath = utils.getStaticFilePath();

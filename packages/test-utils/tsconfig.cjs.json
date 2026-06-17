@@ -9,8 +9,7 @@
     "skipLibCheck": true
   },
   "include": [
-    "lib/**/*.ts",
-    "lib/**/*.cts"
+    "lib/**/*.ts"
   ],
   "exclude": [
     "dist/**",

@@ -1,0 +1,4 @@
+SELECT ?s WHERE {
+  ?s <http://example/p> ?v .
+}
+GROUP BY ?s

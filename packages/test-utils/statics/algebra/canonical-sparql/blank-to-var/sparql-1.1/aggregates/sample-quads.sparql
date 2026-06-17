@@ -1,0 +1,8 @@
+ASK WHERE {
+  {
+    SELECT ( SAMPLE( ?o ) AS ?sample ) WHERE {
+      ?s <http://www.example.org/dec> ?o .
+    }
+  }
+  FILTER ( ( ( ( ?sample = "1.0"^^<http://www.w3.org/2001/XMLSchema#decimal> ) || ( ?sample = "2.2"^^<http://www.w3.org/2001/XMLSchema#decimal> ) ) || ( ?sample = "3.5"^^<http://www.w3.org/2001/XMLSchema#decimal> ) ) )
+}

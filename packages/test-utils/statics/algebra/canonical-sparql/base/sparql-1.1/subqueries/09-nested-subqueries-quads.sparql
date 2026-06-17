@@ -1,0 +1,10 @@
+SELECT ?x ?y WHERE {
+  {
+    SELECT ?x WHERE {
+      SELECT ?x WHERE {
+        ?x <http://www.example.org/schema#q> ?t .
+      }
+    }
+  }
+  ?x <http://www.example.org/schema#p> ?y .
+}

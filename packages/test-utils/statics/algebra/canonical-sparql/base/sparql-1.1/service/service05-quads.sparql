@@ -1,0 +1,10 @@
+SELECT ?service ?title WHERE {
+  {
+    ?p <http://purl.org/dc/elements/1.1/subject> ?projectSubject .
+    ?p <http://rdfs.org/ns/void#sparqlEndpoint> ?service .
+    FILTER ( REGEX( ?projectSubject , "remote"^^<http://www.w3.org/2001/XMLSchema#string> ) )
+  }
+  SERVICE ?service {
+    ?project <http://usefulinc.com/ns/doap#name> ?title .
+  }
+}

@@ -119,6 +119,7 @@ indicating whether patterns should be translated to triple or quad patterns.
 In the case of quads the `graph` operation will be removed
 and embedded into the patterns it contained.
 The default value for this parameter is `false`.
+For update queries, even in the case of `quad: false`, the target triple patterns are converted to quads.
 ```
 PREFIX : <http://www.example.org/>
 
@@ -252,4 +253,4 @@ and the project operation always gets used (even in the case of `SELECT *`).
 ## A note on tests
 
 Every test consists of a sparql file and a corresponding json file containing the algebra result.
-Tests ending with `(quads)` in their name are tested/generated with `quads: true` in the options.
+Tests ending with `-quads` in their name are tested/generated with `quads: true` in the options.

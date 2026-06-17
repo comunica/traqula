@@ -1,0 +1,5 @@
+SELECT ?x WHERE {
+  SELECT ?p ?x ?y WHERE {
+    ?x ?p ?y .
+  }
+}

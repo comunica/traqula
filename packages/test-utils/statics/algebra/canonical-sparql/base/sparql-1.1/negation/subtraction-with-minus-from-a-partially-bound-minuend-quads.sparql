@@ -1,0 +1,19 @@
+SELECT ?a ?b ?c WHERE {
+  ?a <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example/Min> .
+  OPTIONAL {
+    ?a <http://example/p1> ?b .
+  }
+  OPTIONAL {
+    ?a <http://example/p2> ?c .
+  }
+  MINUS {
+    ?d <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://example/Sub> .
+    OPTIONAL {
+      ?d <http://example/q1> ?b .
+    }
+    OPTIONAL {
+      ?d <http://example/q2> ?c .
+    }
+  }
+}
+ORDER BY ASC ( ?a )

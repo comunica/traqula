@@ -1,0 +1,7 @@
+SELECT ?a ?y ?z WHERE {
+  ?a <http://example.org/ns#b> <http://example.org/ns#c> .
+  OPTIONAL {
+    <http://example.org/ns#x> <http://example.org/ns#y> <http://example.org/ns#z> .
+  }
+  <http://example.org/ns#x> ?y ?z .
+}

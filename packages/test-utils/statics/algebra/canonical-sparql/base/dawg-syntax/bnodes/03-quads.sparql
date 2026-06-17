@@ -1,0 +1,5 @@
+SELECT ?b ?pa ?x ?y WHERE {
+  _:g_0 ?x ?y .
+  _:g_1 ?pa ?b .
+  _:g_0 <http://example.org/ns#p> _:g_1 .
+}

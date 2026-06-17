@@ -88,11 +88,9 @@ Algebra.Update,
 [UpdateOperationInsertData | UpdateOperationDeleteData | UpdateOperationDeleteWhere | UpdateOperationModify]
 > = {
   name: 'translateInsertDelete',
-  fun: ({ SUBRULE }) => ({ useQuads, algebraFactory: AF, astFactory: F }, op) => {
-    if (!useQuads) {
-      throw new Error('INSERT/DELETE operations are only supported with quads option enabled');
-    }
-
+  fun: ({ SUBRULE }) => ({ algebraFactory: AF, astFactory: F, useQuads }, op) => {
+    // `useQuads: false` is supported in update queries,
+    // but within the target, the quad push down is still performed.
     const deleteTriples: Algebra.Pattern[] = [];
     const insertTriples: Algebra.Pattern[] = [];
     let where: Algebra.Operation | undefined;
@@ -114,8 +112,11 @@ Algebra.Update,
         if (use.default.length > 0 || use.named.length > 0) {
           where = AF.createFrom(where, use.default, use.named);
         } else if (F.isUpdateOperationModify(op) && op.graph) {
-          // This is equivalent
-          where = SUBRULE(recurseGraph, where, SUBRULE(translateNamed, op.graph), undefined);
+          if (useQuads) {
+            where = SUBRULE(recurseGraph, where, SUBRULE(translateNamed, op.graph), undefined);
+          } else {
+            where = AF.createGraph(where, SUBRULE(translateNamed, op.graph));
+          }
         }
       }
     }

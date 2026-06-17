@@ -1,0 +1,4 @@
+SELECT ?t WHERE {
+  <http://www.example.org/a> (<http://www.example.org/p1>|<http://www.example.org/p2>) ?var0 .
+  ?var0 (<http://www.example.org/p3>|<http://www.example.org/p4>) ?t .
+}

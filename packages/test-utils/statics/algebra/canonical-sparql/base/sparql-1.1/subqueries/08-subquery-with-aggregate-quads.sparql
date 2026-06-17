@@ -1,0 +1,8 @@
+SELECT ?x ?max WHERE {
+  {
+    SELECT ( MAX( ?y ) AS ?max ) WHERE {
+      ?x <http://www.example.org/schema#p> ?y .
+    }
+  }
+  ?x <http://www.example.org/schema#p> ?max .
+}

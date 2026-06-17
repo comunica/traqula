@@ -1,0 +1,3 @@
+DESCRIBE ?x?y<http://example.org/> WHERE {
+  ?x <http://xmlns.com/foaf/0.1/knows> ?y .
+}

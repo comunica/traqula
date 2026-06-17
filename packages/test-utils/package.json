@@ -22,11 +22,13 @@
     ".": {
       "types": "./dist/esm/lib/index.d.ts",
       "import": "./dist/esm/lib/index.js",
-      "require": "./dist/cjs/lib/index.js"
+      "require": "./dist/cjs/lib/index.cjs"
     }
   },
   "main": "dist/esm/lib/index.js",
   "files": [
+    "dist/*/lib/**/*.cjs",
+    "dist/*/lib/**/*.cjs.map",
     "dist/*/lib/**/*.d.ts",
     "dist/*/lib/**/*.js",
     "dist/*/lib/**/*.js.map",

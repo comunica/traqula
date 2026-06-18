@@ -13,7 +13,7 @@
   "bugs": {
     "url": "https://github.com/comunica/traqula/issues"
   },
-  "sideEffects": false,
+  "sideEffects": ["**/index.js", "**/indexCjs.js"],
   "publishConfig": {
     "access": "public"
   },
@@ -22,7 +22,7 @@
     ".": {
       "types": "./dist/esm/lib/index.d.ts",
       "import": "./dist/esm/lib/index.js",
-      "require": "./dist/cjs/lib/index.js"
+      "require": "./dist/cjs/lib/indexCjs.js"
     }
   },
   "main": "dist/esm/lib/index.js",

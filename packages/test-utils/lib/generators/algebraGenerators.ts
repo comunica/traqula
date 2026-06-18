@@ -5,12 +5,28 @@ import { readFile, readFileSync } from '../fileUtils.js';
 import type { NegativeTest } from './generators.js';
 import { getStaticFilePath } from './utils.js';
 
-const rootDir = getStaticFilePath('algebra');
-const rootSparql = join(rootDir, 'sparql');
-const rootJson = join(rootDir, 'algebra');
-const rootJsonBlankToVariable = join(rootDir, 'algebra-blank-to-var');
-const rootCanonicalSparql = join(rootDir, 'canonical-sparql', 'base');
-const rootCanonicalSparqlBlankToVar = join(rootDir, 'canonical-sparql', 'blank-to-var');
+// Computed lazily inside each generator so that getStaticFilePath() is not
+// called at module-evaluation time.  This avoids an ESM initialisation-order
+// issue where algebraGenerators.js would execute before index.ts has had a
+// chance to call _initStaticsRoot().
+function getRootDir(): string {
+  return getStaticFilePath('algebra');
+}
+function getRootSparql(): string {
+  return join(getRootDir(), 'sparql');
+}
+function getRootJson(): string {
+  return join(getRootDir(), 'algebra');
+}
+function getRootJsonBlankToVariable(): string {
+  return join(getRootDir(), 'algebra-blank-to-var');
+}
+function getRootCanonicalSparql(): string {
+  return join(getRootDir(), 'canonical-sparql', 'base');
+}
+function getRootCanonicalSparqlBlankToVar(): string {
+  return join(getRootDir(), 'canonical-sparql', 'blank-to-var');
+}
 
 export interface algebraTestGen {
   name: string;
@@ -37,7 +53,7 @@ export function* sparqlAlgebraTests(suite: AlgebraTestSuite, blankToVariable: bo
 Generator<algebraTestGen> {
   // Relative path starting from roots declared above.
   function* subGen(relativePath: string): Generator<algebraTestGen> {
-    const absolutePath = join(blankToVariable ? rootJsonBlankToVariable : rootJson, relativePath);
+    const absolutePath = join(blankToVariable ? getRootJsonBlankToVariable() : getRootJson(), relativePath);
     if (lstatSync(absolutePath).isDirectory()) {
       // Recursion
       for (const sub of readdirSync(absolutePath)) {
@@ -45,9 +61,9 @@ Generator<algebraTestGen> {
       }
     } else {
       const name = relativePath.replace(/\.json$/u, '');
-      const sparqlPath = join(rootSparql, relativePath.replace(/\.json/u, '.sparql'));
+      const sparqlPath = join(getRootSparql(), relativePath.replace(/\.json/u, '.sparql'));
       const canonicalSparqlPath = join(
-        blankToVariable ? rootCanonicalSparqlBlankToVar : rootCanonicalSparql,
+        blankToVariable ? getRootCanonicalSparqlBlankToVar() : getRootCanonicalSparql(),
         relativePath.replace(/\.json/u, '.sparql'),
       );
       yield {
@@ -60,7 +76,7 @@ Generator<algebraTestGen> {
     }
   }
 
-  const subfolders = readdirSync(blankToVariable ? rootJsonBlankToVariable : rootJson);
+  const subfolders = readdirSync(blankToVariable ? getRootJsonBlankToVariable() : getRootJson());
   if (subfolders.includes(suite)) {
     yield* subGen(suite);
   }
@@ -73,7 +89,7 @@ type GenQuery = { query: string; name: string };
  */
 export function* sparqlQueries(suite: AlgebraTestSuite): Generator<GenQuery> {
   function* subGen(relativePath: string): Generator<GenQuery> {
-    const absolutePath = join(rootSparql, relativePath);
+    const absolutePath = join(getRootSparql(), relativePath);
     if (lstatSync(absolutePath).isDirectory()) {
       // Recursion
       for (const sub of readdirSync(absolutePath)) {
@@ -89,7 +105,7 @@ export function* sparqlQueries(suite: AlgebraTestSuite): Generator<GenQuery> {
     }
   }
 
-  const subfolders = readdirSync(rootSparql);
+  const subfolders = readdirSync(getRootSparql());
   if (subfolders.includes(suite)) {
     yield* subGen(suite);
   }

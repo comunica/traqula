@@ -44,6 +44,11 @@ export default defineConfig({
         'packages/*/lib/**/*.ts',
         'engines/*/lib/**/*.ts',
       ],
+      exclude: [
+        // CJS-only entry point compiled by tsconfig.cjs.json; cannot be loaded in the
+        // ESM Vitest context so coverage is gathered indirectly via the cjs.test.ts artifact test.
+        '**/indexCjs.ts',
+      ],
       thresholds: {
         lines: 100,
         functions: 100,

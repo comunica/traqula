@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.1.5"></a>
+## [v1.1.5](https://github.com/comunica/traqula/compare/v1.1.4...v1.1.5) - 2026-06-18
+
+* [Fix: double packaging test-utils through side-effect endpoint  (#149)](https://github.com/comunica/traqula/commit/db786becebbd77b842189da87c2f413a44ab275d)
+* [chore(deps): update dependency axios to v1.18.0 (#146)](https://github.com/comunica/traqula/commit/b0f02e151ecf1e49f83f57966d09eb1778a8124e)
+* [Chore(deps-dev): Bump esbuild from 0.28.0 to 0.28.1 (#148)](https://github.com/comunica/traqula/commit/f02ba78de45a3530cfdb6d9c956e988c680d4735)
+
 <a name="v1.1.4"></a>
 ## [v1.1.4](https://github.com/comunica/traqula/compare/v1.1.3...v1.1.4) - 2026-06-10
 

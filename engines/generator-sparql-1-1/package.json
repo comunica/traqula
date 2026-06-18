@@ -1,7 +1,7 @@
 {
   "name": "@traqula/generator-sparql-1-1",
   "type": "module",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "SPARQL 1.1 generator",
   "lsd:module": true,
   "license": "MIT",
@@ -45,7 +45,7 @@
     "@traqula/rules-sparql-1-1": "^1.1.4"
   },
   "devDependencies": {
-    "@traqula/parser-sparql-1-1": "^1.1.4",
-    "@traqula/test-utils": "^1.1.3"
+    "@traqula/parser-sparql-1-1": "^1.1.5",
+    "@traqula/test-utils": "^1.1.5"
   }
 }

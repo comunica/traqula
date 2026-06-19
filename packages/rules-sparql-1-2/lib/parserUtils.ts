@@ -9,19 +9,22 @@ import type { Sparql12Nodes } from './sparql12Types.js';
  *
  * Unlike the SPARQL 1.1 variant, this function rejects surrogate code points (U+D800–U+DFFF)
  * even when they would form a valid surrogate pair.
+ * @deprecated will be removed in next MAJOR in favor of the less usecase dependent {@link decodeUchar}.
  */
 export function sparql12CodepointEscape(input: string): string {
   return input.replaceAll(
     /\\u([0-9a-fA-F]{4})|\\U([0-9a-fA-F]{8})/gu,
-    (_, unicode4: string | undefined, unicode8: string | undefined) => {
-      const hex = (unicode4 ?? unicode8)!;
-      const codePoint = Number.parseInt(hex, 16);
-      if (codePoint >= 0xD800 && codePoint <= 0xDFFF) {
-        throw new Error(`Illegal codepoint escape: surrogate code point U+${hex.toUpperCase()}`);
-      }
-      return String.fromCodePoint(codePoint);
-    },
+    (_, unicode4: string | undefined, unicode8: string | undefined) =>
+      decodeUchar((unicode4 ?? unicode8)!),
   );
+}
+
+export function decodeUchar(hex: string): string {
+  const codePoint = Number.parseInt(hex, 16);
+  if (codePoint >= 0xD800 && codePoint <= 0xDFFF) {
+    throw new Error(`Illegal codepoint escape: surrogate code point U+${hex.toUpperCase()}`);
+  }
+  return String.fromCodePoint(codePoint);
 }
 
 export function completeParseContext(
@@ -33,6 +36,9 @@ export function completeParseContext(
     prefixes: Object.assign(Object.create(null), context.prefixes),
     parseMode: context.parseMode ? new Set(context.parseMode) : new Set([ 'canParseVars', 'canCreateBlankNodes' ]),
     skipValidation: context.skipValidation ?? false,
+    /**
+     * @deprecated since it cannot be used for string decoding.
+     */
     codepointEscape: context.codepointEscape ?? sparql12CodepointEscape,
   };
 }

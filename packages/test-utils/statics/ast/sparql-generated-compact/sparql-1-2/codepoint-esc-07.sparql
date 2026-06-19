@@ -1,1 +1,1 @@
-SELECT * WHERE { <http://example/abc> ?p "abc" . }
+SELECT ?v WHERE { VALUES ?v { "abc👾" } }

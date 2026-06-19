@@ -57,6 +57,7 @@ export type SparqlContext = T11.SparqlContext & {
   /**
    * Function that decodes UCHAR codepoint escapes (\\uXXXX / \\UXXXXXXXX) within a string.
    * In SPARQL 1.2 this is applied per-rule rather than as a query pre-processor.
+   * @deprecated no longer used since it did not properly implement the decuding of sting literals.
    */
   codepointEscape: (input: string) => string;
 };

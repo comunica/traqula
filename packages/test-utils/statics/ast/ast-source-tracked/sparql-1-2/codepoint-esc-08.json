@@ -1,0 +1,109 @@
+{
+  "context": [
+    {
+      "type": "contextDef",
+      "subType": "prefix",
+      "key": "ex",
+      "value": {
+        "type": "term",
+        "subType": "namedNode",
+        "value": "http://example.org/",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 64,
+          "end": 85
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 53,
+        "end": 85
+      }
+    }
+  ],
+  "subType": "construct",
+  "template": {
+    "type": "pattern",
+    "subType": "bgp",
+    "triples": [
+      {
+        "type": "triple",
+        "subject": {
+          "type": "term",
+          "subType": "namedNode",
+          "value": "s",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 119,
+            "end": 123
+          },
+          "prefix": "ex"
+        },
+        "predicate": {
+          "type": "term",
+          "subType": "namedNode",
+          "value": "p",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 124,
+            "end": 128
+          },
+          "prefix": "ex"
+        },
+        "object": {
+          "type": "term",
+          "subType": "literal",
+          "value": "a\t\n\r\b\f\"'\\a",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 129,
+            "end": 181
+          }
+        },
+        "annotations": [],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 119,
+          "end": 181
+        }
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 119,
+      "end": 181
+    }
+  },
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 190,
+      "end": 192
+    }
+  },
+  "solutionModifiers": {},
+  "loc": {
+    "sourceLocationType": "inlinedSource",
+    "newSource": "# Codepoint escape of special characters in strings\n\nPREFIX ex: <http://example.org/>\n# a\\t\\n\\r\\b\\f\\\"\\'\\\\a\nCONSTRUCT { ex:s ex:p \"a\\u0009\\u000A\\u000D\\u0008\\u000C\\u0022\\u0027\\u005Ca\" } WHERE {}\n",
+    "start": 0,
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 53,
+      "end": 192
+    },
+    "startOnNew": 53,
+    "endOnNew": 192
+  },
+  "type": "query"
+}

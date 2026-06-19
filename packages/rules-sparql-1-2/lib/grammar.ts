@@ -9,6 +9,7 @@ import { traqulaIndentation } from '@traqula/core';
 import { CommonIRIs, funcExpr1, funcExpr3, gram as S11, lex as l11 } from '@traqula/rules-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import * as l12 from './lexer.js';
+import { decodeUchar } from './parserUtils.js';
 import type { SparqlGeneratorRule, SparqlGrammarRule, SparqlRule } from './sparql12HelperTypes.js';
 import type {
   Annotation,
@@ -739,9 +740,9 @@ export const rdfLiteral: SparqlGrammarRule<'rdfLiteral', RuleDefReturn<typeof S1
  * [[155]](https://www.w3.org/TR/sparql12-query/#rString)
  *
  * Uses the SPARQL 1.2 string tokens (which include UCHAR in their patterns).
- * Applies two-pass decoding per the SPARQL 1.2 spec: UCHAR first (via
- * {@link SparqlContext.codepointEscape}), then ECHAR. This order ensures that
- * `\\u0041` yields `\A` (→ invalid ECHAR) rather than `\u0041` (single-pass result).
+ * Applies single-pass decoding of UCHAR and ECHAR sequences so that a backslash
+ * produced by a UCHAR (e.g. \u005C → \) is never re-interpreted as an ECHAR prefix.
+ * Per the SPARQL 1.2 spec exapmles: \u005Cn -> \n
  */
 export const string: SparqlGrammarRule<'string', T11.TermLiteralStr> = {
   name: 'string',
@@ -767,9 +768,8 @@ export const string: SparqlGrammarRule<'string', T11.TermLiteralStr> = {
     return ACTION(() => {
       const [ token, raw ] = tuple;
       const F = C.astFactory;
-      // Pass 1: Decode all UCHAR escape sequences (and reject surrogate code points).
-      const afterUchar = C.codepointEscape(raw);
-      // Pass 2: Validate and decode ECHAR sequences in the UCHAR-decoded string.
+      // Single-pass: decode UCHAR and ECHAR together so a backslash from a UCHAR
+      // is never re-processed as an ECHAR prefix.
       const ecmap: Record<string, string> = {
         t: '\t',
         n: '\n',
@@ -780,15 +780,15 @@ export const string: SparqlGrammarRule<'string', T11.TermLiteralStr> = {
         '\'': '\'',
         '\\': '\\',
       };
-      const value = afterUchar.replaceAll(/\\(.?)/gsu, (_, char: string) => {
-        if (!char) {
-          throw new Error(`String literal ends with an unpaired backslash`);
-        }
-        if (!(char in ecmap)) {
-          throw new Error(`Invalid escape sequence \\${char} in string literal`);
-        }
-        return ecmap[char];
-      });
+      const value = raw.replaceAll(
+        /\\u([\dA-Fa-f]{4})|\\U([\dA-Fa-f]{8})|\\(.)/gsu,
+        (_, u4: string | undefined, u8: string | undefined, echar: string | undefined) => {
+          if (u4 !== undefined || u8 !== undefined) {
+            return decodeUchar((u4 ?? u8)!);
+          }
+          return ecmap[echar!];
+        },
+      );
       // Catch literal surrogate code units embedded directly in the query (not via \uXXXX).
       if (/[\uD800-\uDBFF](?:[^\uDC00-\uDFFF]|$)/u.test(value)) {
         throw new Error(`Invalid unicode codepoint of surrogate pair without corresponding codepoint`);
@@ -811,7 +811,12 @@ export const iriFull: SparqlGrammarRule<'iriFull', T11.TermIriFull> = {
     const iriToken = CONSUME(l12.iriRef);
     return ACTION(() => {
       const raw = iriToken.image.slice(1, -1);
-      return C.astFactory.termNamed(C.astFactory.sourceLocation(iriToken), C.codepointEscape(raw));
+      return C.astFactory.termNamed(
+        C.astFactory.sourceLocation(iriToken),
+        // TODO: next major replace with implementation of codePointEscape.
+        //  The function no longer serves the intended purpose since it is not reusable for `string`.
+        C.codepointEscape(raw),
+      );
     });
   },
 };

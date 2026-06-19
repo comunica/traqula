@@ -813,8 +813,9 @@ export const iriFull: SparqlGrammarRule<'iriFull', T11.TermIriFull> = {
       const raw = iriToken.image.slice(1, -1);
       return C.astFactory.termNamed(
         C.astFactory.sourceLocation(iriToken),
-        raw.replaceAll(/\\u([0-9a-fA-F]{4})|\\U([0-9a-fA-F]{8})/gu, (_, unicode4, unicode8) =>
-          decodeUchar((unicode4 ?? unicode8))),
+        // TODO: next major replace with implementation of codePointEscape.
+        //  The function no longer serves the intended purpose since it is not reusable for `string`.
+        C.codepointEscape(raw),
       );
     });
   },

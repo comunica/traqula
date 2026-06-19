@@ -9,6 +9,7 @@ import { traqulaIndentation } from '@traqula/core';
 import { CommonIRIs, funcExpr1, funcExpr3, gram as S11, lex as l11 } from '@traqula/rules-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import * as l12 from './lexer.js';
+import { decodeUchar } from './parserUtils.js';
 import type { SparqlGeneratorRule, SparqlGrammarRule, SparqlRule } from './sparql12HelperTypes.js';
 import type {
   Annotation,
@@ -784,12 +785,7 @@ export const string: SparqlGrammarRule<'string', T11.TermLiteralStr> = {
         /\\u([\dA-Fa-f]{4})|\\U([\dA-Fa-f]{8})|\\(.)/gsu,
         (_, u4: string | undefined, u8: string | undefined, echar: string | undefined) => {
           if (u4 !== undefined || u8 !== undefined) {
-            const hex = (u4 ?? u8)!;
-            const codePoint = Number.parseInt(hex, 16);
-            if (codePoint >= 0xD800 && codePoint <= 0xDFFF) {
-              throw new Error(`Illegal codepoint escape: surrogate code point U+${hex.toUpperCase()}`);
-            }
-            return String.fromCodePoint(codePoint);
+            return decodeUchar((u4 ?? u8)!);
           }
           return ecmap[echar!];
         },
@@ -816,7 +812,11 @@ export const iriFull: SparqlGrammarRule<'iriFull', T11.TermIriFull> = {
     const iriToken = CONSUME(l12.iriRef);
     return ACTION(() => {
       const raw = iriToken.image.slice(1, -1);
-      return C.astFactory.termNamed(C.astFactory.sourceLocation(iriToken), C.codepointEscape(raw));
+      return C.astFactory.termNamed(
+        C.astFactory.sourceLocation(iriToken),
+        raw.replaceAll(/\\u([0-9a-fA-F]{4})|\\U([0-9a-fA-F]{8})/gu, (_, unicode4, unicode8) =>
+          decodeUchar((unicode4 ?? unicode8))),
+      );
     });
   },
 };

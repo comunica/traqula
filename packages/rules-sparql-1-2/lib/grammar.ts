@@ -742,8 +742,7 @@ export const rdfLiteral: SparqlGrammarRule<'rdfLiteral', RuleDefReturn<typeof S1
  * Uses the SPARQL 1.2 string tokens (which include UCHAR in their patterns).
  * Applies single-pass decoding of UCHAR and ECHAR sequences so that a backslash
  * produced by a UCHAR (e.g. \u005C → \) is never re-interpreted as an ECHAR prefix.
- * Per the SPARQL 1.2 spec note: "the character resulting from the codepoint escape
- * sequence is not further interpreted".
+ * Per the SPARQL 1.2 spec exapmles: \u005Cn -> \n
  */
 export const string: SparqlGrammarRule<'string', T11.TermLiteralStr> = {
   name: 'string',

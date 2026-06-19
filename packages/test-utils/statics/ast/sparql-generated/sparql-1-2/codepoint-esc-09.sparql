@@ -1,14 +1,12 @@
-# Codepoint escape are not reused during parsing
-
-SELECT ?v {
+SELECT ?v WHERE {
   VALUES ?v {
-    "abc\u005Cdef"
-    "abc\u005Ctuv"
-    "\u005CA"
+    "abc\\def"
+    "abc\\tuv"
+    "\\A"
     "\\u005C"
-    "\u005C\u005C"
-    "\\\u005C"
     "\\\\"
-    "\u005Cn"
+    "\\\\"
+    "\\\\"
+    "\\n"
   }
 }

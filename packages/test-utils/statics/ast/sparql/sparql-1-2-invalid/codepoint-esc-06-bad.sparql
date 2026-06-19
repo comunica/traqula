@@ -1,5 +1,0 @@
-# \u005C is the UCHAR for \ (backslash). After UCHAR decode the string becomes
-# \x, where x is not a valid ECHAR character.
-SELECT * {
-    ?s ?p "\u005Cx"
-}

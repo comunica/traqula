@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.1.6"></a>
+## [v1.1.6](https://github.com/comunica/traqula/compare/v1.1.5...v1.1.6) - 2026-06-19
+
+* [Update static 1.2 spec - rdf-tests 348 (#150)](https://github.com/comunica/traqula/commit/3057be5cd7e19019baed2d7b29db402526510b58)
+* [chore(deps): update actions/checkout action to v7](https://github.com/comunica/traqula/commit/a09122756a791f1809558aefdbbe8b8c1b116bd2)
+
 <a name="v1.1.5"></a>
 ## [v1.1.5](https://github.com/comunica/traqula/compare/v1.1.4...v1.1.5) - 2026-06-18
 

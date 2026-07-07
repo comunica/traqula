@@ -52,6 +52,9 @@ jobs:
       - run: yarn install --immutable
       - run: yarn build
       - run: yarn test
+      - name: Trust Coveralls Homebrew tap (Homebrew 6 requirement)
+        if: runner.os == 'macOS'
+        run: brew trust coverallsapp/coveralls
       - name: Submit coverage results
         uses: coverallsapp/github-action@v2
         with:

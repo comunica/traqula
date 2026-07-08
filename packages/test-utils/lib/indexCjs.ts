@@ -5,6 +5,7 @@ import { _initStaticsRoot } from './generators/utils.js';
 // This side-effect runs before any re-exported functions are called.
 _initStaticsRoot(__dirname);
 
+export * from './matchers/parsedQueryMatchers.js';
 export * from './matchers/toEqualParsedQuery.js';
 export * from './matchers/vitest.js';
 export * from './generators/generators.js';

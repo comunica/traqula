@@ -3,7 +3,8 @@
   "compilerOptions": {
     "composite": true,
     "rootDir": ".",
-    "outDir": "dist/esm"
+    "outDir": "dist/esm",
+    "isolatedDeclarations": true
   },
   "include": ["lib/**/*.ts", "test/**/*.ts"],
   "exclude": ["dist/**"]

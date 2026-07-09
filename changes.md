@@ -103,16 +103,65 @@ new defaults:
 
 ## 5. Type-level source code
 
-No source type changes were necessary or beneficial:
+TypeScript 7.0 preserves 6.0's type-checking semantics (with `stableTypeOrdering`
+permanently on), so it introduces **no new type-system syntax/features** to adopt,
+and nothing in the existing types newly fails to check. Concretely:
 
-- 7.0 preserves 6.0's type-checking semantics, so there are no new type features
-  to adopt and nothing that newly fails to check.
 - The one type-inference behaviour change – template-literal types now pulling a
   full Unicode code point for empty placeholders – does not affect this codebase
   (a scan found no `` `${infer …}` `` template-literal type patterns).
 - No removed/deprecated compiler options (`baseUrl`, `es5` target,
   `downlevelIteration`, `moduleResolution: node/classic`, `module: amd/umd/…`,
   etc.) were in use anywhere.
+
+## 6. `isolatedDeclarations` for `@traqula/core`
+
+The one genuinely 7.0-relevant lever for a **project-reference library monorepo**
+is `isolatedDeclarations`. When enabled, `.d.ts` files can be emitted purely
+syntactically (per file, without cross-file type inference), which lets the 7.0
+builder emit declarations **in parallel** and removes declaration emit from the
+project-reference critical path (the release post explicitly calls this out as
+the exception to the project-graph bottleneck).
+
+`@traqula/core` is the root dependency of the whole graph, so making its
+declaration emit isolatable has the most leverage. It turned out to need a single
+explicit annotation to satisfy the flag:
+
+```
+// packages/core/lib/generator-builder/dynamicGenerator.ts
+- protected readonly factory = new AstCoreFactory();
++ protected readonly factory: AstCoreFactory = new AstCoreFactory();
+```
+
+Changes:
+
+- `packages/core/tsconfig.json` – added `"isolatedDeclarations": true`.
+- `packages/core/tsconfig.cjs.json` – added `"isolatedDeclarations": false`
+  (the CJS project sets `declaration: false` / `composite: false`, and
+  `isolatedDeclarations` requires declaration emit, so it must be disabled there).
+- `dynamicGenerator.ts` – the one explicit type annotation above.
+
+This is also a small **correctness/readability** win: every exported declaration
+in `core` now has a compiler-verified, explicit public type.
+
+### Not extended repo-wide (yet)
+
+Turning `isolatedDeclarations` on for the whole monorepo would currently require
+~400 additional explicit annotations, overwhelmingly in `@traqula/rules-sparql-1-1`
+(lexer/grammar tables). That is a valuable but separate, larger refactor and is
+left as future work; it can be rolled out package-by-package the same way `core`
+was done here.
+
+## 7. Future work
+
+- **Collapse the dual TypeScript setup.** The `@typescript/native` +
+  `@typescript/typescript6` alias pair (section 1) exists only because 7.0 ships
+  no API. Once `typescript-eslint`, `typedoc`, `dts-bundle-generator` and
+  `vitest` publish releases built against the upcoming 7.1 API, revert to a single
+  `"typescript": "npm:typescript@^7.x"` dependency, drop the `@typescript/native`
+  alias, and restore the per-package build scripts to call plain `tsc`. Note the
+  trigger is *tooling support for the new API*, not merely the 7.1 tag.
+- **Extend `isolatedDeclarations` to the remaining packages** (see section 6).
 
 ## Verification
 

@@ -10,7 +10,7 @@ export interface GeneratorContext {
 }
 
 export class DynamicGenerator<Context, Names extends string, RuleDefs extends GenRuleMap<Names>> {
-  protected readonly factory = new AstCoreFactory();
+  protected readonly factory: AstCoreFactory = new AstCoreFactory();
   protected __context: Context | undefined = undefined;
   protected origSource = '';
   /**

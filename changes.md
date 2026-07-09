@@ -114,7 +114,7 @@ and nothing in the existing types newly fails to check. Concretely:
   `downlevelIteration`, `moduleResolution: node/classic`, `module: amd/umd/…`,
   etc.) were in use anywhere.
 
-## 6. `isolatedDeclarations` for `@traqula/core`
+## 6. `isolatedDeclarations` where it fits
 
 The one genuinely 7.0-relevant lever for a **project-reference library monorepo**
 is `isolatedDeclarations`. When enabled, `.d.ts` files can be emitted purely
@@ -123,9 +123,19 @@ builder emit declarations **in parallel** and removes declaration emit from the
 project-reference critical path (the release post explicitly calls this out as
 the exception to the project-graph bottleneck).
 
-`@traqula/core` is the root dependency of the whole graph, so making its
-declaration emit isolatable has the most leverage. It turned out to need a single
-explicit annotation to satisfy the flag:
+It is enabled (opt-in, per package via `tsconfig.json`) for the packages whose
+exported declarations are explicitly typed or need only small, sensible
+annotations:
+
+| Package | Change needed to satisfy the flag |
+| --- | --- |
+| `@traqula/core` | one property annotation (`factory: AstCoreFactory`) |
+| `@traqula/test-utils` | explicit return types on two matcher factories |
+| `@traqula/algebra-transformations-1-2` | none – already fully typed |
+| `@traqula/rules-sparql-1-1-adjust` | one explicit `const` type |
+
+`@traqula/core` is the root of the dependency graph, so isolating its
+declaration emit has the most leverage. Example (the only change it required):
 
 ```
 // packages/core/lib/generator-builder/dynamicGenerator.ts
@@ -133,24 +143,30 @@ explicit annotation to satisfy the flag:
 + protected readonly factory: AstCoreFactory = new AstCoreFactory();
 ```
 
-Changes:
+For each enabled package the flag is added to its `tsconfig.json`, and set to
+`false` in its `tsconfig.cjs.json` (the CJS projects set `declaration: false`
+and `isolatedDeclarations` requires declaration emit). A side benefit is that
+every exported declaration in these packages now has a compiler-verified,
+explicit public type.
 
-- `packages/core/tsconfig.json` – added `"isolatedDeclarations": true`.
-- `packages/core/tsconfig.cjs.json` – added `"isolatedDeclarations": false`
-  (the CJS project sets `declaration: false` / `composite: false`, and
-  `isolatedDeclarations` requires declaration emit, so it must be disabled there).
-- `dynamicGenerator.ts` – the one explicit type annotation above.
+### Why not the whole monorepo
 
-This is also a small **correctness/readability** win: every exported declaration
-in `core` now has a compiler-verified, explicit public type.
+`isolatedDeclarations` was evaluated for **every** package (via the compiler's
+own `fixMissingTypeAnnotationOnExports` code fix). It is a poor fit for the
+lexer/parser/transformation packages and the engines because their public API is
+built on the *builder pattern* (`LexerBuilder`, `ParserBuilder`, `IndirBuilder`).
+Those builders accumulate dozens of rule/token names into a single value, so an
+explicit type for an exported builder is an enormous machine-generated union
+(2–27 KB for a single declaration). Forcing those annotations would:
 
-### Not extended repo-wide (yet)
+- produce thousands of lines of unreadable, unmaintainable generated types, and
+- violate the project's own `max-len` lint rule in ~950 places.
 
-Turning `isolatedDeclarations` on for the whole monorepo would currently require
-~400 additional explicit annotations, overwhelmingly in `@traqula/rules-sparql-1-1`
-(lexer/grammar tables). That is a valuable but separate, larger refactor and is
-left as future work; it can be rolled out package-by-package the same way `core`
-was done here.
+That is a bad trade for a build-time optimisation, so those packages keep the
+standard (already fast) declaration emit. The dynamic-mixin `AstFactory` in
+`@traqula/rules-sparql-1-1` is a second, independent reason that package is a
+poor fit: `isolatedDeclarations` forbids `extends <expression>` and inference
+from class expressions.
 
 ## 7. Future work
 
@@ -161,7 +177,9 @@ was done here.
   `"typescript": "npm:typescript@^7.x"` dependency, drop the `@typescript/native`
   alias, and restore the per-package build scripts to call plain `tsc`. Note the
   trigger is *tooling support for the new API*, not merely the 7.1 tag.
-- **Extend `isolatedDeclarations` to the remaining packages** (see section 6).
+- **Extend `isolatedDeclarations` further** only if the builder-pattern public
+  APIs are refactored so their exported types are expressible without giant
+  machine-generated unions (see section 6).
 
 ## Verification
 

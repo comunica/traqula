@@ -94,10 +94,13 @@ interface MatcherContext {
 }
 
 export const parsedQueryMatchers = {
-  toEqualParsedQuery(this: MatcherContext, received: unknown, expected: unknown) {
+  toEqualParsedQuery(this: MatcherContext, received: unknown, expected: unknown): {
+    pass: boolean;
+    message: () => string;
+  } {
     const pass = objectsEqual(received, expected, () => false, []);
     const message = pass ?
-        () =>
+        (): string =>
         `${this.utils.matcherHint('toEqualParsedQuery')}\n\n` +
         `Expected: ${this.utils.printExpected(expected)}\n` +
         `Received: ${this.utils.printReceived(received)}` :
@@ -121,10 +124,13 @@ export const parsedQueryMatchers = {
     selector: (obj: object) => boolean,
     ignoreKeys: string[],
     expected: unknown,
-  ) {
+  ): {
+      pass: boolean;
+      message: () => string;
+    } {
     const pass = objectsEqual(received, expected, selector, ignoreKeys);
     const message = pass ?
-        () =>
+        (): string =>
         `${this.utils.matcherHint('toEqualParsedQueryIgnoring')}\n\n` +
         `Expected: ${this.utils.printExpected(expected)}\n` +
         `Received: ${this.utils.printReceived(received)}` :

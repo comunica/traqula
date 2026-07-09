@@ -4,7 +4,8 @@
     "composite": true,
     "rootDir": ".",
     "declaration": true,
-    "outDir": "dist/esm"
+    "outDir": "dist/esm",
+    "isolatedDeclarations": true
   },
   "references": [
     { "path": "../core" },

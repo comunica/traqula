@@ -1,6 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.1.7"></a>
+## [v1.1.7](https://github.com/comunica/traqula/compare/v1.1.6...v1.1.7) - 2026-07-07
+
+* [Fix: export submodule types as flat types of module - fix downstream TS2883 (#156)](https://github.com/comunica/traqula/commit/0378c691ede3d0716b37743b55be122ce685a8d8)
+* [Chore: deprecate support for macOS 14 (#157)](https://github.com/comunica/traqula/commit/17ccad8b1d0fdfb61a51821067092c3d51988dba)
+* [chore(deps): update dependency axios to v1.18.1 (#151)](https://github.com/comunica/traqula/commit/ae5285555d333c11d4032a2a548b246038fb1a19)
+* [chore(deps): update actions/cache action to v6](https://github.com/comunica/traqula/commit/3c625feb92a2f1ed8d031167e33b82ed016910a3)
+
 <a name="v1.1.6"></a>
 ## [v1.1.6](https://github.com/comunica/traqula/compare/v1.1.5...v1.1.6) - 2026-06-19
 

@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.1.8"></a>
+## [v1.1.8](https://github.com/comunica/traqula/compare/v1.1.7...v1.1.8) - 2026-07-09
+
+### TODO: categorize commits, choose titles from: Added, Changed, Deprecated, Removed, Fixed, Security.
+* [feat: test-utils export expect-functions independent (#158)](https://github.com/comunica/traqula/commit/e564b62bab8394e40e90fb251ba5b3961697f610)
+
 <a name="v1.1.7"></a>
 ## [v1.1.7](https://github.com/comunica/traqula/compare/v1.1.6...v1.1.7) - 2026-07-07
 

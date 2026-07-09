@@ -11,15 +11,12 @@
     "moduleResolution": "nodenext",
     "types": ["vitest/globals", "node"],
     "strict": true,
-    "strictFunctionTypes": true,
     "strictPropertyInitialization": false,
     "noImplicitOverride": true,
     "declaration": true,
     "inlineSources": true,
     "preserveConstEnums": true,
     "removeComments": false,
-    "sourceMap": true,
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true
+    "sourceMap": true
   }
 }

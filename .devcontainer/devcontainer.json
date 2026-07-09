@@ -1,11 +1,13 @@
 // See https://containers.dev/implementors/json_reference/ for configuration reference
 {
-  "name": "Untitled Node.js project",
+  "name": "Traqula",
   "build": {
       "dockerfile": "Dockerfile"
   },
+  "initializeCommand": "mkdir -p .devcontainer/.copilot .devcontainer/.claude",
   "mounts": [
     "source=${localWorkspaceFolder}/.devcontainer/.copilot,target=/home/node/.copilot/,type=bind",
+    "source=${localWorkspaceFolder}/.devcontainer/.claude,target=/home/node/.claude/,type=bind"
   ],
   "remoteUser": "node",
   "customizations" : {

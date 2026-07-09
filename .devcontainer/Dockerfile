@@ -13,4 +13,8 @@ ENV DEVCONTAINER=true
 
 USER node
 RUN curl -fsSL https://gh.io/copilot-install | bash
+RUN curl -fsSL https://claude.ai/install.sh | bash
+RUN git config --global alias.gitm 'commit -am' \
+    && git config --global push.autoSetupRemote true \
+    && echo "alias gitm='git commit -am'" >> /home/node/.bashrc
 USER root

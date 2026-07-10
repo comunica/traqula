@@ -11,6 +11,7 @@ export const reificationClose = createToken({ name: 'ReificationClose', pattern:
 export const tripleTermOpen = createToken({ name: 'TripleTermOpen', pattern: '<<(', label: 'Triple Term Open <<(' });
 export const tripleTermClose = createToken({ name: 'TripleTermClose', pattern: ')>>', label: 'Triple Term Close )>>' });
 
+// TODO next major: fix builtIn
 export const buildInLangDir = createToken({ name: 'BuiltInLangdir', pattern: /langdir/i, label: 'LANGDIR' });
 export const buildInStrLangDir = createToken({
   name: 'BuiltInStrLangdir',

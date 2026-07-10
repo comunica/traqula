@@ -670,6 +670,7 @@ SparqlGrammarRule<'exprTripleTermObject', RuleDefReturn<typeof exprTripleTermSub
     ]),
 };
 
+// TODO next major: fix builtIn
 export const buildInLangDir = funcExpr1(l12.buildInLangDir);
 export const buildInLangStrDir = funcExpr3(l12.buildInStrLangDir);
 export const buildInHasLang = funcExpr1(l12.buildInHasLang);

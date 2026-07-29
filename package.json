@@ -52,8 +52,8 @@
     "**/markdown-it": "14.3.0",
     "**/picomatch": "4.0.5",
     "**/tar": "7.5.22",
-    "@nx/devkit/minimatch": "10.2.5",
-    "@typescript-eslint/typescript-estree/minimatch": "10.2.5",
-    "nx/minimatch": "10.2.5"
+    "@nx/devkit/minimatch": "10.2.6",
+    "@typescript-eslint/typescript-estree/minimatch": "10.2.6",
+    "nx/minimatch": "10.2.6"
   }
 }

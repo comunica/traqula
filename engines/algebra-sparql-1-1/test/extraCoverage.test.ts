@@ -166,6 +166,8 @@ GROUP BY ( ?y AS ?x )`);
 
     it('only exposes the keys and aggregates of a GROUP', ({ expect }) => {
       // The aggregate is bound to ?var0 by the group, ?c is bound by the extend above it.
+      // var0 is out of scope for the project (since it cannot be targetted to be projected,
+      // but is in scope before the select.
       expect(scopeOfWhere('SELECT ?s (COUNT(?o) AS ?c) WHERE { ?s ?p ?o } GROUP BY ?s'))
         .toEqual([ 'c', 's', 'var0' ]);
     });

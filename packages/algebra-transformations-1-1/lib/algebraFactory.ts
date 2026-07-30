@@ -169,6 +169,9 @@ export class AlgebraFactory {
     return pattern;
   }
 
+  /**
+   * Providing no variables is interpreted as a `SELECT *`.
+   */
   public createProject(input: A.BaseOperation, variables: RDF.Variable[]): A.Project {
     return { type: A.Types.PROJECT, input: known(input), variables };
   }

@@ -361,8 +361,8 @@ export function inScopeVariables(
         preVisitor: (op: A.Expression) =>
           op.subType === ExpressionTypes.EXISTENCE ? { continue: false } : {},
         visitor: (op: A.Expression & { variable?: RDF.Variable }) => {
-          if (op.subType === ExpressionTypes.AGGREGATE && (op).variable) {
-            addVariable((op).variable);
+          if (op.subType === ExpressionTypes.AGGREGATE && op.variable) {
+            addVariable(op.variable);
           }
         },
       },

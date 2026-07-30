@@ -83,7 +83,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
    * to reuse its descendants in the node you return, and to change the own properties of the copy you got,
    * but changing the properties _of a descendant_ writes straight into the input tree.
    * Remapping callbacks additionally have to converge.
-   * Both are documented in detail on {@link TransformerObject.transformObjectDown}.
+   * Both are documented in detail on {@link TransformerObject.transformObjectPreOrder}.
    * @param startObject the object from which we will start the transformation,
    *   potentially visiting and transforming its descendants along the way.
    * @param nodeCallBacks a dictionary mapping the various operation types to objects optionally
@@ -109,7 +109,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
         preVisitor?: (op: Extract<Nodes, SubTyped<Type, SubType>>) => TransformContext;
       }}},
   ): Safe extends 'unsafe' ? OutType : unknown {
-    return <any> this.transformObjectDown(
+    return <any> this.transformObjectPreOrder(
       startObject,
       this.subTypedTransformWrapper(nodeCallBacks, nodeSpecificCallBacks),
       this.subTypedPreVisitWrapper(nodeCallBacks, nodeSpecificCallBacks),

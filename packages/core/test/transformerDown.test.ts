@@ -14,7 +14,7 @@ describe('transformObjectDown', () => {
     const downwards: string[] = [];
     const upwards: string[] = [];
 
-    plain.transformObjectDown(tree, (copy) => {
+    plain.transformObjectPreOrder(tree, (copy) => {
       downwards.push((<Chain> copy).name);
       return copy;
     });
@@ -31,7 +31,7 @@ describe('transformObjectDown', () => {
     const tree: Chain = { name: 'root', child: { name: 'replaced', child: { name: 'unreachable' }}};
     const seen: string[] = [];
 
-    const result = <Chain> plain.transformObjectDown(tree, (copy) => {
+    const result = <Chain> plain.transformObjectPreOrder(tree, (copy) => {
       const node = <Chain> copy;
       seen.push(node.name);
       return node.name === 'replaced' ? { name: 'replacement', child: { name: 'new-leaf' }} : node;
@@ -45,7 +45,7 @@ describe('transformObjectDown', () => {
     const items = [{ name: 'a' }, { name: 'b' }];
     const tree = { name: 'root', items };
 
-    const result = <typeof tree> plain.transformObjectDown(tree, copy =>
+    const result = <typeof tree> plain.transformObjectPreOrder(tree, copy =>
       ({ ...copy, name: `${(<{ name: string }> copy).name}!` }));
 
     expect(result.items).not.toBe(items);
@@ -58,7 +58,7 @@ describe('transformObjectDown', () => {
     let isCopy = false;
     let sharesDescendant = false;
 
-    plain.transformObjectDown(tree, (copy, orig) => {
+    plain.transformObjectPreOrder(tree, (copy, orig) => {
       if ((<Chain> copy).name === 'root') {
         isCopy = copy !== orig;
         sharesDescendant = (<Chain> copy).child === (<Chain> orig).child;
@@ -73,7 +73,7 @@ describe('transformObjectDown', () => {
   it('lets the mapper change the own properties of its copy', ({ expect }) => {
     const tree: Chain = { name: 'root', child: { name: 'child' }};
 
-    const result = <Chain> plain.transformObjectDown(tree, (copy) => {
+    const result = <Chain> plain.transformObjectPreOrder(tree, (copy) => {
       const node = <Chain> copy;
       node.name = `${node.name}!`;
       return node;
@@ -94,7 +94,7 @@ describe('transformObjectDown', () => {
 
     // Transforming top-down, the descendants of the copy are not copies: changing them is not safe
     const downTree: Chain = { name: 'root', child: { name: 'child' }};
-    plain.transformObjectDown(downTree, changeDescendant);
+    plain.transformObjectPreOrder(downTree, changeDescendant);
     expect(downTree.child!.name).toBe('changed');
 
     // Transforming bottom-up, the descendants are transformed copies already: changing them is safe
@@ -108,7 +108,7 @@ describe('transformObjectDown', () => {
     const tree: Chain = { name: 'root', child };
 
     // Replacing an object by its own descendant hands the mapper an object of the input tree
-    const result = <Chain> plain.transformObjectDown(
+    const result = <Chain> plain.transformObjectPreOrder(
       tree,
       (copy) => {
         const node = <Chain> copy;
@@ -118,7 +118,7 @@ describe('transformObjectDown', () => {
         node.name = 'changed';
         return node;
       },
-      () => ({ remap: true }),
+      () => ({ reTransform: true }),
     );
 
     expect(result.name).toBe('changed');
@@ -128,7 +128,7 @@ describe('transformObjectDown', () => {
   it('ends the descent when the mapper returns something that is not a traversable object', ({ expect }) => {
     const tree = { name: 'root', child: { name: 'child', grand: { name: 'grand' }}};
     const visited: string[] = [];
-    const replaceChildBy = (replacement: unknown): unknown => plain.transformObjectDown(tree, (copy) => {
+    const replaceChildBy = (replacement: unknown): unknown => plain.transformObjectPreOrder(tree, (copy) => {
       const node = <{ name: string }> copy;
       visited.push(node.name);
       return node.name === 'child' ? replacement : node;
@@ -149,21 +149,21 @@ describe('transformObjectDown', () => {
     };
 
     // A rule creating a new object on every call would never stabilize, so it is applied once
-    plain.transformObjectDown({ name: 'root' }, rewriteAlways);
+    plain.transformObjectPreOrder({ name: 'root' }, rewriteAlways);
     expect(calls).toBe(1);
   });
 
   it('keeps mapping a remapping object until it stabilizes', ({ expect }) => {
     const origs: string[] = [];
 
-    const result = <Chain> plain.transformObjectDown(
+    const result = <Chain> plain.transformObjectPreOrder(
       { name: 'a' },
       (copy, orig) => {
         origs.push((<Chain> orig).name);
         const node = <Chain> copy;
         return node.name.length < 3 ? { name: `${node.name}!` } : node;
       },
-      () => ({ remap: true }),
+      () => ({ reTransform: true }),
     );
 
     expect(result.name).toBe('a!!');
@@ -177,7 +177,7 @@ describe('transformObjectDown', () => {
     const contextsFor: string[] = [];
 
     // The rewritten object is of a whole other kind, and asks not to be iterated into
-    const result = <typeof tree> plain.transformObjectDown(
+    const result = <typeof tree> plain.transformObjectPreOrder(
       tree,
       (copy) => {
         const node = <{ name: string }> copy;
@@ -195,10 +195,10 @@ describe('transformObjectDown', () => {
   });
 
   it('does not copy the result of a rewrite when the context asks not to copy', ({ expect }) => {
-    const uncopying = new TransformerObject({ copy: false, remap: true });
+    const uncopying = new TransformerObject({ copy: false, reTransform: true });
     const replacement: Chain = { name: 'replacement' };
 
-    const result = <Chain> uncopying.transformObjectDown({ name: 'root' }, copy =>
+    const result = <Chain> uncopying.transformObjectPreOrder({ name: 'root' }, copy =>
       ((<Chain> copy).name === 'root' ? replacement : copy));
 
     expect(result).toBe(replacement);
@@ -209,18 +209,18 @@ describe('transformObjectDown', () => {
     const tree = { name: 'root', a: shared, b: { name: 'b' }};
     const asIs = (copy: object): object => copy;
 
-    const notContinued = <typeof tree> plain.transformObjectDown(tree, asIs, () => ({ continue: false }));
+    const notContinued = <typeof tree> plain.transformObjectPreOrder(tree, asIs, () => ({ continue: false }));
     expect(notContinued.a).toBe(shared);
 
-    const shortcutted = <typeof tree> plain.transformObjectDown(tree, asIs, orig =>
+    const shortcutted = <typeof tree> plain.transformObjectPreOrder(tree, asIs, orig =>
       ((<{ name: string }> orig).name === 'root' ? { shortcut: true } : {}));
     expect(shortcutted.a).toBe(shared);
 
-    const ignored = <typeof tree> plain.transformObjectDown(tree, asIs, () => ({ ignoreKeys: new Set([ 'a' ]) }));
+    const ignored = <typeof tree> plain.transformObjectPreOrder(tree, asIs, () => ({ ignoreKeys: new Set([ 'a' ]) }));
     expect(ignored.a).toBe(shared);
     expect(ignored.b).not.toBe(tree.b);
 
-    const shallow = <typeof tree> plain.transformObjectDown(tree, asIs, () => ({ shallowKeys: new Set([ 'a' ]) }));
+    const shallow = <typeof tree> plain.transformObjectPreOrder(tree, asIs, () => ({ shallowKeys: new Set([ 'a' ]) }));
     expect(shallow.a).not.toBe(shared);
     expect(shallow.a.deep).toBe(shared.deep);
   });
@@ -229,11 +229,11 @@ describe('transformObjectDown', () => {
     class ImpatientTransformer extends TransformerObject {
       protected override readonly maxNodeRewrites = 3;
     }
-    const impatient = new ImpatientTransformer({ remap: true });
+    const impatient = new ImpatientTransformer({ reTransform: true });
 
-    expect(() => impatient.transformObjectDown({ name: 'root' }, copy => ({ ...copy })))
+    expect(() => impatient.transformObjectPreOrder({ name: 'root' }, copy => ({ ...copy })))
       .toThrow(/Down transform did not converge: rewrote the same object 4 times$/u);
-    expect(() => impatient.transformObjectDown({ type: 'fruit' }, copy => ({ ...copy })))
+    expect(() => impatient.transformObjectPreOrder({ type: 'fruit' }, copy => ({ ...copy })))
       .toThrow(/Down transform did not converge: rewrote the same object 4 times \(last type: fruit\)$/u);
   });
 
@@ -241,7 +241,7 @@ describe('transformObjectDown', () => {
     class TinyTransformer extends TransformerObject {
       protected override readonly maxStackSize = 1;
     }
-    expect(() => new TinyTransformer().transformObjectDown({ a: { b: 'deep' }}, copy => copy))
+    expect(() => new TinyTransformer().transformObjectPreOrder({ a: { b: 'deep' }}, copy => copy))
       .toThrow(/Transform object stack overflowed/u);
   });
 });
@@ -275,7 +275,7 @@ describe('transformNodeDown', () => {
    */
   const sink = (op: Op): Op => transformer.transformNodeDown<'unsafe', Op>(op, {
     // Merging two marks results in a mark taking the exact same place, which still has to descend
-    mark: { preVisitor: () => ({ remap: true }), transform: (copy) => {
+    mark: { preVisitor: () => ({ reTransform: true }), transform: (copy) => {
       const child = copy.input;
       switch (child.type) {
         case 'pass':
@@ -319,7 +319,7 @@ describe('transformNodeDown', () => {
       protected override readonly maxNodeRewrites = 2;
     }
     expect(() => new ImpatientTransformer().transformNodeDown(stop(), {
-      stop: { preVisitor: () => ({ remap: true }), transform: copy => ({ ...copy }) },
+      stop: { preVisitor: () => ({ reTransform: true }), transform: copy => ({ ...copy }) },
     })).toThrow(/\(last type: stop\)$/u);
   });
 });
@@ -349,7 +349,7 @@ describe('transformNodeSpecificDown', () => {
       box: { transform: copy => ({ ...copy, label: 'type' }) },
     }, {
       box: { wide: {
-        preVisitor: () => ({ remap: true }),
+        preVisitor: () => ({ reTransform: true }),
         transform: (copy) => {
           labels.push(copy.label);
           return copy.label === 'a' ? { ...copy, label: 'subType' } : copy;

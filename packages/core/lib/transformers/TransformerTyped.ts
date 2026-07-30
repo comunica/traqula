@@ -102,14 +102,14 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
    * ```
    * A node that is the result of a rewrite is transformed once. Rules rewriting a node into a node taking
    * the exact same place - like a rule merging two nested filters - additionally need
-   * {@link TransformContext.remap}, making the transform be applied until the node stabilizes.
+   * {@link TransformContext.reTransform}, making the transform be applied until the node stabilizes.
    *
    * Contrary to {@link this.transformNode}, the descendants of the node given to the callback are not
    * transformed yet: they are the nodes of the input tree itself. You are free to replace the node,
    * to reuse its descendants in the node you return, and to change the own properties of the copy you got,
    * but changing the properties _of a descendant_ writes straight into the input tree.
    * Remapping callbacks additionally have to converge.
-   * Both are documented in detail on {@link TransformerObject.transformObjectDown}.
+   * Both are documented in detail on {@link TransformerObject.transformObjectPreOrder}.
    * @param startObject the object from which we will start the transformation,
    *   potentially visiting and transforming its descendants along the way.
    * @param nodeCallBacks a dictionary mapping the various node types to objects optionally
@@ -128,7 +128,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
       preVisitor?: (orig: Extract<Nodes, Typed<T>>) => TransformContext;
     }},
   ): Safe extends 'unsafe' ? OutType : unknown {
-    return <any> this.transformObjectDown(
+    return <any> this.transformObjectPreOrder(
       startObject,
       this.typedTransformWrapper(nodeCallBacks),
       this.typedPreVisitWrapper(nodeCallBacks),

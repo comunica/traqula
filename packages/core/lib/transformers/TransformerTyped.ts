@@ -1,5 +1,5 @@
 import type { Typed } from '../types.js';
-import type { TransformContext, VisitContext } from './TransformerObject.js';
+import type { PreOrderMapping, TransformContext, VisitContext } from './TransformerObject.js';
 import { TransformerObject } from './TransformerObject.js';
 
 /**
@@ -81,30 +81,35 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
 
   /**
    * Transform a single node ({@link Typed}) pre-order, the dual of {@link this.transformNode}.
-   * Takes the exact same callbacks, but transforms a node _before_ its descendants,
-   * and iterates into the result of that transformation.
+   * Transforms a node _before_ its descendants, and iterates into the result of that transformation.
    *
    * This is what you want when an operation has to travel deeper into the tree, like a filter pushdown:
    * a callback only has to describe how a node swaps places with the node right below it,
    * the copy it sank into is visited in turn, and swaps places with the node below that one.
    * ```ts
    * transformer.transformNodePreOrder(query, {
-   *   filter: { transform: (copy) => {
+   *   filter: (copy) => {
    *     const child = copy.input;
    *     // Sink the filter into every branch of a union - both new filters keep sinking on their own.
    *     if (child.type === 'union') {
-   *       return { ...child, input: child.input.map(branch => ({ ...copy, input: branch })) };
+   *       return { newValue: { ...child, input: child.input.map(branch => ({ ...copy, input: branch })) }};
    *     }
    *     // Anything else is a barrier: returning the copy untouched stops the descent of this filter.
-   *     return copy;
-   *   }},
+   *     return { newValue: copy };
+   *   },
    * });
    * ```
+   * Contrary to {@link this.transformNode}, a callback does not just return the value taking the place of
+   * the node, it returns a {@link PreOrderMapping}: that value, plus the {@link TransformContext} of that
+   * value. Since the callback decides what we iterate into, it is the one telling us how to iterate into it,
+   * so there is no separate preVisitor - only the per type defaults of this transformer, which are
+   * looked up using the type of the value you return.
+   *
    * A node that is the result of a rewrite is transformed once. Rules rewriting a node into a node taking
    * the exact same place - like a rule merging two nested filters - additionally need
    * {@link TransformContext.reTransform}, making the transform be applied until the node stabilizes.
    *
-   * Contrary to {@link this.transformNode}, the descendants of the node given to the callback are not
+   * Also contrary to {@link this.transformNode}, the descendants of the node given to the callback are not
    * transformed yet: they are the nodes of the input tree itself. You are free to replace the node,
    * to reuse its descendants in the node you return, and to change the own properties of the copy you got,
    * but changing the properties _of a descendant_ writes straight into the input tree.
@@ -112,27 +117,18 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
    * Both are documented in detail on {@link TransformerObject.transformObjectPreOrder}.
    * @param startObject the object from which we will start the transformation,
    *   potentially visiting and transforming its descendants along the way.
-   * @param nodeCallBacks a dictionary mapping the various node types to objects optionally
-   *    containing preVisitor and transformer.
-   *    The preVisitor allows you to provide {@link TransformContext} for the current object,
-   *    altering how it will be transformed. It is re-evaluated after every rewrite.
-   *    The transformer allows you to manipulate the copy of the current object,
-   *    and expects you to return the value that should take the current objects place.
+   * @param nodeCallBacks a dictionary mapping the various node types to a mapper.
+   *    The mapper allows you to manipulate the copy of the current node, and expects you to return the
+   *    value that should take the current nodes place, together with the context of that value.
    *    The returned value is dispatched again, and is what we iterate into.
    * @return the result of transforming the startObject and the descendants of its rewrites.
    */
   public transformNodePreOrder<Safe extends Safeness = 'safe', OutType = unknown>(
     startObject: object,
-    nodeCallBacks: {[T in Nodes['type']]?: {
-      transform?: (copy: SafeWrap<Safe, Extract<Nodes, Typed<T>>>, orig: Extract<Nodes, Typed<T>>) => unknown;
-      preVisitor?: (orig: Extract<Nodes, Typed<T>>) => TransformContext;
-    }},
+    nodeCallBacks: {[T in Nodes['type']]?:
+      (copy: SafeWrap<Safe, Extract<Nodes, Typed<T>>>, orig: Extract<Nodes, Typed<T>>) => PreOrderMapping },
   ): Safe extends 'unsafe' ? OutType : unknown {
-    return <any> this.transformObjectPreOrder(
-      startObject,
-      this.typedTransformWrapper(nodeCallBacks),
-      this.typedPreVisitWrapper(nodeCallBacks),
-    );
+    return <any> this.transformObjectPreOrder(startObject, this.typedPreOrderWrapper(nodeCallBacks));
   }
 
   /**
@@ -150,6 +146,36 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
       }
       return ogTransform ? ogTransform(casted, orig) : copy;
     };
+  }
+
+  /**
+   * Creates the pre-order mapper dispatching to the callback registered for the type of the mapped object.
+   * @protected
+   */
+  protected typedPreOrderWrapper(
+    nodeCallBacks: Record<string, ((copy: any, orig: any) => PreOrderMapping) | undefined>,
+  ): (copy: object, orig: object) => PreOrderMapping {
+    return (copy: object, orig: object): PreOrderMapping => {
+      let ogMapper: ((copy: any, orig: any) => PreOrderMapping) | undefined;
+      const casted = <Typed<Nodes['type']>>copy;
+      if (casted.type) {
+        ogMapper = nodeCallBacks[casted.type];
+      }
+      return this.withNodeDefaults(ogMapper ? ogMapper(casted, orig) : { newValue: copy });
+    };
+  }
+
+  /**
+   * Completes a mapping with the context registered in the {@link defaultNodePreVisitor} of this transformer.
+   * Those defaults are looked up using the type of the value the mapping returns - the value we iterate into -
+   * since a rewrite can return a node of a whole other kind than the one it mapped.
+   * @protected
+   */
+  protected withNodeDefaults(mapping: PreOrderMapping): PreOrderMapping {
+    const nodeDefaults = <Record<string, TransformContext | undefined>> this.defaultNodePreVisitor;
+    const newValue = <Partial<Typed> | null | undefined> mapping.newValue;
+    const nodeContext = newValue?.type ? nodeDefaults[newValue.type] : undefined;
+    return nodeContext ? { ...nodeContext, ...mapping } : mapping;
   }
 
   /**

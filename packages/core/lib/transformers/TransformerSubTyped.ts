@@ -1,5 +1,6 @@
 import type { SubTyped, Typed } from '../types.js';
 import type {
+  PreOrderMapping,
   TransformContext,
   VisitContext,
 } from './TransformerObject.js';
@@ -78,20 +79,21 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
    * The node is transformed _before_ its descendants, and we iterate into the result of that transformation,
    * making it the tool of choice for operations that have to travel deeper into the tree, like a filter pushdown.
    *
-   * Contrary to {@link this.transformNodeSpecific}, the descendants of the node given to the callback are not
-   * transformed yet: they are the nodes of the input tree itself. You are free to replace the node,
+   * Contrary to {@link this.transformNodeSpecific}, a callback does not just return the value taking the
+   * place of the node, it returns a {@link PreOrderMapping}: that value, plus the {@link TransformContext}
+   * of that value, so there is no separate preVisitor.
+   *
+   * Also contrary to {@link this.transformNodeSpecific}, the descendants of the node given to the callback
+   * are not transformed yet: they are the nodes of the input tree itself. You are free to replace the node,
    * to reuse its descendants in the node you return, and to change the own properties of the copy you got,
    * but changing the properties _of a descendant_ writes straight into the input tree.
    * Remapping callbacks additionally have to converge.
    * Both are documented in detail on {@link TransformerObject.transformObjectPreOrder}.
    * @param startObject the object from which we will start the transformation,
    *   potentially visiting and transforming its descendants along the way.
-   * @param nodeCallBacks a dictionary mapping the various operation types to objects optionally
-   *    containing preVisitor and transformer.
-   *    The preVisitor allows you to provide {@link TransformContext} for the current object,
-   *    altering how it will be transformed. It is re-evaluated after every rewrite.
-   *    The transformer allows you to manipulate the copy of the current object,
-   *    and expects you to return the value that should take the current objects place.
+   * @param nodeCallBacks a dictionary mapping the various operation types to a mapper.
+   *    The mapper allows you to manipulate the copy of the current operation, and expects you to return the
+   *    value that should take the current operations place, together with the context of that value.
    *    The returned value is dispatched again, and is what we iterate into.
    * @param nodeSpecificCallBacks Same as nodeCallBacks but using an additional level of indirection to
    *     indicate the subType.
@@ -99,20 +101,15 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
    */
   public transformNodeSpecificPreOrder<Safe extends Safeness = 'safe', OutType = unknown>(
     startObject: object,
-    nodeCallBacks: {[T in Nodes['type']]?: {
-      transform?: (copy: SafeWrap<Safe, Extract<Nodes, Typed<T>>>, orig: Extract<Nodes, Typed<T>>) => unknown;
-      preVisitor?: (orig: Extract<Nodes, Typed<T>>) => TransformContext;
-    }},
+    nodeCallBacks: {[T in Nodes['type']]?:
+      (copy: SafeWrap<Safe, Extract<Nodes, Typed<T>>>, orig: Extract<Nodes, Typed<T>>) => PreOrderMapping },
     nodeSpecificCallBacks: {[Type in Nodes['type']]?: {
-      [SubType in Extract<Nodes, SubTyped<Type>>['subType']]?: {
-        transform?: (op: SafeWrap<Safe, Extract<Nodes, SubTyped<Type, SubType>>>) => unknown;
-        preVisitor?: (op: Extract<Nodes, SubTyped<Type, SubType>>) => TransformContext;
-      }}},
+      [SubType in Extract<Nodes, SubTyped<Type>>['subType']]?:
+      (op: SafeWrap<Safe, Extract<Nodes, SubTyped<Type, SubType>>>) => PreOrderMapping }},
   ): Safe extends 'unsafe' ? OutType : unknown {
     return <any> this.transformObjectPreOrder(
       startObject,
-      this.subTypedTransformWrapper(nodeCallBacks, nodeSpecificCallBacks),
-      this.subTypedPreVisitWrapper(nodeCallBacks, nodeSpecificCallBacks),
+      this.subTypedPreOrderWrapper(nodeCallBacks, nodeSpecificCallBacks),
     );
   }
 
@@ -140,6 +137,32 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
         }
       }
       return ogTransform ? ogTransform(casted, orig) : copy;
+    };
+  }
+
+  /**
+   * Creates the pre-order mapper dispatching to the callback registered for the subType of the mapped object,
+   * falling back to the one registered for its type.
+   * @protected
+   */
+  protected subTypedPreOrderWrapper(
+    nodeCallBacks: Record<string, ((copy: any, orig: any) => PreOrderMapping) | undefined>,
+    nodeSpecificCallBacks: Record<string, Record<string, ((copy: any, orig: any) => PreOrderMapping) |
+      undefined> | undefined>,
+  ): (copy: object, orig: object) => PreOrderMapping {
+    return (copy: object, orig: object): PreOrderMapping => {
+      let ogMapper: ((copy: any, orig: any) => PreOrderMapping) | undefined;
+      const casted = <SubTyped<Nodes['type']>>copy;
+      if (casted.type && casted.subType) {
+        const specific = nodeSpecificCallBacks[casted.type];
+        if (specific) {
+          ogMapper = specific[casted.subType];
+        }
+        if (!ogMapper) {
+          ogMapper = nodeCallBacks[casted.type];
+        }
+      }
+      return this.withNodeDefaults(ogMapper ? ogMapper(casted, orig) : { newValue: copy });
     };
   }
 

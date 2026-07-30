@@ -18,6 +18,7 @@ export * from './types.js';
 export {
   VisitContext,
   TransformContext,
+  PreOrderMapping,
   TransformerObject,
   SelectiveTraversalContext,
 } from './transformers/TransformerObject.js';

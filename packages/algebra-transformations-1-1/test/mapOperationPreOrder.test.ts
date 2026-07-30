@@ -15,16 +15,16 @@ describe('mapOperationPreOrder', () => {
    */
   const pushDownFilter = (op: A.Operation): A.Operation =>
     algebraUtils.mapOperationPreOrder<'unsafe', A.Operation>(op, {
-      [Types.FILTER]: { transform: (filter) => {
+      [Types.FILTER]: (filter) => {
         if (filter.input.type === Types.UNION) {
-          return AF.createUnion(
+          return { newValue: AF.createUnion(
             filter.input.input.map(branch => AF.createFilter(branch, filter.expression)),
             false,
-          );
+          ) };
         }
         // Any other operation is a barrier for this filter
-        return filter;
-      } },
+        return { newValue: filter };
+      },
     });
 
   it('sinks a filter through the union below it', ({ expect }) => {
@@ -68,10 +68,10 @@ describe('mapOperationPreOrder', () => {
 
     // The transformer ignores the terms of a pattern, so its subject is never mapped
     algebraUtils.mapOperationPreOrder(bgp('?a'), {
-      [Types.PATTERN]: { transform: (copy) => {
+      [Types.PATTERN]: (copy) => {
         visited.push(Types.PATTERN);
-        return copy;
-      } },
+        return { newValue: copy };
+      },
     });
 
     expect(visited).toEqual([ Types.PATTERN ]);
@@ -89,11 +89,11 @@ describe('mapOperationSubPreOrder', () => {
     const result = <A.OperatorExpression> algebraUtils.mapOperationSubPreOrder<'unsafe', A.Operation>(
       aggregate,
       {},
-      { [Types.EXPRESSION]: { [ExpressionTypes.AGGREGATE]: { transform: (copy) => {
+      { [Types.EXPRESSION]: { [ExpressionTypes.AGGREGATE]: (copy) => {
         mapped.push(copy.aggregator);
         // Replacing the aggregate makes us iterate into the operator expression instead
-        return AF.createOperatorExpression('!', [ copy.expression ]);
-      } }}},
+        return { newValue: AF.createOperatorExpression('!', [ copy.expression ]) };
+      } }},
     );
 
     expect(mapped).toEqual([ 'count' ]);

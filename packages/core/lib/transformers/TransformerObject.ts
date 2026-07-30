@@ -32,6 +32,19 @@ export interface TransformContext extends VisitContext {
   reTransform?: boolean;
 }
 
+/**
+ * What a pre-order mapper ({@link TransformerObject.transformObjectPreOrder}) returns:
+ * the value taking the place of the object it mapped, together with the {@link TransformContext}
+ * steering how the traversal handles _that_ value - whether to map it again, to iterate into it,
+ * and which of its keys to skip or to only copy shallowly.
+ * Since a pre-order mapper decides what we iterate into, it is also the one providing this context:
+ * contrary to the post-order {@link TransformerObject.transformObject},
+ * there is no separate preVisitor to provide it.
+ * Copying is not part of it: a pre-order mapper is always handed a copy to do with as it pleases,
+ * so whether copies are made at all is a matter of the {@link TransformerObject.defaultContext}.
+ */
+export type PreOrderMapping<T = unknown> = Omit<TransformContext, 'copy'> & { newValue: T };
+
 export interface SelectiveTraversalContext<Nodes> {
   /**
    * Nodes you should visit next. Defaults to empty list
@@ -233,29 +246,37 @@ export class TransformerObject {
    * Meaning manipulation of nested objects changes the original!
    * @param startObject object to start iterating from
    * @param preMapper mapper to transform the various objects - first argument is a copy of the original.
-   *   Its result takes the place of the object, and is what we iterate into.
-   *   The result is mapped again when the preVisitor asked for {@link TransformContext.reTransform},
-   *   in which case the mapping has to converge within {@link maxNodeRewrites} rewrites.
-   * @param preVisitor callback that is evaluated before mapping, and re-evaluated after every rewrite.
-   *   If continues is false, we do not iterate deeper, current object is still mapped. - default: true
-   *   If shortcut is true, we do not iterate deeper, nor do we branch out, this preMapper will be the last one called.
+   *   It returns a {@link PreOrderMapping}: the value taking the place of the object - which is what we
+   *   iterate into - and the context steering how we handle that value.
+   *   Since the mapper decides what its own descendants are, it provides that context itself,
+   *   there is no separate preVisitor.
+   *   If continue is false, we do not iterate deeper, the value still takes the place of the object.
+   *    - Default true
+   *   If shortcut is true, we do not iterate deeper, nor do we branch out, this is the last mapping made.
    *    - Default false
+   *   The value is handed back to the traversal, and so mapped again, when the mapping asked for
+   *   {@link TransformContext.reTransform}, in which case the mapping has to converge
+   *   within {@link maxNodeRewrites} rewrites.
    */
   public transformObjectPreOrder(
     startObject: object,
-    preMapper: (copy: object, orig: object) => unknown,
-    preVisitor: (orig: object) => TransformContext = () => ({}),
+    preMapper: (copy: object, orig: object) => PreOrderMapping,
   ): unknown {
     const defaults = this.defaultContext;
+    const defaultCopyFlag = defaults.copy ?? true;
     const defaultContinues = defaults.continue ?? true;
     const defaultIgnoreKeys = defaults.ignoreKeys;
     const defaultShallowKeys = defaults.shallowKeys;
     const defaultDidShortCut = defaults.shortcut ?? false;
+    const defaultReTransform = defaults.reTransform ?? false;
 
     // Code handles own stack instead of using recursion - this optimizes it for deep operations.
     // Contrary to {@link transformObject}, an object is mapped when it is popped of the stack,
     // so its result can be assigned to its parent right away - no reverse stack needed.
     let didShortCut = false;
+    // Counts how often the object currently on top of the stack was rewritten into another object.
+    // A rewrite is pushed back onto the stack, so it is popped again on the very next iteration.
+    let rewrites = 0;
     const resultWrap = { res: <unknown> startObject };
 
     const stack = [ startObject ];
@@ -285,28 +306,52 @@ export class TransformerObject {
       }
 
       // Map the object before its descendants, so that the mapper can decide what its descendants are.
-      const { result: copy, context } = this.mapUntilStable(curObject, preMapper, preVisitor);
+      const copy = defaultCopyFlag ? this.cloneObj(curObject) : curObject;
+      const { newValue, ...context } = preMapper(copy, curObject);
+
+      // The object is mapped, the value takes its place in the tree
+      curParent[curKey] = newValue;
+
+      // A mapper returning the object it was given is done with it, and so is one returning something we
+      // never map again: an array or a plain value.
+      const isRewrite = newValue !== copy && newValue !== null && typeof newValue === 'object' &&
+        !Array.isArray(newValue);
+
+      // A rewrite asking to be mapped again is simply handed back to the traversal. A rule creating a new
+      // object every time would never stabilize, hence the bound on the rewrites of a single object.
+      if (isRewrite && (context.reTransform ?? defaultReTransform)) {
+        if (++rewrites > this.maxNodeRewrites) {
+          const type = (<Partial<Typed>> newValue).type;
+          throw new Error(`Pre order transform did not converge: rewrote the same object ${
+            this.maxNodeRewrites + 1} times${typeof type === 'string' ? ` (last type: ${type})` : ''}`);
+        }
+        stack.push(newValue);
+        stackParent.push(curParent);
+        stackParentKey.push(curKey);
+        continue;
+      }
+      rewrites = 0;
 
       const continues = context.continue ?? defaultContinues;
       const ignoreKeys = context.ignoreKeys ?? defaultIgnoreKeys;
       const shallowKeys = context.shallowKeys ?? defaultShallowKeys;
       didShortCut = context.shortcut ?? defaultDidShortCut;
 
-      // The object is mapped, its place in the tree is final
-      curParent[curKey] = copy;
-
       // Extend stack if needed. Only objects can be iterated into,
       // and when shortcutted, the traversal ends, so no longer add to it.
-      if (copy !== null && typeof copy === 'object' && continues && !didShortCut) {
-        if (Array.isArray(copy)) {
+      if (newValue !== null && typeof newValue === 'object' && continues && !didShortCut) {
+        if (Array.isArray(newValue)) {
           // An array the mapper returned is handed back to the traversal,
           // which copies it and maps its elements in turn.
-          stack.push(copy);
+          stack.push(newValue);
           stackParent.push(curParent);
           stackParentKey.push(curKey);
           continue;
         }
-        const node = <Record<string, unknown>> copy;
+        // A rewrite can be an object taken straight from the input tree, and iterating into an object
+        // writes into it, so copy it first - just like we copied the object we started from.
+        const node = <Record<string, unknown>> (isRewrite && defaultCopyFlag ? this.cloneObj(newValue) : newValue);
+        curParent[curKey] = node;
         for (const key in node) {
           if (!Object.hasOwn(node, key)) {
             continue;
@@ -337,53 +382,6 @@ export class TransformerObject {
     }
 
     return <any> resultWrap.res;
-  }
-
-  /**
-   * Maps a single object, mapping the result again for as long as it asks to be transformed again
-   * through {@link TransformContext.reTransform}.
-   * Used by {@link transformObjectPreOrder}, which iterates into the result of this mapping.
-   * @param curObject the object to map, an object of the input tree.
-   * @param preMapper mapper to transform the object - first argument is a copy of the object it maps.
-   * @param preVisitor callback providing the context of the object, re-evaluated after every rewrite.
-   * @returns the value taking the place of the object, and the context of the last object we mapped.
-   * @protected
-   */
-  protected mapUntilStable(
-    curObject: object,
-    preMapper: (copy: object, orig: object) => unknown,
-    preVisitor: (orig: object) => TransformContext,
-  ): { result: unknown; context: TransformContext } {
-    const defaultCopyFlag = this.defaultContext.copy ?? true;
-    const defaultReTransform = this.defaultContext.reTransform ?? false;
-
-    // Perform pre visit before mapping
-    let context = preVisitor(<any> curObject);
-    let copyFlag = context.copy ?? defaultCopyFlag;
-    let copy: unknown = copyFlag ? this.cloneObj(curObject) : curObject;
-    let orig = curObject;
-
-    // Only objects asking to be transformed again are mapped again - a rule creating a new object every time
-    // would never stabilize otherwise, hence the bound on the number of rewrites of a single object.
-    for (let rewrites = 0; rewrites <= this.maxNodeRewrites; rewrites++) {
-      const mapped: unknown = preMapper(<object> copy, orig);
-      // The mapper returned the object it was given, or something we never map: an array or a plain value
-      if (mapped === copy || mapped === null || typeof mapped !== 'object' || Array.isArray(mapped)) {
-        return { result: mapped, context };
-      }
-      orig = mapped;
-      // The replacement can be an object taken straight from the input tree, copy before iterating into it
-      copy = copyFlag ? this.cloneObj(mapped) : mapped;
-      // The rewritten object can be of a whole other kind, and thus require a whole other context
-      context = preVisitor(<any> copy);
-      copyFlag = context.copy ?? defaultCopyFlag;
-      if (!(context.reTransform ?? defaultReTransform)) {
-        return { result: copy, context };
-      }
-    }
-    const type = (<Partial<Typed>> copy).type;
-    throw new Error(`Pre order transform did not converge: rewrote the same object ${
-      this.maxNodeRewrites + 1} times${typeof type === 'string' ? ` (last type: ${type})` : ''}`);
   }
 
   /**

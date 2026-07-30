@@ -125,7 +125,7 @@ describe('transformObjectPreOrder', () => {
     expect(child.name).toBe('child');
   });
 
-  it('ends the descent when the mapper returns something that is not a traversable object', ({ expect }) => {
+  it('ends the descent when the mapper returns something that is not an object', ({ expect }) => {
     const tree = { name: 'root', child: { name: 'child', grand: { name: 'grand' }}};
     const visited: string[] = [];
     const replaceChildBy = (replacement: unknown): unknown => plain.transformObjectPreOrder(tree, (copy) => {
@@ -136,9 +136,27 @@ describe('transformObjectPreOrder', () => {
 
     expect(replaceChildBy('a string')).toEqual({ name: 'root', child: 'a string' });
     expect(replaceChildBy(null)).toEqual({ name: 'root', child: null });
-    expect(replaceChildBy([ 1, 2 ])).toEqual({ name: 'root', child: [ 1, 2 ]});
     // The grandchild is never reached, whatever the child was replaced by
-    expect(visited).toEqual([ 'root', 'child', 'root', 'child', 'root', 'child' ]);
+    expect(visited).toEqual([ 'root', 'child', 'root', 'child' ]);
+  });
+
+  it('iterates into an array the mapper returns', ({ expect }) => {
+    const grand: Chain = { name: 'grand' };
+    const tree: Chain = { name: 'root', child: { name: 'child', child: grand }};
+    const visited: string[] = [];
+
+    // The mapper is not called on the array itself, it is called on the elements of its copy
+    const result = <{ child: Chain[] }> plain.transformObjectPreOrder(tree, (copy) => {
+      const node = <Chain> copy;
+      visited.push(node.name);
+      return node.name === 'child' ? [{ ...node, name: 'wrapped' }, { name: 'extra' }] : node;
+    });
+
+    expect(visited).toEqual([ 'root', 'child', 'wrapped', 'grand', 'extra' ]);
+    expect(result.child.map(node => node.name)).toEqual([ 'wrapped', 'extra' ]);
+    // The descendants of the elements are copied, just like those of any other object we iterate into
+    expect(result.child[0].child).toEqual(grand);
+    expect(result.child[0].child).not.toBe(grand);
   });
 
   it('maps the result of a rewrite once, unless it asks to be remapped', ({ expect }) => {

@@ -73,10 +73,10 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
   }
 
   /**
-   * Transform a single node top-down, the dual of {@link this.transformNodeSpecific}.
-   * Similar to {@link TransformerTyped.transformNodeDown}, but also allowing you to target the subTypes.
-   * The node is transformed _before_ its descendants, and the result is dispatched again until it stabilizes,
-   * making it the tool of choice for operations that have to travel _down_ the tree, like a filter pushdown.
+   * Transform a single node pre-order, the dual of {@link this.transformNodeSpecific}.
+   * Similar to {@link TransformerTyped.transformNodePreOrder}, but also allowing you to target the subTypes.
+   * The node is transformed _before_ its descendants, and we iterate into the result of that transformation,
+   * making it the tool of choice for operations that have to travel deeper into the tree, like a filter pushdown.
    *
    * Contrary to {@link this.transformNodeSpecific}, the descendants of the node given to the callback are not
    * transformed yet: they are the nodes of the input tree itself. You are free to replace the node,
@@ -97,7 +97,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
    *     indicate the subType.
    * @return the result of transforming the startObject and the descendants of its rewrites.
    */
-  public transformNodeSpecificDown<Safe extends Safeness = 'safe', OutType = unknown>(
+  public transformNodeSpecificPreOrder<Safe extends Safeness = 'safe', OutType = unknown>(
     startObject: object,
     nodeCallBacks: {[T in Nodes['type']]?: {
       transform?: (copy: SafeWrap<Safe, Extract<Nodes, Typed<T>>>, orig: Extract<Nodes, Typed<T>>) => unknown;

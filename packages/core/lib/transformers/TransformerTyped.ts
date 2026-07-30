@@ -80,15 +80,15 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
   }
 
   /**
-   * Transform a single node ({@link Typed}) top-down, the dual of {@link this.transformNode}.
+   * Transform a single node ({@link Typed}) pre-order, the dual of {@link this.transformNode}.
    * Takes the exact same callbacks, but transforms a node _before_ its descendants,
    * and iterates into the result of that transformation.
    *
-   * This is what you want when an operation has to travel _down_ the tree, like a filter pushdown:
+   * This is what you want when an operation has to travel deeper into the tree, like a filter pushdown:
    * a callback only has to describe how a node swaps places with the node right below it,
-   * the copy it pushed down is visited in turn, and swaps places with the node below that one.
+   * the copy it sank into is visited in turn, and swaps places with the node below that one.
    * ```ts
-   * transformer.transformNodeDown(query, {
+   * transformer.transformNodePreOrder(query, {
    *   filter: { transform: (copy) => {
    *     const child = copy.input;
    *     // Sink the filter into every branch of a union - both new filters keep sinking on their own.
@@ -121,7 +121,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
    *    The returned value is dispatched again, and is what we iterate into.
    * @return the result of transforming the startObject and the descendants of its rewrites.
    */
-  public transformNodeDown<Safe extends Safeness = 'safe', OutType = unknown>(
+  public transformNodePreOrder<Safe extends Safeness = 'safe', OutType = unknown>(
     startObject: object,
     nodeCallBacks: {[T in Nodes['type']]?: {
       transform?: (copy: SafeWrap<Safe, Extract<Nodes, Typed<T>>>, orig: Extract<Nodes, Typed<T>>) => unknown;

@@ -6,25 +6,25 @@ interface Chain {
   child?: Chain;
 }
 
-describe('transformObjectDown', () => {
+describe('transformObjectPreOrder', () => {
   const plain = new TransformerObject();
 
   it('maps an object before its descendants, contrary to transformObject', ({ expect }) => {
     const tree: Chain = { name: 'root', child: { name: 'middle', child: { name: 'leaf' }}};
-    const downwards: string[] = [];
-    const upwards: string[] = [];
+    const preOrder: string[] = [];
+    const postOrder: string[] = [];
 
     plain.transformObjectPreOrder(tree, (copy) => {
-      downwards.push((<Chain> copy).name);
+      preOrder.push((<Chain> copy).name);
       return copy;
     });
     plain.transformObject(tree, (copy) => {
-      upwards.push((<Chain> copy).name);
+      postOrder.push((<Chain> copy).name);
       return copy;
     });
 
-    expect(downwards).toEqual([ 'root', 'middle', 'leaf' ]);
-    expect(upwards).toEqual([ 'leaf', 'middle', 'root' ]);
+    expect(preOrder).toEqual([ 'root', 'middle', 'leaf' ]);
+    expect(postOrder).toEqual([ 'leaf', 'middle', 'root' ]);
   });
 
   it('iterates into the result of the mapper, not into the object it replaced', ({ expect }) => {
@@ -41,16 +41,16 @@ describe('transformObjectDown', () => {
     expect(result.child).toEqual({ name: 'replacement', child: { name: 'new-leaf' }});
   });
 
-  it('copies arrays and maps their elements', ({ expect }) => {
-    const items = [{ name: 'a' }, { name: 'b' }];
+  it('copies arrays and maps their object elements', ({ expect }) => {
+    const items: (Chain | string | null)[] = [{ name: 'a' }, 'untouched', null, { name: 'b' }];
     const tree = { name: 'root', items };
 
     const result = <typeof tree> plain.transformObjectPreOrder(tree, copy =>
       ({ ...copy, name: `${(<{ name: string }> copy).name}!` }));
 
     expect(result.items).not.toBe(items);
-    expect(result.items).toEqual([{ name: 'a!' }, { name: 'b!' }]);
-    expect(items).toEqual([{ name: 'a' }, { name: 'b' }]);
+    expect(result.items).toEqual([{ name: 'a!' }, 'untouched', null, { name: 'b!' }]);
+    expect(items).toEqual([{ name: 'a' }, 'untouched', null, { name: 'b' }]);
   });
 
   it('hands the mapper a copy of the object, but not of its descendants', ({ expect }) => {
@@ -92,15 +92,15 @@ describe('transformObjectDown', () => {
       return node;
     };
 
-    // Transforming top-down, the descendants of the copy are not copies: changing them is not safe
-    const downTree: Chain = { name: 'root', child: { name: 'child' }};
-    plain.transformObjectPreOrder(downTree, changeDescendant);
-    expect(downTree.child!.name).toBe('changed');
+    // Pre-order, the descendants of the copy are not copies: changing them is not safe
+    const preOrderTree: Chain = { name: 'root', child: { name: 'child' }};
+    plain.transformObjectPreOrder(preOrderTree, changeDescendant);
+    expect(preOrderTree.child!.name).toBe('changed');
 
-    // Transforming bottom-up, the descendants are transformed copies already: changing them is safe
-    const upTree: Chain = { name: 'root', child: { name: 'child' }};
-    plain.transformObject(upTree, changeDescendant);
-    expect(upTree.child!.name).toBe('child');
+    // Post-order, the descendants are transformed copies already: changing them is safe
+    const postOrderTree: Chain = { name: 'root', child: { name: 'child' }};
+    plain.transformObject(postOrderTree, changeDescendant);
+    expect(postOrderTree.child!.name).toBe('child');
   });
 
   it('copies a replacement that was taken from the input tree', ({ expect }) => {
@@ -225,6 +225,21 @@ describe('transformObjectDown', () => {
     expect(shallow.a.deep).toBe(shared.deep);
   });
 
+  it('skips non-own inherited properties', ({ expect }) => {
+    const proto = { inherited: { name: 'inherited' }};
+    const tree = <Chain & { inherited: Chain }> Object.create(proto);
+    tree.name = 'root';
+    const seen: string[] = [];
+
+    // TransformObjectPreOrder iterates with for...in; non-own properties should be skipped
+    plain.transformObjectPreOrder(tree, (copy) => {
+      seen.push((<Chain> copy).name);
+      return copy;
+    });
+
+    expect(seen).toEqual([ 'root' ]);
+  });
+
   it('throws when the rewrite rules do not converge', ({ expect }) => {
     class ImpatientTransformer extends TransformerObject {
       protected override readonly maxNodeRewrites = 3;
@@ -232,9 +247,9 @@ describe('transformObjectDown', () => {
     const impatient = new ImpatientTransformer({ reTransform: true });
 
     expect(() => impatient.transformObjectPreOrder({ name: 'root' }, copy => ({ ...copy })))
-      .toThrow(/Down transform did not converge: rewrote the same object 4 times$/u);
+      .toThrow(/Pre order transform did not converge: rewrote the same object 4 times$/u);
     expect(() => impatient.transformObjectPreOrder({ type: 'fruit' }, copy => ({ ...copy })))
-      .toThrow(/Down transform did not converge: rewrote the same object 4 times \(last type: fruit\)$/u);
+      .toThrow(/Pre order transform did not converge: rewrote the same object 4 times \(last type: fruit\)$/u);
   });
 
   it('throws when the stack overflows', ({ expect }) => {
@@ -246,7 +261,7 @@ describe('transformObjectDown', () => {
   });
 });
 
-describe('transformNodeDown', () => {
+describe('transformNodePreOrder', () => {
   /**
    * A mark that sinks through pass nodes, counting how deep it got, and stops at a stop node.
    */
@@ -273,7 +288,7 @@ describe('transformNodeDown', () => {
   /**
    * A rule describing a single swap: the mark trades places with the node right below it.
    */
-  const sink = (op: Op): Op => transformer.transformNodeDown<'unsafe', Op>(op, {
+  const sink = (op: Op): Op => transformer.transformNodePreOrder<'unsafe', Op>(op, {
     // Merging two marks results in a mark taking the exact same place, which still has to descend
     mark: { preVisitor: () => ({ reTransform: true }), transform: (copy) => {
       const child = copy.input;
@@ -305,10 +320,10 @@ describe('transformNodeDown', () => {
     const tree = mark(0, stop());
     const rename = { stop: { transform: (copy: Stop): Stop => ({ ...copy, name: 'reached' }) }};
 
-    expect(transformer.transformNodeDown<'unsafe', Op>(tree, rename))
+    expect(transformer.transformNodePreOrder<'unsafe', Op>(tree, rename))
       .toEqual(mark(0, stop('reached')));
     // The mark asked not to be iterated into, so the stop below it is never reached
-    expect(transformer.transformNodeDown<'unsafe', Op>(tree, {
+    expect(transformer.transformNodePreOrder<'unsafe', Op>(tree, {
       ...rename,
       mark: { preVisitor: () => ({ continue: false }) },
     })).toEqual(tree);
@@ -318,13 +333,13 @@ describe('transformNodeDown', () => {
     class ImpatientTransformer extends TransformerTyped<Op> {
       protected override readonly maxNodeRewrites = 2;
     }
-    expect(() => new ImpatientTransformer().transformNodeDown(stop(), {
+    expect(() => new ImpatientTransformer().transformNodePreOrder(stop(), {
       stop: { preVisitor: () => ({ reTransform: true }), transform: copy => ({ ...copy }) },
     })).toThrow(/\(last type: stop\)$/u);
   });
 });
 
-describe('transformNodeSpecificDown', () => {
+describe('transformNodeSpecificPreOrder', () => {
   interface Wide {
     type: 'box';
     subType: 'wide';
@@ -345,7 +360,7 @@ describe('transformNodeSpecificDown', () => {
     const tree: Wide = { type: 'box', subType: 'wide', label: 'a', inner: tall };
     const labels: string[] = [];
 
-    const result = transformer.transformNodeSpecificDown<'unsafe', Wide>(tree, {
+    const result = transformer.transformNodeSpecificPreOrder<'unsafe', Wide>(tree, {
       box: { transform: copy => ({ ...copy, label: 'type' }) },
     }, {
       box: { wide: {
@@ -362,7 +377,7 @@ describe('transformNodeSpecificDown', () => {
   });
 
   it('falls back to the type callback', ({ expect }) => {
-    const result = transformer.transformNodeSpecificDown<'unsafe', Tall>(tall, {
+    const result = transformer.transformNodeSpecificPreOrder<'unsafe', Tall>(tall, {
       box: { transform: copy => ({ ...copy, label: 'fallback' }) },
     }, {});
 

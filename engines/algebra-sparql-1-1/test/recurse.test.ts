@@ -11,13 +11,30 @@ import { suites } from './algebra.test.js';
 describe('util functions', () => {
   const factory = new AlgebraFactory();
 
+  /**
+   * `SELECT *` - which is what an empty projection is generated as - is only permitted
+   * when the query does not use grouping (https://www.w3.org/TR/sparql12-query/#modProjection).
+   * The round trip below therefore says nothing about grouped queries.
+   */
+  function usesGrouping(op: Algebra.Operation): boolean {
+    let grouping = false;
+    algebraUtils.visitOperation(op, {
+      // Variables of a nested projection are masked, its grouping is of no concern here.
+      project: { preVisitor: () => ({ continue: false }) },
+      group: { visitor: () => {
+        grouping = true;
+      } },
+    });
+    return grouping;
+  }
+
   for (const suite of suites) {
     describe(suite, () => {
       for (const test of sparqlAlgebraTests(suite, false, true)) {
         const { name, json: expected } = test;
         it (name, ({ expect }) => {
           const clone = <Algebra.Operation> algebraUtils.mapOperation(<Algebra.Operation>expected, {});
-          if (clone.type === 'project') {
+          if (clone.type === 'project' && !usesGrouping(clone.input)) {
             const scope = algebraUtils.inScopeVariables(clone.input);
             // Console.log(scope);
             const project = <Algebra.Project> toAlgebra(toAst(factory.createProject(clone.input, [])));

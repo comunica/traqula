@@ -289,9 +289,17 @@ export function objectify(algebra: any): any {
 }
 
 /**
- * Detects all in-scope variables.
+ * Detects all [in-scope variables](https://www.w3.org/TR/sparql12-query/#variableScope).
  * In practice this means iterating through the entire algebra tree, finding all variables,
- * and stopping when a project function is found.
+ * and stopping at every operation that hides the variables of its input:
+ * - PROJECT only exposes the variables it projects.
+ * - GROUP only exposes its keys and the variables its aggregates are bound to.
+ * - The right-hand side of a MINUS is not in scope, only the left-hand side is.
+ * - The pattern of an `(NOT) EXISTS` is not in scope
+ *   ("use of a variable in FILTER or in MINUS does not cause the variable to be in-scope
+ *   outside of those forms").
+ * - The templates of a CONSTRUCT or a DELETE/INSERT consume solution mappings,
+ *   they do not produce them, so their variables are not in scope either.
  * @param {Operation} op - Input algebra tree.
  * @param visitor the visitor to be used to traverse the various nodes.
  * Allows you to provide a visitor with different default preVisitor cotexts.
@@ -339,11 +347,25 @@ export function inScopeVariables(
   function visitingRecursion(curOp: A.BaseOperation): void {
     // https://www.w3.org/TR/sparql11-query/#variableScope
     visitor(curOp, {
-      [Types.EXPRESSION]: { visitor: (op: A.Expression & { variable?: RDF.Variable }) => {
-        if (op.subType === ExpressionTypes.AGGREGATE && (op).variable) {
-          addVariable((op).variable);
-        }
-      } },
+      [Types.CONSTRUCT]: {
+        // The variables of the template are consumed, they are not in scope.
+        preVisitor: () => ({ ignoreKeys: new Set([ 'template' ]) }),
+      },
+      [Types.DELETE_INSERT]: {
+        // The variables of the templates are consumed, they are not in scope.
+        preVisitor: () => ({ ignoreKeys: new Set([ 'delete', 'insert' ]) }),
+      },
+      [Types.EXPRESSION]: {
+        // Variables only used within an expression are not in scope,
+        // this includes the pattern of an (NOT) EXISTS.
+        preVisitor: (op: A.Expression) =>
+          op.subType === ExpressionTypes.EXISTENCE ? { continue: false } : {},
+        visitor: (op: A.Expression & { variable?: RDF.Variable }) => {
+          if (op.subType === ExpressionTypes.AGGREGATE && (op).variable) {
+            addVariable((op).variable);
+          }
+        },
+      },
       [Types.EXTEND]: { visitor: op =>
         addVariable(op.variable),
       },
@@ -352,11 +374,16 @@ export function inScopeVariables(
           addVariable(op.name);
         }
       } },
-      [Types.GROUP]: { visitor: (op) => {
-        for (const v of op.variables) {
-          addVariable(v);
-        }
-      } },
+      [Types.GROUP]: {
+        // A group only outputs its keys and the variables its aggregates are bound to,
+        // the variables of its input are not visible above it.
+        preVisitor: () => ({ ignoreKeys: new Set([ 'variables', 'input' ]) }),
+        visitor: (op) => {
+          for (const v of op.variables) {
+            addVariable(v);
+          }
+        },
+      },
       [Types.PATH]: { visitor: (op) => {
         // Subject
         if (op.subject.termType === 'Variable') {

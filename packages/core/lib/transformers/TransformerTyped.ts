@@ -105,9 +105,11 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
    * so there is no separate preVisitor - only the per type defaults of this transformer, which are
    * looked up using the type of the value you return.
    *
-   * A node that is the result of a rewrite is transformed once. Rules rewriting a node into a node taking
-   * the exact same place - like a rule merging two nested filters - additionally need
-   * {@link TransformContext.reTransform}, making the transform be applied until the node stabilizes.
+   * The node a rewrite returns is not dispatched again: the rewrite counts as its transformation, and we
+   * iterate straight into its descendants. Rules rewriting a node into a node taking the exact same place -
+   * like a rule merging two nested filters - therefore need {@link TransformContext.reTransform}, making the
+   * transform be applied until the node stabilizes. An array is the exception: it is never dispatched as a
+   * whole, its elements are, so they do go through the callbacks again.
    *
    * Also contrary to {@link this.transformNode}, the descendants of the node given to the callback are not
    * transformed yet: they are the nodes of the input tree itself. You are free to replace the node,

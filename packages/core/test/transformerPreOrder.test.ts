@@ -255,9 +255,53 @@ describe('transformObjectPreOrder', () => {
     const impatient = new ImpatientTransformer({ reTransform: true });
 
     expect(() => impatient.transformObjectPreOrder({ name: 'root' }, copy => ({ newValue: { ...copy }})))
-      .toThrow(/Pre order transform did not converge: rewrote the same object 4 times$/u);
+      .toThrow(/Pre order transform did not converge: rewrote the same position 4 times$/u);
     expect(() => impatient.transformObjectPreOrder({ type: 'fruit' }, copy => ({ newValue: { ...copy }})))
-      .toThrow(/Pre order transform did not converge: rewrote the same object 4 times \(last type: fruit\)$/u);
+      .toThrow(/Pre order transform did not converge: rewrote the same position 4 times \(last type: fruit\)$/u);
+  });
+
+  it('throws when a rule keeps wrapping its argument in an array', ({ expect }) => {
+    class ImpatientTransformer extends TransformerObject {
+      protected override readonly maxNodeRewrites = 3;
+    }
+
+    // The elements of a returned array are mapped again, so a rule wrapping its argument never stabilizes.
+    // The stack does not grow while this happens, so only the hand-back bound catches it.
+    expect(() => new ImpatientTransformer().transformObjectPreOrder({ name: 'root' }, copy =>
+      ({ newValue: [ copy ]}))).toThrow(/did not converge: rewrote the same position 4 times$/u);
+  });
+
+  it('shortcuts a mapping that asks to be remapped', ({ expect }) => {
+    const mapped: string[] = [];
+
+    const result = <Chain> plain.transformObjectPreOrder({ name: 'a', child: { name: 'child' }}, (copy) => {
+      const node = <Chain> copy;
+      mapped.push(node.name);
+      return { newValue: { ...node, name: `${node.name}!` }, reTransform: true, shortcut: true };
+    });
+
+    // The mapping is made, but the shortcut ends the traversal before it is handed back
+    expect(mapped).toEqual([ 'a' ]);
+    expect(result.name).toBe('a!');
+  });
+
+  it('copies a replacement taken from the input tree, even when not iterating into it', ({ expect }) => {
+    const inner: Chain = { name: 'inner' };
+    const items = [ inner ];
+    const tree = { name: 'root', child: { name: 'child', inner, items }};
+    const replaceChildBy = (pick: (child: any) => unknown, context: TransformContext): any =>
+      plain.transformObjectPreOrder(tree, (copy) => {
+        const node = <{ name: string }> copy;
+        return node.name === 'child' ? { ...context, newValue: pick(node) } : { newValue: node };
+      });
+
+    // Both an object and an array of the input tree end up copied, so the result never aliases the input
+    for (const context of <TransformContext[]> [{ continue: false }, { shortcut: true }]) {
+      expect(replaceChildBy(child => child.inner, context)).toEqual({ name: 'root', child: inner });
+      expect(replaceChildBy(child => child.inner, context).child).not.toBe(inner);
+      expect(replaceChildBy(child => child.items, context).child).not.toBe(items);
+      expect(replaceChildBy(child => child.items, context).child).toEqual([ inner ]);
+    }
   });
 
   it('throws when the stack overflows', ({ expect }) => {

@@ -73,8 +73,8 @@ export interface SelectiveTraversalContext<Nodes> {
 export class TransformerObject {
   protected maxStackSize = 1_000_000;
   /**
-   * The number of times a single object may be rewritten by {@link transformObjectPreOrder} before we
-   * assume the rewriting rules do not converge.
+   * The number of times {@link transformObjectPreOrder} may hand the same position in the tree back to the
+   * traversal - by remapping it, or by wrapping it in an array - before we assume the rules do not converge.
    */
   protected maxNodeRewrites = 1_000;
   /**
@@ -255,8 +255,8 @@ export class TransformerObject {
    *   If shortcut is true, we do not iterate deeper, nor do we branch out, this is the last mapping made.
    *    - Default false
    *   The value is handed back to the traversal, and so mapped again, when the mapping asked for
-   *   {@link TransformContext.reTransform}, in which case the mapping has to converge
-   *   within {@link maxNodeRewrites} rewrites.
+   *   {@link TransformContext.reTransform}. An array is always handed back, and its elements are mapped
+   *   in turn. Either way the rules have to converge within {@link maxNodeRewrites} hand-backs.
    */
   public transformObjectPreOrder(
     startObject: object,
@@ -274,8 +274,9 @@ export class TransformerObject {
     // Contrary to {@link transformObject}, an object is mapped when it is popped of the stack,
     // so its result can be assigned to its parent right away - no reverse stack needed.
     let didShortCut = false;
-    // Counts how often the object currently on top of the stack was rewritten into another object.
-    // A rewrite is pushed back onto the stack, so it is popped again on the very next iteration.
+    // Counts how often the position currently being mapped was handed back to the traversal instead of
+    // settling: a rewrite asking to be mapped again, or an array whose elements we map in turn.
+    // Whatever is handed back is pushed onto the stack, so it is popped again on the very next iteration.
     let rewrites = 0;
     const resultWrap = { res: <unknown> startObject };
 
@@ -312,17 +313,35 @@ export class TransformerObject {
       // The object is mapped, the value takes its place in the tree
       curParent[curKey] = newValue;
 
-      // A mapper returning the object it was given is done with it, and so is one returning something we
-      // never map again: an array or a plain value.
-      const isRewrite = newValue !== copy && newValue !== null && typeof newValue === 'object' &&
-        !Array.isArray(newValue);
+      const continues = context.continue ?? defaultContinues;
+      const ignoreKeys = context.ignoreKeys ?? defaultIgnoreKeys;
+      const shallowKeys = context.shallowKeys ?? defaultShallowKeys;
+      didShortCut = context.shortcut ?? defaultDidShortCut;
 
-      // A rewrite asking to be mapped again is simply handed back to the traversal. A rule creating a new
-      // object every time would never stabilize, hence the bound on the rewrites of a single object.
-      if (isRewrite && (context.reTransform ?? defaultReTransform)) {
+      // Only objects can be iterated into, and a plain value cannot alias the input tree either.
+      if (newValue === null || typeof newValue !== 'object') {
+        rewrites = 0;
+        continue;
+      }
+
+      // A value the mapper did not get from us can be an object taken straight from the input tree.
+      const isForeign = newValue !== copy;
+      // A mapper returning the object it was given is done with it. An array is never mapped as a whole,
+      // so it is never a rewrite - only its elements are mapped, and they can be rewrites in turn.
+      const isRewrite = isForeign && !Array.isArray(newValue);
+
+      // Values that are handed back to the traversal instead of being iterated into right away:
+      // a rewrite asking to be mapped again, and an array, whose copy is what we iterate into.
+      // A rule handing back a new value on every call would never stabilize - that holds just as much for
+      // a rule wrapping its argument in an array - hence the bound on how often one position is handed back.
+      // Nothing is handed back once shortcutted: the traversal ends with this mapping.
+      const handsBack = !didShortCut && (Array.isArray(newValue) ?
+        continues :
+        isRewrite && (context.reTransform ?? defaultReTransform));
+      if (handsBack) {
         if (++rewrites > this.maxNodeRewrites) {
           const type = (<Partial<Typed>> newValue).type;
-          throw new Error(`Pre order transform did not converge: rewrote the same object ${
+          throw new Error(`Pre order transform did not converge: rewrote the same position ${
             this.maxNodeRewrites + 1} times${typeof type === 'string' ? ` (last type: ${type})` : ''}`);
         }
         stack.push(newValue);
@@ -332,37 +351,29 @@ export class TransformerObject {
       }
       rewrites = 0;
 
-      const continues = context.continue ?? defaultContinues;
-      const ignoreKeys = context.ignoreKeys ?? defaultIgnoreKeys;
-      const shallowKeys = context.shallowKeys ?? defaultShallowKeys;
-      didShortCut = context.shortcut ?? defaultDidShortCut;
+      // A foreign value can be an object of the input tree, and both iterating into an object and handing it
+      // back as part of the result alias that tree, so copy it first - just like we copied the object we
+      // started from. An array is not copied through cloneObj, which does not preserve array exotic objects.
+      const node = isForeign && defaultCopyFlag ?
+          (Array.isArray(newValue) ? [ ...<unknown[]> newValue ] : this.cloneObj(newValue)) :
+        newValue;
+      curParent[curKey] = node;
 
-      // Extend stack if needed. Only objects can be iterated into,
+      // Extend stack if needed. An array that reaches this point is not iterated into,
       // and when shortcutted, the traversal ends, so no longer add to it.
-      if (newValue !== null && typeof newValue === 'object' && continues && !didShortCut) {
-        if (Array.isArray(newValue)) {
-          // An array the mapper returned is handed back to the traversal,
-          // which copies it and maps its elements in turn.
-          stack.push(newValue);
-          stackParent.push(curParent);
-          stackParentKey.push(curKey);
-          continue;
-        }
-        // A rewrite can be an object taken straight from the input tree, and iterating into an object
-        // writes into it, so copy it first - just like we copied the object we started from.
-        const node = <Record<string, unknown>> (isRewrite && defaultCopyFlag ? this.cloneObj(newValue) : newValue);
-        curParent[curKey] = node;
-        for (const key in node) {
-          if (!Object.hasOwn(node, key)) {
+      if (continues && !didShortCut && !Array.isArray(node)) {
+        const record = <Record<string, unknown>> node;
+        for (const key in record) {
+          if (!Object.hasOwn(record, key)) {
             continue;
           }
-          const val = node[key];
+          const val = record[key];
 
           // If shallow copy required, do
           const onlyShallow = shallowKeys && shallowKeys?.has(key);
           if (onlyShallow) {
             // Do not add stack entry - assign straight away
-            node[key] = this.cloneObj(val);
+            record[key] = this.cloneObj(val);
           }
           if (ignoreKeys && ignoreKeys.has(key)) {
             // Do not add stack entry
@@ -372,7 +383,7 @@ export class TransformerObject {
             // Do add stack entry.
             stack.push(val);
             stackParentKey.push(key);
-            stackParent.push(node);
+            stackParent.push(record);
           }
         }
       }

@@ -100,9 +100,11 @@ export const mapOperation = transformer.transformNode.bind(transformer);
  * value. Since the callback decides what we iterate into, it is the one telling us how to iterate into it,
  * so there is no separate preVisitor.
  *
- * An operation that is the result of a rewrite is transformed once. Rules rewriting an operation into an
- * operation taking the exact same place - like a rule merging two nested filters - additionally need
- * {@link TransformContext.reTransform}, making the transform be applied until the operation stabilizes.
+ * The operation a rewrite returns is not dispatched again: the rewrite counts as its transformation, and we
+ * iterate straight into its descendants. Rules rewriting an operation into an operation taking the exact same
+ * place - like a rule merging two nested filters - therefore need {@link TransformContext.reTransform},
+ * making the transform be applied until the operation stabilizes. An array is the exception: it is never
+ * dispatched as a whole, its elements are, so they do go through the callbacks again.
  *
  * Also contrary to {@link mapOperation}, the descendants of the operation given to the callback are not
  * transformed yet: they are the operations of the input tree itself. You are free to replace the operation,

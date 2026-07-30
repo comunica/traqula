@@ -168,7 +168,8 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
 
   /**
    * Creates the preVisitor dispatching to the preVisitor registered for the subType of the visited object,
-   * falling back to the one registered for its type.
+   * falling back to the one registered for its type, and to the context registered in the
+   * {@link defaultNodePreVisitor} of this transformer - just like {@link TransformerTyped.typedPreVisitWrapper}.
    * @protected
    */
   protected subTypedPreVisitWrapper(
@@ -177,19 +178,25 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
       preVisitor?: (orig: any) => VisitContext;
     } | undefined> | undefined>,
   ): (orig: object) => TransformContext {
+    const nodeDefaults = <Record<string, TransformContext | undefined>> this.defaultNodePreVisitor;
     return (curObject: object): TransformContext => {
       let ogPreVisit: ((node: any) => VisitContext) | undefined;
+      let nodeContext: TransformContext = {};
       const casted = <SubTyped<Nodes['type']>>curObject;
-      if (casted.type && casted.subType) {
-        const specific = nodeSpecificCallBacks[casted.type];
-        if (specific) {
-          ogPreVisit = specific[casted.subType]?.preVisitor;
-        }
-        if (!ogPreVisit) {
-          ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
+      if (casted.type) {
+        nodeContext = nodeDefaults[casted.type] ?? nodeContext;
+        // Only a node carrying a subType can be dispatched, the type only serves to find the right dictionary
+        if (casted.subType) {
+          const specific = nodeSpecificCallBacks[casted.type];
+          if (specific) {
+            ogPreVisit = specific[casted.subType]?.preVisitor;
+          }
+          if (!ogPreVisit) {
+            ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
+          }
         }
       }
-      return ogPreVisit ? ogPreVisit(casted) : {};
+      return ogPreVisit ? { ...nodeContext, ...ogPreVisit(casted) } : nodeContext;
     };
   }
 

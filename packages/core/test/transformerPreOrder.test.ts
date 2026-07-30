@@ -271,6 +271,41 @@ describe('transformObjectPreOrder', () => {
       ({ newValue: [ copy ]}))).toThrow(/did not converge: rewrote the same position 4 times$/u);
   });
 
+  it('counts the hand-backs of a position, not those of the whole traversal', ({ expect }) => {
+    class ImpatientTransformer extends TransformerObject {
+      protected override readonly maxNodeRewrites = 3;
+    }
+    const impatient = new ImpatientTransformer();
+    // Positions that hand back an array we can map nothing of - a rule deleting nodes, say - would let the
+    // count of one leak into the next were it kept for the traversal as a whole
+    const siblings = Object.fromEntries(
+      Array.from({ length: 10 }, (_, index) => [ `k${index}`, { name: `k${index}` }]),
+    );
+
+    const result = impatient.transformObjectPreOrder({ name: 'root', ...siblings }, (copy) => {
+      const node = <Chain> copy;
+      return { newValue: node.name === 'root' ? node : []};
+    });
+
+    expect(result).toEqual({ name: 'root', ...Object.fromEntries(Object.keys(siblings).map(key => [ key, []])) });
+  });
+
+  it('lets the elements of a handed back array inherit its count', ({ expect }) => {
+    class ImpatientTransformer extends TransformerObject {
+      protected override readonly maxNodeRewrites = 3;
+    }
+    const impatient = new ImpatientTransformer();
+
+    // Alternating between wrapping in an array and remapping never stabilizes either, and neither step
+    // settles the position, so the two have to keep counting towards the same bound
+    expect(() => impatient.transformObjectPreOrder({ name: 'root' }, (copy) => {
+      const node = <Chain> copy;
+      return node.name === 'root' ?
+          { newValue: [{ ...node, name: 'wrapped' }]} :
+          { newValue: { ...node, name: 'root' }, reTransform: true };
+    })).toThrow(/did not converge: rewrote the same position 4 times$/u);
+  });
+
   it('shortcuts a mapping that asks to be remapped', ({ expect }) => {
     const mapped: string[] = [];
 

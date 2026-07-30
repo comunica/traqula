@@ -274,15 +274,16 @@ export class TransformerObject {
     // Contrary to {@link transformObject}, an object is mapped when it is popped of the stack,
     // so its result can be assigned to its parent right away - no reverse stack needed.
     let didShortCut = false;
-    // Counts how often the position currently being mapped was handed back to the traversal instead of
-    // settling: a rewrite asking to be mapped again, or an array whose elements we map in turn.
-    // Whatever is handed back is pushed onto the stack, so it is popped again on the very next iteration.
-    let rewrites = 0;
     const resultWrap = { res: <unknown> startObject };
 
     const stack = [ startObject ];
     const stackParent: object[] = [ resultWrap ];
     const stackParentKey: string[] = [ 'res' ];
+    // Counts, per stack entry, how often the position it takes was handed back to the traversal instead of
+    // settling: a rewrite asking to be mapped again, or an array whose elements we map in turn.
+    // The elements of a handed back array inherit the count of that array, so a rule wrapping its argument
+    // keeps climbing, while positions that have nothing to do with each other never share a count.
+    const stackRewrites: number[] = [ 0 ];
 
     // Since there is nothing left to unwind, a shortcut simply ends the traversal.
     // Objects still on the stack keep the place they have in the (shallow) copy of their parent.
@@ -290,6 +291,7 @@ export class TransformerObject {
       const curObject = stack.pop()!;
       const curParent = <Record<string, unknown>> stackParent.pop()!;
       const curKey = stackParentKey.pop()!;
+      const rewrites = stackRewrites.pop()!;
 
       if (Array.isArray(curObject)) {
         const newArr = [ ...curObject ];
@@ -301,6 +303,7 @@ export class TransformerObject {
             stack.push(val);
             stackParent.push(newArr);
             stackParentKey.push(index.toString());
+            stackRewrites.push(rewrites);
           }
         }
         continue;
@@ -320,7 +323,6 @@ export class TransformerObject {
 
       // Only objects can be iterated into, and a plain value cannot alias the input tree either.
       if (newValue === null || typeof newValue !== 'object') {
-        rewrites = 0;
         continue;
       }
 
@@ -339,7 +341,7 @@ export class TransformerObject {
         continues :
         isRewrite && (context.reTransform ?? defaultReTransform));
       if (handsBack) {
-        if (++rewrites > this.maxNodeRewrites) {
+        if (rewrites >= this.maxNodeRewrites) {
           const type = (<Partial<Typed>> newValue).type;
           throw new Error(`Pre order transform did not converge: rewrote the same position ${
             this.maxNodeRewrites + 1} times${typeof type === 'string' ? ` (last type: ${type})` : ''}`);
@@ -347,9 +349,9 @@ export class TransformerObject {
         stack.push(newValue);
         stackParent.push(curParent);
         stackParentKey.push(curKey);
+        stackRewrites.push(rewrites + 1);
         continue;
       }
-      rewrites = 0;
 
       // A foreign value can be an object of the input tree, and both iterating into an object and handing it
       // back as part of the result alias that tree, so copy it first - just like we copied the object we
@@ -380,10 +382,11 @@ export class TransformerObject {
             continue;
           }
           if (!onlyShallow && val !== null && typeof val === 'object') {
-            // Do add stack entry.
+            // Do add stack entry. A descendant is a position of its own, it starts counting from scratch.
             stack.push(val);
             stackParentKey.push(key);
             stackParent.push(record);
+            stackRewrites.push(0);
           }
         }
       }

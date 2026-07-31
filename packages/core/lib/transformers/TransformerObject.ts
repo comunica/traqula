@@ -241,6 +241,19 @@ export class TransformerObject {
    * @param startObject object to start iterating from
    * @param preMapper mapper to transform the various objects -
    *   first argument is a copy of the original if default setup says to copy.
+   *   It returns a {@link PreOrderMappingReturn}: the value taking the place of the object - the value we
+   *   iterate into - together with the {@link TransformContext} steering that iteration. Since the mapper
+   *   is the one deciding what the descendants of that value are, it hands us that context itself, there is
+   *   no separate preVisitor. Whether we copy is therefore not up to the mapper either,
+   *   the default context of this transformer decides that.
+   *   The returned value is only handed back to the traversal - and thus mapped again - when the mapper
+   *   asked for {@link TransformContext.reTransform}, in any other case we iterate straight into its
+   *   descendants. An array is the exception: it is never mapped as a whole, its elements are handed back
+   *   and mapped in turn. Either way the rules have to settle a position within {@link maxNodeRewrites}
+   *   hand-backs of that position, or we assume they do not converge and throw.
+   *   A {@link VisitContext.shortcut} simply ends the traversal - since an object is already mapped when we
+   *   iterate into it, there is nothing left to unwind - leaving the objects still on the stack in the place
+   *   they have in the (shallow) copy of their parent.
    */
   public transformObjectPreOrder(
     startObject: object,

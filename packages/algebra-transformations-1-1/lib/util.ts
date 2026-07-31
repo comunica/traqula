@@ -5,7 +5,7 @@ import type * as A from './algebra.js';
 import { ExpressionTypes, Types } from './algebra.js';
 
 const transformer = new TransformerSubTyped<A.Operation>({}, {
-  // Optimization that causes search tree pruning
+  // Optimization that causes search tree pruning -- do not step into RDF.Term objects, they are outside the algebra.
   [Types.PATTERN]: { ignoreKeys: new Set([ 'subject', 'predicate', 'object', 'graph' ]) } satisfies TransformContext,
   [Types.EXPRESSION]: { ignoreKeys: new Set([ 'name', 'term', 'wildcard', 'variable' ]) } satisfies VisitContext,
   [Types.DESCRIBE]: { ignoreKeys: new Set([ 'terms' ]) },
@@ -75,6 +75,56 @@ const transformer = new TransformerSubTyped<A.Operation>({}, {
 export const mapOperation = transformer.transformNode.bind(transformer);
 
 /**
+ * Transform a single operation pre-order, the dual of {@link mapOperation}: an operation is mapped
+ * _before_ its descendants, and we iterate into the result of that mapping.
+ * This is what you want for an operation that has to travel deeper into the tree,
+ * like a filter pushdown: the callback only describes how the filter swaps places with the operation right
+ * below it, and the filters it sank into are mapped in turn.
+ * e.g. sinking a filter into every branch of the unions below it:
+ * ```ts
+ * mapOperationPreOrder({
+ *   type: Algebra.Types.FILTER,
+ *   expression,
+ *   input: {
+ *     type: Algebra.Types.UNION,
+ *     input: [{ type: Algebra.Types.BGP }, { type: Algebra.Types.BGP }],
+ *   },
+ * }, {
+ *   [Algebra.Types.FILTER]: (filter) => {
+ *     if (filter.input.type === Algebra.Types.UNION) {
+ *       return { newValue: algebraFactory.createUnion(
+ *         filter.input.input.map(branch => algebraFactory.createFilter(branch, filter.expression)),
+ *         false,
+ *       ) };
+ *     }
+ *     // Any other operation is a barrier for this filter
+ *     return { newValue: filter };
+ *   },
+ * });
+ * const returns = {
+ *   type: Algebra.Types.UNION,
+ *   input: [
+ *     { type: Algebra.Types.FILTER, expression, input: { type: Algebra.Types.BGP }},
+ *     { type: Algebra.Types.FILTER, expression, input: { type: Algebra.Types.BGP }},
+ *   ],
+ * };
+ * ```
+ * Contrary to {@link mapOperation}, a callback returns the value taking the place of the operation together
+ * with the {@link TransformContext} of that value, so there is no separate preVisitor. The descendants of
+ * the operation it is called on are not mapped yet either - they are the operations of the input tree
+ * itself - so changing the properties _of a descendant_ writes straight into that tree.
+ * Both are documented in detail on {@link TransformerTyped.transformNodePreOrder}.
+ * @param startObject the object from which we will start the transformation,
+ *   potentially visiting and transforming its descendants along the way.
+ * @param nodeCallBacks a dictionary mapping the various operation types to a mapper.
+ *    The mapper allows you to manipulate the copy of the current operation, and expects you to return the
+ *    value that should take the current operations place, together with the context of that value.
+ *    That context steers how we iterate into the returned value.
+ * @return the result of transforming the startObject and the descendants of its rewrites.
+ */
+export const mapOperationPreOrder = transformer.transformNodePreOrder.bind(transformer);
+
+/**
  * Transform a single operation, similar to {@link mapOperation}, but also allowing you to target subTypes.
  * e.g. wrapping a distinct around the all project operations not contained in an aggregate expression
  * (invalid algebra anyway):
@@ -129,6 +179,38 @@ export const mapOperation = transformer.transformNode.bind(transformer);
  * using a transformer that works its way back up from the descendant to the startObject.
  */
 export const mapOperationSub = transformer.transformNodeSpecific.bind(transformer);
+
+/**
+ * Transform a single operation pre-order, similar to {@link mapOperationPreOrder},
+ * but also allowing you to target subTypes - it is to {@link mapOperationSub} what
+ * {@link mapOperationPreOrder} is to {@link mapOperation}.
+ * e.g. replacing every aggregate expression, and iterating into the operator expression it becomes:
+ * ```ts
+ * mapOperationSubPreOrder(
+ *   algebraFactory.createAggregateExpression('count', inner, false),
+ *   {},
+ *   { [Algebra.Types.EXPRESSION]: { [Algebra.ExpressionTypes.AGGREGATE]: copy =>
+ *     ({ newValue: algebraFactory.createOperatorExpression('!', [ copy.expression ]) }),
+ *   }},
+ * );
+ * ```
+ * Just like {@link mapOperationSub}, a callback registered for the subType of an operation takes
+ * precedence over the one registered for its type.
+ * The same caveats as on {@link mapOperationPreOrder} apply: the callback returns the value taking the
+ * place of the operation together with the {@link TransformContext} of that value, and the descendants
+ * it is handed are those of the input tree.
+ * They are documented in detail on {@link TransformerSubTyped.transformNodeSpecificPreOrder}.
+ * @param startObject the object from which we will start the transformation,
+ *   potentially visiting and transforming its descendants along the way.
+ * @param nodeCallBacks a dictionary mapping the various operation types to a mapper.
+ *    The mapper allows you to manipulate the copy of the current operation, and expects you to return the
+ *    value that should take the current operations place, together with the context of that value.
+ *    That context steers how we iterate into the returned value.
+ * @param nodeSpecificCallBacks Same as nodeCallBacks but using an additional level of indirection to
+ *     indicate the subType.
+ * @return the result of transforming the startObject and the descendants of its rewrites.
+ */
+export const mapOperationSubPreOrder = transformer.transformNodeSpecificPreOrder.bind(transformer);
 
 /**
  * Similar to {@link mapOperation}, but only visiting instead of copying and transforming explicitly.

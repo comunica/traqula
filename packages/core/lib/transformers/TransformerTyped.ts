@@ -95,7 +95,50 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
   }
 
   /**
-   * TODO(short)
+   * Transform a single node ({@link Typed}) pre-order, the dual of {@link this.transformNode}.
+   * Transforms a node _before_ its descendants, and iterates into the result of that transformation.
+   *
+   * This is what you want when an operation has to travel deeper into the tree, like a filter pushdown:
+   * a callback only has to describe how a node swaps places with the node right below it,
+   * the copy it sank into is visited in turn, and swaps places with the node below that one.
+   * ```ts
+   * transformer.transformNodePreOrder(query, {
+   *   filter: (copy) => {
+   *     const child = copy.input;
+   *     // Sink the filter into every branch of a union - both new filters keep sinking on their own.
+   *     if (child.type === 'union') {
+   *       return { newValue: { ...child, input: child.input.map(branch => ({ ...copy, input: branch })) }};
+   *     }
+   *     // Anything else is a barrier: returning the copy untouched stops the descent of this filter.
+   *     return { newValue: copy };
+   *   },
+   * });
+   * ```
+   * Contrary to {@link this.transformNode}, a callback does not just return the value taking the place of
+   * the node, it returns a {@link PreOrderMappingReturn}: that value, plus the {@link TransformContext} of
+   * that value. Since the callback decides what we iterate into, it is the one telling us how to iterate
+   * into it, so there is no separate preVisitor - it only completes the per type defaults of this
+   * transformer, which are looked up using the type of the node it was called on.
+   *
+   * The node a callback returns is not dispatched again: the rewrite counts as its transformation, and we
+   * iterate straight into its descendants. Rules rewriting a node into a node taking the exact same place -
+   * like a rule merging two nested filters - therefore need {@link TransformContext.reTransform}, making the
+   * transform be applied until the node stabilizes. An array is the exception: it is never dispatched as a
+   * whole, its elements are, so they do go through the callbacks again.
+   *
+   * Also contrary to {@link this.transformNode}, the descendants of the node given to the callback are not
+   * transformed yet: they are the nodes of the input tree itself. You are free to replace the node,
+   * to reuse its descendants in the node you return, and to change the own properties of the copy you got,
+   * but changing the properties _of a descendant_ writes straight into the input tree.
+   * Remapping callbacks additionally have to converge.
+   * Both are documented in detail on {@link TransformerObject.transformObjectPreOrder}.
+   * @param startObject the object from which we will start the transformation,
+   *   potentially visiting and transforming its descendants along the way.
+   * @param nodeCallBacks a dictionary mapping the various node types to a mapper.
+   *    The mapper allows you to manipulate the copy of the current node, and expects you to return the
+   *    value that should take the current nodes place, together with the context of that value.
+   *    That context steers how we iterate into the returned value.
+   * @return the result of transforming the startObject and the descendants of its rewrites.
    */
   public transformNodePreOrder<Safe extends Safeness = 'safe', OutType = unknown>(
     startObject: object,

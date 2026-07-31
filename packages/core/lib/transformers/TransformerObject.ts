@@ -241,6 +241,13 @@ export class TransformerObject {
    * @param startObject object to start iterating from
    * @param preMapper mapper to transform the various objects -
    *   first argument is a copy of the original if default setup says to copy.
+   *   It returns a {@link PreOrderMappingReturn}: the value taking the place of the object - which is what
+   *   we iterate into - and the context steering how we handle that value. Since the mapper decides what
+   *   the descendants of that value are, it provides that context itself, there is no separate preVisitor.
+   *   The value is handed back to the traversal, and so mapped again, when the mapping asked for
+   *   {@link TransformContext.reTransform}. An array is always handed back - it is never mapped as a whole,
+   *   its elements are mapped in turn. Either way the rules have to converge within
+   *   {@link maxNodeRewrites} hand-backs of the same position.
    */
   public transformObjectPreOrder(
     startObject: object,
@@ -266,15 +273,17 @@ export class TransformerObject {
     // Counts for ech object how many times it has been rewritten
     const stackRewriteCount: number[] = [ 0 ];
 
-    function pushArrayOnStack(array: unknown[]): void {
+    function pushArrayOnStack(array: unknown[], rewriteCount: number): void {
       // Register all containing objects in the stack to be handled.
+      // The elements inherit the count of the array: an array is not mapped as a whole, so it does not
+      // settle the position it takes, a rule wrapping its argument in one has to keep climbing.
       for (let index = array.length - 1; index >= 0; index--) {
         const val = array[index];
         if (val !== null && typeof val === 'object') {
           stack.push(val);
           stackParent.push(array);
           stackParentKey.push(index.toString());
-          stackRewriteCount.push(0);
+          stackRewriteCount.push(rewriteCount);
         }
       }
     }
@@ -295,7 +304,7 @@ export class TransformerObject {
       if (Array.isArray(curObject)) {
         const newArr = [ ...curObject ];
         curParent[curKey] = newArr;
-        pushArrayOnStack(newArr);
+        pushArrayOnStack(newArr, rewriteCount);
         continue;
       }
 
@@ -319,8 +328,10 @@ export class TransformerObject {
         continue;
       }
       // We cannot retransform an array since the API never gives array to the callback.
+      // Its elements are handed back to the traversal instead, and are mapped in turn.
       if (Array.isArray(newValue)) {
-        pushArrayOnStack(newValue);
+        pushArrayOnStack(newValue, rewriteCount + 1);
+        continue;
       }
       // If we need to re transform, register the object instead of its children.
       if (reTransform) {
@@ -328,6 +339,7 @@ export class TransformerObject {
         stackParent.push(curParent);
         stackParentKey.push(curKey);
         stackRewriteCount.push(rewriteCount + 1);
+        continue;
       }
       // In any other case, push the children, ignoring ignoreKeys and shallowKeys.
       // Creating shallow copies of shallowKeys.
@@ -348,6 +360,9 @@ export class TransformerObject {
           }
         }
       }
+    }
+    if (stack.length >= this.maxStackSize) {
+      throw new Error('Transform object stack overflowed');
     }
     return resultWrap.res;
   }

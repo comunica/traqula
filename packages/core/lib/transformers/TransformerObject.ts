@@ -1,5 +1,3 @@
-import type { Typed } from '../types.js';
-
 export interface VisitContext {
   /**
    * Whether you should stop iterating after this object. Default false.
@@ -32,18 +30,12 @@ export interface TransformContext extends VisitContext {
   reTransform?: boolean;
 }
 
-/**
- * What a pre-order mapper ({@link TransformerObject.transformObjectPreOrder}) returns:
- * the value taking the place of the object it mapped, together with the {@link TransformContext}
- * steering how the traversal handles _that_ value - whether to map it again, to iterate into it,
- * and which of its keys to skip or to only copy shallowly.
- * Since a pre-order mapper decides what we iterate into, it is also the one providing this context:
- * contrary to the post-order {@link TransformerObject.transformObject},
- * there is no separate preVisitor to provide it.
- * Copying is not part of it: a pre-order mapper is always handed a copy to do with as it pleases,
- * so whether copies are made at all is a matter of the {@link TransformerObject.defaultContext}.
- */
-export type PreOrderMapping<T = unknown> = Omit<TransformContext, 'copy'> & { newValue: T };
+export type PreOrderMappingReturn = Omit<TransformContext, 'copy'> & {
+  /**
+   * The value to replace the current one with.
+   */
+  newValue: unknown;
+};
 
 export interface SelectiveTraversalContext<Nodes> {
   /**
@@ -72,11 +64,13 @@ export interface SelectiveTraversalContext<Nodes> {
  */
 export class TransformerObject {
   protected maxStackSize = 1_000_000;
+
   /**
    * The number of times {@link transformObjectPreOrder} may hand the same position in the tree back to the
    * traversal - by remapping it, or by wrapping it in an array - before we assume the rules do not converge.
    */
   protected maxNodeRewrites = 1_000;
+
   /**
    * Creates stateless transformer.
    * @param defaultContext
@@ -236,7 +230,7 @@ export class TransformerObject {
     }
     handleMapper();
 
-    return <any> resultWrap.res;
+    return resultWrap.res;
   }
 
   /**
@@ -245,22 +239,12 @@ export class TransformerObject {
    * It should be noted that the preMapper is called using a *shallow* copy of the object.
    * Meaning manipulation of nested objects changes the original!
    * @param startObject object to start iterating from
-   * @param preMapper mapper to transform the various objects - first argument is a copy of the original.
-   *   It returns a {@link PreOrderMapping}: the value taking the place of the object - which is what we
-   *   iterate into - and the context steering how we handle that value.
-   *   Since the mapper decides what its own descendants are, it provides that context itself,
-   *   there is no separate preVisitor.
-   *   If continue is false, we do not iterate deeper, the value still takes the place of the object.
-   *    - Default true
-   *   If shortcut is true, we do not iterate deeper, nor do we branch out, this is the last mapping made.
-   *    - Default false
-   *   The value is handed back to the traversal, and so mapped again, when the mapping asked for
-   *   {@link TransformContext.reTransform}. An array is always handed back, and its elements are mapped
-   *   in turn. Either way the rules have to converge within {@link maxNodeRewrites} hand-backs.
+   * @param preMapper mapper to transform the various objects -
+   *   first argument is a copy of the original if default setup says to copy.
    */
   public transformObjectPreOrder(
     startObject: object,
-    preMapper: (copy: object, orig: object) => PreOrderMapping,
+    preMapper: (copy: object, orig: object) => PreOrderMappingReturn,
   ): unknown {
     const defaults = this.defaultContext;
     const defaultCopyFlag = defaults.copy ?? true;
@@ -279,123 +263,93 @@ export class TransformerObject {
     const stack = [ startObject ];
     const stackParent: object[] = [ resultWrap ];
     const stackParentKey: string[] = [ 'res' ];
-    // Counts, per stack entry, how often the position it takes was handed back to the traversal instead of
-    // settling: a rewrite asking to be mapped again, or an array whose elements we map in turn.
-    // The elements of a handed back array inherit the count of that array, so a rule wrapping its argument
-    // keeps climbing, while positions that have nothing to do with each other never share a count.
-    const stackRewrites: number[] = [ 0 ];
+    // Counts for ech object how many times it has been rewritten
+    const stackRewriteCount: number[] = [ 0 ];
+
+    function pushArrayOnStack(array: unknown[]): void {
+      // Register all containing objects in the stack to be handled.
+      for (let index = array.length - 1; index >= 0; index--) {
+        const val = array[index];
+        if (val !== null && typeof val === 'object') {
+          stack.push(val);
+          stackParent.push(array);
+          stackParentKey.push(index.toString());
+          stackRewriteCount.push(0);
+        }
+      }
+    }
 
     // Since there is nothing left to unwind, a shortcut simply ends the traversal.
     // Objects still on the stack keep the place they have in the (shallow) copy of their parent.
     while (!didShortCut && stack.length > 0 && stack.length < this.maxStackSize) {
       const curObject = stack.pop()!;
+      // Parent is always a raw object (not an array since we handle that differently)
       const curParent = <Record<string, unknown>> stackParent.pop()!;
       const curKey = stackParentKey.pop()!;
-      const rewrites = stackRewrites.pop()!;
+      const rewriteCount = stackRewriteCount.pop()!;
+
+      if (rewriteCount >= this.maxNodeRewrites) {
+        throw new Error(`Pre order transform did not converge: rewrote the same position ${this.maxNodeRewrites} times.`, { cause: curObject });
+      }
 
       if (Array.isArray(curObject)) {
         const newArr = [ ...curObject ];
         curParent[curKey] = newArr;
-
-        for (let index = curObject.length - 1; index >= 0; index--) {
-          const val = <unknown> curObject[index];
-          if (val !== null && typeof val === 'object') {
-            stack.push(val);
-            stackParent.push(newArr);
-            stackParentKey.push(index.toString());
-            stackRewrites.push(rewrites);
-          }
-        }
+        pushArrayOnStack(newArr);
         continue;
       }
 
       // Map the object before its descendants, so that the mapper can decide what its descendants are.
       const copy = defaultCopyFlag ? this.cloneObj(curObject) : curObject;
-      const { newValue, ...context } = preMapper(copy, curObject);
+      const mapperResult = preMapper(copy, curObject);
+      const newValue = mapperResult.newValue;
 
       // The object is mapped, the value takes its place in the tree
       curParent[curKey] = newValue;
 
-      const continues = context.continue ?? defaultContinues;
-      const ignoreKeys = context.ignoreKeys ?? defaultIgnoreKeys;
-      const shallowKeys = context.shallowKeys ?? defaultShallowKeys;
-      didShortCut = context.shortcut ?? defaultDidShortCut;
+      const continues = mapperResult.continue ?? defaultContinues;
+      const ignoreKeys = mapperResult.ignoreKeys ?? defaultIgnoreKeys;
+      const shallowKeys = mapperResult.shallowKeys ?? defaultShallowKeys;
+      const reTransform = mapperResult.reTransform ?? defaultReTransform;
+      didShortCut = mapperResult.shortcut ?? defaultDidShortCut;
 
-      // Only objects can be iterated into, and a plain value cannot alias the input tree either.
-      if (newValue === null || typeof newValue !== 'object') {
+      // Register values of returned object onto the stack
+      // If primitive, or we do not go further, cannot do
+      if (!continues || didShortCut || (newValue === null || typeof newValue !== 'object')) {
         continue;
       }
-
-      // A value the mapper did not get from us can be an object taken straight from the input tree.
-      const isForeign = newValue !== copy;
-      // A mapper returning the object it was given is done with it. An array is never mapped as a whole,
-      // so it is never a rewrite - only its elements are mapped, and they can be rewrites in turn.
-      const isRewrite = isForeign && !Array.isArray(newValue);
-
-      // Values that are handed back to the traversal instead of being iterated into right away:
-      // a rewrite asking to be mapped again, and an array, whose copy is what we iterate into.
-      // A rule handing back a new value on every call would never stabilize - that holds just as much for
-      // a rule wrapping its argument in an array - hence the bound on how often one position is handed back.
-      // Nothing is handed back once shortcutted: the traversal ends with this mapping.
-      const handsBack = !didShortCut && (Array.isArray(newValue) ?
-        continues :
-        isRewrite && (context.reTransform ?? defaultReTransform));
-      if (handsBack) {
-        if (rewrites >= this.maxNodeRewrites) {
-          const type = (<Partial<Typed>> newValue).type;
-          throw new Error(`Pre order transform did not converge: rewrote the same position ${
-            this.maxNodeRewrites + 1} times${typeof type === 'string' ? ` (last type: ${type})` : ''}`);
-        }
+      // We cannot retransform an array since the API never gives array to the callback.
+      if (Array.isArray(newValue)) {
+        pushArrayOnStack(newValue);
+      }
+      // If we need to re transform, register the object instead of its children.
+      if (reTransform) {
         stack.push(newValue);
         stackParent.push(curParent);
         stackParentKey.push(curKey);
-        stackRewrites.push(rewrites + 1);
-        continue;
+        stackRewriteCount.push(rewriteCount + 1);
       }
-
-      // A foreign value can be an object of the input tree, and both iterating into an object and handing it
-      // back as part of the result alias that tree, so copy it first - just like we copied the object we
-      // started from. An array is not copied through cloneObj, which does not preserve array exotic objects.
-      const node = isForeign && defaultCopyFlag ?
-          (Array.isArray(newValue) ? [ ...<unknown[]> newValue ] : this.cloneObj(newValue)) :
-        newValue;
-      curParent[curKey] = node;
-
-      // Extend stack if needed. An array that reaches this point is not iterated into,
-      // and when shortcutted, the traversal ends, so no longer add to it.
-      if (continues && !didShortCut && !Array.isArray(node)) {
-        const record = <Record<string, unknown>> node;
-        for (const key in record) {
-          if (!Object.hasOwn(record, key)) {
-            continue;
-          }
-          const val = record[key];
-
-          // If shallow copy required, do
-          const onlyShallow = shallowKeys && shallowKeys?.has(key);
-          if (onlyShallow) {
-            // Do not add stack entry - assign straight away
-            record[key] = this.cloneObj(val);
-          }
-          if (ignoreKeys && ignoreKeys.has(key)) {
-            // Do not add stack entry
-            continue;
-          }
-          if (!onlyShallow && val !== null && typeof val === 'object') {
-            // Do add stack entry. A descendant is a position of its own, it starts counting from scratch.
+      // In any other case, push the children, ignoring ignoreKeys and shallowKeys.
+      // Creating shallow copies of shallowKeys.
+      const newAsRecord = <Record<string, unknown>> newValue;
+      for (const key in newAsRecord) {
+        if (!Object.hasOwn(newAsRecord, key) || ignoreKeys?.has(key)) {
+          continue;
+        }
+        const val = newAsRecord[key];
+        if (val !== null && typeof val === 'object') {
+          if (shallowKeys?.has(key)) {
+            newAsRecord[key] = this.cloneObj(val);
+          } else {
             stack.push(val);
+            stackParent.push(newAsRecord);
             stackParentKey.push(key);
-            stackParent.push(record);
-            stackRewrites.push(0);
+            stackRewriteCount.push(0);
           }
         }
       }
     }
-    if (stack.length >= this.maxStackSize) {
-      throw new Error('Transform object stack overflowed');
-    }
-
-    return <any> resultWrap.res;
+    return resultWrap.res;
   }
 
   /**

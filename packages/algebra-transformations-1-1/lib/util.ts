@@ -75,48 +75,7 @@ const transformer = new TransformerSubTyped<A.Operation>({}, {
 export const mapOperation = transformer.transformNode.bind(transformer);
 
 /**
- * Transform a single operation pre-order, the dual of {@link mapOperation}.
- * Transforms an operation _before_ its descendants, and iterates into the result of that transformation.
- *
- * This is what you want when an operation has to travel deeper into the tree, like a filter pushdown:
- * a callback only has to describe how an operation swaps places with the operation right below it,
- * the copy it sank into is transformed in turn, and swaps places with the operation below that one.
- * ```ts
- * mapOperationPreOrder(query, {
- *   [Algebra.Types.FILTER]: (filter) => {
- *     // Sink the filter into every branch of a union - all of them keep sinking on their own.
- *     if (filter.input.type === Algebra.Types.UNION) {
- *       return { newValue: algebraFactory.createUnion(
- *         filter.input.input.map(branch => algebraFactory.createFilter(branch, filter.expression)),
- *       ) };
- *     }
- *     // Anything else is a barrier: returning the copy untouched stops the descent of this filter.
- *     return { newValue: filter };
- *   },
- * });
- * ```
- * Contrary to {@link mapOperation}, a callback does not just return the value taking the place of the
- * operation, it returns a {@link PreOrderMapping}: that value, plus the {@link TransformContext} of that
- * value. Since the callback decides what we iterate into, it is the one telling us how to iterate into it,
- * so there is no separate preVisitor.
- *
- * The operation a rewrite returns is not dispatched again: the rewrite counts as its transformation, and we
- * iterate straight into its descendants. Rules rewriting an operation into an operation taking the exact same
- * place - like a rule merging two nested filters - therefore need {@link TransformContext.reTransform},
- * making the transform be applied until the operation stabilizes. An array is the exception: it is never
- * dispatched as a whole, its elements are, so they do go through the callbacks again.
- *
- * Also contrary to {@link mapOperation}, the descendants of the operation given to the callback are not
- * transformed yet: they are the operations of the input tree itself. You are free to replace the operation,
- * to reuse its descendants in the operation you return, and to change the own properties of the copy you got,
- * but changing the properties _of a descendant_ writes straight into the input tree.
- * @param startObject the object from which we will start the transformation,
- *   potentially visiting and transforming its descendants along the way.
- * @param nodeCallBacks a dictionary mapping the various operation types to a mapper.
- *    The mapper allows you to manipulate the copy of the current operation, and expects you to return the
- *    value that should take the current operations place, together with the context of that value.
- *    The returned value is dispatched again, and is what we iterate into.
- * @return the result of transforming the startObject and the descendants of its rewrites.
+ * TODO
  */
 export const mapOperationPreOrder = transformer.transformNodePreOrder.bind(transformer);
 
@@ -177,25 +136,7 @@ export const mapOperationPreOrder = transformer.transformNodePreOrder.bind(trans
 export const mapOperationSub = transformer.transformNodeSpecific.bind(transformer);
 
 /**
- * Transform a single operation pre-order, the dual of {@link mapOperationSub}.
- * Similar to {@link mapOperationPreOrder}, but also allowing you to target subTypes.
- * The operation is transformed _before_ its descendants, and we iterate into the result of that
- * transformation, making it the tool of choice for operations that have to travel deeper into the tree,
- * like a filter pushdown.
- *
- * Contrary to {@link mapOperationSub}, the descendants of the operation given to the callback are not
- * transformed yet: they are the operations of the input tree itself, so changing the properties
- * _of a descendant_ writes straight into the input tree.
- * Documented in detail on {@link mapOperationPreOrder}.
- * @param startObject the object from which we will start the transformation,
- *   potentially visiting and transforming its descendants along the way.
- * @param nodeCallBacks a dictionary mapping the various operation types to a mapper.
- *    The mapper allows you to manipulate the copy of the current operation, and expects you to return the
- *    value that should take the current operations place, together with the context of that value.
- *    The returned value is dispatched again, and is what we iterate into.
- * @param nodeSpecificCallBacks Same as nodeCallBacks but using an additional level of indirection to
- *     indicate the subType.
- * @return the result of transforming the startObject and the descendants of its rewrites.
+ * TODO(short)
  */
 export const mapOperationSubPreOrder = transformer.transformNodeSpecificPreOrder.bind(transformer);
 

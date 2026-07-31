@@ -1,6 +1,6 @@
 import type { SubTyped, Typed } from '../types.js';
 import type {
-  PreOrderMapping,
+  PreOrderMappingReturn,
   TransformContext,
   VisitContext,
 } from './TransformerObject.js';
@@ -66,71 +66,13 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
         preVisitor?: (op: Extract<Nodes, SubTyped<Type, SubType>>) => TransformContext;
       }}},
   ): Safe extends 'unsafe' ? OutType : unknown {
-    return <any> this.transformObject(
-      startObject,
-      this.subTypedTransformWrapper(nodeCallBacks, nodeSpecificCallBacks),
-      this.subTypedPreVisitWrapper(nodeCallBacks, nodeSpecificCallBacks),
-    );
-  }
-
-  /**
-   * Transform a single node pre-order, the dual of {@link this.transformNodeSpecific}.
-   * Similar to {@link TransformerTyped.transformNodePreOrder}, but also allowing you to target the subTypes.
-   * The node is transformed _before_ its descendants, and we iterate into the result of that transformation,
-   * making it the tool of choice for operations that have to travel deeper into the tree, like a filter pushdown.
-   *
-   * Contrary to {@link this.transformNodeSpecific}, a callback does not just return the value taking the
-   * place of the node, it returns a {@link PreOrderMapping}: that value, plus the {@link TransformContext}
-   * of that value, so there is no separate preVisitor.
-   *
-   * Also contrary to {@link this.transformNodeSpecific}, the descendants of the node given to the callback
-   * are not transformed yet: they are the nodes of the input tree itself. You are free to replace the node,
-   * to reuse its descendants in the node you return, and to change the own properties of the copy you got,
-   * but changing the properties _of a descendant_ writes straight into the input tree.
-   * Remapping callbacks additionally have to converge.
-   * Both are documented in detail on {@link TransformerObject.transformObjectPreOrder}.
-   * @param startObject the object from which we will start the transformation,
-   *   potentially visiting and transforming its descendants along the way.
-   * @param nodeCallBacks a dictionary mapping the various operation types to a mapper.
-   *    The mapper allows you to manipulate the copy of the current operation, and expects you to return the
-   *    value that should take the current operations place, together with the context of that value.
-   *    The returned value is dispatched again, and is what we iterate into.
-   * @param nodeSpecificCallBacks Same as nodeCallBacks but using an additional level of indirection to
-   *     indicate the subType.
-   * @return the result of transforming the startObject and the descendants of its rewrites.
-   */
-  public transformNodeSpecificPreOrder<Safe extends Safeness = 'safe', OutType = unknown>(
-    startObject: object,
-    nodeCallBacks: {[T in Nodes['type']]?:
-      (copy: SafeWrap<Safe, Extract<Nodes, Typed<T>>>, orig: Extract<Nodes, Typed<T>>) => PreOrderMapping },
-    nodeSpecificCallBacks: {[Type in Nodes['type']]?: {
-      [SubType in Extract<Nodes, SubTyped<Type>>['subType']]?:
-      (op: SafeWrap<Safe, Extract<Nodes, SubTyped<Type, SubType>>>) => PreOrderMapping }},
-  ): Safe extends 'unsafe' ? OutType : unknown {
-    return <any> this.transformObjectPreOrder(
-      startObject,
-      this.subTypedPreOrderWrapper(nodeCallBacks, nodeSpecificCallBacks),
-    );
-  }
-
-  /**
-   * Creates the mapper dispatching to the transform callback registered for the subType of the mapped object,
-   * falling back to the one registered for its type.
-   * @protected
-   */
-  protected subTypedTransformWrapper(
-    nodeCallBacks: Record<string, { transform?: (copy: any, orig: any) => unknown } | undefined>,
-    nodeSpecificCallBacks: Record<string, Record<string, {
-      transform?: (copy: any, orig: any) => unknown;
-    } | undefined> | undefined>,
-  ): (copy: object, orig: object) => unknown {
-    return (copy: object, orig: object): unknown => {
+    const transformWrapper = (copy: object, orig: object): unknown => {
       let ogTransform: ((copy: any, orig: any) => unknown) | undefined;
       const casted = <SubTyped<Nodes['type']>>copy;
       if (casted.type && casted.subType) {
         const specific = nodeSpecificCallBacks[casted.type];
         if (specific) {
-          ogTransform = specific[casted.subType]?.transform;
+          ogTransform = specific[<keyof typeof specific> casted.subType]?.transform;
         }
         if (!ogTransform) {
           ogTransform = nodeCallBacks[casted.type]?.transform;
@@ -138,66 +80,50 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
       }
       return ogTransform ? ogTransform(casted, orig) : copy;
     };
-  }
-
-  /**
-   * Creates the pre-order mapper dispatching to the callback registered for the subType of the mapped object,
-   * falling back to the one registered for its type.
-   * @protected
-   */
-  protected subTypedPreOrderWrapper(
-    nodeCallBacks: Record<string, ((copy: any, orig: any) => PreOrderMapping) | undefined>,
-    nodeSpecificCallBacks: Record<string, Record<string, ((copy: any, orig: any) => PreOrderMapping) |
-      undefined> | undefined>,
-  ): (copy: object, orig: object) => PreOrderMapping {
-    return (copy: object, orig: object): PreOrderMapping => {
-      let ogMapper: ((copy: any, orig: any) => PreOrderMapping) | undefined;
-      const casted = <SubTyped<Nodes['type']>>copy;
+    const preVisitWrapper = (curObject: object): TransformContext => {
+      let ogPreVisit: ((node: any) => TransformContext) | undefined;
+      const casted = <SubTyped<Nodes['type']>>curObject;
       if (casted.type && casted.subType) {
         const specific = nodeSpecificCallBacks[casted.type];
         if (specific) {
-          ogMapper = specific[casted.subType];
+          ogPreVisit = specific[<keyof typeof specific> casted.subType]?.preVisitor;
         }
-        if (!ogMapper) {
-          ogMapper = nodeCallBacks[casted.type];
+        if (!ogPreVisit) {
+          ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
         }
       }
-      return this.withNodeDefaults(ogMapper ? ogMapper(casted, orig) : { newValue: copy });
+      return ogPreVisit ? ogPreVisit(casted) : {};
     };
+    return <any> this.transformObject(startObject, transformWrapper, preVisitWrapper);
   }
 
   /**
-   * Creates the preVisitor dispatching to the preVisitor registered for the subType of the visited object,
-   * falling back to the one registered for its type, and to the context registered in the
-   * {@link defaultNodePreVisitor} of this transformer - just like {@link TransformerTyped.typedPreVisitWrapper}.
-   * @protected
+   * TODO(short)
    */
-  protected subTypedPreVisitWrapper(
-    nodeCallBacks: Record<string, { preVisitor?: (orig: any) => VisitContext } | undefined>,
-    nodeSpecificCallBacks: Record<string, Record<string, {
-      preVisitor?: (orig: any) => VisitContext;
-    } | undefined> | undefined>,
-  ): (orig: object) => TransformContext {
-    const nodeDefaults = <Record<string, TransformContext | undefined>> this.defaultNodePreVisitor;
-    return (curObject: object): TransformContext => {
-      let ogPreVisit: ((node: any) => VisitContext) | undefined;
-      let nodeContext: TransformContext = {};
-      const casted = <SubTyped<Nodes['type']>>curObject;
-      if (casted.type) {
-        nodeContext = nodeDefaults[casted.type] ?? nodeContext;
-        // Only a node carrying a subType can be dispatched, the type only serves to find the right dictionary
-        if (casted.subType) {
-          const specific = nodeSpecificCallBacks[casted.type];
-          if (specific) {
-            ogPreVisit = specific[casted.subType]?.preVisitor;
-          }
-          if (!ogPreVisit) {
-            ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
-          }
+  public transformNodeSpecificPreOrder<Safe extends Safeness = 'safe', OutType = unknown>(
+    startObject: object,
+    nodeCallBacks: {[T in Nodes['type']]?:
+      (copy: SafeWrap<Safe, Extract<Nodes, Typed<T>>>, orig: Extract<Nodes, Typed<T>>) => PreOrderMappingReturn;
+    },
+    nodeSpecificCallBacks: {[Type in Nodes['type']]?: {[SubType in Extract<Nodes, SubTyped<Type>>['subType']]?:
+      (op: SafeWrap<Safe, Extract<Nodes, SubTyped<Type, SubType>>>) => PreOrderMappingReturn;
+    }},
+  ): Safe extends 'unsafe' ? OutType : unknown {
+    const preTransformWrapper = (copy: object, orig: object): PreOrderMappingReturn => {
+      let ogPreTransform: ((copy: any, orig: any) => PreOrderMappingReturn) | undefined;
+      const casted = <SubTyped<Nodes['type']>> copy;
+      if (casted.type && casted.subType) {
+        const specific = nodeSpecificCallBacks[casted.type];
+        if (specific) {
+          ogPreTransform = specific[<keyof typeof specific> casted.subType];
+        }
+        if (!ogPreTransform) {
+          ogPreTransform = nodeCallBacks[casted.type];
         }
       }
-      return ogPreVisit ? { ...nodeContext, ...ogPreVisit(casted) } : nodeContext;
+      return ogPreTransform ? ogPreTransform(copy, orig) : { newValue: copy };
     };
+    return <any> this.transformObject(startObject, preTransformWrapper);
   }
 
   /**
@@ -246,6 +172,20 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
         ogTransform(casted);
       }
     };
-    this.visitObject(startObject, visitWrapper, this.subTypedPreVisitWrapper(nodeCallBacks, nodeSpecificCallBacks));
+    const preVisitWrapper = (curObject: object): VisitContext => {
+      let ogPreVisit: ((node: any) => VisitContext) | undefined;
+      const casted = <SubTyped<Nodes['type']>>curObject;
+      if (casted.type && casted.subType) {
+        const specific = nodeSpecificCallBacks[casted.type];
+        if (specific) {
+          ogPreVisit = specific[<keyof typeof specific> casted.subType]?.preVisitor;
+        }
+        if (!ogPreVisit) {
+          ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
+        }
+      }
+      return ogPreVisit ? ogPreVisit(casted) : {};
+    };
+    this.visitObject(startObject, visitWrapper, preVisitWrapper);
   }
 }

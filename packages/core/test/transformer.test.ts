@@ -273,32 +273,6 @@ describe('transformerSubTyped', () => {
     expect(cloned).not.toBe(original);
     expect(cloned).toBeInstanceOf(TransformerSubTyped);
   });
-
-  it('takes the per type defaults of the transformer, just like the typed transformer', ({ expect }) => {
-    // The defaults are what prunes the search tree, so they have to reach every dispatch on a subType too
-    const pruning = new TransformerSubTyped<Nodes>({}, { category: { ignoreKeys: new Set([ 'child' ]) }});
-    const tree = {
-      type: 'category',
-      subType: 'a',
-      value: 'root',
-      child: { type: 'category', subType: 'b', value: 'child' },
-    };
-    const transformed: string[] = [];
-    const visited: string[] = [];
-
-    pruning.transformNodeSpecific(tree, {}, {
-      category: { b: { transform: (copy: any) => {
-        transformed.push(copy.value);
-        return copy;
-      } }},
-    });
-    pruning.visitNodeSpecific(tree, {}, {
-      category: { b: { visitor: (node: any) => visited.push(node.value) }},
-    });
-
-    expect(transformed).toEqual([]);
-    expect(visited).toEqual([]);
-  });
 });
 
 describe('transformerTyped clone', () => {

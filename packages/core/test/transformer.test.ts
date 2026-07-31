@@ -305,13 +305,13 @@ describe('transformerTyped without-type branches', () => {
 
   it('transformNode ignores objects without a type property', ({ expect }) => {
     const obj = { type: 'fruit', child: { noType: true }};
-    const result = <any> transformer.transformNode(obj, {});
+    const result = <typeof obj> transformer.transformNode(obj, {});
     expect(result.child).toMatchObject({ noType: true });
   });
 
   it('transformNodePreOrder ignores objects without a type property', ({ expect }) => {
     const obj = { type: 'fruit', child: { noType: true }};
-    const result = <any> transformer.transformNodePreOrder(obj, {});
+    const result = transformer.transformNodePreOrder<'unsafe', typeof obj>(obj, {});
     expect(result.child).toMatchObject({ noType: true });
   });
 
@@ -485,8 +485,8 @@ describe('transformerObject preOrder', () => {
     const mapped: string[] = [];
     const tree = { name: 'root', child: { name: 'child', child: { name: 'grandchild' }}};
 
-    const result = <any> transformer.transformObjectPreOrder(tree, (copy) => {
-      mapped.push((<any>copy).name);
+    const result = <typeof tree> transformer.transformObjectPreOrder(tree, (copy) => {
+      mapped.push((<{ name: string }>copy).name);
       return { newValue: copy };
     });
 
@@ -502,9 +502,9 @@ describe('transformerObject preOrder', () => {
     const mapped: string[] = [];
     const tree = { name: 'root', child: { name: 'replaced', child: { name: 'gone' }}};
 
-    const result = <any> transformer.transformObjectPreOrder(tree, (copy) => {
-      mapped.push((<any>copy).name);
-      if ((<any>copy).name === 'replaced') {
+    const result = <typeof tree> transformer.transformObjectPreOrder(tree, (copy) => {
+      mapped.push((<{ name: string }>copy).name);
+      if ((<{ name: string }>copy).name === 'replaced') {
         return { newValue: { name: 'replacement', child: { name: 'new' }}};
       }
       return { newValue: copy };
@@ -520,8 +520,8 @@ describe('transformerObject preOrder', () => {
     const child = { name: 'child', child: grandChild };
     const tree = { name: 'root', child };
 
-    const result = <any> transformer.transformObjectPreOrder(tree, (copy) => {
-      if ((<any>copy).name === 'root') {
+    const result = <typeof tree> transformer.transformObjectPreOrder(tree, (copy) => {
+      if ((<{ name: string }>copy).name === 'root') {
         (<any>copy).child.touched = 'yes';
       }
       return { newValue: copy };
@@ -534,15 +534,16 @@ describe('transformerObject preOrder', () => {
   });
 
   it('does not map the returned value again unless asked to reTransform', ({ expect }) => {
-    const stopsRightAway = <any> transformer.transformObjectPreOrder({ depth: 0 }, (copy) => {
-      const depth = (<any>copy).depth;
-      return depth < 3 ? { newValue: { depth: depth + 1 }} : { newValue: copy };
+    const depth = { depth: 0 };
+    const stopsRightAway = <typeof depth> transformer.transformObjectPreOrder(depth, (copy) => {
+      const d = (<typeof depth>copy).depth;
+      return d < 3 ? { newValue: { depth: d + 1 }} : { newValue: copy };
     });
     expect(stopsRightAway).toEqual({ depth: 1 });
 
-    const untilStable = <any> transformer.transformObjectPreOrder({ depth: 0 }, (copy) => {
-      const depth = (<any>copy).depth;
-      return depth < 3 ? { newValue: { depth: depth + 1 }, reTransform: true } : { newValue: copy };
+    const untilStable = <typeof depth> transformer.transformObjectPreOrder(depth, (copy) => {
+      const d = (<typeof depth>copy).depth;
+      return d < 3 ? { newValue: { depth: d + 1 }, reTransform: true } : { newValue: copy };
     });
     expect(untilStable).toEqual({ depth: 3 });
   });
@@ -551,9 +552,9 @@ describe('transformerObject preOrder', () => {
     const mapped: string[] = [];
     const tree = { name: 'root', items: [{ name: 'one' }, { name: 'two' }]};
 
-    const result = <any> transformer.transformObjectPreOrder(tree, (copy) => {
-      mapped.push((<any>copy).name);
-      if ((<any>copy).name === 'two') {
+    const result = <typeof tree> transformer.transformObjectPreOrder(tree, (copy) => {
+      mapped.push((<{ name: string }>copy).name);
+      if ((<{ name: string }>copy).name === 'two') {
         return { newValue: [{ name: 'two-a' }, { name: 'two-b' }]};
       }
       return { newValue: copy };
@@ -743,6 +744,7 @@ describe('transformerTyped preOrder', () => {
     // The default of the fruit applies even though it has no callback
     expect(mapped).toEqual([ 'kept' ]);
     expect(useDefaults.skipped).toBe(skipped);
+    expect(useDefaults.kept).not.toBe(tree.kept);
 
     const overwritten = <any> defaulting.transformNodePreOrder(tree, {
       fruit: (copy: any) => ({ newValue: copy, ignoreKeys: new Set([ 'kept' ]) }),
@@ -799,6 +801,7 @@ describe('transformerSubTyped preOrder', () => {
   });
 
   it('transformNodeSpecificPreOrder only dispatches nodes carrying a subType', ({ expect }) => {
+    // TODO(major): this should change. The first array should call always (same for the other functions).
     const tree = {
       type: 'category',
       value: 'no-subType',

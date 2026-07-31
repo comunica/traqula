@@ -5,7 +5,7 @@ import type * as A from './algebra.js';
 import { ExpressionTypes, Types } from './algebra.js';
 
 const transformer = new TransformerSubTyped<A.Operation>({}, {
-  // Optimization that causes search tree pruning
+  // Optimization that causes search tree pruning -- do not step into RDF.Term objects, they are outside the algebra.
   [Types.PATTERN]: { ignoreKeys: new Set([ 'subject', 'predicate', 'object', 'graph' ]) } satisfies TransformContext,
   [Types.EXPRESSION]: { ignoreKeys: new Set([ 'name', 'term', 'wildcard', 'variable' ]) } satisfies VisitContext,
   [Types.DESCRIBE]: { ignoreKeys: new Set([ 'terms' ]) },
@@ -76,8 +76,8 @@ export const mapOperation = transformer.transformNode.bind(transformer);
 
 /**
  * Transform a single operation pre-order, the dual of {@link mapOperation}: an operation is mapped
- * _before_ its descendants, and we iterate into the result of that mapping instead of into the operation
- * it replaced. This is what you want for an operation that has to travel deeper into the tree,
+ * _before_ its descendants, and we iterate into the result of that mapping.
+ * This is what you want for an operation that has to travel deeper into the tree,
  * like a filter pushdown: the callback only describes how the filter swaps places with the operation right
  * below it, and the filters it sank into are mapped in turn.
  * e.g. sinking a filter into every branch of the unions below it:
@@ -194,8 +194,8 @@ export const mapOperationSub = transformer.transformNodeSpecific.bind(transforme
  *   }},
  * );
  * ```
- * Just like {@link mapOperationSub}, only an operation carrying a subType is dispatched, and a callback
- * registered for the subType of an operation takes precedence over the one registered for its type.
+ * Just like {@link mapOperationSub}, a callback registered for the subType of an operation takes
+ * precedence over the one registered for its type.
  * The same caveats as on {@link mapOperationPreOrder} apply: the callback returns the value taking the
  * place of the operation together with the {@link TransformContext} of that value, and the descendants
  * it is handed are those of the input tree.

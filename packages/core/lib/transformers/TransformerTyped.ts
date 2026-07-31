@@ -95,9 +95,10 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
   }
 
   /**
-   * Transform a single node ({@link Typed}) pre-order, the dual of {@link this.transformNode}:
+   * Transform a single node ({@link Typed}) pre-order,
+   * the dual of {@link this.transformObjectPreOrder} with the same type specification as {@link this.transformNode}:
    * a node is transformed _before_ its descendants, and we iterate into the result of that transformation.
-   * This is what you want when a node has to travel deeper into the tree, like a filter pushdown:
+   * This is what you want when a node has to travel deeper into the tree:
    * the callback only describes how a node swaps places with the node right below it,
    * the copy it sank into is dispatched in turn, and swaps places with the node below that one.
    *
@@ -109,9 +110,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
    * A node without a callback is left alone: it keeps those defaults, but is never re-transformed.
    *
    * Also contrary to {@link this.transformNode}, the descendants of the node given to the callback are not
-   * transformed yet: they are the nodes of the input tree itself. Both that, and the fact that the returned
-   * value is only dispatched again when it asks for {@link TransformContext.reTransform},
-   * are documented in detail on {@link TransformerObject.transformObjectPreOrder}.
+   * transformed yet: they are the nodes of the input tree itself.
    * @param startObject the object from which we will start the transformation,
    *   potentially visiting and transforming its descendants along the way.
    * @param nodeCallBacks a dictionary mapping the various node types to a mapper.

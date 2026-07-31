@@ -21,6 +21,7 @@ import { TransformerTyped } from './TransformerTyped.js';
  * @typeParam Nodes - Union type of all node types this transformer handles.
  */
 export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<Nodes> {
+  // TODO(major): these functions here should care about the default pre visitor provided to the constructor!
   public constructor(
     defaultContext: TransformContext = {},
     defaultNodePreVisitor: DefaultNodePreVisitor<Nodes> = {},
@@ -98,24 +99,18 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
   }
 
   /**
-   * Transform a single node pre-order, the dual of {@link this.transformNodeSpecific}.
+   * Transform a single node pre-order,
+   * the dual of {@link this.transformObjectPreOrder} with the same type specification
+   * as {@link this.transformNodeSpecific}:
    * Similar to {@link TransformerTyped.transformNodePreOrder}, but also allowing you to target the subTypes:
    * the node is transformed _before_ its descendants, and we iterate into the result of that transformation,
    * making it the tool of choice for nodes that have to travel deeper into the tree, like a filter pushdown.
-   *
-   * Just like {@link this.transformNodeSpecific}, only a node carrying a subType is dispatched - the type of
-   * that node just selects the right dictionary - and a callback registered for the subType of a node takes
-   * precedence over the one registered for its type. The per type defaults of this transformer are not
-   * applied either, the context a callback returns is the only one steering the iteration.
-   * A node that is not dispatched is handed back unchanged.
    *
    * Contrary to {@link this.transformNodeSpecific}, a callback does not just return the value taking the
    * place of the node, it returns a {@link PreOrderMappingReturn}: that value, plus the
    * {@link TransformContext} of that value, so there is no separate preVisitor.
    * Also contrary to {@link this.transformNodeSpecific}, the descendants of the node given to the callback
-   * are not transformed yet: they are the nodes of the input tree itself. Both that, and the fact that the
-   * returned value is only dispatched again when it asks for {@link TransformContext.reTransform},
-   * are documented in detail on {@link TransformerObject.transformObjectPreOrder}.
+   * are not transformed yet: they are the nodes of the input tree itself.
    * @param startObject the object from which we will start the transformation,
    *   potentially visiting and transforming its descendants along the way.
    * @param nodeCallBacks a dictionary mapping the various node types to a mapper.

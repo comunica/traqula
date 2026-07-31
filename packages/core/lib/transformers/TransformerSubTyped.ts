@@ -80,57 +80,25 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
       }
       return ogTransform ? ogTransform(casted, orig) : copy;
     };
-    const nodeDefaults = this.defaultNodePreVisitor;
     const preVisitWrapper = (curObject: object): TransformContext => {
       let ogPreVisit: ((node: any) => TransformContext) | undefined;
-      let nodeContext: TransformContext = {};
       const casted = <SubTyped<Nodes['type']>>curObject;
-      if (casted.type) {
-        nodeContext = nodeDefaults[casted.type] ?? nodeContext;
-        // Only a node carrying a subType can be dispatched, the type only serves to find the right dictionary
-        if (casted.subType) {
-          const specific = nodeSpecificCallBacks[casted.type];
-          if (specific) {
-            ogPreVisit = specific[<keyof typeof specific> casted.subType]?.preVisitor;
-          }
-          if (!ogPreVisit) {
-            ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
-          }
+      if (casted.type && casted.subType) {
+        const specific = nodeSpecificCallBacks[casted.type];
+        if (specific) {
+          ogPreVisit = specific[<keyof typeof specific> casted.subType]?.preVisitor;
+        }
+        if (!ogPreVisit) {
+          ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
         }
       }
-      return ogPreVisit ? { ...nodeContext, ...ogPreVisit(casted) } : nodeContext;
+      return ogPreVisit ? ogPreVisit(casted) : {};
     };
     return <any> this.transformObject(startObject, transformWrapper, preVisitWrapper);
   }
 
   /**
-   * Transform a single node pre-order, the dual of {@link this.transformNodeSpecific}.
-   * Similar to {@link TransformerTyped.transformNodePreOrder}, but also allowing you to target the subTypes.
-   * The node is transformed _before_ its descendants, and we iterate into the result of that transformation,
-   * making it the tool of choice for operations that have to travel deeper into the tree, like a filter
-   * pushdown. Just like {@link this.transformNodeSpecific}, a callback registered for the subType of a node
-   * takes precedence over the one registered for its type.
-   *
-   * Contrary to {@link this.transformNodeSpecific}, a callback does not just return the value taking the
-   * place of the node, it returns a {@link PreOrderMappingReturn}: that value, plus the
-   * {@link TransformContext} of that value, so there is no separate preVisitor - only the per type defaults
-   * of this transformer, which the returned context completes.
-   *
-   * Also contrary to {@link this.transformNodeSpecific}, the descendants of the node given to the callback
-   * are not transformed yet: they are the nodes of the input tree itself. You are free to replace the node,
-   * to reuse its descendants in the node you return, and to change the own properties of the copy you got,
-   * but changing the properties _of a descendant_ writes straight into the input tree.
-   * Remapping callbacks additionally have to converge.
-   * Both are documented in detail on {@link TransformerObject.transformObjectPreOrder}.
-   * @param startObject the object from which we will start the transformation,
-   *   potentially visiting and transforming its descendants along the way.
-   * @param nodeCallBacks a dictionary mapping the various operation types to a mapper.
-   *    The mapper allows you to manipulate the copy of the current operation, and expects you to return the
-   *    value that should take the current operations place, together with the context of that value.
-   *    That context steers how we iterate into the returned value.
-   * @param nodeSpecificCallBacks Same as nodeCallBacks but using an additional level of indirection to
-   *     indicate the subType.
-   * @return the result of transforming the startObject and the descendants of its rewrites.
+   * TODO(short)
    */
   public transformNodeSpecificPreOrder<Safe extends Safeness = 'safe', OutType = unknown>(
     startObject: object,
@@ -141,27 +109,19 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
       (op: SafeWrap<Safe, Extract<Nodes, SubTyped<Type, SubType>>>) => PreOrderMappingReturn;
     }},
   ): Safe extends 'unsafe' ? OutType : unknown {
-    const nodeDefaults = this.defaultNodePreVisitor;
     const preTransformWrapper = (copy: object, orig: object): PreOrderMappingReturn => {
       let ogPreTransform: ((copy: any, orig: any) => PreOrderMappingReturn) | undefined;
-      let nodeContext: TransformContext = {};
       const casted = <SubTyped<Nodes['type']>> copy;
-      if (casted.type) {
-        nodeContext = nodeDefaults[casted.type] ?? nodeContext;
-        // Only a node carrying a subType can be dispatched, the type only serves to find the right dictionary
-        if (casted.subType) {
-          const specific = nodeSpecificCallBacks[casted.type];
-          if (specific) {
-            ogPreTransform = specific[<keyof typeof specific> casted.subType];
-          }
-          if (!ogPreTransform) {
-            ogPreTransform = nodeCallBacks[casted.type];
-          }
+      if (casted.type && casted.subType) {
+        const specific = nodeSpecificCallBacks[casted.type];
+        if (specific) {
+          ogPreTransform = specific[<keyof typeof specific> casted.subType];
+        }
+        if (!ogPreTransform) {
+          ogPreTransform = nodeCallBacks[casted.type];
         }
       }
-      return ogPreTransform ?
-          { ...nodeContext, ...ogPreTransform(copy, orig) } :
-          { ...nodeContext, newValue: copy, reTransform: false };
+      return ogPreTransform ? ogPreTransform(copy, orig) : { newValue: copy };
     };
     return <any> this.transformObjectPreOrder(startObject, preTransformWrapper);
   }
@@ -212,25 +172,19 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
         ogTransform(casted);
       }
     };
-    const nodeDefaults = this.defaultNodePreVisitor;
     const preVisitWrapper = (curObject: object): VisitContext => {
       let ogPreVisit: ((node: any) => VisitContext) | undefined;
-      let nodeContext: VisitContext = {};
       const casted = <SubTyped<Nodes['type']>>curObject;
-      if (casted.type) {
-        nodeContext = nodeDefaults[casted.type] ?? nodeContext;
-        // Only a node carrying a subType can be dispatched, the type only serves to find the right dictionary
-        if (casted.subType) {
-          const specific = nodeSpecificCallBacks[casted.type];
-          if (specific) {
-            ogPreVisit = specific[<keyof typeof specific> casted.subType]?.preVisitor;
-          }
-          if (!ogPreVisit) {
-            ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
-          }
+      if (casted.type && casted.subType) {
+        const specific = nodeSpecificCallBacks[casted.type];
+        if (specific) {
+          ogPreVisit = specific[<keyof typeof specific> casted.subType]?.preVisitor;
+        }
+        if (!ogPreVisit) {
+          ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
         }
       }
-      return ogPreVisit ? { ...nodeContext, ...ogPreVisit(casted) } : nodeContext;
+      return ogPreVisit ? ogPreVisit(casted) : {};
     };
     this.visitObject(startObject, visitWrapper, preVisitWrapper);
   }

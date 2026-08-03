@@ -138,6 +138,54 @@ GROUP BY ( ?y AS ?x )`);
     });
   });
 
+  /**
+   * https://www.w3.org/TR/sparql12-query/#variableScope
+   * > Not visible: only in filter, exists/not exists, masked by a subselect,
+   * > non-projected GROUP variables, only in the right hand side of MINUS
+   */
+  describe('algebraUtils.inScopeVariables hides variables that cannot be in a solution mapping', () => {
+    function scopeOfWhere(query: string, quads = false): string[] {
+      const algebra = <Algebra.Project> toAlgebra(parser.parse(query), { quads });
+      return algebraUtils.inScopeVariables(algebra.input).map(v => v.value).sort();
+    }
+
+    it('does not descend into the pattern of an EXISTS', ({ expect }) => {
+      expect(scopeOfWhere('SELECT * WHERE { ?s ?p ?o FILTER EXISTS { ?hidden <http://a> <http://b> } }'))
+        .toEqual([ 'o', 'p', 's' ]);
+    });
+
+    it('does not descend into the pattern of a NOT EXISTS', ({ expect }) => {
+      expect(scopeOfWhere('SELECT * WHERE { ?s ?p ?o FILTER NOT EXISTS { ?hidden <http://a> <http://b> } }'))
+        .toEqual([ 'o', 'p', 's' ]);
+    });
+
+    it('does not descend into an EXISTS used outside of a FILTER', ({ expect }) => {
+      expect(scopeOfWhere('SELECT * WHERE { ?s ?p ?o BIND(EXISTS { ?hidden <http://a> <http://b> } AS ?b) }'))
+        .toEqual([ 'b', 'o', 'p', 's' ]);
+    });
+
+    it('only exposes the keys and aggregates of a GROUP', ({ expect }) => {
+      // The aggregate is bound to ?var0 by the group, ?c is bound by the extend above it.
+      // var0 is out of scope for the project (since it cannot be targetted to be projected,
+      // but is in scope before the select.
+      expect(scopeOfWhere('SELECT ?s (COUNT(?o) AS ?c) WHERE { ?s ?p ?o } GROUP BY ?s'))
+        .toEqual([ 'c', 's', 'var0' ]);
+    });
+
+    it('does not expose the variables of a CONSTRUCT template', ({ expect }) => {
+      const algebra = toAlgebra(parser.parse('CONSTRUCT { ?s <http://a> ?hidden } WHERE { ?s ?p ?o }'));
+      expect(algebraUtils.inScopeVariables(algebra).map(v => v.value).sort()).toEqual([ 'o', 'p', 's' ]);
+    });
+
+    it('does not expose the variables of a DELETE template', ({ expect }) => {
+      const algebra = toAlgebra(
+        parser.parse('DELETE { ?s <http://a> ?hidden } WHERE { ?s ?p ?o }'),
+        { quads: true },
+      );
+      expect(algebraUtils.inScopeVariables(algebra).map(v => v.value).sort()).toEqual([ 'o', 'p', 's' ]);
+    });
+  });
+
   describe('createAlgebraContext with prefixes', () => {
     it('passes prefixes to the algebra context', ({ expect }) => {
       const ast = parser.parse('PREFIX ex: <http://example.org/> SELECT * WHERE { ex:s ex:p ex:o }');

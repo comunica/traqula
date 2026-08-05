@@ -1,6 +1,25 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.2.0"></a>
+## [v1.2.0](https://github.com/comunica/traqula/compare/v1.1.8...v1.2.0) - 2026-08-05
+
+* [Parse evaluation spec tests and fix exponent parsing (#171)](https://github.com/comunica/traqula/commit/56f48fb4bf6012267692d794646b412093a05d4f)
+* [Narrow algebraUtils.inScopeVariables results (#166)](https://github.com/comunica/traqula/commit/bc95d2a6a089b5e7215edef8955dcf408acba5f0)
+* [Extend core transformer with transformObjectPreOrder and typed extensions](https://github.com/comunica/traqula/commit/122da6caa9d1b6b21f910f797c4304850a2d686c)
+* [chore(deps): update dependency markdown-it to v15 (#170)](https://github.com/comunica/traqula/commit/b0670c1807008487a64f2e4327492a108f6360f0)
+* [chore(deps): update dependency flatted to v3.4.4 (#169)](https://github.com/comunica/traqula/commit/fda5db5673dc7b189221886e22f1f44073cfa853)
+* [chore(deps): update dependency minimatch to v10.2.6 (#164)](https://github.com/comunica/traqula/commit/0c9c91f8079b1808dc3bf7e59eb2fc1cd724e68c)
+* [chore(deps): update dependency flatted to v3.4.3 (#162)](https://github.com/comunica/traqula/commit/1661952f017daa21b6b23d08957add47442394bc)
+* [chore(deps): update dependency tar to v7.5.22 (#161)](https://github.com/comunica/traqula/commit/072c57f72eca44435486afd58d04bbf8f86209b2)
+* [chore(deps): update actions/setup-node action to v7](https://github.com/comunica/traqula/commit/eb534010ed77cd42a0e6d21ff3dc5434612fe60a)
+* [chore(deps): update dependency tar to v7.5.20 (#152)](https://github.com/comunica/traqula/commit/cf422e57fd7e5b54ee26b95bf3d27f5d6521901e)
+* [chore(deps): update dependency markdown-it to v14.3.0 (#153)](https://github.com/comunica/traqula/commit/edfea82538b73e4b16339a622296a1b55014df8b)
+* [chore(deps): update dependency picomatch to v4.0.5 (#154)](https://github.com/comunica/traqula/commit/c9c60cc7cb64d5fb4afe989f14271f1c37886486)
+* [chore: name devcontainer and install claude cli in it](https://github.com/comunica/traqula/commit/866591f90e9666838fea4a0509ef191be3600d08)
+* [chore: add TODO major for type in builtIn 1.2 tokens and rules](https://github.com/comunica/traqula/commit/2f0b12350ffb09d464596f74d0cbc3702ebb06cd)
+* [chore: Remove devcontainer setup from git](https://github.com/comunica/traqula/commit/52f6cec7f662ce6aab6917dcd476e88394983b4c)
+
 <a name="v1.1.8"></a>
 ## [v1.1.8](https://github.com/comunica/traqula/compare/v1.1.7...v1.1.8) - 2026-07-09
 

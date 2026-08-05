@@ -6,10 +6,14 @@ export function parse(query: string, context: Partial<SparqlContext> = {}): void
   const parser = new Parser();
   parser.parse(query, context);
 }
-export function query(): Promise<never> {
+export function query(_data: unknown, queryString: string, context: Partial<SparqlContext> = {}): Promise<never> {
+  // Evaluation is out of scope for a parser, but the query still has to parse.
+  parse(queryString, context);
   return Promise.reject(new ErrorSkipped('Querying is not supported'));
 }
 
-export function update(): Promise<never> {
+export function update(_data: unknown, queryString: string, context: Partial<SparqlContext> = {}): Promise<never> {
+  // Evaluation is out of scope for a parser, but the request still has to parse.
+  parse(queryString, context);
   return Promise.reject(new ErrorSkipped('Updating is not supported'));
 }

@@ -4,7 +4,8 @@
   "theme": "default",
   "entryPointStrategy": "packages",
   "entryPoints": ["engines/*", "packages/*"],
-  "projectDocuments": ["docs/**/*.md"],
+  "readme": "docs/index.md",
+  "projectDocuments": ["docs/**/!(index).md"],
   "plugin": ["./typedoc.plugin.mjs"],
   "repositoryLinkTemplate": "https://github.com/comunica/traqula/{kind}/main/{path}"
 }

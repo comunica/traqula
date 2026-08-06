@@ -1,5 +1,5 @@
 <p align="center">
-    <img alt="Traqula logo" width="70%" style="border-radius: 20px" src="/assets/white-on-red/logo-white-on-red-lettered-social.png">
+    <img alt="Traqula logo" width="70%" style="border-radius: 20px" src="../../assets/white-on-red/logo-white-on-red-lettered-social.png">
 </p>
 
 <p align="center">

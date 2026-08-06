@@ -331,7 +331,7 @@ export interface Nop extends BaseOperation {
 }
 
 /**
- * [NegatedPropertySet algebra operation](eval_negatedPropertySet) representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) negated property set (`!`).
+ * [NegatedPropertySet algebra operation](https://www.w3.org/TR/sparql11-query/#eval_negatedPropertySet) representing the [Property path](https://www.w3.org/TR/sparql11-query/#propertypaths) negated property set (`!`).
  * Property paths have a specific [SPARQL definition](https://www.w3.org/TR/sparql11-query/#sparqlPropertyPaths)
  */
 export interface Nps extends BaseOperation {

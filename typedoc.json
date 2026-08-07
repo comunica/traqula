@@ -1,11 +1,13 @@
 {
-  "name": "Traqula",
+  "name": "Traqula docs",
   "out": "documentation",
   "theme": "default",
   "entryPointStrategy": "packages",
   "entryPoints": ["engines/*", "packages/*"],
   "readme": "docs/index.md",
   "projectDocuments": ["docs/**/!(index).md"],
+  "favicon": "assets/favicon.png",
+  "customCss": "docs/typedoc-custom.css",
   "plugin": ["./typedoc.plugin.mjs"],
   "repositoryLinkTemplate": "https://github.com/comunica/traqula/{kind}/main/{path}"
 }

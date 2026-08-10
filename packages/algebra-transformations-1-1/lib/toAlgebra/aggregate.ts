@@ -160,7 +160,7 @@ export const translateAggregates: AlgebraIndir<'translateAggregates', Algebra.Op
     // Slicing needs to happen after construct/describe
     // 18.2.5.5
     const limitOffset = query.solutionModifiers.limitOffset;
-    if ((limitOffset?.limit || limitOffset?.limit === 0) ?? limitOffset?.offset) {
+    if (limitOffset?.limit ?? (limitOffset?.limit === 0 || limitOffset?.offset)) {
       res = AF.createSlice(res, limitOffset.offset ?? 0, limitOffset.limit);
     }
 

@@ -54,7 +54,7 @@ describe.skip('algebra test generate', () => {
 
               writeFileSync(
                 join(blankToVariable ? rootJsonBlankToVariable : rootJson, algebraFileName),
-                JSON.stringify(algebra, null, 2),
+                `${JSON.stringify(algebra, null, 2)}\n`,
               );
               writeFileSync(
                 join(blankToVariable ? canonicalSparqlBlankToVar : canonicalSparqlBase, `${name}.sparql`),

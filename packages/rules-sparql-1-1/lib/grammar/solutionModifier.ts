@@ -263,7 +263,7 @@ export const limitOffsetClauses: SparqlRule<'limitOffsetClauses', SolutionModifi
   gImpl: ({ PRINT_WORDS, NEW_LINE }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => {
       NEW_LINE();
-      if (ast.limit) {
+      if (ast.limit !== undefined) {
         PRINT_WORDS('LIMIT', String(ast.limit));
       }
       if (ast.offset) {

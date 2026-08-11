@@ -2,3 +2,4 @@ SELECT ?o ?p ?s WHERE {
   ?s ?p ?o .
 }
 ORDER BY ASC ( ?o )
+LIMIT 0

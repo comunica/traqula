@@ -8,7 +8,6 @@ import { sparqlQueries, getStaticFilePath } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
 import { toAlgebra, toAst } from '../lib/index.js';
 import { suites } from './algebra.test.js';
-import { allBaseTokens } from '../../../packages/rules-sparql-1-1/lib/lexer/lexer.js';
 
 // WARNING: use this script with caution!
 // After running this script, manual inspection of the output is needed to make sure that conversion happened correctly.

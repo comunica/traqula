@@ -1,55 +1,60 @@
 {
-  "type": "project",
+  "type": "slice",
   "input": {
-    "type": "orderby",
+    "type": "project",
     "input": {
-      "type": "bgp",
-      "patterns": [
+      "type": "orderby",
+      "input": {
+        "type": "bgp",
+        "patterns": [
+          {
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": {
+              "termType": "Variable",
+              "value": "s"
+            },
+            "predicate": {
+              "termType": "Variable",
+              "value": "p"
+            },
+            "object": {
+              "termType": "Variable",
+              "value": "o"
+            },
+            "graph": {
+              "termType": "DefaultGraph",
+              "value": ""
+            }
+          }
+        ]
+      },
+      "expressions": [
         {
-          "type": "pattern",
-          "termType": "Quad",
-          "subject": {
-            "termType": "Variable",
-            "value": "s"
-          },
-          "predicate": {
-            "termType": "Variable",
-            "value": "p"
-          },
-          "object": {
+          "type": "expression",
+          "subType": "term",
+          "term": {
             "termType": "Variable",
             "value": "o"
-          },
-          "graph": {
-            "termType": "DefaultGraph",
-            "value": ""
           }
         }
       ]
     },
-    "expressions": [
+    "variables": [
       {
-        "type": "expression",
-        "subType": "term",
-        "term": {
-          "termType": "Variable",
-          "value": "o"
-        }
+        "termType": "Variable",
+        "value": "o"
+      },
+      {
+        "termType": "Variable",
+        "value": "p"
+      },
+      {
+        "termType": "Variable",
+        "value": "s"
       }
     ]
   },
-  "variables": [
-    {
-      "termType": "Variable",
-      "value": "o"
-    },
-    {
-      "termType": "Variable",
-      "value": "p"
-    },
-    {
-      "termType": "Variable",
-      "value": "s"
-    }
-  ]
+  "start": 0,
+  "length": 0
 }

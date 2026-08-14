@@ -22,7 +22,7 @@ import type {
   TermVariable,
   ValuePatternRow,
 } from '../Sparql11types.js';
-import { checkNote13 } from '../validation/validators.js';
+import { checkBlankNodeBGPScope, checkNote13 } from '../validation/validators.js';
 import { builtInCall } from './builtIn.js';
 import { argList, brackettedExpression, expression } from './expression.js';
 import { var_, varOrIri, varOrTerm } from './general.js';
@@ -58,6 +58,8 @@ export const groupGraphPattern: SparqlRule<'groupGraphPattern', PatternGroup> = 
       { ALT: () => SUBRULE(groupGraphPatternSub) },
     ]);
     const close = CONSUME(l.symbols.RCurly);
+
+    ACTION(() => !C.skipValidation && checkBlankNodeBGPScope(patterns));
 
     return ACTION(() => C.astFactory.patternGroup(patterns, C.astFactory.sourceLocation(open, close)));
   },

@@ -4,6 +4,7 @@ import type {
   Expression,
   ExpressionAggregate,
   Pattern,
+  PatternBgp,
   QuerySelect,
   TermVariable,
   SolutionModifierGroupBind,
@@ -243,4 +244,71 @@ export function updateNoReuseBlankNodeLabels(updateQuery: Update): void {
       }
     }
   }
+}
+
+/**
+ * https://www.w3.org/TR/sparql11-query/#QSynBlankNodes
+ * NOTE 11: the scope of a blank node label is limited to the basic graph pattern (BGP) in which
+ * it is used. It is a syntax error to reuse a blank node label in two different basic graph
+ * patterns within the same query.
+ *
+ * A BGP is broken - and a new one started - by constructs that introduce a nested graph pattern:
+ * a nested group `{ }`, `OPTIONAL`, `UNION`, `GRAPH`, `MINUS`, and `SERVICE`, even when they
+ * appear "flat" alongside other triples in the same enclosing `{ }`. `FILTER`, `BIND`, and
+ * `VALUES` do NOT break a BGP - they are constraints/modifiers on the existing pattern rather
+ * than graph patterns of their own, so triples separated only by these remain part of the same
+ * BGP even though the grammar represents them as separate PatternBgp AST nodes.
+ * Subqueries introduce a fresh scope of their own: they are not descended into here, since their
+ * own WHERE clause is validated independently when it is parsed.
+ */
+export function checkBlankNodeBGPScope(patterns: Pattern[]): void {
+  // Maps a blank node label to the scope (an opaque token, unique per BGP) it was first seen in.
+  const labelOwner = new Map<string, object>();
+
+  function collectBlankNodeLabels(bgp: PatternBgp): Set<string> {
+    const labels = new Set<string>();
+    transformer.visitNodeSpecific(bgp, {}, { term: { blankNode: { visitor: (blankNode) => {
+      labels.add(blankNode.label);
+    } }}});
+    return labels;
+  }
+
+  function visitPatternList(list: Pattern[]): void {
+    // All PatternBgp nodes encountered until the next BGP-breaking construct belong to the
+    // same logical BGP, even if FILTER/BIND/VALUES split them into separate AST nodes.
+    let scope: object = {};
+
+    for (const pattern of list) {
+      if (F.isPatternBgp(pattern)) {
+        for (const label of collectBlankNodeLabels(pattern)) {
+          const owner = labelOwner.get(label);
+          if (owner !== undefined && owner !== scope) {
+            throw new Error(
+              `Detected reuse of blank node across two different basic graph patterns (_:${
+                label.replace(/^[eg]_/u, '')})`,
+            );
+          }
+          labelOwner.set(label, scope);
+        }
+      } else if (
+        F.isPatternGroup(pattern) ||
+        F.isPatternOptional(pattern) ||
+        F.isPatternMinus(pattern) ||
+        F.isPatternGraph(pattern) ||
+        F.isPatternService(pattern)
+      ) {
+        visitPatternList(pattern.patterns);
+        scope = {};
+      } else if (F.isPatternUnion(pattern)) {
+        for (const group of pattern.patterns) {
+          visitPatternList(group.patterns);
+        }
+        scope = {};
+      }
+      // PatternFilter, PatternBind, PatternValues, and SubSelect (its own fresh scope) don't
+      // affect or break the current BGP scope.
+    }
+  }
+
+  visitPatternList(patterns);
 }

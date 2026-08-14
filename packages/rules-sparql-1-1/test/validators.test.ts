@@ -306,8 +306,6 @@ describe('checkBlankNodeBGPScope', () => {
   });
 
   it('still throws when a FILTER is followed by a genuinely new BGP-breaking construct', ({ expect }) => {
-    // `_:a ?p ?v . FILTER(true) . OPTIONAL { _:a ?q 1 }` - FILTER doesn't break the BGP,
-    // but the subsequent OPTIONAL still does.
     const filter = F.patternFilter(F.termLiteral(noLoc, 'true'), noLoc);
     const bgp1 = F.patternBgp([ bnodeTriple('a') ], noLoc);
     const optional = F.patternOptional([ F.patternBgp([ bnodeTriple('a') ], noLoc) ], noLoc);

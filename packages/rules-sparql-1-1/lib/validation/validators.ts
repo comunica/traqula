@@ -307,6 +307,17 @@ export function checkBlankNodeBGPScope(patterns: Pattern[]): void {
         service: boundaryHandler,
         union: boundaryHandler,
       },
+      expression: {
+        patternOperation: {
+          preVisitor: () => {
+            scopeStack.push({});
+            return {};
+          },
+          visitor: () => {
+            scopeStack.pop();
+          },
+        },
+      },
     },
   );
 }

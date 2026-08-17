@@ -253,6 +253,9 @@ export function updateNoReuseBlankNodeLabels(updateQuery: Update): void {
 export function checkBlankNodeBGPScope(patterns: Pattern[]): void {
   const labelOwner = new Map<string, object>();
 
+  const scopeStack: object[] = [{}];
+  const currentScope = (): object => scopeStack.at(-1)!;
+
   function collectBlankNodeLabels(bgp: PatternBgp): Set<string> {
     const labels = new Set<string>();
     transformer.visitNodeSpecific(bgp, {}, { term: { blankNode: { visitor: (blankNode) => {
@@ -261,38 +264,49 @@ export function checkBlankNodeBGPScope(patterns: Pattern[]): void {
     return labels;
   }
 
-  function visitPatternList(list: Pattern[]): void {
-    let scope: object = {};
+  const boundaryHandler = {
+    preVisitor: () => {
+      scopeStack.push({});
+      return {};
+    },
+    visitor: () => {
+      scopeStack.pop();
+      scopeStack[scopeStack.length - 1] = {};
+    },
+  };
 
-    for (const pattern of list) {
-      if (F.isPatternBgp(pattern)) {
-        for (const label of collectBlankNodeLabels(pattern)) {
-          const owner = labelOwner.get(label);
-          if (owner !== undefined && owner !== scope) {
-            throw new Error(
-              `Detected reuse of blank node across two different basic graph patterns (_:${
-                label.replace(/^[eg]_/u, '')})`,
-            );
-          }
-          labelOwner.set(label, scope);
-        }
-      } else if (
-        F.isPatternGroup(pattern) ||
-        F.isPatternOptional(pattern) ||
-        F.isPatternMinus(pattern) ||
-        F.isPatternGraph(pattern) ||
-        F.isPatternService(pattern)
-      ) {
-        visitPatternList(pattern.patterns);
-        scope = {};
-      } else if (F.isPatternUnion(pattern)) {
-        for (const group of pattern.patterns) {
-          visitPatternList(group.patterns);
-        }
-        scope = {};
-      }
-    }
-  }
-
-  visitPatternList(patterns);
+  transformer.visitNodeSpecific(
+    patterns,
+    {
+      query: {
+        preVisitor: () => ({ continue: false }),
+      },
+    },
+    {
+      pattern: {
+        bgp: {
+          preVisitor: (bgp) => {
+            const scope = currentScope();
+            for (const label of collectBlankNodeLabels(bgp)) {
+              const owner = labelOwner.get(label);
+              if (owner !== undefined && owner !== scope) {
+                throw new Error(
+                  `Detected reuse of blank node across two different basic graph patterns (_:${
+                    label.replace(/^[eg]_/u, '')})`,
+                );
+              }
+              labelOwner.set(label, scope);
+            }
+            return { continue: false };
+          },
+        },
+        group: boundaryHandler,
+        optional: boundaryHandler,
+        minus: boundaryHandler,
+        graph: boundaryHandler,
+        service: boundaryHandler,
+        union: boundaryHandler,
+      },
+    },
+  );
 }

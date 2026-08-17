@@ -1,4 +1,7 @@
 import { describe, it } from 'vitest';
+import type {
+  TripleNesting,
+} from '../lib/index.js';
 import {
   AstFactory,
   checkBlankNodeBGPScope,
@@ -188,7 +191,7 @@ describe('updateNoReuseBlankNodeLabels', () => {
 });
 
 describe('checkBlankNodeBGPScope', () => {
-  function bnodeTriple(label: string): any {
+  function bnodeTriple(label: string): TripleNesting {
     const blank = F.termBlank(label, noLoc);
     return F.triple(blank, F.termVariable('p', noLoc), F.termVariable('v', noLoc), noLoc);
   }

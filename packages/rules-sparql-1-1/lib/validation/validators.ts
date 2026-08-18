@@ -253,6 +253,7 @@ export function updateNoReuseBlankNodeLabels(updateQuery: Update): void {
 export function checkBlankNodeBGPScope(patterns: Pattern[]): void {
   const labelOwner = new Map<string, object>();
 
+  // Each entry is a unique object used only as an identity marker for "the current scope"
   const scopeStack: object[] = [{}];
   const currentScope = (): object => scopeStack.at(-1)!;
 
@@ -264,7 +265,9 @@ export function checkBlankNodeBGPScope(patterns: Pattern[]): void {
     return labels;
   }
 
-  const boundaryHandler = {
+  // Introduces a new blank node scope on entry.
+  // Pops the introduced scope and resets the parent scope on exit.
+  const newBlankNodeScopeHandler = {
     preVisitor: () => {
       scopeStack.push({});
       return {};
@@ -300,14 +303,18 @@ export function checkBlankNodeBGPScope(patterns: Pattern[]): void {
             return { continue: false };
           },
         },
-        group: boundaryHandler,
-        optional: boundaryHandler,
-        minus: boundaryHandler,
-        graph: boundaryHandler,
-        service: boundaryHandler,
-        union: boundaryHandler,
+        // All other patterns introduce a new scope
+        group: newBlankNodeScopeHandler,
+        optional: newBlankNodeScopeHandler,
+        minus: newBlankNodeScopeHandler,
+        graph: newBlankNodeScopeHandler,
+        service: newBlankNodeScopeHandler,
+        union: newBlankNodeScopeHandler,
       },
       expression: {
+        // FILTER (not) EXISTS introduces a new scope.
+        // Unlike newBlankScopeHandler, we only pop on exit, we don't reset the parent scope;
+        // labels can still be reused after a FILTER or (not) EXISTS.
         patternOperation: {
           preVisitor: () => {
             scopeStack.push({});

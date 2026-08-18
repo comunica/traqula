@@ -1,5 +1,7 @@
 import { describe, it } from 'vitest';
 import type {
+  Expression,
+  Pattern,
   TripleNesting,
 } from '../lib/index.js';
 import {
@@ -261,6 +263,9 @@ describe('checkBlankNodeBGPScope', () => {
       .toThrow(/Detected reuse of blank node across two different basic graph patterns \(_:a\)/u);
   });
 
+  // https://www.w3.org/TR/sparql11-query/#subqueries
+  // subqueries are evaluated as independent queries first; only projected
+  // variables join back into the outer solution, so blank node scope resets
   it('does not descend into subqueries (they have their own fresh scope)', ({ expect }) => {
     const outerBgp = F.patternBgp([ bnodeTriple('a') ], noLoc);
     const subquery = {
@@ -268,7 +273,7 @@ describe('checkBlankNodeBGPScope', () => {
       subType: 'select',
       where: F.patternGroup([ F.patternBgp([ bnodeTriple('a') ], noLoc) ], noLoc),
     };
-    expect(() => checkBlankNodeBGPScope([ outerBgp, <any> subquery ])).not.toThrow();
+    expect(() => checkBlankNodeBGPScope([ outerBgp, <Pattern> subquery ])).not.toThrow();
   });
 
   it('ignores non-BGP-bearing patterns such as simple FILTERs and BINDs', ({ expect }) => {
@@ -279,14 +284,14 @@ describe('checkBlankNodeBGPScope', () => {
       variable: F.termVariable('x', noLoc),
       expression: F.termLiteral(noLoc, '1'),
     };
-    expect(() => checkBlankNodeBGPScope([ <any> filter, <any> bind ])).not.toThrow();
+    expect(() => checkBlankNodeBGPScope([ <Pattern> filter, <Pattern> bind ])).not.toThrow();
   });
 
   it('allows a blank node reused across triples split by a FILTER', ({ expect }) => {
     const filter = F.patternFilter(F.termLiteral(noLoc, 'true'), noLoc);
     const bgp1 = F.patternBgp([ bnodeTriple('a') ], noLoc);
     const bgp2 = F.patternBgp([ bnodeTriple('a') ], noLoc);
-    expect(() => checkBlankNodeBGPScope([ bgp1, <any> filter, bgp2 ])).not.toThrow();
+    expect(() => checkBlankNodeBGPScope([ bgp1, <Pattern> filter, bgp2 ])).not.toThrow();
   });
 
   it('allows a blank node reused across triples split by a BIND', ({ expect }) => {
@@ -298,7 +303,7 @@ describe('checkBlankNodeBGPScope', () => {
     };
     const bgp1 = F.patternBgp([ bnodeTriple('a') ], noLoc);
     const bgp2 = F.patternBgp([ bnodeTriple('a') ], noLoc);
-    expect(() => checkBlankNodeBGPScope([ bgp1, <any> bind, bgp2 ])).not.toThrow();
+    expect(() => checkBlankNodeBGPScope([ bgp1, <Pattern> bind, bgp2 ])).not.toThrow();
   });
 
   it('allows a blank node reused across triples split by a VALUES clause', ({ expect }) => {
@@ -312,32 +317,32 @@ describe('checkBlankNodeBGPScope', () => {
     const filter = F.patternFilter(F.termLiteral(noLoc, 'true'), noLoc);
     const bgp1 = F.patternBgp([ bnodeTriple('a') ], noLoc);
     const optional = F.patternOptional([ F.patternBgp([ bnodeTriple('a') ], noLoc) ], noLoc);
-    expect(() => checkBlankNodeBGPScope([ bgp1, <any> filter, optional ]))
+    expect(() => checkBlankNodeBGPScope([ bgp1, <Pattern> filter, optional ]))
       .toThrow(/Detected reuse of blank node across two different basic graph patterns \(_:a\)/u);
   });
 
   it('throws when a blank node is reused inside a FILTER (EXISTS) block', ({ expect }) => {
     const outerBgp = F.patternBgp([ bnodeTriple('a') ], noLoc);
-    const existsFilter = F.patternFilter(<any> {
+    const existsFilter = F.patternFilter(<Expression> {
       type: 'expression',
       subType: 'patternOperation',
       operator: 'exists',
       args: F.patternGroup([ F.patternBgp([ bnodeTriple('a') ], noLoc) ], noLoc),
     }, noLoc);
-    expect(() => checkBlankNodeBGPScope([ outerBgp, <any> existsFilter ]))
+    expect(() => checkBlankNodeBGPScope([ outerBgp, <Pattern> existsFilter ]))
       .toThrow(/Detected reuse of blank node across two different basic graph patterns \(_:a\)/u);
   });
 
   it('allows blank node reuse across outer BGPs split by FILTER (EXISTS)', ({ expect }) => {
     const bgp1 = F.patternBgp([ bnodeTriple('a') ], noLoc);
-    const existsFilter = F.patternFilter(<any> {
+    const existsFilter = F.patternFilter(<Expression> {
       type: 'expression',
       subType: 'patternOperation',
       operator: 'exists',
       args: F.patternGroup([ F.patternBgp([ bnodeTriple('b') ], noLoc) ], noLoc),
     }, noLoc);
     const bgp2 = F.patternBgp([ bnodeTriple('a') ], noLoc);
-    expect(() => checkBlankNodeBGPScope([ bgp1, <any> existsFilter, bgp2 ])).not.toThrow();
+    expect(() => checkBlankNodeBGPScope([ bgp1, <Pattern> existsFilter, bgp2 ])).not.toThrow();
   });
 });
 

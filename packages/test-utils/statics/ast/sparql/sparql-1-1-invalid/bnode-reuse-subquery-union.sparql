@@ -1,0 +1,4 @@
+SELECT * {
+   ?x ?y ?z .
+   { SELECT DISTINCT * { { _:b ?a ?b . } UNION { _:b ?c ?d } } }
+}

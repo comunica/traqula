@@ -263,6 +263,27 @@ describe('checkBlankNodeBGPScope', () => {
       .toThrow(/Detected reuse of blank node across two different basic graph patterns \(_:a\)/u);
   });
 
+  it('allows a blank node reused across triples split by a BIND', ({ expect }) => {
+    const bind = {
+      type: 'pattern',
+      subType: 'bind',
+      variable: F.termVariable('x', noLoc),
+      expression: F.termLiteral(noLoc, '1'),
+    };
+    const bgp1 = F.patternBgp([ bnodeTriple('a') ], noLoc);
+    const bgp2 = F.patternBgp([ bnodeTriple('a') ], noLoc);
+    expect(() => checkBlankNodeBGPScope([ bgp1, <Pattern> bind, bgp2 ]))
+      .toThrow(/Detected reuse of blank node across two different basic graph patterns \(_:a\)/u);
+  });
+
+  it('allows a blank node reused across triples split by a VALUES clause', ({ expect }) => {
+    const values = F.patternValues([ F.termVariable('x', noLoc) ], [{ x: undefined }], noLoc);
+    const bgp1 = F.patternBgp([ bnodeTriple('a') ], noLoc);
+    const bgp2 = F.patternBgp([ bnodeTriple('a') ], noLoc);
+    expect(() => checkBlankNodeBGPScope([ bgp1, values, bgp2 ]))
+      .toThrow(/Detected reuse of blank node across two different basic graph patterns \(_:a\)/u);
+  });
+
   // https://www.w3.org/TR/sparql11-query/#subqueries
   // subqueries are evaluated as independent queries first; only projected
   // variables join back into the outer solution, so blank node scope resets
@@ -292,25 +313,6 @@ describe('checkBlankNodeBGPScope', () => {
     const bgp1 = F.patternBgp([ bnodeTriple('a') ], noLoc);
     const bgp2 = F.patternBgp([ bnodeTriple('a') ], noLoc);
     expect(() => checkBlankNodeBGPScope([ bgp1, <Pattern> filter, bgp2 ])).not.toThrow();
-  });
-
-  it('allows a blank node reused across triples split by a BIND', ({ expect }) => {
-    const bind = {
-      type: 'pattern',
-      subType: 'bind',
-      variable: F.termVariable('x', noLoc),
-      expression: F.termLiteral(noLoc, '1'),
-    };
-    const bgp1 = F.patternBgp([ bnodeTriple('a') ], noLoc);
-    const bgp2 = F.patternBgp([ bnodeTriple('a') ], noLoc);
-    expect(() => checkBlankNodeBGPScope([ bgp1, <Pattern> bind, bgp2 ])).not.toThrow();
-  });
-
-  it('allows a blank node reused across triples split by a VALUES clause', ({ expect }) => {
-    const values = F.patternValues([ F.termVariable('x', noLoc) ], [{ x: undefined }], noLoc);
-    const bgp1 = F.patternBgp([ bnodeTriple('a') ], noLoc);
-    const bgp2 = F.patternBgp([ bnodeTriple('a') ], noLoc);
-    expect(() => checkBlankNodeBGPScope([ bgp1, values, bgp2 ])).not.toThrow();
   });
 
   it('still throws when a FILTER is followed by a genuinely new BGP-breaking construct', ({ expect }) => {

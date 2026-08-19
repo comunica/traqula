@@ -287,6 +287,7 @@ export function checkBlankNodeBGPScope(patterns: Pattern[]): void {
       query: {
         preVisitor: () => ({ continue: false }),
       },
+      pattern: newBlankNodeScopeHandler,
     },
     {
       pattern: {
@@ -305,20 +306,12 @@ export function checkBlankNodeBGPScope(patterns: Pattern[]): void {
             }
             return { continue: false };
           },
+          visitor: () => {},
         },
-        // All other patterns introduce a new scope
-        group: newBlankNodeScopeHandler,
-        optional: newBlankNodeScopeHandler,
-        minus: newBlankNodeScopeHandler,
-        graph: newBlankNodeScopeHandler,
-        service: newBlankNodeScopeHandler,
-        union: newBlankNodeScopeHandler,
-      },
-      expression: {
         // FILTER (not) EXISTS introduces a new scope.
         // Unlike newBlankScopeHandler, we only pop on exit, we don't reset the parent scope;
         // labels can still be reused after a FILTER or (not) EXISTS.
-        patternOperation: {
+        filter: {
           preVisitor: () => {
             scopeStack.push({});
             return {};

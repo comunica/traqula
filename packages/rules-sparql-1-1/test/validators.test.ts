@@ -263,7 +263,7 @@ describe('checkBlankNodeBGPScope', () => {
       .toThrow(/Detected reuse of blank node across two different basic graph patterns \(_:a\)/u);
   });
 
-  it('allows a blank node reused across triples split by a BIND', ({ expect }) => {
+  it('throws when a blank node is reused across triples split by a BIND', ({ expect }) => {
     const bind = {
       type: 'pattern',
       subType: 'bind',

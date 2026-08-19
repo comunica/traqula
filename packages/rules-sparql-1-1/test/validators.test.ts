@@ -1,6 +1,12 @@
 import { describe, it } from 'vitest';
+import type {
+  Expression,
+  Pattern,
+  TripleNesting,
+} from '../lib/index.js';
 import {
   AstFactory,
+  checkBlankNodeBGPScope,
   checkNote13,
   findPatternBoundedVars,
   queryProjectionIsGood,
@@ -28,7 +34,7 @@ describe('queryProjectionIsGood', () => {
       where: { type: 'group', patterns: []},
     };
 
-    expect(() => queryProjectionIsGood(<any>query)).toThrowError(/GROUP BY not allowed with wildcard/u);
+    expect(() => queryProjectionIsGood(<any>query)).toThrow(/GROUP BY not allowed with wildcard/u);
   });
 
   it('throws when projecting ungrouped variable', ({ expect }) => {
@@ -45,7 +51,7 @@ describe('queryProjectionIsGood', () => {
       where: { type: 'group', patterns: []},
     };
 
-    expect(() => queryProjectionIsGood(<any>query)).toThrowError(/Variable not allowed in projection/u);
+    expect(() => queryProjectionIsGood(<any>query)).toThrow(/Variable not allowed in projection/u);
   });
 
   it('allows grouped variable in projection', ({ expect }) => {
@@ -88,7 +94,7 @@ describe('checkNote13', () => {
       expression: F.termLiteral(noLoc, 'value'),
     };
 
-    expect(() => checkNote13(<any>[ bgp, bind ])).toThrowError(/Variable used to bind is already bound/u);
+    expect(() => checkNote13(<any>[ bgp, bind ])).toThrow(/Variable used to bind is already bound/u);
   });
 
   it('allows BIND with fresh variable', ({ expect }) => {
@@ -140,7 +146,7 @@ describe('updateNoReuseBlankNodeLabels', () => {
     };
 
     expect(() => updateNoReuseBlankNodeLabels(<any>update))
-      .toThrowError(/Detected reuse blank node across different INSERT DATA clauses/u);
+      .toThrow(/Detected reuse blank node across different INSERT DATA clauses/u);
   });
 
   it('allows different blank node labels in separate INSERT DATA clauses', ({ expect }) => {
@@ -183,6 +189,162 @@ describe('updateNoReuseBlankNodeLabels', () => {
     };
 
     expect(() => updateNoReuseBlankNodeLabels(<any>update)).not.toThrow();
+  });
+});
+
+describe('checkBlankNodeBGPScope', () => {
+  function bnodeTriple(label: string): TripleNesting {
+    const blank = F.termBlank(label, noLoc);
+    return F.triple(blank, F.termVariable('p', noLoc), F.termVariable('v', noLoc), noLoc);
+  }
+
+  it('allows the same blank node reused within a single BGP', ({ expect }) => {
+    const bgp = F.patternBgp([ bnodeTriple('a'), bnodeTriple('a') ], noLoc);
+    expect(() => checkBlankNodeBGPScope([ bgp ])).not.toThrow();
+  });
+
+  it('allows different blank nodes across different BGPs', ({ expect }) => {
+    const bgp1 = F.patternBgp([ bnodeTriple('a') ], noLoc);
+    const bgp2 = F.patternBgp([ bnodeTriple('b') ], noLoc);
+    const group = F.patternGroup([ bgp2 ], noLoc);
+    expect(() => checkBlankNodeBGPScope([ bgp1, group ])).not.toThrow();
+  });
+
+  it('throws when a blank node is reused across a nested group and its parent BGP', ({ expect }) => {
+    const outerBgp = F.patternBgp([ bnodeTriple('a') ], noLoc);
+    const innerBgp = F.patternBgp([ bnodeTriple('a') ], noLoc);
+    const group = F.patternGroup([ innerBgp ], noLoc);
+    expect(() => checkBlankNodeBGPScope([ outerBgp, group ]))
+      .toThrow(/Detected reuse of blank node across two different basic graph patterns \(_:a\)/u);
+  });
+
+  it('throws when a blank node is reused across UNION branches', ({ expect }) => {
+    const branch1 = F.patternGroup([ F.patternBgp([ bnodeTriple('a') ], noLoc) ], noLoc);
+    const branch2 = F.patternGroup([ F.patternBgp([ bnodeTriple('a') ], noLoc) ], noLoc);
+    const union = F.patternUnion([ branch1, branch2 ], noLoc);
+    expect(() => checkBlankNodeBGPScope([ union ]))
+      .toThrow(/Detected reuse of blank node across two different basic graph patterns \(_:a\)/u);
+  });
+
+  it('throws when a blank node is reused across an OPTIONAL block', ({ expect }) => {
+    const outerBgp = F.patternBgp([ bnodeTriple('a') ], noLoc);
+    const optional = F.patternOptional([ F.patternBgp([ bnodeTriple('a') ], noLoc) ], noLoc);
+    expect(() => checkBlankNodeBGPScope([ outerBgp, optional ]))
+      .toThrow(/Detected reuse of blank node across two different basic graph patterns \(_:a\)/u);
+  });
+
+  it('throws when a blank node is reused across a MINUS block', ({ expect }) => {
+    const outerBgp = F.patternBgp([ bnodeTriple('a') ], noLoc);
+    const minus = F.patternMinus([ F.patternBgp([ bnodeTriple('a') ], noLoc) ], noLoc);
+    expect(() => checkBlankNodeBGPScope([ outerBgp, minus ]))
+      .toThrow(/Detected reuse of blank node across two different basic graph patterns \(_:a\)/u);
+  });
+
+  it('throws when a blank node is reused across a GRAPH block', ({ expect }) => {
+    const outerBgp = F.patternBgp([ bnodeTriple('a') ], noLoc);
+    const graph = F.patternGraph(
+      F.termVariable('g', noLoc),
+      [ F.patternBgp([ bnodeTriple('a') ], noLoc) ],
+      noLoc,
+    );
+    expect(() => checkBlankNodeBGPScope([ outerBgp, graph ]))
+      .toThrow(/Detected reuse of blank node across two different basic graph patterns \(_:a\)/u);
+  });
+
+  it('throws when a blank node is reused across a SERVICE block', ({ expect }) => {
+    const outerBgp = F.patternBgp([ bnodeTriple('a') ], noLoc);
+    const service = F.patternService(
+      F.termVariable('g', noLoc),
+      [ F.patternBgp([ bnodeTriple('a') ], noLoc) ],
+      false,
+      noLoc,
+    );
+    expect(() => checkBlankNodeBGPScope([ outerBgp, service ]))
+      .toThrow(/Detected reuse of blank node across two different basic graph patterns \(_:a\)/u);
+  });
+
+  it('throws when a blank node is reused across triples split by a BIND', ({ expect }) => {
+    const bind = {
+      type: 'pattern',
+      subType: 'bind',
+      variable: F.termVariable('x', noLoc),
+      expression: F.termLiteral(noLoc, '1'),
+    };
+    const bgp1 = F.patternBgp([ bnodeTriple('a') ], noLoc);
+    const bgp2 = F.patternBgp([ bnodeTriple('a') ], noLoc);
+    expect(() => checkBlankNodeBGPScope([ bgp1, <Pattern> bind, bgp2 ]))
+      .toThrow(/Detected reuse of blank node across two different basic graph patterns \(_:a\)/u);
+  });
+
+  it('throws when a blank node is reused across reused across triples split by a VALUES clause', ({ expect }) => {
+    const values = F.patternValues([ F.termVariable('x', noLoc) ], [{ x: undefined }], noLoc);
+    const bgp1 = F.patternBgp([ bnodeTriple('a') ], noLoc);
+    const bgp2 = F.patternBgp([ bnodeTriple('a') ], noLoc);
+    expect(() => checkBlankNodeBGPScope([ bgp1, values, bgp2 ]))
+      .toThrow(/Detected reuse of blank node across two different basic graph patterns \(_:a\)/u);
+  });
+
+  // https://www.w3.org/TR/sparql11-query/#subqueries
+  // subqueries are evaluated as independent queries first; only projected
+  // variables join back into the outer solution, so blank node scope resets
+  it('does not descend into subqueries (they have their own fresh scope)', ({ expect }) => {
+    const outerBgp = F.patternBgp([ bnodeTriple('a') ], noLoc);
+    const subquery = {
+      type: 'query',
+      subType: 'select',
+      where: F.patternGroup([ F.patternBgp([ bnodeTriple('a') ], noLoc) ], noLoc),
+    };
+    expect(() => checkBlankNodeBGPScope([ outerBgp, <Pattern> subquery ])).not.toThrow();
+  });
+
+  it('ignores non-BGP-bearing patterns such as simple FILTERs and BINDs', ({ expect }) => {
+    const filter = F.patternFilter(F.termLiteral(noLoc, 'true'), noLoc);
+    const bind = {
+      type: 'pattern',
+      subType: 'bind',
+      variable: F.termVariable('x', noLoc),
+      expression: F.termLiteral(noLoc, '1'),
+    };
+    expect(() => checkBlankNodeBGPScope([ <Pattern> filter, <Pattern> bind ])).not.toThrow();
+  });
+
+  it('allows a blank node reused across triples split by a FILTER', ({ expect }) => {
+    const filter = F.patternFilter(F.termLiteral(noLoc, 'true'), noLoc);
+    const bgp1 = F.patternBgp([ bnodeTriple('a') ], noLoc);
+    const bgp2 = F.patternBgp([ bnodeTriple('a') ], noLoc);
+    expect(() => checkBlankNodeBGPScope([ bgp1, <Pattern> filter, bgp2 ])).not.toThrow();
+  });
+
+  it('still throws when a FILTER is followed by a genuinely new BGP-breaking construct', ({ expect }) => {
+    const filter = F.patternFilter(F.termLiteral(noLoc, 'true'), noLoc);
+    const bgp1 = F.patternBgp([ bnodeTriple('a') ], noLoc);
+    const optional = F.patternOptional([ F.patternBgp([ bnodeTriple('a') ], noLoc) ], noLoc);
+    expect(() => checkBlankNodeBGPScope([ bgp1, <Pattern> filter, optional ]))
+      .toThrow(/Detected reuse of blank node across two different basic graph patterns \(_:a\)/u);
+  });
+
+  it('throws when a blank node is reused inside a FILTER (EXISTS) block', ({ expect }) => {
+    const outerBgp = F.patternBgp([ bnodeTriple('a') ], noLoc);
+    const existsFilter = F.patternFilter(<Expression> {
+      type: 'expression',
+      subType: 'patternOperation',
+      operator: 'exists',
+      args: F.patternGroup([ F.patternBgp([ bnodeTriple('a') ], noLoc) ], noLoc),
+    }, noLoc);
+    expect(() => checkBlankNodeBGPScope([ outerBgp, <Pattern> existsFilter ]))
+      .toThrow(/Detected reuse of blank node across two different basic graph patterns \(_:a\)/u);
+  });
+
+  it('allows blank node reuse across outer BGPs split by FILTER (EXISTS)', ({ expect }) => {
+    const bgp1 = F.patternBgp([ bnodeTriple('a') ], noLoc);
+    const existsFilter = F.patternFilter(<Expression> {
+      type: 'expression',
+      subType: 'patternOperation',
+      operator: 'exists',
+      args: F.patternGroup([ F.patternBgp([ bnodeTriple('b') ], noLoc) ], noLoc),
+    }, noLoc);
+    const bgp2 = F.patternBgp([ bnodeTriple('a') ], noLoc);
+    expect(() => checkBlankNodeBGPScope([ bgp1, <Pattern> existsFilter, bgp2 ])).not.toThrow();
   });
 });
 
@@ -306,7 +468,7 @@ describe('queryProjectionIsGood - additional cases', () => {
       where: { type: 'group', patterns: []},
     };
     expect(() => queryProjectionIsGood(<any>query))
-      .toThrowError(/Use of ungrouped variable in projection/u);
+      .toThrow(/Use of ungrouped variable in projection/u);
   });
 
   it('exercises getVariablesFromExpression with nested operator', ({ expect }) => {
@@ -349,7 +511,7 @@ describe('queryProjectionIsGood - additional cases', () => {
       },
     };
     expect(() => queryProjectionIsGood(<any>query))
-      .toThrowError(/Target id of 'AS' \(\?x\) already used in subquery/u);
+      .toThrow(/Target id of 'AS' \(\?x\) already used in subquery/u);
   });
 });
 
@@ -366,7 +528,7 @@ describe('checkNote13 - second bounded vars check', () => {
     };
     // Second loop: values adds 'x', then bind sees 'x' already bound -> L214
     expect(() => checkNote13(<any>[ valuesPattern, bind ]))
-      .toThrowError(/Variable used to bind is already bound/u);
+      .toThrow(/Variable used to bind is already bound/u);
   });
 });
 

@@ -4,6 +4,7 @@ import type {
   Expression,
   ExpressionAggregate,
   Pattern,
+  PatternBgp,
   QuerySelect,
   TermVariable,
   SolutionModifierGroupBind,
@@ -243,4 +244,83 @@ export function updateNoReuseBlankNodeLabels(updateQuery: Update): void {
       }
     }
   }
+}
+
+/**
+ * https://www.w3.org/TR/sparql11-query/#bgpBNodeLabels
+ * > A label can be used in only a single basic graph pattern in any query.
+ */
+export function checkBlankNodeBGPScope(patterns: Pattern[]): void {
+  const labelOwner = new Map<string, object>();
+
+  // Each entry is a unique object used only as an identity marker for "the current scope"
+  const scopeStack: object[] = [{}];
+  const currentScope = (): object => scopeStack.at(-1)!;
+
+  function collectBlankNodeLabels(bgp: PatternBgp): Set<string> {
+    const labels = new Set<string>();
+    transformer.visitNodeSpecific(bgp, {}, { term: { blankNode: { visitor: (blankNode) => {
+      labels.add(blankNode.label);
+    } }}});
+    return labels;
+  }
+
+  // Introduces a new blank node scope on entry.
+  // Pops the introduced scope and resets the parent scope on exit.
+  const newBlankNodeScopeHandler = {
+    preVisitor: () => {
+      scopeStack.push({});
+      return {};
+    },
+    visitor: () => {
+      scopeStack.pop();
+      // Within a list of patterns, seeing this pattern breaks the scope of the list of patterns.
+      // BIND and FILTER do not break the scope since when transforming to algebra, they are collected separately:
+      // https://www.w3.org/TR/sparql12-query/#sparqlCollectFilters
+      scopeStack[scopeStack.length - 1] = {};
+    },
+  };
+
+  transformer.visitNodeSpecific(
+    patterns,
+    {
+      query: {
+        preVisitor: () => ({ continue: false }),
+      },
+      pattern: newBlankNodeScopeHandler,
+    },
+    {
+      pattern: {
+        bgp: {
+          preVisitor: (bgp) => {
+            const scope = currentScope();
+            for (const label of collectBlankNodeLabels(bgp)) {
+              const owner = labelOwner.get(label);
+              if (owner !== undefined && owner !== scope) {
+                throw new Error(
+                  `Detected reuse of blank node across two different basic graph patterns (_:${
+                    label.replace(/^[eg]_/u, '')})`,
+                );
+              }
+              labelOwner.set(label, scope);
+            }
+            return { continue: false };
+          },
+          visitor: () => {},
+        },
+        // FILTER (not) EXISTS introduces a new scope.
+        // Unlike newBlankScopeHandler, we only pop on exit, we don't reset the parent scope;
+        // labels can still be reused after a FILTER or (not) EXISTS.
+        filter: {
+          preVisitor: () => {
+            scopeStack.push({});
+            return {};
+          },
+          visitor: () => {
+            scopeStack.pop();
+          },
+        },
+      },
+    },
+  );
 }

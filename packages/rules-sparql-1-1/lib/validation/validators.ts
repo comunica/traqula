@@ -274,7 +274,9 @@ export function checkBlankNodeBGPScope(patterns: Pattern[]): void {
     },
     visitor: () => {
       scopeStack.pop();
-      // Within a list of patterns, seing this pattern breaks the scope of the list of patterns. BIND and FILTER do not break he scope since when transforming to algebra, they are collected separetly: https://www.w3.org/TR/sparql12-query/#sparqlCollectFilters
+      // Within a list of patterns, seeing this pattern breaks the scope of the list of patterns.
+      // BIND and FILTER do not break the scope since when transforming to algebra, they are collected separately:
+      // https://www.w3.org/TR/sparql12-query/#sparqlCollectFilters
       scopeStack[scopeStack.length - 1] = {};
     },
   };

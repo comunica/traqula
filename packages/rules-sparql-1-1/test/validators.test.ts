@@ -276,7 +276,7 @@ describe('checkBlankNodeBGPScope', () => {
       .toThrow(/Detected reuse of blank node across two different basic graph patterns \(_:a\)/u);
   });
 
-  it('allows a blank node reused across triples split by a VALUES clause', ({ expect }) => {
+  it('throws when a blank node is reused across reused across triples split by a VALUES clause', ({ expect }) => {
     const values = F.patternValues([ F.termVariable('x', noLoc) ], [{ x: undefined }], noLoc);
     const bgp1 = F.patternBgp([ bnodeTriple('a') ], noLoc);
     const bgp2 = F.patternBgp([ bnodeTriple('a') ], noLoc);

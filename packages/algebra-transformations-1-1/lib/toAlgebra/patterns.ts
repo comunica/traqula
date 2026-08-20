@@ -201,7 +201,14 @@ AlgebraIndir<'accumulateGroupGraphPattern', Algebra.Operation, [Algebra.Operatio
     if (F.isPatternOptional(pattern)) {
       // Optional input needs to be interpreted as a group
       const groupAsAlgebra = SUBRULE(translateGraphPattern, F.patternGroup(pattern.patterns, pattern.loc));
-      if (groupAsAlgebra.type === types.FILTER) {
+      // Only hoist the filter onto the LeftJoin's expression when it was declared directly within this
+      // OPTIONAL's own scope (i.e. `{ P FILTER(...) }`). A `groupAsAlgebra` of type FILTER can also arise
+      // when the OPTIONAL's sole element is itself a nested group whose own FILTER got bubbled up through
+      // simplifiedJoin's BGP-elision (e.g. `OPTIONAL { { P FILTER(...) } }`, double curly braces). In that
+      // case the filter is scoped to the inner group and must remain there rather than becoming the join
+      // condition, as the two have different semantics (see dawg-optional-filter-005-not-simplified).
+      const hasOwnFilter = pattern.patterns.some(subPattern => F.isPatternFilter(subPattern));
+      if (hasOwnFilter && groupAsAlgebra.type === types.FILTER) {
         return AF.createLeftJoin(algebraOp, groupAsAlgebra.input, groupAsAlgebra.expression);
       }
       return AF.createLeftJoin(algebraOp, groupAsAlgebra);

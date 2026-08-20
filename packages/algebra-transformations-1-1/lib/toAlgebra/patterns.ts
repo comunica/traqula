@@ -201,7 +201,7 @@ AlgebraIndir<'accumulateGroupGraphPattern', Algebra.Operation, [Algebra.Operatio
     if (F.isPatternOptional(pattern)) {
       // Optional input needs to be interpreted as a group
       const groupAsAlgebra = SUBRULE(translateGraphPattern, F.patternGroup(pattern.patterns, pattern.loc));
-      if (groupAsAlgebra.type === types.FILTER) {
+      if (groupAsAlgebra.type === types.FILTER && pattern.patterns.some(p => F.isPatternFilter(p))) {
         return AF.createLeftJoin(algebraOp, groupAsAlgebra.input, groupAsAlgebra.expression);
       }
       return AF.createLeftJoin(algebraOp, groupAsAlgebra);

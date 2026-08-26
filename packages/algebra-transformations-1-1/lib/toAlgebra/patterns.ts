@@ -201,7 +201,8 @@ AlgebraIndir<'accumulateGroupGraphPattern', Algebra.Operation, [Algebra.Operatio
     if (F.isPatternOptional(pattern)) {
       // Optional input needs to be interpreted as a group
       const groupAsAlgebra = SUBRULE(translateGraphPattern, F.patternGroup(pattern.patterns, pattern.loc));
-      // Hoist FILTER if it's an immediate child of the pattern
+      // Only hoist FILTER into LEFT_JOIN if it's a direct child of this OPTIONAL's group (per SPARQL 18.2.2.8):
+      // a nested group's FILTER is scoped to that inner group and hoisting it would change what bindings it sees.
       if (groupAsAlgebra.type === types.FILTER && pattern.patterns.some(p => F.isPatternFilter(p))) {
         return AF.createLeftJoin(algebraOp, groupAsAlgebra.input, groupAsAlgebra.expression);
       }

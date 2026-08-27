@@ -1,6 +1,19 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.2.1"></a>
+## [v1.2.1](https://github.com/comunica/traqula/compare/v1.2.0...v1.2.1) - 2026-08-27
+
+* [Prevent filter hoisting into leftJoins when filters are not declared in immediate child group (#182)](https://github.com/comunica/traqula/commit/fa033405519c20baf7782e425da4ba44a4eec212)
+* [Add validation for BlankNode scoping (grammar rule 8) using checkBlankNodeBGPScope (#176)](https://github.com/comunica/traqula/commit/896dfa7868f93bfef9448ca58d69a5e6a70d825a)
+* [Fix `LIMIT 0` not being transformed to algebra (#175)](https://github.com/comunica/traqula/commit/351e1ab66e6b572ce7be27ed544fe34e849b71db)
+
+
+* [Brand the TypeDoc site title with the Traqula logo and red (#174)](https://github.com/comunica/traqula/commit/015812b00719fe361d3fa33d61fce294bb4a9ad1)
+* [Use docs/index.md as the documentation landing page (#173)](https://github.com/comunica/traqula/commit/8e880291587cc29f389c035ef68d362e2ab906f9)
+* [Fix TypeDoc broken links (#172)](https://github.com/comunica/traqula/commit/0f5f04f2fad2d104857f8389b33a27596896608e)
+* [Update dependency axios to v1.19.0 (#177)](https://github.com/comunica/traqula/commit/14378e89a559e5a851e87a7bf6bd1e82dd3682be)
+
 <a name="v1.2.0"></a>
 ## [v1.2.0](https://github.com/comunica/traqula/compare/v1.1.8...v1.2.0) - 2026-08-05
 

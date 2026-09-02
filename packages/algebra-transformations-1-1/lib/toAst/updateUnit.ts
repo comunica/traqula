@@ -106,7 +106,10 @@ export const translateAlgDeleteInsert: AstIndir<'translateDeleteInsert', LikeMod
     // If not an empty where pattern, handle quads
     if (where && (where.type !== types.BGP || where.patterns.length > 0)) {
       const graphs: (RDF.NamedNode | RDF.DefaultGraph)[] = [];
-      const result = SUBRULE(translateAlgPatternNew, <typeof where> SUBRULE(removeAlgQuadsRecursive, where, graphs));
+      const result = SUBRULE(
+        translateAlgPatternNew,
+        <typeof where> SUBRULE(removeAlgQuadsRecursive, where, graphs, false),
+      );
       update.where = SUBRULE(algWrapInPatternGroup, result);
       // Graph might not be applied yet since there was no project
       // this can only happen if there was a single graph

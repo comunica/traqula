@@ -117,10 +117,9 @@ GROUP BY ( ?y AS ?x )`);
 
   describe('recurseGraph EXTEND handling', () => {
     it('keeps a BIND inside its GRAPH, even when it shadows the graph variable name', ({ expect }) => {
-      // The EXTEND must stay inside the GRAPH: Graph(?g, P) binds ?g by joining it onto P's
-      // result, so hoisting the BIND into the outer SELECT list would read the always-bound
-      // graph name instead of whatever P itself bound to ?o - a different query, not a rendering
-      // choice. See task.md entry 1.
+      // The BIND must stay inside the GRAPH: hoisting it out would read the always-bound graph
+      // name instead of whatever the pattern itself bound to ?o - a different query, not a
+      // rendering choice.
       const result = roundTrip(
         'SELECT * WHERE { GRAPH ?g { ?s <http://p> ?o BIND(?o AS ?g) } }',
       );

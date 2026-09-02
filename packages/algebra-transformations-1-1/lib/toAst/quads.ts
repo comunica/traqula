@@ -113,8 +113,7 @@ unknown,
       // as their own clause, so deferring past them lets sibling occurrences of the same graph
       // (e.g. a FILTER whose EXISTS sub-pattern targets the same graph as its main pattern)
       // merge into one GRAPH block instead of each wrapping itself separately.
-      const isBoundary = knownOp.type === types.PROJECT || knownOp.type === types.SERVICE ||
-        knownOp.type === types.GROUP || knownOp.type === types.ORDER_BY ||
+      const isBoundary = [ types.PROJECT, types.SERVICE, types.GROUP, types.ORDER_BY ].includes(knownOp.type) ||
         (knownOp.type === types.EXTEND && projectionScope);
       if (graphNameSet.length === 1 && !isBoundary) {
         graphs.push(operationGraphNames[graphNameSet[0]]);

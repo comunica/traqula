@@ -1,6 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.2.2"></a>
+## [v1.2.2](https://github.com/comunica/traqula/compare/v1.2.1...v1.2.2) - 2026-09-02
+
+* [Fix toAst hoisting EXTEND out of GRAPH  (#186)](https://github.com/comunica/traqula/commit/6689a684038e32d8f1f16901a3a998960ac362db)
+* [Update dependency markdown-it to v15.0.1 (#185)](https://github.com/comunica/traqula/commit/e83ffd216b530af930152dc271ac92a454fb3d92)
+* [Update dependency axios to v1.20.0 (#184)](https://github.com/comunica/traqula/commit/7db0a5764dc55afd0581d0b8af04ea2f57c93658)
+* [Update dependency picomatch to v4.0.7 (#183)](https://github.com/comunica/traqula/commit/e8a745172a28ea0accae72aa00aaa10e0fd57215)
+
 <a name="v1.2.1"></a>
 ## [v1.2.1](https://github.com/comunica/traqula/compare/v1.2.0...v1.2.1) - 2026-08-27
 

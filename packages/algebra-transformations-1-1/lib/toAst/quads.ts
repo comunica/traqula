@@ -9,22 +9,39 @@ import type { AstIndir } from './core.js';
 export const removeAlgQuads: AstIndir<'removeQuads', Algebra.Operation, [Algebra.Operation]> = {
   name: 'removeQuads',
   fun: ({ SUBRULE }) => (_, op) =>
-    <typeof op>SUBRULE(removeAlgQuadsRecursive, op, []),
+    <typeof op>SUBRULE(removeAlgQuadsRecursive, op, [], false),
 };
+
+/**
+ * Whether `knownOp`'s `input` will be read as a SELECT-expression EXTEND rather than a BIND -
+ * mirrors `registerProjection`'s `c.project`. True under PROJECT/ASK/DESCRIBE, carried through an
+ * EXTEND/ORDER_BY chain, false otherwise (including under CONSTRUCT, which never opens it).
+ */
+function inputProjectionScope(knownOp: Algebra.Operation, projectionScope: boolean): boolean {
+  if (knownOp.type === types.PROJECT || knownOp.type === types.ASK || knownOp.type === types.DESCRIBE) {
+    return true;
+  }
+  if (knownOp.type === types.EXTEND || knownOp.type === types.ORDER_BY) {
+    return projectionScope;
+  }
+  return false;
+}
 
 /**
  * Removes quad component of triples and wrap found bgps in Algebra.GraphOperations
  * Mainly returns same type as first arg
+ * @param projectionScope whether we are directly below an EXTEND/ORDER_BY chain rooted at a
+ * PROJECT/ASK/DESCRIBE - see {@link inputProjectionScope}.
  */
 export const removeAlgQuadsRecursive: AstIndir<
   'removeQuadsRecursive',
 unknown,
-[unknown, (RDF.NamedNode | RDF.DefaultGraph)[]]
+[unknown, (RDF.NamedNode | RDF.DefaultGraph)[], boolean]
 > = {
   name: 'removeQuadsRecursive',
-  fun: ({ SUBRULE }) => ({ algebraFactory: AF }, unknownVal, graphs) => {
+  fun: ({ SUBRULE }) => ({ algebraFactory: AF }, unknownVal, graphs, projectionScope) => {
     if (Array.isArray(unknownVal)) {
-      return unknownVal.map(sub => SUBRULE(removeAlgQuadsRecursive, sub, graphs));
+      return unknownVal.map(sub => SUBRULE(removeAlgQuadsRecursive, sub, graphs, projectionScope));
     }
 
     if (typeof unknownVal !== 'object' || unknownVal === null || !('type' in unknownVal) || !unknownVal.type) {
@@ -59,7 +76,10 @@ unknown,
     const operationGraphNames: Record<string, RDF.NamedNode | RDF.DefaultGraph> = {};
     for (const [ key, value ] of Object.entries(knownOp)) {
       const newGraphs: (RDF.NamedNode | RDF.DefaultGraph)[] = [];
-      result[key] = SUBRULE(removeAlgQuadsRecursive, value, newGraphs);
+      // Only `input` ever continues a projection-scope chain; every other key (an EXTEND's own
+      // `expression`, for instance) starts fresh outside of it - see `inputProjectionScope`.
+      const childScope = key === 'input' && inputProjectionScope(knownOp, projectionScope);
+      result[key] = SUBRULE(removeAlgQuadsRecursive, value, newGraphs, childScope);
 
       // If a graph was registered, we register the discovery we did at this key of the object
       //  and create graph identifier map
@@ -74,8 +94,14 @@ unknown,
     const graphNameSet = Object.keys(operationGraphNames);
     // Finally, if we found graphs at some keys, wrap those keys in Algebra.graphOperations
     if (graphNameSet.length > 0) {
-      // We also need to create graph statement if we are at the edge of certain operations
-      if (graphNameSet.length === 1 && ![ types.PROJECT, types.SERVICE ].includes(knownOp.type)) {
+      // PROJECT/SERVICE/GROUP/ORDER_BY, and EXTEND in projection scope, never bracket their
+      // input - they're external SELECT state, not a pattern - so the GRAPH must wrap right
+      // below them, not defer further up. FILTER and the multi-branch combinators (JOIN,
+      // LEFT_JOIN, MINUS, UNION) do defer: they share a group with sibling patterns, so matching
+      // graphs merge into one GRAPH block instead of each wrapping itself separately.
+      const isBoundary = [ types.PROJECT, types.SERVICE, types.GROUP, types.ORDER_BY ].includes(knownOp.type) ||
+        (knownOp.type === types.EXTEND && projectionScope);
+      if (graphNameSet.length === 1 && !isBoundary) {
         graphs.push(operationGraphNames[graphNameSet[0]]);
       } else if (knownOp.type === types.BGP) {
         // This is the specific case that `op` got changed because of using quads. -

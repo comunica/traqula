@@ -62,9 +62,9 @@ export const resetContext: AstIndir<'resetContext', void, []> = {
 export const registerProjection: AstIndir<'registerProjection', void, [Algebra.Operation]> = {
   name: 'registerProjection',
   fun: () => (c, op) => {
-    // GRAPH was added because the way graphs get added back here is not the same as how they get added in the future
-    // ^ seems fine but might have to be changed if problems get detected in the future
-    if (op.type !== types.EXTEND && op.type !== types.ORDER_BY && op.type !== types.GRAPH) {
+    // GRAPH closes projection scope: Graph(?g, P) joins {?g} onto P's result, so an EXTEND
+    // inside P must render as a BIND, not get hoisted into the outer SELECT list.
+    if (op.type !== types.EXTEND && op.type !== types.ORDER_BY) {
       c.project = false;
     }
   },

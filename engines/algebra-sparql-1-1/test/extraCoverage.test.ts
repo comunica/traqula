@@ -116,14 +116,19 @@ GROUP BY ( ?y AS ?x )`);
   });
 
   describe('recurseGraph EXTEND handling', () => {
-    it('handles GRAPH with BIND that shadows graph variable name', ({ expect }) => {
-      // TODO: I actually feel like this is wrong. It relates to our graph issues in Comunica
+    it('keeps a BIND inside its GRAPH, even when it shadows the graph variable name', ({ expect }) => {
+      // The BIND must stay inside the GRAPH: hoisting it out would read the always-bound graph
+      // name instead of whatever the pattern itself bound to ?o - a different query, not a
+      // rendering choice.
       const result = roundTrip(
         'SELECT * WHERE { GRAPH ?g { ?s <http://p> ?o BIND(?o AS ?g) } }',
       );
-      expect(result).toBe(`SELECT ( ?o AS ?g ) ?o ?s WHERE {
+      expect(result).toBe(`SELECT ?g ?o ?s WHERE {
   GRAPH ?g {
-    ?s <http://p> ?o .
+    {
+      ?s <http://p> ?o .
+      BIND( ?o AS ?g )
+    }
   }
 }`);
     });

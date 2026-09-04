@@ -982,7 +982,7 @@ describe('transformerObject async', () => {
     await expect(result).resolves.toBe(1);
   });
 
-  it('handles a shortcut taken from inside a resolved promise (post-order)', async({ expect }) => {
+  it('handles a shortcut from the pre-visitor under the async method (post-order)', async({ expect }) => {
     const tree = buildBranchingTree();
     const syncMapped: string[] = [];
     transformer.transformObject(
@@ -1006,7 +1006,7 @@ describe('transformerObject async', () => {
         }
         return copy;
       },
-      orig => Promise.resolve((<any>orig).name === 'right' ? { shortcut: true } : {}),
+      orig => ((<any>orig).name === 'right' ? { shortcut: true } : {}),
     );
     expect(asyncMapped).toEqual(syncMapped);
   });
@@ -1209,7 +1209,7 @@ describe('transformer async branch coverage', () => {
     expect(visited).toEqual([ 'root' ]);
   });
 
-  it('visitObjectAsync supports an async pre-visitor together with an async visitor', async({ expect }) => {
+  it('visitObjectAsync supports an async visitor with a sync pre-visitor', async({ expect }) => {
     const visited: string[] = [];
     const tree = { name: 'root', child: { name: 'child', leaf: 1 }};
     await transformer.visitObjectAsync(
@@ -1220,10 +1220,7 @@ describe('transformer async branch coverage', () => {
           visited.push((<any>obj).name);
         }
       },
-      async() => {
-        await delay();
-        return {};
-      },
+      () => ({}),
     );
     expect(visited).toEqual([ 'child', 'root' ]);
   });
@@ -1238,7 +1235,7 @@ describe('transformer async branch coverage', () => {
       fruit: { transform: async(copy) => {
         await delay();
         return { ...copy, f: 1 };
-      }, preVisitor: async() => ({}) },
+      }, preVisitor: () => ({}) },
       vegetable: { preVisitor: () => ({ continue: true }) },
     });
     expect(result.f).toBe(1);
@@ -1272,7 +1269,7 @@ describe('transformer async branch coverage', () => {
       fruit: { visitor: async() => {
         await delay();
         visited.push('fruit');
-      }, preVisitor: async() => ({}) },
+      }, preVisitor: () => ({}) },
       vegetable: { preVisitor: () => ({}) },
     });
     expect(visited).toEqual([ 'fruit' ]);
@@ -1298,7 +1295,7 @@ describe('transformer async branch coverage', () => {
       category: { a: { transform: async(copy: any) => {
         await delay();
         return { ...copy, viaSpecific: true };
-      }, preVisitor: async() => ({}) }},
+      }, preVisitor: () => ({}) }},
     });
     expect(result.viaSpecific).toBe(true);
     expect(result.child.viaType).toBe(true);
@@ -1357,7 +1354,7 @@ describe('transformer async branch coverage', () => {
       category: { a: { visitor: async(op: any) => {
         await delay();
         visited.push(`specific:${op.subType}`);
-      }, preVisitor: async() => ({}) }},
+      }, preVisitor: () => ({}) }},
     });
     // Deepest first: child (b via type) before root (a via specific)
     expect(visited).toEqual([ 'type:b', 'specific:a' ]);

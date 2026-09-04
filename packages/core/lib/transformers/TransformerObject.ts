@@ -147,7 +147,7 @@ export class TransformerObject {
   public transformObjectAsync(
     startObject: object,
     postMapper: (copy: object, orig: object) => Awaitable<unknown>,
-    preVisitor: (orig: object) => Awaitable<TransformContext> = () => ({}),
+    preVisitor: (orig: object) => TransformContext = () => ({}),
   ): Promise<unknown> {
     return Promise.resolve(this.runTransformObject(startObject, postMapper, preVisitor, true));
   }
@@ -155,7 +155,7 @@ export class TransformerObject {
   protected runTransformObject(
     startObject: object,
     postMapper: (copy: object, orig: object) => Awaitable<unknown>,
-    preVisitor: (orig: object) => Awaitable<TransformContext>,
+    preVisitor: (orig: object) => TransformContext,
     allowAsync: boolean,
   ): unknown {
     const defaults = this.defaultContext;
@@ -202,51 +202,6 @@ export class TransformerObject {
       return undefined;
     }
 
-    // Everything after the preVisitor call - split out so it can also run from inside a resolved promise.
-    const expand = (curObject: object, curParent: object, curKey: string, context: TransformContext): void => {
-      const copyFlag = context.copy ?? defaultCopyFlag;
-      const continues = context.continue ?? defaultContinues;
-      const ignoreKeys = context.ignoreKeys ?? defaultIgnoreKeys;
-      const shallowKeys = context.shallowKeys ?? defaultShallowKeys;
-      didShortCut = context.shortcut ?? defaultDidShortCut;
-
-      const copy = copyFlag ? this.cloneObj(curObject) : curObject;
-
-      // Register that you want to be visited
-      handleMapperOnLen.push(stack.length);
-      mapperCopyStack.push(copy);
-      mapperOrigStack.push(curObject);
-      mapperParent.push(curParent);
-      mapperParentKey.push(curKey);
-
-      // Extend stack if needed. When shortcutted, should still unwind the stack, but no longer add to it.
-      if (continues && !didShortCut) {
-        for (const key in copy) {
-          if (!Object.hasOwn(copy, key)) {
-            continue;
-          }
-          const val = (<Record<string, unknown>> copy)[key];
-
-          // If shallow copy required, do
-          const onlyShallow = shallowKeys && shallowKeys?.has(key);
-          if (onlyShallow) {
-            // Do not add stack entry - assign straight away
-            (<Record<string, unknown>> copy)[key] = this.cloneObj(val);
-          }
-          if (ignoreKeys && ignoreKeys.has(key)) {
-            // Do not add stack entry
-            continue;
-          }
-          if (!onlyShallow && val !== null && typeof val === 'object') {
-            // Do add stack entry.
-            stack.push(val);
-            stackParentKey.push(key);
-            stackParent.push(copy);
-          }
-        }
-      }
-    };
-
     // The loop is wrapped so it can return at a suspension point and be called again to resume.
     const drive = (): unknown => {
       while (stack.length > 0 && stack.length < this.maxStackSize) {
@@ -281,14 +236,47 @@ export class TransformerObject {
 
           // Perform pre visit before expanding the stack
           const context = preVisitor(<any>curObject);
-          if (allowAsync && isThenable(context)) {
-            return context.then((ctx): unknown => {
-              expand(curObject, curParent, curKey, ctx);
-              const pending = handleMapper();
-              return pending ? pending.then(drive) : drive();
-            });
+          const copyFlag = context.copy ?? defaultCopyFlag;
+          const continues = context.continue ?? defaultContinues;
+          const ignoreKeys = context.ignoreKeys ?? defaultIgnoreKeys;
+          const shallowKeys = context.shallowKeys ?? defaultShallowKeys;
+          didShortCut = context.shortcut ?? defaultDidShortCut;
+
+          const copy = copyFlag ? this.cloneObj(curObject) : curObject;
+
+          // Register that you want to be visited
+          handleMapperOnLen.push(stack.length);
+          mapperCopyStack.push(copy);
+          mapperOrigStack.push(curObject);
+          mapperParent.push(curParent);
+          mapperParentKey.push(curKey);
+
+          // Extend stack if needed. When shortcutted, should still unwind the stack, but no longer add to it.
+          if (continues && !didShortCut) {
+            for (const key in copy) {
+              if (!Object.hasOwn(copy, key)) {
+                continue;
+              }
+              const val = (<Record<string, unknown>> copy)[key];
+
+              // If shallow copy required, do
+              const onlyShallow = shallowKeys && shallowKeys?.has(key);
+              if (onlyShallow) {
+                // Do not add stack entry - assign straight away
+                (<Record<string, unknown>> copy)[key] = this.cloneObj(val);
+              }
+              if (ignoreKeys && ignoreKeys.has(key)) {
+                // Do not add stack entry
+                continue;
+              }
+              if (!onlyShallow && val !== null && typeof val === 'object') {
+                // Do add stack entry.
+                stack.push(val);
+                stackParentKey.push(key);
+                stackParent.push(copy);
+              }
+            }
           }
-          expand(curObject, curParent, curKey, <TransformContext>context);
         }
         const pending = handleMapper();
         if (pending) {
@@ -513,7 +501,7 @@ export class TransformerObject {
   public visitObjectAsync(
     startObject: object,
     visitor: (orig: object) => Awaitable<void>,
-    preVisitor: (orig: object) => Awaitable<VisitContext> = () => ({}),
+    preVisitor: (orig: object) => VisitContext = () => ({}),
   ): Promise<void> {
     return <Promise<void>> Promise.resolve(this.runVisitObject(startObject, visitor, preVisitor, true));
   }
@@ -521,7 +509,7 @@ export class TransformerObject {
   protected runVisitObject(
     startObject: object,
     visitor: (orig: object) => Awaitable<void>,
-    preVisitor: (orig: object) => Awaitable<VisitContext>,
+    preVisitor: (orig: object) => VisitContext,
     allowAsync: boolean,
   ): unknown {
     const defaults = this.defaultContext;
@@ -550,33 +538,6 @@ export class TransformerObject {
       return undefined;
     }
 
-    // Everything after the preVisitor call - split out so it can also run from inside a resolved promise.
-    const expand = (curObject: object, context: VisitContext): void => {
-      didShortCut = context.shortcut ?? defaultShortcut;
-      const continues = context.continue ?? defaultContinues;
-      const ignoreKeys = context.ignoreKeys ?? defaultIgnoreKeys;
-
-      // Register that you want to be visited
-      handleVisitorOnLen.push(stack.length);
-      visitorStack.push(curObject);
-
-      // Extend stack if needed. When shortcutted, should still unwind the stack, but no longer add to it.
-      if (continues && !didShortCut) {
-        for (const key in curObject) {
-          if (!Object.hasOwn(curObject, key)) {
-            continue;
-          }
-          if (ignoreKeys && ignoreKeys.has(key)) {
-            continue;
-          }
-          const val = (<Record<string, unknown>> curObject)[key];
-          if (val && typeof val === 'object') {
-            stack.push(val);
-          }
-        }
-      }
-    };
-
     // The loop is wrapped so it can return at a suspension point and be called again to resume.
     const drive = (): unknown => {
       while (stack.length > 0 && stack.length < this.maxStackSize) {
@@ -599,14 +560,29 @@ export class TransformerObject {
 
           // Perform pre visit before expanding the stack
           const context = preVisitor(curObject);
-          if (allowAsync && isThenable(context)) {
-            return context.then((ctx): unknown => {
-              expand(curObject, ctx);
-              const pending = handleVisitor();
-              return pending ? pending.then(drive) : drive();
-            });
+          didShortCut = context.shortcut ?? defaultShortcut;
+          const continues = context.continue ?? defaultContinues;
+          const ignoreKeys = context.ignoreKeys ?? defaultIgnoreKeys;
+
+          // Register that you want to be visited
+          handleVisitorOnLen.push(stack.length);
+          visitorStack.push(curObject);
+
+          // Extend stack if needed. When shortcutted, should still unwind the stack, but no longer add to it.
+          if (continues && !didShortCut) {
+            for (const key in curObject) {
+              if (!Object.hasOwn(curObject, key)) {
+                continue;
+              }
+              if (ignoreKeys && ignoreKeys.has(key)) {
+                continue;
+              }
+              const val = (<Record<string, unknown>> curObject)[key];
+              if (val && typeof val === 'object') {
+                stack.push(val);
+              }
+            }
           }
-          expand(curObject, <VisitContext>context);
         }
         const pending = handleVisitor();
         if (pending) {

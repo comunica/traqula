@@ -290,8 +290,8 @@ export class TransformerObject {
           // Perform pre visit before expanding the stack
           const context = preVisitor(<any>curObject);
           if (allowAsync && isPromise(context)) {
-            return context.then((ctx): unknown => {
-              expand(curObject, curParent, curKey, ctx);
+            return context.then((context) => {
+              expand(curObject, curParent, curKey, context);
               const pending = handleMapper();
               return pending ? pending.then(wrappedExecutionLoop) : wrappedExecutionLoop();
             });

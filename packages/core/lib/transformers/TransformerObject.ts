@@ -1,12 +1,10 @@
 /**
- * A value that is either available synchronously, or as a promise.
+ * A value that is either available synchronously, or as a native promise.
  */
-export type Awaitable<T> = T | PromiseLike<T>;
+export type Awaitable<T> = T | Promise<T>;
 
-export function isThenable(value: unknown): value is PromiseLike<unknown> {
-  return value !== null &&
-    (typeof value === 'object' || typeof value === 'function') &&
-    typeof (<PromiseLike<unknown>>value).then === 'function';
+export function isPromise(value: unknown): value is Promise<unknown> {
+  return value instanceof Promise;
 }
 
 export interface VisitContext {
@@ -201,7 +199,7 @@ export class TransformerObject {
         const parent = <Record<string, unknown>> mapperParent.pop()!;
         const parentKey = mapperParentKey.pop()!;
         const mapped = postMapper(copyToMap, origToMap);
-        if (allowAsync && isThenable(mapped)) {
+        if (allowAsync && isPromise(mapped)) {
           return mapped.then((value): PromiseLike<void> | undefined => {
             parent[parentKey] = value;
             return handleMapper();
@@ -474,7 +472,7 @@ export class TransformerObject {
         // Map the object before its descendants, so that the mapper can decide what its descendants are.
         const copy = defaultCopyFlag ? this.cloneObj(curObject) : curObject;
         const mapperResult = preMapper(copy, curObject);
-        if (allowAsync && isThenable(mapperResult)) {
+        if (allowAsync && isPromise(mapperResult)) {
           return mapperResult.then((result): unknown => {
             applyResult(result, curParent, curKey, rewriteCount);
             return drive();
@@ -541,7 +539,7 @@ export class TransformerObject {
         handleVisitorOnLen.pop();
         const toVisit = visitorStack.pop()!;
         const visited = visitor(toVisit);
-        if (allowAsync && isThenable(visited)) {
+        if (allowAsync && isPromise(visited)) {
           return visited.then((): PromiseLike<void> | undefined => handleVisitor());
         }
       }

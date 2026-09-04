@@ -1,6 +1,6 @@
 import type { Typed } from '../types.js';
 import type { Awaitable, PreOrderMappingReturn, TransformContext, VisitContext } from './TransformerObject.js';
-import { isThenable, TransformerObject } from './TransformerObject.js';
+import { isPromise, TransformerObject } from './TransformerObject.js';
 
 /**
  * Controls whether transform callbacks receive fully typed nodes (`'unsafe'`) or
@@ -204,7 +204,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
         return { ...nodeContext, newValue: copy, reTransform: false };
       }
       const result = ogPreTransform(copy, orig);
-      return isThenable(result) ?
+      return isPromise(result) ?
         result.then((res): PreOrderMappingReturn => ({ ...nodeContext, ...res })) :
           { ...nodeContext, ...result };
     };

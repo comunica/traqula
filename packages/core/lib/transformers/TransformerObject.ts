@@ -377,6 +377,7 @@ export class TransformerObject {
     const stack = [ startObject ];
     const stackParent: object[] = [ resultWrap ];
     const stackParentKey: string[] = [ 'res' ];
+    // Counts for ech object how many times it has been rewritten
     const stackRewriteCount: number[] = [ 0 ];
 
     function pushArrayOnStack(array: unknown[], rewriteCount: number): void {

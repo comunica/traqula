@@ -363,14 +363,20 @@ export class TransformerObject {
 
     // Code handles own stack instead of using recursion - this optimizes it for deep operations.
     // Contrary to {@link transformObject}, an object is mapped when it is popped of the stack,
-    // so its result can be assigned to its parent right away - no reverse stack needed.
+    // so its result can be assigned to its parent right away - no reverse (post-map) stack needed.
     let didShortCut = false;
     const resultWrap = { res: <unknown> startObject };
 
+    // Work stack: nodes still to visit. Parallel arrays, length S.
+    //   stack[i]             - original node to visit
+    //   stackParent[i]       - object to write the mapped value into, under stackParentKey[i]
+    //   stackRewriteCount[i] - how many times this position was already handed back (remap/array-wrap),
+    //     bounded by maxNodeRewrites so non-converging rules throw instead of looping forever.
+    // Seeded with the root under resultWrap.res. S is the DFS frontier (all unvisited siblings on all
+    // levels), not the depth — this is what maxStackSize bounds.
     const stack = [ startObject ];
     const stackParent: object[] = [ resultWrap ];
     const stackParentKey: string[] = [ 'res' ];
-    // Counts for ech object how many times it has been rewritten
     const stackRewriteCount: number[] = [ 0 ];
 
     function pushArrayOnStack(array: unknown[], rewriteCount: number): void {
@@ -448,7 +454,7 @@ export class TransformerObject {
     // The loop is wrapped so it can return at a suspension point and be called again to resume.
     // Since there is nothing left to unwind, a shortcut simply ends the traversal.
     // Objects still on the stack keep the place they have in the (shallow) copy of their parent.
-    const drive = (): unknown => {
+    const wrappedExecutionLoop = (): unknown => {
       // The didShortCut flag is flipped inside applyResult (a separate closure), which the rule cannot see.
       // eslint-disable-next-line no-unmodified-loop-condition
       while (!didShortCut && stack.length > 0 && stack.length < this.maxStackSize) {
@@ -475,7 +481,7 @@ export class TransformerObject {
         if (allowAsync && isPromise(mapperResult)) {
           return mapperResult.then((result): unknown => {
             applyResult(result, curParent, curKey, rewriteCount);
-            return drive();
+            return wrappedExecutionLoop();
           });
         }
         applyResult(<PreOrderMappingReturn>mapperResult, curParent, curKey, rewriteCount);
@@ -486,7 +492,7 @@ export class TransformerObject {
       return resultWrap.res;
     };
 
-    return drive();
+    return wrappedExecutionLoop();
   }
 
   /**
@@ -527,9 +533,17 @@ export class TransformerObject {
 
     let didShortCut = false;
 
-    // Stack of things to preVisit
+    // Work stack: nodes still to preVisit. Single array, length S.
+    // Unlike {@link transformObject} there is no copying, so a parent/key is not tracked - we only visit.
+    // Seeded with the root. S is the DFS frontier (all unvisited siblings on all levels),
+    // not the depth — this is what maxStackSize bounds.
     const stack = [ startObject ];
-    // When the stack is done preVisiting things above this lengths, visit the bellow
+
+    // Visit stack: preVisited, awaiting the actual visitor. Parallel arrays, length M.
+    //   handleVisitorOnLen[i] - stack.length snapshotted after popping node i, before pushing its children.
+    //     The frontier returning to this value means i's subtree is done, so i can be visited.
+    //   visitorStack[i]       - the node to hand to the visitor
+    // M is the current ancestor chain, so M <= nesting depth and is usually far below S.
     const handleVisitorOnLen: number[] = [];
     const visitorStack: object[] = [];
 
@@ -547,7 +561,7 @@ export class TransformerObject {
     }
 
     // The loop is wrapped so it can return at a suspension point and be called again to resume.
-    const drive = (): unknown => {
+    const wrappedExecutionLoop = (): unknown => {
       while (stack.length > 0 && stack.length < this.maxStackSize) {
         const curObject = stack.pop()!;
 
@@ -561,7 +575,7 @@ export class TransformerObject {
             }
             const pending = handleVisitor();
             if (pending) {
-              return pending.then(drive);
+              return pending.then(wrappedExecutionLoop);
             }
             continue;
           }
@@ -594,7 +608,7 @@ export class TransformerObject {
         }
         const pending = handleVisitor();
         if (pending) {
-          return pending.then(drive);
+          return pending.then(wrappedExecutionLoop);
         }
       }
       if (stack.length >= this.maxStackSize) {
@@ -603,6 +617,6 @@ export class TransformerObject {
       return undefined;
     };
 
-    return drive();
+    return wrappedExecutionLoop();
   }
 }

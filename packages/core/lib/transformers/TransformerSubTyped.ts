@@ -110,12 +110,12 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
         copy: SafeWrap<Safe, Extract<Nodes, Typed<T>>>,
         orig: Extract<Nodes, Typed<T>>,
       ) => Awaitable<unknown>;
-      preVisitor?: (orig: Extract<Nodes, Typed<T>>) => TransformContext;
+      preVisitor?: (orig: Extract<Nodes, Typed<T>>) => Awaitable<TransformContext>;
     }},
     nodeSpecificCallBacks: {[Type in Nodes['type']]?: {
       [SubType in Extract<Nodes, SubTyped<Type>>['subType']]?: {
         transform?: (op: SafeWrap<Safe, Extract<Nodes, SubTyped<Type, SubType>>>) => Awaitable<unknown>;
-        preVisitor?: (op: Extract<Nodes, SubTyped<Type, SubType>>) => TransformContext;
+        preVisitor?: (op: Extract<Nodes, SubTyped<Type, SubType>>) => Awaitable<TransformContext>;
       }}},
   ): Promise<Safe extends 'unsafe' ? OutType : unknown> {
     const transformWrapper = (copy: object, orig: object): Awaitable<unknown> => {
@@ -132,8 +132,8 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
       }
       return ogTransform ? ogTransform(casted, orig) : copy;
     };
-    const preVisitWrapper = (curObject: object): TransformContext => {
-      let ogPreVisit: ((node: any) => TransformContext) | undefined;
+    const preVisitWrapper = (curObject: object): Awaitable<TransformContext> => {
+      let ogPreVisit: ((node: any) => Awaitable<TransformContext>) | undefined;
       const casted = <SubTyped<Nodes['type']>>curObject;
       if (casted.type && casted.subType) {
         const specific = nodeSpecificCallBacks[casted.type];
@@ -302,12 +302,12 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
     startObject: object,
     nodeCallBacks: {[T in Nodes['type']]?: {
       visitor?: (op: Extract<Nodes, Typed<T>>) => Awaitable<void>;
-      preVisitor?: (op: Extract<Nodes, Typed<T>>) => VisitContext;
+      preVisitor?: (op: Extract<Nodes, Typed<T>>) => Awaitable<VisitContext>;
     }},
     nodeSpecificCallBacks: {[Type in Nodes['type']]?:
       {[Subtype in Extract<Nodes, SubTyped<Type>>['subType']]?: {
         visitor?: (op: Extract<Nodes, SubTyped<Type, Subtype>>) => Awaitable<void>;
-        preVisitor?: (op: Extract<Nodes, SubTyped<Type, Subtype>>) => VisitContext;
+        preVisitor?: (op: Extract<Nodes, SubTyped<Type, Subtype>>) => Awaitable<VisitContext>;
       }}},
   ): Promise<void> {
     const visitWrapper = (curObject: object): Awaitable<void> => {
@@ -326,8 +326,8 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
         return ogTransform(casted);
       }
     };
-    const preVisitWrapper = (curObject: object): VisitContext => {
-      let ogPreVisit: ((node: any) => VisitContext) | undefined;
+    const preVisitWrapper = (curObject: object): Awaitable<VisitContext> => {
+      let ogPreVisit: ((node: any) => Awaitable<VisitContext>) | undefined;
       const casted = <SubTyped<Nodes['type']>>curObject;
       if (casted.type && casted.subType) {
         const specific = nodeSpecificCallBacks[casted.type];

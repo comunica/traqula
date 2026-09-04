@@ -169,13 +169,23 @@ export class TransformerObject {
     let didShortCut = false;
     const resultWrap = { res: startObject };
 
-    // Grows with stack
+    // Work stack: nodes still to visit. Parallel arrays, length S.
+    //   stack[i]        - original node to visit
+    //   stackParent[i]  - copy to write the result into, under stackParentKey[i]
+    // Seeded with the root under resultWrap.res, so the root's mapped value has
+    // somewhere to land. S is the DFS frontier (all unvisited siblings on all levels),
+    // not the depth — this is what maxStackSize bounds.
     const stack = [ startObject ];
     const stackParent: object[] = [ resultWrap ];
     const stackParentKey: string[] = [ 'res' ];
 
-    // Grows with reverse stack - when popping down the stack, you realise you still want to map something.
-    // Counter of stack size when we started adding the children of this object, going beyond this means a new parent
+    // Post-map stack: visited, awaiting postMapper. Parallel arrays, length M.
+    //   handleMapperOnLen[i] - stack.length snapshotted after popping node i, before pushing its children.
+    //     The frontier returning to this value means i's subtree is done.
+    //   mapperParent/Key[i]  - where postMapper's return value goes (may differ from the copy, hence a separate write)
+    // M is the current ancestor chain, so M <= nesting depth and is usually far
+    // below S. Watermarks are non-decreasing bottom-to-top; a match at the top
+    // flushes and cascades to the parent.
     const handleMapperOnLen: number[] = [];
     const mapperCopyStack: object[] = [];
     const mapperOrigStack: object[] = [];
@@ -203,7 +213,7 @@ export class TransformerObject {
     }
 
     // The loop is wrapped so it can return at a suspension point and be called again to resume.
-    const drive = (): unknown => {
+    const wrappedExecutionLoop = (): unknown => {
       while (stack.length > 0 && stack.length < this.maxStackSize) {
         const curObject = stack.pop()!;
         const curParent = stackParent.pop()!;
@@ -229,7 +239,7 @@ export class TransformerObject {
             }
             const pending = handleMapper();
             if (pending) {
-              return pending.then(drive);
+              return pending.then(wrappedExecutionLoop);
             }
             continue;
           }
@@ -280,7 +290,7 @@ export class TransformerObject {
         }
         const pending = handleMapper();
         if (pending) {
-          return pending.then(drive);
+          return pending.then(wrappedExecutionLoop);
         }
       }
       if (stack.length >= this.maxStackSize) {
@@ -289,7 +299,7 @@ export class TransformerObject {
       return resultWrap.res;
     };
 
-    return drive();
+    return wrappedExecutionLoop();
   }
 
   /**

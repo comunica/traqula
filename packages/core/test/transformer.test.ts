@@ -277,6 +277,34 @@ describe('transformerSubTyped', () => {
     expect(result.value).toBe('transformed-a');
   });
 
+  it('transformNodeSpecific hands the original (pre-transform) node to the specific transform', ({ expect }) => {
+    const tree = {
+      type: 'category',
+      subType: 'a',
+      value: 'root',
+      child: { type: 'category', subType: 'b', value: 'child' },
+    };
+
+    let seenOrig: any;
+    let seenCopy: any;
+    transformer.transformNodeSpecific(tree, {}, {
+      category: {
+        a: {
+          transform: (copy: any, orig: any) => {
+            seenCopy = copy;
+            seenOrig = orig;
+            return copy;
+          },
+        },
+        b: { transform: (copy: any) => ({ ...copy, value: 'transformed-b' }) },
+      },
+    });
+
+    // The copy has its descendants already transformed, the orig still holds the input descendants.
+    expect(seenCopy.child.value).toBe('transformed-b');
+    expect(seenOrig.child.value).toBe('child');
+  });
+
   it('visitNodeSpecific visits by subType', ({ expect }) => {
     const visited: string[] = [];
     const tree = {

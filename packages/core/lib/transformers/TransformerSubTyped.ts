@@ -64,7 +64,10 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
     }},
     nodeSpecificCallBacks: {[Type in Nodes['type']]?: {
       [SubType in Extract<Nodes, SubTyped<Type>>['subType']]?: {
-        transform?: (op: SafeWrap<Safe, Extract<Nodes, SubTyped<Type, SubType>>>) => unknown;
+        transform?: (
+          copy: SafeWrap<Safe, Extract<Nodes, SubTyped<Type, SubType>>>,
+          orig: Extract<Nodes, SubTyped<Type, SubType>>,
+        ) => unknown;
         preVisitor?: (op: Extract<Nodes, SubTyped<Type, SubType>>) => TransformContext;
       }}},
   ): Safe extends 'unsafe' ? OutType : unknown {
@@ -114,7 +117,10 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
     }},
     nodeSpecificCallBacks: {[Type in Nodes['type']]?: {
       [SubType in Extract<Nodes, SubTyped<Type>>['subType']]?: {
-        transform?: (op: SafeWrap<Safe, Extract<Nodes, SubTyped<Type, SubType>>>) => Awaitable<unknown>;
+        transform?: (
+          copy: SafeWrap<Safe, Extract<Nodes, SubTyped<Type, SubType>>>,
+          orig: Extract<Nodes, SubTyped<Type, SubType>>,
+        ) => Awaitable<unknown>;
         preVisitor?: (op: Extract<Nodes, SubTyped<Type, SubType>>) => Awaitable<TransformContext>;
       }}},
   ): Promise<Safe extends 'unsafe' ? OutType : unknown> {
@@ -178,7 +184,10 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
       (copy: SafeWrap<Safe, Extract<Nodes, Typed<T>>>, orig: Extract<Nodes, Typed<T>>) => PreOrderMappingReturn;
     },
     nodeSpecificCallBacks: {[Type in Nodes['type']]?: {[SubType in Extract<Nodes, SubTyped<Type>>['subType']]?:
-      (op: SafeWrap<Safe, Extract<Nodes, SubTyped<Type, SubType>>>) => PreOrderMappingReturn;
+      (
+        copy: SafeWrap<Safe, Extract<Nodes, SubTyped<Type, SubType>>>,
+        orig: Extract<Nodes, SubTyped<Type, SubType>>,
+      ) => PreOrderMappingReturn;
     }},
   ): Safe extends 'unsafe' ? OutType : unknown {
     const preTransformWrapper = (copy: object, orig: object): PreOrderMappingReturn => {
@@ -211,7 +220,10 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
       ) => Awaitable<PreOrderMappingReturn>;
     },
     nodeSpecificCallBacks: {[Type in Nodes['type']]?: {[SubType in Extract<Nodes, SubTyped<Type>>['subType']]?:
-      (op: SafeWrap<Safe, Extract<Nodes, SubTyped<Type, SubType>>>) => Awaitable<PreOrderMappingReturn>;
+      (
+        copy: SafeWrap<Safe, Extract<Nodes, SubTyped<Type, SubType>>>,
+        orig: Extract<Nodes, SubTyped<Type, SubType>>,
+      ) => Awaitable<PreOrderMappingReturn>;
     }},
   ): Promise<Safe extends 'unsafe' ? OutType : unknown> {
     const preTransformWrapper = (copy: object, orig: object): Awaitable<PreOrderMappingReturn> => {

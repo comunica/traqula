@@ -75,6 +75,12 @@ const transformer = new TransformerSubTyped<A.Operation>({}, {
 export const mapOperation = transformer.transformNode.bind(transformer);
 
 /**
+ * Async variant of {@link mapOperation}, accepting promise-returning callbacks and returning a Promise.
+ * The traversal stays strictly sequential (depth-first); see {@link TransformerTyped.transformNodeAsync}.
+ */
+export const mapOperationAsync = transformer.transformNodeAsync.bind(transformer);
+
+/**
  * Transform a single operation pre-order, the dual of {@link mapOperation}: an operation is mapped
  * _before_ its descendants, and we iterate into the result of that mapping.
  * This is what you want for an operation that has to travel deeper into the tree,
@@ -123,6 +129,13 @@ export const mapOperation = transformer.transformNode.bind(transformer);
  * @return the result of transforming the startObject and the descendants of its rewrites.
  */
 export const mapOperationPreOrder = transformer.transformNodePreOrder.bind(transformer);
+
+/**
+ * Async variant of {@link mapOperationPreOrder}, accepting promise-returning callbacks and returning a
+ * Promise. The traversal stays strictly sequential (depth-first);
+ * see {@link TransformerTyped.transformNodePreOrderAsync}.
+ */
+export const mapOperationPreOrderAsync = transformer.transformNodePreOrderAsync.bind(transformer);
 
 /**
  * Transform a single operation, similar to {@link mapOperation}, but also allowing you to target subTypes.
@@ -181,6 +194,13 @@ export const mapOperationPreOrder = transformer.transformNodePreOrder.bind(trans
 export const mapOperationSub = transformer.transformNodeSpecific.bind(transformer);
 
 /**
+ * Async variant of {@link mapOperationSub}, accepting promise-returning callbacks and returning a Promise.
+ * The traversal stays strictly sequential (depth-first);
+ * see {@link TransformerSubTyped.transformNodeSpecificAsync}.
+ */
+export const mapOperationSubAsync = transformer.transformNodeSpecificAsync.bind(transformer);
+
+/**
  * Transform a single operation pre-order, similar to {@link mapOperationPreOrder},
  * but also allowing you to target subTypes - it is to {@link mapOperationSub} what
  * {@link mapOperationPreOrder} is to {@link mapOperation}.
@@ -211,6 +231,13 @@ export const mapOperationSub = transformer.transformNodeSpecific.bind(transforme
  * @return the result of transforming the startObject and the descendants of its rewrites.
  */
 export const mapOperationSubPreOrder = transformer.transformNodeSpecificPreOrder.bind(transformer);
+
+/**
+ * Async variant of {@link mapOperationSubPreOrder}, accepting promise-returning callbacks and returning a
+ * Promise. The traversal stays strictly sequential (depth-first);
+ * see {@link TransformerSubTyped.transformNodeSpecificPreOrderAsync}.
+ */
+export const mapOperationSubPreOrderAsync = transformer.transformNodeSpecificPreOrderAsync.bind(transformer);
 
 /**
  * Similar to {@link mapOperation}, but only visiting instead of copying and transforming explicitly.
@@ -244,6 +271,12 @@ export const mapOperationSubPreOrder = transformer.transformNodeSpecificPreOrder
  *    similar to {@link mapOperation}.
  */
 export const visitOperation = transformer.visitNode.bind(transformer);
+
+/**
+ * Async variant of {@link visitOperation}, accepting promise-returning callbacks and returning a Promise.
+ * The traversal stays strictly sequential (depth-first); see {@link TransformerTyped.visitNodeAsync}.
+ */
+export const visitOperationAsync = transformer.visitNodeAsync.bind(transformer);
 
 /**
  * Visits an object and it's descendants, similar to {@link visitOperation},
@@ -286,6 +319,13 @@ export const visitOperation = transformer.visitNode.bind(transformer);
  *     indicate the subType.
  */
 export const visitOperationSub = transformer.visitNodeSpecific.bind(transformer);
+
+/**
+ * Async variant of {@link visitOperationSub}, accepting promise-returning callbacks and returning a Promise.
+ * The traversal stays strictly sequential (depth-first);
+ * see {@link TransformerSubTyped.visitNodeSpecificAsync}.
+ */
+export const visitOperationSubAsync = transformer.visitNodeSpecificAsync.bind(transformer);
 
 /**
  * Resolves an IRI against a base path in accordance to the [Syntax for IRIs](https://www.w3.org/TR/sparql11-query/#QSynIRI)

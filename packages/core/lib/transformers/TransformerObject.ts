@@ -1,3 +1,12 @@
+/**
+ * A value that is either available synchronously, or as a native promise.
+ */
+export type Awaitable<T> = T | Promise<T>;
+
+export function isPromise(value: unknown): value is Promise<unknown> {
+  return value instanceof Promise;
+}
+
 export interface VisitContext {
   /**
    * Whether you should stop iterating after this object. Default false.
@@ -105,6 +114,9 @@ export class TransformerObject {
 
   /**
    * Recursively transforms all objects that are not arrays. Mapper is called on deeper objects first.
+   *
+   * `transformObject` never inspects the values a mapper returns; a returned promise is stored as-is.
+   * `transformObjectAsync` awaits any thenable a mapper returns, so it cannot store one as a value.
    * @param startObject object to start iterating from
    * @param postMapper postMapper to transform the various objects - argument is a copy of the original
    * @param preVisitor callback that is evaluated before iterating deeper.
@@ -117,6 +129,33 @@ export class TransformerObject {
     postMapper: (copy: object, orig: object) => unknown,
     preVisitor: (orig: object) => TransformContext = () => ({}),
   ): unknown {
+    return this.runTransformObject(startObject, postMapper, preVisitor, false);
+  }
+
+  /**
+   * Async variant of {@link transformObject}, supporting promise-returning callbacks.
+   * The traversal is strictly sequential (depth-first, one suspension point) - it does not parallelise siblings.
+   *
+   * `transformObject` never inspects the values a mapper returns; a returned promise is stored as-is.
+   * `transformObjectAsync` awaits any thenable a mapper returns, so it cannot store one as a value.
+   * @param startObject object to start iterating from
+   * @param postMapper postMapper to transform the various objects - argument is a copy of the original
+   * @param preVisitor callback that is evaluated before iterating deeper.
+   */
+  public transformObjectAsync(
+    startObject: object,
+    postMapper: (copy: object, orig: object) => Awaitable<unknown>,
+    preVisitor: (orig: object) => Awaitable<TransformContext> = () => ({}),
+  ): Promise<unknown> {
+    return Promise.resolve(this.runTransformObject(startObject, postMapper, preVisitor, true));
+  }
+
+  protected runTransformObject(
+    startObject: object,
+    postMapper: (copy: object, orig: object) => Awaitable<unknown>,
+    preVisitor: (orig: object) => Awaitable<TransformContext>,
+    allowAsync: boolean,
+  ): unknown {
     const defaults = this.defaultContext;
     const defaultCopyFlag = defaults.copy ?? true;
     const defaultContinues = defaults.continue ?? true;
@@ -128,109 +167,149 @@ export class TransformerObject {
     let didShortCut = false;
     const resultWrap = { res: startObject };
 
-    // Grows with stack
+    // Work stack: nodes still to visit. Parallel arrays, length S.
+    //   stack[i]        - original node to visit
+    //   stackParent[i]  - copy to write the result into, under stackParentKey[i]
+    // Seeded with the root under resultWrap.res, so the root's mapped value has
+    // somewhere to land. S is the DFS frontier (all unvisited siblings on all levels),
+    // not the depth — this is what maxStackSize bounds.
     const stack = [ startObject ];
     const stackParent: object[] = [ resultWrap ];
     const stackParentKey: string[] = [ 'res' ];
 
-    // Grows with reverse stack - when popping down the stack, you realise you still want to map something.
-    // Counter of stack size when we started adding the children of this object, going beyond this means a new parent
+    // Post-map stack: visited, awaiting postMapper. Parallel arrays, length M.
+    //   handleMapperOnLen[i] - stack.length snapshotted after popping node i, before pushing its children.
+    //     The frontier returning to this value means i's subtree is done.
+    //   mapperParent/Key[i]  - where postMapper's return value goes (may differ from the copy, hence a separate write)
+    // M is the current ancestor chain, so M <= nesting depth and is usually far
+    // below S. Watermarks are non-decreasing bottom-to-top; a match at the top
+    // flushes and cascades to the parent.
     const handleMapperOnLen: number[] = [];
     const mapperCopyStack: object[] = [];
     const mapperOrigStack: object[] = [];
     const mapperParent: object[] = [];
     const mapperParentKey: string[] = [];
 
-    function handleMapper(): void {
+    // Returns a promise only when a postMapper suspended - it keeps unwinding itself once that resolves.
+    function handleMapper(): PromiseLike<void> | undefined {
       while (stack.length === handleMapperOnLen.at(-1)) {
         handleMapperOnLen.pop();
         const copyToMap = mapperCopyStack.pop()!;
         const origToMap = mapperOrigStack.pop()!;
         const parent = <Record<string, unknown>> mapperParent.pop()!;
         const parentKey = mapperParentKey.pop()!;
-        parent[parentKey] = postMapper(copyToMap, origToMap);
+        const mapped = postMapper(copyToMap, origToMap);
+        if (allowAsync && isPromise(mapped)) {
+          return mapped.then((value): PromiseLike<void> | undefined => {
+            parent[parentKey] = value;
+            return handleMapper();
+          });
+        }
+        parent[parentKey] = mapped;
       }
+      return undefined;
     }
 
-    while (stack.length > 0 && stack.length < this.maxStackSize) {
-      const curObject = stack.pop()!;
-      const curParent = stackParent.pop()!;
-      const curKey = stackParentKey.pop()!;
+    // Everything after the preVisitor call - split out so it can also run from inside a resolved promise.
+    const expand = (curObject: object, curParent: object, curKey: string, context: TransformContext): void => {
+      const copyFlag = context.copy ?? defaultCopyFlag;
+      const continues = context.continue ?? defaultContinues;
+      const ignoreKeys = context.ignoreKeys ?? defaultIgnoreKeys;
+      const shallowKeys = context.shallowKeys ?? defaultShallowKeys;
+      didShortCut = context.shortcut ?? defaultDidShortCut;
 
-      // Only add to the stack when you did not shortcut
-      if (!didShortCut) {
-        if (Array.isArray(curObject)) {
-          const newArr = [ ...curObject ];
-          handleMapperOnLen.push(stack.length);
-          mapperCopyStack.push(newArr);
-          mapperOrigStack.push(curObject);
-          mapperParent.push(curParent);
-          mapperParentKey.push(curKey);
+      const copy = copyFlag ? this.cloneObj(curObject) : curObject;
 
-          for (let index = curObject.length - 1; index >= 0; index--) {
-            const val = <unknown> curObject[index];
-            if (val !== null && typeof val === 'object') {
-              stack.push(val);
-              stackParent.push(newArr);
-              stackParentKey.push(index.toString());
-            }
+      // Register that you want to be visited
+      handleMapperOnLen.push(stack.length);
+      mapperCopyStack.push(copy);
+      mapperOrigStack.push(curObject);
+      mapperParent.push(curParent);
+      mapperParentKey.push(curKey);
+
+      // Extend stack if needed. When shortcutted, should still unwind the stack, but no longer add to it.
+      if (continues && !didShortCut) {
+        for (const key in copy) {
+          if (!Object.hasOwn(copy, key)) {
+            continue;
           }
-          handleMapper();
-          continue;
-        }
+          const val = (<Record<string, unknown>> copy)[key];
 
-        // Perform pre visit before expanding the stack
-        const context = preVisitor(<any>curObject);
-        const copyFlag = context.copy ?? defaultCopyFlag;
-        const continues = context.continue ?? defaultContinues;
-        const ignoreKeys = context.ignoreKeys ?? defaultIgnoreKeys;
-        const shallowKeys = context.shallowKeys ?? defaultShallowKeys;
-        didShortCut = context.shortcut ?? defaultDidShortCut;
-
-        const copy = copyFlag ? this.cloneObj(curObject) : curObject;
-
-        // Register that you want to be visited
-        handleMapperOnLen.push(stack.length);
-        mapperCopyStack.push(copy);
-        mapperOrigStack.push(curObject);
-        mapperParent.push(curParent);
-        mapperParentKey.push(curKey);
-
-        // Extend stack if needed. When shortcutted, should still unwind the stack, but no longer add to it.
-        if (continues && !didShortCut) {
-          for (const key in copy) {
-            if (!Object.hasOwn(copy, key)) {
-              continue;
-            }
-            const val = (<Record<string, unknown>> copy)[key];
-
-            // If shallow copy required, do
-            const onlyShallow = shallowKeys && shallowKeys?.has(key);
-            if (onlyShallow) {
-              // Do not add stack entry - assign straight away
-              (<Record<string, unknown>> copy)[key] = this.cloneObj(val);
-            }
-            if (ignoreKeys && ignoreKeys.has(key)) {
-              // Do not add stack entry
-              continue;
-            }
-            if (!onlyShallow && val !== null && typeof val === 'object') {
-              // Do add stack entry.
-              stack.push(val);
-              stackParentKey.push(key);
-              stackParent.push(copy);
-            }
+          // If shallow copy required, do
+          const onlyShallow = shallowKeys && shallowKeys?.has(key);
+          if (onlyShallow) {
+            // Do not add stack entry - assign straight away
+            (<Record<string, unknown>> copy)[key] = this.cloneObj(val);
+          }
+          if (ignoreKeys && ignoreKeys.has(key)) {
+            // Do not add stack entry
+            continue;
+          }
+          if (!onlyShallow && val !== null && typeof val === 'object') {
+            // Do add stack entry.
+            stack.push(val);
+            stackParentKey.push(key);
+            stackParent.push(copy);
           }
         }
       }
-      handleMapper();
-    }
-    if (stack.length >= this.maxStackSize) {
-      throw new Error('Transform object stack overflowed');
-    }
-    handleMapper();
+    };
 
-    return resultWrap.res;
+    // The loop is wrapped so it can return at a suspension point and be called again to resume.
+    const wrappedExecutionLoop = (): unknown => {
+      while (stack.length > 0 && stack.length < this.maxStackSize) {
+        const curObject = stack.pop()!;
+        const curParent = stackParent.pop()!;
+        const curKey = stackParentKey.pop()!;
+
+        // Only add to the stack when you did not shortcut
+        if (!didShortCut) {
+          if (Array.isArray(curObject)) {
+            const newArr = [ ...curObject ];
+            handleMapperOnLen.push(stack.length);
+            mapperCopyStack.push(newArr);
+            mapperOrigStack.push(curObject);
+            mapperParent.push(curParent);
+            mapperParentKey.push(curKey);
+
+            for (let index = curObject.length - 1; index >= 0; index--) {
+              const val = <unknown> curObject[index];
+              if (val !== null && typeof val === 'object') {
+                stack.push(val);
+                stackParent.push(newArr);
+                stackParentKey.push(index.toString());
+              }
+            }
+            const pending = handleMapper();
+            if (pending) {
+              return pending.then(wrappedExecutionLoop);
+            }
+            continue;
+          }
+
+          // Perform pre visit before expanding the stack
+          const context = preVisitor(<any>curObject);
+          if (allowAsync && isPromise(context)) {
+            return context.then((context) => {
+              expand(curObject, curParent, curKey, context);
+              const pending = handleMapper();
+              return pending ? pending.then(wrappedExecutionLoop) : wrappedExecutionLoop();
+            });
+          }
+          expand(curObject, curParent, curKey, <TransformContext>context);
+        }
+        const pending = handleMapper();
+        if (pending) {
+          return pending.then(wrappedExecutionLoop);
+        }
+      }
+      if (stack.length >= this.maxStackSize) {
+        throw new Error('Transform object stack overflowed');
+      }
+      return resultWrap.res;
+    };
+
+    return wrappedExecutionLoop();
   }
 
   /**
@@ -254,10 +333,37 @@ export class TransformerObject {
    *   A {@link VisitContext.shortcut} simply ends the traversal - since an object is already mapped when we
    *   iterate into it, there is nothing left to unwind - leaving the objects still on the stack in the place
    *   they have in the (shallow) copy of their parent.
+   *
+   *   `transformObjectPreOrder` never inspects the values a mapper returns; a returned promise is stored as-is.
+   *   `transformObjectPreOrderAsync` awaits any thenable a mapper returns, so it cannot store one as a value.
    */
   public transformObjectPreOrder(
     startObject: object,
     preMapper: (copy: object, orig: object) => PreOrderMappingReturn,
+  ): unknown {
+    return this.runTransformObjectPreOrder(startObject, preMapper, false);
+  }
+
+  /**
+   * Async variant of {@link transformObjectPreOrder}, supporting promise-returning callbacks.
+   * The traversal is strictly sequential (depth-first, one suspension point) - it does not parallelise siblings.
+   *
+   * `transformObjectPreOrder` never inspects the values a mapper returns; a returned promise is stored as-is.
+   * `transformObjectPreOrderAsync` awaits any thenable a mapper returns, so it cannot store one as a value.
+   * @param startObject object to start iterating from
+   * @param preMapper mapper to transform the various objects.
+   */
+  public transformObjectPreOrderAsync(
+    startObject: object,
+    preMapper: (copy: object, orig: object) => Awaitable<PreOrderMappingReturn>,
+  ): Promise<unknown> {
+    return Promise.resolve(this.runTransformObjectPreOrder(startObject, preMapper, true));
+  }
+
+  protected runTransformObjectPreOrder(
+    startObject: object,
+    preMapper: (copy: object, orig: object) => Awaitable<PreOrderMappingReturn>,
+    allowAsync: boolean,
   ): unknown {
     const defaults = this.defaultContext;
     const defaultCopyFlag = defaults.copy ?? true;
@@ -269,10 +375,17 @@ export class TransformerObject {
 
     // Code handles own stack instead of using recursion - this optimizes it for deep operations.
     // Contrary to {@link transformObject}, an object is mapped when it is popped of the stack,
-    // so its result can be assigned to its parent right away - no reverse stack needed.
+    // so its result can be assigned to its parent right away - no reverse (post-map) stack needed.
     let didShortCut = false;
     const resultWrap = { res: <unknown> startObject };
 
+    // Work stack: nodes still to visit. Parallel arrays, length S.
+    //   stack[i]             - original node to visit
+    //   stackParent[i]       - object to write the mapped value into, under stackParentKey[i]
+    //   stackRewriteCount[i] - how many times this position was already handed back (remap/array-wrap),
+    //     bounded by maxNodeRewrites so non-converging rules throw instead of looping forever.
+    // Seeded with the root under resultWrap.res. S is the DFS frontier (all unvisited siblings on all
+    // levels), not the depth — this is what maxStackSize bounds.
     const stack = [ startObject ];
     const stackParent: object[] = [ resultWrap ];
     const stackParentKey: string[] = [ 'res' ];
@@ -294,29 +407,12 @@ export class TransformerObject {
       }
     }
 
-    // Since there is nothing left to unwind, a shortcut simply ends the traversal.
-    // Objects still on the stack keep the place they have in the (shallow) copy of their parent.
-    while (!didShortCut && stack.length > 0 && stack.length < this.maxStackSize) {
-      const curObject = stack.pop()!;
-      // Parent is always a raw object (not an array since we handle that differently)
-      const curParent = <Record<string, unknown>> stackParent.pop()!;
-      const curKey = stackParentKey.pop()!;
-      const rewriteCount = stackRewriteCount.pop()!;
-
-      if (rewriteCount >= this.maxNodeRewrites) {
-        throw new Error(`Pre order transform did not converge: rewrote the same position ${this.maxNodeRewrites} times.`, { cause: curObject });
-      }
-
-      if (Array.isArray(curObject)) {
-        const newArr = [ ...curObject ];
-        curParent[curKey] = newArr;
-        pushArrayOnStack(newArr, rewriteCount);
-        continue;
-      }
-
-      // Map the object before its descendants, so that the mapper can decide what its descendants are.
-      const copy = defaultCopyFlag ? this.cloneObj(curObject) : curObject;
-      const mapperResult = preMapper(copy, curObject);
+    const applyResult = (
+      mapperResult: PreOrderMappingReturn,
+      curParent: Record<string, unknown>,
+      curKey: string,
+      rewriteCount: number,
+    ): void => {
       const newValue = mapperResult.newValue;
 
       // The object is mapped, the value takes its place in the tree
@@ -331,13 +427,13 @@ export class TransformerObject {
       // Register values of returned object onto the stack
       // If primitive, or we do not go further, cannot do
       if (!continues || didShortCut || (newValue === null || typeof newValue !== 'object')) {
-        continue;
+        return;
       }
       // We cannot retransform an array since the API never gives array to the callback.
       // Its elements are handed back to the traversal instead, and are mapped in turn.
       if (Array.isArray(newValue)) {
         pushArrayOnStack(newValue, rewriteCount + 1);
-        continue;
+        return;
       }
       // If we need to re transform, register the object instead of its children.
       if (reTransform) {
@@ -345,7 +441,7 @@ export class TransformerObject {
         stackParent.push(curParent);
         stackParentKey.push(curKey);
         stackRewriteCount.push(rewriteCount + 1);
-        continue;
+        return;
       }
       // In any other case, push the children, ignoring ignoreKeys and shallowKeys.
       // Creating shallow copies of shallowKeys.
@@ -366,21 +462,83 @@ export class TransformerObject {
           }
         }
       }
-    }
-    if (stack.length >= this.maxStackSize) {
-      throw new Error('Transform object stack overflowed');
-    }
-    return resultWrap.res;
+    };
+
+    // The loop is wrapped so it can return at a suspension point and be called again to resume.
+    // Since there is nothing left to unwind, a shortcut simply ends the traversal.
+    // Objects still on the stack keep the place they have in the (shallow) copy of their parent.
+    const wrappedExecutionLoop = (): unknown => {
+      // The didShortCut flag is flipped inside applyResult (a separate closure), which the rule cannot see.
+      // eslint-disable-next-line no-unmodified-loop-condition
+      while (!didShortCut && stack.length > 0 && stack.length < this.maxStackSize) {
+        const curObject = stack.pop()!;
+        // Parent is always a raw object (not an array since we handle that differently)
+        const curParent = <Record<string, unknown>> stackParent.pop()!;
+        const curKey = stackParentKey.pop()!;
+        const rewriteCount = stackRewriteCount.pop()!;
+
+        if (rewriteCount >= this.maxNodeRewrites) {
+          throw new Error(`Pre order transform did not converge: rewrote the same position ${this.maxNodeRewrites} times.`, { cause: curObject });
+        }
+
+        if (Array.isArray(curObject)) {
+          const newArr = [ ...curObject ];
+          curParent[curKey] = newArr;
+          pushArrayOnStack(newArr, rewriteCount);
+          continue;
+        }
+
+        // Map the object before its descendants, so that the mapper can decide what its descendants are.
+        const copy = defaultCopyFlag ? this.cloneObj(curObject) : curObject;
+        const mapperResult = preMapper(copy, curObject);
+        if (allowAsync && isPromise(mapperResult)) {
+          return mapperResult.then((result): unknown => {
+            applyResult(result, curParent, curKey, rewriteCount);
+            return wrappedExecutionLoop();
+          });
+        }
+        applyResult(<PreOrderMappingReturn>mapperResult, curParent, curKey, rewriteCount);
+      }
+      if (stack.length >= this.maxStackSize) {
+        throw new Error('Transform object stack overflowed');
+      }
+      return resultWrap.res;
+    };
+
+    return wrappedExecutionLoop();
   }
 
   /**
    * Visitor that visits all objects. Visits deeper objects first.
+   *
+   * `visitObjectAsync` awaits any thenable a visitor returns before visiting the next node.
    */
   public visitObject(
     startObject: object,
     visitor: (orig: object) => void,
     preVisitor: (orig: object) => VisitContext = () => ({}),
   ): void {
+    this.runVisitObject(startObject, visitor, preVisitor, false);
+  }
+
+  /**
+   * Async variant of {@link visitObject}, supporting promise-returning callbacks.
+   * The traversal is strictly sequential (depth-first, one suspension point) - it does not parallelise siblings.
+   */
+  public visitObjectAsync(
+    startObject: object,
+    visitor: (orig: object) => Awaitable<void>,
+    preVisitor: (orig: object) => Awaitable<VisitContext> = () => ({}),
+  ): Promise<void> {
+    return <Promise<void>> Promise.resolve(this.runVisitObject(startObject, visitor, preVisitor, true));
+  }
+
+  protected runVisitObject(
+    startObject: object,
+    visitor: (orig: object) => Awaitable<void>,
+    preVisitor: (orig: object) => Awaitable<VisitContext>,
+    allowAsync: boolean,
+  ): unknown {
     const defaults = this.defaultContext;
     const defaultContinues = defaults.continue ?? true;
     const defaultIgnoreKeys = defaults.ignoreKeys;
@@ -388,66 +546,102 @@ export class TransformerObject {
 
     let didShortCut = false;
 
-    // Stack of things to preVisit
+    // Work stack: nodes still to preVisit. Single array, length S.
+    // Unlike {@link transformObject} there is no copying, so a parent/key is not tracked - we only visit.
+    // Seeded with the root. S is the DFS frontier (all unvisited siblings on all levels),
+    // not the depth — this is what maxStackSize bounds.
     const stack = [ startObject ];
-    // When the stack is done preVisiting things above this lengths, visit the bellow
+
+    // Visit stack: preVisited, awaiting the actual visitor. Parallel arrays, length M.
+    //   handleVisitorOnLen[i] - stack.length snapshotted after popping node i, before pushing its children.
+    //     The frontier returning to this value means i's subtree is done, so i can be visited.
+    //   visitorStack[i]       - the node to hand to the visitor
+    // M is the current ancestor chain, so M <= nesting depth and is usually far below S.
     const handleVisitorOnLen: number[] = [];
     const visitorStack: object[] = [];
 
-    function handleVisitor(): void {
+    // Returns a promise only when a visitor suspended - it keeps unwinding itself once that resolves.
+    function handleVisitor(): PromiseLike<void> | undefined {
       while (stack.length === handleVisitorOnLen.at(-1)) {
         handleVisitorOnLen.pop();
         const toVisit = visitorStack.pop()!;
-        visitor(toVisit);
+        const visited = visitor(toVisit);
+        if (allowAsync && isPromise(visited)) {
+          return visited.then((): PromiseLike<void> | undefined => handleVisitor());
+        }
       }
+      return undefined;
     }
 
-    while (stack.length > 0 && stack.length < this.maxStackSize) {
-      const curObject = stack.pop()!;
+    // Everything after the preVisitor call - split out so it can also run from inside a resolved promise.
+    const expand = (curObject: object, context: VisitContext): void => {
+      didShortCut = context.shortcut ?? defaultShortcut;
+      const continues = context.continue ?? defaultContinues;
+      const ignoreKeys = context.ignoreKeys ?? defaultIgnoreKeys;
 
-      if (!didShortCut) {
-        if (Array.isArray(curObject)) {
-          for (let i = curObject.length - 1; i >= 0; i--) {
-            const val = <unknown> curObject[i];
-            if (val !== null && typeof val === 'object') {
-              stack.push(val);
-            }
+      // Register that you want to be visited
+      handleVisitorOnLen.push(stack.length);
+      visitorStack.push(curObject);
+
+      // Extend stack if needed. When shortcutted, should still unwind the stack, but no longer add to it.
+      if (continues && !didShortCut) {
+        for (const key in curObject) {
+          if (!Object.hasOwn(curObject, key)) {
+            continue;
           }
-          handleVisitor();
-          continue;
-        }
-
-        // Perform pre visit before expanding the stack
-        const context = preVisitor(curObject);
-        didShortCut = context.shortcut ?? defaultShortcut;
-        const continues = context.continue ?? defaultContinues;
-        const ignoreKeys = context.ignoreKeys ?? defaultIgnoreKeys;
-
-        // Register that you want to be visited
-        handleVisitorOnLen.push(stack.length);
-        visitorStack.push(curObject);
-
-        // Extend stack if needed. When shortcutted, should still unwind the stack, but no longer add to it.
-        if (continues && !didShortCut) {
-          for (const key in curObject) {
-            if (!Object.hasOwn(curObject, key)) {
-              continue;
-            }
-            if (ignoreKeys && ignoreKeys.has(key)) {
-              continue;
-            }
-            const val = (<Record<string, unknown>> curObject)[key];
-            if (val && typeof val === 'object') {
-              stack.push(val);
-            }
+          if (ignoreKeys && ignoreKeys.has(key)) {
+            continue;
+          }
+          const val = (<Record<string, unknown>> curObject)[key];
+          if (val && typeof val === 'object') {
+            stack.push(val);
           }
         }
       }
-      handleVisitor();
-    }
-    if (stack.length >= this.maxStackSize) {
-      throw new Error('Transform object stack overflowed');
-    }
-    handleVisitor();
+    };
+
+    // The loop is wrapped so it can return at a suspension point and be called again to resume.
+    const wrappedExecutionLoop = (): unknown => {
+      while (stack.length > 0 && stack.length < this.maxStackSize) {
+        const curObject = stack.pop()!;
+
+        if (!didShortCut) {
+          if (Array.isArray(curObject)) {
+            for (let i = curObject.length - 1; i >= 0; i--) {
+              const val = <unknown> curObject[i];
+              if (val !== null && typeof val === 'object') {
+                stack.push(val);
+              }
+            }
+            const pending = handleVisitor();
+            if (pending) {
+              return pending.then(wrappedExecutionLoop);
+            }
+            continue;
+          }
+
+          // Perform pre visit before expanding the stack
+          const context = preVisitor(curObject);
+          if (allowAsync && isPromise(context)) {
+            return context.then((ctx): unknown => {
+              expand(curObject, ctx);
+              const pending = handleVisitor();
+              return pending ? pending.then(wrappedExecutionLoop) : wrappedExecutionLoop();
+            });
+          }
+          expand(curObject, <VisitContext>context);
+        }
+        const pending = handleVisitor();
+        if (pending) {
+          return pending.then(wrappedExecutionLoop);
+        }
+      }
+      if (stack.length >= this.maxStackSize) {
+        throw new Error('Transform object stack overflowed');
+      }
+      return undefined;
+    };
+
+    return wrappedExecutionLoop();
   }
 }

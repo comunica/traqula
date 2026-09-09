@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.3.0"></a>
+## [v1.3.0](https://github.com/comunica/traqula/compare/v1.2.2...v1.3.0) - 2026-09-09
+
+* [Async transformers (#187)](https://github.com/comunica/traqula/commit/7e1c7bfb6faf8cda89a95627adb88784953d252a)
+
 <a name="v1.2.2"></a>
 ## [v1.2.2](https://github.com/comunica/traqula/compare/v1.2.1...v1.2.2) - 2026-09-02
 

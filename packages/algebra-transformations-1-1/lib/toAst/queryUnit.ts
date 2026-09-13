@@ -235,6 +235,11 @@ export const putExtensionsInGroup: AstIndir<'putExtensionsInGroup', void, [Query
     const extensionEntries = Object.entries(extensions);
     if (extensionEntries.length > 0) {
       result.where = result.where ?? F.patternGroup([], F.gen());
+      // A subquery is only allowed as the entire content of a group.
+      //  Giving it siblings thus requires it to get a group of its own.
+      if (result.where.patterns.length === 1 && F.isQuery(result.where.patterns[0])) {
+        result.where = F.patternGroup([ F.patternGroup(result.where.patterns, F.gen()) ], F.gen());
+      }
       for (const [ key, value ] of extensionEntries) {
         result.where.patterns.push(
           F.patternBind(

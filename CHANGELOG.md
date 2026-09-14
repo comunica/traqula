@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.3.1"></a>
+## [v1.3.1](https://github.com/comunica/traqula/compare/v1.3.0...v1.3.1) - 2026-09-14
+
+* [Give a sub-SELECT its own group when binds join it (#190)](https://github.com/comunica/traqula/commit/49c6f249b9111657848971768b5c82d982aa3625)
+
 <a name="v1.3.0"></a>
 ## [v1.3.0](https://github.com/comunica/traqula/compare/v1.2.2...v1.3.0) - 2026-09-09
 

@@ -12,6 +12,10 @@ we suggest comparing the [SPARQL.js AST types](https://github.com/DefinitelyType
 In case you do not care about the AST generated, like when you use SparqlJS for query validation,
 Traqula _can_ be a drop in replacement.
 
+If you already have sparqljs AST objects around (parsed queries, or fragments your application built or
+stored) and would rather convert them automatically than migrate every one by hand, see
+[Converting sparqljs AST automatically](#converting-sparqljs-ast-automatically) below.
+
 Using SparqlJS you would parse using:
 ```typescript
 const SparqlParser = require('sparqljs').Parser;
@@ -338,3 +342,33 @@ query.context.append(
 > [!note]
 > The arguments `F.gen()` create a sourceLocation definition which is a [part of our AST](./usage/AST-structure.md#source-location) for [round tripping purposes](modifications/create-generator.md#round-tripping).
 > `F.gen()` simply says to the generator that it should generate this node.
+
+## Converting sparqljs AST automatically
+
+If you have existing sparqljs AST objects, whether from `sparqljs.Parser.parse()` or built/stored by your
+own application (e.g. as reusable query fragments in a form-driven query builder), `@traqula/rules-sparql-1-1`
+provides a converter so you don't have to migrate every fragment by hand.
+
+```typescript
+import { Parser as SparqlJsParser } from 'sparqljs';
+import { sparqlQueryFromSparqlJs } from '@traqula/rules-sparql-1-1';
+import { Generator } from '@traqula/generator-sparql-1-1';
+
+const sparqlJsAst = new SparqlJsParser().parse('SELECT * WHERE { ?s ?p ?o }');
+const traqulaAst = sparqlQueryFromSparqlJs(sparqlJsAst);
+new Generator().generate(traqulaAst);
+```
+
+Besides `sparqlQueryFromSparqlJs` (for a whole `SparqlQuery`/`Update`), every intermediate conversion step
+is exported too - `termFromSparqlJs`, `pathFromSparqlJs`, `tripleFromSparqlJs`, `patternFromSparqlJs`,
+`expressionFromSparqlJs`, one function per query form (`selectQueryFromSparqlJs`,
+`constructQueryFromSparqlJs`, `askQueryFromSparqlJs`, `describeQueryFromSparqlJs`), and
+`updateOperationFromSparqlJs`/`updateFromSparqlJs` - so a single stored fragment (e.g. just a `Pattern`
+used as one reusable query-builder piece) can be converted without a whole query around it.
+
+The conversion is one-directional and lossy in the ways described above (full IRIs instead of prefixed
+names, a flattened PREFIX/BASE context, flattened `[]`/`()` triples) - see the file header of
+[`fromSparqlJs.ts`](../packages/rules-sparql-1-1/lib/sparqljs-compat/fromSparqlJs.ts) for the full list.
+If you want prefixed names back in generated output, apply `collapseIrisToPrefixed(ast, prefixes)`
+(exported from the same module) to the converted AST afterwards: it rewrites full IRIs to `prefix:local`
+form wherever a known prefix's expansion matches.

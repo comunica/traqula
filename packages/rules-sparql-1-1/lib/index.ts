@@ -10,3 +10,5 @@ export * from './validation/validators.js';
 
 export * as validation from './validation/validators.js';
 export * from './utils.js';
+export * from './sparqljs-compat/fromSparqlJs.js';
+export * as sparqljs from './sparqljs-compat/sparqljsTypes.js';

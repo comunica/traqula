@@ -6,6 +6,6 @@ describe('negativeTest filter', () => {
     const all = [ ...negativeTest('sparql-1-2-invalid') ].map(test => test.name);
     const [ rejected ] = all;
     const filtered = [ ...negativeTest('sparql-1-2-invalid', name => name !== rejected) ].map(test => test.name);
-    expect(filtered).toEqual(all.filter(name => name !== rejected));
+    expect(filtered).toEqual(all.slice(1));
   });
 });

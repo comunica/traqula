@@ -70,10 +70,35 @@ export const toUpdate: AstIndir<'toUpdate', Update, [(UpdateOperation | undefine
 
 export const translateAlgCompositeUpdate: AstIndir<'translateCompositeUpdate', Update, [Algebra.CompositeUpdate]> = {
   name: 'translateCompositeUpdate',
-  fun: ({ SUBRULE }) => (_, op) => SUBRULE(
-    toUpdate,
-    op.updates.map(update => update.type === Types.NOP ? undefined : SUBRULE(translateAlgUpdateOperation, update)),
-  ),
+  fun: ({ SUBRULE }) => ({ astFactory: F, transformer }, op) => {
+    const operations = op.updates
+      .map(update => update.type === Types.NOP ? undefined : SUBRULE(translateAlgUpdateOperation, update));
+    // An INSERT without WHERE becomes INSERT DATA, but INSERT DATA may not reuse the blank node labels
+    // of an earlier INSERT DATA in the same request, while the equivalent INSERT {} WHERE {} may.
+    const insertDataLabels = new Set<string>();
+    return SUBRULE(toUpdate, operations.map((operation) => {
+      if (!operation || !F.isUpdateOperationInsertData(operation)) {
+        return operation;
+      }
+      const labels = new Set<string>();
+      transformer.visitNodeSpecific(operation, {}, { term: { blankNode: { visitor: (blankNode) => {
+        labels.add(blankNode.label);
+      } }}});
+      if ([ ...labels ].some(label => insertDataLabels.has(label))) {
+        return F.updateOperationModify(
+          operation.loc,
+          operation.data,
+          [],
+          F.patternGroup([], F.gen()),
+          F.datasetClauses([], F.gen()),
+        );
+      }
+      for (const label of labels) {
+        insertDataLabels.add(label);
+      }
+      return operation;
+    }));
+  },
 };
 
 type LikeModify = UpdateOperationModify

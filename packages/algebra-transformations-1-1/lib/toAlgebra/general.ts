@@ -29,7 +29,9 @@ export const translateNamed: AlgebraIndir<'translateNamed', RDF.NamedNode, [Term
       if (!expanded) {
         throw new Error(`Unknown prefix: ${term.prefix}`);
       }
-      fullIri = expanded + term.value;
+      // Remove the backslash of PN_LOCAL_ESC escapes, percent-encodings (PLX) are kept as is.
+      // https://www.w3.org/TR/sparql11-query/#rPN_LOCAL_ESC
+      fullIri = expanded + term.value.replaceAll(/\\([!#$%&'()*+,./;=?@_~-])/gu, '$1');
     }
     return dataFactory.namedNode(util.resolveIRI(fullIri, currentBase));
   },

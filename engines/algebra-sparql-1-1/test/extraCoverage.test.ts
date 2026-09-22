@@ -530,6 +530,30 @@ GROUP BY ( ?y AS ?x )`);
       expect(result3.object).toBe(other);
     });
   });
+
+  describe('prefixed names with PN_LOCAL_ESC escapes', () => {
+    it('removes the escaping backslashes when expanding the IRI', ({ expect }) => {
+      const ast = parser.parse('PREFIX : <http://example/> SELECT * { :a :b :c\\~z\\. }');
+      const result = toAlgebra(ast, {});
+      expect(result).toMatchObject({
+        input: { patterns: [{ object: { value: 'http://example/c~z.' }}]},
+      });
+    });
+
+    it('keeps percent-encodings when expanding the IRI', ({ expect }) => {
+      const ast = parser.parse('PREFIX : <http://example/> SELECT * { :a :b%3D :c\\~z\\. }');
+      const result = toAlgebra(ast, {});
+      expect(result).toMatchObject({
+        input: { patterns: [{ predicate: { value: 'http://example/b%3D' }, object: { value: 'http://example/c~z.' }}]},
+      });
+    });
+
+    it('generates a query that parses again', ({ expect }) => {
+      const result = roundTripQuads('PREFIX : <http://example/> SELECT * { :a :b%3D :c\\~z\\. }');
+      expect(result).toContain('<http://example/c~z.>');
+      expect(roundTripQuads(result)).toBe(result);
+    });
+  });
 });
 
 describe('algebraGenerators filter', () => {

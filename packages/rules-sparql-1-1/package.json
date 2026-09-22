@@ -41,11 +41,7 @@
     "build:cjs": "node \"../../node_modules/typescript/bin/tsc\" -b tsconfig.cjs.json"
   },
   "dependencies": {
-    "@rdfjs/types": "^2.0.0",
     "@traqula/chevrotain": "^1.1.0",
     "@traqula/core": "^1.3.0"
-  },
-  "devDependencies": {
-    "sparqljs": "^3.7.4"
   }
 }

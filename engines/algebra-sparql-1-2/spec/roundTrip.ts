@@ -8,9 +8,8 @@ import { toAlgebra, toAst } from '../lib/index.js';
 
 /**
  * Maximum number of parse -> algebra -> AST -> generate cycles before the generated query must be stable.
- * Can be overwritten through the environment variable TRAQULA_ROUND_TRIP_MAX_ITERATIONS.
  */
-const maxIterations = Number(process.env.TRAQULA_ROUND_TRIP_MAX_ITERATIONS ?? 2);
+const MAX_ITERATIONS = 2;
 
 const transformer = new TransformerObject();
 
@@ -31,14 +30,14 @@ function stripBlankNodePrefix(algebra: Algebra.Operation): Algebra.Operation {
 /**
  * Parses the query, translates it to algebra and back to a query string, repeatedly,
  * until the generated query is a fixed point of this round trip.
- * Throws when the query is invalid, or when no fixed point is reached within {@link maxIterations}.
+ * Throws when the query is invalid, or when no fixed point is reached within {@link MAX_ITERATIONS}.
  */
 export function parse(query: string, context: Partial<SparqlContext> = {}): void {
   const parser = new Parser();
   const generator = new Generator();
   let previous: string | undefined;
   let current = query;
-  for (let iteration = 1; iteration <= maxIterations; iteration++) {
+  for (let iteration = 1; iteration <= MAX_ITERATIONS; iteration++) {
     const ast = parser.parse(current, context);
     const algebra = stripBlankNodePrefix(toAlgebra(ast, { quads: true, baseIRI: context.baseIRI }));
     previous = current;
@@ -47,7 +46,7 @@ export function parse(query: string, context: Partial<SparqlContext> = {}): void
       return;
     }
   }
-  throw new Error(`Round trip did not converge within ${maxIterations} iterations:\n${previous}\n---\n${current}`);
+  throw new Error(`Round trip did not converge within ${MAX_ITERATIONS} iterations:\n${previous}\n---\n${current}`);
 }
 
 export function query(_data: unknown, queryString: string, context: Partial<SparqlContext> = {}): Promise<never> {

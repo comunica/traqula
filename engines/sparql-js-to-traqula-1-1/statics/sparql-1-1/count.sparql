@@ -1,0 +1,3 @@
+SELECT ?p ( COUNT( * ) AS ?n ) WHERE {
+  _:22 ?p _:21 .
+}

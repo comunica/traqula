@@ -1,0 +1,6 @@
+PREFIX : <https://ex.com/>
+SELECT * WHERE {
+  <https://ex.com/a> <https://ex.com/a> <https://ex.com/a> .
+  <https://ex.com/a> <https://ex.com/a> _:50 .
+  _:50 (<https://ex.com/a>/<https://ex.com/a>) <https://ex.com/a> .
+}

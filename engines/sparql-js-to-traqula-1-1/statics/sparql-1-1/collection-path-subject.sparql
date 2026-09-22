@@ -1,0 +1,7 @@
+SELECT * WHERE {
+  _:16 <http://p> ?o .
+  _:16 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <http://a> .
+  _:16 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:17 .
+  _:17 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <http://b> .
+  _:17 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+}

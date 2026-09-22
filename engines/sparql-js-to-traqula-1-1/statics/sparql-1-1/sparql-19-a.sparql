@@ -1,0 +1,3 @@
+SELECT ?p ( COUNT( * ) AS ?n ) WHERE {
+  _:59 ?p _:58 .
+}

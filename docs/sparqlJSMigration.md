@@ -359,22 +359,6 @@ const traqulaAst = sparqlQueryFromSparqlJs(sparqlJsAst);
 new Generator().generate(traqulaAst);
 ```
 
-Besides `sparqlQueryFromSparqlJs` (for a whole `SparqlQuery`/`Update`), every intermediate conversion step
-is exported too - `termFromSparqlJs`, `pathFromSparqlJs`, `tripleFromSparqlJs`, `patternFromSparqlJs`,
-`expressionFromSparqlJs`, one function per query form (`selectQueryFromSparqlJs`,
-`constructQueryFromSparqlJs`, `askQueryFromSparqlJs`, `describeQueryFromSparqlJs`), and
-`updateOperationFromSparqlJs`/`updateFromSparqlJs` - so a single stored fragment (e.g. just a `Pattern`
-used as one reusable query-builder piece) can be converted without a whole query around it.
-
-The conversion is one-directional and lossy in the ways described above (full IRIs instead of prefixed
-names, a flattened PREFIX/BASE context, flattened `[]`/`()` triples) - see the module docs of
-[`@traqula/sparqljs-traqula-transformations`](../packages/sparqljs-traqula-transformations/lib/index.ts)
-(the package `@traqula/sparql-js-to-traqula-1-1` is built on) for the full list. If you want prefixed names
-back in generated output, apply `collapseIrisToPrefixed(ast, prefixes)` (exported from the same package) to
-the converted AST afterwards: it rewrites full IRIs to `prefix:local` form wherever a known prefix's
-expansion matches.
-
-Every conversion step is a modular Traqula rule (see
-[`@traqula/sparqljs-traqula-transformations`](../packages/sparqljs-traqula-transformations)), so it can be
-patched or replaced with `IndirBuilder.create(sparqlJsToTraqula11Builder).patchRule(...)` if you need to
-customize a single step (e.g. a different blank-node labeling scheme) without forking the whole pipeline.
+Single fragments, such as one stored `Pattern`, can be converted too. See the
+[README of `@traqula/sparql-js-to-traqula-1-1`](../engines/sparql-js-to-traqula-1-1/README.md) for all functions,
+what the SPARQL.js parser does not keep, and how to get prefixed names back.

@@ -6,13 +6,11 @@ import type {
 } from '@traqula/rules-sparql-1-1';
 import type * as SparqlJs from 'sparqljs';
 import type { SparqlJsCompatIndir, SparqlJsTermToTraqula } from './core.js';
-import { inferSparqlJsTermType, isSparqlJsTerm, stripLeadingQuestionMark } from './core.js';
-import { pathFromSparqlJs, termFromSparqlJs } from './term.js';
+import { isSparqlJsTerm, stripLeadingQuestionMark } from './core.js';
+import { inferSparqlJsTermType, pathFromSparqlJs, termFromSparqlJs } from './term.js';
 
 /**
- * Converts a single sparqljs {@link SparqlJs.Triple} into a Traqula {@link TripleNesting}.
- * sparqljs already flattens `( ... )` collections and `[ ... ]` property lists into plain triples with
- * synthesized blank nodes, so no `TripleCollection` reconstruction is attempted (see `index.ts`'s header).
+ * Converts a single SPARQL.js triple.
  */
 export const tripleFromSparqlJs: SparqlJsCompatIndir<'tripleFromSparqlJs', TripleNesting, [SparqlJs.Triple]> = {
   name: 'tripleFromSparqlJs',
@@ -30,6 +28,9 @@ export const tripleFromSparqlJs: SparqlJsCompatIndir<'tripleFromSparqlJs', Tripl
   },
 };
 
+/**
+ * Converts the quad blocks of INSERT/DELETE data.
+ */
 export const quadsFromSparqlJs: SparqlJsCompatIndir<'quadsFromSparqlJs', Quads[], [SparqlJs.Quads[]]> = {
   name: 'quadsFromSparqlJs',
   fun: ({ SUBRULE }) => (context, quads) => {
@@ -47,6 +48,9 @@ export const quadsFromSparqlJs: SparqlJsCompatIndir<'quadsFromSparqlJs', Quads[]
   },
 };
 
+/**
+ * Converts the rows of a VALUES block. Row keys may start with `?`, as the SPARQL.js parser writes them.
+ */
 export const valuesPatternFromSparqlJs: SparqlJsCompatIndir<
   'valuesPatternFromSparqlJs',
   PatternValues,
@@ -63,13 +67,13 @@ export const valuesPatternFromSparqlJs: SparqlJsCompatIndir<
         const value = row[key];
         if (value === undefined) {
           convertedRow[stripLeadingQuestionMark(key)] = undefined;
-          continue;
+        } else {
+          if (SUBRULE(inferSparqlJsTermType, value) === 'BlankNode') {
+            throw new Error('Blank nodes are not allowed as VALUES bindings in the SPARQL 1.1 grammar');
+          }
+          convertedRow[stripLeadingQuestionMark(key)] =
+            <SparqlJsTermToTraqula<Exclude<typeof value, SparqlJs.BlankTerm>>> SUBRULE(termFromSparqlJs, value);
         }
-        if (inferSparqlJsTermType(value) === 'BlankNode') {
-          throw new Error('Blank nodes are not allowed as VALUES bindings in the SPARQL 1.1 grammar');
-        }
-        convertedRow[stripLeadingQuestionMark(key)] =
-          <SparqlJsTermToTraqula<Exclude<typeof value, SparqlJs.BlankTerm>>> SUBRULE(termFromSparqlJs, value);
       }
       return convertedRow;
     });

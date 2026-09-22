@@ -12,22 +12,11 @@ undefined {
 }
 
 /**
- * Rewrites every plain full-IRI `TermIriFull` in a Traqula AST (sub)tree to a `TermIriPrefixed` wherever a
- * known prefix's expansion matches the IRI's start (the longest-matching expansion wins when more than one
- * prefix could apply). Returns a new tree; `node` itself is not mutated. Built on {@link AstTransformer}
- * (a `TransformerSubTyped` specialized for the SPARQL 1.1 AST), dispatching on `(type, subType)` so only
- * `term`/`namedNode` nodes are visited.
- *
- * `termFromSparqlJs` (and everything built on it) always produces full IRIs - sparqljs resolves prefixed
- * names to full IRIs at parse time, so the original prefix notation genuinely isn't recoverable from a
- * single term in isolation. This is the tool to reach for afterwards if you want the more familiar
- * `prefix:local` style back in generated output, for example to approximate what sparqljs' own (deprecated)
- * `Generator` used to produce: pass it the same query's `context` (or its original sparqljs `prefixes` map)
- * once you've converted it.
- *
- * `contextDef` nodes (the `PREFIX`/`BASE` declarations themselves) are left untouched: they must always
- * show the full IRI they define, never a prefixed self-reference. This is done by telling the transformer
- * to skip a `contextDef`'s `value` key entirely (`ignoreKeys`) rather than by special-casing the term itself.
+ * Rewrites full IRIs in a Traqula AST to prefixed names wherever a prefix matches, using the longest match.
+ * Useful after conversion, as SPARQL.js expands all prefixed names to full IRIs.
+ * @param node - The AST (or part of it) to rewrite; it is not mutated.
+ * @param prefixes - Prefix to IRI map, e.g. the `prefixes` of the SPARQL.js query.
+ * @returns A copy of `node` with prefixed names.
  */
 export function collapseIrisToPrefixed<T>(node: T, prefixes: Record<string, string>): T {
   if (node === null || typeof node !== 'object') {
@@ -38,6 +27,7 @@ export function collapseIrisToPrefixed<T>(node: T, prefixes: Record<string, stri
   return transformer.transformNodeSpecific<'unsafe', T>(
     node,
     {
+      // PREFIX/BASE declarations must keep the full IRI they define.
       contextDef: {
         preVisitor: () => ({ ignoreKeys: new Set([ 'value' ]) }),
       },

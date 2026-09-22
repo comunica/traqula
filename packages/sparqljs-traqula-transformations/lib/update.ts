@@ -2,11 +2,15 @@ import type { GraphRefSpecific, SparqlQuery, Update, UpdateOperation } from '@tr
 import type * as SparqlJs from 'sparqljs';
 import type { SparqlJsCompatIndir, SparqlJsTermToTraqula } from './core.js';
 import { graphOrDefaultToGraphRef, graphReferenceToGraphRef } from './graphRef.js';
-import { patternFromSparqlJs } from './pattern.js';
+import { groupPatternsFromSparqlJs } from './pattern.js';
 import { contextFromSparqlJs, datasetClausesFromSparqlJs, queryFromSparqlJs } from './query.js';
 import { termFromSparqlJs } from './term.js';
 import { quadsFromSparqlJs } from './triple.js';
 
+/**
+ * Converts a single update operation: INSERT/DELETE DATA, DELETE WHERE, INSERT/DELETE ... WHERE,
+ * or a graph management operation (LOAD, CLEAR, CREATE, DROP, ADD, MOVE, COPY).
+ */
 export const updateOperationFromSparqlJs: SparqlJsCompatIndir<
   'updateOperationFromSparqlJs',
   UpdateOperation,
@@ -28,7 +32,7 @@ export const updateOperationFromSparqlJs: SparqlJsCompatIndir<
             F.gen(),
             SUBRULE(quadsFromSparqlJs, operation.insert),
             SUBRULE(quadsFromSparqlJs, operation.delete),
-            F.patternGroup(operation.where.map(p => SUBRULE(patternFromSparqlJs, p)), F.gen()),
+            F.patternGroup(SUBRULE(groupPatternsFromSparqlJs, operation.where), F.gen()),
             SUBRULE(datasetClausesFromSparqlJs, operation.using),
             operation.graph ?
               <SparqlJsTermToTraqula<typeof operation.graph>> SUBRULE(termFromSparqlJs, operation.graph) :
@@ -86,27 +90,35 @@ export const updateOperationFromSparqlJs: SparqlJsCompatIndir<
   },
 };
 
+/**
+ * Converts an update request. The SPARQL.js AST has a single PREFIX/BASE map for the whole request,
+ * so the same context is attached to every operation.
+ */
 export const updateFromSparqlJs: SparqlJsCompatIndir<'updateFromSparqlJs', Update, [SparqlJs.Update]> = {
   name: 'updateFromSparqlJs',
   fun: ({ SUBRULE }) => (context, update) => {
     const { astFactory: F } = context;
-    // Sparqljs merges every PREFIX/BASE declaration in the whole update into one flat map, so - unlike a
-    // native Traqula parse - the same (flattened) context ends up attached to every operation.
     const updateContext = SUBRULE(contextFromSparqlJs, update.prefixes, update.base);
+    // An update without operations (e.g. only a PREFIX) may lack `updates` or have it empty - the SPARQL.js
+    // parser omits it, hand-built input may do either. Traqula's parser represents this as a single entry
+    // holding just the context.
+    const operations = update.updates ?? [];
     return {
       type: 'update',
-      updates: update.updates.map(operation => ({
-        operation: SUBRULE(updateOperationFromSparqlJs, operation),
-        context: updateContext,
-      })),
+      updates: operations.length > 0 ?
+        operations.map(operation => ({
+          operation: SUBRULE(updateOperationFromSparqlJs, operation),
+          context: updateContext,
+        })) :
+          [{ context: updateContext }],
       loc: F.gen(),
     };
   },
 };
 
 /**
- * Converts a full sparqljs parse result (`new (require('sparqljs').Parser)().parse(queryString)`) into a
- * Traqula {@link SparqlQuery} AST.
+ * Converts a SPARQL.js-compatible query or update (a SPARQL.js parse result or a hand-built equivalent)
+ * into a Traqula {@link SparqlQuery}.
  */
 export const sparqlQueryFromSparqlJs: SparqlJsCompatIndir<
   'sparqlQueryFromSparqlJs',
@@ -114,6 +126,8 @@ export const sparqlQueryFromSparqlJs: SparqlJsCompatIndir<
   [SparqlJs.SparqlQuery]
 > = {
   name: 'sparqlQueryFromSparqlJs',
-  fun: ({ SUBRULE }) => (context, query) =>
-    query.type === 'update' ? SUBRULE(updateFromSparqlJs, query) : SUBRULE(queryFromSparqlJs, query),
+  // An update without operations may lack `type` (the SPARQL.js parser omits it), so anything that is not a
+  // query is treated as an update.
+  fun: ({ SUBRULE }) => (_, query) =>
+    'queryType' in query ? SUBRULE(queryFromSparqlJs, query) : SUBRULE(updateFromSparqlJs, query),
 };

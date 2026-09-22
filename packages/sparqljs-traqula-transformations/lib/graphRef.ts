@@ -5,6 +5,9 @@ import { termFromSparqlJs } from './term.js';
 
 type GraphRefDefaultOrSpecific = GraphRefDefault | GraphRefSpecific;
 
+/**
+ * Converts the graph of a CREATE/ADD/MOVE/COPY operation: DEFAULT or a named graph.
+ */
 export const graphOrDefaultToGraphRef: SparqlJsCompatIndir<
   'graphOrDefaultToGraphRef',
   GraphRefDefaultOrSpecific,
@@ -21,6 +24,9 @@ export const graphOrDefaultToGraphRef: SparqlJsCompatIndir<
   },
 };
 
+/**
+ * Converts the graph of a CLEAR/DROP operation: DEFAULT, NAMED, ALL or a named graph.
+ */
 export const graphReferenceToGraphRef: SparqlJsCompatIndir<
   'graphReferenceToGraphRef',
   GraphRef,
@@ -38,9 +44,13 @@ export const graphReferenceToGraphRef: SparqlJsCompatIndir<
     if (graph.all) {
       return F.graphRefAll(F.gen());
     }
-    // Sparqljs' `GraphOrDefault.name` is optional, but the grammar guarantees exactly one of
-    // default/named/all/name is set, so this last branch always has a name.
-    const name = <SparqlJs.IriTerm> graph.name;
-    return F.graphRefSpecific(<SparqlJsTermToTraqula<typeof name>> SUBRULE(termFromSparqlJs, name), F.gen());
+    // Parser output always sets one of these, but hand-built input might not.
+    if (!graph.name) {
+      throw new Error('GraphReference must set one of default/named/all/name');
+    }
+    return F.graphRefSpecific(
+      <SparqlJsTermToTraqula<typeof graph.name>> SUBRULE(termFromSparqlJs, graph.name),
+      F.gen(),
+    );
   },
 };

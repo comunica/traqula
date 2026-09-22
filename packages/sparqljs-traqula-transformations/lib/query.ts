@@ -13,16 +13,15 @@ import type {
 } from '@traqula/rules-sparql-1-1';
 import type * as SparqlJs from 'sparqljs';
 import type { SparqlJsCompatIndir, SparqlJsTermToTraqula } from './core.js';
-import { extractTopLevelBgpTriples, isSparqlJsTerm, isWildcardVariables } from './core.js';
+import { isSparqlJsTerm, isWildcardVariables } from './core.js';
 import { expressionFromSparqlJs } from './expression.js';
-import { patternFromSparqlJs } from './pattern.js';
+import { groupPatternsFromSparqlJs } from './pattern.js';
 import { termFromSparqlJs } from './term.js';
 import { tripleFromSparqlJs, valuesPatternFromSparqlJs } from './triple.js';
 
 /**
- * `prefixes` and `base` are only populated on a top-level query/update by sparqljs' `Prologue` rule:
- * a nested subquery Pattern shares its enclosing query's lexical scope and carries neither, so both
- * parameters are treated as optional here even though sparqljs' own types mark `prefixes` as required.
+ * Converts a PREFIX map and BASE into context definitions.
+ * Both may be missing: a subquery carries neither, even though the SPARQL.js types require `prefixes`.
  */
 export const contextFromSparqlJs: SparqlJsCompatIndir<
   'contextFromSparqlJs',
@@ -42,6 +41,9 @@ export const contextFromSparqlJs: SparqlJsCompatIndir<
   },
 };
 
+/**
+ * Converts FROM / FROM NAMED (or USING / USING NAMED) clauses.
+ */
 export const datasetClausesFromSparqlJs: SparqlJsCompatIndir<
   'datasetClausesFromSparqlJs',
   DatasetClauses,
@@ -66,10 +68,8 @@ export const datasetClausesFromSparqlJs: SparqlJsCompatIndir<
 };
 
 /**
- * Sparqljs' community types only declare `group`/`having`/`order`/`limit`/`offset` on `SelectQuery`, but
- * the SPARQL grammar applies SolutionModifier to SELECT, CONSTRUCT, DESCRIBE and ASK alike (see sparqljs'
- * sparql.jison, rules [9]-[13]) and sparqljs itself does populate them on every query form at runtime, so
- * this is declared separately rather than derived from `SparqlJs.BaseQuery`.
+ * The DefinitelyTyped types drift from what the SPARQL.js parser supplies: they only declare these fields on
+ * SELECT, while every query form can have them. We correct these types here.
  */
 export interface SolutionModifierFields {
   group?: SparqlJs.Grouping[] | undefined;
@@ -79,6 +79,9 @@ export interface SolutionModifierFields {
   offset?: number | undefined;
 }
 
+/**
+ * Converts GROUP BY, HAVING, ORDER BY, LIMIT and OFFSET.
+ */
 export const solutionModifiersFromSparqlJs: SparqlJsCompatIndir<
   'solutionModifiersFromSparqlJs',
   SolutionModifiers,
@@ -104,7 +107,7 @@ export const solutionModifiersFromSparqlJs: SparqlJsCompatIndir<
     }
     if (query.having && query.having.length > 0) {
       modifiers.having = F.solutionModifierHaving(
-        query.having.map(expr => SUBRULE(expressionFromSparqlJs, expr)),
+        query.having.map(condition => SUBRULE(expressionFromSparqlJs, condition)),
         F.gen(),
       );
     }
@@ -122,6 +125,9 @@ export const solutionModifiersFromSparqlJs: SparqlJsCompatIndir<
   },
 };
 
+/**
+ * Converts a SELECT query, including one used as a subquery.
+ */
 export const selectQueryFromSparqlJs: SparqlJsCompatIndir<
   'selectQueryFromSparqlJs',
   QuerySelect,
@@ -145,7 +151,7 @@ export const selectQueryFromSparqlJs: SparqlJsCompatIndir<
     return F.querySelect({
       context: SUBRULE(contextFromSparqlJs, query.prefixes, query.base),
       datasets: SUBRULE(datasetClausesFromSparqlJs, query.from),
-      where: F.patternGroup((query.where ?? []).map(p => SUBRULE(patternFromSparqlJs, p)), F.gen()),
+      where: F.patternGroup(SUBRULE(groupPatternsFromSparqlJs, query.where ?? []), F.gen()),
       variables,
       ...(query.distinct ? { distinct: true } : {}),
       ...(query.reduced ? { reduced: true } : {}),
@@ -155,6 +161,9 @@ export const selectQueryFromSparqlJs: SparqlJsCompatIndir<
   },
 };
 
+/**
+ * Converts a CONSTRUCT query.
+ */
 export const constructQueryFromSparqlJs: SparqlJsCompatIndir<
   'constructQueryFromSparqlJs',
   QueryConstruct,
@@ -163,10 +172,10 @@ export const constructQueryFromSparqlJs: SparqlJsCompatIndir<
   name: 'constructQueryFromSparqlJs',
   fun: ({ SUBRULE }) => (context, query) => {
     const { astFactory: F } = context;
-    const where = F.patternGroup((query.where ?? []).map(p => SUBRULE(patternFromSparqlJs, p)), F.gen());
-    // Sparqljs always populates `template` (also for the `CONSTRUCT WHERE { ... }` shorthand, where it
-    // duplicates the where-clause triples), but the fallback keeps this robust for hand-built input too.
-    const templateTriples = query.template ?? extractTopLevelBgpTriples(query.where ?? []);
+    const where = F.patternGroup(SUBRULE(groupPatternsFromSparqlJs, query.where ?? []), F.gen());
+    // The SPARQL.js parser fills `template` for the `CONSTRUCT WHERE` shorthand and leaves it undefined for
+    // an empty template (`CONSTRUCT { } WHERE`), so a missing template is converted as an empty one.
+    const templateTriples = query.template ?? [];
     return F.queryConstruct(
       F.gen(),
       SUBRULE(contextFromSparqlJs, query.prefixes, query.base),
@@ -179,6 +188,9 @@ export const constructQueryFromSparqlJs: SparqlJsCompatIndir<
   },
 };
 
+/**
+ * Converts an ASK query.
+ */
 export const askQueryFromSparqlJs: SparqlJsCompatIndir<'askQueryFromSparqlJs', QueryAsk, [SparqlJs.AskQuery]> = {
   name: 'askQueryFromSparqlJs',
   fun: ({ SUBRULE }) => (context, query) => {
@@ -188,7 +200,7 @@ export const askQueryFromSparqlJs: SparqlJsCompatIndir<'askQueryFromSparqlJs', Q
       subType: 'ask',
       context: SUBRULE(contextFromSparqlJs, query.prefixes, query.base),
       datasets: SUBRULE(datasetClausesFromSparqlJs, query.from),
-      where: F.patternGroup((query.where ?? []).map(p => SUBRULE(patternFromSparqlJs, p)), F.gen()),
+      where: F.patternGroup(SUBRULE(groupPatternsFromSparqlJs, query.where ?? []), F.gen()),
       solutionModifiers: SUBRULE(solutionModifiersFromSparqlJs, <SolutionModifierFields> <unknown> query),
       values: query.values ? SUBRULE(valuesPatternFromSparqlJs, query.values) : undefined,
       loc: F.gen(),
@@ -196,6 +208,9 @@ export const askQueryFromSparqlJs: SparqlJsCompatIndir<'askQueryFromSparqlJs', Q
   },
 };
 
+/**
+ * Converts a DESCRIBE query.
+ */
 export const describeQueryFromSparqlJs: SparqlJsCompatIndir<
   'describeQueryFromSparqlJs',
   QueryDescribe,
@@ -212,7 +227,7 @@ export const describeQueryFromSparqlJs: SparqlJsCompatIndir<
       subType: 'describe',
       context: SUBRULE(contextFromSparqlJs, query.prefixes, query.base),
       datasets: SUBRULE(datasetClausesFromSparqlJs, query.from),
-      where: query.where ? F.patternGroup(query.where.map(p => SUBRULE(patternFromSparqlJs, p)), F.gen()) : undefined,
+      where: query.where ? F.patternGroup(SUBRULE(groupPatternsFromSparqlJs, query.where), F.gen()) : undefined,
       variables,
       solutionModifiers: SUBRULE(solutionModifiersFromSparqlJs, <SolutionModifierFields> <unknown> query),
       values: query.values ? SUBRULE(valuesPatternFromSparqlJs, query.values) : undefined,
@@ -221,9 +236,12 @@ export const describeQueryFromSparqlJs: SparqlJsCompatIndir<
   },
 };
 
+/**
+ * Converts a query of any form, dispatching on `queryType`.
+ */
 export const queryFromSparqlJs: SparqlJsCompatIndir<'queryFromSparqlJs', Query, [SparqlJs.Query]> = {
   name: 'queryFromSparqlJs',
-  fun: ({ SUBRULE }) => (context, query) => {
+  fun: ({ SUBRULE }) => (_, query) => {
     switch (query.queryType) {
       case 'SELECT':
         return SUBRULE(selectQueryFromSparqlJs, query);

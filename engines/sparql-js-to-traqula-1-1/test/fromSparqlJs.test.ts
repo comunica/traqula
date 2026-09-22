@@ -513,6 +513,40 @@ describe('fromSparqlJs', () => {
     });
   });
 
+  describe('blank node label scope (checked like Traqula\'s parser does)', () => {
+    const reusedAcrossGroups = 'SELECT * WHERE { _:a ?p ?v . { _:a ?q 1 } }';
+
+    it('rejects a label reused across basic graph patterns', ({ expect }) => {
+      expect(() => sparqlQueryFromSparqlJs(parseRaw(reusedAcrossGroups)))
+        .toThrow(/reuse of blank node across two different basic graph patterns \(_:a\)/u);
+    });
+
+    it('accepts it when validation is skipped', ({ expect }) => {
+      expect(sparqlQueryFromSparqlJs(parseRaw(reusedAcrossGroups), { skipValidation: true }).type).toBe('query');
+    });
+
+    it('accepts a label reused within one basic graph pattern', ({ expect }) => {
+      expect(parseSelect('SELECT * WHERE { _:a ?p ?v . _:a ?q 1 }').type).toBe('query');
+    });
+
+    it('also checks a hand-built fragment converted on its own', ({ expect }) => {
+      const blank = <SparqlJs.BlankTerm> { termType: 'BlankNode', value: 'a' };
+      const bgp = (object: string): SparqlJs.BgpPattern => ({
+        type: 'bgp',
+        triples: [{
+          subject: blank,
+          predicate: <SparqlJs.VariableTerm> { value: 'p' },
+          object: <SparqlJs.VariableTerm> { value: object },
+        }],
+      });
+      const fragment: SparqlJs.Pattern = {
+        type: 'optional',
+        patterns: [ bgp('x'), { type: 'group', patterns: [ bgp('y') ]}],
+      };
+      expect(() => patternFromSparqlJs(fragment)).toThrow(/reuse of blank node/u);
+    });
+  });
+
   describe('context (PREFIX / BASE)', () => {
     it('converts a BASE declaration', ({ expect }) => {
       const q = parseSelect('BASE <http://example.com/> SELECT * WHERE { <a> ?p ?o }');
@@ -589,7 +623,7 @@ describe('fromSparqlJs', () => {
       expect(q.where.patterns).toHaveLength(1);
     });
 
-    it('falls back to extracting the where-clause bgp triples when template is absent', ({ expect }) => {
+    it('converts an absent template as an empty one, not as the WHERE triples', ({ expect }) => {
       const bgp = firstRawBgp(parseRawSelect('SELECT * WHERE { ?s ?p ?o }').where!);
       const raw: SparqlJs.ConstructQuery = {
         type: 'query',
@@ -599,7 +633,8 @@ describe('fromSparqlJs', () => {
         where: [ bgp ],
       };
       const q = constructQueryFromSparqlJs(raw);
-      expect(q.template.triples).toHaveLength(1);
+      expect(q.template.triples).toHaveLength(0);
+      expect(q.where.patterns).toHaveLength(1);
     });
 
     it('falls back to an empty template when both template and where are absent', ({ expect }) => {
@@ -757,6 +792,10 @@ describe('fromSparqlJs', () => {
       expect(F.isGraphRefAll(graphReferenceToGraphRef(cleared.graph))).toBe(true);
     });
 
+    it('rejects a hand-built GraphReference that sets none of default/named/all/name', ({ expect }) => {
+      expect(() => graphReferenceToGraphRef({ type: 'graph' })).toThrow(/must set one of/u);
+    });
+
     it('rejects an unrecognized updateType', ({ expect }) => {
       const bogus = <SparqlJs.UpdateOperation> <unknown> { updateType: 'bogus' };
       expect(() => updateOperationFromSparqlJs(bogus)).toThrow(/Cannot convert/u);
@@ -771,6 +810,21 @@ describe('fromSparqlJs', () => {
       const raw = <SparqlJs.Update> parseRaw('PREFIX ex: <http://example.com/> INSERT DATA { ex:a ex:b ex:c }');
       expect(updateFromSparqlJs(raw).type).toBe('update');
       expect(sparqlQueryFromSparqlJs(raw).type).toBe('update');
+    });
+
+    it('converts an update without operations (SPARQL.js omits `type` and `updates`) to an empty update', ({
+      expect,
+    }) => {
+      const u = parseUpdate('BASE <http://example.com/> PREFIX ex: <http://example.com/>');
+      expect(u.type).toBe('update');
+      expect(u.updates).toHaveLength(1);
+      expect(u.updates[0].operation).toBeUndefined();
+      expect(u.updates[0].context.map(entry => entry.subType)).toEqual([ 'base', 'prefix' ]);
+    });
+
+    it('treats a hand-built update with an empty `updates` array the same way', ({ expect }) => {
+      const u = updateFromSparqlJs({ type: 'update', prefixes: {}, updates: []});
+      expect(u.updates).toEqual([{ context: []}]);
     });
   });
 

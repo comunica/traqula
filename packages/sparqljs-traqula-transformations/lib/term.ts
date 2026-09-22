@@ -1,3 +1,4 @@
+import type * as RDF from '@rdfjs/types';
 import { CommonIRIs } from '@traqula/rules-sparql-1-1';
 import type {
   Path,
@@ -8,25 +9,57 @@ import type {
 } from '@traqula/rules-sparql-1-1';
 import type * as SparqlJs from 'sparqljs';
 import type { SparqlJsCompatIndir, SparqlJsTermToTraqula } from './core.js';
-import { inferSparqlJsTermType, isSparqlJsTerm } from './core.js';
+import { isSparqlJsTerm } from './core.js';
 
 /**
- * Converts a single sparqljs (rdfjs-shaped) term into a Traqula {@link Term}.
- * Suitable for use on values coming from an rdfjs-compatible datastore, not only from sparqljs itself.
- * Tolerates a missing `termType` (see {@link inferSparqlJsTermType}).
+ * Returns a term's `termType`, inferring it from the term's shape when it is missing.
+ * @param term - A SPARQL.js (RDF/JS) term, possibly without `termType`.
+ * @returns The (inferred) term type.
+ */
+export const inferSparqlJsTermType: SparqlJsCompatIndir<'inferSparqlJsTermType', RDF.Term['termType'], [object]> = {
+  name: 'inferSparqlJsTermType',
+  fun: () => (_, term) => {
+    // `termType` is lost when a term comes from JSON, a spread (`{ ...term }`) or a hand-built fragment,
+    // as some RDF/JS implementations define it as a getter rather than an own property.
+    const fields = <{ termType?: unknown; value?: unknown }> term;
+    if (typeof fields.termType === 'string') {
+      return <RDF.Term['termType']> fields.termType;
+    }
+    if ('subject' in term && 'predicate' in term && 'object' in term) {
+      return 'Quad';
+    }
+    // An RDF/JS literal always has both keys; `direction` is RDF 1.2 and needs no check.
+    if ('datatype' in term || 'language' in term) {
+      return 'Literal';
+    }
+    if (typeof fields.value === 'string') {
+      // The SPARQL.js parser prefixes blank node labels with `e_` (explicit) or `g_` (generated).
+      if (/^[eg]_/u.test(fields.value)) {
+        return 'BlankNode';
+      }
+      if (/^[a-z][a-z\d+.-]*:/iu.test(fields.value)) {
+        return 'NamedNode';
+      }
+    }
+    // Other blank node labels cannot be told apart from variables.
+    return 'Variable';
+  },
+};
+
+/**
+ * Converts a SPARQL.js (RDF/JS) term, tolerating a missing `termType`.
  */
 export const termFromSparqlJs: SparqlJsCompatIndir<'termFromSparqlJs', Term, [SparqlJs.Term]> = {
   name: 'termFromSparqlJs',
-  fun: () => ({ astFactory: F }, term) => {
-    const termType = inferSparqlJsTermType(term);
+  fun: ({ SUBRULE }) => ({ astFactory: F }, term) => {
+    const termType = SUBRULE(inferSparqlJsTermType, term);
     switch (termType) {
       case 'NamedNode':
         return F.termNamed(F.gen(), (<SparqlJs.IriTerm> term).value);
       case 'Variable':
         return F.termVariable((<SparqlJs.VariableTerm> term).value, F.gen());
       case 'BlankNode': {
-        // Strip sparqljs' own 'e_'/'g_' prefix before handing the label to termBlank, which re-applies
-        // its own 'e_' prefix - otherwise explicit labels would double up (`_:b0` becoming `e_e_b0`).
+        // `termBlank` adds its own `e_` prefix, so strip the SPARQL.js one to avoid `e_e_b0`.
         const label = (<SparqlJs.BlankTerm> term).value.replace(/^[eg]_/u, '');
         return F.termBlank(label, F.gen());
       }
@@ -50,7 +83,7 @@ export const termFromSparqlJs: SparqlJsCompatIndir<'termFromSparqlJs', Term, [Sp
 };
 
 /**
- * Converts a sparqljs property path (or plain predicate IRI) into a Traqula {@link Path}.
+ * Converts a SPARQL.js property path or plain predicate IRI.
  */
 export const pathFromSparqlJs: SparqlJsCompatIndir<
   'pathFromSparqlJs',
@@ -64,9 +97,7 @@ export const pathFromSparqlJs: SparqlJsCompatIndir<
       return <SparqlJsTermToTraqula<typeof item>> SUBRULE(termFromSparqlJs, item);
     }
     if (item.pathType === '!') {
-      // Sparqljs always wraps a negated property set's content as the single element of `items`, whether
-      // it is a plain IRI (`!ex:p`), an inverse (`!^ex:p`) or an alternative list (`!(ex:p1|^ex:p2)`, itself
-      // represented as a nested `{ pathType: '|', ... }` node) - never as a flattened array of alternatives.
+      // The negated set is always the single item: an IRI, an inverse, or a nested '|' path.
       const [ child ] = item.items;
       const converted = <TermIri | PathNegatedElt | PathAlternativeLimited> SUBRULE(pathFromSparqlJs, child);
       return F.path('!', [ converted ], F.gen());

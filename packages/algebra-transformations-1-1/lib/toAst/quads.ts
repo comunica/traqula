@@ -2,6 +2,7 @@ import type * as RDF from '@rdfjs/types';
 import type { Algebra } from '../index.js';
 import { types } from '../toAlgebra/index.js';
 import type { AstIndir } from './core.js';
+import { eTypes } from './core.js';
 
 /**
  * Removes quad component of triple and ...
@@ -99,8 +100,12 @@ unknown,
       // below them, not defer further up. FILTER and the multi-branch combinators (JOIN,
       // LEFT_JOIN, MINUS, UNION) do defer: they share a group with sibling patterns, so matching
       // graphs merge into one GRAPH block instead of each wrapping itself separately.
+      // An EXISTS is an expression: a GRAPH can never wrap it, so it wraps the EXISTS' input instead.
+      // Only a default graph is still deferred - it wraps nothing, but keeps the EXISTS out of any GRAPH.
       const isBoundary = [ types.PROJECT, types.SERVICE, types.GROUP, types.ORDER_BY ].includes(knownOp.type) ||
-        (knownOp.type === types.EXTEND && projectionScope);
+        (knownOp.type === types.EXTEND && projectionScope) ||
+        (knownOp.type === types.EXPRESSION && knownOp.subType === eTypes.EXISTENCE &&
+          !('' in operationGraphNames));
       if (graphNameSet.length === 1 && !isBoundary) {
         graphs.push(operationGraphNames[graphNameSet[0]]);
       } else if (knownOp.type === types.BGP) {

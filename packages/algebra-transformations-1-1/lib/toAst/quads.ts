@@ -101,11 +101,12 @@ unknown,
       // LEFT_JOIN, MINUS, UNION) do defer: they share a group with sibling patterns, so matching
       // graphs merge into one GRAPH block instead of each wrapping itself separately.
       // An EXISTS is an expression: a GRAPH can never wrap it, so it wraps the EXISTS' input instead.
-      // Only a default graph is still deferred - it wraps nothing, but keeps the EXISTS out of any GRAPH.
+      // A default graph is still deferred though: it wraps nothing here, but the FILTER above needs to see it.
+      // Otherwise, in `GRAPH :g { ?s ?p ?o } FILTER EXISTS { ?s ?p ?x }`, the FILTER would only see graph `:g`,
+      // and wrap itself - and so the EXISTS - in that GRAPH, moving the EXISTS out of the default graph.
       const isBoundary = [ types.PROJECT, types.SERVICE, types.GROUP, types.ORDER_BY ].includes(knownOp.type) ||
         (knownOp.type === types.EXTEND && projectionScope) ||
         (knownOp.type === types.EXPRESSION && knownOp.subType === eTypes.EXISTENCE &&
-        // TODO: do we need this last check in the conjunct? What does it do?
           !('' in operationGraphNames));
       if (graphNameSet.length === 1 && !isBoundary) {
         graphs.push(operationGraphNames[graphNameSet[0]]);

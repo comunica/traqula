@@ -75,6 +75,11 @@ export const translateAlgCompositeUpdate: AstIndir<'translateCompositeUpdate', U
       .map(update => update.type === Types.NOP ? undefined : SUBRULE(translateAlgUpdateOperation, update));
     // An INSERT without WHERE becomes INSERT DATA, but INSERT DATA may not reuse the blank node labels
     // of an earlier INSERT DATA in the same request, while the equivalent INSERT {} WHERE {} may.
+    // "The same blank node identifier cannot be used in: [...] two INSERT DATA operations within a single SPARQL update
+    // request", yet it "can occur in different QuadPattern clauses" - https://www.w3.org/TR/sparql12-query/#grammarBNodes
+    // Both forms insert fresh blank nodes: with the single empty solution of `WHERE {}`, OpDeleteInsert reduces to
+    // OpInsertData - https://www.w3.org/TR/sparql12-update/#def_insertdataoperation
+    // and https://www.w3.org/TR/sparql12-update/#def_deleteinsertoperation
     const insertDataLabels = new Set<string>();
     return SUBRULE(toUpdate, operations.map((operation) => {
       if (!operation || !F.isUpdateOperationInsertData(operation)) {

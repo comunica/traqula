@@ -530,6 +530,54 @@ GROUP BY ( ?y AS ?x )`);
       expect(result3.object).toBe(other);
     });
   });
+
+  describe('prefixed names with PN_LOCAL_ESC escapes', () => {
+    it('removes the escaping backslashes when expanding the IRI', ({ expect }) => {
+      // Note that the double `\\` means the SPARQL parser will see only a single `\`
+      const ast = parser.parse('PREFIX : <http://example/> SELECT * { :a :b :c\\~z\\. }');
+      const result = toAlgebra(ast, {});
+      expect(result).toMatchObject({
+        input: { patterns: [{ object: { value: 'http://example/c~z.' }}]},
+      });
+    });
+
+    it('keeps percent-encodings when expanding the IRI', ({ expect }) => {
+      const ast = parser.parse('PREFIX : <http://example/> SELECT * { :a :b%3D :c\\~z\\. }');
+      const result = toAlgebra(ast, {});
+      expect(result).toMatchObject({
+        input: { patterns: [{ predicate: { value: 'http://example/b%3D' }, object: { value: 'http://example/c~z.' }}]},
+      });
+    });
+
+    it('generates a query that parses again', ({ expect }) => {
+      const result = roundTripQuads('PREFIX : <http://example/> SELECT * { :a :b%3D :c\\~z\\. }');
+      expect(result).toContain('<http://example/c~z.>');
+      expect(roundTripQuads(result)).toBe(result);
+    });
+  });
+
+  it('registers the graph of every pattern when removing quads from an array directly', ({ expect }) => {
+    const transformer = toAst11Builder.build();
+    const c = createAstContext();
+    const g = AF.dataFactory.namedNode('http://example/g');
+    const pattern = AF.createPattern(
+      AF.dataFactory.variable!('s'),
+      AF.dataFactory.variable!('p'),
+      AF.dataFactory.variable!('o'),
+      g,
+    );
+    const graphs: unknown[] = [];
+    const result = transformer.removeQuadsRecursive(c, [ pattern, pattern ], <any> graphs, false);
+    expect(graphs).toEqual([ g, g ]);
+    expect(result).toMatchObject([{ type: 'pattern' }, { type: 'pattern' }]);
+  });
+
+  it('wraps the input of an EXISTS within an aggregate in its GRAPH', ({ expect }) => {
+    const result = roundTripQuads(`PREFIX : <http://example/>
+SELECT (COUNT(EXISTS { GRAPH ?g { ?s :q ?o } }) AS ?c) WHERE { ?s :p ?g }`);
+    expect(result.replaceAll(/\s+/gu, ' ')).toContain('COUNT( EXISTS { GRAPH ?g {');
+    expect(roundTripQuads(result)).toBe(result);
+  });
 });
 
 describe('algebraGenerators filter', () => {

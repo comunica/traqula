@@ -1,0 +1,6 @@
+prefix ex: <http://www.example.org/>
+
+select ?s ?b where {
+    ?s ex:p ?g .
+    bind (exists { graph ?g { ?s ex:q ?o } } as ?b)
+}

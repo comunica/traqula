@@ -1,0 +1,4 @@
+PREFIX : <http://example.org/>
+INSERT { GRAPH :g1 { _:b :p :o } } WHERE {} ;
+INSERT { GRAPH :g2 { _:b :p :o } } WHERE {} ;
+INSERT { _:c :p :o } WHERE {}

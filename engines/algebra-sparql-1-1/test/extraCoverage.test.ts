@@ -556,6 +556,22 @@ GROUP BY ( ?y AS ?x )`);
     });
   });
 
+  it('registers the graph of every pattern when removing quads from an array directly', ({ expect }) => {
+    const transformer = toAst11Builder.build();
+    const c = createAstContext();
+    const g = AF.dataFactory.namedNode('http://example/g');
+    const pattern = AF.createPattern(
+      AF.dataFactory.variable!('s'),
+      AF.dataFactory.variable!('p'),
+      AF.dataFactory.variable!('o'),
+      g,
+    );
+    const graphs: unknown[] = [];
+    const result = transformer.removeQuadsRecursive(c, [ pattern, pattern ], <any> graphs, false);
+    expect(graphs).toEqual([ g, g ]);
+    expect(result).toMatchObject([{ type: 'pattern' }, { type: 'pattern' }]);
+  });
+
   it('wraps the input of an EXISTS within an aggregate in its GRAPH', ({ expect }) => {
     const result = roundTripQuads(`PREFIX : <http://example/>
 SELECT (COUNT(EXISTS { GRAPH ?g { ?s :q ?o } }) AS ?c) WHERE { ?s :p ?g }`);

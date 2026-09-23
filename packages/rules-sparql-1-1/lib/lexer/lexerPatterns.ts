@@ -8,7 +8,7 @@ export const pnCharsPattern = new RegExp(`(${pnCharsUPattern.source})|[\\-0-9\u0
 export const pnPrefixPattern = new RegExp(`(${pnCharsBasePattern.source})(((${pnCharsPattern.source})|\\.)*(${pnCharsPattern.source}))?`);
 export const pNameNsPattern = new RegExp(`(${pnPrefixPattern.source})?:`);
 export const percentPattern = /%[\dA-Fa-f]{2}/;
-export const pnLocalEscPattern = /\\[!#$%&'()*+,./;=?@\\_~-]/;
+export const pnLocalEscPattern = /\\[!#$%&'()*+,./;=?@_~-]/;
 export const plxPattern = new RegExp(`(${percentPattern.source})|(${pnLocalEscPattern.source})`);
 export const pnLocalPattern = new RegExp(`((${pnCharsUPattern.source})|:|[0-9]|(${plxPattern.source}))(((${pnCharsPattern.source})|\\.|:|(${plxPattern.source}))*((${pnCharsPattern.source})|:|(${plxPattern.source})))?`);
 export const pNameLnPattern = new RegExp(`(${pNameNsPattern.source})(${pnLocalPattern.source})`);

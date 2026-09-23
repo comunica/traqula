@@ -17,4 +17,11 @@ describe('lexer', () => {
     expect(invalid).toMatchObject({ tokens: [{ tokenType: { name: 'PNameLn' }}]});
     expect(new RegExp(`^(${pnLocalPattern.source})$`, 'u').test('appel\\test')).toBe(false);
   });
+
+  it('does not accept an escaped backslash in a local name', ({ expect }) => {
+    // A backslash is not one of the characters PN_LOCAL_ESC [173] may escape
+    const invalid = lexer.tokenize('aair:appel\\\\test');
+    expect(invalid.errors.length).greaterThanOrEqual(1);
+    expect(new RegExp(`^(${pnLocalPattern.source})$`, 'u').test('appel\\\\test')).toBe(false);
+  });
 });

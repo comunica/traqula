@@ -1,6 +1,7 @@
 import type * as RDF from '@rdfjs/types';
 import {
   findPatternBoundedVars,
+  lex,
 } from '@traqula/rules-sparql-1-1';
 import type {
   ContextDefinition,
@@ -20,6 +21,8 @@ import * as Algebra from '../algebra.js';
 import * as util from '../util.js';
 import type { AlgebraIndir } from './core.js';
 
+const pnLocalEscGlobal = new RegExp(lex.patterns.pnLocalEscPattern.source, 'gu');
+
 export const translateNamed: AlgebraIndir<'translateNamed', RDF.NamedNode, [TermIri]> = {
   name: 'translateNamed',
   fun: () => ({ astFactory: F, currentPrefixes, currentBase, dataFactory }, term) => {
@@ -29,10 +32,9 @@ export const translateNamed: AlgebraIndir<'translateNamed', RDF.NamedNode, [Term
       if (!expanded) {
         throw new Error(`Unknown prefix: ${term.prefix}`);
       }
-      // TODO: can we reuse the pattern defined for the lexer in rules 1.1?
       // Remove the backslash of PN_LOCAL_ESC escapes, percent-encodings (PLX) are kept as is.
       // https://www.w3.org/TR/sparql11-query/#rPN_LOCAL_ESC
-      fullIri = expanded + term.value.replaceAll(/\\([!#$%&'()*+,./;=?@_~-])/gu, '$1');
+      fullIri = expanded + term.value.replaceAll(pnLocalEscGlobal, escaped => escaped.slice(1));
     }
     return dataFactory.namedNode(util.resolveIRI(fullIri, currentBase));
   },

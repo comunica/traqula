@@ -8,6 +8,9 @@ export const pnCharsPattern = new RegExp(`(${pnCharsUPattern.source})|[\\-0-9\u0
 export const pnPrefixPattern = new RegExp(`(${pnCharsBasePattern.source})(((${pnCharsPattern.source})|\\.)*(${pnCharsPattern.source}))?`);
 export const pNameNsPattern = new RegExp(`(${pnPrefixPattern.source})?:`);
 export const percentPattern = /%[\dA-Fa-f]{2}/;
+// "A reserved character escape sequence consists of a \ followed by one of these characters ~.-!$&'()*+,;=/?#@%_,
+// and represents the character to the right of the \." - https://www.w3.org/TR/sparql12-query/#sec-escapes
+// The backslash itself cannot be escaped: https://www.w3.org/TR/sparql12-query/#rPN_LOCAL_ESC
 export const pnLocalEscPattern = /\\[!#$%&'()*+,./;=?@_~-]/;
 export const plxPattern = new RegExp(`(${percentPattern.source})|(${pnLocalEscPattern.source})`);
 export const pnLocalPattern = new RegExp(`((${pnCharsUPattern.source})|:|[0-9]|(${plxPattern.source}))(((${pnCharsPattern.source})|\\.|:|(${plxPattern.source}))*((${pnCharsPattern.source})|:|(${plxPattern.source})))?`);

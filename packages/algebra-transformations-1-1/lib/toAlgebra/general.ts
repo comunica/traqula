@@ -33,7 +33,10 @@ export const translateNamed: AlgebraIndir<'translateNamed', RDF.NamedNode, [Term
         throw new Error(`Unknown prefix: ${term.prefix}`);
       }
       // Remove the backslash of PN_LOCAL_ESC escapes, percent-encodings (PLX) are kept as is.
-      // https://www.w3.org/TR/sparql11-query/#rPN_LOCAL_ESC
+      // "The RDF string of the IRI is formed by unescaping the reserved characters in the second argument, PN_LOCAL,
+      // and concatenating this onto the namespace." - https://www.w3.org/TR/rdf12-turtle/#sec-parsing-terms
+      // Percent-encodings: "These sequences are not decoded during processing."
+      // - https://www.w3.org/TR/sparql12-query/#sec-escapes
       fullIri = expanded + term.value.replaceAll(pnLocalEscGlobal, escaped => escaped.slice(1));
     }
     return dataFactory.namedNode(util.resolveIRI(fullIri, currentBase));

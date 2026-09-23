@@ -4,6 +4,8 @@ import { types } from '../toAlgebra/index.js';
 import type { AstIndir } from './core.js';
 import { eTypes } from './core.js';
 
+const DEFAULT_GRAPH_NAME = '';
+
 /**
  * Removes quad component of triple and ...
  */
@@ -61,7 +63,7 @@ unknown,
       // We create a list that tracks, for each pattern the original graph and remove the graph
       graphs.push(graph);
       // Remove non-default graphs
-      if (graph.value !== '') {
+      if (graph.value !== DEFAULT_GRAPH_NAME) {
         return knownOp.type === types.PATTERN ?
           AF.createPattern(knownOp.subject, knownOp.predicate, knownOp.object) :
           AF.createPath(knownOp.subject, knownOp.predicate, knownOp.object);
@@ -102,7 +104,6 @@ unknown,
       // graphs merge into one GRAPH block instead of each wrapping itself separately.
       // An EXISTS is an expression: a GRAPH can never wrap it, so it wraps the EXISTS' input instead.
       // Only a default graph is still deferred - it wraps nothing, but keeps the EXISTS out of any GRAPH.
-      const DEFAULT_GRAPH_NAME = '';
       const isBoundary = [ types.PROJECT, types.SERVICE, types.GROUP, types.ORDER_BY ].includes(knownOp.type) ||
         (knownOp.type === types.EXTEND && projectionScope) ||
         (knownOp.type === types.EXPRESSION && knownOp.subType === eTypes.EXISTENCE &&
@@ -159,7 +160,7 @@ Algebra.Join | Algebra.Graph | Algebra.Bgp,
     for (const [ graphName, { patterns, graph }] of Object.entries(graphPatterns)) {
       const bgp = AF.createBgp(patterns);
       // No name means DefaultGraph, otherwise wrap in graph
-      children.push(graphName === '' ? bgp : AF.createGraph(bgp, graph));
+      children.push(graphName === DEFAULT_GRAPH_NAME ? bgp : AF.createGraph(bgp, graph));
     }
 
     // Join the graph objects

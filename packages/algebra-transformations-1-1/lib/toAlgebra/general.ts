@@ -29,6 +29,7 @@ export const translateNamed: AlgebraIndir<'translateNamed', RDF.NamedNode, [Term
       if (!expanded) {
         throw new Error(`Unknown prefix: ${term.prefix}`);
       }
+      // TODO: can we reuse the pattern defined for the lexer in rules 1.1?
       // Remove the backslash of PN_LOCAL_ESC escapes, percent-encodings (PLX) are kept as is.
       // https://www.w3.org/TR/sparql11-query/#rPN_LOCAL_ESC
       fullIri = expanded + term.value.replaceAll(/\\([!#$%&'()*+,./;=?@_~-])/gu, '$1');

@@ -105,6 +105,7 @@ unknown,
       const isBoundary = [ types.PROJECT, types.SERVICE, types.GROUP, types.ORDER_BY ].includes(knownOp.type) ||
         (knownOp.type === types.EXTEND && projectionScope) ||
         (knownOp.type === types.EXPRESSION && knownOp.subType === eTypes.EXISTENCE &&
+        // TODO: do we need this last check in the conjunct? What does it do?
           !('' in operationGraphNames));
       if (graphNameSet.length === 1 && !isBoundary) {
         graphs.push(operationGraphNames[graphNameSet[0]]);

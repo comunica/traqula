@@ -533,6 +533,7 @@ GROUP BY ( ?y AS ?x )`);
 
   describe('prefixed names with PN_LOCAL_ESC escapes', () => {
     it('removes the escaping backslashes when expanding the IRI', ({ expect }) => {
+      // Note that the double `\\` means the SPARQL parser will see only a single `\`
       const ast = parser.parse('PREFIX : <http://example/> SELECT * { :a :b :c\\~z\\. }');
       const result = toAlgebra(ast, {});
       expect(result).toMatchObject({

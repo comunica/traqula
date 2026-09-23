@@ -1,10 +1,30 @@
 import type * as RDF from '@rdfjs/types';
+import type { AlgebraFactory } from '../algebraFactory.js';
 import type { Algebra } from '../index.js';
 import { types } from '../toAlgebra/index.js';
 import type { AstIndir } from './core.js';
 import { eTypes } from './core.js';
 
 const DEFAULT_GRAPH_NAME = '';
+
+/**
+ * Wraps an operation in a GRAPH. An expression cannot be wrapped, so the input of every EXISTS within it is wrapped.
+ */
+function wrapInGraph(AF: AlgebraFactory, op: Algebra.Operation, graph: RDF.NamedNode | RDF.DefaultGraph): unknown {
+  if (op.type !== types.EXPRESSION) {
+    return AF.createGraph(op, <RDF.NamedNode> graph);
+  }
+  if (op.subType === eTypes.EXISTENCE) {
+    return { ...op, input: AF.createGraph(op.input, <RDF.NamedNode> graph) };
+  }
+  if (op.subType === eTypes.OPERATOR || op.subType === eTypes.NAMED) {
+    return { ...op, args: op.args.map(arg => wrapInGraph(AF, arg, graph)) };
+  }
+  if (op.subType === eTypes.AGGREGATE) {
+    return { ...op, expression: wrapInGraph(AF, op.expression, graph) };
+  }
+  return op;
+}
 
 /**
  * Removes quad component of triple and ...
@@ -102,12 +122,8 @@ unknown,
       // below them, not defer further up. FILTER and the multi-branch combinators (JOIN,
       // LEFT_JOIN, MINUS, UNION) do defer: they share a group with sibling patterns, so matching
       // graphs merge into one GRAPH block instead of each wrapping itself separately.
-      // An EXISTS is an expression: a GRAPH can never wrap it, so it wraps the EXISTS' input instead.
-      // Only a default graph is still deferred - it wraps nothing, but keeps the EXISTS out of any GRAPH.
       const isBoundary = [ types.PROJECT, types.SERVICE, types.GROUP, types.ORDER_BY ].includes(knownOp.type) ||
-        (knownOp.type === types.EXTEND && projectionScope) ||
-        (knownOp.type === types.EXPRESSION && knownOp.subType === eTypes.EXISTENCE &&
-          !(DEFAULT_GRAPH_NAME in operationGraphNames));
+        (knownOp.type === types.EXTEND && projectionScope);
       if (graphNameSet.length === 1 && !isBoundary) {
         graphs.push(operationGraphNames[graphNameSet[0]]);
       } else if (knownOp.type === types.BGP) {
@@ -122,9 +138,9 @@ unknown,
               // If DefaultGraph, do nothing, else wrap in plainly in Graph
               keyGraphs[key][idx].termType === 'DefaultGraph' ?
                 child :
-                AF.createGraph(child, keyGraphs[key][idx]));
+                wrapInGraph(AF, child, keyGraphs[key][idx]));
           } else if (keyGraphs[key][0].termType !== 'DefaultGraph') {
-            result[key] = AF.createGraph(value, keyGraphs[key][0]);
+            result[key] = wrapInGraph(AF, value, keyGraphs[key][0]);
           }
         }
       }

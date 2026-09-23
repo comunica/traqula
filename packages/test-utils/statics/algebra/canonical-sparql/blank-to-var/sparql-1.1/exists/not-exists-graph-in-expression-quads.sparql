@@ -1,13 +1,5 @@
-SELECT ?s ?b WHERE {
-  {
-    ?s <http://www.example.org/p> ?g .
-    BIND( EXISTS {
-      GRAPH ?g {
-        ?s <http://www.example.org/q> ?o .
-      }
-    }
-    AS ?b )
-  }
+SELECT ?s WHERE {
+  ?s <http://www.example.org/p> ?g .
   FILTER ( ( ( ?s != ?g ) && NOT EXISTS {
     GRAPH <http://www.example.org/graph> {
       ?s <http://www.example.org/q> ?o .

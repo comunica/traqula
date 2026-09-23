@@ -3,9 +3,7 @@ SELECT ?p ?s WHERE {
     {
       ?s ?p <http://www.example.org/o1> .
       FILTER ( EXISTS {
-        GRAPH <http://www.example.org/graph> {
-          ?s ?p <http://www.example.org/o2> .
-        }
+        ?s ?p <http://www.example.org/o2> .
       }
       )
     }

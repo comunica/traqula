@@ -3,66 +3,29 @@
   "input": {
     "type": "filter",
     "input": {
-      "type": "extend",
-      "input": {
-        "type": "bgp",
-        "patterns": [
-          {
-            "type": "pattern",
-            "termType": "Quad",
-            "subject": {
-              "termType": "Variable",
-              "value": "s"
-            },
-            "predicate": {
-              "termType": "NamedNode",
-              "value": "http://www.example.org/p"
-            },
-            "object": {
-              "termType": "Variable",
-              "value": "g"
-            },
-            "graph": {
-              "termType": "DefaultGraph",
-              "value": ""
-            }
+      "type": "bgp",
+      "patterns": [
+        {
+          "type": "pattern",
+          "termType": "Quad",
+          "subject": {
+            "termType": "Variable",
+            "value": "s"
+          },
+          "predicate": {
+            "termType": "NamedNode",
+            "value": "http://www.example.org/p"
+          },
+          "object": {
+            "termType": "Variable",
+            "value": "g"
+          },
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
           }
-        ]
-      },
-      "variable": {
-        "termType": "Variable",
-        "value": "b"
-      },
-      "expression": {
-        "type": "expression",
-        "subType": "existence",
-        "not": false,
-        "input": {
-          "type": "bgp",
-          "patterns": [
-            {
-              "type": "pattern",
-              "termType": "Quad",
-              "subject": {
-                "termType": "Variable",
-                "value": "s"
-              },
-              "predicate": {
-                "termType": "NamedNode",
-                "value": "http://www.example.org/q"
-              },
-              "object": {
-                "termType": "Variable",
-                "value": "o"
-              },
-              "graph": {
-                "termType": "Variable",
-                "value": "g"
-              }
-            }
-          ]
         }
-      }
+      ]
     },
     "expression": {
       "type": "expression",
@@ -129,10 +92,6 @@
     {
       "termType": "Variable",
       "value": "s"
-    },
-    {
-      "termType": "Variable",
-      "value": "b"
     }
   ]
 }

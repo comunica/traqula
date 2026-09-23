@@ -73,8 +73,9 @@ export const translateAlgCompositeUpdate: AstIndir<'translateCompositeUpdate', U
   fun: ({ SUBRULE }) => ({ astFactory: F, transformer }, op) => {
     const operations = op.updates
       .map(update => update.type === Types.NOP ? undefined : SUBRULE(translateAlgUpdateOperation, update));
-    // An INSERT without WHERE becomes INSERT DATA within toAlgebra, but INSERT DATA may not reuse the blank node labels
-    // of an earlier INSERT DATA in the same request, while the equivalent INSERT {} WHERE {} may.
+    // INSERT DATA and INSERT {} WHERE {} share one algebra, which toAst prints as INSERT DATA.
+    // INSERT DATA may however not reuse the blank node labels of another INSERT DATA in the same request,
+    // while the equivalent INSERT {} WHERE {} may - so fall back to that form when labels collide.
     // "The same blank node identifier cannot be used in: [...] two INSERT DATA operations within a single SPARQL update
     // request", yet it "can occur in different QuadPattern clauses" - https://www.w3.org/TR/sparql12-query/#grammarBNodes
     // Both forms insert fresh blank nodes: with the single empty solution of `WHERE {}`, OpDeleteInsert reduces to

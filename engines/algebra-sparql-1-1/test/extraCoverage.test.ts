@@ -555,6 +555,13 @@ GROUP BY ( ?y AS ?x )`);
       expect(roundTripQuads(result)).toBe(result);
     });
   });
+
+  it('wraps the input of an EXISTS within an aggregate in its GRAPH', ({ expect }) => {
+    const result = roundTripQuads(`PREFIX : <http://example/>
+SELECT (COUNT(EXISTS { GRAPH ?g { ?s :q ?o } }) AS ?c) WHERE { ?s :p ?g }`);
+    expect(result.replaceAll(/\s+/gu, ' ')).toContain('COUNT( EXISTS { GRAPH ?g {');
+    expect(roundTripQuads(result)).toBe(result);
+  });
 });
 
 describe('algebraGenerators filter', () => {

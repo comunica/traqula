@@ -33,6 +33,22 @@ describe('extra parser coverage', () => {
     });
   });
 
+  describe('prefixed names with colons in the local name', () => {
+    it('keeps everything after the first colon as local name', ({ expect }) => {
+      const query = <any> parser.parse('PREFIX ex: <http://ex.org/> SELECT * WHERE { ex:a:b:c ?p ?o }');
+      const subject = query.where.patterns[0].triples[0].subject;
+      expect(subject.prefix).toBe('ex');
+      expect(subject.value).toBe('a:b:c');
+    });
+
+    it('keeps a local name starting with a colon', ({ expect }) => {
+      const query = <any> parser.parse('PREFIX : <http://ex.org/> SELECT * WHERE { ::a ?p ?o }');
+      const subject = query.where.patterns[0].triples[0].subject;
+      expect(subject.prefix).toBe('');
+      expect(subject.value).toBe(':a');
+    });
+  });
+
   describe('duplicate SELECT clause variables', () => {
     it('throws when the same variable appears twice in SELECT', ({ expect }) => {
       expect(() => parser.parse('SELECT ?s ?s WHERE { ?s ?p ?o }')).toThrow(

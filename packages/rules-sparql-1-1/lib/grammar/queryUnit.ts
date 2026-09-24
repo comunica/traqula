@@ -397,6 +397,8 @@ export const describeQuery: SparqlRule<'describeQuery', Omit<QueryDescribe, Hand
       F.printFilter(ast, () => PRINT_WORD('*'));
     } else {
       for (const variable of (<Exclude<QueryDescribe['variables'], [Wildcard]>> ast.variables)) {
+        // Separate the targets, otherwise `DESCRIBE ?s ex:a` would be generated as `DESCRIBE ?sex:a`
+        F.printFilter(ast, () => PRINT_WORD(''));
         SUBRULE(varOrTerm, variable);
       }
     }

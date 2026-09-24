@@ -298,6 +298,57 @@ describe('algebraUtils utility functions', () => {
     expect(algebraUtils.resolveIRI('./a:b', 'http://ex.org/p/q')).toBe('http://ex.org/p/a:b');
   });
 
+  it('resolveIRI resolves network-path references', ({ expect }) => {
+    expect(algebraUtils.resolveIRI('//', 'http://a/b')).toBe('http://');
+    expect(algebraUtils.resolveIRI('//g/../h', 'http://a/b')).toBe('http://g/h');
+  });
+
+  it('resolveIRI ignores slashes in the query and fragment of the base IRI', ({ expect }) => {
+    expect(algebraUtils.resolveIRI('g', 'http://a/b?c/d#e/f')).toBe('http://a/g');
+  });
+
+  it('resolveIRI does not decode percent-encoded dot segments', ({ expect }) => {
+    expect(algebraUtils.resolveIRI('%2E%2E/g', 'http://a/b/c')).toBe('http://a/b/%2E%2E/g');
+    expect(algebraUtils.resolveIRI('.%2E/g', 'http://a/b/c')).toBe('http://a/b/.%2E/g');
+  });
+
+  it('resolveIRI resolves against a base IRI without path', ({ expect }) => {
+    expect(algebraUtils.resolveIRI('', 'http://a')).toBe('http://a');
+    expect(algebraUtils.resolveIRI('?q', 'http://a')).toBe('http://a?q');
+    expect(algebraUtils.resolveIRI('#f', 'http://a')).toBe('http://a#f');
+  });
+
+  it('resolveIRI only removes complete dot segments', ({ expect }) => {
+    expect(algebraUtils.resolveIRI('a//b/../c', 'http://x/')).toBe('http://x/a//c');
+    expect(algebraUtils.resolveIRI('/a/..', 'http://x/y')).toBe('http://x/');
+    expect(algebraUtils.resolveIRI('/a/.', 'http://x/y')).toBe('http://x/a/');
+  });
+
+  it('resolveIRI may produce a path starting with // against a base IRI without authority', ({ expect }) => {
+    expect(algebraUtils.resolveIRI('..//g', 'urn:x/y')).toBe('urn://g');
+  });
+
+  it('resolveIRI keeps a first segment with an invalid scheme as a path by default', ({ expect }) => {
+    expect(algebraUtils.resolveIRI('1a:b', 'http://h/a/b')).toBe('http://h/a/1a:b');
+    expect(algebraUtils.resolveIRI('x_y:z', 'http://h/a/b')).toBe('http://h/a/x_y:z');
+    expect(algebraUtils.resolveIRI(':z', 'http://h/a/b')).toBe('http://h/a/:z');
+  });
+
+  it('resolveIRI with validation throws on relative IRIs with a colon in the first segment', ({ expect }) => {
+    for (const iri of [ '1a:b', 'x_y:z', 'é:o', ':z', '1:b/c' ]) {
+      expect(() => algebraUtils.resolveIRI(iri, 'http://h/a/b', false)).toThrowError(/Invalid IRI/u);
+    }
+    expect(algebraUtils.resolveIRI('a/b', 'http://h/a/b', false)).toBe('http://h/a/a/b');
+    expect(algebraUtils.resolveIRI('./a:b', 'http://h/a/b', false)).toBe('http://h/a/a:b');
+    expect(algebraUtils.resolveIRI('//g:1/x', 'http://h/a/b', false)).toBe('http://g:1/x');
+    expect(algebraUtils.resolveIRI('?a:b', 'http://h/a/b', false)).toBe('http://h/a/b?a:b');
+  });
+
+  it('resolveIRI with validation throws on a base IRI that is not absolute', ({ expect }) => {
+    expect(() => algebraUtils.resolveIRI('../c', 'a/b/d', false)).toThrowError(/base IRI a\/b\/d is not absolute/u);
+    expect(algebraUtils.resolveIRI('http://x/y', 'a/b/d', false)).toBe('http://x/y');
+  });
+
   it('isTriple identifies quad-like objects', ({ expect }) => {
     const triple = { subject: {}, predicate: {}, object: {}};
     expect(isTriple(triple)).toBeTruthy();

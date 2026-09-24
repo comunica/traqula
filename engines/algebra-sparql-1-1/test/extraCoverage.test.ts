@@ -746,4 +746,38 @@ describe('queryUnit.ts (toAst): registerGroupBy direct call', () => {
       });
     });
   });
+
+  describe('resolving IRIs with skipValidation', () => {
+    it('keeps an invalid relative IRI as a path by default', ({ expect }) => {
+      const ast = parser.parse('BASE <http://h/a/b> SELECT * WHERE { <1a:b> ?p ?o }');
+      expect(toAlgebra(ast)).toMatchObject({
+        input: { patterns: [{ subject: { value: 'http://h/a/1a:b' }}]},
+      });
+    });
+
+    it('throws on an invalid relative IRI when skipValidation is false', ({ expect }) => {
+      const ast = parser.parse('BASE <http://h/a/b> SELECT * WHERE { <1a:b> ?p ?o }');
+      expect(() => toAlgebra(ast, { skipValidation: false })).toThrowError(/Invalid IRI 1a:b/u);
+    });
+
+    it('accepts a relative base IRI by default', ({ expect }) => {
+      const ast = parser.parse('SELECT * WHERE { <../c> ?p ?o }', { baseIRI: 'a/b/d' });
+      expect(toAlgebra(ast, { baseIRI: 'a/b/d' })).toMatchObject({
+        input: { patterns: [{ subject: { value: 'a/c' }}]},
+      });
+    });
+
+    it('throws on a relative base IRI when skipValidation is false', ({ expect }) => {
+      const ast = parser.parse('SELECT * WHERE { <../c> ?p ?o }', { baseIRI: 'a/b/d' });
+      expect(() => toAlgebra(ast, { baseIRI: 'a/b/d', skipValidation: false }))
+        .toThrowError(/base IRI a\/b\/d is not absolute/u);
+    });
+
+    it('resolves valid relative IRIs when skipValidation is false', ({ expect }) => {
+      const ast = parser.parse('BASE <http://h/a/b> SELECT * WHERE { <./c:d> ?p <//g/x/../y> }');
+      expect(toAlgebra(ast, { skipValidation: false })).toMatchObject({
+        input: { patterns: [{ subject: { value: 'http://h/a/c:d' }, object: { value: 'http://g/y' }}]},
+      });
+    });
+  });
 });

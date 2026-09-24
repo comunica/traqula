@@ -328,21 +328,36 @@ export const visitOperationSub = transformer.visitNodeSpecific.bind(transformer)
 export const visitOperationSubAsync = transformer.visitNodeSpecificAsync.bind(transformer);
 
 /**
- * Splits an IRI (reference) into its components following
+ * Matches IRIs that start with a scheme, i.e. absolute IRIs, see
+ * [RFC 3986, section 3.1](https://www.rfc-editor.org/rfc/rfc3986#section-3.1).
+ */
+const schemeRegex = /^[a-z][\d+.a-z-]*:/iu;
+
+/**
+ * Splits an IRI into its components following
  * [RFC 3986, appendix B](https://www.rfc-editor.org/rfc/rfc3986#appendix-B).
  * Components that are absent are undefined, components that are present but empty are the empty string.
+ * This regex matches every string: all groups are optional, each group stops at the character that starts the next,
+ * and the 's' flag lets the fragment's '.' match line terminators too.
  */
 const iriComponentsRegex = /^(?:([^:/?#]+):)?(?:\/\/([^/?#]*))?([^?#]*)(?:\?([^#]*))?(?:#(.*))?$/su;
 
 /**
- * Removes the '.' and '..' segments from a path in accordance to
+ * Same as {@link iriComponentsRegex}, but for relative references, which have no scheme.
+ * Without a scheme group, an invalid reference like '1a:b' is kept as a path instead of being split at the ':'.
+ */
+const relativeComponentsRegex = /^(?:\/\/([^/?#]*))?([^?#]*)(?:\?([^#]*))?(?:#(.*))?$/su;
+
+/**
+ * Removes the '.' and '..' segments from a path in accordance with
  * [RFC 3986, section 5.2.4](https://www.rfc-editor.org/rfc/rfc3986#section-5.2.4).
  */
 function removeDotSegments(path: string): string {
   let input = path;
   let output = '';
   const removeLastOutputSegment = (): void => {
-    output = output.slice(0, Math.max(output.lastIndexOf('/'), 0));
+    const pos = output.lastIndexOf('/');
+    output = output.slice(0, pos > 0 ? pos : 0);
   };
   while (input.length > 0) {
     if (input.startsWith('../')) {
@@ -371,23 +386,37 @@ function removeDotSegments(path: string): string {
 }
 
 /**
- * Resolves an IRI against a base IRI in accordance to the [Syntax for IRIs](https://www.w3.org/TR/sparql12-query/#QSynIRI):
+ * Resolves an IRI against a base IRI in accordance with the [Syntax for IRIs](https://www.w3.org/TR/sparql12-query/#QSynIRI):
  * relative IRIs are resolved using the basic algorithm of
  * [RFC 3986, section 5.2](https://www.rfc-editor.org/rfc/rfc3986#section-5.2),
  * without performing syntax-based or scheme-based normalization.
  * Absolute IRIs are returned unmodified.
+ * @param iri the IRI to resolve.
+ * @param base the base IRI to resolve relative IRIs against.
+ * @param skipValidation when false, throw on a base IRI that is not absolute
+ *   and on a relative IRI whose first path segment contains a ':'.
  */
-export function resolveIRI(iri: string, base: string | undefined): string {
+export function resolveIRI(iri: string, base: string | undefined, skipValidation = true): string {
   // Return absolute IRIs unmodified
-  if (/^[a-z][\d+.a-z-]*:/iu.test(iri)) {
+  if (schemeRegex.test(iri)) {
     return iri;
   }
   if (!base) {
     throw new Error(`Cannot resolve relative IRI ${iri} because no base IRI was set.`);
   }
-  // Both regex matches always succeed since all groups are optional
-  const [ , , rAuthority, rPath, rQuery, rFragment ] = iriComponentsRegex.exec(iri)!;
+  // Both regex matches always succeed, see iriComponentsRegex
+  const [ , rAuthority, rPath, rQuery, rFragment ] = relativeComponentsRegex.exec(iri)!;
   const [ , bScheme, bAuthority, bPath, bQuery ] = iriComponentsRegex.exec(base)!;
+  if (!skipValidation) {
+    if (!schemeRegex.test(base)) {
+      throw new Error(`Cannot resolve relative IRI ${iri} because base IRI ${base} is not absolute.`);
+    }
+    // A relative-path reference must not contain a ':' in its first segment (path-noscheme),
+    // otherwise it would be mistaken for a scheme - https://www.rfc-editor.org/rfc/rfc3986#section-4.2
+    if (rAuthority === undefined && /^[^/]*:/u.test(rPath)) {
+      throw new Error(`Invalid IRI ${iri}: neither an absolute IRI nor a valid relative IRI.`);
+    }
+  }
 
   // Transform references - https://www.rfc-editor.org/rfc/rfc3986#section-5.2.2
   let authority: string | undefined;
@@ -416,6 +445,8 @@ export function resolveIRI(iri: string, base: string | undefined): string {
   }
 
   // Component recomposition - https://www.rfc-editor.org/rfc/rfc3986#section-5.3
+  // Like the RFC, this does not guard against a path starting with '//' when there is no authority
+  // (e.g. '..//g' against 'urn:x/y' results in 'urn://g').
   let result = bScheme === undefined ? '' : `${bScheme}:`;
   if (authority !== undefined) {
     result += `//${authority}`;

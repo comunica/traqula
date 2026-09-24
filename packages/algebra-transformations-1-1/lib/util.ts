@@ -391,12 +391,8 @@ function removeDotSegments(path: string): string {
  * [RFC 3986, section 5.2](https://www.rfc-editor.org/rfc/rfc3986#section-5.2),
  * without performing syntax-based or scheme-based normalization.
  * Absolute IRIs are returned unmodified.
- * @param iri the IRI to resolve.
- * @param base the base IRI to resolve relative IRIs against.
- * @param skipValidation when false, throw on a base IRI that is not absolute
- *   and on a relative IRI whose first path segment contains a ':'.
  */
-export function resolveIRI(iri: string, base: string | undefined, skipValidation = true): string {
+export function resolveIRI(iri: string, base: string | undefined): string {
   // Return absolute IRIs unmodified
   if (schemeRegex.test(iri)) {
     return iri;
@@ -407,16 +403,6 @@ export function resolveIRI(iri: string, base: string | undefined, skipValidation
   // Both regex matches always succeed, see iriComponentsRegex
   const [ , rAuthority, rPath, rQuery, rFragment ] = relativeComponentsRegex.exec(iri)!;
   const [ , bScheme, bAuthority, bPath, bQuery ] = iriComponentsRegex.exec(base)!;
-  if (!skipValidation) {
-    if (!schemeRegex.test(base)) {
-      throw new Error(`Cannot resolve relative IRI ${iri} because base IRI ${base} is not absolute.`);
-    }
-    // A relative-path reference must not contain a ':' in its first segment (path-noscheme),
-    // otherwise it would be mistaken for a scheme - https://www.rfc-editor.org/rfc/rfc3986#section-4.2
-    if (rAuthority === undefined && /^[^/]*:/u.test(rPath)) {
-      throw new Error(`Invalid IRI ${iri}: neither an absolute IRI nor a valid relative IRI.`);
-    }
-  }
 
   // Transform references - https://www.rfc-editor.org/rfc/rfc3986#section-5.2.2
   let authority: string | undefined;

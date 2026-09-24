@@ -334,21 +334,6 @@ describe('algebraUtils utility functions', () => {
     expect(algebraUtils.resolveIRI(':z', 'http://h/a/b')).toBe('http://h/a/:z');
   });
 
-  it('resolveIRI with validation throws on relative IRIs with a colon in the first segment', ({ expect }) => {
-    for (const iri of [ '1a:b', 'x_y:z', 'é:o', ':z', '1:b/c' ]) {
-      expect(() => algebraUtils.resolveIRI(iri, 'http://h/a/b', false)).toThrowError(/Invalid IRI/u);
-    }
-    expect(algebraUtils.resolveIRI('a/b', 'http://h/a/b', false)).toBe('http://h/a/a/b');
-    expect(algebraUtils.resolveIRI('./a:b', 'http://h/a/b', false)).toBe('http://h/a/a:b');
-    expect(algebraUtils.resolveIRI('//g:1/x', 'http://h/a/b', false)).toBe('http://g:1/x');
-    expect(algebraUtils.resolveIRI('?a:b', 'http://h/a/b', false)).toBe('http://h/a/b?a:b');
-  });
-
-  it('resolveIRI with validation throws on a base IRI that is not absolute', ({ expect }) => {
-    expect(() => algebraUtils.resolveIRI('../c', 'a/b/d', false)).toThrowError(/base IRI a\/b\/d is not absolute/u);
-    expect(algebraUtils.resolveIRI('http://x/y', 'a/b/d', false)).toBe('http://x/y');
-  });
-
   it('isTriple identifies quad-like objects', ({ expect }) => {
     const triple = { subject: {}, predicate: {}, object: {}};
     expect(isTriple(triple)).toBeTruthy();

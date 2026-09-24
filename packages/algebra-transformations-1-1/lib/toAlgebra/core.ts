@@ -16,7 +16,6 @@ export interface AlgebraContext {
   dataFactory: RDF.DataFactory<RDF.BaseQuad> & { variable: Function };
   currentBase: string | undefined;
   currentPrefixes: Record<string, string>;
-  skipValidation: boolean;
 }
 
 export interface ContextConfigs {
@@ -25,14 +24,6 @@ export interface ContextConfigs {
   prefixes?: Record<string, string>;
   baseIRI?: string;
   blankToVariable?: boolean;
-  // TODO next major: default to false, like the parser does
-  /**
-   * Skip validations during translation.
-   * When false, translation throws on a base IRI that is not absolute,
-   * and on relative IRIs that are not valid relative IRI references (e.g. `<1a:b>`).
-   * Defaults to true.
-   */
-  skipValidation?: boolean;
 }
 export function createAlgebraContext(config: ContextConfigs): AlgebraContext {
   const dataFactory = config.dataFactory ?? new DataFactory<RDF.BaseQuad>();
@@ -46,7 +37,6 @@ export function createAlgebraContext(config: ContextConfigs): AlgebraContext {
     algebraFactory: new AlgebraFactory(dataFactory),
     currentBase: config.baseIRI,
     currentPrefixes: Object.assign(Object.create(null), config.prefixes),
-    skipValidation: config.skipValidation ?? true,
   };
 }
 

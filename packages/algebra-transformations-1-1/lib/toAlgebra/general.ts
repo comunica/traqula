@@ -25,7 +25,7 @@ const pnLocalEscGlobal = new RegExp(lex.patterns.pnLocalEscPattern.source, 'gu')
 
 export const translateNamed: AlgebraIndir<'translateNamed', RDF.NamedNode, [TermIri]> = {
   name: 'translateNamed',
-  fun: () => ({ astFactory: F, currentPrefixes, currentBase, dataFactory, skipValidation }, term) => {
+  fun: () => ({ astFactory: F, currentPrefixes, currentBase, dataFactory }, term) => {
     let fullIri: string = term.value;
     if (F.isTermNamedPrefixed(term)) {
       const expanded = currentPrefixes[term.prefix];
@@ -39,7 +39,7 @@ export const translateNamed: AlgebraIndir<'translateNamed', RDF.NamedNode, [Term
       // - https://www.w3.org/TR/sparql12-query/#sec-escapes
       fullIri = expanded + term.value.replaceAll(pnLocalEscGlobal, escaped => escaped.slice(1));
     }
-    return dataFactory.namedNode(util.resolveIRI(fullIri, currentBase, skipValidation));
+    return dataFactory.namedNode(util.resolveIRI(fullIri, currentBase));
   },
 };
 

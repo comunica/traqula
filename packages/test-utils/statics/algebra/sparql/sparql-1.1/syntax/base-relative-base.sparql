@@ -1,0 +1,8 @@
+BASE <http://example.com/a/b/c#frag>
+BASE <../d/./e/../>
+PREFIX ns: <f/g/..>
+
+SELECT * WHERE {
+  <> ns:p <//other.example/x/../y?q#r> .
+  <?q2> ns:p <h;x=1/../i> .
+}

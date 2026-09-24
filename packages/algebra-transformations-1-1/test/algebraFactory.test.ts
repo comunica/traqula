@@ -203,6 +203,101 @@ describe('algebraUtils utility functions', () => {
     expect(result).toBe('http://base.org/root/path');
   });
 
+  describe('resolveIRI conforms to the RFC 3986 reference resolution examples', () => {
+    // https://www.rfc-editor.org/rfc/rfc3986#section-5.4
+    const base = 'http://a/b/c/d;p?q';
+    const examples: Record<string, string> = {
+      // Normal examples
+      'g:h': 'g:h',
+      g: 'http://a/b/c/g',
+      './g': 'http://a/b/c/g',
+      'g/': 'http://a/b/c/g/',
+      '/g': 'http://a/g',
+      '//g': 'http://g',
+      '?y': 'http://a/b/c/d;p?y',
+      'g?y': 'http://a/b/c/g?y',
+      '#s': 'http://a/b/c/d;p?q#s',
+      'g#s': 'http://a/b/c/g#s',
+      'g?y#s': 'http://a/b/c/g?y#s',
+      ';x': 'http://a/b/c/;x',
+      'g;x': 'http://a/b/c/g;x',
+      'g;x?y#s': 'http://a/b/c/g;x?y#s',
+      '': 'http://a/b/c/d;p?q',
+      '.': 'http://a/b/c/',
+      './': 'http://a/b/c/',
+      '..': 'http://a/b/',
+      '../': 'http://a/b/',
+      '../g': 'http://a/b/g',
+      '../..': 'http://a/',
+      '../../': 'http://a/',
+      '../../g': 'http://a/g',
+      // Abnormal examples
+      '../../../g': 'http://a/g',
+      '../../../../g': 'http://a/g',
+      '/./g': 'http://a/g',
+      '/../g': 'http://a/g',
+      'g.': 'http://a/b/c/g.',
+      '.g': 'http://a/b/c/.g',
+      'g..': 'http://a/b/c/g..',
+      '..g': 'http://a/b/c/..g',
+      './../g': 'http://a/b/g',
+      './g/.': 'http://a/b/c/g/',
+      'g/./h': 'http://a/b/c/g/h',
+      'g/../h': 'http://a/b/c/h',
+      'g;x=1/./y': 'http://a/b/c/g;x=1/y',
+      'g;x=1/../y': 'http://a/b/c/y',
+      'g?y/./x': 'http://a/b/c/g?y/./x',
+      'g?y/../x': 'http://a/b/c/g?y/../x',
+      'g#s/./x': 'http://a/b/c/g#s/./x',
+      'g#s/../x': 'http://a/b/c/g#s/../x',
+      'http:g': 'http:g',
+    };
+    for (const [ relative, expected ] of Object.entries(examples)) {
+      it(`resolves <${relative}>`, ({ expect }) => {
+        expect(algebraUtils.resolveIRI(relative, base)).toBe(expected);
+      });
+    }
+  });
+
+  it('resolveIRI resolves against a base IRI whose path does not end in a slash', ({ expect }) => {
+    // https://github.com/w3c/rdf-tests/pull/373
+    const base = 'http://example.com/xxx/abc';
+    expect(algebraUtils.resolveIRI('', base)).toBe('http://example.com/xxx/abc');
+    expect(algebraUtils.resolveIRI('def', base)).toBe('http://example.com/xxx/def');
+    expect(algebraUtils.resolveIRI('#ghi', base)).toBe('http://example.com/xxx/abc#ghi');
+    expect(algebraUtils.resolveIRI('./jkl', base)).toBe('http://example.com/xxx/jkl');
+    expect(algebraUtils.resolveIRI('../mno', base)).toBe('http://example.com/mno');
+    expect(algebraUtils.resolveIRI('/pqr', base)).toBe('http://example.com/pqr');
+  });
+
+  it('resolveIRI drops the fragment of the base IRI', ({ expect }) => {
+    expect(algebraUtils.resolveIRI('', 'http://ex.org/a#frag')).toBe('http://ex.org/a');
+    expect(algebraUtils.resolveIRI('#x', 'http://ex.org/a#frag')).toBe('http://ex.org/a#x');
+  });
+
+  it('resolveIRI resolves against a base IRI with an authority and an empty path', ({ expect }) => {
+    expect(algebraUtils.resolveIRI('g', 'http://ex.org')).toBe('http://ex.org/g');
+    expect(algebraUtils.resolveIRI('g', 'http://ex.org?q')).toBe('http://ex.org/g');
+  });
+
+  it('resolveIRI resolves against a base IRI without authority', ({ expect }) => {
+    expect(algebraUtils.resolveIRI('#x', 'urn:ex:a')).toBe('urn:ex:a#x');
+    expect(algebraUtils.resolveIRI('b', 'urn:ex:a')).toBe('urn:b');
+    expect(algebraUtils.resolveIRI('./b', 'urn:ex:a')).toBe('urn:b');
+    expect(algebraUtils.resolveIRI('../b', 'urn:ex:a')).toBe('urn:b');
+    expect(algebraUtils.resolveIRI('.', 'urn:ex:a')).toBe('urn:');
+    expect(algebraUtils.resolveIRI('/x', 'file:///a/b')).toBe('file:///x');
+  });
+
+  it('resolveIRI resolves against a relative base IRI', ({ expect }) => {
+    expect(algebraUtils.resolveIRI('../c', 'a/b/d')).toBe('a/c');
+  });
+
+  it('resolveIRI resolves relative IRIs containing non-ASCII characters and colons', ({ expect }) => {
+    expect(algebraUtils.resolveIRI('é/../ü', 'http://ex.org/p/')).toBe('http://ex.org/p/ü');
+    expect(algebraUtils.resolveIRI('./a:b', 'http://ex.org/p/q')).toBe('http://ex.org/p/a:b');
+  });
+
   it('isTriple identifies quad-like objects', ({ expect }) => {
     const triple = { subject: {}, predicate: {}, object: {}};
     expect(isTriple(triple)).toBeTruthy();

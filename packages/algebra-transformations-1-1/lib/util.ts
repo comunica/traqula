@@ -328,7 +328,54 @@ export const visitOperationSub = transformer.visitNodeSpecific.bind(transformer)
 export const visitOperationSubAsync = transformer.visitNodeSpecificAsync.bind(transformer);
 
 /**
- * Resolves an IRI against a base path in accordance to the [Syntax for IRIs](https://www.w3.org/TR/sparql11-query/#QSynIRI)
+ * Splits an IRI (reference) into its components following
+ * [RFC 3986, appendix B](https://www.rfc-editor.org/rfc/rfc3986#appendix-B).
+ * Components that are absent are undefined, components that are present but empty are the empty string.
+ */
+const iriComponentsRegex = /^(?:([^:/?#]+):)?(?:\/\/([^/?#]*))?([^?#]*)(?:\?([^#]*))?(?:#(.*))?$/su;
+
+/**
+ * Removes the '.' and '..' segments from a path in accordance to
+ * [RFC 3986, section 5.2.4](https://www.rfc-editor.org/rfc/rfc3986#section-5.2.4).
+ */
+function removeDotSegments(path: string): string {
+  let input = path;
+  let output = '';
+  const removeLastOutputSegment = (): void => {
+    output = output.slice(0, Math.max(output.lastIndexOf('/'), 0));
+  };
+  while (input.length > 0) {
+    if (input.startsWith('../')) {
+      input = input.slice(3);
+    } else if (input.startsWith('./') || input.startsWith('/./')) {
+      input = input.slice(2);
+    } else if (input === '/.') {
+      input = '/';
+    } else if (input.startsWith('/../')) {
+      input = input.slice(3);
+      removeLastOutputSegment();
+    } else if (input === '/..') {
+      input = '/';
+      removeLastOutputSegment();
+    } else if (input === '.' || input === '..') {
+      input = '';
+    } else {
+      // Move the first path segment (including its leading '/', if any) to the output
+      const segmentEnd = input.indexOf('/', 1);
+      const segment = segmentEnd === -1 ? input : input.slice(0, segmentEnd);
+      output += segment;
+      input = input.slice(segment.length);
+    }
+  }
+  return output;
+}
+
+/**
+ * Resolves an IRI against a base IRI in accordance to the [Syntax for IRIs](https://www.w3.org/TR/sparql12-query/#QSynIRI):
+ * relative IRIs are resolved using the basic algorithm of
+ * [RFC 3986, section 5.2](https://www.rfc-editor.org/rfc/rfc3986#section-5.2),
+ * without performing syntax-based or scheme-based normalization.
+ * Absolute IRIs are returned unmodified.
  */
 export function resolveIRI(iri: string, base: string | undefined): string {
   // Return absolute IRIs unmodified
@@ -338,38 +385,49 @@ export function resolveIRI(iri: string, base: string | undefined): string {
   if (!base) {
     throw new Error(`Cannot resolve relative IRI ${iri} because no base IRI was set.`);
   }
-  switch (iri[0]) {
-    // An empty relative IRI indicates the base IRI
-    case undefined:
-      return base;
-      // Resolve relative fragment IRIs against the base IRI
-    case '#':
-      return base + iri;
-      // Resolve relative query string IRIs by replacing the query string
-    case '?':
-      return base.replace(/(?:\?.*)?$/u, iri);
-      // Resolve root relative IRIs at the root of the base IRI
-    case '/': {
-      // Since the empty string natches, this always matches something.
-      const baseRoot = /^(?:[a-z]+:\/*)?[^/]*/u.exec(base)![0];
-      return baseRoot + iri;
+  // Both regex matches always succeed since all groups are optional
+  const [ , , rAuthority, rPath, rQuery, rFragment ] = iriComponentsRegex.exec(iri)!;
+  const [ , bScheme, bAuthority, bPath, bQuery ] = iriComponentsRegex.exec(base)!;
+
+  // Transform references - https://www.rfc-editor.org/rfc/rfc3986#section-5.2.2
+  let authority: string | undefined;
+  let path: string;
+  let query: string | undefined;
+  if (rAuthority === undefined) {
+    if (rPath === '') {
+      path = bPath;
+      query = rQuery ?? bQuery;
+    } else {
+      if (rPath.startsWith('/')) {
+        path = removeDotSegments(rPath);
+      } else if (bAuthority !== undefined && bPath === '') {
+        // Merge paths - https://www.rfc-editor.org/rfc/rfc3986#section-5.2.3
+        path = removeDotSegments(`/${rPath}`);
+      } else {
+        path = removeDotSegments(bPath.slice(0, bPath.lastIndexOf('/') + 1) + rPath);
+      }
+      query = rQuery;
     }
-    // Resolve all other IRIs at the base IRI's path
-    default: {
-      // Const lastSemi = base.lastIndexOf(':');
-      // const lastSlash = base.lastIndexOf('/');
-      // let basePath;
-      // if (lastSlash === -1 && lastSemi === -1) {
-      //   basePath = '';
-      // } else if (lastSlash > lastSemi) {
-      //   basePath = base.slice(0, lastSlash);
-      // } else {
-      //   basePath = base.slice(0, lastSemi);
-      // }
-      const basePath = base.replace(/[^/:]*$/u, '');
-      return basePath + iri;
-    }
+    authority = bAuthority;
+  } else {
+    authority = rAuthority;
+    path = removeDotSegments(rPath);
+    query = rQuery;
   }
+
+  // Component recomposition - https://www.rfc-editor.org/rfc/rfc3986#section-5.3
+  let result = bScheme === undefined ? '' : `${bScheme}:`;
+  if (authority !== undefined) {
+    result += `//${authority}`;
+  }
+  result += path;
+  if (query !== undefined) {
+    result += `?${query}`;
+  }
+  if (rFragment !== undefined) {
+    result += `#${rFragment}`;
+  }
+  return result;
 }
 
 // TODO: find a cleaner way

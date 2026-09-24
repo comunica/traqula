@@ -749,6 +749,8 @@ describe('queryUnit.ts (toAst): registerGroupBy direct call', () => {
 
   describe('resolving relative IRIs', () => {
     it('keeps a first segment with an invalid scheme as a path', ({ expect }) => {
+      // <1a:b> is not a valid IRI, so this result is arbitrary and the query should in principle be rejected.
+      // This test only tracks regressions in how such IRIs are handled.
       const ast = parser.parse('BASE <http://h/a/b> SELECT * WHERE { <1a:b> ?p ?o }');
       expect(toAlgebra(ast)).toMatchObject({
         input: { patterns: [{ subject: { value: 'http://h/a/1a:b' }}]},

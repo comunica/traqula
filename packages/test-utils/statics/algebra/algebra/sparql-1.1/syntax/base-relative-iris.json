@@ -1,0 +1,213 @@
+{
+  "type": "project",
+  "input": {
+    "type": "leftjoin",
+    "input": [
+      {
+        "type": "leftjoin",
+        "input": [
+          {
+            "type": "leftjoin",
+            "input": [
+              {
+                "type": "leftjoin",
+                "input": [
+                  {
+                    "type": "leftjoin",
+                    "input": [
+                      {
+                        "type": "leftjoin",
+                        "input": [
+                          {
+                            "type": "bgp",
+                            "patterns": []
+                          },
+                          {
+                            "type": "bgp",
+                            "patterns": [
+                              {
+                                "type": "pattern",
+                                "termType": "Quad",
+                                "subject": {
+                                  "termType": "NamedNode",
+                                  "value": "http://example.com/xxx/abc"
+                                },
+                                "predicate": {
+                                  "termType": "NamedNode",
+                                  "value": "http://example.org/ns#p"
+                                },
+                                "object": {
+                                  "termType": "Variable",
+                                  "value": "res0"
+                                },
+                                "graph": {
+                                  "termType": "DefaultGraph",
+                                  "value": ""
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "type": "bgp",
+                        "patterns": [
+                          {
+                            "type": "pattern",
+                            "termType": "Quad",
+                            "subject": {
+                              "termType": "NamedNode",
+                              "value": "http://example.com/xxx/def"
+                            },
+                            "predicate": {
+                              "termType": "NamedNode",
+                              "value": "http://example.org/ns#p"
+                            },
+                            "object": {
+                              "termType": "Variable",
+                              "value": "res1"
+                            },
+                            "graph": {
+                              "termType": "DefaultGraph",
+                              "value": ""
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "bgp",
+                    "patterns": [
+                      {
+                        "type": "pattern",
+                        "termType": "Quad",
+                        "subject": {
+                          "termType": "NamedNode",
+                          "value": "http://example.com/xxx/abc#ghi"
+                        },
+                        "predicate": {
+                          "termType": "NamedNode",
+                          "value": "http://example.org/ns#p"
+                        },
+                        "object": {
+                          "termType": "Variable",
+                          "value": "res2"
+                        },
+                        "graph": {
+                          "termType": "DefaultGraph",
+                          "value": ""
+                        }
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "bgp",
+                "patterns": [
+                  {
+                    "type": "pattern",
+                    "termType": "Quad",
+                    "subject": {
+                      "termType": "NamedNode",
+                      "value": "http://example.com/xxx/jkl"
+                    },
+                    "predicate": {
+                      "termType": "NamedNode",
+                      "value": "http://example.org/ns#p"
+                    },
+                    "object": {
+                      "termType": "Variable",
+                      "value": "res3"
+                    },
+                    "graph": {
+                      "termType": "DefaultGraph",
+                      "value": ""
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "bgp",
+            "patterns": [
+              {
+                "type": "pattern",
+                "termType": "Quad",
+                "subject": {
+                  "termType": "NamedNode",
+                  "value": "http://example.com/mno"
+                },
+                "predicate": {
+                  "termType": "NamedNode",
+                  "value": "http://example.org/ns#p"
+                },
+                "object": {
+                  "termType": "Variable",
+                  "value": "res4"
+                },
+                "graph": {
+                  "termType": "DefaultGraph",
+                  "value": ""
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "bgp",
+        "patterns": [
+          {
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": {
+              "termType": "NamedNode",
+              "value": "http://example.com/pqr"
+            },
+            "predicate": {
+              "termType": "NamedNode",
+              "value": "http://example.org/ns#p"
+            },
+            "object": {
+              "termType": "Variable",
+              "value": "res5"
+            },
+            "graph": {
+              "termType": "DefaultGraph",
+              "value": ""
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "res0"
+    },
+    {
+      "termType": "Variable",
+      "value": "res1"
+    },
+    {
+      "termType": "Variable",
+      "value": "res2"
+    },
+    {
+      "termType": "Variable",
+      "value": "res3"
+    },
+    {
+      "termType": "Variable",
+      "value": "res4"
+    },
+    {
+      "termType": "Variable",
+      "value": "res5"
+    }
+  ]
+}

@@ -328,29 +328,22 @@ export const visitOperationSub = transformer.visitNodeSpecific.bind(transformer)
 export const visitOperationSubAsync = transformer.visitNodeSpecificAsync.bind(transformer);
 
 /**
- * Matches IRIs that start with a scheme, i.e. absolute IRIs, see
- * [RFC 3986, section 3.1](https://www.rfc-editor.org/rfc/rfc3986#section-3.1).
+ * Absolute IRIs start with a scheme - [RFC 3986, section 3.1](https://www.rfc-editor.org/rfc/rfc3986#section-3.1)
  */
-const schemeRegex = /^[a-z][\d+.a-z-]*:/iu;
+const absoluteIriRegex = /^[a-z][\d+.a-z-]*:/iu;
 
 /**
- * Splits an IRI into its components following
- * [RFC 3986, appendix B](https://www.rfc-editor.org/rfc/rfc3986#appendix-B).
- * Components that are absent are undefined, components that are present but empty are the empty string.
- * This regex matches every string: all groups are optional, each group stops at the character that starts the next,
- * and the 's' flag lets the fragment's '.' match line terminators too.
+ * [RFC 3986, appendix B](https://www.rfc-editor.org/rfc/rfc3986#appendix-B). Matches every string.
  */
 const iriComponentsRegex = /^(?:([^:/?#]+):)?(?:\/\/([^/?#]*))?([^?#]*)(?:\?([^#]*))?(?:#(.*))?$/su;
 
 /**
- * Same as {@link iriComponentsRegex}, but for relative references, which have no scheme.
- * Without a scheme group, an invalid reference like '1a:b' is kept as a path instead of being split at the ':'.
+ * {@link iriComponentsRegex} without the scheme, so an invalid relative IRI like '1a:b' is kept whole as a path.
  */
-const relativeComponentsRegex = /^(?:\/\/([^/?#]*))?([^?#]*)(?:\?([^#]*))?(?:#(.*))?$/su;
+const relativeIriComponentsRegex = /^(?:\/\/([^/?#]*))?([^?#]*)(?:\?([^#]*))?(?:#(.*))?$/su;
 
 /**
- * Removes the '.' and '..' segments from a path in accordance with
- * [RFC 3986, section 5.2.4](https://www.rfc-editor.org/rfc/rfc3986#section-5.2.4).
+ * [RFC 3986, section 5.2.4](https://www.rfc-editor.org/rfc/rfc3986#section-5.2.4)
  */
 function removeDotSegments(path: string): string {
   let input = path;
@@ -386,63 +379,59 @@ function removeDotSegments(path: string): string {
 }
 
 /**
- * Resolves an IRI against a base IRI in accordance with the [Syntax for IRIs](https://www.w3.org/TR/sparql12-query/#QSynIRI):
- * relative IRIs are resolved using the basic algorithm of
- * [RFC 3986, section 5.2](https://www.rfc-editor.org/rfc/rfc3986#section-5.2),
- * without performing syntax-based or scheme-based normalization.
+ * Resolves relative IRIs against the base IRI as described in the [Syntax for IRIs](https://www.w3.org/TR/sparql12-query/#QSynIRI),
+ * using [RFC 3986, section 5.2](https://www.rfc-editor.org/rfc/rfc3986#section-5.2) without normalization.
  * Absolute IRIs are returned unmodified.
  */
 export function resolveIRI(iri: string, base: string | undefined): string {
-  // Return absolute IRIs unmodified
-  if (schemeRegex.test(iri)) {
+  if (absoluteIriRegex.test(iri)) {
     return iri;
   }
   if (!base) {
     throw new Error(`Cannot resolve relative IRI ${iri} because no base IRI was set.`);
   }
-  // Both regex matches always succeed, see iriComponentsRegex
-  const [ , rAuthority, rPath, rQuery, rFragment ] = relativeComponentsRegex.exec(iri)!;
-  const [ , bScheme, bAuthority, bPath, bQuery ] = iriComponentsRegex.exec(base)!;
+  const [ , relativeAuthority, relativePath, relativeQuery, relativeFragment ] =
+    relativeIriComponentsRegex.exec(iri)!;
+  const [ , baseScheme, baseAuthority, basePath, baseQuery ] = iriComponentsRegex.exec(base)!;
 
   // Transform references - https://www.rfc-editor.org/rfc/rfc3986#section-5.2.2
-  let authority: string | undefined;
-  let path: string;
-  let query: string | undefined;
-  if (rAuthority === undefined) {
-    if (rPath === '') {
-      path = bPath;
-      query = rQuery ?? bQuery;
+  let resolvedAuthority: string | undefined;
+  let resolvedPath: string;
+  let resolvedQuery: string | undefined;
+  if (relativeAuthority === undefined) {
+    if (relativePath === '') {
+      resolvedPath = basePath;
+      resolvedQuery = relativeQuery ?? baseQuery;
     } else {
-      if (rPath.startsWith('/')) {
-        path = removeDotSegments(rPath);
-      } else if (bAuthority !== undefined && bPath === '') {
+      if (relativePath.startsWith('/')) {
+        resolvedPath = removeDotSegments(relativePath);
+      } else if (baseAuthority !== undefined && basePath === '') {
         // Merge paths - https://www.rfc-editor.org/rfc/rfc3986#section-5.2.3
-        path = removeDotSegments(`/${rPath}`);
+        resolvedPath = removeDotSegments(`/${relativePath}`);
       } else {
-        path = removeDotSegments(bPath.slice(0, bPath.lastIndexOf('/') + 1) + rPath);
+        resolvedPath = removeDotSegments(basePath.slice(0, basePath.lastIndexOf('/') + 1) + relativePath);
       }
-      query = rQuery;
+      resolvedQuery = relativeQuery;
     }
-    authority = bAuthority;
+    resolvedAuthority = baseAuthority;
   } else {
-    authority = rAuthority;
-    path = removeDotSegments(rPath);
-    query = rQuery;
+    resolvedAuthority = relativeAuthority;
+    resolvedPath = removeDotSegments(relativePath);
+    resolvedQuery = relativeQuery;
   }
 
   // Component recomposition - https://www.rfc-editor.org/rfc/rfc3986#section-5.3
-  // Like the RFC, this does not guard against a path starting with '//' when there is no authority
-  // (e.g. '..//g' against 'urn:x/y' results in 'urn://g').
-  let result = bScheme === undefined ? '' : `${bScheme}:`;
-  if (authority !== undefined) {
-    result += `//${authority}`;
+  // Like the RFC, a path starting with '//' is not guarded against: '..//g' against 'urn:x/y' gives 'urn://g'.
+  let result = baseScheme === undefined ? '' : `${baseScheme}:`;
+  if (resolvedAuthority !== undefined) {
+    result += `//${resolvedAuthority}`;
   }
-  result += path;
-  if (query !== undefined) {
-    result += `?${query}`;
+  result += resolvedPath;
+  if (resolvedQuery !== undefined) {
+    result += `?${resolvedQuery}`;
   }
-  if (rFragment !== undefined) {
-    result += `#${rFragment}`;
+  if (relativeFragment !== undefined) {
+    result += `#${relativeFragment}`;
   }
   return result;
 }

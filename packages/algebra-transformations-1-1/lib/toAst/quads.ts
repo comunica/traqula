@@ -10,7 +10,7 @@ const DEFAULT_GRAPH_NAME = '';
 /**
  * Wraps an operation in a GRAPH. An expression cannot be wrapped, so the input of every EXISTS within it is wrapped.
  */
-function wrapInGraph(AF: AlgebraFactory, op: Algebra.Operation, graph: RDF.NamedNode | RDF.DefaultGraph): unknown {
+function wrapInGraph(AF: AlgebraFactory, op: Algebra.Operation, graph: RDF.NamedNode | RDF.DefaultGraph): object {
   if (op.type !== types.EXPRESSION) {
     return AF.createGraph(op, <RDF.NamedNode> graph);
   }

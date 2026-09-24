@@ -67,6 +67,10 @@ is not always generated back exactly as written:
 - **`CONSTRUCT WHERE { ... }`** gets its template filled in by SPARQL.js and is generated back with an explicit
   template. A CONSTRUCT without `template` is converted with an empty template (`CONSTRUCT { } WHERE`), so
   hand-built input for the shorthand should set `template` to the WHERE triples.
+- **A leading `+` on numbers** is dropped, so `+5` is generated back as `5`.
+- **`^^xsd:string`** is generated back as a plain string: `"b"^^xsd:string` becomes `"b"`. In RDF 1.1 both are
+  the same literal, so SPARQL.js gives them the same AST.
+- **A trailing `;`** after the last update operation is dropped.
 
 Not supported: SPARQL-star quoted triples, which are not part of SPARQL 1.1. A term without `termType` is
 accepted, but a blank node label without the `e_`/`g_` prefix is then read as a variable.

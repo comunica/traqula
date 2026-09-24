@@ -1,3 +1,4 @@
+import { Generator } from '@traqula/generator-sparql-1-1';
 import { AstFactory } from '@traqula/rules-sparql-1-1';
 import type {
   PatternGroup,
@@ -859,13 +860,25 @@ describe('fromSparqlJs', () => {
       expect(F.isTermNamedPrefixed(<object> predicate)).toBe(false);
     });
 
-    it('does not collapse an IRI that exactly equals a prefix expansion (would leave an empty local name)', ({
-      expect,
-    }) => {
+    it('collapses an IRI that exactly equals a prefix expansion to an empty local name', ({ expect }) => {
       const q = parseSelect('SELECT * WHERE { ?s <http://example.com/> ?o }');
       const collapsed = collapseIrisToPrefixed(q, { ex: 'http://example.com/' });
       const predicate = firstTriplePredicate(collapsed.where.patterns[0]);
-      expect(F.isTermNamedPrefixed(<object> predicate)).toBe(false);
+      expect(predicate).toEqual(expect.objectContaining({ prefix: 'ex', value: '' }));
+      expect(new Generator().generate(collapsed)).toContain('?s ex: ?o');
+    });
+
+    it('only collapses where the rest is a valid local name, falling back to a shorter prefix', ({ expect }) => {
+      const q = parseSelect(`SELECT * WHERE {
+        <http://example.com/a/b> <http://example.com/x?y=1>
+          <http://example.com/-z>, <http://example.com/d-e>, <http://example.com/c:d.e>
+      }`);
+      const collapsed = collapseIrisToPrefixed(q, { ex: 'http://example.com/', exD: 'http://example.com/d' });
+      expect(new Generator().generate(collapsed)).toBe(`SELECT * WHERE {
+  <http://example.com/a/b> <http://example.com/x?y=1> <http://example.com/-z> .
+  <http://example.com/a/b> <http://example.com/x?y=1> ex:d-e .
+  <http://example.com/a/b> <http://example.com/x?y=1> ex:c:d.e .
+}`);
     });
 
     it('leaves a PREFIX/BASE declaration\'s own IRI untouched', ({ expect }) => {

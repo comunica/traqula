@@ -8,13 +8,23 @@ export function isPromise(value: unknown): value is Promise<unknown> {
 }
 
 /**
+ * A key of the given object, or any other string.
+ * Unlike `keyof Obj | string`, the IDE keeps suggesting the keys of the object.
+ * These suggestions do not show within a `new Set([ ... ])` returned by an arrow function's expression body.
+ */
+export type ObjectKeyHint<Obj> = (keyof Obj & string) | (string & NonNullable<unknown>);
+
+/**
  * Whether a key should not be visited according to the given ignoreKeys and visitOnlyKeys.
  */
 function isKeyIgnored(key: string, ignoreKeys?: Set<string>, visitOnlyKeys?: Set<string>): boolean {
   return (ignoreKeys?.has(key) ?? false) || !(visitOnlyKeys?.has(key) ?? true);
 }
 
-export interface VisitContext {
+/**
+ * @typeParam Obj - The object this context applies to, its keys are suggested by the IDE.
+ */
+export interface VisitContext<Obj = object> {
   /**
    * Whether you should stop iterating after this object. Default false.
    */
@@ -26,20 +36,23 @@ export interface VisitContext {
   /**
    * Object keys that can be ignored, meaning they do not get visited.
    */
-  ignoreKeys?: Set<string>;
+  ignoreKeys?: Set<ObjectKeyHint<Obj>>;
   /**
    * Object keys that can be visited, all other keys are ignored. By default, all keys can be visited.
    * A key included here and in {@link ignoreKeys} is ignored.
    */
-  visitOnlyKeys?: Set<string>;
+  visitOnlyKeys?: Set<ObjectKeyHint<Obj>>;
 }
 
-export interface TransformContext extends VisitContext {
+/**
+ * @typeParam Obj - The object this context applies to, its keys are suggested by the IDE.
+ */
+export interface TransformContext<Obj = object> extends VisitContext<Obj> {
   /**
    * Object keys that will be shallowly copied but not traversed.
    * When the same key is ignored through {@link ignoreKeys} or {@link visitOnlyKeys}, the copy will still be made.
    */
-  shallowKeys?: Set<string>;
+  shallowKeys?: Set<ObjectKeyHint<Obj>>;
   /**
    * Whether the visited object should be shallowly copied or not. Defaults to true.
    */

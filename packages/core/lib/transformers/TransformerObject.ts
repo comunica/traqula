@@ -39,6 +39,7 @@ export interface VisitContext<Obj = object> {
   /**
    * Object keys that can be visited, all other keys are ignored. By default, all keys can be visited.
    * A key included here and in {@link ignoreKeys} is ignored.
+   * An empty set in the default context makes a transformer only visit keys that a node explicitly allows.
    */
   visitOnlyKeys?: Set<ObjectKeyHint<Obj>>;
 }

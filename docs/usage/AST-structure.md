@@ -113,6 +113,33 @@ SELECT * {
 `
 ```
 
+### Allowlist-Based Traversal
+
+By default, a transformer visits every key of a node, unless the node's context excludes it through `ignoreKeys`.
+Setting `visitOnlyKeys` to an empty set in the default context flips this around:
+the transformer only visits the keys a node explicitly allows.
+
+```typescript
+import { AstTransformer } from "@traqula/rules-sparql-1-1";
+import { Parser } from '@traqula/parser-sparql-1-1'
+
+const ast = new Parser().parse('SELECT ?s (?p AS ?q) WHERE { ?s ?p ?o }');
+const transformer = new AstTransformer({ visitOnlyKeys: new Set() });
+const projected: string[] = [];
+transformer.visitNodeSpecific(ast, {}, {
+  'query': { 'select': { preVisitor: () => ({ visitOnlyKeys: new Set([ 'variables' ]) }) }},
+  'term': { 'variable': { visitor: (variable) => { projected.push(variable.value); } }},
+});
+// Only ?s: the bind '(?p AS ?q)' is visited, but it allows none of its keys.
+const truety = projected.join() === 's';
+```
+
+Keep in mind that:
+- the `visitOnlyKeys` of a node replaces the default, it is not merged with it;
+- all elements of an allowed array are visited, arrays are not filtered;
+- `ignoreKeys` still applies, and `shallowKeys` are still shallowly copied;
+- the object you start from is always visited.
+
 ## See Also
 
 - [Design decisions — Round Tripping](../design.md#round-tripping) — rationale behind the source location approach

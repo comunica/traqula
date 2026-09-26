@@ -729,6 +729,45 @@ describe('transformerObject preOrder', () => {
     expect(result.ignored).toBe(ignored);
   });
 
+  it('shallowly copies shallowKeys that are ignored', ({ expect }) => {
+    const ignored = { name: 'ignored', child: { name: 'ignoredChild' }};
+    const notVisited = { name: 'notVisited', child: { name: 'notVisitedChild' }};
+    const mapped: string[] = [];
+
+    const result = <any> transformer.transformObjectPreOrder(
+      { name: 'root', ignored, notVisited, kept: { name: 'kept' }},
+      (copy) => {
+        mapped.push((<any>copy).name);
+        return {
+          newValue: copy,
+          ignoreKeys: new Set([ 'ignored' ]),
+          visitOnlyKeys: new Set([ 'ignored', 'kept' ]),
+          shallowKeys: new Set([ 'ignored', 'notVisited' ]),
+        };
+      },
+    );
+
+    expect(mapped).toEqual([ 'root', 'kept' ]);
+    expect(result.ignored).not.toBe(ignored);
+    expect(result.ignored.child).toBe(ignored.child);
+    expect(result.notVisited).not.toBe(notVisited);
+    expect(result.notVisited.child).toBe(notVisited.child);
+  });
+
+  it('skips non-own inherited properties', ({ expect }) => {
+    const mapped: string[] = [];
+    const proto = { inherited: { name: 'inherited' }};
+    const obj = Object.create(proto);
+    obj.name = 'root';
+    obj.child = { name: 'child' };
+    // TransformObjectPreOrder iterates with for...in; non-own properties should be skipped
+    transformer.transformObjectPreOrder(obj, (copy) => {
+      mapped.push((<any>copy).name);
+      return { newValue: copy };
+    });
+    expect(mapped).toEqual([ 'root', 'child' ]);
+  });
+
   it('does not copy when the default context says not to', ({ expect }) => {
     const noCopy = new TransformerObject({ copy: false });
     const tree = { name: 'root', child: { name: 'child' }};

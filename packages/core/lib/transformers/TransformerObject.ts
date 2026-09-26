@@ -460,17 +460,17 @@ export class TransformerObject {
         return;
       }
       // In any other case, push the children, ignoring ignoreKeys, keys not in visitOnlyKeys, and shallowKeys.
-      // Creating shallow copies of shallowKeys.
+      // Creating shallow copies of shallowKeys, even when they are ignored.
       const newAsRecord = <Record<string, unknown>> newValue;
       for (const key in newAsRecord) {
-        if (!Object.hasOwn(newAsRecord, key) || isKeyIgnored(key, ignoreKeys, visitOnlyKeys)) {
+        if (!Object.hasOwn(newAsRecord, key)) {
           continue;
         }
         const val = newAsRecord[key];
         if (val !== null && typeof val === 'object') {
           if (shallowKeys?.has(key)) {
             newAsRecord[key] = this.cloneObj(val);
-          } else {
+          } else if (!isKeyIgnored(key, ignoreKeys, visitOnlyKeys)) {
             stack.push(val);
             stackParent.push(newAsRecord);
             stackParentKey.push(key);

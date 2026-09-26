@@ -10,7 +10,6 @@ export function isPromise(value: unknown): value is Promise<unknown> {
 /**
  * A key of the given object, or any other string.
  * Unlike `keyof Obj | string`, the IDE keeps suggesting the keys of the object.
- * These suggestions do not show within a `new Set([ ... ])` returned by an arrow function's expression body.
  */
 export type ObjectKeyHint<Obj> = (keyof Obj & string) | (string & NonNullable<unknown>);
 

@@ -60,7 +60,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
     startObject: object,
     nodeCallBacks: {[T in Nodes['type']]?: {
       transform?: (copy: SafeWrap<Safe, Extract<Nodes, Typed<T>>>, orig: Extract<Nodes, Typed<T>>) => unknown;
-      preVisitor?: (orig: Extract<Nodes, Typed<T>>) => TransformContext;
+      preVisitor?: (orig: Extract<Nodes, Typed<T>>) => TransformContext<Extract<Nodes, Typed<T>>>;
     }},
     nodeSpecificCallBacks: {[Type in Nodes['type']]?: {
       [SubType in Extract<Nodes, SubTyped<Type>>['subType']]?: {
@@ -68,7 +68,9 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
           copy: SafeWrap<Safe, Extract<Nodes, SubTyped<Type, SubType>>>,
           orig: Extract<Nodes, SubTyped<Type, SubType>>,
         ) => unknown;
-        preVisitor?: (op: Extract<Nodes, SubTyped<Type, SubType>>) => TransformContext;
+        preVisitor?: (
+          op: Extract<Nodes, SubTyped<Type, SubType>>,
+        ) => TransformContext<Extract<Nodes, SubTyped<Type, SubType>>>;
       }}},
   ): Safe extends 'unsafe' ? OutType : unknown {
     const transformWrapper = (copy: object, orig: object): unknown => {
@@ -113,7 +115,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
         copy: SafeWrap<Safe, Extract<Nodes, Typed<T>>>,
         orig: Extract<Nodes, Typed<T>>,
       ) => Awaitable<unknown>;
-      preVisitor?: (orig: Extract<Nodes, Typed<T>>) => Awaitable<TransformContext>;
+      preVisitor?: (orig: Extract<Nodes, Typed<T>>) => Awaitable<TransformContext<Extract<Nodes, Typed<T>>>>;
     }},
     nodeSpecificCallBacks: {[Type in Nodes['type']]?: {
       [SubType in Extract<Nodes, SubTyped<Type>>['subType']]?: {
@@ -121,7 +123,9 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
           copy: SafeWrap<Safe, Extract<Nodes, SubTyped<Type, SubType>>>,
           orig: Extract<Nodes, SubTyped<Type, SubType>>,
         ) => Awaitable<unknown>;
-        preVisitor?: (op: Extract<Nodes, SubTyped<Type, SubType>>) => Awaitable<TransformContext>;
+        preVisitor?: (
+          op: Extract<Nodes, SubTyped<Type, SubType>>,
+        ) => Awaitable<TransformContext<Extract<Nodes, SubTyped<Type, SubType>>>>;
       }}},
   ): Promise<Safe extends 'unsafe' ? OutType : unknown> {
     const transformWrapper = (copy: object, orig: object): Awaitable<unknown> => {
@@ -265,12 +269,14 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
     startObject: object,
     nodeCallBacks: {[T in Nodes['type']]?: {
       visitor?: (op: Extract<Nodes, Typed<T>>) => void;
-      preVisitor?: (op: Extract<Nodes, Typed<T>>) => VisitContext;
+      preVisitor?: (op: Extract<Nodes, Typed<T>>) => VisitContext<Extract<Nodes, Typed<T>>>;
     }},
     nodeSpecificCallBacks: {[Type in Nodes['type']]?:
       {[Subtype in Extract<Nodes, SubTyped<Type>>['subType']]?: {
         visitor?: (op: Extract<Nodes, SubTyped<Type, Subtype>>) => void;
-        preVisitor?: (op: Extract<Nodes, SubTyped<Type, Subtype>>) => VisitContext;
+        preVisitor?: (
+          op: Extract<Nodes, SubTyped<Type, Subtype>>,
+        ) => VisitContext<Extract<Nodes, SubTyped<Type, Subtype>>>;
       }}},
   ): void {
     const visitWrapper = (curObject: object): void => {
@@ -314,12 +320,14 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
     startObject: object,
     nodeCallBacks: {[T in Nodes['type']]?: {
       visitor?: (op: Extract<Nodes, Typed<T>>) => Awaitable<void>;
-      preVisitor?: (op: Extract<Nodes, Typed<T>>) => Awaitable<VisitContext>;
+      preVisitor?: (op: Extract<Nodes, Typed<T>>) => Awaitable<VisitContext<Extract<Nodes, Typed<T>>>>;
     }},
     nodeSpecificCallBacks: {[Type in Nodes['type']]?:
       {[Subtype in Extract<Nodes, SubTyped<Type>>['subType']]?: {
         visitor?: (op: Extract<Nodes, SubTyped<Type, Subtype>>) => Awaitable<void>;
-        preVisitor?: (op: Extract<Nodes, SubTyped<Type, Subtype>>) => Awaitable<VisitContext>;
+        preVisitor?: (
+          op: Extract<Nodes, SubTyped<Type, Subtype>>,
+        ) => Awaitable<VisitContext<Extract<Nodes, SubTyped<Type, Subtype>>>>;
       }}},
   ): Promise<void> {
     const visitWrapper = (curObject: object): Awaitable<void> => {

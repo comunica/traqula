@@ -134,6 +134,28 @@ describe('transformer', () => {
     expect(ignoreKeysAreIgnored.in.in).toBe(in2);
     expect(ignoreKeysAreIgnored.side).not.toBe(side1);
   });
+
+  it('knows visitOnlyKeys', ({ expect }) => {
+    const in2 = { type: 'fruit', val: 'depth3' };
+    const in1 = { type: 'vegetable', in: in2, val: 'depth2' };
+    const side1 = { type: 'fruit', val: 'side1' };
+    const fruit: Fruit = { type: 'fruit', in: in1, val: 'depth1', side: side1 };
+
+    const onlyVisitOnlyKeysAreVisited = <any> transformer.transformNode(fruit, {
+      fruit: { preVisitor: () => ({ visitOnlyKeys: new Set([ 'in' ]) }) },
+    });
+    expect(onlyVisitOnlyKeysAreVisited).not.toBe(fruit);
+    expect(onlyVisitOnlyKeysAreVisited.in).not.toBe(in1);
+    expect(onlyVisitOnlyKeysAreVisited.in.in).not.toBe(in2);
+    expect(onlyVisitOnlyKeysAreVisited.side).toBe(side1);
+
+    const ignoreKeysOverruleVisitOnlyKeys = <any> transformer.transformNode(fruit, {
+      fruit: { preVisitor: () => ({ visitOnlyKeys: new Set([ 'in' ]), ignoreKeys: new Set([ 'in' ]) }) },
+    });
+    expect(ignoreKeysOverruleVisitOnlyKeys).not.toBe(fruit);
+    expect(ignoreKeysOverruleVisitOnlyKeys.in).toBe(in1);
+    expect(ignoreKeysOverruleVisitOnlyKeys.side).toBe(side1);
+  });
 });
 
 describe('transformerObject', () => {
@@ -200,6 +222,22 @@ describe('transformerObject', () => {
       },
       () => ({ ignoreKeys: new Set([ 'ignored' ]) }),
     );
+
+    expect(visited).toEqual([ 'kept-child', 'root' ]);
+  });
+
+  it('visitObject respects visitOnlyKeys', ({ expect }) => {
+    const transformer = new TransformerObject({ visitOnlyKeys: new Set([ 'kept' ]) });
+    const visited: string[] = [];
+    const tree = {
+      name: 'root',
+      ignored: { name: 'ignored-child' },
+      kept: { name: 'kept-child' },
+    };
+
+    transformer.visitObject(tree, (obj) => {
+      visited.push((<any>obj).name);
+    });
 
     expect(visited).toEqual([ 'kept-child', 'root' ]);
   });
@@ -673,6 +711,61 @@ describe('transformerObject preOrder', () => {
     expect(result.ignored).toBe(ignored);
     expect(result.shallow).not.toBe(shallow);
     expect(result.shallow.child).toBe(shallow.child);
+  });
+
+  it('knows visitOnlyKeys', ({ expect }) => {
+    const ignored = { name: 'ignored' };
+    const mapped: string[] = [];
+
+    const result = <any> transformer.transformObjectPreOrder(
+      { name: 'root', ignored, kept: { name: 'kept' }},
+      (copy) => {
+        mapped.push((<any>copy).name);
+        return { newValue: copy, visitOnlyKeys: new Set([ 'kept' ]) };
+      },
+    );
+
+    expect(mapped).toEqual([ 'root', 'kept' ]);
+    expect(result.ignored).toBe(ignored);
+  });
+
+  it('shallowly copies shallowKeys that are ignored', ({ expect }) => {
+    const ignored = { name: 'ignored', child: { name: 'ignoredChild' }};
+    const notVisited = { name: 'notVisited', child: { name: 'notVisitedChild' }};
+    const mapped: string[] = [];
+
+    const result = <any> transformer.transformObjectPreOrder(
+      { name: 'root', ignored, notVisited, kept: { name: 'kept' }},
+      (copy) => {
+        mapped.push((<any>copy).name);
+        return {
+          newValue: copy,
+          ignoreKeys: new Set([ 'ignored' ]),
+          visitOnlyKeys: new Set([ 'ignored', 'kept' ]),
+          shallowKeys: new Set([ 'ignored', 'notVisited' ]),
+        };
+      },
+    );
+
+    expect(mapped).toEqual([ 'root', 'kept' ]);
+    expect(result.ignored).not.toBe(ignored);
+    expect(result.ignored.child).toBe(ignored.child);
+    expect(result.notVisited).not.toBe(notVisited);
+    expect(result.notVisited.child).toBe(notVisited.child);
+  });
+
+  it('skips non-own inherited properties', ({ expect }) => {
+    const mapped: string[] = [];
+    const proto = { inherited: { name: 'inherited' }};
+    const obj = Object.create(proto);
+    obj.name = 'root';
+    obj.child = { name: 'child' };
+    // TransformObjectPreOrder iterates with for...in; non-own properties should be skipped
+    transformer.transformObjectPreOrder(obj, (copy) => {
+      mapped.push((<any>copy).name);
+      return { newValue: copy };
+    });
+    expect(mapped).toEqual([ 'root', 'child' ]);
   });
 
   it('does not copy when the default context says not to', ({ expect }) => {

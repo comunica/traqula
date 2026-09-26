@@ -20,10 +20,14 @@ export interface SparqlJsCompatContext {
   skipValidation: boolean;
 }
 
-export type SparqlJsCompatOptions = Partial<Pick<SparqlJsCompatContext, 'skipValidation'>>;
-
-export function createSparqlJsCompatContext(options: SparqlJsCompatOptions = {}): SparqlJsCompatContext {
-  return { astFactory: new AstFactory(), skipValidation: options.skipValidation ?? false };
+/**
+ * Fills in the defaults for any context option that is not set.
+ */
+export function createSparqlJsCompatContext(context: Partial<SparqlJsCompatContext> = {}): SparqlJsCompatContext {
+  return {
+    astFactory: context.astFactory ?? new AstFactory(),
+    skipValidation: context.skipValidation ?? false,
+  };
 }
 
 export type SparqlJsCompatIndir<Name extends string, Ret, Arg extends any[]> =

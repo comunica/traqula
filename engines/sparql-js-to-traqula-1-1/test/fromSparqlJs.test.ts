@@ -15,25 +15,18 @@ import { Parser as SparqlJsParser } from 'sparqljs';
 import type * as SparqlJs from 'sparqljs';
 import { describe, it } from 'vitest';
 import {
-  askQueryFromSparqlJs,
   collapseIrisToPrefixed,
-  constructQueryFromSparqlJs,
-  describeQueryFromSparqlJs,
-  expressionFromSparqlJs,
-  graphOrDefaultToGraphRef,
-  graphReferenceToGraphRef,
+  createSparqlJsCompatContext as context,
   pathFromSparqlJs,
   patternFromSparqlJs,
-  queryFromSparqlJs,
-  selectQueryFromSparqlJs,
+  sparqlJsToTraqula11Builder,
   sparqlQueryFromSparqlJs,
   termFromSparqlJs,
-  tripleFromSparqlJs,
-  updateFromSparqlJs,
-  updateOperationFromSparqlJs,
 } from '../lib/index.js';
 
 const F = new AstFactory();
+// Rules without an exported wrapper function are called on the built converter directly.
+const converter = sparqlJsToTraqula11Builder.build();
 const sparqlJsParser = new SparqlJsParser();
 const sparqlStarParser = new SparqlJsParser({ sparqlStar: true });
 
@@ -155,7 +148,7 @@ describe('fromSparqlJs', () => {
           predicate: <SparqlJs.VariableTerm> { value: 'p' },
           object: <SparqlJs.VariableTerm> { value: 'o' },
         };
-        expect(() => expressionFromSparqlJs(quad)).toThrow(/SPARQL-star/u);
+        expect(() => converter.expressionFromSparqlJs(context(), quad)).toThrow(/SPARQL-star/u);
       });
 
       it('falls back to Variable when even the value key is missing entirely', ({ expect }) => {
@@ -194,7 +187,7 @@ describe('fromSparqlJs', () => {
             }],
           }],
         };
-        const q = selectQueryFromSparqlJs(raw);
+        const q = converter.selectQueryFromSparqlJs(context(), raw);
         expect(F.isPatternBind(q.variables[0])).toBe(true);
       });
 
@@ -206,7 +199,7 @@ describe('fromSparqlJs', () => {
           variables: [ <SparqlJs.Wildcard> { value: '*' } ],
           where: [],
         };
-        const q = selectQueryFromSparqlJs(raw);
+        const q = converter.selectQueryFromSparqlJs(context(), raw);
         expect(F.isWildcard(q.variables[0])).toBe(true);
       });
     });
@@ -285,7 +278,7 @@ describe('fromSparqlJs', () => {
   describe('tripleFromSparqlJs', () => {
     it('is usable directly on a single raw sparqljs triple', ({ expect }) => {
       const bgp = firstRawBgp(parseRawSelect('SELECT * WHERE { ?s <http://example.com/p> ?o }').where!);
-      const triple = tripleFromSparqlJs(bgp.triples[0]);
+      const triple = converter.tripleFromSparqlJs(context(), bgp.triples[0]);
       expect(F.isTriple(triple)).toBe(true);
     });
   });
@@ -395,7 +388,7 @@ describe('fromSparqlJs', () => {
         function: 'http://example.com/customFunction',
         args: [],
       };
-      const op = expressionFromSparqlJs(bogus);
+      const op = converter.expressionFromSparqlJs(context(), bogus);
       if (!F.isExpressionFunctionCall(op)) {
         throw new Error('expected functionCall');
       }
@@ -439,12 +432,12 @@ describe('fromSparqlJs', () => {
     });
 
     it('rejects a bare Tuple as a standalone expression', ({ expect }) => {
-      expect(() => expressionFromSparqlJs(<SparqlJs.Tuple> [])).toThrow(TypeError);
+      expect(() => converter.expressionFromSparqlJs(context(), <SparqlJs.Tuple> [])).toThrow(TypeError);
     });
 
     it('rejects an unrecognized expression type', ({ expect }) => {
       const bogus = <SparqlJs.Expression> <unknown> { type: 'bogus' };
-      expect(() => expressionFromSparqlJs(bogus)).toThrow(/Cannot convert/u);
+      expect(() => converter.expressionFromSparqlJs(context(), bogus)).toThrow(/Cannot convert/u);
     });
   });
 
@@ -633,14 +626,14 @@ describe('fromSparqlJs', () => {
         template: undefined,
         where: [ bgp ],
       };
-      const q = constructQueryFromSparqlJs(raw);
+      const q = converter.constructQueryFromSparqlJs(context(), raw);
       expect(q.template.triples).toHaveLength(0);
       expect(q.where.patterns).toHaveLength(1);
     });
 
     it('falls back to an empty template when both template and where are absent', ({ expect }) => {
       const raw: SparqlJs.ConstructQuery = { type: 'query', queryType: 'CONSTRUCT', prefixes: {}, template: undefined };
-      const q = constructQueryFromSparqlJs(raw);
+      const q = converter.constructQueryFromSparqlJs(context(), raw);
       expect(q.template.triples).toHaveLength(0);
     });
 
@@ -651,9 +644,9 @@ describe('fromSparqlJs', () => {
       const rawConstruct: SparqlJs.ConstructQuery =
         { type: 'query', queryType: 'CONSTRUCT', prefixes: {}, template: []};
       const rawAsk: SparqlJs.AskQuery = { type: 'query', queryType: 'ASK', prefixes: {}};
-      expect(selectQueryFromSparqlJs(rawSelect).where.patterns).toHaveLength(0);
-      expect(constructQueryFromSparqlJs(rawConstruct).where.patterns).toHaveLength(0);
-      expect(askQueryFromSparqlJs(rawAsk).where.patterns).toHaveLength(0);
+      expect(converter.selectQueryFromSparqlJs(context(), rawSelect).where.patterns).toHaveLength(0);
+      expect(converter.constructQueryFromSparqlJs(context(), rawConstruct).where.patterns).toHaveLength(0);
+      expect(converter.askQueryFromSparqlJs(context(), rawAsk).where.patterns).toHaveLength(0);
     });
 
     it('converts a CONSTRUCT query with a post-query VALUES clause', ({ expect }) => {
@@ -667,7 +660,7 @@ describe('fromSparqlJs', () => {
       const ast = parseRaw(
         'PREFIX ex: <http://example.com/> ASK FROM ex:g { ?s ex:p ?x } VALUES ?x { 1 }',
       );
-      const q = <QueryAsk> queryFromSparqlJs(<SparqlJs.Query> ast);
+      const q = <QueryAsk> converter.queryFromSparqlJs(context(), <SparqlJs.Query> ast);
       expect(q.subType).toBe('ask');
       expect(q.datasets.clauses).toHaveLength(1);
       expect(q.values).toBeDefined();
@@ -675,7 +668,7 @@ describe('fromSparqlJs', () => {
 
     it('directly calling askQueryFromSparqlJs also works', ({ expect }) => {
       const raw = <SparqlJs.AskQuery> parseRaw('ASK { ?s ?p ?o }');
-      expect(askQueryFromSparqlJs(raw).subType).toBe('ask');
+      expect(converter.askQueryFromSparqlJs(context(), raw).subType).toBe('ask');
     });
 
     it('converts a DESCRIBE * query', ({ expect }) => {
@@ -688,7 +681,7 @@ describe('fromSparqlJs', () => {
       const raw = <SparqlJs.DescribeQuery> parseRaw(
         'PREFIX ex: <http://example.com/> DESCRIBE ?s ex:other WHERE { ?s ex:p ?x } VALUES ?x { 1 }',
       );
-      const q = describeQueryFromSparqlJs(raw);
+      const q = converter.describeQueryFromSparqlJs(context(), raw);
       expect(q.variables).toHaveLength(2);
       expect(q.where).toBeDefined();
       expect(q.values).toBeDefined();
@@ -696,7 +689,7 @@ describe('fromSparqlJs', () => {
 
     it('rejects an unrecognized query type', ({ expect }) => {
       const bogus = <SparqlJs.Query> <unknown> { type: 'query', queryType: 'BOGUS' };
-      expect(() => queryFromSparqlJs(bogus)).toThrow(/Cannot convert/u);
+      expect(() => converter.queryFromSparqlJs(context(), bogus)).toThrow(/Cannot convert/u);
     });
   });
 
@@ -783,33 +776,33 @@ describe('fromSparqlJs', () => {
       if (!('type' in raw) || raw.type !== 'add') {
         throw new Error('expected add');
       }
-      expect(F.isGraphRefDefault(graphOrDefaultToGraphRef(raw.source))).toBe(true);
-      expect(F.isGraphRefSpecific(graphOrDefaultToGraphRef(raw.destination))).toBe(true);
+      expect(F.isGraphRefDefault(converter.graphOrDefaultToGraphRef(context(), raw.source))).toBe(true);
+      expect(F.isGraphRefSpecific(converter.graphOrDefaultToGraphRef(context(), raw.destination))).toBe(true);
 
       const cleared = (<SparqlJs.Update> parseRaw('CLEAR ALL')).updates[0];
       if (!('type' in cleared) || cleared.type !== 'clear') {
         throw new Error('expected clear');
       }
-      expect(F.isGraphRefAll(graphReferenceToGraphRef(cleared.graph))).toBe(true);
+      expect(F.isGraphRefAll(converter.graphReferenceToGraphRef(context(), cleared.graph))).toBe(true);
     });
 
     it('rejects a hand-built GraphReference that sets none of default/named/all/name', ({ expect }) => {
-      expect(() => graphReferenceToGraphRef({ type: 'graph' })).toThrow(/must set one of/u);
+      expect(() => converter.graphReferenceToGraphRef(context(), { type: 'graph' })).toThrow(/must set one of/u);
     });
 
     it('rejects an unrecognized updateType', ({ expect }) => {
       const bogus = <SparqlJs.UpdateOperation> <unknown> { updateType: 'bogus' };
-      expect(() => updateOperationFromSparqlJs(bogus)).toThrow(/Cannot convert/u);
+      expect(() => converter.updateOperationFromSparqlJs(context(), bogus)).toThrow(/Cannot convert/u);
     });
 
     it('rejects an unrecognized management operation type', ({ expect }) => {
       const bogus = <SparqlJs.UpdateOperation> <unknown> { type: 'bogus' };
-      expect(() => updateOperationFromSparqlJs(bogus)).toThrow(/Cannot convert/u);
+      expect(() => converter.updateOperationFromSparqlJs(context(), bogus)).toThrow(/Cannot convert/u);
     });
 
     it('is usable directly via updateFromSparqlJs / sparqlQueryFromSparqlJs dispatch', ({ expect }) => {
       const raw = <SparqlJs.Update> parseRaw('PREFIX ex: <http://example.com/> INSERT DATA { ex:a ex:b ex:c }');
-      expect(updateFromSparqlJs(raw).type).toBe('update');
+      expect(converter.updateFromSparqlJs(context(), raw).type).toBe('update');
       expect(sparqlQueryFromSparqlJs(raw).type).toBe('update');
     });
 
@@ -824,7 +817,7 @@ describe('fromSparqlJs', () => {
     });
 
     it('treats a hand-built update with an empty `updates` array the same way', ({ expect }) => {
-      const u = updateFromSparqlJs({ type: 'update', prefixes: {}, updates: []});
+      const u = converter.updateFromSparqlJs(context(), { type: 'update', prefixes: {}, updates: []});
       expect(u.updates).toEqual([{ context: []}]);
     });
   });

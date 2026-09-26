@@ -42,14 +42,16 @@ const traqulaAst = sparqlQueryFromSparqlJs(sparqlJsAst);
 new Generator().generate(traqulaAst); // 'SELECT * WHERE {\n  ?s ?p ?o .\n}'
 ```
 
-Besides `sparqlQueryFromSparqlJs` (for a whole `SparqlQuery`/`Update`), every intermediate conversion step
-is exported too - `termFromSparqlJs`, `pathFromSparqlJs`, `tripleFromSparqlJs`, `patternFromSparqlJs`,
-`expressionFromSparqlJs`, one function per query form, and `updateOperationFromSparqlJs`/
-`updateFromSparqlJs` - so a single stored fragment (e.g. just a `Pattern` used as one reusable
-query-builder piece) can be converted without a whole query around it.
+Besides `sparqlQueryFromSparqlJs` (for a whole `SparqlQuery`/`Update`), `patternFromSparqlJs`,
+`pathFromSparqlJs` and `termFromSparqlJs` convert a single stored fragment, such as a BGP used as a reusable
+query-builder piece, without a whole query around it. `termFromSparqlJs` also works as a converter from an RDF/JS
+term to a Traqula term. Any other step can be called directly, see
+[Converting other fragments](#converting-other-fragments).
 
-Like Traqula's parser, the converter rejects a blank node label used in more than one basic graph pattern,
-which SPARQL.js does not check. Pass `{ skipValidation: true }` as the last argument to turn this off.
+Each function takes an optional context as its last argument. Like Traqula's parser, the converter rejects a
+blank node label used in more than one basic graph pattern, which SPARQL.js does not check. Set the context
+option `skipValidation: true` to turn this off. The context option `astFactory` sets the `AstFactory` used
+to build the Traqula AST.
 
 ## What SPARQL.js does not keep
 
@@ -60,6 +62,10 @@ is not always generated back exactly as written:
   AST to get prefixed names back.
 - **PREFIX and BASE** are kept as a single map per query or update, so every operation of an update gets the same
   declarations.
+- **Relative IRIs** are resolved against BASE by SPARQL.js and generated back as full IRIs. SPARQL.js does not
+  remove `.` and `..` segments and treats `//host` references as paths, so against the base
+  `http://example.com/a/b`, `<../c>` becomes `<http://example.com/a/../c>` instead of `<http://example.com/c>`,
+  as RFC 3986 and Traqula's algebra translation give. Relative IRIs without such segments are resolved correctly.
 - **`[ ... ]` and `( ... )`** are expanded into plain triples with generated blank nodes, and are generated
   back as those triples.
 - **Blank node labels** are prefixed by SPARQL.js with `e_` or `g_`; the converter removes that prefix. A label
@@ -89,12 +95,31 @@ import { sparqlJsToTraqula11Builder } from '@traqula/sparql-js-to-traqula-1-1';
 const customBuilder = IndirBuilder.create(sparqlJsToTraqula11Builder).patchRule(myCustomTermRule);
 ```
 
-## A note on tests
+### Converting other fragments
+
+Every rule of the builder can be called on the built converter, with a context as its first argument. This is
+how you convert a fragment that has no exported function, such as an expression:
+
+```typescript
+import { createSparqlJsCompatContext, sparqlJsToTraqula11Builder } from '@traqula/sparql-js-to-traqula-1-1';
+
+const converter = sparqlJsToTraqula11Builder.build();
+const expression = converter.expressionFromSparqlJs(createSparqlJsCompatContext(), sparqlJsExpression);
+```
+
+The rule names match the exports of `@traqula/sparqljs-traqula-transformations`, e.g.
+`tripleFromSparqlJs`, `selectQueryFromSparqlJs` or `updateOperationFromSparqlJs`.
+
+## Tests
 
 `test/statics.test.ts` parses the shared SPARQL 1.1 corpus with SPARQL.js, converts it, generates it with
-Traqula and compares the result against a snapshot in `statics/sparql-1-1/`. `test/fromSparqlJs.test.ts`
-holds the unit tests.
+Traqula and compares the result against a snapshot in `statics/sparql-1-1/`. `test/generatedOutput.test.ts`
+checks the generated query for hand-written inputs, and `test/fromSparqlJs.test.ts` holds the unit tests.
 
 `spec/converter.ts` runs the same pipeline against the W3C SPARQL test suite (`yarn spec:all`), like
 `@traqula/parser-sparql-1-1`'s `spec/parser.ts`. Query and update tests only check that parsing, conversion and
 generation succeed.
+
+Two spec tests are skipped: `syntax-esc-04` and `syntax-esc-05`. They use a `\u` escape inside an IRI
+written in angle brackets, which the SPARQL 1.1 grammar allows but the SPARQL.js parser rejects, so there is
+no SPARQL.js AST to convert.

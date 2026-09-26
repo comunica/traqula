@@ -1,4 +1,4 @@
-# SPARQL.js → Traqula transformations
+# SPARQL.js to Traqula transformations
 
 [![npm version](https://badge.fury.io/js/@traqula%2Fsparqljs-traqula-transformations.svg)](https://www.npmjs.com/package/@traqula/sparqljs-traqula-transformations)
 

@@ -2,13 +2,13 @@ PREFIX example: <http://example/id/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 SELECT ?s ?p ?o WHERE {
-  ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> _:54 .
-  _:54 (<http://example/id/prop>*) ?o .
-  ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> _:55 .
+  ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> _:0 .
+  _:0 (<http://example/id/prop>*) ?o .
+  ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> _:1 .
   ?s <http://example/id/p2> ?_ .
-  _:55 (<http://example/id/prop>*) ?o .
+  _:1 (<http://example/id/prop>*) ?o .
   ?s <http://example/id/p1> ?_ .
-  ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> _:56 .
-  _:56 (<http://example/id/prop>*) ?o .
+  ?s <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> _:2 .
+  _:2 (<http://example/id/prop>*) ?o .
   ?s <http://example/id/p2> ?o .
 }

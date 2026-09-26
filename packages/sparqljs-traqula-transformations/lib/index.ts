@@ -6,7 +6,6 @@ export * from './collapseIrisToPrefixed.js';
 export type {
   SparqlJsCompatContext,
   SparqlJsCompatIndir,
-  SparqlJsCompatOptions,
   SparqlJsTermToTraqula,
 } from './core.js';
 export { createSparqlJsCompatContext } from './core.js';

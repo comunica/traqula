@@ -360,5 +360,5 @@ new Generator().generate(traqulaAst);
 ```
 
 Single fragments, such as one stored `Pattern`, can be converted too. See the
-[README of `@traqula/sparql-js-to-traqula-1-1`](../engines/sparql-js-to-traqula-1-1/README.md) for all functions,
+[README of `@traqula/sparql-js-to-traqula-1-1`](../engines/sparql-js-to-traqula-1-1/README.md) for how,
 what the SPARQL.js parser does not keep, and how to get prefixed names back.

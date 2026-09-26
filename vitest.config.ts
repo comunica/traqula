@@ -62,6 +62,8 @@ export default defineConfig({
     ],
     typecheck: {
       enabled: true,
+      // The root tsconfig.json only references the packages, so tsc would check no files through it.
+      tsconfig: './tsconfig.typecheck.json',
       include: [
         '**/test/**/*.types.test.ts',
       ],

@@ -1,0 +1,9 @@
+SELECT ?o ?p ?s ?y ?z WHERE {
+  GRAPH <http://www.example.org/g> {
+    ?s ?p ?o .
+  }
+  ?s <http://www.example.org/x> ?y .
+  GRAPH <http://www.example.org/h> {
+    ?y ?p ?z .
+  }
+}

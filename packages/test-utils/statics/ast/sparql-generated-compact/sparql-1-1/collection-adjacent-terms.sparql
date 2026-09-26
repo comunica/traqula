@@ -1,0 +1,1 @@
+PREFIX ex: <http://example.org/> SELECT * WHERE { ?s ex:p ( ?a ?b ex:c ex:d _:e ex:f "g"@en ex:h "i"^^ex:j ex:k "1"^^<http://www.w3.org/2001/XMLSchema#integer> ?l [ ex:m ex:n ; ] ex:o ( ex:p ex:q ) ex:r ) . ( ex:s ?t ) ex:u ?v . }

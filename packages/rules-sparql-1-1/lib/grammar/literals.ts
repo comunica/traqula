@@ -261,7 +261,11 @@ export const prefixedName: SparqlRule<'prefixedName', TermIriPrefixed> = <const>
     return OR([{ ALT: () => {
       const longName = CONSUME(l.terminals.pNameLn);
       return ACTION(() => {
-        const [ prefix, localName ] = longName.image.split(':');
+        // The local name may itself contain colons, only the first one ends the prefix.
+        //  https://www.w3.org/TR/sparql12-query/#rPN_LOCAL
+        const colon = longName.image.indexOf(':');
+        const prefix = longName.image.slice(0, colon);
+        const localName = longName.image.slice(colon + 1);
         verifyPrefix(prefix);
         return C.astFactory.termNamed(C.astFactory.sourceLocation(longName), localName, prefix);
       });

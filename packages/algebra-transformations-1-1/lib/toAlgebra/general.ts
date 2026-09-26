@@ -1,6 +1,7 @@
 import type * as RDF from '@rdfjs/types';
 import {
   findPatternBoundedVars,
+  lex,
 } from '@traqula/rules-sparql-1-1';
 import type {
   ContextDefinition,
@@ -20,6 +21,8 @@ import * as Algebra from '../algebra.js';
 import * as util from '../util.js';
 import type { AlgebraIndir } from './core.js';
 
+const pnLocalEscGlobal = new RegExp(lex.patterns.pnLocalEscPattern.source, 'gu');
+
 export const translateNamed: AlgebraIndir<'translateNamed', RDF.NamedNode, [TermIri]> = {
   name: 'translateNamed',
   fun: () => ({ astFactory: F, currentPrefixes, currentBase, dataFactory }, term) => {
@@ -29,7 +32,12 @@ export const translateNamed: AlgebraIndir<'translateNamed', RDF.NamedNode, [Term
       if (!expanded) {
         throw new Error(`Unknown prefix: ${term.prefix}`);
       }
-      fullIri = expanded + term.value;
+      // Remove the backslash of PN_LOCAL_ESC escapes, percent-encodings (PLX) are kept as is.
+      // "The RDF string of the IRI is formed by unescaping the reserved characters in the second argument, PN_LOCAL,
+      // and concatenating this onto the namespace." - https://www.w3.org/TR/rdf12-turtle/#sec-parsing-terms
+      // Percent-encodings: "These sequences are not decoded during processing."
+      // - https://www.w3.org/TR/sparql12-query/#sec-escapes
+      fullIri = expanded + term.value.replaceAll(pnLocalEscGlobal, escaped => escaped.slice(1));
     }
     return dataFactory.namedNode(util.resolveIRI(fullIri, currentBase));
   },

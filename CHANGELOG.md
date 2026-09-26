@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.4.0"></a>
+## [v1.4.0](https://github.com/comunica/traqula/compare/v1.3.1...v1.4.0) - 2026-09-25
+
+* [Resolve relative IRIs according to RFC 3986 (#196)](https://github.com/comunica/traqula/commit/4e179b9ad2a67fe4033d745c9c7988ead8314342)
+* [Fix generator term separation (#195)](https://github.com/comunica/traqula/commit/927ad48aec7b5da3c543a86dc53888f7c736c0ee)
+* [Narrow return type of wrapInGraph added in last commit - c2c6f3e](https://github.com/comunica/traqula/commit/cf4ac26f6bf0a280248da47763a9944bd37ddc90)
+* [Add round-trip spec tests for the algebra transformers (#194)](https://github.com/comunica/traqula/commit/c2c6f3ee106bdf8e890a190c3713baa7d8785003)
+* [Align spec test coverage across SPARQL parsers (#192)](https://github.com/comunica/traqula/commit/9023ec05c0facacc7cc21ce826dac0d5232b7ad0)
+
 <a name="v1.3.1"></a>
 ## [v1.3.1](https://github.com/comunica/traqula/compare/v1.3.0...v1.3.1) - 2026-09-14
 

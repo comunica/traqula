@@ -1,0 +1,5 @@
+PREFIX : <http://example.com/ns#>
+SELECT * WHERE {
+  <<( :x ?R :z )>> :p <<( :a :b ?C )>> .
+  <<( <<( :x ?R :z )>> :p <<( :a :b _:g_0 )>> )>> :q <<( <<( _:g_1 ?R :z )>> :p <<( :a :b _:g_2 )>> )>> .
+}

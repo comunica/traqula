@@ -75,6 +75,8 @@ export const groupClause: SparqlRule<'groupClause', SolutionModifierGroup> = <co
       PRINT_ON_EMPTY('GROUP BY ');
     });
     for (const grouping of ast.groupings) {
+      // Separate the conditions, otherwise `GROUP BY ?a ex:f(?b)` would be generated as `GROUP BY ?aex:f(?b)`
+      F.printFilter(ast, () => PRINT_WORDS(''));
       if (F.isExpression(grouping)) {
         SUBRULE(expression, grouping);
       } else {

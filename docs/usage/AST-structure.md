@@ -138,7 +138,22 @@ Keep in mind that:
 - the `visitOnlyKeys` of a node replaces the default, it is not merged with it;
 - all elements of an allowed array are visited, arrays are not filtered;
 - `ignoreKeys` still applies, and `shallowKeys` are still shallowly copied;
-- the object you start from is always visited.
+- the object you start from is always visited;
+- objects without a `type`, like the rows of a `VALUES` clause, also get the default context,
+  so the nodes within them are not visited unless you allow them.
+
+To only skip the keys Traqula does not know, like keys added by an extension,
+use a known keys allowlist as the default per node type instead:
+`astKnownKeysAllowlist` of `@traqula/rules-sparql-1-1` and `@traqula/rules-sparql-1-2`,
+or `algebraUtils.knownKeysAllowlist` for the algebra.
+Nodes of a known type then only visit their known keys, while other objects are still fully visited.
+The `*Specific` methods of a transformer do not use these per type defaults yet.
+
+```typescript
+import { AstTransformer, astKnownKeysAllowlist } from "@traqula/rules-sparql-1-1";
+
+const transformer = new AstTransformer({}, astKnownKeysAllowlist);
+```
 
 ## See Also
 

@@ -1,5 +1,5 @@
 import { describe, it } from 'vitest';
-import { TransformerTyped, TransformerSubTyped, TransformerObject } from '../lib/index.js';
+import { TransformerTyped, TransformerSubTyped, TransformerObject, visitOnlyKnownKeys } from '../lib/index.js';
 
 interface Fruit {
   type: 'fruit';
@@ -1519,5 +1519,45 @@ describe('transformer async branch coverage', () => {
     });
     // Deepest first: child (b via type) before root (a via specific)
     expect(visited).toEqual([ 'type:b', 'specific:a' ]);
+  });
+});
+
+describe('visitOnlyKnownKeys', () => {
+  interface Apple {
+    type: 'apple';
+    name: string;
+    core: object;
+  }
+  interface Crate {
+    type: 'crate';
+    content: Apple[];
+  }
+
+  const knownKeys = visitOnlyKnownKeys<Apple | Crate>({
+    apple: { type: true, name: true, core: true },
+    crate: { type: true, content: true },
+  });
+
+  it('creates contexts that only visit the known keys', ({ expect }) => {
+    expect(knownKeys).toEqual({
+      apple: { visitOnlyKeys: new Set([ 'type', 'name', 'core' ]) },
+      crate: { visitOnlyKeys: new Set([ 'type', 'content' ]) },
+    });
+  });
+
+  it('skips unknown keys of known nodes, but fully visits other objects', ({ expect }) => {
+    const transformer = new TransformerTyped<Apple | Crate>({}, knownKeys);
+    const crate = {
+      type: 'crate',
+      content: [{ type: 'apple', name: 'inCrate', core: {}}],
+      extension: { type: 'apple', name: 'inExtension', core: {}},
+    };
+    const visited: string[] = [];
+    transformer.visitNode({ wrapper: [ crate, { type: 'apple', name: 'inWrapper', core: {}}]}, {
+      apple: { visitor: (apple) => {
+        visited.push(apple.name);
+      } },
+    });
+    expect(visited).toEqual([ 'inCrate', 'inWrapper' ]);
   });
 });

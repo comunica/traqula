@@ -1,4 +1,4 @@
-import { TransformerSubTyped } from '@traqula/core';
+import { TransformerSubTyped, visitOnlyKnownKeys } from '@traqula/core';
 import { AstFactory } from './astFactory.js';
 import { pnLocalEscPattern } from './lexer/lexerPatterns.js';
 import type { Sparql11Nodes, TermIri } from './Sparql11types.js';
@@ -199,3 +199,82 @@ export function resolveTermIri(term: TermIri, prefixes: Record<string, string>, 
   }
   return resolveIRI(fullIri, baseIRI);
 }
+
+/**
+ * Contexts per node type that only visit the keys known for that type, see {@link visitOnlyKnownKeys}.
+ */
+export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql11Nodes>({
+  path: { type: true, subType: true, loc: true, items: true },
+  pattern: {
+    type: true,
+    subType: true,
+    loc: true,
+    values: true,
+    name: true,
+    variable: true,
+    silent: true,
+    expression: true,
+    variables: true,
+    patterns: true,
+    triples: true,
+  },
+  update: { type: true, subType: true, loc: true, updates: true },
+  query: {
+    type: true,
+    subType: true,
+    loc: true,
+    values: true,
+    template: true,
+    context: true,
+    solutionModifiers: true,
+    datasets: true,
+    where: true,
+    variables: true,
+    distinct: true,
+    reduced: true,
+  },
+  graph: { type: true, subType: true, loc: true, graph: true, triples: true },
+  graphRef: { type: true, subType: true, loc: true, graph: true },
+  updateOperation: {
+    type: true,
+    subType: true,
+    loc: true,
+    data: true,
+    source: true,
+    silent: true,
+    destination: true,
+    from: true,
+    graph: true,
+    where: true,
+    delete: true,
+    insert: true,
+  },
+  datasetClauses: { type: true, subType: true, loc: true, clauses: true },
+  tripleCollection: { type: true, subType: true, loc: true, triples: true, identifier: true },
+  triple: { type: true, subType: true, loc: true, object: true, subject: true, predicate: true },
+  solutionModifier: {
+    type: true,
+    subType: true,
+    loc: true,
+    offset: true,
+    having: true,
+    limit: true,
+    orderDefs: true,
+    groupings: true,
+  },
+  expression: {
+    type: true,
+    subType: true,
+    loc: true,
+    function: true,
+    args: true,
+    expression: true,
+    distinct: true,
+    operator: true,
+    separator: true,
+    aggregation: true,
+  },
+  contextDef: { type: true, subType: true, loc: true, key: true, value: true },
+  wildcard: { type: true, subType: true, loc: true },
+  term: { type: true, subType: true, loc: true, value: true, label: true, prefix: true, langOrIri: true },
+});

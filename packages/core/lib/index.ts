@@ -24,5 +24,13 @@ export {
   SelectiveTraversalContext,
   Awaitable,
 } from './transformers/TransformerObject.js';
-export { TransformerTyped, Safeness, SafeWrap } from './transformers/TransformerTyped.js';
+export {
+  TransformerTyped,
+  Safeness,
+  SafeWrap,
+  DefaultNodePreVisitor,
+  AllObjectKeys,
+  KnownNodeKeys,
+  visitOnlyKnownKeys,
+} from './transformers/TransformerTyped.js';
 export { TransformerSubTyped } from './transformers/TransformerSubTyped.js';

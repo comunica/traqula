@@ -1,5 +1,7 @@
 import { describe, it, expectTypeOf } from 'vitest';
 import type {
+  AllObjectKeys,
+  KnownNodeKeys,
   ObjectKeyHint,
   TransformContext,
   TransformerSubTyped,
@@ -61,6 +63,12 @@ describe('transformer', () => {
     it('hints the keys of the node in default node contexts', () => {
       type DefaultNodeContexts = NonNullable<Parameters<TransformerTyped<Nodes>['clone']>[1]>;
       expectTypeOf<HintedKeys<DefaultNodeContexts['pattern']>>().toEqualTypeOf<ObjectKeyHint<Pattern>>();
+    });
+
+    it('requires known node keys to list exactly all keys', () => {
+      expectTypeOf<AllObjectKeys<Nodes>>().toEqualTypeOf<'type' | 'subject' | 'predicate' | 'subType' | 'value'>();
+      expectTypeOf<KnownNodeKeys<Nodes>['term']>().toEqualTypeOf<Record<'type' | 'subType' | 'value', true>>();
+      expectTypeOf<{ pattern: { type: true; subject: true }}>().not.toExtend<KnownNodeKeys<Pattern>>();
     });
   });
 });

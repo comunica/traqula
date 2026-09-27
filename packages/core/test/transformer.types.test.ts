@@ -67,7 +67,7 @@ describe('transformer', () => {
 
     it('requires known node keys to list exactly all keys', () => {
       expectTypeOf<AllObjectKeys<Nodes>>().toEqualTypeOf<'type' | 'subject' | 'predicate' | 'subType' | 'value'>();
-      expectTypeOf<KnownNodeKeys<Nodes>['term']>().toEqualTypeOf<Record<'type' | 'subType' | 'value', true>>();
+      expectTypeOf<KnownNodeKeys<Nodes>['term']>().toEqualTypeOf<Record<'type' | 'subType' | 'value', boolean>>();
       expectTypeOf<{ pattern: { type: true; subject: true }}>().not.toExtend<KnownNodeKeys<Pattern>>();
     });
   });

@@ -146,7 +146,8 @@ To only skip the keys Traqula does not know, like keys added by an extension,
 use a known keys allowlist as the default per node type instead:
 `astKnownKeysAllowlist` of `@traqula/rules-sparql-1-1` and `@traqula/rules-sparql-1-2`,
 or `algebraUtils.knownKeysAllowlist` for the algebra.
-Nodes of a known type then only visit their known keys, while other objects are still fully visited.
+Nodes of a known type then only visit their known keys that can hold objects, skipping `loc`,
+while other objects are still fully visited.
 The `*Specific` methods of a transformer do not use these per type defaults yet.
 
 ```typescript

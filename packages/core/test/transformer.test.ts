@@ -1534,14 +1534,14 @@ describe('visitOnlyKnownKeys', () => {
   }
 
   const knownKeys = visitOnlyKnownKeys<Apple | Crate>({
-    apple: { type: true, name: true, core: true },
-    crate: { type: true, content: true },
+    apple: { type: false, name: false, core: true },
+    crate: { type: false, content: true },
   });
 
-  it('creates contexts that only visit the known keys', ({ expect }) => {
+  it('creates contexts that only visit the known keys mapped to true', ({ expect }) => {
     expect(knownKeys).toEqual({
-      apple: { visitOnlyKeys: new Set([ 'type', 'name', 'core' ]) },
-      crate: { visitOnlyKeys: new Set([ 'type', 'content' ]) },
+      apple: { visitOnlyKeys: new Set([ 'core' ]) },
+      crate: { visitOnlyKeys: new Set([ 'content' ]) },
     });
   });
 

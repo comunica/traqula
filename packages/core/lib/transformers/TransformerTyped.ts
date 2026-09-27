@@ -23,6 +23,32 @@ export type DefaultNodePreVisitor<Nodes extends Typed> =
   {[T in Nodes['type']]?: TransformContext<Extract<Nodes, Typed<T>>> };
 
 /**
+ * All keys of an object, also when the object is a union of objects.
+ */
+export type AllObjectKeys<Obj> = Obj extends unknown ? keyof Obj & string : never;
+
+/**
+ * Per node type, all keys its nodes can have.
+ * Keys are mapped to `true` so the compiler checks that no key is missing or unknown.
+ */
+export type KnownNodeKeys<Nodes extends Typed> =
+  {[T in Nodes['type']]: Record<AllObjectKeys<Extract<Nodes, Typed<T>>>, true> };
+
+/**
+ * Creates a {@link DefaultNodePreVisitor} that only visits the known keys of each node type.
+ * Objects of other types, and objects without type, are still fully visited.
+ * Combining it with an empty default {@link VisitContext.visitOnlyKeys} skips typed nodes within such objects.
+ * The `*Specific` methods of {@link TransformerSubTyped} do not use a {@link DefaultNodePreVisitor} yet.
+ */
+export function visitOnlyKnownKeys<Nodes extends Typed>(knownKeys: KnownNodeKeys<Nodes>): DefaultNodePreVisitor<Nodes> {
+  const contexts: Record<string, TransformContext> = {};
+  for (const [ type, keys ] of Object.entries(knownKeys)) {
+    contexts[type] = { visitOnlyKeys: new Set(Object.keys(<object> keys)) };
+  }
+  return <DefaultNodePreVisitor<Nodes>> contexts;
+}
+
+/**
  * Type-aware AST transformer that dispatches visit and transform callbacks
  * based on the `type` field of {@link Typed} nodes.
  *

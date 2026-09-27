@@ -1,4 +1,9 @@
-import { TransformerSubTyped, traqulaIndentation, traqulaNewlineAlternative } from '@traqula/core';
+import {
+  TransformerSubTyped,
+  traqulaIndentation,
+  traqulaNewlineAlternative,
+  visitOnlyKnownKeys,
+} from '@traqula/core';
 import { AstFactory } from './AstFactory.js';
 import type { SparqlContext, SparqlGeneratorContext } from './sparql12HelperTypes.js';
 import type { Sparql12Nodes } from './sparql12Types.js';
@@ -68,3 +73,92 @@ Partial<SparqlContext & SparqlGeneratorContext & { origSource: string; offset?: 
 }
 
 export class AstTransformer extends TransformerSubTyped<Sparql12Nodes> {}
+
+/**
+ * Contexts per node type that only visit the keys known for that type, see {@link visitOnlyKnownKeys}.
+ */
+export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql12Nodes>({
+  path: { type: true, subType: true, loc: true, items: true },
+  pattern: {
+    type: true,
+    subType: true,
+    loc: true,
+    values: true,
+    name: true,
+    variable: true,
+    silent: true,
+    expression: true,
+    variables: true,
+    patterns: true,
+    triples: true,
+  },
+  update: { type: true, subType: true, loc: true, updates: true },
+  query: {
+    type: true,
+    subType: true,
+    loc: true,
+    values: true,
+    template: true,
+    context: true,
+    solutionModifiers: true,
+    datasets: true,
+    where: true,
+    variables: true,
+    distinct: true,
+    reduced: true,
+  },
+  graphRef: { type: true, subType: true, loc: true, graph: true },
+  updateOperation: {
+    type: true,
+    subType: true,
+    loc: true,
+    data: true,
+    source: true,
+    silent: true,
+    destination: true,
+    from: true,
+    graph: true,
+    where: true,
+    delete: true,
+    insert: true,
+  },
+  datasetClauses: { type: true, subType: true, loc: true, clauses: true },
+  tripleCollection: { type: true, subType: true, loc: true, triples: true, identifier: true },
+  triple: { type: true, subType: true, loc: true, object: true, subject: true, predicate: true, annotations: true },
+  solutionModifier: {
+    type: true,
+    subType: true,
+    loc: true,
+    offset: true,
+    having: true,
+    limit: true,
+    orderDefs: true,
+    groupings: true,
+  },
+  expression: {
+    type: true,
+    subType: true,
+    loc: true,
+    function: true,
+    args: true,
+    expression: true,
+    distinct: true,
+    operator: true,
+    separator: true,
+    aggregation: true,
+  },
+  contextDef: { type: true, subType: true, loc: true, key: true, value: true, version: true },
+  wildcard: { type: true, subType: true, loc: true },
+  term: {
+    type: true,
+    subType: true,
+    loc: true,
+    object: true,
+    value: true,
+    label: true,
+    prefix: true,
+    subject: true,
+    predicate: true,
+    langOrIri: true,
+  },
+});

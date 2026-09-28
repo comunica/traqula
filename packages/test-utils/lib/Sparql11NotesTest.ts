@@ -52,8 +52,21 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
 
   it('should throw an error on an invalid selectscope', testErroneousQuery(
     'SELECT (1 AS ?X ) { SELECT (2 AS ?X ) {} }',
-    'Target id of \'AS\' (?X) already used in subquery',
+    'Target id of \'AS\' (?X) is already in scope',
   ));
+
+  it('should NOT throw on a select expression binding a variable that is not in scope', ({ expect }) => {
+    const queries = [
+      'SELECT (?o + 1 AS ?a) (?a * 2 AS ?b) { ?s ?p ?o }',
+      'SELECT (1 AS ?x) { ?s ?p ?o MINUS { ?s ?p ?x } }',
+      'SELECT (1 AS ?x) { ?s ?p ?o FILTER EXISTS { ?s ?p ?x } }',
+      'SELECT (1 AS ?x) { { SELECT ?s { ?s ?p ?x } } }',
+      'SELECT (COUNT(?o) AS ?c) { ?s ?p ?o } GROUP BY ?s',
+    ];
+    for (const query of queries) {
+      expect(parser.parse(query), query).toMatchObject({});
+    }
+  });
 
   it('should throw an error on bind to variable in scope', testErroneousQuery(
     'SELECT * { ?s ?p ?o BIND(?o AS ?o) }',

@@ -105,14 +105,14 @@ describe('extra parser coverage', () => {
     it('throws when AS target variable conflicts with a subquery variable', ({ expect }) => {
       expect(() => parser.parse(
         'SELECT (?x AS ?y) WHERE { SELECT ?y WHERE { ?y ?p ?o } }',
-      )).toThrow(/Target id of 'AS' \(\?y\) already used in subquery/u);
+      )).toThrow(/Target id of 'AS' \(\?y\) is already in scope/u);
     });
   });
 
   describe('expressionFactory isExpressionAggregateDefault', () => {
     it('identifies a default aggregate (non-wildcard single-arg aggregate)', ({ expect }) => {
       const result = parser.parse(
-        'SELECT (SUM(?x) AS ?s) WHERE { ?s ?p ?x }',
+        'SELECT (SUM(?x) AS ?sum) WHERE { ?s ?p ?x }',
       );
       expect(result).toMatchObject({ subType: 'select', variables: [{ expression: { aggregation: 'sum' }}]});
     });

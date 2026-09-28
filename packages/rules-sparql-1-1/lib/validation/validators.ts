@@ -111,23 +111,21 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
     }
   }
 
-  // NOTE 12: Check if id of each AS-selected column is not yet bound by subquery
-  const subqueries = query.where.patterns.filter(pattern => pattern.type === 'query');
-  if (subqueries.length > 0) {
-    const selectBoundedVars = new Set<string>();
-    for (const variable of variables) {
-      if ('variable' in variable) {
-        selectBoundedVars.add(variable.variable.value);
+  // NOTE 12 and https://www.w3.org/TR/sparql11-query/#variableScope
+  // > The variable v must not be in-scope at the point of the (expr AS v) form.
+  // In-scope are the variables bound by the WHERE clause (including subquery projections) and GROUP BY (expr AS v).
+  const selectBinds = variables.filter((variable): variable is PatternBind => !F.isTerm(variable));
+  if (selectBinds.length > 0) {
+    const inScopeVars = new Set<string>();
+    findPatternBoundedVars(query.where, inScopeVars);
+    for (const grouping of query.solutionModifiers.group?.groupings ?? []) {
+      if ('variable' in grouping) {
+        inScopeVars.add(grouping.variable.value);
       }
     }
-
-    // Look at in scope variables
-    const vars = subqueries.flatMap<TermVariable | PatternBind | Wildcard>(sub => sub.variables)
-      .map(v => F.isTerm(v) ? v.value : (F.isWildcard(v) ? '*' : v.variable.value));
-    const subqueryIds = new Set(vars);
-    for (const selectedVarId of selectBoundedVars) {
-      if (subqueryIds.has(selectedVarId)) {
-        throw new Error(`Target id of 'AS' (?${selectedVarId}) already used in subquery`);
+    for (const { variable } of selectBinds) {
+      if (inScopeVars.has(variable.value)) {
+        throw new Error(`Target id of 'AS' (?${variable.value}) is already in scope`);
       }
     }
   }

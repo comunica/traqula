@@ -1,0 +1,4 @@
+SELECT ( ?b AS ?a ) ?b WHERE {
+  ?s ?p ?o .
+  BIND( ?o AS ?b )
+}

@@ -126,7 +126,7 @@ AstIndir<'translateProject', PatternGroup, [Algebra.Project | Algebra.Ask | Alge
 
     // Do these in reverse order since variables in one extend might apply to an expression in another extend
     const extensions: Record<string, Expression> = {};
-    for (const e of c.extend.reverse()) {
+    for (const e of [ ...c.extend ].reverse()) {
       const expr = SUBRULE(translateAlgPureExpression, e.expression);
       extensions[(<RdfTermToAst<typeof e.variable>>SUBRULE(translateAlgTerm, e.variable)).value] =
         <typeof expr>SUBRULE(replaceAlgAggregatorVariables, expr, aggregators);
@@ -204,15 +204,33 @@ export const registerOrderBy: AstIndir<'registerOrderBy', void, [QueryBase]> = {
 export const registerVariables:
 AstIndir<'registerVariables', void, [QuerySelect, RDF.Variable[] | undefined, Record<string, Expression>]> = {
   name: 'registerVariables',
-  fun: ({ SUBRULE }) => ({ astFactory: F }, select, variables, extensions) => {
+  fun: ({ SUBRULE }) => ({ astFactory: F, extend }, select, variables, extensions) => {
     if (variables) {
+      // SELECT expressions are evaluated from left to right, after the WHERE clause.
+      //  Only the outermost extends can thus become SELECT expressions,
+      //  and only when they are projected in the same order as they are nested.
+      //  Starting at the outermost extend, we move extensions until that is no longer the case.
+      //  The remaining (unused) extensions will be put in the WHERE clause as BIND operations.
+      const selectExpressions: Record<string, Expression> = {};
+      let lastIndex = variables.length;
+      for (const { variable } of extend) {
+        if (!extensions[variable.value]) {
+          // Already used, e.g., by GROUP BY
+          continue;
+        }
+        const index = variables.findIndex(term => term.value === variable.value);
+        if (index < 0 || index > lastIndex) {
+          break;
+        }
+        lastIndex = index;
+        selectExpressions[variable.value] = extensions[variable.value];
+        // Remove used extensions so only unused ones remain
+        delete extensions[variable.value];
+      }
       select.variables = variables.map((term): TermVariable | PatternBind => {
         const v = <RdfTermToAst<typeof term>>SUBRULE(translateAlgTerm, term);
-        if (extensions[v.value]) {
-          const result: Expression = extensions[v.value];
-          // Remove used extensions so only unused ones remain
-          delete extensions[v.value];
-          return F.patternBind(result, v, F.gen());
+        if (selectExpressions[v.value]) {
+          return F.patternBind(selectExpressions[v.value], v, F.gen());
         }
         return v;
       });

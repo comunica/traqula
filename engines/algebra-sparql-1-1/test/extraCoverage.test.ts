@@ -790,6 +790,45 @@ describe('queryUnit.ts (toAst): registerGroupBy direct call', () => {
       ]);
       expect(canon.canonicalizeQuery(bgpOf('constructor'), true)).toEqual(canon.canonicalizeQuery(bgpOf('x'), true));
     });
+  });
+
+  describe('canonicalizer', () => {
+    const DF = AF.dataFactory;
+
+    it('returns patterns and paths themselves, not wrapped', ({ expect }) => {
+      const p = DF.namedNode('http://ex.org/p');
+      const op = AF.createJoin([
+        AF.createBgp([ AF.createPattern(DF.blankNode('b'), p, DF.variable!('x')) ]),
+        AF.createPath(DF.variable!('x'), AF.createLink(p), DF.blankNode('b')),
+      ]);
+      const result = <Algebra.Join> new Canonicalizer().canonicalizeQuery(op, true);
+      expect(result).toEqual(AF.createJoin([
+        AF.createBgp([ AF.createPattern(DF.blankNode('value_0'), p, DF.variable!('value_1')) ]),
+        AF.createPath(DF.variable!('value_1'), AF.createLink(p), DF.blankNode('value_0')),
+      ]));
+    });
+
+    it('renames blank nodes of CONSTRUCT templates, keeping them blank nodes', ({ expect }) => {
+      const p = DF.namedNode('http://ex.org/p');
+      const op = AF.createConstruct(
+        AF.createBgp([ AF.createPattern(DF.variable!('s'), p, DF.variable!('o')) ]),
+        [ AF.createPattern(DF.blankNode('g_7'), p, DF.variable!('o')) ],
+      );
+      const result = <Algebra.Construct> new Canonicalizer().canonicalizeQuery(op, true);
+      const [ templatePattern ] = result.template;
+      expect(templatePattern.subject.termType).toBe('BlankNode');
+      expect(templatePattern.subject.value).toMatch(/^value_\d+$/u);
+      expect(templatePattern.object).toEqual((<Algebra.Bgp> result.input).patterns[0].object);
+    });
+
+    it('renames a term in and outside a quoted triple once', ({ expect }) => {
+      const p = DF.namedNode('http://ex.org/p');
+      const quoted = AF.createPattern(DF.blankNode('b'), p, DF.namedNode('http://ex.org/o'));
+      const op = AF.createBgp([ AF.createPattern(quoted, p, DF.blankNode('b')) ]);
+      const result = <Algebra.Bgp> new Canonicalizer().canonicalizeQuery(op, false);
+      expect(result.patterns[0].subject).toMatchObject({ subject: DF.blankNode('value_0') });
+      expect(result.patterns[0].object).toEqual(DF.blankNode('value_0'));
+    });
 
     it('finds in-scope variables whose names are prototype keys', ({ expect }) => {
       const bgp = AF.createBgp([

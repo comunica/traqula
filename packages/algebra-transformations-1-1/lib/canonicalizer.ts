@@ -30,30 +30,25 @@ export class Canonicalizer {
     const factory = new AlgebraFactory();
 
     return util.mapOperation<'unsafe', typeof res>(res, {
-      [Algebra.Types.PATH]: { transform: pathOp => ({
-        result: factory.createPath(
+      // Do not iterate into patterns and paths: replaceValue already handles their (quoted triple) terms.
+      [Algebra.Types.PATH]: {
+        preVisitor: () => ({ continue: false }),
+        transform: pathOp => factory.createPath(
           this.replaceValue(pathOp.subject, nameMapping, replaceVariables, factory),
           pathOp.predicate,
           this.replaceValue(pathOp.object, nameMapping, replaceVariables, factory),
           this.replaceValue(pathOp.graph, nameMapping, replaceVariables, factory),
         ),
-        recurse: true,
-      }) },
-      [Algebra.Types.PATTERN]: { transform: patternOp => ({
-        result: factory.createPattern(
+      },
+      [Algebra.Types.PATTERN]: {
+        preVisitor: () => ({ continue: false }),
+        transform: patternOp => factory.createPattern(
           this.replaceValue(patternOp.subject, nameMapping, replaceVariables, factory),
           this.replaceValue(patternOp.predicate, nameMapping, replaceVariables, factory),
           this.replaceValue(patternOp.object, nameMapping, replaceVariables, factory),
           this.replaceValue(patternOp.graph, nameMapping, replaceVariables, factory),
         ),
-        recurse: true,
-      }) },
-      [Algebra.Types.CONSTRUCT]: { transform: constructOp =>
-        // Blank nodes in CONSTRUCT templates must be maintained
-        ({
-          result: factory.createConstruct(constructOp.input, constructOp.template),
-          recurse: true,
-        }) },
+      },
     });
   }
 

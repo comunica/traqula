@@ -67,7 +67,9 @@ unknown,
       return unknownVal.map(sub => SUBRULE(removeAlgQuadsRecursive, sub, graphs, projectionScope));
     }
 
-    if (typeof unknownVal !== 'object' || unknownVal === null || !('type' in unknownVal) || !unknownVal.type) {
+    // Operations have a string `type`. VALUES bindings can hold a `type` key too (for `?type`), holding a term.
+    if (typeof unknownVal !== 'object' || unknownVal === null || !('type' in unknownVal) ||
+      typeof unknownVal.type !== 'string') {
       return unknownVal;
     }
     const knownOp = <Algebra.Operation> unknownVal;
@@ -92,7 +94,8 @@ unknown,
     }
 
     // We build our `op` again.
-    // TODO; should we not migrate this too? better safe then sorry?
+    // Keys are those of an operation, never user-controlled names (see the `type` check above),
+    //  and the result is an operation again, so it keeps the regular Object prototype.
     const result: any = {};
     // Unique graphs per key (keyof T)
     const keyGraphs: Record<string, (RDF.NamedNode | RDF.DefaultGraph)[]> = Object.create(null);

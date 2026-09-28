@@ -78,7 +78,7 @@ AlgebraIndir<'translateTripleNesting', void, [TripleNesting, FlattenedTriple[]]>
 export const recurseGraph:
 AlgebraIndir<'recurseGraph', Algebra.Operation, [Algebra.Operation, RDF.Term, RDF.Variable | undefined]> = {
   name: 'recurseGraph',
-  fun: ({ SUBRULE }) => (_, algOp, graph, replacement) => {
+  fun: ({ SUBRULE }) => ({ algebraFactory: AF }, algOp, graph, replacement) => {
     if (algOp.type === types.GRAPH) {
       if (replacement) {
         // At this point we would lose track of the replacement which would result in incorrect results
@@ -133,6 +133,23 @@ AlgebraIndir<'recurseGraph', Algebra.Operation, [Algebra.Operation, RDF.Term, RD
       // if there are it's the same situation as above
       if (algOp.variable.equals(graph)) {
         replacement = SUBRULE(generateFreshVar);
+        algOp.input = SUBRULE(recurseGraph, algOp.input, graph, replacement);
+        // The graph variable is already bound by the patterns, so it cannot be extended.
+        // GRAPH joins its result with the graph name (18.5), so extend a fresh variable instead
+        // and require it to be compatible with the graph: unbound (the expression errored), or the same term.
+        const extended = SUBRULE(generateFreshVar);
+        return AF.createFilter(
+          AF.createExtend(algOp.input, extended, algOp.expression),
+          AF.createOperatorExpression('||', [
+            AF.createOperatorExpression('!', [
+              AF.createOperatorExpression('bound', [ AF.createTermExpression(extended) ]),
+            ]),
+            AF.createOperatorExpression('sameterm', [
+              AF.createTermExpression(extended),
+              AF.createTermExpression(graph),
+            ]),
+          ]),
+        );
       }
       algOp.input = SUBRULE(recurseGraph, algOp.input, graph, replacement);
     } else if (algOp.type === types.MINUS && graph.termType === 'Variable') {

@@ -1,3 +1,4 @@
+import type * as RDF from '@rdfjs/types';
 import type { Algebra } from '@traqula/algebra-transformations-1-1';
 import { AlgebraFactory, algebraUtils, createAstContext, createAlgebraContext }
   from '@traqula/algebra-transformations-1-1';
@@ -577,6 +578,73 @@ GROUP BY ( ?y AS ?x )`);
 SELECT (COUNT(EXISTS { GRAPH ?g { ?s :q ?o } }) AS ?c) WHERE { ?s :p ?g }`);
     expect(result.replaceAll(/\s+/gu, ' ')).toContain('COUNT( EXISTS { GRAPH ?g {');
     expect(roundTripQuads(result)).toBe(result);
+  });
+
+  describe('join operands scoping OPTIONAL and MINUS', () => {
+    const v = (name: string): RDF.Variable => AF.dataFactory.variable!(name);
+    const bgp = (s: string, o: string): Algebra.Bgp =>
+      AF.createBgp([ AF.createPattern(v(s), AF.dataFactory.namedNode('http://p'), v(o)) ]);
+
+    function algebraRoundTrip(op: Algebra.Operation): { sparql: string; algebra: Algebra.Operation } {
+      const sparql = generator.generate(F.forcedAutoGenTree(toAst(op)));
+      return { sparql, algebra: toAlgebra(parser.parse(sparql)) };
+    }
+
+    it('groups a MINUS that is not the first operand', ({ expect }) => {
+      const op = AF.createProject(
+        AF.createJoin([ bgp('a', 'b'), AF.createMinus(bgp('c', 'd'), bgp('a', 'e')) ]),
+        [ v('a') ],
+      );
+      const { sparql, algebra } = algebraRoundTrip(op);
+      expect(sparql).toBe(`SELECT ?a WHERE {
+  ?a <http://p> ?b .
+  {
+    ?c <http://p> ?d .
+    MINUS {
+      ?a <http://p> ?e .
+    }
+  }
+}`);
+      expect(algebra).toEqual(op);
+    });
+
+    it('groups an OPTIONAL that is not the first operand', ({ expect }) => {
+      const op = AF.createProject(
+        AF.createJoin([ bgp('a', 'b'), AF.createLeftJoin(bgp('c', 'd'), bgp('a', 'e')) ]),
+        [ v('a') ],
+      );
+      const { algebra } = algebraRoundTrip(op);
+      expect(algebra).toEqual(op);
+    });
+
+    it('groups an OPTIONAL nested in a join that is not the first operand', ({ expect }) => {
+      const op = AF.createProject(AF.createJoin([
+        bgp('a', 'b'),
+        AF.createJoin([ bgp('f', 'g'), AF.createLeftJoin(bgp('c', 'd'), bgp('a', 'e')) ], false),
+      ], false), [ v('a') ]);
+      const { algebra } = algebraRoundTrip(op);
+      // Joins are associative, so the nested join may be flattened as long as the OPTIONAL stays scoped
+      expect(algebra).toEqual(AF.createProject(AF.createJoin([
+        AF.createBgp([ ...bgp('a', 'b').patterns, ...bgp('f', 'g').patterns ]),
+        AF.createLeftJoin(bgp('c', 'd'), bgp('a', 'e')),
+      ]), [ v('a') ]));
+    });
+
+    it('does not group an OPTIONAL in the first operand', ({ expect }) => {
+      const op = AF.createProject(
+        AF.createJoin([ AF.createLeftJoin(bgp('c', 'd'), bgp('a', 'e')), bgp('a', 'b') ]),
+        [ v('a') ],
+      );
+      const { sparql, algebra } = algebraRoundTrip(op);
+      expect(sparql).toBe(`SELECT ?a WHERE {
+  ?c <http://p> ?d .
+  OPTIONAL {
+    ?a <http://p> ?e .
+  }
+  ?a <http://p> ?b .
+}`);
+      expect(algebra).toEqual(op);
+    });
   });
 });
 

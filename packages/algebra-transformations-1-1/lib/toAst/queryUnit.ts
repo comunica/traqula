@@ -105,6 +105,7 @@ AstIndir<'translateProject', PatternGroup, [Algebra.Project | Algebra.Ask | Alge
     const extend = c.extend;
     const group = c.group;
     const aggregates = c.aggregates;
+    const having = c.having;
     const order = c.order;
     SUBRULE(resetContext);
     c.project = true;
@@ -136,18 +137,19 @@ AstIndir<'translateProject', PatternGroup, [Algebra.Project | Algebra.Ask | Alge
     SUBRULE(registerVariables, select, variables, extensions);
     SUBRULE(putExtensionsInGroup, result, extensions);
 
-    // Convert all filters to 'having' if it contains an aggregator variable
-    // could always convert, but is nicer to keep as filter when possible
-    const havings: Expression[] = [];
-    result.where = <PatternGroup> SUBRULE(filterReplace, result.where, aggregators, havings);
-    if (havings.length > 0) {
-      select.solutionModifiers.having = F.solutionModifierHaving(havings, F.gen());
+    // Filters on top of the group are HAVING conditions, they can reference the aggregators
+    if (c.having.length > 0) {
+      select.solutionModifiers.having = F.solutionModifierHaving(
+        c.having.map(expr => <typeof expr> SUBRULE(replaceAlgAggregatorVariables, expr, aggregators)),
+        F.gen(),
+      );
     }
 
     // Recover state
     c.extend = extend;
     c.group = group;
     c.aggregates = aggregates;
+    c.having = having;
     c.order = order;
 
     // Subqueries need to be in a group! Top level grouping is removed at toAst function
@@ -250,50 +252,5 @@ export const putExtensionsInGroup: AstIndir<'putExtensionsInGroup', void, [Query
         );
       }
     }
-  },
-};
-
-/**
- * If second arg is a Group, we will return a group.
- */
-export const filterReplace: AstIndir<
-  'filterReplace',
-PatternGroup | Pattern,
-[PatternGroup | Pattern, Record<string, Expression>, Expression[]]
-> = {
-  name: 'filterReplace',
-  fun: ({ SUBRULE }) => ({ astFactory: F }, group, aggregators, havings) => {
-    if (!F.isPatternGroup(group)) {
-      return group;
-    }
-    const patterns = group.patterns
-      .map(x => SUBRULE(filterReplace, x, aggregators, havings))
-      .flatMap((pattern) => {
-        if (F.isPatternFilter(pattern) && SUBRULE(objectContainsVariable, pattern, Object.keys(aggregators))) {
-          havings.push(
-            <typeof pattern.expression>SUBRULE(replaceAlgAggregatorVariables, pattern.expression, aggregators),
-          );
-          return [];
-        }
-        return [ pattern ];
-      });
-    return F.patternGroup(patterns, F.gen());
-  },
-};
-
-export const objectContainsVariable: AstIndir<'objectContainsVariable', boolean, [any, string[]]> = {
-  name: 'objectContainsVariable',
-  fun: ({ SUBRULE }) => ({ astFactory: F }, o, vals) => {
-    const casted = <Sparql11Nodes> o;
-    if (F.isTermVariable(casted)) {
-      return vals.includes(casted.value);
-    }
-    if (Array.isArray(o)) {
-      return o.some(e => SUBRULE(objectContainsVariable, e, vals));
-    }
-    if (o === Object(o)) {
-      return Object.keys(o).some(key => SUBRULE(objectContainsVariable, o[key], vals));
-    }
-    return false;
   },
 };

@@ -126,18 +126,26 @@ export const translateAlgFrom: AstIndir<'translateFrom', PatternGroup, [Algebra.
 };
 
 /**
- * A patternFilter closes the group
+ * A patternFilter closes the group.
+ * A filter on top of a group (possibly through other such filters) is a HAVING condition,
+ * it needs to be handled by {@link translateAlgProject}
  */
 export const translateAlgFilter: AstIndir<'translateFilter', PatternGroup, [Algebra.Filter]> = {
   name: 'translateFilter',
-  fun: ({ SUBRULE }) => ({ astFactory: F }, op) =>
-    F.patternGroup(
-      [
-        SUBRULE(translateAlgPatternNew, op.input),
-        F.patternFilter(SUBRULE(translateAlgPureExpression, op.expression), F.gen()),
-      ].flat(),
-      F.gen(),
-    ),
+  fun: ({ SUBRULE }) => ({ astFactory: F, having }, op) => {
+    let filterInput = op.input;
+    while (filterInput.type === types.FILTER) {
+      filterInput = filterInput.input;
+    }
+    const input = SUBRULE(translateAlgPatternNew, op.input);
+    const expression = SUBRULE(translateAlgPureExpression, op.expression);
+    if (filterInput.type === types.GROUP) {
+      having.push(expression);
+      // Stacked HAVING conditions should not introduce nested groups
+      return F.isPatternGroup(input) ? input : F.patternGroup([ input ].flat(), F.gen());
+    }
+    return F.patternGroup([ input, F.patternFilter(expression, F.gen()) ].flat(), F.gen());
+  },
 };
 
 export const translateAlgGraph: AstIndir<'translateGraph', PatternGraph, [Algebra.Graph]> = {

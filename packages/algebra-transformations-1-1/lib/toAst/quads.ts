@@ -92,6 +92,7 @@ unknown,
     }
 
     // We build our `op` again.
+    // TODO; should we not migrate this too? better safe then sorry?
     const result: any = {};
     // Unique graphs per key (keyof T)
     const keyGraphs: Record<string, (RDF.NamedNode | RDF.DefaultGraph)[]> = Object.create(null);

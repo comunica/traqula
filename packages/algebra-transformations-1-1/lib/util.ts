@@ -465,8 +465,8 @@ export function objectify(algebra: any): any {
     return algebra.map(e => objectify(e));
   }
   if (algebra === Object(algebra)) {
-    // Object.fromEntries defines own properties, so keys like `__proto__` do not alter the prototype.
-    return Object.fromEntries(Object.keys(algebra).map(key => [ key, objectify(algebra[key]) ]));
+    return Object.fromEntries(Object.keys(algebra)
+      .map(key => [ key, objectify(algebra[key]) ]));
   }
   return algebra;
 }

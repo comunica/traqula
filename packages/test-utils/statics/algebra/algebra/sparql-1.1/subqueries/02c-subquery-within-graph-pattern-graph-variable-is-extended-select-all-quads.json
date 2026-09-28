@@ -22,7 +22,7 @@
               },
               "object": {
                 "termType": "Variable",
-                "value": "var0"
+                "value": "o"
               },
               "graph": {
                 "termType": "Variable",
@@ -107,11 +107,7 @@
   "variables": [
     {
       "termType": "Variable",
-      "value": "x"
-    },
-    {
-      "termType": "Variable",
-      "value": "p"
+      "value": "g"
     }
   ]
 }

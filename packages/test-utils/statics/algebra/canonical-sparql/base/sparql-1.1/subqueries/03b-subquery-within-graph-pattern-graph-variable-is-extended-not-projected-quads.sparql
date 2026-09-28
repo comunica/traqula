@@ -1,0 +1,8 @@
+SELECT ?g ?x WHERE {
+  SELECT ?x WHERE {
+    GRAPH ?g {
+      ?x ?p ?o .
+    }
+    BIND( ?o AS ?var0 )
+  }
+}

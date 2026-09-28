@@ -125,6 +125,8 @@ export const groupCondition: SparqlGrammarRule<'groupCondition', Expression | So
     ]),
 };
 
+const prefixOperators = new Set([ '!', 'uplus', 'uminus' ]);
+
 /**
  * [[21]](https://www.w3.org/TR/sparql11-query/#rHavingClause)
  */
@@ -144,12 +146,22 @@ export const havingClause: SparqlRule<'havingClause', SolutionModifierHaving> = 
     return ACTION(() =>
       C.astFactory.solutionModifierHaving(expressions, C.astFactory.sourceLocation(having, expressions.at(-1))));
   },
-  gImpl: ({ PRINT_ON_EMPTY, SUBRULE }) => (ast, { astFactory: F }) => {
+  gImpl: ({ PRINT_ON_EMPTY, PRINT_WORD, SUBRULE }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => {
       PRINT_ON_EMPTY('HAVING ');
     });
     for (const having of ast.having) {
+      // A HavingCondition is a Constraint: terms and prefix operators are not generated with brackets themselves,
+      // otherwise `HAVING (!BOUND(?o))` would be generated as `HAVING ! BOUND( ?o )`
+      const addBrackets = F.isTerm(having) ||
+        (F.isExpressionOperator(having) && prefixOperators.has(having.operator));
+      if (addBrackets) {
+        F.printFilter(having, () => PRINT_WORD('('));
+      }
       SUBRULE(expression, having);
+      if (addBrackets) {
+        F.printFilter(having, () => PRINT_WORD(')'));
+      }
     }
   },
 };

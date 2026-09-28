@@ -1,0 +1,1 @@
+SELECT ?s WHERE { ?s ?p ?o . } GROUP BY ?s HAVING ( ! ( COUNT( ?o ) > "1"^^<http://www.w3.org/2001/XMLSchema#integer> ) ) ( - COUNT( ?o ) )

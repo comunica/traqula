@@ -50,6 +50,8 @@ export const solutionModifier: SparqlRule<'solutionModifier', SolutionModifiers>
   },
 };
 
+const prefixOperators = new Set([ '!', 'uplus', 'uminus' ]);
+
 /**
  * [[19]](https://www.w3.org/TR/sparql11-query/#rGroupClause)
  */
@@ -78,7 +80,17 @@ export const groupClause: SparqlRule<'groupClause', SolutionModifierGroup> = <co
       // Separate the conditions, otherwise `GROUP BY ?a ex:f(?b)` would be generated as `GROUP BY ?aex:f(?b)`
       F.printFilter(ast, () => PRINT_WORDS(''));
       if (F.isExpression(grouping)) {
+        // A GroupCondition without AS can not be a non-variable term or prefix operator without brackets,
+        // otherwise `GROUP BY (!?a)` would be generated as `GROUP BY ! ?a`
+        const addBrackets = (F.isTerm(grouping) && !F.isTermVariable(grouping)) ||
+          (F.isExpressionOperator(grouping) && prefixOperators.has(grouping.operator));
+        if (addBrackets) {
+          F.printFilter(grouping, () => PRINT_WORDS('('));
+        }
         SUBRULE(expression, grouping);
+        if (addBrackets) {
+          F.printFilter(grouping, () => PRINT_WORDS(')'));
+        }
       } else {
         F.printFilter(ast, () => PRINT_WORDS('('));
         SUBRULE(expression, grouping.value);
@@ -124,8 +136,6 @@ export const groupCondition: SparqlGrammarRule<'groupCondition', Expression | So
       },
     ]),
 };
-
-const prefixOperators = new Set([ '!', 'uplus', 'uminus' ]);
 
 /**
  * [[21]](https://www.w3.org/TR/sparql11-query/#rHavingClause)

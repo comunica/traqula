@@ -1,0 +1,1 @@
+SELECT (COUNT(*) AS ?count) WHERE { ?s ?p ?o } GROUP BY (!?s) (-?o) ("a")

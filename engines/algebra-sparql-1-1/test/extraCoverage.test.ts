@@ -191,6 +191,26 @@ GROUP BY ( ?y AS ?x )`);
     });
   });
 
+  describe('algebraUtils.objectify', () => {
+    it('keeps the direction of directional language-tagged literals', ({ expect }) => {
+      const literal = AF.dataFactory.literal('hello', { language: 'en', direction: 'ltr' });
+      expect(algebraUtils.objectify(literal)).toEqual({
+        termType: 'Literal',
+        value: 'hello',
+        language: 'en',
+        direction: 'ltr',
+        datatype: { termType: 'NamedNode', value: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#dirLangString' },
+      });
+    });
+
+    it('returns primitives, null and undefined as-is', ({ expect }) => {
+      expect(algebraUtils.objectify(null)).toBeNull();
+      expect(algebraUtils.objectify(undefined)).toBeUndefined();
+      expect(algebraUtils.objectify({ a: null, b: undefined, c: [ 1, 'x', false ]}))
+        .toEqual({ a: null, b: undefined, c: [ 1, 'x', false ]});
+    });
+  });
+
   describe('createAlgebraContext with prefixes', () => {
     it('passes prefixes to the algebra context', ({ expect }) => {
       const ast = parser.parse('PREFIX ex: <http://example.org/> SELECT * WHERE { ex:s ex:p ex:o }');

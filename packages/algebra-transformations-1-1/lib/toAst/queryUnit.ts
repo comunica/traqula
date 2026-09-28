@@ -131,6 +131,15 @@ AstIndir<'translateProject', PatternGroup, [Algebra.Project | Algebra.Ask | Alge
       extensions[(<RdfTermToAst<typeof e.variable>>SUBRULE(translateAlgTerm, e.variable)).value] =
         <typeof expr>SUBRULE(replaceAlgAggregatorVariables, expr, aggregators);
     }
+    // SPARQL can only select an aggregate as `(aggregate AS ?variable)`,
+    //  so a SELECT of an aggregate's variable needs the aggregate as its projection expression.
+    if (type === types.PROJECT) {
+      for (const variable of (<Algebra.Project>op).variables) {
+        if (aggregators[variable.value]) {
+          extensions[variable.value] = aggregators[variable.value];
+        }
+      }
+    }
     SUBRULE(registerAlgGroupBy, result, extensions);
     SUBRULE(registerOrderBy, result);
     SUBRULE(registerVariables, select, variables, extensions);

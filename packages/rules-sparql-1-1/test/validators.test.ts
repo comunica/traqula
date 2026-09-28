@@ -501,17 +501,19 @@ describe('queryProjectionIsGood - additional cases', () => {
       type: 'query',
       subType: 'select',
       variables: [ varX ],
+      solutionModifiers: {},
     };
     const query = {
       variables: [ binding ],
       solutionModifiers: {},
       where: {
-        type: 'group',
+        type: 'pattern',
+        subType: 'group',
         patterns: [ subquery ],
       },
     };
     expect(() => queryProjectionIsGood(<any>query))
-      .toThrow(/Target id of 'AS' \(\?x\) already used in subquery/u);
+      .toThrow(/Target id of 'AS' \(\?x\) is already in scope/u);
   });
 });
 

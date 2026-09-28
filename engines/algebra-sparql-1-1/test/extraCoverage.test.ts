@@ -1,5 +1,5 @@
 import type { Algebra } from '@traqula/algebra-transformations-1-1';
-import { AlgebraFactory, algebraUtils, createAstContext, createAlgebraContext }
+import { AlgebraFactory, Canonicalizer, algebraUtils, createAstContext, createAlgebraContext }
   from '@traqula/algebra-transformations-1-1';
 import { Generator } from '@traqula/generator-sparql-1-1';
 import { Parser } from '@traqula/parser-sparql-1-1';
@@ -723,6 +723,8 @@ describe('queryUnit.ts (toAst): registerGroupBy direct call', () => {
   });
 
   describe('prototype-key reserved-name bypass (security fix)', () => {
+    const generator = new Generator();
+
     // When a prefix name collides with an Object.prototype property, the algebra
     // must still throw "Unknown prefix" rather than silently expanding to garbage.
     it('throws Unknown prefix for constructor when not declared', ({ expect }) => {
@@ -744,6 +746,67 @@ describe('queryUnit.ts (toAst): registerGroupBy direct call', () => {
       expect(result).toMatchObject({
         input: { patterns: [{ predicate: { value: 'http://ex.org/foo' }}]},
       });
+    });
+
+    it('does not read prototype keys from VALUES bindings', ({ expect }) => {
+      const constructorVar = AF.dataFactory.variable!('constructor');
+      const values = AF.createValues([ constructorVar ], [{}]);
+      const result = generator.generate(F.forcedAutoGenTree(toAst(AF.createProject(values, [ constructorVar ]))));
+      expect(result).toContain('UNDEF');
+    });
+
+    it('splits patterns over graphs whose names are prototype keys', ({ expect }) => {
+      const s = AF.dataFactory.variable!('s');
+      const p = AF.dataFactory.variable!('p');
+      const o = AF.dataFactory.variable!('o');
+      const bgp = AF.createBgp([
+        AF.createPattern(s, p, o, AF.dataFactory.namedNode('constructor')),
+        AF.createPattern(s, p, o, AF.dataFactory.namedNode('__proto__')),
+      ]);
+      const result = generator.generate(F.forcedAutoGenTree(toAst(AF.createProject(bgp, [ s, p, o ]))));
+      expect(result).toContain('GRAPH <constructor>');
+      expect(result).toContain('GRAPH <__proto__>');
+    });
+
+    it('translates blank nodes whose labels are prototype keys to variables', ({ expect }) => {
+      const transformer = toAlgebra11Builder.build();
+      const c = createAlgebraContext({});
+      const bgp = AF.createBgp([
+        AF.createPattern(
+          AF.dataFactory.blankNode('constructor'),
+          AF.dataFactory.variable!('p'),
+          AF.dataFactory.blankNode('__proto__'),
+        ),
+      ]);
+      const result = <Algebra.Bgp> transformer.translateBlankNodesToVariables(c, bgp);
+      expect(result.patterns[0].subject).toEqual(AF.dataFactory.variable!('constructor'));
+      expect(result.patterns[0].object).toEqual(AF.dataFactory.variable!('__proto__'));
+    });
+
+    it('canonicalizes variables whose names are prototype keys', ({ expect }) => {
+      const canon = new Canonicalizer();
+      const bgpOf = (name: string): Algebra.Bgp => AF.createBgp([
+        AF.createPattern(AF.dataFactory.variable!(name), AF.dataFactory.variable!('p'), AF.dataFactory.variable!(name)),
+      ]);
+      expect(canon.canonicalizeQuery(bgpOf('constructor'), true)).toEqual(canon.canonicalizeQuery(bgpOf('x'), true));
+    });
+
+    it('finds in-scope variables whose names are prototype keys', ({ expect }) => {
+      const bgp = AF.createBgp([
+        AF.createPattern(
+          AF.dataFactory.variable!('__proto__'),
+          AF.dataFactory.variable!('constructor'),
+          AF.dataFactory.variable!('o'),
+        ),
+      ]);
+      expect(algebraUtils.inScopeVariables(bgp).map(v => v.value)).toEqual([ '__proto__', 'constructor', 'o' ]);
+    });
+
+    it('objectify keeps __proto__ keys as own properties', ({ expect }) => {
+      const binding = Object.fromEntries([[ '__proto__', AF.dataFactory.namedNode('http://ex.org/a') ]]);
+      const result = algebraUtils.objectify(binding);
+      expect(Object.getPrototypeOf(result)).toBe(Object.prototype);
+      expect(Object.keys(result)).toEqual([ '__proto__' ]);
     });
   });
 

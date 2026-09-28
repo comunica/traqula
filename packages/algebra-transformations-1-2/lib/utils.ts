@@ -30,11 +30,8 @@ export function objectify(algebra: any): any {
     return algebra.map(e => objectify(e));
   }
   if (algebra === Object(algebra)) {
-    const result: any = {};
-    for (const key of Object.keys(algebra)) {
-      result[key] = objectify(algebra[key]);
-    }
-    return result;
+    // Object.fromEntries defines own properties, so keys like `__proto__` do not alter the prototype.
+    return Object.fromEntries(Object.keys(algebra).map(key => [ key, objectify(algebra[key]) ]));
   }
   return algebra;
 }

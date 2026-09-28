@@ -26,7 +26,7 @@ export class Canonicalizer {
    */
   public canonicalizeQuery(res: Algebra.Operation, replaceVariables: boolean): Algebra.Operation {
     this.blankId = 0;
-    const nameMapping: Record<string, string> = {};
+    const nameMapping: Record<string, string> = Object.create(null);
     const factory = new AlgebraFactory();
 
     return util.mapOperation<'unsafe', typeof res>(res, {

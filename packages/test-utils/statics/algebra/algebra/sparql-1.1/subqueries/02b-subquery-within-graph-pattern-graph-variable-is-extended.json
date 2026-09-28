@@ -22,7 +22,7 @@
               },
               "object": {
                 "termType": "Variable",
-                "value": "g"
+                "value": "o"
               },
               "graph": {
                 "termType": "DefaultGraph",

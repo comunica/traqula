@@ -107,6 +107,14 @@ describe('extra parser coverage', () => {
         'SELECT (?x AS ?y) WHERE { SELECT ?y WHERE { ?y ?p ?o } }',
       )).toThrow(/Target id of 'AS' \(\?y\) is already in scope/u);
     });
+
+    it('does not check subquery projections when skipValidation is true', ({ expect }) => {
+      const result = parser.parse(
+        'SELECT * WHERE { { SELECT (?o AS ?o) WHERE { ?s ?p ?o } } }',
+        { skipValidation: true },
+      );
+      expect(result).toMatchObject({ subType: 'select' });
+    });
   });
 
   describe('expressionFactory isExpressionAggregateDefault', () => {

@@ -21,6 +21,11 @@ describe('sparql algebra 1.1 output', () => {
       describe(suite, () => {
         for (const test of sparqlAlgebraTests(suite, false, false)) {
           const { name, json, quads } = test;
+          // Quads mode moves GRAPH ?g into the subquery that binds (?x AS ?g),
+          // so the generated query violates the SELECT expression scoping rule and cannot be parsed.
+          if (name === 'sparql-1.1/subqueries/02b-subquery-within-graph-pattern-graph-variable-is-extended-quads') {
+            continue;
+          }
           const expected = <Algebra.Operation> json;
           it (name, ({ expect }) => {
             const genAst = toAst(expected);

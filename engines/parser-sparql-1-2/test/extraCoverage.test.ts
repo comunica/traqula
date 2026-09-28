@@ -59,6 +59,16 @@ describe('extra parser-sparql-1-2 coverage', () => {
     });
   });
 
+  describe('skipValidation in SPARQL 1.2 subquery', () => {
+    it('does not check subquery projections when skipValidation is true', ({ expect }) => {
+      const result = parser.parse(
+        'SELECT * WHERE { { SELECT (?o AS ?o) WHERE { ?s ?p ?o } } }',
+        { skipValidation: true },
+      );
+      expect(result).toMatchObject({ subType: 'select' });
+    });
+  });
+
   describe('prototype-key reserved-name bypass (security fix)', () => {
     // Object.prototype property names like 'constructor', 'toString', '__proto__', etc.
     // must not bypass the "Unknown prefix" guard even though they exist on plain {}.

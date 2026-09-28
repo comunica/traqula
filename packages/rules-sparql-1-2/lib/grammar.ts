@@ -20,6 +20,7 @@ import type {
   GraphTerm,
   PatternBgp,
   QuerySelect,
+  SubSelect,
   Term,
   TermBlank,
   TermIri,
@@ -30,7 +31,7 @@ import type {
   TripleCollectionReifiedTriple,
   TripleNesting,
 } from './sparql12Types.js';
-import { langTagHasCorrectRange, queryProjectionIsGood } from './validators.js';
+import { langTagHasCorrectRange, queryProjectionIsGood, selectExpressionAliasesNotInScope } from './validators.js';
 
 /**
  *[[7]](https://www.w3.org/TR/sparql12-query/#rVersionDecl)
@@ -80,6 +81,43 @@ export const selectQuery: SparqlGrammarRule<'selectQuery', Omit<QuerySelect, 'ty
       } satisfies RuleDefReturn<typeof selectQuery>;
       if (!C.skipValidation) {
         queryProjectionIsGood(ret);
+      }
+      return ret;
+    });
+  },
+};
+
+/**
+ * [[8]](https://www.w3.org/TR/sparql12-query/#rSubSelect)
+ * (Validator uses the SPARQL 1.2 in-scope variables)
+ */
+export const subSelect: SparqlGrammarRule<'subSelect', SubSelect> = <const> {
+  name: 'subSelect',
+  impl: ({ ACTION, SUBRULE }) => (C) => {
+    const selectVal = SUBRULE(S11.selectClause);
+    const where = SUBRULE(S11.whereClause);
+    const modifiers = SUBRULE(S11.solutionModifier);
+    const values = SUBRULE(S11.valuesClause);
+
+    return ACTION(() => {
+      const ret = C.astFactory.querySelect({
+        where: where.val,
+        datasets: C.astFactory.datasetClauses([], C.astFactory.sourceLocation()),
+        context: [],
+        solutionModifiers: modifiers,
+        ...selectVal.val,
+        ...(values && { values }),
+      }, C.astFactory.sourceLocation(
+        selectVal,
+        where,
+        modifiers.group,
+        modifiers.having,
+        modifiers.order,
+        modifiers.limitOffset,
+        values,
+      ));
+      if (!C.skipValidation) {
+        selectExpressionAliasesNotInScope(ret);
       }
       return ret;
     });

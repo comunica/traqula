@@ -111,10 +111,19 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
     }
   }
 
-  // NOTE 12 and https://www.w3.org/TR/sparql11-query/#variableScope
-  // > The variable v must not be in-scope at the point of the (expr AS v) form.
-  // In-scope are the variables bound by the WHERE clause (including subquery projections) and GROUP BY (expr AS v).
-  const selectBinds = variables.filter((variable): variable is PatternBind => !F.isTerm(variable));
+  selectExpressionAliasesNotInScope(query);
+}
+
+/**
+ * NOTE 12 and https://www.w3.org/TR/sparql11-query/#variableScope
+ * > The variable v must not be in-scope at the point of the (expr AS v) form.
+ * In-scope are the variables bound by the WHERE clause (including subquery projections) and GROUP BY (expr AS v).
+ */
+export function selectExpressionAliasesNotInScope(
+  query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where'>,
+): void {
+  const selectBinds = query.variables.filter((variable): variable is PatternBind =>
+    !F.isTerm(variable) && !F.isWildcard(variable));
   if (selectBinds.length > 0) {
     const inScopeVars = new Set<string>();
     findPatternBoundedVars(query.where, inScopeVars);

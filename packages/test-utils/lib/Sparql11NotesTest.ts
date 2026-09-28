@@ -62,6 +62,8 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
       'SELECT (1 AS ?x) { ?s ?p ?o FILTER EXISTS { ?s ?p ?x } }',
       'SELECT (1 AS ?x) { { SELECT ?s { ?s ?p ?x } } }',
       'SELECT (COUNT(?o) AS ?c) { ?s ?p ?o } GROUP BY ?s',
+      'SELECT * { { SELECT (?o + 1 AS ?a) { ?s ?p ?o } } ?a ?p ?o }',
+      'ASK { { SELECT * { { SELECT (1 AS ?x) { ?s ?p ?o } } } } }',
     ];
     for (const query of queries) {
       expect(parser.parse(query), query).toMatchObject({});

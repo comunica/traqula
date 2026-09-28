@@ -17,7 +17,7 @@ import type {
   TermVariable,
   Wildcard,
 } from '../Sparql11types.js';
-import { queryProjectionIsGood } from '../validation/validators.js';
+import { queryProjectionIsGood, selectExpressionAliasesNotInScope } from '../validation/validators.js';
 import { datasetClauseStar } from './dataSetClause.js';
 import { expression } from './expression.js';
 import { prologue, var_, varOrIri, varOrTerm } from './general.js';
@@ -140,22 +140,28 @@ export const subSelect: SparqlGrammarRule<'subSelect', SubSelect> = <const> {
     const modifiers = SUBRULE(solutionModifier);
     const values = SUBRULE(valuesClause);
 
-    return ACTION(() => C.astFactory.querySelect({
-      where: where.val,
-      datasets: C.astFactory.datasetClauses([], C.astFactory.sourceLocation()),
-      context: [],
-      solutionModifiers: modifiers,
-      ...selectVal.val,
-      ...(values && { values }),
-    }, C.astFactory.sourceLocation(
-      selectVal,
-      where,
-      modifiers.group,
-      modifiers.having,
-      modifiers.order,
-      modifiers.limitOffset,
-      values,
-    )));
+    return ACTION(() => {
+      const ret = C.astFactory.querySelect({
+        where: where.val,
+        datasets: C.astFactory.datasetClauses([], C.astFactory.sourceLocation()),
+        context: [],
+        solutionModifiers: modifiers,
+        ...selectVal.val,
+        ...(values && { values }),
+      }, C.astFactory.sourceLocation(
+        selectVal,
+        where,
+        modifiers.group,
+        modifiers.having,
+        modifiers.order,
+        modifiers.limitOffset,
+        values,
+      ));
+      if (!C.skipValidation) {
+        selectExpressionAliasesNotInScope(ret);
+      }
+      return ret;
+    });
   },
 };
 

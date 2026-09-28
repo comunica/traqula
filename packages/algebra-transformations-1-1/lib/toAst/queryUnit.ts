@@ -132,7 +132,7 @@ AstIndir<'translateProject', PatternGroup, [Algebra.Project | Algebra.Ask | Alge
         <typeof expr>SUBRULE(replaceAlgAggregatorVariables, expr, aggregators);
     }
     SUBRULE(registerAlgGroupBy, result, extensions);
-    SUBRULE(registerOrderBy, result);
+    SUBRULE(registerOrderBy, result, aggregators);
     SUBRULE(registerVariables, select, variables, extensions);
     SUBRULE(putExtensionsInGroup, result, extensions);
 
@@ -180,13 +180,19 @@ export const registerAlgGroupBy: AstIndir<'registerGroupBy', void, [QueryBase, R
   },
 };
 
-export const registerOrderBy: AstIndir<'registerOrderBy', void, [QueryBase]> = {
+/**
+ * Aggregators used in an ordering are bound to a variable by the group operation.
+ * Such variables are replaced by the aggregator they represent.
+ */
+export const registerOrderBy:
+AstIndir<'registerOrderBy', void, [QueryBase, Record<string, Expression>?]> = {
   name: 'registerOrderBy',
-  fun: ({ SUBRULE }) => ({ astFactory: F, order }, result) => {
+  fun: ({ SUBRULE }) => ({ astFactory: F, order }, result, aggregators = {}) => {
     if (order.length > 0) {
       result.solutionModifiers.order = F.solutionModifierOrder(
         order
           .map(x => SUBRULE(translateAlgExpressionOrOrdering, x))
+          .map(x => <typeof x>SUBRULE(replaceAlgAggregatorVariables, x, aggregators))
           .map((o: Ordering | Expression) =>
             F.isExpression(o) ?
                 ({

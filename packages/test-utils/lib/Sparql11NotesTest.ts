@@ -14,7 +14,7 @@ interface Parser {
  * @param _DF - A DataFactory instance (currently unused, reserved for future tests).
  */
 export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQuad>): void {
-  function testErroneousQuery(query: string, _errorMsg: string): TestFunction<object> {
+  function testErroneousQuery(query: string, errorMsg: string | RegExp): TestFunction<object> {
     return ({ expect }) => {
       let error: any;
       try {
@@ -24,15 +24,18 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
       }
       expect(error).not.toBeUndefined();
       expect(error).toBeInstanceOf(Error);
-      // Expect(error.message).toContain(errorMsg);
+      expect(error.message).toMatch(errorMsg);
     };
   }
 
-  it('should throw an error on an invalid query', testErroneousQuery('invalid', 'Parse error on line 1'));
+  it('should throw an error on an invalid query', testErroneousQuery(
+    'invalid',
+    'unexpected character: ->v<- at offset: 2',
+  ));
 
   it('should throw an error on a projection of ungrouped variable', testErroneousQuery(
     'PREFIX : <http://www.example.org/> SELECT ?o WHERE { ?s ?p ?o } GROUP BY ?s',
-    'Projection of ungrouped variable (?o)',
+    'Variable not allowed in projection',
   ));
 
   it('should throw an error on a values class with LESS variables than value', testErroneousQuery(
@@ -57,7 +60,7 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
 
   it('should throw an error on bind to variable in scope', testErroneousQuery(
     'SELECT * { ?s ?p ?o BIND(?o AS ?o) }',
-    'Target id of \'AS\' (?X) already used in subquery',
+    'Variable used to bind is already bound (?o)',
   ));
 
   it('should parse when not ending in newline', ({ expect }) => {
@@ -118,44 +121,71 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
   describe('for update queries', () => {
     it('should throw an error on blank nodes in DELETE clause', testErroneousQuery(
       'DELETE { ?a <ex:knows> [] . } WHERE { ?a <ex:knows> "Alan" . }',
-      'Detected illegal blank node in BGP',
+      /Blank nodes are not allowed in this context|but found: '\[\]'/u,
     ));
 
     it('should not throw on blank nodes in INSERT clause', ({ expect }) => {
       const query = 'INSERT { ?a <ex:knows> [] . } WHERE { ?a <ex:knows> "Alan" . }';
-      // TODO: add proper test
-      expect(parser.parse(query)).toMatchObject({});
+      expect(parser.parse(query)).toMatchObject({
+        type: 'update',
+        updates: [{ operation: {
+          type: 'updateOperation',
+          subType: 'modify',
+          delete: [],
+          insert: [{ type: 'pattern', subType: 'bgp', triples: [{
+            type: 'triple',
+            subject: { type: 'term', subType: 'variable', value: 'a' },
+            predicate: { type: 'term', subType: 'namedNode', value: 'ex:knows' },
+            object: { type: 'term', subType: 'blankNode' },
+          }]}],
+          where: { type: 'pattern', subType: 'group', patterns: [{ type: 'pattern', subType: 'bgp', triples: [{
+            object: { type: 'term', subType: 'literal', value: 'Alan' },
+          }]}]},
+        }}],
+      });
     });
 
     it('should throw an error on blank nodes in compact DELETE clause', testErroneousQuery(
       'DELETE WHERE { _:a <ex:p> <ex:o> }',
-      'Detected illegal blank node in BGP',
+      /Blank nodes are not allowed in this context|but found: '_:a'/u,
     ));
 
     it('should throw an error on variables in DELETE DATA clause', testErroneousQuery(
       'DELETE DATA { ?a <ex:p> <ex:o> }',
-      'Detected illegal variable in BGP',
+      'but found: \'?a\'',
     ));
 
     it('should throw an error on blank nodes in DELETE DATA clause', testErroneousQuery(
       'DELETE DATA { _:a <ex:p> <ex:o> }',
-      'Detected illegal blank node in BGP',
+      /Blank nodes are not allowed in this context|but found: '_:a'/u,
     ));
 
     it('should throw an error on variables in DELETE DATA clause with GRAPH', testErroneousQuery(
       'DELETE DATA { GRAPH ?a { <ex:s> <ex:p> <ex:o> } }',
-      'Detected illegal variable in GRAPH',
+      'but found: \'?a\'',
     ));
 
     it('should throw an error on variables in INSERT DATA clause', testErroneousQuery(
       'INSERT DATA { ?a <ex:p> <ex:o> }',
-      'Detected illegal variable in BGP',
+      'but found: \'?a\'',
     ));
 
     it('should not throw on reused blank nodes in one INSERT DATA clause', ({ expect }) => {
       const query = 'INSERT DATA { _:a <ex:p> <ex:o> . _:a <ex:p> <ex:o> . }';
-      // Todo: add proper test
-      expect(parser.parse(query)).toMatchObject({});
+      const triple = {
+        type: 'triple',
+        subject: { type: 'term', subType: 'blankNode', label: 'e_a' },
+        predicate: { type: 'term', subType: 'namedNode', value: 'ex:p' },
+        object: { type: 'term', subType: 'namedNode', value: 'ex:o' },
+      };
+      expect(parser.parse(query)).toMatchObject({
+        type: 'update',
+        updates: [{ operation: {
+          type: 'updateOperation',
+          subType: 'insertdata',
+          data: [{ type: 'pattern', subType: 'bgp', triples: [ triple, triple ]}],
+        }}],
+      });
     });
 
     it('should throw an error on reused blank nodes across INSERT DATA clauses', testErroneousQuery(
@@ -168,24 +198,13 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
       'Detected reuse blank node across different INSERT DATA clauses',
     ));
 
-    it('should not throw on comment between INSERT and DATA', ({ expect }) => {
-      const query = `INSERT
-# Comment
-DATA { GRAPH <ex:G> { <ex:s> <ex:p> 'o1', 'o2', 'o3' } }`;
-      // TODO: add proper test
-      expect(parser.parse(query)).toMatchObject({});
-    });
-
-    it('should not throw on comment after INSERT that could be confused with DATA', ({ expect }) => {
-      const query = `INSERT # DATA
-DATA { GRAPH <ex:G> { <ex:s> <ex:p> 'o1', 'o2', 'o3' } }`;
-      // TODO: add proper test
-      expect(parser.parse(query)).toMatchObject({});
-    });
+    // Comments between INSERT and DATA are covered by the static tests
+    // sparql-update-comment-between-insert-data and sparql-update-commented-data-after-insert.
 
     it('should throw an error on commented DATA after INSERT', testErroneousQuery(
       'INSERT # DATA { GRAPH <ex:G> { <ex:s> <ex:p> \'o1\', \'o2\', \'o3\' } }',
-      'Parse error',
+      // The commented DATA makes INSERT expect a template, but the input ends right after the comment
+      'Expecting --> { <-- but found --> \'\' <--',
     ));
   });
 
@@ -198,8 +217,12 @@ DATA { GRAPH <ex:G> { <ex:s> <ex:p> 'o1', 'o2', 'o3' } }`;
     'should not throw an error on unicode codepoint escaping in literal with complete surrogate pair',
     ({ expect }) => {
       const query = 'SELECT * WHERE { ?s <ex:p> \'\uD800\uDFFF\' }';
-      // TODO: add proper test
-      expect(parser.parse(query)).toMatchObject({});
+      const object = { type: 'term', subType: 'literal', value: '\u{103FF}' };
+      expect(parser.parse(query)).toMatchObject({ where: { patterns: [{ triples: [{ object }]}]}});
+      // The \U escaped code point yields the same literal. Escaping the surrogate pair itself (\uD800\uDFFF)
+      // is only legal in SPARQL 1.1: see the sparqlCodepointEscape tests and the 1.2 surrogate-esc-*-bad statics.
+      expect(parser.parse('SELECT * WHERE { ?s <ex:p> \'\\U000103FF\' }'))
+        .toMatchObject({ where: { patterns: [{ triples: [{ object }]}]}});
     },
   );
 }

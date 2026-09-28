@@ -170,7 +170,7 @@ export const translateAlgJoin: AstIndir<'translateJoin', Pattern[], [Algebra.Joi
   fun: ({ SUBRULE }) => ({ astFactory: F }, op) => {
     // An OPTIONAL or MINUS applies to everything preceding it in its group.
     // Operands other than the first must thus be scoped by their own group when they contain one,
-    // otherwise Join(A, Minus(B, C)) would be read back as Minus(Join(A, B), C).
+    // and thus get rewrapped ina  group, otherwise Join(A, Minus(B, C)) would be read back as Minus(Join(A, B), C).
     const arr = op.input.flatMap((x, index) => {
       const patterns = SUBRULE(operationAlgInputAsPatternList, x);
       if (index > 0 && patterns.some(pattern => F.isPatternOptional(pattern) || F.isPatternMinus(pattern))) {

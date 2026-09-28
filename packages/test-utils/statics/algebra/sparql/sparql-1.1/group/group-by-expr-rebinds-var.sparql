@@ -1,0 +1,3 @@
+SELECT ?o (COUNT(*) AS ?c)
+WHERE { ?s ?p ?o }
+GROUP BY (STR(?o) AS ?o)

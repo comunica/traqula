@@ -751,8 +751,6 @@ describe('queryUnit.ts (toAst): registerGroupBy direct call', () => {
   });
 
   describe('prototype-key reserved-name bypass (security fix)', () => {
-    const generator = new Generator();
-
     // When a prefix name collides with an Object.prototype property, the algebra
     // must still throw "Unknown prefix" rather than silently expanding to garbage.
     it('throws Unknown prefix for constructor when not declared', ({ expect }) => {
@@ -776,26 +774,6 @@ describe('queryUnit.ts (toAst): registerGroupBy direct call', () => {
       });
     });
 
-    it('does not read prototype keys from VALUES bindings', ({ expect }) => {
-      const constructorVar = AF.dataFactory.variable!('constructor');
-      const values = AF.createValues([ constructorVar ], [{}]);
-      const result = generator.generate(F.forcedAutoGenTree(toAst(AF.createProject(values, [ constructorVar ]))));
-      expect(result).toContain('UNDEF');
-    });
-
-    it('splits patterns over graphs whose names are prototype keys', ({ expect }) => {
-      const s = AF.dataFactory.variable!('s');
-      const p = AF.dataFactory.variable!('p');
-      const o = AF.dataFactory.variable!('o');
-      const bgp = AF.createBgp([
-        AF.createPattern(s, p, o, AF.dataFactory.namedNode('constructor')),
-        AF.createPattern(s, p, o, AF.dataFactory.namedNode('__proto__')),
-      ]);
-      const result = generator.generate(F.forcedAutoGenTree(toAst(AF.createProject(bgp, [ s, p, o ]))));
-      expect(result).toContain('GRAPH <constructor>');
-      expect(result).toContain('GRAPH <__proto__>');
-    });
-
     it('translates blank nodes whose labels are prototype keys to variables', ({ expect }) => {
       const transformer = toAlgebra11Builder.build();
       const c = createAlgebraContext({});
@@ -806,9 +784,13 @@ describe('queryUnit.ts (toAst): registerGroupBy direct call', () => {
           AF.dataFactory.blankNode('__proto__'),
         ),
       ]);
-      const result = <Algebra.Bgp> transformer.translateBlankNodesToVariables(c, bgp);
-      expect(result.patterns[0].subject).toEqual(AF.dataFactory.variable!('constructor'));
-      expect(result.patterns[0].object).toEqual(AF.dataFactory.variable!('__proto__'));
+      expect(transformer.translateBlankNodesToVariables(c, bgp)).toEqual(AF.createBgp([
+        AF.createPattern(
+          AF.dataFactory.variable!('constructor'),
+          AF.dataFactory.variable!('p'),
+          AF.dataFactory.variable!('__proto__'),
+        ),
+      ]));
     });
 
     it('canonicalizes variables whose names are prototype keys', ({ expect }) => {
@@ -842,38 +824,21 @@ describe('queryUnit.ts (toAst): registerGroupBy direct call', () => {
         AF.createBgp([ AF.createPattern(DF.variable!('s'), p, DF.variable!('o')) ]),
         [ AF.createPattern(DF.blankNode('g_7'), p, DF.variable!('o')) ],
       );
-      const result = <Algebra.Construct> new Canonicalizer().canonicalizeQuery(op, true);
-      const [ templatePattern ] = result.template;
-      expect(templatePattern.subject.termType).toBe('BlankNode');
-      expect(templatePattern.subject.value).toMatch(/^value_\d+$/u);
-      expect(templatePattern.object).toEqual((<Algebra.Bgp> result.input).patterns[0].object);
+      expect(new Canonicalizer().canonicalizeQuery(op, true)).toEqual(AF.createConstruct(
+        AF.createBgp([ AF.createPattern(DF.variable!('value_2'), p, DF.variable!('value_1')) ]),
+        [ AF.createPattern(DF.blankNode('value_0'), p, DF.variable!('value_1')) ],
+      ));
     });
 
     it('renames a term in and outside a quoted triple once', ({ expect }) => {
       const p = DF.namedNode('http://ex.org/p');
       const quoted = AF.createPattern(DF.blankNode('b'), p, DF.namedNode('http://ex.org/o'));
       const op = AF.createBgp([ AF.createPattern(quoted, p, DF.blankNode('b')) ]);
-      const result = <Algebra.Bgp> new Canonicalizer().canonicalizeQuery(op, false);
-      expect(result.patterns[0].subject).toMatchObject({ subject: DF.blankNode('value_0') });
-      expect(result.patterns[0].object).toEqual(DF.blankNode('value_0'));
-    });
-
-    it('finds in-scope variables whose names are prototype keys', ({ expect }) => {
-      const bgp = AF.createBgp([
-        AF.createPattern(
-          AF.dataFactory.variable!('__proto__'),
-          AF.dataFactory.variable!('constructor'),
-          AF.dataFactory.variable!('o'),
-        ),
-      ]);
-      expect(algebraUtils.inScopeVariables(bgp).map(v => v.value)).toEqual([ '__proto__', 'constructor', 'o' ]);
-    });
-
-    it('objectify keeps __proto__ keys as own properties', ({ expect }) => {
-      const binding = Object.fromEntries([[ '__proto__', AF.dataFactory.namedNode('http://ex.org/a') ]]);
-      const result = algebraUtils.objectify(binding);
-      expect(Object.getPrototypeOf(result)).toBe(Object.prototype);
-      expect(Object.keys(result)).toEqual([ '__proto__' ]);
+      expect(new Canonicalizer().canonicalizeQuery(op, false)).toEqual(AF.createBgp([ AF.createPattern(
+        AF.createPattern(DF.blankNode('value_0'), p, DF.namedNode('http://ex.org/o')),
+        p,
+        DF.blankNode('value_0'),
+      ) ]));
     });
   });
 

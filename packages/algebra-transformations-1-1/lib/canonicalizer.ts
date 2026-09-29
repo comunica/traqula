@@ -21,6 +21,7 @@ export class Canonicalizer {
 
   /**
    * Replaces values of BlankNodes in a query with newly generated names.
+   * This includes the blank nodes of CONSTRUCT templates: they get a new name but remain blank nodes.
    * @param res
    * @param replaceVariables
    */
@@ -30,9 +31,7 @@ export class Canonicalizer {
     const factory = new AlgebraFactory();
 
     return util.mapOperation<'unsafe', typeof res>(res, {
-      // Do not iterate into patterns and paths: replaceValue already handles their (quoted triple) terms.
       [Algebra.Types.PATH]: {
-        preVisitor: () => ({ continue: false }),
         transform: pathOp => factory.createPath(
           this.replaceValue(pathOp.subject, nameMapping, replaceVariables, factory),
           pathOp.predicate,
@@ -41,7 +40,6 @@ export class Canonicalizer {
         ),
       },
       [Algebra.Types.PATTERN]: {
-        preVisitor: () => ({ continue: false }),
         transform: patternOp => factory.createPattern(
           this.replaceValue(patternOp.subject, nameMapping, replaceVariables, factory),
           this.replaceValue(patternOp.predicate, nameMapping, replaceVariables, factory),

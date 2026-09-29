@@ -1,0 +1,10 @@
+SELECT ( EXISTS {
+  GRAPH ?g {
+    ?s <http://www.example.org/q> ?r .
+  }
+}
+AS ?b ) ?g ?o ?s WHERE {
+  GRAPH ?g {
+    ?s <http://www.example.org/p> ?o .
+  }
+}

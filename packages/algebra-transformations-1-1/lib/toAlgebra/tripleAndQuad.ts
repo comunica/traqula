@@ -135,6 +135,8 @@ AlgebraIndir<'recurseGraph', Algebra.Operation, [Algebra.Operation, RDF.Term, RD
         replacement = SUBRULE(generateFreshVar);
       }
       algOp.input = SUBRULE(recurseGraph, algOp.input, graph, replacement);
+      // The expression can contain EXISTS patterns, which are evaluated against the active graph
+      algOp.expression = <Algebra.Expression> SUBRULE(recurseGraph, algOp.expression, graph, replacement);
     } else if (algOp.type === types.MINUS && graph.termType === 'Variable') {
       algOp.graphScopeVar = graph;
       algOp.input = [

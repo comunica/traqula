@@ -1,0 +1,10 @@
+SELECT ( IF( NOT EXISTS {
+  GRAPH <http://www.example.org/graph> {
+    ?s <http://www.example.org/q> ?r .
+  }
+}
+, ?o , ?s ) AS ?b ) ?o ?s WHERE {
+  GRAPH <http://www.example.org/graph> {
+    ?s <http://www.example.org/p> ?o .
+  }
+}

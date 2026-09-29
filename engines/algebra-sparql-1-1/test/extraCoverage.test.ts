@@ -70,6 +70,34 @@ GROUP BY ( ?y AS ?x )`);
     });
   });
 
+  describe('projection of an aggregate variable', () => {
+    const s = AF.dataFactory.variable!('s');
+    const p = AF.dataFactory.variable!('p');
+    const o = AF.dataFactory.variable!('o');
+    const var0 = AF.dataFactory.variable!('var0');
+    const project = AF.createProject(
+      AF.createGroup(
+        AF.createBgp([ AF.createPattern(s, p, o) ]),
+        [ s ],
+        [ AF.createBoundAggregate(var0, 'count', AF.createTermExpression(o), false) ],
+      ),
+      [ var0, s ],
+    );
+
+    it('selects the aggregate bound to the variable', ({ expect }) => {
+      const result = generator.generate(F.forcedAutoGenTree(toAst(project)));
+      expect(result).toBe(`SELECT ( COUNT( ?o ) AS ?var0 ) ?s WHERE {
+  ?s ?p ?o .
+}
+GROUP BY ?s`);
+    });
+
+    it('generates a query that parses and round-trips unchanged', ({ expect }) => {
+      const result = generator.generate(F.forcedAutoGenTree(toAst(project)));
+      expect(roundTrip(result)).toBe(result);
+    });
+  });
+
   describe('insert/DELETE without quads option throws', () => {
     it('toAlgebra throws when INSERT DATA is converted without quads option', ({ expect }) => {
       const ast = parser.parse('INSERT DATA { <http://s> <http://p> <http://o> }');

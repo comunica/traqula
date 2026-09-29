@@ -117,7 +117,7 @@ AstIndir<'translateProject', PatternGroup, [Algebra.Project | Algebra.Ask | Alge
     result.where = F.patternGroup(input, F.gen());
 
     // Map from variable to what agg it represents
-    const aggregators: Record<string, Expression> = {};
+    const aggregators: Record<string, Expression> = Object.create(null);
     // These can not reference each other
     for (const agg of c.aggregates) {
       aggregators[(<RdfTermToAst<typeof agg.variable>>SUBRULE(translateAlgTerm, agg.variable)).value] =
@@ -125,11 +125,20 @@ AstIndir<'translateProject', PatternGroup, [Algebra.Project | Algebra.Ask | Alge
     }
 
     // Do these in reverse order since variables in one extend might apply to an expression in another extend
-    const extensions: Record<string, Expression> = {};
+    const extensions: Record<string, Expression> = Object.create(null);
     for (const e of [ ...c.extend ].reverse()) {
       const expr = SUBRULE(translateAlgPureExpression, e.expression);
       extensions[(<RdfTermToAst<typeof e.variable>>SUBRULE(translateAlgTerm, e.variable)).value] =
         <typeof expr>SUBRULE(replaceAlgAggregatorVariables, expr, aggregators);
+    }
+    // SPARQL can only select an aggregate as `(aggregate AS ?variable)`,
+    //  so a SELECT of an aggregate's variable needs the aggregate as its projection expression.
+    if (type === types.PROJECT) {
+      for (const variable of (<Algebra.Project>op).variables) {
+        if (aggregators[variable.value]) {
+          extensions[variable.value] = aggregators[variable.value];
+        }
+      }
     }
     SUBRULE(registerAlgGroupBy, result, extensions);
     SUBRULE(registerOrderBy, result);
@@ -206,31 +215,20 @@ AstIndir<'registerVariables', void, [QuerySelect, RDF.Variable[] | undefined, Re
   name: 'registerVariables',
   fun: ({ SUBRULE }) => ({ astFactory: F, extend }, select, variables, extensions) => {
     if (variables) {
-      // SELECT expressions are evaluated from left to right, after the WHERE clause.
-      //  Only the outermost extends can thus become SELECT expressions,
-      //  and only when they are projected in the same order as they are nested.
-      //  Starting at the outermost extend, we move extensions until that is no longer the case.
-      //  The remaining (unused) extensions will be put in the WHERE clause as BIND operations.
-      const selectExpressions: Record<string, Expression> = {};
-      let lastIndex = variables.length;
-      for (const { variable } of extend) {
-        if (!extensions[variable.value]) {
-          // Already used, e.g., by GROUP BY
-          continue;
-        }
-        const index = variables.findIndex(term => term.value === variable.value);
-        if (index < 0 || index > lastIndex) {
-          break;
-        }
-        lastIndex = index;
-        selectExpressions[variable.value] = extensions[variable.value];
-        // Remove used extensions so only unused ones remain
-        delete extensions[variable.value];
-      }
+      // SELECT expressions are evaluated left to right, after the WHERE clause.
+      //  Only the outermost extends, projected in nesting order, can thus become SELECT expressions.
+      //  The other extends stay BIND operations in the WHERE clause. Projected aggregates can always be selected.
+      const unused = extend.filter(({ variable }) => extensions[variable.value]);
+      const indices = unused.map(({ variable }) => variables.findIndex(term => term.value === variable.value));
+      const stop = indices.findIndex((index, i) => index < 0 || (i > 0 && index > indices[i - 1]));
+      const binds = new Set(unused.slice(stop < 0 ? unused.length : stop).map(({ variable }) => variable.value));
       select.variables = variables.map((term): TermVariable | PatternBind => {
         const v = <RdfTermToAst<typeof term>>SUBRULE(translateAlgTerm, term);
-        if (selectExpressions[v.value]) {
-          return F.patternBind(selectExpressions[v.value], v, F.gen());
+        if (extensions[v.value] && !binds.has(v.value)) {
+          const result: Expression = extensions[v.value];
+          // Remove used extensions so only unused ones remain
+          delete extensions[v.value];
+          return F.patternBind(result, v, F.gen());
         }
         return v;
       });

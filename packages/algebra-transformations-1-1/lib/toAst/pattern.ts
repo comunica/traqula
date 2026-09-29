@@ -161,9 +161,10 @@ export const translateAlgGroup: AstIndir<'translateGroup', Pattern | Pattern[], 
     let input = op.input;
     // Group conditions are evaluated in order: the extends (top to bottom) must bind group variables in reverse order,
     // so each extend may only bind a group variable preceding the one bound by the extend above it.
-    let groupVariables = op.variables.map(variable => variable.value);
-    while (input.type === types.EXTEND && groupVariables.includes(input.variable.value)) {
-      groupVariables = groupVariables.slice(0, groupVariables.indexOf(input.variable.value));
+    const groupVariableIndex = new Map(op.variables.map((variable, index) => [ variable.value, index ]));
+    let lastIndex = op.variables.length;
+    while (input.type === types.EXTEND && (groupVariableIndex.get(input.variable.value) ?? lastIndex) < lastIndex) {
+      lastIndex = <number> groupVariableIndex.get(input.variable.value);
       extend.push(input);
       input = input.input;
     }

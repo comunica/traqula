@@ -322,6 +322,34 @@ GROUP BY ?s`);
     });
   });
 
+  // TODO(major): remove together with the deprecated filterReplace and objectContainsVariable
+  describe('deprecated filterReplace', () => {
+    it('moves filters mentioning an aggregator variable to the havings, also in nested groups', ({ expect }) => {
+      const transformer = toAst11Builder.build();
+      const c = createAstContext();
+      const query = <any> parser.parse('SELECT * { ?s ?p ?o FILTER(?agg > 1) FILTER(?x) { FILTER(STR(?agg)) } }');
+      const aggregate = F.termVariable('replaced', F.gen());
+      const havings: any[] = [];
+      const result = <any> transformer.filterReplace(c, query.where, { agg: aggregate }, havings);
+      expect(havings).toMatchObject([
+        { type: 'expression', args: [{ value: 'replaced' }]},
+        { type: 'expression', subType: 'operation', operator: '>', args: [{ value: 'replaced' }, {}]},
+      ]);
+      expect(result.patterns).toMatchObject([
+        { type: 'pattern', subType: 'bgp' },
+        { type: 'pattern', subType: 'filter', expression: { value: 'x' }},
+        { type: 'pattern', subType: 'group', patterns: []},
+      ]);
+    });
+
+    it('returns non-group patterns as is', ({ expect }) => {
+      const transformer = toAst11Builder.build();
+      const c = createAstContext();
+      const bgp = F.patternBgp([], F.gen());
+      expect(transformer.filterReplace(c, bgp, {}, [])).toBe(bgp);
+    });
+  });
+
   describe('translateAlgTerm with invalid term type', () => {
     it('throws on an unrecognised term type', ({ expect }) => {
       const transformer = toAst11Builder.build();

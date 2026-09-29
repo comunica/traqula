@@ -105,6 +105,7 @@ AstIndir<'translateProject', PatternGroup, [Algebra.Project | Algebra.Ask | Alge
     const extend = c.extend;
     const group = c.group;
     const aggregates = c.aggregates;
+    const having = c.having;
     const order = c.order;
     SUBRULE(resetContext);
     c.project = true;
@@ -145,18 +146,19 @@ AstIndir<'translateProject', PatternGroup, [Algebra.Project | Algebra.Ask | Alge
     SUBRULE(registerVariables, select, variables, extensions);
     SUBRULE(putExtensionsInGroup, result, extensions);
 
-    // Convert all filters to 'having' if it contains an aggregator variable
-    // could always convert, but is nicer to keep as filter when possible
-    const havings: Expression[] = [];
-    result.where = <PatternGroup> SUBRULE(filterReplace, result.where, aggregators, havings);
-    if (havings.length > 0) {
-      select.solutionModifiers.having = F.solutionModifierHaving(havings, F.gen());
+    // Filters on top of the group are HAVING conditions, they can reference the aggregators
+    if (c.having.length > 0) {
+      select.solutionModifiers.having = F.solutionModifierHaving(
+        c.having.map(expr => <typeof expr> SUBRULE(replaceAlgAggregatorVariables, expr, aggregators)),
+        F.gen(),
+      );
     }
 
     // Recover state
     c.extend = extend;
     c.group = group;
     c.aggregates = aggregates;
+    c.having = having;
     c.order = order;
 
     // Subqueries need to be in a group! Top level grouping is removed at toAst function
@@ -264,7 +266,10 @@ export const putExtensionsInGroup: AstIndir<'putExtensionsInGroup', void, [Query
 
 /**
  * If second arg is a Group, we will return a group.
+ * @deprecated No longer used: HAVING conditions are now collected by `translateAlgFilter`
+ * in `AstContext.having` and emitted by {@link translateAlgProject}.
  */
+// TODO(major): remove
 export const filterReplace: AstIndir<
   'filterReplace',
 PatternGroup | Pattern,
@@ -290,6 +295,10 @@ PatternGroup | Pattern,
   },
 };
 
+/**
+ * @deprecated No longer used, only served {@link filterReplace}.
+ */
+// TODO(major): remove
 export const objectContainsVariable: AstIndir<'objectContainsVariable', boolean, [any, string[]]> = {
   name: 'objectContainsVariable',
   fun: ({ SUBRULE }) => ({ astFactory: F }, o, vals) => {

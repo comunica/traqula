@@ -117,7 +117,7 @@ AstIndir<'translateProject', PatternGroup, [Algebra.Project | Algebra.Ask | Alge
     result.where = F.patternGroup(input, F.gen());
 
     // Map from variable to what agg it represents
-    const aggregators: Record<string, Expression> = {};
+    const aggregators: Record<string, Expression> = Object.create(null);
     // These can not reference each other
     for (const agg of c.aggregates) {
       aggregators[(<RdfTermToAst<typeof agg.variable>>SUBRULE(translateAlgTerm, agg.variable)).value] =
@@ -125,7 +125,7 @@ AstIndir<'translateProject', PatternGroup, [Algebra.Project | Algebra.Ask | Alge
     }
 
     // Do these in reverse order since variables in one extend might apply to an expression in another extend
-    const extensions: Record<string, Expression> = {};
+    const extensions: Record<string, Expression> = Object.create(null);
     for (const e of c.extend.reverse()) {
       const expr = SUBRULE(translateAlgPureExpression, e.expression);
       extensions[(<RdfTermToAst<typeof e.variable>>SUBRULE(translateAlgTerm, e.variable)).value] =

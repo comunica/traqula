@@ -67,7 +67,9 @@ unknown,
       return unknownVal.map(sub => SUBRULE(removeAlgQuadsRecursive, sub, graphs, projectionScope));
     }
 
-    if (typeof unknownVal !== 'object' || unknownVal === null || !('type' in unknownVal) || !unknownVal.type) {
+    // Operations have a string `type`. VALUES bindings can hold a `type` key too (for `?type`), holding a term.
+    if (typeof unknownVal !== 'object' || unknownVal === null || !('type' in unknownVal) ||
+      typeof unknownVal.type !== 'string') {
       return unknownVal;
     }
     const knownOp = <Algebra.Operation> unknownVal;
@@ -92,15 +94,17 @@ unknown,
     }
 
     // We build our `op` again.
+    // Keys are those of an operation, never user-controlled names (see the `type` check above),
+    //  and the result is an operation again, so it keeps the regular Object prototype.
     const result: any = {};
     // Unique graphs per key (keyof T)
-    const keyGraphs: Record<string, (RDF.NamedNode | RDF.DefaultGraph)[]> = {};
+    const keyGraphs: Record<string, (RDF.NamedNode | RDF.DefaultGraph)[]> = Object.create(null);
     // For keys holding an array: the graph each element registered, if any.
     // Not every element registers one (e.g. the term `?s` in `IF(?s, EXISTS {...}, EXISTS {...})`),
     // so the graphs of a key cannot be matched with its elements by index.
-    const elementGraphs: Record<string, (RDF.NamedNode | RDF.DefaultGraph | undefined)[]> = {};
+    const elementGraphs: Record<string, (RDF.NamedNode | RDF.DefaultGraph | undefined)[]> = Object.create(null);
     // Track all the unique graph names for the entire Operation
-    const operationGraphNames: Record<string, RDF.NamedNode | RDF.DefaultGraph> = {};
+    const operationGraphNames: Record<string, RDF.NamedNode | RDF.DefaultGraph> = Object.create(null);
     for (const [ key, value ] of Object.entries(knownOp)) {
       const newGraphs: (RDF.NamedNode | RDF.DefaultGraph)[] = [];
       // Only `input` ever continues a projection-scope chain; every other key (an EXTEND's own
@@ -186,7 +190,7 @@ Algebra.Join | Algebra.Graph | Algebra.Bgp,
   name: 'splitBgpToGraphs',
   fun: () => ({ algebraFactory: AF }, op, graphs) => {
     // Split patterns per graph
-    const graphPatterns: Record<string, { patterns: Algebra.Pattern[]; graph: RDF.NamedNode }> = {};
+    const graphPatterns: Record<string, { patterns: Algebra.Pattern[]; graph: RDF.NamedNode }> = Object.create(null);
     for (const [ index, pattern ] of op.patterns.entries()) {
       const graph = graphs[index];
       graphPatterns[graph.value] = graphPatterns[graph.value] ?? { patterns: [], graph };

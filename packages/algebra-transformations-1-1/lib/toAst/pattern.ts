@@ -298,10 +298,10 @@ export const translateAlgValues: AstIndir<'translateValues', PatternValues, [Alg
     F.patternValues(
       op.variables.map(variable => F.termVariable(variable.value, F.gen())),
       op.bindings.map((binding) => {
-        const result: ValuePatternRow = {};
+        const result: ValuePatternRow = Object.create(null);
         for (const v of op.variables) {
           const s = v.value;
-          if (binding[s]) {
+          if (Object.hasOwn(binding, s) && binding[s]) {
             result[s] = <RdfTermToAst<typeof binding[typeof s]>> SUBRULE(translateAlgTerm, binding[s]);
           } else {
             result[s] = undefined;

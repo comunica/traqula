@@ -111,6 +111,35 @@ export function* sparqlQueries(suite: AlgebraTestSuite): Generator<GenQuery> {
   }
 }
 
+export type AlgebraOnlySuite = 'sparql-1.1-algebra-only';
+
+type AlgebraOnlyTest = { name: string; json: unknown; canonicalSparql: string };
+/**
+ * Yields test cases of algebra in a different form than toAlgebra produces, from the static test fixtures.
+ * Each test provides the algebra JSON and the canonical SPARQL string that it must translate to.
+ * @param suite - The algebra-only test suite to iterate.
+ */
+export function* sparqlAlgebraOnlyTests(suite: AlgebraOnlySuite): Generator<AlgebraOnlyTest> {
+  function* subGen(relativePath: string): Generator<AlgebraOnlyTest> {
+    const absolutePath = join(getRootJson(), relativePath);
+    if (lstatSync(absolutePath).isDirectory()) {
+      // Recursion
+      for (const sub of readdirSync(absolutePath)) {
+        yield* subGen(join(relativePath, sub));
+      }
+    } else {
+      const name = relativePath.replace(/\.json$/u, '');
+      yield {
+        name,
+        json: JSON.parse(readFileSync(absolutePath)),
+        canonicalSparql: readFileSync(join(getRootCanonicalSparql(), `${name}.sparql`)),
+      };
+    }
+  }
+
+  yield* subGen(suite);
+}
+
 export type NegativeAlgebraSuite = 'sparql-1.1-negative' | 'sparql-1.2-negative';
 
 /**

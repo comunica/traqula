@@ -158,17 +158,13 @@ export const translateAlgGraph: AstIndir<'translateGraph', PatternGraph, [Algebr
 export const translateAlgGroup: AstIndir<'translateGroup', Pattern | Pattern[], [Algebra.Group]> = {
   name: 'translateGroup',
   fun: ({ SUBRULE }) => ({ aggregates, group, extend }, op) => {
-    const groupVariables = op.variables.map(variable => variable.value);
     let input = op.input;
-    // Group conditions are evaluated in order: the extends (top to bottom) must bind group variables in reverse order
-    let lastIndex = groupVariables.length;
-    while (input.type === types.EXTEND) {
-      const index = groupVariables.indexOf(input.variable.value);
-      if (index < 0 || index >= lastIndex) {
-        break;
-      }
+    // Group conditions are evaluated in order: the extends (top to bottom) must bind group variables in reverse order,
+    // so each extend may only bind a group variable preceding the one bound by the extend above it.
+    let groupVariables = op.variables.map(variable => variable.value);
+    while (input.type === types.EXTEND && groupVariables.includes(input.variable.value)) {
+      groupVariables = groupVariables.slice(0, groupVariables.indexOf(input.variable.value));
       extend.push(input);
-      lastIndex = index;
       input = input.input;
     }
     const pattern = SUBRULE(translateAlgPatternNew, input);

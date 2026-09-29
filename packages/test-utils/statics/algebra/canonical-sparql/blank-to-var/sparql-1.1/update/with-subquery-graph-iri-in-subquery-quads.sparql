@@ -1,0 +1,13 @@
+DELETE {
+  GRAPH <http://example.org/g> {
+    ?x ?p ?o .
+  }
+}
+WHERE {
+  SELECT ?x ?p ?o WHERE {
+    GRAPH <http://example.org/g> {
+      ?x ?p ?o .
+      ?x ?q <http://example.org/g> .
+    }
+  }
+}

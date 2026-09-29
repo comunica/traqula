@@ -1,0 +1,7 @@
+SELECT ?x WHERE {
+  SELECT ?x WHERE {
+    GRAPH <http://example.org/g> {
+      ?x ?p <http://example.org/g> .
+    }
+  }
+}

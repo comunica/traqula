@@ -17,12 +17,12 @@
             "value": "p"
           },
           "object": {
-            "termType": "Variable",
-            "value": "y"
+            "termType": "NamedNode",
+            "value": "http://example.org/g"
           },
           "graph": {
-            "termType": "Variable",
-            "value": "g"
+            "termType": "NamedNode",
+            "value": "http://example.org/g"
           }
         }
       ]
@@ -30,19 +30,7 @@
     "variables": [
       {
         "termType": "Variable",
-        "value": "p"
-      },
-      {
-        "termType": "Variable",
         "value": "x"
-      },
-      {
-        "termType": "Variable",
-        "value": "y"
-      },
-      {
-        "termType": "Variable",
-        "value": "g"
       }
     ]
   },
@@ -50,10 +38,6 @@
     {
       "termType": "Variable",
       "value": "x"
-    },
-    {
-      "termType": "Variable",
-      "value": "p"
     }
   ]
 }

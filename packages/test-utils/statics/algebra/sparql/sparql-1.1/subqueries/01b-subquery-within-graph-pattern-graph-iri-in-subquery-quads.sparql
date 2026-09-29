@@ -1,0 +1,5 @@
+select ?x where {
+graph <http://example.org/g> {
+  {select ?x where {?x ?p <http://example.org/g>}}
+}
+}

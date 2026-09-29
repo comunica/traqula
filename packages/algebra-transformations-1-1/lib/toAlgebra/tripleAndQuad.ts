@@ -120,11 +120,24 @@ AlgebraIndir<'recurseGraph', Algebra.Operation, [Algebra.Operation, RDF.Term, RD
       if (algOp.graph.termType === 'DefaultGraph') {
         algOp.graph = graph;
       }
-    } else if (algOp.type === types.PROJECT && !replacement) {
-      // Need to replace variables in subqueries should the graph also be a variable of the same name
-      // unless the subquery projects that variable
-      if (!algOp.variables.some(v => v.equals(graph))) {
-        replacement = SUBRULE(generateFreshVar);
+    } else if (algOp.type === types.PROJECT) {
+      if (graph.termType === 'Variable' && (replacement !== undefined || !algOp.variables.some(v => v.equals(graph)))) {
+        // The patterns in the subquery bind the graph variable to the graph name,
+        // and GRAPH joins the result of the subquery with that graph name (18.5),
+        // so the subquery should keep projecting the graph variable.
+        // A variable of the same name within the subquery is scoped to it, so it is replaced.
+        const fresh = replacement ?? SUBRULE(generateFreshVar);
+        replacement = fresh;
+        const rename = (variable: RDF.Variable): RDF.Variable => variable.equals(graph) ? fresh : variable;
+        algOp.variables = [ ...algOp.variables.map(rename), graph ];
+        // Aggregates of the subquery are then computed per graph.
+        let op = algOp.input;
+        while ([ types.EXTEND, types.FILTER, types.ORDER_BY ].includes(op.type)) {
+          op = (<Algebra.Extend | Algebra.Filter | Algebra.OrderBy> op).input;
+        }
+        if (op.type === types.GROUP) {
+          op.variables = [ ...op.variables.map(rename), graph ];
+        }
       }
       algOp.input = SUBRULE(recurseGraph, algOp.input, graph, replacement);
     } else if (algOp.type === types.EXTEND && !replacement) {

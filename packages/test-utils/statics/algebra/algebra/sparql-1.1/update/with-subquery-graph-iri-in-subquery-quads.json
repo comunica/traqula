@@ -1,0 +1,87 @@
+{
+  "type": "deleteinsert",
+  "delete": [
+    {
+      "type": "pattern",
+      "termType": "Quad",
+      "subject": {
+        "termType": "Variable",
+        "value": "x"
+      },
+      "predicate": {
+        "termType": "Variable",
+        "value": "p"
+      },
+      "object": {
+        "termType": "Variable",
+        "value": "o"
+      },
+      "graph": {
+        "termType": "NamedNode",
+        "value": "http://example.org/g"
+      }
+    }
+  ],
+  "where": {
+    "type": "project",
+    "input": {
+      "type": "bgp",
+      "patterns": [
+        {
+          "type": "pattern",
+          "termType": "Quad",
+          "subject": {
+            "termType": "Variable",
+            "value": "x"
+          },
+          "predicate": {
+            "termType": "Variable",
+            "value": "p"
+          },
+          "object": {
+            "termType": "Variable",
+            "value": "o"
+          },
+          "graph": {
+            "termType": "NamedNode",
+            "value": "http://example.org/g"
+          }
+        },
+        {
+          "type": "pattern",
+          "termType": "Quad",
+          "subject": {
+            "termType": "Variable",
+            "value": "x"
+          },
+          "predicate": {
+            "termType": "Variable",
+            "value": "q"
+          },
+          "object": {
+            "termType": "NamedNode",
+            "value": "http://example.org/g"
+          },
+          "graph": {
+            "termType": "NamedNode",
+            "value": "http://example.org/g"
+          }
+        }
+      ]
+    },
+    "variables": [
+      {
+        "termType": "Variable",
+        "value": "x"
+      },
+      {
+        "termType": "Variable",
+        "value": "p"
+      },
+      {
+        "termType": "Variable",
+        "value": "o"
+      }
+    ]
+  }
+}

@@ -1,0 +1,5 @@
+with <http://example.org/g>
+delete { ?x ?p ?o }
+where {
+  {select ?x ?p ?o where {?x ?p ?o . ?x ?q <http://example.org/g>}}
+}

@@ -1,0 +1,12 @@
+SELECT ?g ?c WHERE {
+  GRAPH ?g {
+    {
+      SELECT ( COUNT( * ) AS ?c ) WHERE {
+        ?x ?p ?g .
+      }
+      GROUP BY ?g
+      HAVING ( COUNT( * ) > "1"^^<http://www.w3.org/2001/XMLSchema#integer> )
+      ORDER BY ASC ( ?c )
+    }
+  }
+}

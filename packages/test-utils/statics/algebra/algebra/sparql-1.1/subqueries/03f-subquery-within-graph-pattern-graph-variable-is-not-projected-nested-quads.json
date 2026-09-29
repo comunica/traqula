@@ -1,0 +1,98 @@
+{
+  "type": "project",
+  "input": {
+    "type": "project",
+    "input": {
+      "type": "join",
+      "input": [
+        {
+          "type": "project",
+          "input": {
+            "type": "bgp",
+            "patterns": [
+              {
+                "type": "pattern",
+                "termType": "Quad",
+                "subject": {
+                  "termType": "Variable",
+                  "value": "x"
+                },
+                "predicate": {
+                  "termType": "Variable",
+                  "value": "p"
+                },
+                "object": {
+                  "termType": "Variable",
+                  "value": "var0"
+                },
+                "graph": {
+                  "termType": "Variable",
+                  "value": "g"
+                }
+              }
+            ]
+          },
+          "variables": [
+            {
+              "termType": "Variable",
+              "value": "x"
+            },
+            {
+              "termType": "Variable",
+              "value": "var0"
+            },
+            {
+              "termType": "Variable",
+              "value": "g"
+            }
+          ]
+        },
+        {
+          "type": "bgp",
+          "patterns": [
+            {
+              "type": "pattern",
+              "termType": "Quad",
+              "subject": {
+                "termType": "Variable",
+                "value": "x"
+              },
+              "predicate": {
+                "termType": "Variable",
+                "value": "q"
+              },
+              "object": {
+                "termType": "Variable",
+                "value": "var0"
+              },
+              "graph": {
+                "termType": "Variable",
+                "value": "g"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "variables": [
+      {
+        "termType": "Variable",
+        "value": "x"
+      },
+      {
+        "termType": "Variable",
+        "value": "g"
+      }
+    ]
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "g"
+    },
+    {
+      "termType": "Variable",
+      "value": "x"
+    }
+  ]
+}

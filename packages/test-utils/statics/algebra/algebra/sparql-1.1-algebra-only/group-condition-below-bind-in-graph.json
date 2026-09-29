@@ -1,0 +1,96 @@
+{
+  "type": "project",
+  "input": {
+    "type": "group",
+    "input": {
+      "type": "extend",
+      "input": {
+        "type": "extend",
+        "input": {
+          "type": "bgp",
+          "patterns": [
+            {
+              "type": "pattern",
+              "termType": "Quad",
+              "subject": {
+                "termType": "Variable",
+                "value": "s"
+              },
+              "predicate": {
+                "termType": "Variable",
+                "value": "p"
+              },
+              "object": {
+                "termType": "Variable",
+                "value": "o"
+              },
+              "graph": {
+                "termType": "NamedNode",
+                "value": "http://example/g"
+              }
+            }
+          ]
+        },
+        "variable": {
+          "termType": "Variable",
+          "value": "a"
+        },
+        "expression": {
+          "type": "expression",
+          "subType": "operator",
+          "operator": "str",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "term",
+              "term": {
+                "termType": "Variable",
+                "value": "o"
+              }
+            }
+          ]
+        }
+      },
+      "variable": {
+        "termType": "Variable",
+        "value": "c"
+      },
+      "expression": {
+        "type": "expression",
+        "subType": "operator",
+        "operator": "str",
+        "args": [
+          {
+            "type": "expression",
+            "subType": "term",
+            "term": {
+              "termType": "Variable",
+              "value": "s"
+            }
+          }
+        ]
+      }
+    },
+    "variables": [
+      {
+        "termType": "Variable",
+        "value": "a"
+      },
+      {
+        "termType": "Variable",
+        "value": "b"
+      }
+    ],
+    "aggregates": []
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "a"
+    },
+    {
+      "termType": "Variable",
+      "value": "b"
+    }
+  ]
+}

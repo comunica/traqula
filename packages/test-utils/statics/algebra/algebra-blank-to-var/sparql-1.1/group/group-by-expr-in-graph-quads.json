@@ -25,15 +25,15 @@
                 "value": "o"
               },
               "graph": {
-                "termType": "DefaultGraph",
-                "value": ""
+                "termType": "NamedNode",
+                "value": "http://example/g"
               }
             }
           ]
         },
         "variable": {
           "termType": "Variable",
-          "value": "o"
+          "value": "x"
         },
         "expression": {
           "type": "expression",
@@ -54,7 +54,7 @@
       "variables": [
         {
           "termType": "Variable",
-          "value": "o"
+          "value": "x"
         }
       ],
       "aggregates": [
@@ -93,7 +93,7 @@
   "variables": [
     {
       "termType": "Variable",
-      "value": "o"
+      "value": "x"
     },
     {
       "termType": "Variable",

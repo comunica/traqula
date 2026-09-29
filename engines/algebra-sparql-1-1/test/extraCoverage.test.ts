@@ -68,6 +68,45 @@ describe('algebra-sparql-1-1 extra coverage', () => {
 }
 GROUP BY ( ?y AS ?x )`);
     });
+
+    describe('extend binding a non-group variable on top of a group-variable extend', () => {
+      const a = AF.dataFactory.variable!('a');
+      const b = AF.dataFactory.variable!('b');
+      const c = AF.dataFactory.variable!('c');
+      const s = AF.dataFactory.variable!('s');
+      const p = AF.dataFactory.variable!('p');
+      const o = AF.dataFactory.variable!('o');
+      function groupOver(pattern: Algebra.Operation): Algebra.Operation {
+        const extendA = AF.createExtend(pattern, a, AF.createOperatorExpression('str', [ AF.createTermExpression(o) ]));
+        const extendC = AF.createExtend(extendA, c, AF.createOperatorExpression('str', [ AF.createTermExpression(s) ]));
+        return <Algebra.Operation> AF.createProject(AF.createGroup(extendC, [ a, b ], []), [ a, b ]);
+      }
+
+      it('translates both extends to BINDs', ({ expect }) => {
+        const backAst = toAst(groupOver(AF.createBgp([ AF.createPattern(s, p, o) ])));
+        expect(generator.generate(F.forcedAutoGenTree(backAst))).toBe(`SELECT ?a ?b WHERE {
+  ?s ?p ?o .
+  BIND( STR( ?o ) AS ?a )
+  BIND( STR( ?s ) AS ?c )
+}
+GROUP BY ?a ?b`);
+      });
+
+      it('keeps both BINDs inside the GRAPH when removing quads', ({ expect }) => {
+        const pattern = AF.createPattern(s, p, o, AF.dataFactory.namedNode('http://example/g'));
+        const backAst = toAst(groupOver(AF.createBgp([ pattern ])));
+        expect(generator.generate(F.forcedAutoGenTree(backAst))).toBe(`SELECT ?a ?b WHERE {
+  GRAPH <http://example/g> {
+    {
+      ?s ?p ?o .
+      BIND( STR( ?o ) AS ?a )
+      BIND( STR( ?s ) AS ?c )
+    }
+  }
+}
+GROUP BY ?a ?b`);
+      });
+    });
   });
 
   describe('insert/DELETE without quads option throws', () => {

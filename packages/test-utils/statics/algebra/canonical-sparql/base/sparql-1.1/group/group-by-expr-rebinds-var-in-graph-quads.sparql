@@ -1,6 +1,0 @@
-SELECT ?o ( COUNT( * ) AS ?c ) WHERE {
-  GRAPH <http://example/g> {
-    ?s ?p ?o .
-  }
-}
-GROUP BY ( STR( ?o ) AS ?o )

@@ -134,15 +134,18 @@ AstIndir<'translateProject', PatternGroup, [Algebra.Project | Algebra.Ask | Alge
     }
     // SPARQL can only select an aggregate as `(aggregate AS ?variable)`,
     //  so a SELECT of an aggregate's variable needs the aggregate as its projection expression.
+    // SELECT expressions are bound before ORDER BY, so ORDER BY can keep referencing selected aggregates by variable.
+    const unselectedAggregators: Record<string, Expression> = Object.assign(Object.create(null), aggregators);
     if (type === types.PROJECT) {
       for (const variable of (<Algebra.Project>op).variables) {
         if (aggregators[variable.value]) {
           extensions[variable.value] = aggregators[variable.value];
+          delete unselectedAggregators[variable.value];
         }
       }
     }
     SUBRULE(registerAlgGroupBy, result, extensions);
-    SUBRULE(registerOrderBy, result);
+    SUBRULE(registerOrderBy, result, unselectedAggregators);
     SUBRULE(registerVariables, select, variables, extensions);
     SUBRULE(putExtensionsInGroup, result, extensions);
 
@@ -191,13 +194,19 @@ export const registerAlgGroupBy: AstIndir<'registerGroupBy', void, [QueryBase, R
   },
 };
 
-export const registerOrderBy: AstIndir<'registerOrderBy', void, [QueryBase]> = {
+/**
+ * Aggregators used in an ordering are bound to a variable by the group operation.
+ * Such variables are replaced by the aggregator they represent.
+ */
+export const registerOrderBy:
+AstIndir<'registerOrderBy', void, [QueryBase, Record<string, Expression>?]> = {
   name: 'registerOrderBy',
-  fun: ({ SUBRULE }) => ({ astFactory: F, order }, result) => {
+  fun: ({ SUBRULE }) => ({ astFactory: F, order }, result, aggregators = Object.create(null)) => {
     if (order.length > 0) {
       result.solutionModifiers.order = F.solutionModifierOrder(
         order
           .map(x => SUBRULE(translateAlgExpressionOrOrdering, x))
+          .map(x => <typeof x>SUBRULE(replaceAlgAggregatorVariables, x, aggregators))
           .map((o: Ordering | Expression) =>
             F.isExpression(o) ?
                 ({

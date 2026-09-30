@@ -6,7 +6,8 @@ import { AlgebraFactory } from './index.js';
 
 /**
  * Utility for canonicalizing SPARQL Algebra operations by replacing blank node
- * and variable names with deterministic generated names.
+ * and variable names with deterministic generated names,
+ * and by sorting the variables of projections, since those form a set.
  * Useful for comparing algebra representations in tests.
  */
 export class Canonicalizer {
@@ -31,6 +32,12 @@ export class Canonicalizer {
     const factory = new AlgebraFactory();
 
     return util.mapOperation<'unsafe', typeof res>(res, {
+      [Algebra.Types.PROJECT]: {
+        transform: projectOp => factory.createProject(
+          projectOp.input,
+          [ ...projectOp.variables ].sort((left, right) => left.value.localeCompare(right.value)),
+        ),
+      },
       [Algebra.Types.PATH]: {
         transform: pathOp => factory.createPath(
           this.replaceValue(pathOp.subject, nameMapping, replaceVariables, factory),

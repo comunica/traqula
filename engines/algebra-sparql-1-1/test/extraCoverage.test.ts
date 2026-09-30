@@ -830,6 +830,13 @@ describe('queryUnit.ts (toAst): registerGroupBy direct call', () => {
       ));
     });
 
+    it('sorts the variables of a projection', ({ expect }) => {
+      const bgp = AF.createBgp([ AF.createPattern(DF.variable!('s'), DF.variable!('p'), DF.variable!('o')) ]);
+      const [ o, p, s ] = [ 'o', 'p', 's' ].map(name => DF.variable!(name));
+      expect(new Canonicalizer().canonicalizeQuery(AF.createProject(bgp, [ s, o, p ]), false))
+        .toEqual(AF.createProject(bgp, [ o, p, s ]));
+    });
+
     it('renames a term in and outside a quoted triple once', ({ expect }) => {
       const p = DF.namedNode('http://ex.org/p');
       const quoted = AF.createPattern(DF.blankNode('b'), p, DF.namedNode('http://ex.org/o'));

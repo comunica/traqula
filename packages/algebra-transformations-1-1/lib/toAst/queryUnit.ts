@@ -216,13 +216,17 @@ AstIndir<'registerVariables', void, [QuerySelect, RDF.Variable[] | undefined, Re
   fun: ({ SUBRULE }) => ({ astFactory: F, extend }, select, variables, extensions) => {
     if (variables) {
       // SELECT expressions are evaluated left to right, after the WHERE clause.
-      //  Only the outermost extends, projected in nesting order, can thus become SELECT expressions.
-      //  The other extends stay BIND operations in the WHERE clause. Projected aggregates can always be selected.
+      //  Only the outermost projected extends can thus become SELECT expressions; the others stay BINDs.
+      //  The projection is a set, so the lifted extends fill their positions in nesting order, innermost first.
       const unused = extend.filter(({ variable }) => extensions[variable.value]);
-      const indices = unused.map(({ variable }) => variables.findIndex(term => term.value === variable.value));
-      const stop = indices.findIndex((index, i) => index < 0 || (i > 0 && index > indices[i - 1]));
-      const binds = new Set(unused.slice(stop < 0 ? unused.length : stop).map(({ variable }) => variable.value));
-      select.variables = variables.map((term): TermVariable | PatternBind => {
+      const stop = unused.findIndex(({ variable }) => !variables.some(term => term.value === variable.value));
+      const lifted = unused.slice(0, stop < 0 ? unused.length : stop);
+      const binds = new Set(unused.slice(lifted.length).map(({ variable }) => variable.value));
+      const nested = lifted.map(({ variable }) => variable);
+      const ordered = variables.map(term => lifted.some(({ variable }) => variable.value === term.value) ?
+        nested.pop()! :
+        term);
+      select.variables = ordered.map((term): TermVariable | PatternBind => {
         const v = <RdfTermToAst<typeof term>>SUBRULE(translateAlgTerm, term);
         if (extensions[v.value] && !binds.has(v.value)) {
           const result: Expression = extensions[v.value];

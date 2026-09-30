@@ -159,17 +159,31 @@ export const translateAlgGraph: AstIndir<'translateGraph', PatternGraph, [Algebr
 };
 
 /**
- * A group needs to be handled by {@link translateAlgProject}
+ * A group needs to be handled by {@link translateAlgProject}.
+ * `GROUP BY (expr AS ?v)` translates to extends directly below the group, binding group variables.
+ * Those extends are registered, so they become `(expr AS ?v)` group conditions instead of BINDs in the WHERE clause.
  */
 export const translateAlgGroup: AstIndir<'translateGroup', Pattern | Pattern[], [Algebra.Group]> = {
   name: 'translateGroup',
-  fun: ({ SUBRULE }) => ({ aggregates, group }, op) => {
-    const input = SUBRULE(translateAlgPatternNew, op.input);
+  fun: ({ SUBRULE }) => ({ aggregates, group, extend }, op) => {
+    const groupVariables = op.variables.map(variable => variable.value);
+    let input = op.input;
+    // Group conditions are evaluated in order: the extends (top to bottom) must bind group variables in reverse order
+    let lastIndex = groupVariables.length;
+    while (input.type === types.EXTEND) {
+      const index = groupVariables.indexOf(input.variable.value);
+      if (index < 0 || index >= lastIndex) {
+        break;
+      }
+      extend.push(input);
+      lastIndex = index;
+      input = input.input;
+    }
+    const pattern = SUBRULE(translateAlgPatternNew, input);
     const aggs = op.aggregates.map(x => SUBRULE(translateAlgBoundAggregate, x));
     aggregates.push(...aggs);
-    // TODO: apply possible extends
     group.push(...op.variables);
-    return input;
+    return pattern;
   },
 };
 

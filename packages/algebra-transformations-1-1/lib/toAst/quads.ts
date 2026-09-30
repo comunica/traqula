@@ -39,10 +39,17 @@ export const removeAlgQuads: AstIndir<'removeQuads', Algebra.Operation, [Algebra
  * Whether `knownOp`'s `input` will be read as a SELECT-expression EXTEND rather than a BIND -
  * mirrors `registerProjection`'s `c.project`. True under PROJECT/ASK/DESCRIBE, carried through an
  * EXTEND/ORDER_BY chain, false otherwise (including under CONSTRUCT, which never opens it).
+ * Also true under a GROUP whose input is an EXTEND binding a group variable:
+ * `translateAlgGroup` reads it as a `GROUP BY (expr AS ?v)` condition rather than a BIND.
  */
 function inputProjectionScope(knownOp: Algebra.Operation, projectionScope: boolean): boolean {
   if (knownOp.type === types.PROJECT || knownOp.type === types.ASK || knownOp.type === types.DESCRIBE) {
     return true;
+  }
+  if (knownOp.type === types.GROUP) {
+    const input = knownOp.input;
+    return input.type === types.EXTEND &&
+      knownOp.variables.some(variable => variable.value === input.variable.value);
   }
   if (knownOp.type === types.EXTEND || knownOp.type === types.ORDER_BY) {
     return projectionScope;

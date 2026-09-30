@@ -1,0 +1,141 @@
+{
+  "type": "project",
+  "input": {
+    "type": "extend",
+    "input": {
+      "type": "group",
+      "input": {
+        "type": "extend",
+        "input": {
+          "type": "extend",
+          "input": {
+            "type": "bgp",
+            "patterns": [
+              {
+                "type": "pattern",
+                "termType": "Quad",
+                "subject": {
+                  "termType": "Variable",
+                  "value": "s"
+                },
+                "predicate": {
+                  "termType": "Variable",
+                  "value": "p"
+                },
+                "object": {
+                  "termType": "Variable",
+                  "value": "o"
+                },
+                "graph": {
+                  "termType": "DefaultGraph",
+                  "value": ""
+                }
+              }
+            ]
+          },
+          "variable": {
+            "termType": "Variable",
+            "value": "a"
+          },
+          "expression": {
+            "type": "expression",
+            "subType": "operator",
+            "operator": "str",
+            "args": [
+              {
+                "type": "expression",
+                "subType": "term",
+                "term": {
+                  "termType": "Variable",
+                  "value": "o"
+                }
+              }
+            ]
+          }
+        },
+        "variable": {
+          "termType": "Variable",
+          "value": "b"
+        },
+        "expression": {
+          "type": "expression",
+          "subType": "operator",
+          "operator": "concat",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "term",
+              "term": {
+                "termType": "Variable",
+                "value": "a"
+              }
+            },
+            {
+              "type": "expression",
+              "subType": "term",
+              "term": {
+                "termType": "Literal",
+                "value": "x",
+                "datatype": {
+                  "termType": "NamedNode",
+                  "value": "http://www.w3.org/2001/XMLSchema#string"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "variables": [
+        {
+          "termType": "Variable",
+          "value": "a"
+        },
+        {
+          "termType": "Variable",
+          "value": "b"
+        }
+      ],
+      "aggregates": [
+        {
+          "type": "expression",
+          "subType": "aggregate",
+          "aggregator": "count",
+          "expression": {
+            "type": "expression",
+            "subType": "wildcard",
+            "wildcard": {
+              "type": "wildcard"
+            }
+          },
+          "distinct": false,
+          "variable": {
+            "termType": "Variable",
+            "value": "var0"
+          }
+        }
+      ]
+    },
+    "variable": {
+      "termType": "Variable",
+      "value": "c"
+    },
+    "expression": {
+      "type": "expression",
+      "subType": "term",
+      "term": {
+        "termType": "Variable",
+        "value": "var0"
+      }
+    }
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "b"
+    },
+    {
+      "termType": "Variable",
+      "value": "c"
+    }
+  ]
+}

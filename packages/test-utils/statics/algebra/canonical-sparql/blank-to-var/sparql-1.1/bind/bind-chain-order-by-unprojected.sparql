@@ -1,0 +1,6 @@
+SELECT ?y ?s WHERE {
+  ?s ?p ?o .
+  BIND( ?o AS ?y )
+  BIND( ?y AS ?w )
+}
+ORDER BY ASC ( ?w )

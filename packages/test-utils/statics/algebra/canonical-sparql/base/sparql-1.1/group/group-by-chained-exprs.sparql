@@ -1,0 +1,4 @@
+SELECT ?b ( COUNT( * ) AS ?c ) WHERE {
+  ?s ?p ?o .
+}
+GROUP BY ( STR( ?o ) AS ?a ) ( CONCAT( ?a , "x"^^<http://www.w3.org/2001/XMLSchema#string> ) AS ?b )

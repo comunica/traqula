@@ -90,7 +90,7 @@ export const translateInlineData: AlgebraIndir<'translateInlineData', Algebra.Va
   fun: ({ SUBRULE }) => ({ algebraFactory: AF }, values) => {
     const variables = values.variables.map(x => <AstToRdfTerm<typeof x>> SUBRULE(translateTerm, x));
     const bindings = values.values.map((binding) => {
-      const map: Record<string, RDF.NamedNode | RDF.Literal> = {};
+      const map: Record<string, RDF.NamedNode | RDF.Literal> = Object.create(null);
       for (const [ key, value ] of Object.entries(binding)) {
         if (value !== undefined) {
           map[key] = <RDF.NamedNode | RDF.Literal> SUBRULE(translateTerm, value);
@@ -117,7 +117,7 @@ export const translateBlankNodesToVariables:
 AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Operation]> = {
   name: 'translateBlankNodesToVariables',
   fun: ({ SUBRULE }) => ({ algebraFactory: AF, variables }, res) => {
-    const blankToVariableMapping: Record<string, RDF.Variable> = {};
+    const blankToVariableMapping: Record<string, RDF.Variable> = Object.create(null);
     const variablesRaw: Set<string> = new Set(variables);
 
     function uniqueVar(label: string): RDF.Variable {

@@ -1,0 +1,9 @@
+SELECT ?var0 ?s ?r WHERE {
+  {
+    SELECT ( COUNT( ?o ) AS ?var0 ) ?s WHERE {
+      ?s ?p ?o .
+    }
+    GROUP BY ?s
+  }
+  ?s ?q ?r .
+}

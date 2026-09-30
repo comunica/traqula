@@ -105,6 +105,7 @@ AstIndir<'translateProject', PatternGroup, [Algebra.Project | Algebra.Ask | Alge
     const extend = c.extend;
     const group = c.group;
     const aggregates = c.aggregates;
+    const having = c.having;
     const order = c.order;
     SUBRULE(resetContext);
     c.project = true;
@@ -117,7 +118,7 @@ AstIndir<'translateProject', PatternGroup, [Algebra.Project | Algebra.Ask | Alge
     result.where = F.patternGroup(input, F.gen());
 
     // Map from variable to what agg it represents
-    const aggregators: Record<string, Expression> = {};
+    const aggregators: Record<string, Expression> = Object.create(null);
     // These can not reference each other
     for (const agg of c.aggregates) {
       aggregators[(<RdfTermToAst<typeof agg.variable>>SUBRULE(translateAlgTerm, agg.variable)).value] =
@@ -125,29 +126,39 @@ AstIndir<'translateProject', PatternGroup, [Algebra.Project | Algebra.Ask | Alge
     }
 
     // Do these in reverse order since variables in one extend might apply to an expression in another extend
-    const extensions: Record<string, Expression> = {};
-    for (const e of c.extend.reverse()) {
+    const extensions: Record<string, Expression> = Object.create(null);
+    for (const e of [ ...c.extend ].reverse()) {
       const expr = SUBRULE(translateAlgPureExpression, e.expression);
       extensions[(<RdfTermToAst<typeof e.variable>>SUBRULE(translateAlgTerm, e.variable)).value] =
         <typeof expr>SUBRULE(replaceAlgAggregatorVariables, expr, aggregators);
+    }
+    // SPARQL can only select an aggregate as `(aggregate AS ?variable)`,
+    //  so a SELECT of an aggregate's variable needs the aggregate as its projection expression.
+    if (type === types.PROJECT) {
+      for (const variable of (<Algebra.Project>op).variables) {
+        if (aggregators[variable.value]) {
+          extensions[variable.value] = aggregators[variable.value];
+        }
+      }
     }
     SUBRULE(registerAlgGroupBy, result, extensions);
     SUBRULE(registerOrderBy, result, aggregators);
     SUBRULE(registerVariables, select, variables, extensions);
     SUBRULE(putExtensionsInGroup, result, extensions);
 
-    // Convert all filters to 'having' if it contains an aggregator variable
-    // could always convert, but is nicer to keep as filter when possible
-    const havings: Expression[] = [];
-    result.where = <PatternGroup> SUBRULE(filterReplace, result.where, aggregators, havings);
-    if (havings.length > 0) {
-      select.solutionModifiers.having = F.solutionModifierHaving(havings, F.gen());
+    // Filters on top of the group are HAVING conditions, they can reference the aggregators
+    if (c.having.length > 0) {
+      select.solutionModifiers.having = F.solutionModifierHaving(
+        c.having.map(expr => <typeof expr> SUBRULE(replaceAlgAggregatorVariables, expr, aggregators)),
+        F.gen(),
+      );
     }
 
     // Recover state
     c.extend = extend;
     c.group = group;
     c.aggregates = aggregates;
+    c.having = having;
     c.order = order;
 
     // Subqueries need to be in a group! Top level grouping is removed at toAst function
@@ -210,14 +221,40 @@ AstIndir<'registerOrderBy', void, [QueryBase, Record<string, Expression>?]> = {
 export const registerVariables:
 AstIndir<'registerVariables', void, [QuerySelect, RDF.Variable[] | undefined, Record<string, Expression>]> = {
   name: 'registerVariables',
-  fun: ({ SUBRULE }) => ({ astFactory: F }, select, variables, extensions) => {
+  fun: ({ SUBRULE }) => ({ astFactory: F, extend }, select, variables, unplacedExpressions) => {
     if (variables) {
-      select.variables = variables.map((term): TermVariable | PatternBind => {
+      // Extends whose expression GROUP BY did not place yet, from outermost to innermost.
+      const unplacedExtends = extend.filter(extend => unplacedExpressions[extend.variable.value]);
+      const isProjected = (variable: RDF.Variable): boolean => variables.some(term => term.value === variable.value);
+
+      // SELECT expressions are evaluated after the WHERE clause, so an extend can only become a SELECT expression
+      //  when all extends around it do too. From the first unprojected extend inward, extends stay BINDs.
+      const firstUnprojected = unplacedExtends.findIndex(extend => !isProjected(extend.variable));
+      const selectedExtends = firstUnprojected < 0 ? unplacedExtends : unplacedExtends.slice(0, firstUnprojected);
+      const extendsKeptAsBind = new Set(
+        unplacedExtends.slice(selectedExtends.length).map(extend => extend.variable.value),
+      );
+
+      // SELECT expressions are evaluated left to right, so an extend must come after the extends it wraps.
+      //  The projection is a set, so the selected extends can fill their positions innermost first.
+      const selectedVariables = new Set(selectedExtends.map(extend => extend.variable.value));
+      const innermostFirst = selectedExtends.map(extend => extend.variable).reverse();
+      const orderedVariables: RDF.Variable[] = [];
+      for (const variable of variables) {
+        if (selectedVariables.has(variable.value)) {
+          orderedVariables.push(innermostFirst.shift()!);
+        } else {
+          orderedVariables.push(variable);
+        }
+      }
+
+      select.variables = orderedVariables.map((term): TermVariable | PatternBind => {
         const v = <RdfTermToAst<typeof term>>SUBRULE(translateAlgTerm, term);
-        if (extensions[v.value]) {
-          const result: Expression = extensions[v.value];
-          // Remove used extensions so only unused ones remain
-          delete extensions[v.value];
+        // Selected extends and projected aggregates become SELECT expressions
+        if (unplacedExpressions[v.value] && !extendsKeptAsBind.has(v.value)) {
+          const result: Expression = unplacedExpressions[v.value];
+          // Remove placed expressions so only unplaced ones remain
+          delete unplacedExpressions[v.value];
           return F.patternBind(result, v, F.gen());
         }
         return v;
@@ -261,7 +298,10 @@ export const putExtensionsInGroup: AstIndir<'putExtensionsInGroup', void, [Query
 
 /**
  * If second arg is a Group, we will return a group.
+ * @deprecated No longer used: HAVING conditions are now collected by `translateAlgFilter`
+ * in `AstContext.having` and emitted by {@link translateAlgProject}.
  */
+// TODO(major): remove
 export const filterReplace: AstIndir<
   'filterReplace',
 PatternGroup | Pattern,
@@ -287,6 +327,10 @@ PatternGroup | Pattern,
   },
 };
 
+/**
+ * @deprecated No longer used, only served {@link filterReplace}.
+ */
+// TODO(major): remove
 export const objectContainsVariable: AstIndir<'objectContainsVariable', boolean, [any, string[]]> = {
   name: 'objectContainsVariable',
   fun: ({ SUBRULE }) => ({ astFactory: F }, o, vals) => {

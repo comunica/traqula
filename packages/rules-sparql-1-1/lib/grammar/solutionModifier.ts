@@ -50,6 +50,8 @@ export const solutionModifier: SparqlRule<'solutionModifier', SolutionModifiers>
   },
 };
 
+// HAVING and GROUP BY conditions must be a call or bracketed (GROUP BY also allows a variable).
+// `expression` brackets infix operators itself, so only terms and these prefix operators need added brackets.
 const prefixOperators = new Set([ '!', 'uplus', 'uminus' ]);
 
 /**
@@ -80,8 +82,7 @@ export const groupClause: SparqlRule<'groupClause', SolutionModifierGroup> = <co
       // Separate the conditions, otherwise `GROUP BY ?a ex:f(?b)` would be generated as `GROUP BY ?aex:f(?b)`
       F.printFilter(ast, () => PRINT_WORDS(''));
       if (F.isExpression(grouping)) {
-        // A GroupCondition without AS can not be a non-variable term or prefix operator without brackets,
-        // otherwise `GROUP BY (!?a)` would be generated as `GROUP BY ! ?a`
+        // `GROUP BY (!?a)`, not `GROUP BY ! ?a`
         const addBrackets = (F.isTerm(grouping) && !F.isTermVariable(grouping)) ||
           (F.isExpressionOperator(grouping) && prefixOperators.has(grouping.operator));
         if (addBrackets) {
@@ -161,8 +162,7 @@ export const havingClause: SparqlRule<'havingClause', SolutionModifierHaving> = 
       PRINT_ON_EMPTY('HAVING ');
     });
     for (const having of ast.having) {
-      // A HavingCondition is a Constraint: terms and prefix operators are not generated with brackets themselves,
-      // otherwise `HAVING (!BOUND(?o))` would be generated as `HAVING ! BOUND( ?o )`
+      // `HAVING (!BOUND(?o))`, not `HAVING ! BOUND( ?o )`
       const addBrackets = F.isTerm(having) ||
         (F.isExpressionOperator(having) && prefixOperators.has(having.operator));
       if (addBrackets) {

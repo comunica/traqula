@@ -1,0 +1,6 @@
+PREFIX : <https://ex.com/>
+SELECT ?a WHERE {
+  <https://ex.com/a> ?a <https://ex.com/a> .
+  <https://ex.com/a> <https://ex.com/a> _:0 .
+  _:0 (<https://ex.com/a>/<https://ex.com/a>) <https://ex.com/a> .
+}

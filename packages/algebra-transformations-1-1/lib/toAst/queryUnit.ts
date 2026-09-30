@@ -216,23 +216,29 @@ AstIndir<'registerVariables', void, [QuerySelect, RDF.Variable[] | undefined, Re
   fun: ({ SUBRULE }) => ({ astFactory: F, extend }, select, variables, unplacedExpressions) => {
     if (variables) {
       // Extends whose expression GROUP BY did not place yet, from outermost to innermost.
-      const unplacedExtends = extend.filter(({ variable }) => unplacedExpressions[variable.value]);
+      const unplacedExtends = extend.filter(extend => unplacedExpressions[extend.variable.value]);
       const isProjected = (variable: RDF.Variable): boolean => variables.some(term => term.value === variable.value);
 
       // SELECT expressions are evaluated after the WHERE clause, so an extend can only become a SELECT expression
       //  when all extends around it do too. From the first unprojected extend inward, extends stay BINDs.
-      const firstUnprojected = unplacedExtends.findIndex(({ variable }) => !isProjected(variable));
+      const firstUnprojected = unplacedExtends.findIndex(extend => !isProjected(extend.variable));
       const selectedExtends = firstUnprojected < 0 ? unplacedExtends : unplacedExtends.slice(0, firstUnprojected);
       const extendsKeptAsBind = new Set(
-        unplacedExtends.slice(selectedExtends.length).map(({ variable }) => variable.value),
+        unplacedExtends.slice(selectedExtends.length).map(extend => extend.variable.value),
       );
 
       // SELECT expressions are evaluated left to right, so an extend must come after the extends it wraps.
       //  The projection is a set, so the selected extends can fill their positions innermost first.
-      const selectedVariables = new Set(selectedExtends.map(({ variable }) => variable.value));
-      const innermostFirst = selectedExtends.map(({ variable }) => variable).reverse();
-      const orderedVariables = variables.map(term =>
-        selectedVariables.has(term.value) ? innermostFirst.shift()! : term);
+      const selectedVariables = new Set(selectedExtends.map(extend => extend.variable.value));
+      const innermostFirst = selectedExtends.map(extend => extend.variable).reverse();
+      const orderedVariables: RDF.Variable[] = [];
+      for (const variable of variables) {
+        if (selectedVariables.has(variable.value)) {
+          orderedVariables.push(innermostFirst.shift()!);
+        } else {
+          orderedVariables.push(variable);
+        }
+      }
 
       select.variables = orderedVariables.map((term): TermVariable | PatternBind => {
         const v = <RdfTermToAst<typeof term>>SUBRULE(translateAlgTerm, term);

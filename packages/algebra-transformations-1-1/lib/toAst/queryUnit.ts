@@ -215,20 +215,29 @@ AstIndir<'registerVariables', void, [QuerySelect, RDF.Variable[] | undefined, Re
   name: 'registerVariables',
   fun: ({ SUBRULE }) => ({ astFactory: F, extend }, select, variables, extensions) => {
     if (variables) {
-      // SELECT expressions are evaluated left to right, after the WHERE clause.
-      //  Only the outermost projected extends can thus become SELECT expressions; the others stay BINDs.
-      //  The projection is a set, so the lifted extends fill their positions in nesting order, innermost first.
-      const unused = extend.filter(({ variable }) => extensions[variable.value]);
-      const stop = unused.findIndex(({ variable }) => !variables.some(term => term.value === variable.value));
-      const lifted = unused.slice(0, stop < 0 ? unused.length : stop);
-      const binds = new Set(unused.slice(lifted.length).map(({ variable }) => variable.value));
-      const nested = lifted.map(({ variable }) => variable);
-      const ordered = variables.map(term => lifted.some(({ variable }) => variable.value === term.value) ?
-        nested.pop()! :
-        term);
-      select.variables = ordered.map((term): TermVariable | PatternBind => {
+      // Extends whose expression is not placed yet (GROUP BY might have placed some), from outermost to innermost.
+      const unplacedExtends = extend.filter(({ variable }) => extensions[variable.value]);
+      const isProjected = (variable: RDF.Variable): boolean => variables.some(term => term.value === variable.value);
+
+      // SELECT expressions are evaluated after the WHERE clause, so an extend can only become a SELECT expression
+      //  when all extends around it do too. From the first unprojected extend inward, extends stay BINDs.
+      const firstUnprojected = unplacedExtends.findIndex(({ variable }) => !isProjected(variable));
+      const selectedExtends = firstUnprojected < 0 ? unplacedExtends : unplacedExtends.slice(0, firstUnprojected);
+      const extendsKeptAsBind = new Set(
+        unplacedExtends.slice(selectedExtends.length).map(({ variable }) => variable.value),
+      );
+
+      // SELECT expressions are evaluated left to right, so an extend must come after the extends it wraps.
+      //  The projection is a set, so the selected extends can fill their positions innermost first.
+      const selectedVariables = new Set(selectedExtends.map(({ variable }) => variable.value));
+      const innermostFirst = selectedExtends.map(({ variable }) => variable).reverse();
+      const orderedVariables = variables.map(term =>
+        selectedVariables.has(term.value) ? innermostFirst.shift()! : term);
+
+      select.variables = orderedVariables.map((term): TermVariable | PatternBind => {
         const v = <RdfTermToAst<typeof term>>SUBRULE(translateAlgTerm, term);
-        if (extensions[v.value] && !binds.has(v.value)) {
+        // Selected extends and projected aggregates become SELECT expressions
+        if (extensions[v.value] && !extendsKeptAsBind.has(v.value)) {
           const result: Expression = extensions[v.value];
           // Remove used extensions so only unused ones remain
           delete extensions[v.value];

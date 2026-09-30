@@ -151,15 +151,4 @@ SELECT * WHERE { VALUES ?x { ex:a ex:b ex:c } ?x ?x ?x }`);
       expect(() => parser.parse(out)).not.toThrow();
     });
   });
-
-  describe('havingClause gImpl brackets', () => {
-    it('brackets terms and prefix operators so each HAVING condition remains a Constraint', ({ expect }) => {
-      const out = generator.generate(
-        F.forcedAutoGenTree(parser.parse('SELECT ?s WHERE { ?s ?p ?o } GROUP BY ?s HAVING (?s) (!BOUND(?s)) (-?s)')),
-        { [traqulaIndentation]: -1, indentInc: 0 },
-      );
-      expect(out).toContain('HAVING ( ?s ) ( ! BOUND( ?s ) ) ( - ?s )');
-      expect(() => parser.parse(out)).not.toThrow();
-    });
-  });
 });

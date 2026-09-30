@@ -88,6 +88,26 @@
       "subType": "having",
       "having": [
         {
+          "type": "term",
+          "subType": "variable",
+          "value": "s",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 48,
+            "end": 52
+          }
+        },
+        {
+          "type": "term",
+          "subType": "literal",
+          "value": "a",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 53,
+            "end": 58
+          }
+        },
+        {
           "type": "expression",
           "subType": "operation",
           "operator": "!",
@@ -104,8 +124,8 @@
                   "distinct": false,
                   "loc": {
                     "sourceLocationType": "source",
-                    "start": 51,
-                    "end": 60
+                    "start": 62,
+                    "end": 71
                   },
                   "expression": [
                     {
@@ -114,8 +134,8 @@
                       "value": "o",
                       "loc": {
                         "sourceLocationType": "source",
-                        "start": 57,
-                        "end": 59
+                        "start": 68,
+                        "end": 70
                       }
                     }
                   ]
@@ -134,22 +154,22 @@
                   },
                   "loc": {
                     "sourceLocationType": "source",
-                    "start": 63,
-                    "end": 64
+                    "start": 74,
+                    "end": 75
                   }
                 }
               ],
               "loc": {
                 "sourceLocationType": "source",
-                "start": 50,
-                "end": 65
+                "start": 61,
+                "end": 76
               }
             }
           ],
           "loc": {
             "sourceLocationType": "source",
-            "start": 48,
-            "end": 66
+            "start": 59,
+            "end": 77
           }
         },
         {
@@ -164,8 +184,8 @@
               "distinct": false,
               "loc": {
                 "sourceLocationType": "source",
-                "start": 69,
-                "end": 78
+                "start": 80,
+                "end": 89
               },
               "expression": [
                 {
@@ -174,8 +194,8 @@
                   "value": "o",
                   "loc": {
                     "sourceLocationType": "source",
-                    "start": 75,
-                    "end": 77
+                    "start": 86,
+                    "end": 88
                   }
                 }
               ]
@@ -183,15 +203,68 @@
           ],
           "loc": {
             "sourceLocationType": "source",
-            "start": 67,
-            "end": 79
+            "start": 78,
+            "end": 90
+          }
+        },
+        {
+          "type": "expression",
+          "subType": "operation",
+          "operator": "+",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "aggregate",
+              "aggregation": "count",
+              "distinct": false,
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 92,
+                "end": 101
+              },
+              "expression": [
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "o",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 98,
+                    "end": 100
+                  }
+                }
+              ]
+            },
+            {
+              "type": "term",
+              "subType": "literal",
+              "value": "1",
+              "langOrIri": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "http://www.w3.org/2001/XMLSchema#integer",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 104,
+                "end": 105
+              }
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 91,
+            "end": 106
           }
         }
       ],
       "loc": {
         "sourceLocationType": "source",
         "start": 41,
-        "end": 79
+        "end": 106
       }
     }
   },
@@ -216,16 +289,16 @@
   ],
   "loc": {
     "sourceLocationType": "inlinedSource",
-    "newSource": "SELECT ?s WHERE { ?s ?p ?o } GROUP BY ?s HAVING (!(COUNT(?o) > 1)) (-COUNT(?o))\n",
+    "newSource": "SELECT ?s WHERE { ?s ?p ?o } GROUP BY ?s HAVING (?s) (\"a\") (!(COUNT(?o) > 1)) (-COUNT(?o)) (COUNT(?o) + 1)\n",
     "start": 0,
     "end": 9007199254740991,
     "loc": {
       "sourceLocationType": "source",
       "start": 0,
-      "end": 79
+      "end": 106
     },
     "startOnNew": 0,
-    "endOnNew": 79
+    "endOnNew": 106
   },
   "type": "query"
 }

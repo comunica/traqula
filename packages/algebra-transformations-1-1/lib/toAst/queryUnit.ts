@@ -198,7 +198,7 @@ export const registerAlgGroupBy: AstIndir<'registerGroupBy', void, [QueryBase, R
 export const registerOrderBy:
 AstIndir<'registerOrderBy', void, [QueryBase, Record<string, Expression>?]> = {
   name: 'registerOrderBy',
-  fun: ({ SUBRULE }) => ({ astFactory: F, order }, result, aggregators = {}) => {
+  fun: ({ SUBRULE }) => ({ astFactory: F, order }, result, aggregators = Object.create(null)) => {
     if (order.length > 0) {
       result.solutionModifiers.order = F.solutionModifierOrder(
         order

@@ -2,4 +2,4 @@ SELECT ( COUNT( ?o ) AS ?var0 ) ?s WHERE {
   ?s ?p ?o .
 }
 GROUP BY ?s
-ORDER BY DESC ( ?var0 )
+ORDER BY DESC ( COUNT( ?o ) )

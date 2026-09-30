@@ -213,10 +213,10 @@ export const registerOrderBy: AstIndir<'registerOrderBy', void, [QueryBase]> = {
 export const registerVariables:
 AstIndir<'registerVariables', void, [QuerySelect, RDF.Variable[] | undefined, Record<string, Expression>]> = {
   name: 'registerVariables',
-  fun: ({ SUBRULE }) => ({ astFactory: F, extend }, select, variables, extensions) => {
+  fun: ({ SUBRULE }) => ({ astFactory: F, extend }, select, variables, unplacedExpressions) => {
     if (variables) {
-      // Extends whose expression is not placed yet (GROUP BY might have placed some), from outermost to innermost.
-      const unplacedExtends = extend.filter(({ variable }) => extensions[variable.value]);
+      // Extends whose expression GROUP BY did not place yet, from outermost to innermost.
+      const unplacedExtends = extend.filter(({ variable }) => unplacedExpressions[variable.value]);
       const isProjected = (variable: RDF.Variable): boolean => variables.some(term => term.value === variable.value);
 
       // SELECT expressions are evaluated after the WHERE clause, so an extend can only become a SELECT expression
@@ -237,10 +237,10 @@ AstIndir<'registerVariables', void, [QuerySelect, RDF.Variable[] | undefined, Re
       select.variables = orderedVariables.map((term): TermVariable | PatternBind => {
         const v = <RdfTermToAst<typeof term>>SUBRULE(translateAlgTerm, term);
         // Selected extends and projected aggregates become SELECT expressions
-        if (extensions[v.value] && !extendsKeptAsBind.has(v.value)) {
-          const result: Expression = extensions[v.value];
-          // Remove used extensions so only unused ones remain
-          delete extensions[v.value];
+        if (unplacedExpressions[v.value] && !extendsKeptAsBind.has(v.value)) {
+          const result: Expression = unplacedExpressions[v.value];
+          // Remove placed expressions so only unplaced ones remain
+          delete unplacedExpressions[v.value];
           return F.patternBind(result, v, F.gen());
         }
         return v;

@@ -31,7 +31,7 @@ export const translateAggregates: AlgebraIndir<'translateAggregates', Algebra.Op
   fun: ({ SUBRULE }) => ({ astFactory: F, algebraFactory: AF, dataFactory: DF }, query, res) => {
     const bindPatterns: PatternBind[] = [];
 
-    const varAggrMap: Record<string, ExpressionAggregate> = {};
+    const varAggrMap: Record<string, ExpressionAggregate> = Object.create(null);
     const variables = F.isQuerySelect(query) || F.isQueryDescribe(query) ?
       query.variables.map(x => SUBRULE(mapAggregate, x, varAggrMap)) :
       undefined;

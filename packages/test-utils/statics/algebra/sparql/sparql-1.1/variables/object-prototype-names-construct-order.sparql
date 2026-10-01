@@ -1,0 +1,6 @@
+PREFIX : <http://example.org/>
+CONSTRUCT { ?constructor :p ?toString }
+WHERE {
+  ?constructor :p ?toString
+}
+ORDER BY ?constructor DESC(?toString)

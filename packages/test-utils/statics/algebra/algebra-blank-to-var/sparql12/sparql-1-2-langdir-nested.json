@@ -22,8 +22,8 @@
                   "lit": {
                     "termType": "Literal",
                     "value": "hello",
-                    "direction": "ltr",
                     "language": "en",
+                    "direction": "ltr",
                     "datatype": {
                       "termType": "NamedNode",
                       "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#dirLangString"
@@ -34,8 +34,8 @@
                   "lit": {
                     "termType": "Literal",
                     "value": "olleh",
-                    "direction": "rtl",
                     "language": "ar",
+                    "direction": "rtl",
                     "datatype": {
                       "termType": "NamedNode",
                       "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#dirLangString"
@@ -72,8 +72,8 @@
                     "object": {
                       "termType": "Literal",
                       "value": "nested",
-                      "direction": "ltr",
                       "language": "en",
+                      "direction": "ltr",
                       "datatype": {
                         "termType": "NamedNode",
                         "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#dirLangString"
@@ -114,8 +114,8 @@
                     "object": {
                       "termType": "Literal",
                       "value": "quoted",
-                      "direction": "rtl",
                       "language": "en",
+                      "direction": "rtl",
                       "datatype": {
                         "termType": "NamedNode",
                         "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#dirLangString"
@@ -145,8 +145,8 @@
                   "object": {
                     "termType": "Literal",
                     "value": "sure",
-                    "direction": "ltr",
                     "language": "en",
+                    "direction": "ltr",
                     "datatype": {
                       "termType": "NamedNode",
                       "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#dirLangString"
@@ -176,8 +176,8 @@
               "term": {
                 "termType": "Literal",
                 "value": "prefix",
-                "direction": "ltr",
                 "language": "en",
+                "direction": "ltr",
                 "datatype": {
                   "termType": "NamedNode",
                   "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#dirLangString"
@@ -289,8 +289,8 @@
               "term": {
                 "termType": "Literal",
                 "value": "bye",
-                "direction": "ltr",
                 "language": "en",
+                "direction": "ltr",
                 "datatype": {
                   "termType": "NamedNode",
                   "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#dirLangString"
@@ -318,8 +318,8 @@
               "term": {
                 "termType": "Literal",
                 "value": "hi",
-                "direction": "ltr",
                 "language": "en",
+                "direction": "ltr",
                 "datatype": {
                   "termType": "NamedNode",
                   "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#dirLangString"
@@ -343,8 +343,8 @@
                 "object": {
                   "termType": "Literal",
                   "value": "deep",
-                  "direction": "rtl",
                   "language": "ar",
+                  "direction": "rtl",
                   "datatype": {
                     "termType": "NamedNode",
                     "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#dirLangString"

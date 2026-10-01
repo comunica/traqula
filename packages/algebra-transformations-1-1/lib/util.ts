@@ -436,6 +436,7 @@ export function resolveIRI(iri: string, base: string | undefined): string {
   return result;
 }
 
+// TODO: find a cleaner way
 /**
  * Outputs a JSON object corresponding to the input algebra-like.
  * Primitive values (including null and undefined) are returned as-is.
@@ -453,10 +454,6 @@ export function objectify(algebra: any): any {
       };
     }
     const result: any = { termType: algebra.termType, value: algebra.value };
-    // SPARQL 1.2 directional language-tagged strings
-    if (algebra.direction) {
-      result.direction = algebra.direction;
-    }
     if (algebra.language) {
       result.language = algebra.language;
     }

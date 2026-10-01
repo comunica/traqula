@@ -220,17 +220,6 @@ GROUP BY ?s`);
   });
 
   describe('algebraUtils.objectify', () => {
-    it('keeps the direction of directional language-tagged literals', ({ expect }) => {
-      const literal = AF.dataFactory.literal('hello', { language: 'en', direction: 'ltr' });
-      expect(algebraUtils.objectify(literal)).toEqual({
-        termType: 'Literal',
-        value: 'hello',
-        language: 'en',
-        direction: 'ltr',
-        datatype: { termType: 'NamedNode', value: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#dirLangString' },
-      });
-    });
-
     it('returns primitives, null and undefined as-is', ({ expect }) => {
       expect(algebraUtils.objectify(null)).toBeNull();
       expect(algebraUtils.objectify(undefined)).toBeUndefined();

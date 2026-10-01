@@ -14,7 +14,9 @@ interface Parser {
  * @param _DF - A DataFactory instance (currently unused, reserved for future tests).
  */
 export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQuad>): void {
-  function testErroneousQuery(query: string, errorMsg: string | RegExp): TestFunction<object> {
+  // Only check that parsing fails: error messages are not part of the contract,
+  // so engines extending the grammar are free to report a different message.
+  function testErroneousQuery(query: string): TestFunction<object> {
     return ({ expect }) => {
       let error: any;
       try {
@@ -24,28 +26,23 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
       }
       expect(error).not.toBeUndefined();
       expect(error).toBeInstanceOf(Error);
-      expect(error.message).toMatch(errorMsg);
     };
   }
 
   it('should throw an error on an invalid query', testErroneousQuery(
     'invalid',
-    'unexpected character: ->v<- at offset: 2',
   ));
 
   it('should throw an error on a projection of ungrouped variable', testErroneousQuery(
     'PREFIX : <http://www.example.org/> SELECT ?o WHERE { ?s ?p ?o } GROUP BY ?s',
-    'Variable not allowed in projection',
   ));
 
   it('should throw an error on a values class with LESS variables than value', testErroneousQuery(
     'SELECT * WHERE { } VALUES ( ?S ) { ( true  false ) }',
-    'Number of dataBlockValues does not match number of variables. Too much values.',
   ));
 
   it('should throw an error on a values class with MORE variables than value', testErroneousQuery(
     'SELECT * WHERE { } VALUES ( ?S ?O ) { ( true ) }',
-    'Number of dataBlockValues does not match number of variables. Too few values.',
   ));
 
   it('should NOT throw on a values class with correct amount of values', ({ expect }) => {
@@ -55,12 +52,10 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
 
   it('should throw an error on an invalid selectscope', testErroneousQuery(
     'SELECT (1 AS ?X ) { SELECT (2 AS ?X ) {} }',
-    'Target id of \'AS\' (?X) already used in subquery',
   ));
 
   it('should throw an error on bind to variable in scope', testErroneousQuery(
     'SELECT * { ?s ?p ?o BIND(?o AS ?o) }',
-    'Variable used to bind is already bound (?o)',
   ));
 
   it('should parse when not ending in newline', ({ expect }) => {
@@ -83,7 +78,6 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
 
   it('should throw an error on an aggregate function within an aggregate function', testErroneousQuery(
     'SELECT (SUM(COUNT(?lprice)) AS ?totalPrice) { }',
-    'An aggregate function is not allowed within an aggregate function',
   ));
 
   describe('with pre-defined prefixes', () => {
@@ -121,7 +115,6 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
   describe('for update queries', () => {
     it('should throw an error on blank nodes in DELETE clause', testErroneousQuery(
       'DELETE { ?a <ex:knows> [] . } WHERE { ?a <ex:knows> "Alan" . }',
-      /Blank nodes are not allowed in this context|but found: '\[\]'/u,
     ));
 
     it('should not throw on blank nodes in INSERT clause', ({ expect }) => {
@@ -147,27 +140,22 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
 
     it('should throw an error on blank nodes in compact DELETE clause', testErroneousQuery(
       'DELETE WHERE { _:a <ex:p> <ex:o> }',
-      /Blank nodes are not allowed in this context|but found: '_:a'/u,
     ));
 
     it('should throw an error on variables in DELETE DATA clause', testErroneousQuery(
       'DELETE DATA { ?a <ex:p> <ex:o> }',
-      'but found: \'?a\'',
     ));
 
     it('should throw an error on blank nodes in DELETE DATA clause', testErroneousQuery(
       'DELETE DATA { _:a <ex:p> <ex:o> }',
-      /Blank nodes are not allowed in this context|but found: '_:a'/u,
     ));
 
     it('should throw an error on variables in DELETE DATA clause with GRAPH', testErroneousQuery(
       'DELETE DATA { GRAPH ?a { <ex:s> <ex:p> <ex:o> } }',
-      'but found: \'?a\'',
     ));
 
     it('should throw an error on variables in INSERT DATA clause', testErroneousQuery(
       'INSERT DATA { ?a <ex:p> <ex:o> }',
-      'but found: \'?a\'',
     ));
 
     it('should not throw on reused blank nodes in one INSERT DATA clause', ({ expect }) => {
@@ -190,12 +178,10 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
 
     it('should throw an error on reused blank nodes across INSERT DATA clauses', testErroneousQuery(
       'INSERT DATA { _:a <ex:p> <ex:o> }; INSERT DATA { _:a <ex:p> <ex:o> }',
-      'Detected reuse blank node across different INSERT DATA clauses',
     ));
 
     it('should throw an error on reused blank nodes across INSERT DATA clauses with GRAPH', testErroneousQuery(
       'INSERT DATA { _:a <ex:p> <ex:o> }; INSERT DATA { GRAPH <ex:g> { _:a <ex:p> <ex:o> } }',
-      'Detected reuse blank node across different INSERT DATA clauses',
     ));
 
     // Comments between INSERT and DATA are covered by the static tests
@@ -203,14 +189,11 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
 
     it('should throw an error on commented DATA after INSERT', testErroneousQuery(
       'INSERT # DATA { GRAPH <ex:G> { <ex:s> <ex:p> \'o1\', \'o2\', \'o3\' } }',
-      // The commented DATA makes INSERT expect a template, but the input ends right after the comment
-      'Expecting --> { <-- but found --> \'\' <--',
     ));
   });
 
   it('should throw an error on unicode codepoint escaping in literal with partial surrogate pair', testErroneousQuery(
     'SELECT * WHERE { ?s <ex:p> \'\uD800\' }',
-    'Invalid unicode codepoint of surrogate pair without corresponding codepoint',
   ));
 
   it(

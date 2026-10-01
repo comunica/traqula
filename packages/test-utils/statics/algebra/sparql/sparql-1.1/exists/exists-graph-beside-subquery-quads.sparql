@@ -1,0 +1,6 @@
+PREFIX : <http://example/>
+SELECT *
+{
+    { SELECT ?s { ?s ?p ?o } }
+    FILTER EXISTS { GRAPH :g { ?s :q ?x } }
+}

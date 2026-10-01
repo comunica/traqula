@@ -150,7 +150,11 @@ unknown,
       // graphs merge into one GRAPH block instead of each wrapping itself separately.
       const isBoundary = [ types.PROJECT, types.SERVICE, types.GROUP, types.ORDER_BY ].includes(knownOp.type) ||
         (knownOp.type === types.EXTEND && projectionScope);
-      if (graphNameSet.length === 1 && !isBoundary) {
+      // Graphs found only in the expression (e.g. a HAVING EXISTS on top of a GROUP) do not defer either:
+      // a GRAPH around this operation would wrap its input instead of the patterns of the expression.
+      const onlyInExpression = knownOp.type !== types.EXPRESSION &&
+        Object.keys(keyGraphs).every(key => key === 'expression');
+      if (graphNameSet.length === 1 && !isBoundary && !onlyInExpression) {
         graphs.push(operationGraphNames[graphNameSet[0]]);
       } else if (knownOp.type === types.BGP) {
         // This is the specific case that `op` got changed because of using quads. -

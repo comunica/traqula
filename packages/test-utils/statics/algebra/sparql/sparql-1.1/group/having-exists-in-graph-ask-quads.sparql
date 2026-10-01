@@ -1,0 +1,7 @@
+PREFIX : <http://example/>
+ASK
+{
+    GRAPH :g { ?s ?p ?o }
+}
+GROUP BY ?s
+HAVING (NOT EXISTS { GRAPH :g { ?s :q ?x } })

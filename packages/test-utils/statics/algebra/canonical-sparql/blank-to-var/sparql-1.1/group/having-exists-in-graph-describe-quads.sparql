@@ -1,0 +1,11 @@
+DESCRIBE ?s WHERE {
+  GRAPH <http://example/g> {
+    ?s ?p ?o .
+  }
+}
+GROUP BY ?s
+HAVING EXISTS {
+  GRAPH <http://example/g> {
+    ?s <http://example/q> ?x .
+  }
+}

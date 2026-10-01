@@ -1,0 +1,7 @@
+PREFIX : <http://example/>
+DESCRIBE ?s
+{
+    GRAPH :g { ?s ?p ?o }
+}
+GROUP BY ?s
+HAVING EXISTS { GRAPH :g { ?s :q ?x } }

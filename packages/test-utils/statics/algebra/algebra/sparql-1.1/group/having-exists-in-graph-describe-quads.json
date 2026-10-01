@@ -1,0 +1,77 @@
+{
+  "type": "describe",
+  "input": {
+    "type": "filter",
+    "input": {
+      "type": "group",
+      "input": {
+        "type": "bgp",
+        "patterns": [
+          {
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": {
+              "termType": "Variable",
+              "value": "s"
+            },
+            "predicate": {
+              "termType": "Variable",
+              "value": "p"
+            },
+            "object": {
+              "termType": "Variable",
+              "value": "o"
+            },
+            "graph": {
+              "termType": "NamedNode",
+              "value": "http://example/g"
+            }
+          }
+        ]
+      },
+      "variables": [
+        {
+          "termType": "Variable",
+          "value": "s"
+        }
+      ],
+      "aggregates": []
+    },
+    "expression": {
+      "type": "expression",
+      "subType": "existence",
+      "not": false,
+      "input": {
+        "type": "bgp",
+        "patterns": [
+          {
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": {
+              "termType": "Variable",
+              "value": "s"
+            },
+            "predicate": {
+              "termType": "NamedNode",
+              "value": "http://example/q"
+            },
+            "object": {
+              "termType": "Variable",
+              "value": "x"
+            },
+            "graph": {
+              "termType": "NamedNode",
+              "value": "http://example/g"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "terms": [
+    {
+      "termType": "Variable",
+      "value": "s"
+    }
+  ]
+}

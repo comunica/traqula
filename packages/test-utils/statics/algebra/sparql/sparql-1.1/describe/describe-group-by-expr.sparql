@@ -1,0 +1,4 @@
+DESCRIBE ?s ?len
+WHERE { ?s ?p ?o }
+GROUP BY ?s ?p (STRLEN(STR(?o)) AS ?len)
+HAVING (COUNT(*) > 1)

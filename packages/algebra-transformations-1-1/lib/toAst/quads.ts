@@ -37,13 +37,13 @@ export const removeAlgQuads: AstIndir<'removeQuads', Algebra.Operation, [Algebra
 
 /**
  * Whether `knownOp`'s `input` will be read as a SELECT-expression EXTEND rather than a BIND -
- * mirrors `registerProjection`'s `c.project`. True under PROJECT/ASK/DESCRIBE, carried through an
- * EXTEND/ORDER_BY chain, false otherwise (including under CONSTRUCT, which never opens it).
+ * mirrors `registerProjection`'s `c.project`. True under PROJECT/ASK/CONSTRUCT/DESCRIBE, carried through an
+ * EXTEND/ORDER_BY chain, false otherwise.
  * Also true under a GROUP whose input is an EXTEND binding a group variable:
  * `translateAlgGroup` reads it as a `GROUP BY (expr AS ?v)` condition rather than a BIND.
  */
 function inputProjectionScope(knownOp: Algebra.Operation, projectionScope: boolean): boolean {
-  if (knownOp.type === types.PROJECT || knownOp.type === types.ASK || knownOp.type === types.DESCRIBE) {
+  if ([ types.PROJECT, types.ASK, types.CONSTRUCT, types.DESCRIBE ].includes(knownOp.type)) {
     return true;
   }
   if (knownOp.type === types.GROUP) {
@@ -61,7 +61,7 @@ function inputProjectionScope(knownOp: Algebra.Operation, projectionScope: boole
  * Removes quad component of triples and wrap found bgps in Algebra.GraphOperations
  * Mainly returns same type as first arg
  * @param projectionScope whether we are directly below an EXTEND/ORDER_BY chain rooted at a
- * PROJECT/ASK/DESCRIBE - see {@link inputProjectionScope}.
+ * PROJECT/ASK/CONSTRUCT/DESCRIBE - see {@link inputProjectionScope}.
  */
 export const removeAlgQuadsRecursive: AstIndir<
   'removeQuadsRecursive',

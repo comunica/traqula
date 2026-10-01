@@ -7,6 +7,7 @@ import type {
   PatternBind,
   PatternGroup,
   QueryBase,
+  QueryConstruct,
   QuerySelect,
   SolutionModifierGroupBind,
   Sparql11Nodes,
@@ -21,23 +22,14 @@ import type { RdfTermToAst } from './general.js';
 import { translateAlgPattern, translateAlgTerm } from './general.js';
 import { translateAlgPatternNew } from './pattern.js';
 
+/**
+ * Only delegates to {@link translateAlgProject}, like the other query forms.
+ * Kept as its own rule so overrides of `translateConstruct` keep being called.
+ */
+// TODO(major): remove, dispatch CONSTRUCT to translateAlgProject directly
 export const translateAlgConstruct: AstIndir<'translateConstruct', PatternGroup, [Algebra.Construct]> = {
   name: 'translateConstruct',
-  fun: ({ SUBRULE }) => ({ astFactory: F, order }, op) => {
-    const queryConstruct = F.queryConstruct(
-      F.gen(),
-      [],
-      F.patternBgp(<BasicGraphPattern> op.template.map(x => SUBRULE(translateAlgPattern, x)), F.gen()),
-      F.patternGroup([ SUBRULE(translateAlgPatternNew, op.input) ].flat(), F.gen()),
-      {},
-      F.datasetClauses([], F.gen()),
-    );
-    SUBRULE(registerOrderBy, queryConstruct);
-    order.length = 0;
-    // Subqueries need to be in a group! Top level grouping is removed at toAst function
-    //  - for consistency with the other operators, we also wrap here.
-    return F.patternGroup([ <Pattern> <unknown> queryConstruct ], F.gen());
-  },
+  fun: ({ SUBRULE }) => (_, op) => SUBRULE(translateAlgProject, op, types.CONSTRUCT),
 };
 
 // Separate terms from wildcard since we handle them differently
@@ -74,7 +66,11 @@ AstIndir<'replaceAggregatorVariables', unknown, [unknown, Record<string, Express
 };
 
 export const translateAlgProject:
-AstIndir<'translateProject', PatternGroup, [Algebra.Project | Algebra.Ask | Algebra.Describe, string]> = {
+AstIndir<
+  'translateProject',
+PatternGroup,
+[Algebra.Project | Algebra.Ask | Algebra.Describe | Algebra.Construct, string]
+> = {
   name: 'translateProject',
   fun: ({ SUBRULE }) => (c, op, type) => {
     const F = c.astFactory;
@@ -95,6 +91,12 @@ AstIndir<'translateProject', PatternGroup, [Algebra.Project | Algebra.Ask | Alge
       variables = (<Algebra.Project>op).variables;
     } else if (type === types.ASK) {
       result.subType = 'ask';
+    } else if (type === types.CONSTRUCT) {
+      result.subType = 'construct';
+      (<QueryConstruct> result).template = F.patternBgp(
+        <BasicGraphPattern> (<Algebra.Construct>op).template.map(x => SUBRULE(translateAlgPattern, x)),
+        F.gen(),
+      );
     } else {
       result.subType = 'describe';
       variables = <RDF.Variable[]>(<Algebra.Describe>op).terms;
@@ -281,9 +283,10 @@ export const putExtensionsInGroup: AstIndir<'putExtensionsInGroup', void, [Query
     const extensionEntries = Object.entries(extensions);
     if (extensionEntries.length > 0) {
       result.where = result.where ?? F.patternGroup([], F.gen());
-      // A subquery is only allowed as the entire content of a group.
-      //  Giving it siblings thus requires it to get a group of its own.
-      if (result.where.patterns.length === 1 && F.isQuery(result.where.patterns[0])) {
+      // A subquery is only allowed as the entire content of a group, and a FILTER constrains its entire group.
+      //  Giving them siblings thus requires them to get a group of their own.
+      const patterns = result.where.patterns;
+      if ((patterns.length === 1 && F.isQuery(patterns[0])) || patterns.some(pattern => F.isPatternFilter(pattern))) {
         result.where = F.patternGroup([ F.patternGroup(result.where.patterns, F.gen()) ], F.gen());
       }
       for (const [ key, value ] of extensionEntries) {

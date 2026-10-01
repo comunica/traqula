@@ -6,7 +6,8 @@ import { AlgebraFactory } from './index.js';
 
 /**
  * Utility for canonicalizing SPARQL Algebra operations by replacing blank node
- * and variable names with deterministic generated names.
+ * and variable names with deterministic generated names,
+ * and by sorting the variables of projections, since those form a set.
  * Useful for comparing algebra representations in tests.
  */
 export class Canonicalizer {
@@ -21,39 +22,38 @@ export class Canonicalizer {
 
   /**
    * Replaces values of BlankNodes in a query with newly generated names.
+   * This includes the blank nodes of CONSTRUCT templates: they get a new name but remain blank nodes.
    * @param res
    * @param replaceVariables
    */
   public canonicalizeQuery(res: Algebra.Operation, replaceVariables: boolean): Algebra.Operation {
     this.blankId = 0;
-    const nameMapping: Record<string, string> = {};
+    const nameMapping: Record<string, string> = Object.create(null);
     const factory = new AlgebraFactory();
 
     return util.mapOperation<'unsafe', typeof res>(res, {
-      [Algebra.Types.PATH]: { transform: pathOp => ({
-        result: factory.createPath(
+      [Algebra.Types.PROJECT]: {
+        transform: projectOp => factory.createProject(
+          projectOp.input,
+          [ ...projectOp.variables ].sort((left, right) => left.value.localeCompare(right.value)),
+        ),
+      },
+      [Algebra.Types.PATH]: {
+        transform: pathOp => factory.createPath(
           this.replaceValue(pathOp.subject, nameMapping, replaceVariables, factory),
           pathOp.predicate,
           this.replaceValue(pathOp.object, nameMapping, replaceVariables, factory),
           this.replaceValue(pathOp.graph, nameMapping, replaceVariables, factory),
         ),
-        recurse: true,
-      }) },
-      [Algebra.Types.PATTERN]: { transform: patternOp => ({
-        result: factory.createPattern(
+      },
+      [Algebra.Types.PATTERN]: {
+        transform: patternOp => factory.createPattern(
           this.replaceValue(patternOp.subject, nameMapping, replaceVariables, factory),
           this.replaceValue(patternOp.predicate, nameMapping, replaceVariables, factory),
           this.replaceValue(patternOp.object, nameMapping, replaceVariables, factory),
           this.replaceValue(patternOp.graph, nameMapping, replaceVariables, factory),
         ),
-        recurse: true,
-      }) },
-      [Algebra.Types.CONSTRUCT]: { transform: constructOp =>
-        // Blank nodes in CONSTRUCT templates must be maintained
-        ({
-          result: factory.createConstruct(constructOp.input, constructOp.template),
-          recurse: true,
-        }) },
+      },
     });
   }
 

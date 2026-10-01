@@ -126,6 +126,7 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
       SUBRULE(aggregate, ast);
     } else if (infixOperators.has(ast.operator)) {
       // We know it will be expressionOperator
+      // Always bracketed: HAVING and GROUP BY generation relies on this
       const [ left, ...right ] = ast.args;
       F.printFilter(ast, () => PRINT_WORD('('));
       SUBRULE(expression, left);

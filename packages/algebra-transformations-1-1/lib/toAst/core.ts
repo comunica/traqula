@@ -1,5 +1,6 @@
 import type * as RDF from '@rdfjs/types';
 import type { IndirDef } from '@traqula/core';
+import type { Expression } from '@traqula/rules-sparql-1-1';
 import { AstFactory, AstTransformer } from '@traqula/rules-sparql-1-1';
 import * as Algebra from '../algebra.js';
 import { AlgebraFactory } from '../algebraFactory.js';
@@ -24,6 +25,10 @@ export interface AstContext {
    */
   aggregates: Algebra.BoundAggregate[];
   /**
+   * All HAVING conditions (filters directly on top of a group) found in our suboperations
+   */
+  having: Expression[];
+  /**
    * All orderings found in our suboperations
    */
   order: Algebra.Expression[];
@@ -38,6 +43,7 @@ export function createAstContext(): AstContext {
     extend: [],
     group: [],
     aggregates: [],
+    having: [],
     order: [],
     algebraFactory: new AlgebraFactory(),
     astFactory: new AstFactory(),
@@ -55,6 +61,7 @@ export const resetContext: AstIndir<'resetContext', void, []> = {
     c.extend = [];
     c.group = [];
     c.aggregates = [];
+    c.having = [];
     c.order = [];
   },
 };

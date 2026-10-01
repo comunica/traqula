@@ -14,6 +14,7 @@ import type {
 } from '@traqula/rules-sparql-1-1';
 import type { Algebra } from '../index.js';
 import { types } from '../toAlgebra/index.js';
+import { inScopeVariables } from '../util.js';
 import type { AstIndir } from './core.js';
 import { resetContext } from './core.js';
 import { translateAlgExpressionOrOrdering, translateAlgPureExpression } from './expression.js';
@@ -73,6 +74,28 @@ AstIndir<'replaceAggregatorVariables', unknown, [unknown, Record<string, Express
   },
 };
 
+/**
+ * The variables a query form mentions outside its input, such as the terms of a DESCRIBE.
+ */
+function getFormVariables(op: Algebra.Operation): Set<string> {
+  const names = new Set<string>();
+  const collect = (value: unknown): void => {
+    if ((<RDF.Term> value)?.termType === 'Variable') {
+      names.add((<RDF.Variable> value).value);
+    } else if (typeof value === 'object' && value !== null) {
+      for (const child of Object.values(value)) {
+        collect(child);
+      }
+    }
+  };
+  for (const [ key, value ] of Object.entries(op)) {
+    if (key !== 'input') {
+      collect(value);
+    }
+  }
+  return names;
+}
+
 export const translateAlgProject:
 AstIndir<'translateProject', PatternGroup, [Algebra.Project | Algebra.Ask | Algebra.Describe, string]> = {
   name: 'translateProject',
@@ -131,6 +154,20 @@ AstIndir<'translateProject', PatternGroup, [Algebra.Project | Algebra.Ask | Alge
       const expr = SUBRULE(translateAlgPureExpression, e.expression);
       extensions[(<RdfTermToAst<typeof e.variable>>SUBRULE(translateAlgTerm, e.variable)).value] =
         <typeof expr>SUBRULE(replaceAlgAggregatorVariables, expr, aggregators);
+    }
+    // Without a SELECT clause, only the group variables of a group are visible to the query form.
+    //  Extends above the group, and aggregates the query form reads, are thus evaluated in a SELECT subquery.
+    if (type !== types.PROJECT && (c.group.length > 0 || c.aggregates.length > 0)) {
+      const formVariables = getFormVariables(op);
+      if (Object.keys(extensions).some(name => !c.group.some(variable => variable.value === name)) ||
+        Object.keys(aggregators).some(name => formVariables.has(name))) {
+        // Recover state and translate again, with the input wrapped in a projection of all it binds
+        Object.assign(c, { extend, group, aggregates, having, order });
+        const projection = inScopeVariables(op.input)
+          .filter(variable => !aggregators[variable.value] || formVariables.has(variable.value));
+        const subquery = c.algebraFactory.createProject(op.input, projection);
+        return SUBRULE(translateAlgProject, { ...op, input: subquery }, type);
+      }
     }
     // SPARQL can only select an aggregate as `(aggregate AS ?variable)`,
     //  so a SELECT of an aggregate's variable needs the aggregate as its projection expression.

@@ -1,0 +1,10 @@
+PREFIX : <http://example.com/ns#>
+
+SELECT * WHERE {
+  VALUES ?lit { "hello"@en--ltr "olleh"@ar--rtl }
+  ?s :p <<( :a :b "nested"@en--ltr )>> .
+  << ?s :says "quoted"@en--rtl >> :certainty "sure"@en--ltr .
+  FILTER(?lit != "bye"@en--ltr && ?lit IN ("hi"@en--ltr, <<( :a :b "deep"@ar--rtl )>>))
+  BIND(CONCAT("prefix"@en--ltr, STR(?lit)) AS ?c)
+  BIND(sameTerm(?lit, STRLANGDIR("x", "en", "rtl")) AS ?d)
+}

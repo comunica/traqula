@@ -1,5 +1,5 @@
 import type { Algebra } from '@traqula/algebra-transformations-1-1';
-import { AlgebraFactory, algebraUtils, createAstContext, createAlgebraContext }
+import { AlgebraFactory, Canonicalizer, algebraUtils, createAstContext, createAlgebraContext }
   from '@traqula/algebra-transformations-1-1';
 import { Generator } from '@traqula/generator-sparql-1-1';
 import { Parser } from '@traqula/parser-sparql-1-1';
@@ -67,6 +67,34 @@ describe('algebra-sparql-1-1 extra coverage', () => {
   ?s ?p ?y .
 }
 GROUP BY ( ?y AS ?x )`);
+    });
+  });
+
+  describe('projection of an aggregate variable', () => {
+    const s = AF.dataFactory.variable!('s');
+    const p = AF.dataFactory.variable!('p');
+    const o = AF.dataFactory.variable!('o');
+    const var0 = AF.dataFactory.variable!('var0');
+    const project = AF.createProject(
+      AF.createGroup(
+        AF.createBgp([ AF.createPattern(s, p, o) ]),
+        [ s ],
+        [ AF.createBoundAggregate(var0, 'count', AF.createTermExpression(o), false) ],
+      ),
+      [ var0, s ],
+    );
+
+    it('selects the aggregate bound to the variable', ({ expect }) => {
+      const result = generator.generate(F.forcedAutoGenTree(toAst(project)));
+      expect(result).toBe(`SELECT ( COUNT( ?o ) AS ?var0 ) ?s WHERE {
+  ?s ?p ?o .
+}
+GROUP BY ?s`);
+    });
+
+    it('generates a query that parses and round-trips unchanged', ({ expect }) => {
+      const result = generator.generate(F.forcedAutoGenTree(toAst(project)));
+      expect(roundTrip(result)).toBe(result);
     });
   });
 
@@ -311,6 +339,34 @@ GROUP BY ( ?y AS ?x )`);
       const operatorExpr = AF.createOperatorExpression('>', [ termX, termY ]);
       const result = transformer.translateAnyExpression(c, operatorExpr);
       expect(result).toMatchObject({ operator: '>' });
+    });
+  });
+
+  // TODO(major): remove together with the deprecated filterReplace and objectContainsVariable
+  describe('deprecated filterReplace', () => {
+    it('moves filters mentioning an aggregator variable to the havings, also in nested groups', ({ expect }) => {
+      const transformer = toAst11Builder.build();
+      const c = createAstContext();
+      const query = <any> parser.parse('SELECT * { ?s ?p ?o FILTER(?agg > 1) FILTER(?x) { FILTER(STR(?agg)) } }');
+      const aggregate = F.termVariable('replaced', F.gen());
+      const havings: any[] = [];
+      const result = <any> transformer.filterReplace(c, query.where, { agg: aggregate }, havings);
+      expect(havings).toMatchObject([
+        { type: 'expression', args: [{ value: 'replaced' }]},
+        { type: 'expression', subType: 'operation', operator: '>', args: [{ value: 'replaced' }, {}]},
+      ]);
+      expect(result.patterns).toMatchObject([
+        { type: 'pattern', subType: 'bgp' },
+        { type: 'pattern', subType: 'filter', expression: { value: 'x' }},
+        { type: 'pattern', subType: 'group', patterns: []},
+      ]);
+    });
+
+    it('returns non-group patterns as is', ({ expect }) => {
+      const transformer = toAst11Builder.build();
+      const c = createAstContext();
+      const bgp = F.patternBgp([], F.gen());
+      expect(transformer.filterReplace(c, bgp, {}, [])).toBe(bgp);
     });
   });
 
@@ -764,6 +820,80 @@ describe('queryUnit.ts (toAst): registerGroupBy direct call', () => {
       expect(result).toMatchObject({
         input: { patterns: [{ predicate: { value: 'http://ex.org/foo' }}]},
       });
+    });
+
+    it('translates blank nodes whose labels are prototype keys to variables', ({ expect }) => {
+      const transformer = toAlgebra11Builder.build();
+      const c = createAlgebraContext({});
+      const bgp = AF.createBgp([
+        AF.createPattern(
+          AF.dataFactory.blankNode('constructor'),
+          AF.dataFactory.variable!('p'),
+          AF.dataFactory.blankNode('__proto__'),
+        ),
+      ]);
+      expect(transformer.translateBlankNodesToVariables(c, bgp)).toEqual(AF.createBgp([
+        AF.createPattern(
+          AF.dataFactory.variable!('constructor'),
+          AF.dataFactory.variable!('p'),
+          AF.dataFactory.variable!('__proto__'),
+        ),
+      ]));
+    });
+
+    it('canonicalizes variables whose names are prototype keys', ({ expect }) => {
+      const canon = new Canonicalizer();
+      const bgpOf = (name: string): Algebra.Bgp => AF.createBgp([
+        AF.createPattern(AF.dataFactory.variable!(name), AF.dataFactory.variable!('p'), AF.dataFactory.variable!(name)),
+      ]);
+      expect(canon.canonicalizeQuery(bgpOf('constructor'), true)).toEqual(canon.canonicalizeQuery(bgpOf('x'), true));
+    });
+  });
+
+  describe('canonicalizer', () => {
+    const DF = AF.dataFactory;
+
+    it('returns patterns and paths themselves, not wrapped', ({ expect }) => {
+      const p = DF.namedNode('http://ex.org/p');
+      const op = AF.createJoin([
+        AF.createBgp([ AF.createPattern(DF.blankNode('b'), p, DF.variable!('x')) ]),
+        AF.createPath(DF.variable!('x'), AF.createLink(p), DF.blankNode('b')),
+      ]);
+      const result = <Algebra.Join> new Canonicalizer().canonicalizeQuery(op, true);
+      expect(result).toEqual(AF.createJoin([
+        AF.createBgp([ AF.createPattern(DF.blankNode('value_0'), p, DF.variable!('value_1')) ]),
+        AF.createPath(DF.variable!('value_1'), AF.createLink(p), DF.blankNode('value_0')),
+      ]));
+    });
+
+    it('renames blank nodes of CONSTRUCT templates, keeping them blank nodes', ({ expect }) => {
+      const p = DF.namedNode('http://ex.org/p');
+      const op = AF.createConstruct(
+        AF.createBgp([ AF.createPattern(DF.variable!('s'), p, DF.variable!('o')) ]),
+        [ AF.createPattern(DF.blankNode('g_7'), p, DF.variable!('o')) ],
+      );
+      expect(new Canonicalizer().canonicalizeQuery(op, true)).toEqual(AF.createConstruct(
+        AF.createBgp([ AF.createPattern(DF.variable!('value_2'), p, DF.variable!('value_1')) ]),
+        [ AF.createPattern(DF.blankNode('value_0'), p, DF.variable!('value_1')) ],
+      ));
+    });
+
+    it('sorts the variables of a projection', ({ expect }) => {
+      const bgp = AF.createBgp([ AF.createPattern(DF.variable!('s'), DF.variable!('p'), DF.variable!('o')) ]);
+      const [ o, p, s ] = [ 'o', 'p', 's' ].map(name => DF.variable!(name));
+      expect(new Canonicalizer().canonicalizeQuery(AF.createProject(bgp, [ s, o, p ]), false))
+        .toEqual(AF.createProject(bgp, [ o, p, s ]));
+    });
+
+    it('renames a term in and outside a quoted triple once', ({ expect }) => {
+      const p = DF.namedNode('http://ex.org/p');
+      const quoted = AF.createPattern(DF.blankNode('b'), p, DF.namedNode('http://ex.org/o'));
+      const op = AF.createBgp([ AF.createPattern(quoted, p, DF.blankNode('b')) ]);
+      expect(new Canonicalizer().canonicalizeQuery(op, false)).toEqual(AF.createBgp([ AF.createPattern(
+        AF.createPattern(DF.blankNode('value_0'), p, DF.namedNode('http://ex.org/o')),
+        p,
+        DF.blankNode('value_0'),
+      ) ]));
     });
   });
 

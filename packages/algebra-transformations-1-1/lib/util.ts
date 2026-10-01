@@ -469,11 +469,8 @@ export function objectify(algebra: any): any {
     return algebra.map(e => objectify(e));
   }
   if (algebra === Object(algebra)) {
-    const result: any = {};
-    for (const key of Object.keys(algebra)) {
-      result[key] = objectify(algebra[key]);
-    }
-    return result;
+    return Object.fromEntries(Object.keys(algebra)
+      .map(key => [ key, objectify(algebra[key]) ]));
   }
   return algebra;
 }
@@ -499,7 +496,7 @@ export function inScopeVariables(
   op: A.BaseOperation,
   visitor: typeof visitOperation = visitOperation,
 ): RDF.Variable[] {
-  const variables: Record<string, RDF.Variable> = {};
+  const variables: Record<string, RDF.Variable> = Object.create(null);
 
   function addVariable(v: RDF.Variable): void {
     variables[v.value] = v;

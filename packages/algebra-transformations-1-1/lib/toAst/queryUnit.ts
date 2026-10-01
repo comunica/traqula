@@ -22,9 +22,6 @@ import type { RdfTermToAst } from './general.js';
 import { translateAlgPattern, translateAlgTerm } from './general.js';
 import { translateAlgPatternNew } from './pattern.js';
 
-/**
- * A construct shares its group, aggregate, having, and order handling with {@link translateAlgProject}.
- */
 export const translateAlgConstruct: AstIndir<'translateConstruct', PatternGroup, [Algebra.Construct]> = {
   name: 'translateConstruct',
   fun: ({ SUBRULE }) => (_, op) => SUBRULE(translateAlgProject, op, types.CONSTRUCT),

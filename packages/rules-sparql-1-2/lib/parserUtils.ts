@@ -1,4 +1,9 @@
-import { TransformerSubTyped, traqulaIndentation, traqulaNewlineAlternative } from '@traqula/core';
+import {
+  TransformerSubTyped,
+  traqulaIndentation,
+  traqulaNewlineAlternative,
+  visitOnlyKnownKeys,
+} from '@traqula/core';
 import { AstFactory } from './AstFactory.js';
 import type { SparqlContext, SparqlGeneratorContext } from './sparql12HelperTypes.js';
 import type { Sparql12Nodes } from './sparql12Types.js';
@@ -68,3 +73,92 @@ Partial<SparqlContext & SparqlGeneratorContext & { origSource: string; offset?: 
 }
 
 export class AstTransformer extends TransformerSubTyped<Sparql12Nodes> {}
+
+/**
+ * Contexts per node type that only visit the known keys that can hold objects, see {@link visitOnlyKnownKeys}.
+ */
+export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql12Nodes>({
+  path: { type: false, subType: false, loc: false, items: true },
+  pattern: {
+    type: false,
+    subType: false,
+    loc: false,
+    silent: false,
+    values: true,
+    name: true,
+    variable: true,
+    expression: true,
+    variables: true,
+    patterns: true,
+    triples: true,
+  },
+  update: { type: false, subType: false, loc: false, updates: true },
+  query: {
+    type: false,
+    subType: false,
+    loc: false,
+    distinct: false,
+    reduced: false,
+    values: true,
+    template: true,
+    context: true,
+    solutionModifiers: true,
+    datasets: true,
+    where: true,
+    variables: true,
+  },
+  graphRef: { type: false, subType: false, loc: false, graph: true },
+  updateOperation: {
+    type: false,
+    subType: false,
+    loc: false,
+    silent: false,
+    data: true,
+    source: true,
+    destination: true,
+    from: true,
+    graph: true,
+    where: true,
+    delete: true,
+    insert: true,
+  },
+  datasetClauses: { type: false, subType: false, loc: false, clauses: true },
+  tripleCollection: { type: false, subType: false, loc: false, triples: true, identifier: true },
+  triple: { type: false, subType: false, loc: false, object: true, subject: true, predicate: true, annotations: true },
+  solutionModifier: {
+    type: false,
+    subType: false,
+    loc: false,
+    offset: false,
+    limit: false,
+    having: true,
+    orderDefs: true,
+    groupings: true,
+  },
+  expression: {
+    type: false,
+    subType: false,
+    loc: false,
+    distinct: false,
+    operator: false,
+    separator: false,
+    aggregation: false,
+    function: true,
+    args: true,
+    expression: true,
+  },
+  contextDef: { type: false, subType: false, loc: false, key: false, version: false, value: true },
+  wildcard: { type: false, subType: false, loc: false },
+  term: {
+    type: false,
+    subType: false,
+    loc: false,
+    value: false,
+    label: false,
+    prefix: false,
+    object: true,
+    subject: true,
+    predicate: true,
+    langOrIri: true,
+  },
+});

@@ -7,7 +7,23 @@ export function isPromise(value: unknown): value is Promise<unknown> {
   return value instanceof Promise;
 }
 
-export interface VisitContext {
+/**
+ * A key of the given object, or any other string.
+ * Unlike `keyof Obj | string`, the IDE keeps suggesting the keys of the object.
+ */
+export type ObjectKeyHint<Obj> = (keyof Obj & string) | (string & NonNullable<unknown>);
+
+/**
+ * Whether a key should not be visited according to the given ignoreKeys and visitOnlyKeys.
+ */
+function isKeyIgnored(key: string, ignoreKeys?: Set<string>, visitOnlyKeys?: Set<string>): boolean {
+  return (ignoreKeys?.has(key) ?? false) || !(visitOnlyKeys?.has(key) ?? true);
+}
+
+/**
+ * @typeParam Obj - The object this context applies to, its keys are suggested by the IDE.
+ */
+export interface VisitContext<Obj = object> {
   /**
    * Whether you should stop iterating after this object. Default false.
    */
@@ -19,15 +35,24 @@ export interface VisitContext {
   /**
    * Object keys that can be ignored, meaning they do not get visited.
    */
-  ignoreKeys?: Set<string>;
+  ignoreKeys?: Set<ObjectKeyHint<Obj>>;
+  /**
+   * Object keys that can be visited, all other keys are ignored. By default, all keys can be visited.
+   * A key included here and in {@link ignoreKeys} is ignored.
+   * An empty set in the default context makes a transformer only visit keys that a node explicitly allows.
+   */
+  visitOnlyKeys?: Set<ObjectKeyHint<Obj>>;
 }
 
-export interface TransformContext extends VisitContext {
+/**
+ * @typeParam Obj - The object this context applies to, its keys are suggested by the IDE.
+ */
+export interface TransformContext<Obj = object> extends VisitContext<Obj> {
   /**
    * Object keys that will be shallowly copied but not traversed.
-   * When the same key is included here and in ignoreKeys, the copy will still be made.
+   * When the same key is ignored through {@link ignoreKeys} or {@link visitOnlyKeys}, the copy will still be made.
    */
-  shallowKeys?: Set<string>;
+  shallowKeys?: Set<ObjectKeyHint<Obj>>;
   /**
    * Whether the visited object should be shallowly copied or not. Defaults to true.
    */
@@ -160,6 +185,7 @@ export class TransformerObject {
     const defaultCopyFlag = defaults.copy ?? true;
     const defaultContinues = defaults.continue ?? true;
     const defaultIgnoreKeys = defaults.ignoreKeys;
+    const defaultVisitOnlyKeys = defaults.visitOnlyKeys;
     const defaultShallowKeys = defaults.shallowKeys;
     const defaultDidShortCut = defaults.shortcut ?? false;
 
@@ -215,6 +241,7 @@ export class TransformerObject {
       const copyFlag = context.copy ?? defaultCopyFlag;
       const continues = context.continue ?? defaultContinues;
       const ignoreKeys = context.ignoreKeys ?? defaultIgnoreKeys;
+      const visitOnlyKeys = context.visitOnlyKeys ?? defaultVisitOnlyKeys;
       const shallowKeys = context.shallowKeys ?? defaultShallowKeys;
       didShortCut = context.shortcut ?? defaultDidShortCut;
 
@@ -241,7 +268,7 @@ export class TransformerObject {
             // Do not add stack entry - assign straight away
             (<Record<string, unknown>> copy)[key] = this.cloneObj(val);
           }
-          if (ignoreKeys && ignoreKeys.has(key)) {
+          if (isKeyIgnored(key, ignoreKeys, visitOnlyKeys)) {
             // Do not add stack entry
             continue;
           }
@@ -369,6 +396,7 @@ export class TransformerObject {
     const defaultCopyFlag = defaults.copy ?? true;
     const defaultContinues = defaults.continue ?? true;
     const defaultIgnoreKeys = defaults.ignoreKeys;
+    const defaultVisitOnlyKeys = defaults.visitOnlyKeys;
     const defaultShallowKeys = defaults.shallowKeys;
     const defaultDidShortCut = defaults.shortcut ?? false;
     const defaultReTransform = defaults.reTransform ?? false;
@@ -420,6 +448,7 @@ export class TransformerObject {
 
       const continues = mapperResult.continue ?? defaultContinues;
       const ignoreKeys = mapperResult.ignoreKeys ?? defaultIgnoreKeys;
+      const visitOnlyKeys = mapperResult.visitOnlyKeys ?? defaultVisitOnlyKeys;
       const shallowKeys = mapperResult.shallowKeys ?? defaultShallowKeys;
       const reTransform = mapperResult.reTransform ?? defaultReTransform;
       didShortCut = mapperResult.shortcut ?? defaultDidShortCut;
@@ -443,18 +472,18 @@ export class TransformerObject {
         stackRewriteCount.push(rewriteCount + 1);
         return;
       }
-      // In any other case, push the children, ignoring ignoreKeys and shallowKeys.
-      // Creating shallow copies of shallowKeys.
+      // In any other case, push the children, ignoring ignoreKeys, keys not in visitOnlyKeys, and shallowKeys.
+      // Creating shallow copies of shallowKeys, even when they are ignored.
       const newAsRecord = <Record<string, unknown>> newValue;
       for (const key in newAsRecord) {
-        if (!Object.hasOwn(newAsRecord, key) || ignoreKeys?.has(key)) {
+        if (!Object.hasOwn(newAsRecord, key)) {
           continue;
         }
         const val = newAsRecord[key];
         if (val !== null && typeof val === 'object') {
           if (shallowKeys?.has(key)) {
             newAsRecord[key] = this.cloneObj(val);
-          } else {
+          } else if (!isKeyIgnored(key, ignoreKeys, visitOnlyKeys)) {
             stack.push(val);
             stackParent.push(newAsRecord);
             stackParentKey.push(key);
@@ -542,6 +571,7 @@ export class TransformerObject {
     const defaults = this.defaultContext;
     const defaultContinues = defaults.continue ?? true;
     const defaultIgnoreKeys = defaults.ignoreKeys;
+    const defaultVisitOnlyKeys = defaults.visitOnlyKeys;
     const defaultShortcut = defaults.shortcut ?? false;
 
     let didShortCut = false;
@@ -578,6 +608,7 @@ export class TransformerObject {
       didShortCut = context.shortcut ?? defaultShortcut;
       const continues = context.continue ?? defaultContinues;
       const ignoreKeys = context.ignoreKeys ?? defaultIgnoreKeys;
+      const visitOnlyKeys = context.visitOnlyKeys ?? defaultVisitOnlyKeys;
 
       // Register that you want to be visited
       handleVisitorOnLen.push(stack.length);
@@ -589,7 +620,7 @@ export class TransformerObject {
           if (!Object.hasOwn(curObject, key)) {
             continue;
           }
-          if (ignoreKeys && ignoreKeys.has(key)) {
+          if (isKeyIgnored(key, ignoreKeys, visitOnlyKeys)) {
             continue;
           }
           const val = (<Record<string, unknown>> curObject)[key];

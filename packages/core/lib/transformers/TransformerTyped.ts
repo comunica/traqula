@@ -19,7 +19,35 @@ export type SafeWrap<Safe extends Safeness, obj extends object> =
  * Default pre-visitor configuration per node type. Provides default {@link TransformContext}
  * values that apply when no explicit preVisitor is given for a node type.
  */
-export type DefaultNodePreVisitor<Nodes extends Typed> = {[T in Nodes['type']]?: TransformContext };
+export type DefaultNodePreVisitor<Nodes extends Typed> =
+  {[T in Nodes['type']]?: TransformContext<Extract<Nodes, Typed<T>>> };
+
+/**
+ * All keys of an object, also when the object is a union of objects.
+ */
+export type AllObjectKeys<Obj> = Obj extends unknown ? keyof Obj & string : never;
+
+/**
+ * Per node type, all keys its nodes can have, mapped to whether they should be visited.
+ * Listing every key lets the compiler check that no key is missing or unknown.
+ */
+export type KnownNodeKeys<Nodes extends Typed> =
+  {[T in Nodes['type']]: Record<AllObjectKeys<Extract<Nodes, Typed<T>>>, boolean> };
+
+/**
+ * Creates a {@link DefaultNodePreVisitor} that per node type only visits the known keys mapped to `true`.
+ * Objects of other types, and objects without type, are still fully visited.
+ * Combining it with an empty default {@link VisitContext.visitOnlyKeys} skips typed nodes within such objects.
+ * The `*Specific` methods of {@link TransformerSubTyped} do not use a {@link DefaultNodePreVisitor} yet.
+ */
+export function visitOnlyKnownKeys<Nodes extends Typed>(knownKeys: KnownNodeKeys<Nodes>): DefaultNodePreVisitor<Nodes> {
+  const contexts: Record<string, TransformContext> = {};
+  for (const [ type, keys ] of Object.entries(knownKeys)) {
+    const keysToVisit = Object.entries(<Record<string, boolean>> keys).filter(([ , visit ]) => visit);
+    contexts[type] = { visitOnlyKeys: new Set(keysToVisit.map(([ key ]) => key)) };
+  }
+  return <DefaultNodePreVisitor<Nodes>> contexts;
+}
 
 /**
  * Type-aware AST transformer that dispatches visit and transform callbacks
@@ -69,7 +97,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     startObject: object,
     nodeCallBacks: {[T in Nodes['type']]?: {
       transform?: (copy: SafeWrap<Safe, Extract<Nodes, Typed<T>>>, orig: Extract<Nodes, Typed<T>>) => unknown;
-      preVisitor?: (orig: Extract<Nodes, Typed<T>>) => TransformContext;
+      preVisitor?: (orig: Extract<Nodes, Typed<T>>) => TransformContext<Extract<Nodes, Typed<T>>>;
     }},
   ): Safe extends 'unsafe' ? OutType : unknown {
     const transformWrapper = (copy: object, orig: object): unknown => {
@@ -105,7 +133,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
         copy: SafeWrap<Safe, Extract<Nodes, Typed<T>>>,
         orig: Extract<Nodes, Typed<T>>,
       ) => Awaitable<unknown>;
-      preVisitor?: (orig: Extract<Nodes, Typed<T>>) => Awaitable<TransformContext>;
+      preVisitor?: (orig: Extract<Nodes, Typed<T>>) => Awaitable<TransformContext<Extract<Nodes, Typed<T>>>>;
     }},
   ): Promise<Safe extends 'unsafe' ? OutType : unknown> {
     const transformWrapper = (copy: object, orig: object): Awaitable<unknown> => {
@@ -237,7 +265,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     startObject: object,
     nodeCallBacks: {[T in Nodes['type']]?: {
       visitor?: (op: Extract<Nodes, Typed<T>>) => void;
-      preVisitor?: (op: Extract<Nodes, Typed<T>>) => VisitContext;
+      preVisitor?: (op: Extract<Nodes, Typed<T>>) => VisitContext<Extract<Nodes, Typed<T>>>;
     }},
   ): void {
     const visitorWrapper = (curObject: object): void => {
@@ -271,7 +299,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     startObject: object,
     nodeCallBacks: {[T in Nodes['type']]?: {
       visitor?: (op: Extract<Nodes, Typed<T>>) => Awaitable<void>;
-      preVisitor?: (op: Extract<Nodes, Typed<T>>) => Awaitable<VisitContext>;
+      preVisitor?: (op: Extract<Nodes, Typed<T>>) => Awaitable<VisitContext<Extract<Nodes, Typed<T>>>>;
     }},
   ): Promise<void> {
     const visitorWrapper = (curObject: object): Awaitable<void> => {

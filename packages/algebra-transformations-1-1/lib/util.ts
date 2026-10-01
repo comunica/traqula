@@ -1,6 +1,6 @@
 import type * as RDF from '@rdfjs/types';
 import type { TransformContext, VisitContext } from '@traqula/core';
-import { TransformerSubTyped } from '@traqula/core';
+import { TransformerSubTyped, visitOnlyKnownKeys } from '@traqula/core';
 import type * as A from './algebra.js';
 import { ExpressionTypes, Types } from './algebra.js';
 
@@ -26,6 +26,78 @@ const transformer = new TransformerSubTyped<A.Operation>({}, {
   [Types.ADD]: { ignoreKeys: new Set([ 'source', 'destination' ]) },
   [Types.MOVE]: { ignoreKeys: new Set([ 'source', 'destination' ]) },
   [Types.COPY]: { ignoreKeys: new Set([ 'source', 'destination' ]) },
+});
+
+/**
+ * Contexts per operation type that only visit the known keys that can hold objects, see {@link visitOnlyKnownKeys}.
+ */
+export const knownKeysAllowlist = visitOnlyKnownKeys<A.Operation>({
+  [Types.ASK]: { type: false, subType: false, input: true },
+  [Types.BGP]: { type: false, subType: false, patterns: true },
+  [Types.CONSTRUCT]: { type: false, subType: false, input: true, template: true },
+  [Types.DESCRIBE]: { type: false, subType: false, input: true, terms: true },
+  [Types.DISTINCT]: { type: false, subType: false, input: true },
+  [Types.EXPRESSION]: {
+    type: false,
+    subType: false,
+    distinct: false,
+    operator: false,
+    aggregator: false,
+    separator: false,
+    not: false,
+    input: true,
+    name: true,
+    variable: true,
+    args: true,
+    expression: true,
+    wildcard: true,
+    term: true,
+  },
+  [Types.EXTEND]: { type: false, subType: false, input: true, variable: true, expression: true },
+  [Types.FILTER]: { type: false, subType: false, input: true, expression: true },
+  [Types.FROM]: { type: false, subType: false, input: true, default: true, named: true },
+  [Types.GRAPH]: { type: false, subType: false, input: true, name: true },
+  [Types.GROUP]: { type: false, subType: false, input: true, variables: true, aggregates: true },
+  [Types.JOIN]: { type: false, subType: false, input: true },
+  [Types.LEFT_JOIN]: { type: false, subType: false, input: true, expression: true },
+  [Types.MINUS]: { type: false, subType: false, input: true, graphScopeVar: true },
+  [Types.NOP]: { type: false, subType: false },
+  [Types.ORDER_BY]: { type: false, subType: false, input: true, expressions: true },
+  [Types.PATTERN]: {
+    type: false,
+    subType: false,
+    value: false,
+    equals: false,
+    termType: false,
+    object: true,
+    subject: true,
+    predicate: true,
+    graph: true,
+  },
+  [Types.PROJECT]: { type: false, subType: false, input: true, variables: true },
+  [Types.REDUCED]: { type: false, subType: false, input: true },
+  [Types.SERVICE]: { type: false, subType: false, silent: false, input: true, name: true },
+  [Types.SLICE]: { type: false, subType: false, length: false, start: false, input: true },
+  [Types.UNION]: { type: false, subType: false, input: true },
+  [Types.VALUES]: { type: false, subType: false, bindings: true, variables: true },
+  [Types.COMPOSITE_UPDATE]: { type: false, subType: false, updates: true },
+  [Types.DELETE_INSERT]: { type: false, subType: false, where: true, delete: true, insert: true },
+  [Types.LOAD]: { type: false, subType: false, silent: false, source: true, destination: true },
+  [Types.CLEAR]: { type: false, subType: false, silent: false, source: true },
+  [Types.CREATE]: { type: false, subType: false, silent: false, source: true },
+  [Types.DROP]: { type: false, subType: false, silent: false, source: true },
+  [Types.ADD]: { type: false, subType: false, silent: false, source: true, destination: true },
+  [Types.MOVE]: { type: false, subType: false, silent: false, source: true, destination: true },
+  [Types.COPY]: { type: false, subType: false, silent: false, source: true, destination: true },
+  [Types.PATH]: { type: false, subType: false, object: true, subject: true, predicate: true, graph: true },
+  [Types.ALT]: { type: false, subType: false, input: true },
+  [Types.INV]: { type: false, subType: false, path: true },
+  [Types.LINK]: { type: false, subType: false, iri: true },
+  [Types.ONE_OR_MORE_PATH]: { type: false, subType: false, path: true },
+  [Types.SEQ]: { type: false, subType: false, input: true },
+  [Types.NPS]: { type: false, subType: false, iris: true },
+  [Types.ZERO_OR_MORE_PATH]: { type: false, subType: false, path: true },
+  [Types.ZERO_OR_ONE_PATH]: { type: false, subType: false, path: true },
 });
 
 /**

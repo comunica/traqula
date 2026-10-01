@@ -146,7 +146,8 @@ AstIndir<'translateProject', PatternGroup, [Algebra.Project | Algebra.Ask | Alge
     }
     SUBRULE(registerAlgGroupBy, result, extensions);
     SUBRULE(registerOrderBy, result, unselectedAggregators);
-    SUBRULE(registerVariables, select, variables, extensions);
+    // DESCRIBE can only list terms, not `(expr AS ?variable)`, so its extends stay BINDs in the WHERE clause.
+    SUBRULE(registerVariables, select, variables, type === types.DESCRIBE ? Object.create(null) : extensions);
     SUBRULE(putExtensionsInGroup, result, extensions);
 
     // Filters on top of the group are HAVING conditions, they can reference the aggregators

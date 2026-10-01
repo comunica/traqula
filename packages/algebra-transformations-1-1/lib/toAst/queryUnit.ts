@@ -22,6 +22,11 @@ import type { RdfTermToAst } from './general.js';
 import { translateAlgPattern, translateAlgTerm } from './general.js';
 import { translateAlgPatternNew } from './pattern.js';
 
+/**
+ * Only delegates to {@link translateAlgProject}, like the other query forms.
+ * Kept as its own rule so overrides of `translateConstruct` keep being called.
+ */
+// TODO(major): remove, dispatch CONSTRUCT to translateAlgProject directly
 export const translateAlgConstruct: AstIndir<'translateConstruct', PatternGroup, [Algebra.Construct]> = {
   name: 'translateConstruct',
   fun: ({ SUBRULE }) => (_, op) => SUBRULE(translateAlgProject, op, types.CONSTRUCT),

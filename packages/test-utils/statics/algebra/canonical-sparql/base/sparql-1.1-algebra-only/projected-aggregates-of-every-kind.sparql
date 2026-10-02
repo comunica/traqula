@@ -1,0 +1,4 @@
+SELECT ?s ( COUNT( ?o ) AS ?var0 ) ( COUNT( * ) AS ?var1 ) ( COUNT( DISTINCT ?o ) AS ?var2 ) ( SUM( ?o ) AS ?var3 ) ( MIN( ?o ) AS ?var4 ) ( MAX( ?o ) AS ?var5 ) ( AVG( ?o ) AS ?var6 ) ( SAMPLE( ?o ) AS ?var7 ) ( GROUP_CONCAT( ?o ;SEPARATOR=", " ) AS ?var8 ) WHERE {
+  ?s ?p ?o .
+}
+GROUP BY ?s

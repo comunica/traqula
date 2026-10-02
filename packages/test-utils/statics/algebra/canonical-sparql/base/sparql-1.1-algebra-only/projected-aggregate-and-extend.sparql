@@ -1,0 +1,4 @@
+SELECT ( COUNT( ?o ) AS ?var0 ) ?s ( COUNT( ?o ) AS ?c ) WHERE {
+  ?s ?p ?o .
+}
+GROUP BY ?s

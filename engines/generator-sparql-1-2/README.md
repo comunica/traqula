@@ -25,13 +25,6 @@ or
 yarn add @traqula/generator-sparql-1-2
 ```
 
-> [!note]
-> Using this engine as shipped follows semantic versioning: its usage API only breaks in major versions.
-> Its exported builders are part of Traqula's extension API, which may break in minor versions,
-> for example when rules are added or their behavior changes. Patch versions never break.
-> When you extend the builders, depend on a patch range (`~x.y.z`).
-> See [versioning](https://github.com/comunica/traqula#versioning).
-
 ## Import
 
 Either through ESM import:
@@ -61,3 +54,12 @@ const queryString = generator.generate(ast);
 
 Note that a single generator cannot generate multiple queries in parallel.
 The generator is constructed as a simple extension of the existing [SPARQL 1.1 generator](../generator-sparql-1-1), the documentation of that generator thus also holds for this one.
+
+## Modifying the build Generator
+
+> [!note]
+> Using this engine as shipped follows semantic versioning: its usage API only breaks in major versions.
+> Its exported builders are part of Traqula's extension API, which may break in minor versions,
+> for example when rules are added or their behavior changes. Patch versions never break.
+> When you extend the builders, depend on a patch range (`~x.y.z`).
+> See [versioning](https://github.com/comunica/traqula#versioning).

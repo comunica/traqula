@@ -1,0 +1,5 @@
+select * where {
+graph ?g {
+{select ?x (count(*) as ?c) where {?x ?p ?g} group by ?x ?g}
+}
+}

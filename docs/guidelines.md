@@ -273,11 +273,19 @@ and [modify a transformer](modifications/modify-transformer.md).
 
 ## Versioning
 
-Minor versions of Traqula may break the extension API: they can add rules that existing rules depend on,
-or change the behavior, parameters or return types of existing rules and indirections.
-Only patch versions guarantee that your builder modifications keep working,
-so depend on Traqula packages with a patch range (`~x.y.z`) and check the changelog when moving to a new minor version.
-See [versioning](../README.md#versioning) for the full promise.
+> [!note]
+> Minor versions of Traqula keep the name, signature and behavior of existing rules,
+> but can add rules or change how existing rules are implemented, such as which rules they call.
+> See [versioning](../README.md#versioning) for the full promise.
+
+These small breaking changes only affect projects that hook into the composition of rules. To limit their impact:
+
+* **Start from a shipped builder** (e.g., `ParserBuilder.create(sparql12ParserBuilder)`) instead of registering rules one by one,
+  so new rules that existing rules call are registered for you.
+* **Wrap the original implementation** (obtained through `getRule`) instead of copying it into your patch,
+  so your patch picks up upstream changes. See [modifying a parser](modifications/modify-parser.md#create-required-parser-rules).
+* **Test your extension**, not only the rules you added, so you notice when a patched rule is no longer called.
+* **Depend on a tilde range** (`~x.y.z`) and read the changelog before moving to a new minor version.
 
 ## Naming Conventions
 

@@ -252,10 +252,9 @@ and the project operation always gets used (even in the case of `SELECT *`).
 ## Modifying the build algebra transformer
 
 > [!note]
-> Using this engine as shipped follows semantic versioning: its usage API only breaks in major versions.
-> Its exported builders are part of Traqula's extension API, which may break in minor versions,
-> for example when rules are added or their behavior changes. Patch versions never break.
-> When you extend the builders, depend on a patch range (`~x.y.z`).
+> Minor versions keep this engine's API and behavior, and the name, signature and behavior of the rules in its builders,
+> but can add rules or change how existing rules are implemented, such as which rules they call.
+> This only affects projects that patch, delete or individually register rules.
 > See [versioning](https://github.com/comunica/traqula#versioning).
 
 ## A note on tests

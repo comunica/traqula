@@ -17,9 +17,9 @@ yarn add @traqula/algebra-transformations-1-2
 ```
 
 > [!note]
-> This package is part of Traqula's extension API, which may break in minor versions,
-> for example when rules are added or their behavior changes. Patch versions never break.
-> When you build on this package, depend on a patch range (`~x.y.z`).
+> Minor versions keep the name, signature and behavior of this package's rules,
+> but can add rules or change how existing rules are implemented, such as which rules they call.
+> This only affects projects that patch, delete or individually register rules.
 > See [versioning](https://github.com/comunica/traqula#versioning).
 
 ## What's added over SPARQL 1.1 transformations

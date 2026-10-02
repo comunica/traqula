@@ -1,17 +1,17 @@
 // TODO(major): consider defining the validation functions with the IndirBuilder pattern,
 //  so they call each other by name and SPARQL 1.2 can patch only the functions that differ
-//  (findPatternBoundedVars and queryProjectionIsGood).
+//  (findPatternBoundedVars, getVariablesFromExpression and queryProjectionIsGood).
 //  The SPARQL 1.2 selectExpressionAliasesNotInScope and checkNote13 copy the SPARQL 1.1 implementation logic,
 //  only to call the SPARQL 1.2 findPatternBoundedVars.
 import {
   getAggregatesOfExpression,
   getExpressionId,
-  getVariablesFromExpression,
   selectExpressionAliasesNotInValues,
 } from '@traqula/rules-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import { AstFactory } from './AstFactory.js';
 import type {
+  Expression,
   Path,
   Pattern,
   PatternBind,
@@ -39,6 +39,23 @@ export function langTagHasCorrectRange(literal: TermLiteral): void {
         throw new Error(`language direction "${direction}" of literal "${JSON.stringify(literal)}" is not is required range 'ltr' | 'rtl'.`);
       }
     }
+  }
+}
+
+/**
+ * Get all variables used in an expression, including those within triple terms.
+ */
+export function getVariablesFromExpression(expression: Expression | Term, variables: Set<string>): void {
+  if (F.isExpressionOperator(expression)) {
+    for (const expr of expression.args) {
+      getVariablesFromExpression(expr, variables);
+    }
+  } else if (F.isTermVariable(expression)) {
+    variables.add(expression.value);
+  } else if (F.isTermTriple(expression)) {
+    getVariablesFromExpression(expression.subject, variables);
+    getVariablesFromExpression(expression.predicate, variables);
+    getVariablesFromExpression(expression.object, variables);
   }
 }
 
@@ -162,7 +179,7 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
       } else if (getAggregatesOfExpression(<T11.Expression> selectVar.expression).length === 0) {
         // Current value binding does not use aggregates
         const usedvars = new Set<string>();
-        getVariablesFromExpression(<T11.Expression> selectVar.expression, usedvars);
+        getVariablesFromExpression(selectVar.expression, usedvars);
         for (const usedvar of usedvars) {
           // If the var is created within the select, it is fine.
           if (asBoundVars.has(usedvar)) {

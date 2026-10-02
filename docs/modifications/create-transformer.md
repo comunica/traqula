@@ -2,6 +2,12 @@
 
 Transformations in Traqula exist on two levels:
 
+> [!note]
+> Traqula's extension API (builders, rules and indirections) may break in minor versions,
+> for example when rules are added or their behavior changes. Patch versions never break.
+> When you extend Traqula, depend on a patch range (`~x.y.z`).
+> See [versioning](../../README.md#versioning).
+
 1. **AST tree transformers** (`TransformerObject`, `TransformerTyped`, `TransformerSubTyped`):
    These iterate any tree following the format `{ type: string, subType?: string }` and are discussed under [the AST structure docs](../usage/AST-structure.md).
    They work well for simple, localized AST manipulations — for example, capitalizing all string literals or collecting all variables.

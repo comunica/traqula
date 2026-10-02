@@ -3,6 +3,12 @@
 Modifying a generator follows the same builder pattern as [modifying a parser](./modify-parser.md),
 but using `GeneratorBuilder` and `GeneratorRule` from `@traqula/core`.
 
+> [!note]
+> Traqula's extension API (builders, rules and indirections) may break in minor versions,
+> for example when rules are added or their behavior changes. Patch versions never break.
+> When you extend Traqula, depend on a patch range (`~x.y.z`).
+> See [versioning](../../README.md#versioning).
+
 ## Copy First
 
 As with all builders, **start by creating a copy** of the generator builder you're extending:

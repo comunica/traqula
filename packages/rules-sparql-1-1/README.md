@@ -18,6 +18,12 @@ or
 yarn add @traqula/rules-sparql-1-1
 ```
 
+> [!note]
+> This package is part of Traqula's extension API, which may break in minor versions,
+> for example when rules are added or their behavior changes. Patch versions never break.
+> When you build on this package, depend on a patch range (`~x.y.z`).
+> See [versioning](https://github.com/comunica/traqula#versioning).
+
 ## Exports
 
 This package provides the following main exports:

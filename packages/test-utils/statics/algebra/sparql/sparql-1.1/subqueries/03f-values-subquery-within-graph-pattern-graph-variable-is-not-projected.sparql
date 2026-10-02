@@ -1,0 +1,5 @@
+select * where {
+graph ?g {
+{select ?x where {values (?g ?y) { (<http://example.org/o1> <http://example.org/y1>) } ?x ?p ?g ; ?q ?y}}
+}
+}

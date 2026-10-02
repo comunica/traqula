@@ -133,22 +133,11 @@ AlgebraIndir<'recurseGraph', Algebra.Operation, [Algebra.Operation, RDF.Term, RD
       // if there are it's the same situation as above
       if (algOp.variable.equals(graph)) {
         replacement = SUBRULE(generateFreshVar);
-        algOp.input = SUBRULE(recurseGraph, algOp.input, graph, replacement);
         // The graph variable is already bound by the patterns, so it cannot be extended.
-        // GRAPH joins its result with the graph name (18.5), so extend a fresh variable instead
-        // and require it to be compatible with the graph: unbound (the expression errored), or the same term.
-        const extended = SUBRULE(generateFreshVar);
+        // GRAPH joins its result with the graph name (18.5), so filter on equality instead.
         return AF.createFilter(
-          AF.createExtend(algOp.input, extended, algOp.expression),
-          AF.createOperatorExpression('||', [
-            AF.createOperatorExpression('!', [
-              AF.createOperatorExpression('bound', [ AF.createTermExpression(extended) ]),
-            ]),
-            AF.createOperatorExpression('sameterm', [
-              AF.createTermExpression(extended),
-              AF.createTermExpression(graph),
-            ]),
-          ]),
+          SUBRULE(recurseGraph, algOp.input, graph, replacement),
+          AF.createOperatorExpression('=', [ algOp.expression, AF.createTermExpression(algOp.variable) ]),
         );
       }
       algOp.input = SUBRULE(recurseGraph, algOp.input, graph, replacement);

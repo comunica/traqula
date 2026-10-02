@@ -53,6 +53,21 @@ The ParserBuilder has a few functions that facilitate parser modification:
 * **deleteRule**: Delete a given rule by providing the name of said rule.
 * **widenContext**: In your new rule requires the Parser To have a wider context, this generic function without arguments allows you to register this change.
 
+### Overriding validators
+
+The SPARQL grammars run their AST validators (e.g., the in-scope checks of `SELECT (expr AS ?v)` and `BIND`)
+through validation rules such as `validateSelectQuery`, `validateSubSelect` and `validateGroupGraphPatternSub`.
+These rules consume no tokens and only validate when `skipValidation` is `false`.
+Patch them like any other rule to change or disable a specific validation:
+
+```typescript
+const lenientBuilder = ParserBuilder.create(sparql11ParserBuilder)
+  .patchRule(<typeof gram.validateGroupGraphPatternSub> {
+    name: 'validateGroupGraphPatternSub',
+    impl: () => () => {},
+  });
+```
+
 ## Building the parser
 
 What remains is to create the modified parser.

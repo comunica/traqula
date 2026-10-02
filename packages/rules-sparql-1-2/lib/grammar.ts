@@ -59,7 +59,7 @@ export const versionDecl: SparqlRule<'versionDecl', ContextDefinitionVersion> = 
 
 /**
  * [[9]](https://www.w3.org/TR/sparql12-query/#rSelectQuery)
- * (Validator has changed: https://github.com/w3c/sparql-query/pull/380)
+ * (Validated by {@link validateSelectQuery})
  */
 export const selectQuery: SparqlGrammarRule<'selectQuery', Omit<QuerySelect, 'type' | 'context' | 'values'>> = <const> {
   name: 'selectQuery',
@@ -69,98 +69,61 @@ export const selectQuery: SparqlGrammarRule<'selectQuery', Omit<QuerySelect, 'ty
     const where = SUBRULE(S11.whereClause);
     const modifiers = SUBRULE(S11.solutionModifier);
 
-    return ACTION(() => {
-      const ret = {
-        subType: 'select',
-        where: where.val,
-        solutionModifiers: modifiers,
-        datasets: from,
-        ...selectVal.val,
-        loc: C.astFactory.sourceLocation(
-          selectVal,
-          where,
-          modifiers.group,
-          modifiers.having,
-          modifiers.order,
-          modifiers.limitOffset,
-        ),
-      } satisfies RuleDefReturn<typeof selectQuery>;
-      if (!C.skipValidation) {
-        queryProjectionIsGood(ret);
-      }
-      return ret;
-    });
-  },
-};
-
-/**
- * [[8]](https://www.w3.org/TR/sparql12-query/#rSubSelect)
- * (Validator uses the SPARQL 1.2 in-scope variables)
- */
-export const subSelect: SparqlGrammarRule<'subSelect', SubSelect> = <const> {
-  name: 'subSelect',
-  impl: ({ ACTION, SUBRULE }) => (C) => {
-    const selectVal = SUBRULE(S11.selectClause);
-    const where = SUBRULE(S11.whereClause);
-    const modifiers = SUBRULE(S11.solutionModifier);
-    const values = SUBRULE(S11.valuesClause);
-
-    return ACTION(() => {
-      const ret = C.astFactory.querySelect({
-        where: where.val,
-        datasets: C.astFactory.datasetClauses([], C.astFactory.sourceLocation()),
-        context: [],
-        solutionModifiers: modifiers,
-        ...selectVal.val,
-        ...(values && { values }),
-      }, C.astFactory.sourceLocation(
+    const result = ACTION(() => ({
+      subType: 'select',
+      where: where.val,
+      solutionModifiers: modifiers,
+      datasets: from,
+      ...selectVal.val,
+      loc: C.astFactory.sourceLocation(
         selectVal,
         where,
         modifiers.group,
         modifiers.having,
         modifiers.order,
         modifiers.limitOffset,
-        values,
-      ));
-      if (!C.skipValidation) {
-        selectExpressionAliasesNotInScope(ret);
-      }
-      return ret;
-    });
+      ),
+    } satisfies RuleDefReturn<typeof selectQuery>));
+    SUBRULE(validateSelectQuery, result);
+    return result;
   },
 };
 
 /**
- * [[55]](https://www.w3.org/TR/sparql12-query/#rGroupGraphPatternSub)
- * (Validator uses the SPARQL 1.2 in-scope variables)
+ * OVERRIDING RULE: {@link S11.validateSelectQuery}.
+ * (Validator has changed: https://github.com/w3c/sparql-query/pull/380)
  */
-export const groupGraphPatternSub: SparqlGrammarRule<'groupGraphPatternSub', Pattern[]> = <const> {
-  name: 'groupGraphPatternSub',
-  impl: ({ ACTION, SUBRULE, CONSUME, MANY, SUBRULE1, SUBRULE2, OPTION1, OPTION2, OPTION3 }) => (C) => {
-    const patterns: Pattern[] = [];
+export const validateSelectQuery: SparqlGrammarRule<'validateSelectQuery', void, [
+  Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where'>,
+]> = {
+  name: 'validateSelectQuery',
+  impl: ({ ACTION }) => (C, query) => {
+    ACTION(() => !C.skipValidation && queryProjectionIsGood(query));
+  },
+};
 
-    const bgpPattern = OPTION1(() => SUBRULE1(S11.triplesBlock));
-    if (bgpPattern) {
-      patterns.push(bgpPattern);
-    }
-    MANY(() => {
-      const notTriples = SUBRULE(S11.graphPatternNotTriples);
-      patterns.push(notTriples);
+/**
+ * OVERRIDING RULE: {@link S11.validateSubSelect}.
+ * Uses the SPARQL 1.2 in-scope variables.
+ */
+export const validateSubSelect: SparqlGrammarRule<'validateSubSelect', void, [SubSelect]> = {
+  name: 'validateSubSelect',
+  impl: ({ ACTION }) => (C, query) => {
+    ACTION(() => !C.skipValidation && selectExpressionAliasesNotInScope(query));
+  },
+};
 
-      OPTION2(() => CONSUME(l11.symbols.dot));
-
-      const moreTriples = OPTION3(() => SUBRULE2(S11.triplesBlock));
-      if (moreTriples) {
-        patterns.push(moreTriples);
-      }
-    });
-
+/**
+ * OVERRIDING RULE: {@link S11.validateGroupGraphPatternSub}.
+ * Uses the SPARQL 1.2 in-scope variables.
+ */
+export const validateGroupGraphPatternSub: SparqlGrammarRule<'validateGroupGraphPatternSub', void, [Pattern[]]> = {
+  name: 'validateGroupGraphPatternSub',
+  impl: ({ ACTION }) => (C, patterns) => {
     ACTION(() => !C.skipValidation && checkNote13(
       <T11.Pattern[]> patterns,
       <(pattern: T11.Pattern, boundedVars: Set<string>) => void> findPatternBoundedVars,
     ));
-
-    return patterns;
   },
 };
 

@@ -1,3 +1,5 @@
+import { ParserBuilder } from '@traqula/core';
+import type { gram } from '@traqula/rules-sparql-1-1';
 import { AstFactory, completeParseContext, lex } from '@traqula/rules-sparql-1-1';
 import { beforeEach, describe, it } from 'vitest';
 import { Parser, sparql11ParserBuilder } from '../lib/index.js';
@@ -114,6 +116,21 @@ describe('extra parser coverage', () => {
         { skipValidation: true },
       );
       expect(result).toMatchObject({ subType: 'select' });
+    });
+  });
+
+  describe('validation rules', () => {
+    it('can be patched to change a validation', ({ expect }) => {
+      const lenientParser = ParserBuilder.create(sparql11ParserBuilder)
+        .patchRule(<typeof gram.validateGroupGraphPatternSub> {
+          name: 'validateGroupGraphPatternSub',
+          impl: () => () => {},
+        })
+        .build({ tokenVocabulary: lex.sparql11LexerBuilder.tokenVocabulary });
+      const query = 'SELECT * { ?s ?p ?o BIND(1 AS ?x) BIND(2 AS ?x) }';
+      expect(() => parser.parse(query)).toThrow(/Variable used to bind is already bound/u);
+      expect(lenientParser.queryOrUpdate(query, completeParseContext({ astFactory: F })))
+        .toMatchObject({ subType: 'select' });
     });
   });
 

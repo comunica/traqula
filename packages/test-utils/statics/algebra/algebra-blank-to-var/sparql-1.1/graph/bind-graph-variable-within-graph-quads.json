@@ -34,11 +34,26 @@
       "args": [
         {
           "type": "expression",
-          "subType": "term",
-          "term": {
-            "termType": "Variable",
-            "value": "x"
-          }
+          "subType": "operator",
+          "operator": "coalesce",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "term",
+              "term": {
+                "termType": "Variable",
+                "value": "x"
+              }
+            },
+            {
+              "type": "expression",
+              "subType": "term",
+              "term": {
+                "termType": "Variable",
+                "value": "g"
+              }
+            }
+          ]
         },
         {
           "type": "expression",

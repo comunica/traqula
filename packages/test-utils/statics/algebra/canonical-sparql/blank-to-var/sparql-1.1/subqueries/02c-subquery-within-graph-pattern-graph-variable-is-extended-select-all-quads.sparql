@@ -3,6 +3,6 @@ SELECT ?g WHERE {
     GRAPH ?g {
       ?x ?p ?o .
     }
-    FILTER ( ( ?x = ?g ) )
+    FILTER ( ( COALESCE( ?x , ?g ) = ?g ) )
   }
 }

@@ -73,6 +73,23 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
     'SELECT * { ?s ?p ?o BIND(?o AS ?o) }',
   ));
 
+  it('should throw an error on bind to variable bound by a preceding bind', testErroneousQuery(
+    'SELECT * { ?s ?p ?o BIND(1 AS ?x) BIND(2 AS ?x) }',
+  ));
+
+  it('should NOT throw on bind to variable that is not in scope', ({ expect }) => {
+    const queries = [
+      'SELECT * { ?s ?p ?o BIND(?s AS ?x) ?x ?a ?b }',
+      'SELECT * { { ?s ?p ?o BIND(1 AS ?x) } BIND(2 AS ?y) }',
+      'SELECT * { ?s ?p ?o MINUS { ?s ?p ?x } BIND(1 AS ?x) }',
+      'SELECT * { ?s ?p ?o FILTER EXISTS { ?s ?p ?x } BIND(1 AS ?x) }',
+      'SELECT * { { BIND(1 AS ?x) } UNION { BIND(2 AS ?x) } }',
+    ];
+    for (const query of queries) {
+      expect(parser.parse(query), query).toMatchObject({});
+    }
+  });
+
   it('should parse when not ending in newline', ({ expect }) => {
     const query = 'select?s{?s?p?o}#wow, what a query';
     expect(parser.parse(query)).toMatchObject({});

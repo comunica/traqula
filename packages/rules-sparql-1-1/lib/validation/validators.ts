@@ -221,14 +221,11 @@ export function checkNote13(patterns: Pattern[]): void {
 
   const boundedVars = new Set<string>();
   for (const pattern of patterns) {
-    // Element can be bind, in that case, check note 13. If it is not, buildup set of bounded variables.
-    if (F.isPatternBind(pattern)) {
-      if (boundedVars.has(pattern.variable.value)) {
-        throw new Error(`Variable used to bind is already bound (?${pattern.variable.value})`);
-      }
-    } else {
-      findPatternBoundedVars(pattern, boundedVars);
+    // A bind may not bind a variable in scope, after which its own variable is in scope too.
+    if (F.isPatternBind(pattern) && boundedVars.has(pattern.variable.value)) {
+      throw new Error(`Variable used to bind is already bound (?${pattern.variable.value})`);
     }
+    findPatternBoundedVars(pattern, boundedVars);
   }
 }
 

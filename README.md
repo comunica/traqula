@@ -29,6 +29,21 @@ If you are building a project that depends on Traqula, see the [**guidelines for
 Additionally, a documentation website is generated based on the source code's documentation: [https://comunica.github.io/traqula/](https://comunica.github.io/traqula/).
 The source code itself is available on [GitHub](https://github.com/comunica/traqula/).
 
+## Versioning
+
+Traqula follows [semantic versioning](https://semver.org/) with one addition for the extension API:
+
+* **Patch** versions do not break anything.
+* **Minor** versions do not break the usage API, but may break the extension API,
+  for example by adding rules that existing rules depend on, or by changing the behavior of existing rules.
+* **Major** versions may break anything.
+
+The **usage API** is what you use when running the engines as they are shipped:
+for example the `Parser`, `Generator`, `toAlgebra` and `toAst` exports, their options, and the AST and algebra they produce.
+The **extension API** is what you use when building on top of Traqula:
+builders, grammar rules, generator rules, indirections, and their names, parameters, return types and behavior.
+Projects that extend Traqula should depend on a patch range (`~x.y.z`), see the [guidelines for dependent projects](docs/guidelines.md#versioning).
+
 ## License
 
 This software is written by [Jitse De Smet](https://jitsedesmet.be/).

@@ -68,6 +68,10 @@ const lenientBuilder = ParserBuilder.create(sparql11ParserBuilder)
   });
 ```
 
+> [!note]
+> Validation rules are part of the extension API: a minor version may add validation rules or change what they check.
+> See [versioning](../../README.md#versioning).
+
 ## Building the parser
 
 What remains is to create the modified parser.

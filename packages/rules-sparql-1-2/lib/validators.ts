@@ -1,3 +1,8 @@
+// TODO(major): consider defining the validation functions with the IndirBuilder pattern,
+//  so they call each other by name and SPARQL 1.2 can patch only the functions that differ
+//  (findPatternBoundedVars and queryProjectionIsGood).
+//  The SPARQL 1.2 selectExpressionAliasesNotInScope and checkNote13 copy the SPARQL 1.1 implementation logic,
+//  only to call the SPARQL 1.2 findPatternBoundedVars.
 import {
   getAggregatesOfExpression,
   getExpressionId,

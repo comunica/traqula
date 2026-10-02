@@ -148,7 +148,15 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
     } else if (typeof prefixOperator[ast.operator] === 'string') {
       const [ expr ] = <[Expression]>ast.args;
       F.printFilter(ast, () => PRINT_WORD(prefixOperator[ast.operator] || ast.operator.toUpperCase()));
+      // A prefix operator only accepts a primary expression: `- ( - ?x )`, not `- - ?x`
+      const addBrackets = F.isExpressionOperator(expr) && typeof prefixOperator[expr.operator] === 'string';
+      if (addBrackets) {
+        F.printFilter(ast, () => PRINT_WORD('('));
+      }
       SUBRULE(expression, expr);
+      if (addBrackets) {
+        F.printFilter(ast, () => PRINT_WORD(')'));
+      }
     } else {
       F.printFilter(ast, () => PRINT_WORD(ast.operator.toUpperCase(), '('));
       const [ head, ...tail ] = ast.args;

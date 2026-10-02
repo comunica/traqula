@@ -126,18 +126,26 @@ export const translateAlgFrom: AstIndir<'translateFrom', PatternGroup, [Algebra.
 };
 
 /**
- * A patternFilter closes the group
+ * A patternFilter closes the group.
+ * A filter on top of a group (possibly through other such filters) is a HAVING condition,
+ * it needs to be handled by {@link translateAlgProject}
  */
 export const translateAlgFilter: AstIndir<'translateFilter', PatternGroup, [Algebra.Filter]> = {
   name: 'translateFilter',
-  fun: ({ SUBRULE }) => ({ astFactory: F }, op) =>
-    F.patternGroup(
-      [
-        SUBRULE(translateAlgPatternNew, op.input),
-        F.patternFilter(SUBRULE(translateAlgPureExpression, op.expression), F.gen()),
-      ].flat(),
-      F.gen(),
-    ),
+  fun: ({ SUBRULE }) => ({ astFactory: F, having }, op) => {
+    let filterInput = op.input;
+    while (filterInput.type === types.FILTER) {
+      filterInput = filterInput.input;
+    }
+    const input = SUBRULE(translateAlgPatternNew, op.input);
+    const expression = SUBRULE(translateAlgPureExpression, op.expression);
+    if (filterInput.type === types.GROUP) {
+      having.push(expression);
+      // Stacked HAVING conditions should not introduce nested groups
+      return F.isPatternGroup(input) ? input : F.patternGroup([ input ].flat(), F.gen());
+    }
+    return F.patternGroup([ input, F.patternFilter(expression, F.gen()) ].flat(), F.gen());
+  },
 };
 
 export const translateAlgGraph: AstIndir<'translateGraph', PatternGraph, [Algebra.Graph]> = {
@@ -151,24 +159,47 @@ export const translateAlgGraph: AstIndir<'translateGraph', PatternGraph, [Algebr
 };
 
 /**
- * A group needs to be handled by {@link translateAlgProject}
+ * A group needs to be handled by {@link translateAlgProject}.
+ * `GROUP BY (expr AS ?v)` translates to extends directly below the group, binding group variables.
+ * Those extends are registered, so they become `(expr AS ?v)` group conditions instead of BINDs in the WHERE clause.
  */
 export const translateAlgGroup: AstIndir<'translateGroup', Pattern | Pattern[], [Algebra.Group]> = {
   name: 'translateGroup',
-  fun: ({ SUBRULE }) => ({ aggregates, group }, op) => {
-    const input = SUBRULE(translateAlgPatternNew, op.input);
+  fun: ({ SUBRULE }) => ({ aggregates, group, extend }, op) => {
+    const groupVariables = op.variables.map(variable => variable.value);
+    let input = op.input;
+    // Group conditions are evaluated in order: the extends (top to bottom) must bind group variables in reverse order
+    let lastIndex = groupVariables.length;
+    while (input.type === types.EXTEND) {
+      const index = groupVariables.indexOf(input.variable.value);
+      if (index < 0 || index >= lastIndex) {
+        break;
+      }
+      extend.push(input);
+      lastIndex = index;
+      input = input.input;
+    }
+    const pattern = SUBRULE(translateAlgPatternNew, input);
     const aggs = op.aggregates.map(x => SUBRULE(translateAlgBoundAggregate, x));
     aggregates.push(...aggs);
-    // TODO: apply possible extends
     group.push(...op.variables);
-    return input;
+    return pattern;
   },
 };
 
 export const translateAlgJoin: AstIndir<'translateJoin', Pattern[], [Algebra.Join]> = {
   name: 'translateJoin',
   fun: ({ SUBRULE }) => ({ astFactory: F }, op) => {
-    const arr = op.input.flatMap(x => SUBRULE(translateAlgPatternNew, x));
+    // An OPTIONAL or MINUS applies to everything preceding it in its group.
+    // Operands other than the first must thus be scoped by their own group when they contain one,
+    // and thus get rewrapped ina  group, otherwise Join(A, Minus(B, C)) would be read back as Minus(Join(A, B), C).
+    const arr = op.input.flatMap((x, index) => {
+      const patterns = SUBRULE(operationAlgInputAsPatternList, x);
+      if (index > 0 && patterns.some(pattern => F.isPatternOptional(pattern) || F.isPatternMinus(pattern))) {
+        return [ F.patternGroup(patterns, F.gen()) ];
+      }
+      return patterns;
+    });
 
     // Merge bgps
     // This is possible if one side was a path and the other a bgp for example
@@ -289,10 +320,10 @@ export const translateAlgValues: AstIndir<'translateValues', PatternValues, [Alg
     F.patternValues(
       op.variables.map(variable => F.termVariable(variable.value, F.gen())),
       op.bindings.map((binding) => {
-        const result: ValuePatternRow = {};
+        const result: ValuePatternRow = Object.create(null);
         for (const v of op.variables) {
           const s = v.value;
-          if (binding[s]) {
+          if (Object.hasOwn(binding, s) && binding[s]) {
             result[s] = <RdfTermToAst<typeof binding[typeof s]>> SUBRULE(translateAlgTerm, binding[s]);
           } else {
             result[s] = undefined;

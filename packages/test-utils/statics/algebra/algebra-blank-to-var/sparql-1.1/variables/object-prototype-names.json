@@ -1,0 +1,104 @@
+{
+  "type": "project",
+  "input": {
+    "type": "extend",
+    "input": {
+      "type": "group",
+      "input": {
+        "type": "extend",
+        "input": {
+          "type": "bgp",
+          "patterns": [
+            {
+              "type": "pattern",
+              "termType": "Quad",
+              "subject": {
+                "termType": "Variable",
+                "value": "constructor"
+              },
+              "predicate": {
+                "termType": "NamedNode",
+                "value": "http://example.org/p"
+              },
+              "object": {
+                "termType": "Variable",
+                "value": "toString"
+              },
+              "graph": {
+                "termType": "DefaultGraph",
+                "value": ""
+              }
+            }
+          ]
+        },
+        "variable": {
+          "termType": "Variable",
+          "value": "hasOwnProperty"
+        },
+        "expression": {
+          "type": "expression",
+          "subType": "operator",
+          "operator": "str",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "term",
+              "term": {
+                "termType": "Variable",
+                "value": "toString"
+              }
+            }
+          ]
+        }
+      },
+      "variables": [
+        {
+          "termType": "Variable",
+          "value": "constructor"
+        }
+      ],
+      "aggregates": [
+        {
+          "type": "expression",
+          "subType": "aggregate",
+          "aggregator": "count",
+          "expression": {
+            "type": "expression",
+            "subType": "term",
+            "term": {
+              "termType": "Variable",
+              "value": "toString"
+            }
+          },
+          "distinct": false,
+          "variable": {
+            "termType": "Variable",
+            "value": "var0"
+          }
+        }
+      ]
+    },
+    "variable": {
+      "termType": "Variable",
+      "value": "__proto__"
+    },
+    "expression": {
+      "type": "expression",
+      "subType": "term",
+      "term": {
+        "termType": "Variable",
+        "value": "var0"
+      }
+    }
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "constructor"
+    },
+    {
+      "termType": "Variable",
+      "value": "__proto__"
+    }
+  ]
+}

@@ -271,6 +271,14 @@ If both builders share the exact same reference for a rule, the merge proceeds w
 For more details on creating transformers, see [create a transformer](modifications/create-transformer.md)
 and [modify a transformer](modifications/modify-transformer.md).
 
+## Versioning
+
+Minor versions of Traqula may break the extension API: they can add rules that existing rules depend on,
+or change the behavior, parameters or return types of existing rules and indirections.
+Only patch versions guarantee that your builder modifications keep working,
+so depend on Traqula packages with a patch range (`~x.y.z`) and check the changelog when moving to a new minor version.
+See [versioning](../README.md#versioning) for the full promise.
+
 ## Naming Conventions
 
 - **Rule names**: Start with a lowercase letter (e.g., `'myCustomRule'`, `'shaclRuleBlock'`).

@@ -94,6 +94,10 @@ export function findPatternBoundedVars(
       findPatternBoundedVars(item, boundedVars);
     }
   } else if (F.isTripleCollection(iter) || F.isPatternBgp(iter)) {
+    if (F.isTripleCollection(iter)) {
+      // The reifier of a reified triple is only stored as its identifier
+      findPatternBoundedVars(iter.identifier, boundedVars);
+    }
     for (const triple of iter.triples) {
       findPatternBoundedVars(triple, boundedVars);
     }

@@ -31,18 +31,29 @@ The source code itself is available on [GitHub](https://github.com/comunica/traq
 
 ## Versioning
 
-Traqula follows [semantic versioning](https://semver.org/) with one addition for the extension API:
+Traqula follows [semantic versioning](https://semver.org/).
+Traqula's builders use dependency injection: every rule, generator rule, and indirection is registered under a name and calls other rules by that name.
+The contract of a rule is its name, its parameters and return type, and its behavior (the AST it parses, the string it generates, the algebra it creates).
+How a rule fulfills that contract, including which other rules it calls, is an implementation detail.
+Because projects that build on Traqula patch and compose these rules, we distinguish between small and big breaking changes:
 
-* **Patch** versions do not break anything.
-* **Minor** versions do not break the usage API, but may break the extension API,
-  for example by adding rules that existing rules depend on, or by changing the behavior of existing rules.
-* **Major** versions may break anything.
+* **Patch** versions fix bugs and never require changes in dependent projects.
+* **Minor** versions keep every contract: exported functions, classes, types, and the name, signature and behavior of existing rules, tokens, and indirections.
+  Minor versions can make **small breaking changes**: they can add rules, tokens and indirections,
+  and change how an existing rule is implemented, for example by having it call a new rule.
+* **Major** versions can make **big breaking changes**: renaming or removing rules, or changing their signature or behavior.
 
-The **usage API** is what you use when running the engines as they are shipped:
-for example the `Parser`, `Generator`, `toAlgebra` and `toAst` exports, their options, and the AST and algebra they produce.
-The **extension API** is what you use when building on top of Traqula:
-builders, grammar rules, generator rules, indirections, and their names, parameters, return types and behavior.
-Projects that extend Traqula should depend on a patch range (`~x.y.z`), see the [guidelines for dependent projects](docs/guidelines.md#versioning).
+Using a shipped engine, or calling existing rules, is never affected by small breaking changes.
+They only affect projects that change the rule dictionary of a builder:
+
+* A builder that registers rules one by one, instead of starting from a shipped builder, must also register the new rules. Building it fails otherwise.
+* A patched rule might no longer be called when its callers change, and a deleted rule might be called again.
+* A patched rule that copies an upstream implementation keeps the old implementation and misses its changes.
+* A rule or token you add might clash with a new upstream name, or your grammar alternatives might conflict with new upstream alternatives.
+
+Projects that only use the engines or call existing rules can depend on a caret range (`^x.y.z`).
+Projects that patch, delete or individually register rules should depend on a tilde range (`~x.y.z`) and test their extension when moving to a new minor version.
+See the [guidelines for dependent projects](docs/guidelines.md#versioning) on how to limit the impact of these changes.
 
 ## License
 

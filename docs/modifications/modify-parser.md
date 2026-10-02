@@ -5,9 +5,9 @@ To create a parser, read [how to create a parser](./create-parser.md).
 A [tutorial on parser manipulation within Comunica](https://comunica.dev/docs/modify/getting_started/contribute_new_operation/) provides a practical example on parser modifications.
 
 > [!note]
-> Traqula's extension API (builders, rules and indirections) may break in minor versions,
-> for example when rules are added or their behavior changes. Patch versions never break.
-> When you extend Traqula, depend on a patch range (`~x.y.z`).
+> Minor versions of Traqula keep the name, signature and behavior of existing rules,
+> but can add rules or change how existing rules are implemented, such as which rules they call.
+> This only affects projects that patch, delete or individually register rules.
 > See [versioning](../../README.md#versioning).
 
 ## Modify the lexer
@@ -75,7 +75,7 @@ const lenientBuilder = ParserBuilder.create(sparql11ParserBuilder)
 ```
 
 > [!note]
-> Validation rules are part of the extension API: a minor version may add validation rules or change what they check.
+> A minor version can add validation rules, or move a validation into its own rule.
 > See [versioning](../../README.md#versioning).
 
 ## Building the parser

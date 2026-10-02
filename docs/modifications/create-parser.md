@@ -8,9 +8,9 @@ This kind of extension is similar to how Object-Oriented programming languages a
 Traqula takes the modularity to the level of grammar rules, allowing you to create a parser by starting from an existing one, then adding, removing or patching existing rules, even allowing you to merge parsers (more information can be found on [modifying a parser](./modify-parser.md)).
 
 > [!note]
-> Traqula's extension API (builders, rules and indirections) may break in minor versions,
-> for example when rules are added or their behavior changes. Patch versions never break.
-> When you extend Traqula, depend on a patch range (`~x.y.z`).
+> Minor versions of Traqula keep the name, signature and behavior of existing rules,
+> but can add rules or change how existing rules are implemented, such as which rules they call.
+> This only affects projects that patch, delete or individually register rules.
 > See [versioning](../../README.md#versioning).
 
 > [!note]

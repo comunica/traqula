@@ -20,6 +20,12 @@ or
 yarn add @traqula/core
 ```
 
+> [!note]
+> This package is part of Traqula's extension API, which may break in minor versions,
+> for example when rules are added or their behavior changes. Patch versions never break.
+> When you build on this package, depend on a patch range (`~x.y.z`).
+> See [versioning](https://github.com/comunica/traqula#versioning).
+
 ## Usage
 
 Each parser contains two steps:

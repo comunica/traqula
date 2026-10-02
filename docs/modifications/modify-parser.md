@@ -4,6 +4,12 @@ Traqula allows you to create a new parser by manipulating an existing parser thr
 To create a parser, read [how to create a parser](./create-parser.md).
 A [tutorial on parser manipulation within Comunica](https://comunica.dev/docs/modify/getting_started/contribute_new_operation/) provides a practical example on parser modifications.
 
+> [!note]
+> Traqula's extension API (builders, rules and indirections) may break in minor versions,
+> for example when rules are added or their behavior changes. Patch versions never break.
+> When you extend Traqula, depend on a patch range (`~x.y.z`).
+> See [versioning](../../README.md#versioning).
+
 ## Modify the lexer
 
 In case your modification requires an additional lexerToken, or the removal of a lexerToken, you should manipulate the original LexerBuilder accordingly.

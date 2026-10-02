@@ -17,6 +17,12 @@ or
 yarn add @traqula/algebra-transformations-1-1
 ```
 
+> [!note]
+> This package is part of Traqula's extension API, which may break in minor versions,
+> for example when rules are added or their behavior changes. Patch versions never break.
+> When you build on this package, depend on a patch range (`~x.y.z`).
+> See [versioning](https://github.com/comunica/traqula#versioning).
+
 ## Algebra object
 The algebra object contains a `types` object,
 which contains all possible values for the `type` field in the output results.

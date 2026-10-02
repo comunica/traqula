@@ -4,6 +4,12 @@ The Traqula framework enables a modular definition of parsers, transformers and 
 This documentation documents Traqula's core design decisions, spanning outside the SPARQL query language to other structured languages.
 Traqula does currently NOT support streaming parsing, making it ill-suited for creating a parser for large data files.
 
+> [!note]
+> Traqula's extension API (builders, rules and indirections) may break in minor versions,
+> for example when rules are added or their behavior changes. Patch versions never break.
+> When you extend Traqula, depend on a patch range (`~x.y.z`).
+> See [versioning](../README.md#versioning).
+
 ## Architecture Overview
 
 Traqula is organized as a monorepo with two categories of packages:

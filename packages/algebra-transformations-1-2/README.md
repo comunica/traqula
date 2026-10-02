@@ -16,6 +16,12 @@ or
 yarn add @traqula/algebra-transformations-1-2
 ```
 
+> [!note]
+> This package is part of Traqula's extension API, which may break in minor versions,
+> for example when rules are added or their behavior changes. Patch versions never break.
+> When you build on this package, depend on a patch range (`~x.y.z`).
+> See [versioning](https://github.com/comunica/traqula#versioning).
+
 ## What's added over SPARQL 1.1 transformations
 
 - Handling of **reified triple** and **triple term** nodes in AST-to-algebra conversion

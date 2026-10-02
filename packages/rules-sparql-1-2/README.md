@@ -16,6 +16,12 @@ or
 yarn add @traqula/rules-sparql-1-2
 ```
 
+> [!note]
+> This package is part of Traqula's extension API, which may break in minor versions,
+> for example when rules are added or their behavior changes. Patch versions never break.
+> When you build on this package, depend on a patch range (`~x.y.z`).
+> See [versioning](https://github.com/comunica/traqula#versioning).
+
 ## What's added over SPARQL 1.1
 
 This package adds grammar, lexer, and AST type definitions for SPARQL 1.2 features including:

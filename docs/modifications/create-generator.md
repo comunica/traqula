@@ -3,6 +3,12 @@
 This documentation details the creation of a generator and thereby assumes you have read
 [how to create a parser](./create-parser.md) and [Traqula's expected AST structure](../usage/AST-structure.md).
 
+> [!note]
+> Traqula's extension API (builders, rules and indirections) may break in minor versions,
+> for example when rules are added or their behavior changes. Patch versions never break.
+> When you extend Traqula, depend on a patch range (`~x.y.z`).
+> See [versioning](../../README.md#versioning).
+
 ## GeneratorRules
 
 Traqula provides a framework to create a generator through `@traqula/core`, further facilitating round tripping generation when following the assumptions we put on the AST and the correct invocation of `printFilter`.

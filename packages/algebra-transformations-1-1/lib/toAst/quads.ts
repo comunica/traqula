@@ -2,6 +2,7 @@ import type * as RDF from '@rdfjs/types';
 import type { AlgebraFactory } from '../algebraFactory.js';
 import type { Algebra } from '../index.js';
 import { types } from '../toAlgebra/index.js';
+import { visitOperationSub } from '../util.js';
 import type { AstIndir } from './core.js';
 import { eTypes } from './core.js';
 
@@ -30,13 +31,15 @@ function wrapInGraph(AF: AlgebraFactory, op: Algebra.Operation, graph: RDF.Named
  * Whether the expression mentions the variable, ignoring EXISTS patterns.
  */
 function mentionsVariable(expression: Algebra.Expression, variable: RDF.Variable): boolean {
-  if (expression.subType === eTypes.TERM) {
-    return expression.term.termType === 'Variable' && expression.term.value === variable.value;
-  }
-  if (expression.subType === eTypes.OPERATOR || expression.subType === eTypes.NAMED) {
-    return expression.args.some(arg => mentionsVariable(arg, variable));
-  }
-  return false;
+  let found = false;
+  visitOperationSub(expression, {}, { [types.EXPRESSION]: {
+    [eTypes.EXISTENCE]: { preVisitor: () => ({ continue: false }) },
+    [eTypes.TERM]: { preVisitor: (term) => {
+      found = term.term.termType === 'Variable' && term.term.value === variable.value;
+      return { shortcut: found };
+    } },
+  }});
+  return found;
 }
 
 /**

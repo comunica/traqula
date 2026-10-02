@@ -1,0 +1,7 @@
+PREFIX : <http://example.org/>
+SELECT ?constructor (COUNT(?toString) AS ?__proto__)
+WHERE {
+  ?constructor :p ?toString .
+  BIND(STR(?toString) AS ?hasOwnProperty)
+}
+GROUP BY ?constructor

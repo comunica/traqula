@@ -50,6 +50,10 @@ export const solutionModifier: SparqlRule<'solutionModifier', SolutionModifiers>
   },
 };
 
+// HAVING and GROUP BY conditions must be a call or bracketed (GROUP BY also allows a variable).
+// `expression` brackets infix operators itself, so only terms and these prefix operators need added brackets.
+const prefixOperators = new Set([ '!', 'uplus', 'uminus' ]);
+
 /**
  * [[19]](https://www.w3.org/TR/sparql11-query/#rGroupClause)
  */
@@ -78,7 +82,16 @@ export const groupClause: SparqlRule<'groupClause', SolutionModifierGroup> = <co
       // Separate the conditions, otherwise `GROUP BY ?a ex:f(?b)` would be generated as `GROUP BY ?aex:f(?b)`
       F.printFilter(ast, () => PRINT_WORDS(''));
       if (F.isExpression(grouping)) {
+        // `GROUP BY (!?a)`, not `GROUP BY ! ?a`
+        const addBrackets = (F.isTerm(grouping) && !F.isTermVariable(grouping)) ||
+          (F.isExpressionOperator(grouping) && prefixOperators.has(grouping.operator));
+        if (addBrackets) {
+          F.printFilter(grouping, () => PRINT_WORDS('('));
+        }
         SUBRULE(expression, grouping);
+        if (addBrackets) {
+          F.printFilter(grouping, () => PRINT_WORDS(')'));
+        }
       } else {
         F.printFilter(ast, () => PRINT_WORDS('('));
         SUBRULE(expression, grouping.value);
@@ -144,12 +157,21 @@ export const havingClause: SparqlRule<'havingClause', SolutionModifierHaving> = 
     return ACTION(() =>
       C.astFactory.solutionModifierHaving(expressions, C.astFactory.sourceLocation(having, expressions.at(-1))));
   },
-  gImpl: ({ PRINT_ON_EMPTY, SUBRULE }) => (ast, { astFactory: F }) => {
+  gImpl: ({ PRINT_ON_EMPTY, PRINT_WORD, SUBRULE }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => {
       PRINT_ON_EMPTY('HAVING ');
     });
     for (const having of ast.having) {
+      // `HAVING (!BOUND(?o))`, not `HAVING ! BOUND( ?o )`
+      const addBrackets = F.isTerm(having) ||
+        (F.isExpressionOperator(having) && prefixOperators.has(having.operator));
+      if (addBrackets) {
+        F.printFilter(having, () => PRINT_WORD('('));
+      }
       SUBRULE(expression, having);
+      if (addBrackets) {
+        F.printFilter(having, () => PRINT_WORD(')'));
+      }
     }
   },
 };

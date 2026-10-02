@@ -24,6 +24,14 @@ and `sparql-1.2-negative` folders for queries that are expected to *fail*
 algebra translation (see `sparqlAlgebraNegativeTests`). Those only need a
 `.sparql` file, no counterparts elsewhere.
 
+`algebra/` and `canonical-sparql/base/` additionally have a
+`sparql-1.1-algebra-only` folder for algebra in a different form than
+`toAlgebra` produces, such as algebra that other tools build or rewrite.
+`toAst` must still translate it to an equivalent SPARQL query (see
+`sparqlAlgebraOnlyTests`). Those only need a `.json` file in
+`algebra/` and a `.sparql` file in `canonical-sparql/base/`, no counterparts
+elsewhere. Both the SPARQL 1.1 and the SPARQL 1.2 engine run them.
+
 ## What each folder is for
 
 - **`sparql/`**: the SPARQL query text. This is the only file you actually
@@ -70,4 +78,23 @@ algebra translation (see `sparqlAlgebraNegativeTests`). Those only need a
 3. **Run all tests** to confirm the new fixture passes:
    ```
    yarn test
+   ```
+
+## Adding an algebra-only test case
+
+1. **Write the algebra.**
+
+    Drop a `.json` file under `algebra/sparql-1.1-algebra-only/<...>/<name>.json`.
+    You can build the algebra with the `AlgebraFactory` and serialize it with
+    `JSON.stringify(algebraUtils.objectify(algebra), null, 2)`.
+
+2. **Write the SPARQL query it must translate to.**
+
+    Drop a `.sparql` file at the same relative path under
+    `canonical-sparql/base/`. Write it by hand: this query is the expected
+    output of the test, so the generator scripts do not create it.
+
+3. **Run the tests** that consume these fixtures, from the repo root:
+   ```
+   yarn vitest run engines/algebra-sparql-1-1/test/sparql.test.ts engines/algebra-sparql-1-2/test/sparql.test.ts
    ```

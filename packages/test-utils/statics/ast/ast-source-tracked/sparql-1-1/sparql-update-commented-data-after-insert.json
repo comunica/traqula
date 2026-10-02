@@ -1,0 +1,171 @@
+{
+  "type": "update",
+  "updates": [
+    {
+      "context": [],
+      "operation": {
+        "type": "updateOperation",
+        "subType": "insertdata",
+        "data": [
+          {
+            "type": "graph",
+            "graph": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "ex:G",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 27,
+                "end": 33
+              }
+            },
+            "triples": {
+              "type": "pattern",
+              "subType": "bgp",
+              "triples": [
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "ex:s",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 36,
+                      "end": 42
+                    }
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "ex:p",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 43,
+                      "end": 49
+                    }
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "literal",
+                    "value": "o1",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 50,
+                      "end": 54
+                    }
+                  },
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 36,
+                    "end": 54
+                  }
+                },
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "ex:s",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    }
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "ex:p",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 43,
+                      "end": 49
+                    }
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "literal",
+                    "value": "o2",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 56,
+                      "end": 60
+                    }
+                  },
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 43,
+                    "end": 60
+                  }
+                },
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "ex:s",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    }
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "ex:p",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 43,
+                      "end": 49
+                    }
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "literal",
+                    "value": "o3",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 62,
+                      "end": 66
+                    }
+                  },
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 43,
+                    "end": 66
+                  }
+                }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 36,
+                "end": 66
+              }
+            },
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 21,
+              "end": 68
+            }
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 0,
+          "end": 70
+        }
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "inlinedSource",
+    "newSource": "INSERT # DATA\nDATA { GRAPH <ex:G> { <ex:s> <ex:p> 'o1', 'o2', 'o3' } }\n",
+    "start": 0,
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 70
+    },
+    "startOnNew": 0,
+    "endOnNew": 70
+  }
+}

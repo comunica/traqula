@@ -14,7 +14,9 @@ interface Parser {
  * @param _DF - A DataFactory instance (currently unused, reserved for future tests).
  */
 export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQuad>): void {
-  function testErroneousQuery(query: string, _errorMsg: string): TestFunction<object> {
+  // Only check that parsing fails: error messages are not part of the contract,
+  // so engines extending the grammar are free to report a different message.
+  function testErroneousQuery(query: string): TestFunction<object> {
     return ({ expect }) => {
       let error: any;
       try {
@@ -24,25 +26,23 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
       }
       expect(error).not.toBeUndefined();
       expect(error).toBeInstanceOf(Error);
-      // Expect(error.message).toContain(errorMsg);
     };
   }
 
-  it('should throw an error on an invalid query', testErroneousQuery('invalid', 'Parse error on line 1'));
+  it('should throw an error on an invalid query', testErroneousQuery(
+    'invalid',
+  ));
 
   it('should throw an error on a projection of ungrouped variable', testErroneousQuery(
     'PREFIX : <http://www.example.org/> SELECT ?o WHERE { ?s ?p ?o } GROUP BY ?s',
-    'Projection of ungrouped variable (?o)',
   ));
 
   it('should throw an error on a values class with LESS variables than value', testErroneousQuery(
     'SELECT * WHERE { } VALUES ( ?S ) { ( true  false ) }',
-    'Number of dataBlockValues does not match number of variables. Too much values.',
   ));
 
   it('should throw an error on a values class with MORE variables than value', testErroneousQuery(
     'SELECT * WHERE { } VALUES ( ?S ?O ) { ( true ) }',
-    'Number of dataBlockValues does not match number of variables. Too few values.',
   ));
 
   it('should NOT throw on a values class with correct amount of values', ({ expect }) => {
@@ -52,7 +52,6 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
 
   it('should throw an error on an invalid selectscope', testErroneousQuery(
     'SELECT (1 AS ?X ) { SELECT (2 AS ?X ) {} }',
-    'Target id of \'AS\' (?X) is already in scope',
   ));
 
   it('should NOT throw on a select expression binding a variable that is not in scope', ({ expect }) => {
@@ -72,7 +71,6 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
 
   it('should throw an error on bind to variable in scope', testErroneousQuery(
     'SELECT * { ?s ?p ?o BIND(?o AS ?o) }',
-    'Target id of \'AS\' (?X) already used in subquery',
   ));
 
   it('should parse when not ending in newline', ({ expect }) => {
@@ -95,7 +93,6 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
 
   it('should throw an error on an aggregate function within an aggregate function', testErroneousQuery(
     'SELECT (SUM(COUNT(?lprice)) AS ?totalPrice) { }',
-    'An aggregate function is not allowed within an aggregate function',
   ));
 
   describe('with pre-defined prefixes', () => {
@@ -133,88 +130,97 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
   describe('for update queries', () => {
     it('should throw an error on blank nodes in DELETE clause', testErroneousQuery(
       'DELETE { ?a <ex:knows> [] . } WHERE { ?a <ex:knows> "Alan" . }',
-      'Detected illegal blank node in BGP',
     ));
 
     it('should not throw on blank nodes in INSERT clause', ({ expect }) => {
       const query = 'INSERT { ?a <ex:knows> [] . } WHERE { ?a <ex:knows> "Alan" . }';
-      // TODO: add proper test
-      expect(parser.parse(query)).toMatchObject({});
+      expect(parser.parse(query)).toMatchObject({
+        type: 'update',
+        updates: [{ operation: {
+          type: 'updateOperation',
+          subType: 'modify',
+          delete: [],
+          insert: [{ type: 'pattern', subType: 'bgp', triples: [{
+            type: 'triple',
+            subject: { type: 'term', subType: 'variable', value: 'a' },
+            predicate: { type: 'term', subType: 'namedNode', value: 'ex:knows' },
+            object: { type: 'term', subType: 'blankNode' },
+          }]}],
+          where: { type: 'pattern', subType: 'group', patterns: [{ type: 'pattern', subType: 'bgp', triples: [{
+            object: { type: 'term', subType: 'literal', value: 'Alan' },
+          }]}]},
+        }}],
+      });
     });
 
     it('should throw an error on blank nodes in compact DELETE clause', testErroneousQuery(
       'DELETE WHERE { _:a <ex:p> <ex:o> }',
-      'Detected illegal blank node in BGP',
     ));
 
     it('should throw an error on variables in DELETE DATA clause', testErroneousQuery(
       'DELETE DATA { ?a <ex:p> <ex:o> }',
-      'Detected illegal variable in BGP',
     ));
 
     it('should throw an error on blank nodes in DELETE DATA clause', testErroneousQuery(
       'DELETE DATA { _:a <ex:p> <ex:o> }',
-      'Detected illegal blank node in BGP',
     ));
 
     it('should throw an error on variables in DELETE DATA clause with GRAPH', testErroneousQuery(
       'DELETE DATA { GRAPH ?a { <ex:s> <ex:p> <ex:o> } }',
-      'Detected illegal variable in GRAPH',
     ));
 
     it('should throw an error on variables in INSERT DATA clause', testErroneousQuery(
       'INSERT DATA { ?a <ex:p> <ex:o> }',
-      'Detected illegal variable in BGP',
     ));
 
     it('should not throw on reused blank nodes in one INSERT DATA clause', ({ expect }) => {
       const query = 'INSERT DATA { _:a <ex:p> <ex:o> . _:a <ex:p> <ex:o> . }';
-      // Todo: add proper test
-      expect(parser.parse(query)).toMatchObject({});
+      const triple = {
+        type: 'triple',
+        subject: { type: 'term', subType: 'blankNode', label: 'e_a' },
+        predicate: { type: 'term', subType: 'namedNode', value: 'ex:p' },
+        object: { type: 'term', subType: 'namedNode', value: 'ex:o' },
+      };
+      expect(parser.parse(query)).toMatchObject({
+        type: 'update',
+        updates: [{ operation: {
+          type: 'updateOperation',
+          subType: 'insertdata',
+          data: [{ type: 'pattern', subType: 'bgp', triples: [ triple, triple ]}],
+        }}],
+      });
     });
 
     it('should throw an error on reused blank nodes across INSERT DATA clauses', testErroneousQuery(
       'INSERT DATA { _:a <ex:p> <ex:o> }; INSERT DATA { _:a <ex:p> <ex:o> }',
-      'Detected reuse blank node across different INSERT DATA clauses',
     ));
 
     it('should throw an error on reused blank nodes across INSERT DATA clauses with GRAPH', testErroneousQuery(
       'INSERT DATA { _:a <ex:p> <ex:o> }; INSERT DATA { GRAPH <ex:g> { _:a <ex:p> <ex:o> } }',
-      'Detected reuse blank node across different INSERT DATA clauses',
     ));
 
-    it('should not throw on comment between INSERT and DATA', ({ expect }) => {
-      const query = `INSERT
-# Comment
-DATA { GRAPH <ex:G> { <ex:s> <ex:p> 'o1', 'o2', 'o3' } }`;
-      // TODO: add proper test
-      expect(parser.parse(query)).toMatchObject({});
-    });
-
-    it('should not throw on comment after INSERT that could be confused with DATA', ({ expect }) => {
-      const query = `INSERT # DATA
-DATA { GRAPH <ex:G> { <ex:s> <ex:p> 'o1', 'o2', 'o3' } }`;
-      // TODO: add proper test
-      expect(parser.parse(query)).toMatchObject({});
-    });
+    // Comments between INSERT and DATA are covered by the static tests
+    // sparql-update-comment-between-insert-data and sparql-update-commented-data-after-insert.
 
     it('should throw an error on commented DATA after INSERT', testErroneousQuery(
       'INSERT # DATA { GRAPH <ex:G> { <ex:s> <ex:p> \'o1\', \'o2\', \'o3\' } }',
-      'Parse error',
     ));
   });
 
   it('should throw an error on unicode codepoint escaping in literal with partial surrogate pair', testErroneousQuery(
     'SELECT * WHERE { ?s <ex:p> \'\uD800\' }',
-    'Invalid unicode codepoint of surrogate pair without corresponding codepoint',
   ));
 
   it(
     'should not throw an error on unicode codepoint escaping in literal with complete surrogate pair',
     ({ expect }) => {
       const query = 'SELECT * WHERE { ?s <ex:p> \'\uD800\uDFFF\' }';
-      // TODO: add proper test
-      expect(parser.parse(query)).toMatchObject({});
+      const object = { type: 'term', subType: 'literal', value: '\u{103FF}' };
+      expect(parser.parse(query)).toMatchObject({ where: { patterns: [{ triples: [{ object }]}]}});
+      // The \U escaped code point yields the same literal. Escaping the surrogate pair itself (\uD800\uDFFF)
+      // is only legal in SPARQL 1.1: see the sparqlCodepointEscape tests and the 1.2 surrogate-esc-*-bad statics.
+      expect(parser.parse('SELECT * WHERE { ?s <ex:p> \'\\U000103FF\' }'))
+        .toMatchObject({ where: { patterns: [{ triples: [{ object }]}]}});
     },
   );
 }

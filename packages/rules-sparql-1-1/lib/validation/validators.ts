@@ -115,7 +115,9 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
 }
 
 /**
- * NOTE 12 and https://www.w3.org/TR/sparql11-query/#variableScope
+ * Grammar note 11 of https://www.w3.org/TR/sparql12-query/#sparqlGrammar (note 12 in SPARQL 1.1)
+ * > Variables introduced by AS in a SELECT clause must not already be in-scope.
+ * See also https://www.w3.org/TR/sparql12-query/#variableScope
  * > The variable v must not be in-scope at the point of the (expr AS v) form.
  * In-scope are the variables bound by the WHERE clause (including subquery projections) and GROUP BY (expr AS v).
  */
@@ -194,7 +196,10 @@ export function findPatternBoundedVars(
 }
 
 /**
- * NOTE 13 and https://www.w3.org/TR/sparql11-query/#variableScope
+ * Grammar note 12 of https://www.w3.org/TR/sparql12-query/#sparqlGrammar (note 13 in SPARQL 1.1)
+ * > The variable assigned in a BIND clause must not already be in-use within the immediately preceding TriplesBlock
+ *   within a GroupGraphPattern.
+ * See also https://www.w3.org/TR/sparql12-query/#variableScope
  * > In BIND (expr AS v) requires that the variable v is not in-scope from the preceeding elements in the
  *    group graph pattern in which it is used.
  */

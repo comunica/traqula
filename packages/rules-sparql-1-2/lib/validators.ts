@@ -171,7 +171,9 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
 }
 
 /**
- * NOTE 12 and https://www.w3.org/TR/sparql11-query/#variableScope
+ * Grammar note 11 of https://www.w3.org/TR/sparql12-query/#sparqlGrammar (note 12 in SPARQL 1.1)
+ * > Variables introduced by AS in a SELECT clause must not already be in-scope.
+ * See also https://www.w3.org/TR/sparql12-query/#variableScope
  * > The variable v must not be in-scope at the point of the (expr AS v) form.
  * In-scope are the variables bound by the WHERE clause (including subquery projections) and GROUP BY (expr AS v).
  */

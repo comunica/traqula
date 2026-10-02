@@ -229,6 +229,33 @@ When developing a modified parser or generator:
 3. **Reuse parser instances.** Building a parser is expensive due to Chevrotain's grammar recording.
    Create the parser once and reuse it across test cases.
 
+4. **Run Traqula's own test suites** against your extension using [`@traqula/test-utils`](../packages/test-utils).
+   It provides the positive and negative parser tests (`positiveTest`, `negativeTest`),
+   the algebra tests (`sparqlAlgebraTests`, `sparqlAlgebraNegativeTests`),
+   the SPARQL 1.1 note tests (`importSparql11NoteTests`), and matchers to compare ASTs (`toEqualParsedQuery`).
+   Run them for the parts of the language your extension keeps (both generators accept a filter on the test name),
+   so you notice when a new minor version of Traqula changes how the rules you patch are called:
+   ```typescript
+   import { AstFactory } from '@traqula/rules-sparql-1-2';
+   import { negativeTest, positiveTest } from '@traqula/test-utils';
+
+   const F = new AstFactory();
+   for (const test of positiveTest('sparql-1-2')) {
+     it(`parses ${test.name}`, async({ expect }) => {
+       const { query, astWithSource } = await test.statics();
+       // The expected ASTs track source locations, drop them when your parser does not
+       expect(myParser.parse(query)).toEqualParsedQuery(F.forcedAutoGenTree(astWithSource));
+     });
+   }
+   for (const test of negativeTest('sparql-1-2-invalid')) {
+     it(`rejects ${test.name}`, async({ expect }) => {
+       const { query } = await test.statics();
+       expect(() => myParser.parse(query)).toThrow();
+     });
+   }
+   ```
+   The [statics tests of the SPARQL 1.2 parser](../engines/parser-sparql-1-2/test/statics.test.ts) show a complete setup.
+
 ## Working with IndirBuilder
 
 `IndirBuilder` (indirection builder) lets you compose transformation logic
@@ -285,6 +312,7 @@ These small breaking changes only affect projects that hook into the composition
 * **Wrap the original implementation** (obtained through `getRule`) instead of copying it into your patch,
   so your patch picks up upstream changes. See [modifying a parser](modifications/modify-parser.md#create-required-parser-rules).
 * **Test your extension**, not only the rules you added, so you notice when a patched rule is no longer called.
+  [`@traqula/test-utils`](../packages/test-utils) ships the test suites Traqula itself uses, see [testing](#testing).
 * **Depend on a tilde range** (`~x.y.z`) and read the changelog before moving to a new minor version.
 
 ## Naming Conventions

@@ -6,7 +6,7 @@
  */
 import type { RuleDefReturn, Wrap } from '@traqula/core';
 import { traqulaIndentation } from '@traqula/core';
-import { checkNote13, CommonIRIs, funcExpr1, funcExpr3, gram as S11, lex as l11 } from '@traqula/rules-sparql-1-1';
+import { CommonIRIs, funcExpr1, funcExpr3, gram as S11, lex as l11 } from '@traqula/rules-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import * as l12 from './lexer.js';
 import { decodeUchar } from './parserUtils.js';
@@ -33,7 +33,7 @@ import type {
   TripleNesting,
 } from './sparql12Types.js';
 import {
-  findPatternBoundedVars,
+  checkNote13,
   langTagHasCorrectRange,
   queryProjectionIsGood,
   selectExpressionAliasesNotInScope,
@@ -120,10 +120,7 @@ export const validateSubSelect: SparqlGrammarRule<'validateSubSelect', void, [Su
 export const validateGroupGraphPatternSub: SparqlGrammarRule<'validateGroupGraphPatternSub', void, [Pattern[]]> = {
   name: 'validateGroupGraphPatternSub',
   impl: ({ ACTION }) => (C, patterns) => {
-    ACTION(() => !C.skipValidation && checkNote13(
-      <T11.Pattern[]> patterns,
-      <(pattern: T11.Pattern, boundedVars: Set<string>) => void> findPatternBoundedVars,
-    ));
+    ACTION(() => !C.skipValidation && checkNote13(patterns));
   },
 };
 

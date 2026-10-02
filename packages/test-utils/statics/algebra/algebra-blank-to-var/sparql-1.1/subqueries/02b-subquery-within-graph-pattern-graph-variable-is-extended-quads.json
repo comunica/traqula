@@ -3,7 +3,7 @@
   "input": {
     "type": "project",
     "input": {
-      "type": "extend",
+      "type": "filter",
       "input": {
         "type": "bgp",
         "patterns": [
@@ -20,7 +20,7 @@
             },
             "object": {
               "termType": "Variable",
-              "value": "var0"
+              "value": "o"
             },
             "graph": {
               "termType": "Variable",
@@ -29,17 +29,43 @@
           }
         ]
       },
-      "variable": {
-        "termType": "Variable",
-        "value": "g"
-      },
       "expression": {
         "type": "expression",
-        "subType": "term",
-        "term": {
-          "termType": "Variable",
-          "value": "x"
-        }
+        "subType": "operator",
+        "operator": "=",
+        "args": [
+          {
+            "type": "expression",
+            "subType": "operator",
+            "operator": "coalesce",
+            "args": [
+              {
+                "type": "expression",
+                "subType": "term",
+                "term": {
+                  "termType": "Variable",
+                  "value": "x"
+                }
+              },
+              {
+                "type": "expression",
+                "subType": "term",
+                "term": {
+                  "termType": "Variable",
+                  "value": "g"
+                }
+              }
+            ]
+          },
+          {
+            "type": "expression",
+            "subType": "term",
+            "term": {
+              "termType": "Variable",
+              "value": "g"
+            }
+          }
+        ]
       }
     },
     "variables": [

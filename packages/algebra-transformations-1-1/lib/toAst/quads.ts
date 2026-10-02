@@ -2,6 +2,7 @@ import type * as RDF from '@rdfjs/types';
 import type { AlgebraFactory } from '../algebraFactory.js';
 import type { Algebra } from '../index.js';
 import { types } from '../toAlgebra/index.js';
+import { visitOperationSub } from '../util.js';
 import type { AstIndir } from './core.js';
 import { eTypes } from './core.js';
 
@@ -27,6 +28,21 @@ function wrapInGraph(AF: AlgebraFactory, op: Algebra.Operation, graph: RDF.Named
 }
 
 /**
+ * Whether the expression mentions the variable, ignoring EXISTS patterns.
+ */
+function mentionsVariable(expression: Algebra.Expression, variable: RDF.Variable): boolean {
+  let found = false;
+  visitOperationSub(expression, {}, { [types.EXPRESSION]: {
+    [eTypes.EXISTENCE]: { preVisitor: () => ({ continue: false }) },
+    [eTypes.TERM]: { preVisitor: (term) => {
+      found = term.term.termType === 'Variable' && term.term.value === variable.value;
+      return { shortcut: found };
+    } },
+  }});
+  return found;
+}
+
+/**
  * Removes quad component of triple and ...
  */
 export const removeAlgQuads: AstIndir<'removeQuads', Algebra.Operation, [Algebra.Operation]> = {
@@ -37,13 +53,13 @@ export const removeAlgQuads: AstIndir<'removeQuads', Algebra.Operation, [Algebra
 
 /**
  * Whether `knownOp`'s `input` will be read as a SELECT-expression EXTEND rather than a BIND -
- * mirrors `registerProjection`'s `c.project`. True under PROJECT/ASK/DESCRIBE, carried through an
- * EXTEND/ORDER_BY chain, false otherwise (including under CONSTRUCT, which never opens it).
+ * mirrors `registerProjection`'s `c.project`. True under PROJECT/ASK/CONSTRUCT/DESCRIBE, carried through an
+ * EXTEND/ORDER_BY chain, false otherwise.
  * Also true under a GROUP whose input is an EXTEND binding a group variable:
  * `translateAlgGroup` reads it as a `GROUP BY (expr AS ?v)` condition rather than a BIND.
  */
 function inputProjectionScope(knownOp: Algebra.Operation, projectionScope: boolean): boolean {
-  if (knownOp.type === types.PROJECT || knownOp.type === types.ASK || knownOp.type === types.DESCRIBE) {
+  if ([ types.PROJECT, types.ASK, types.CONSTRUCT, types.DESCRIBE ].includes(knownOp.type)) {
     return true;
   }
   if (knownOp.type === types.GROUP) {
@@ -61,7 +77,7 @@ function inputProjectionScope(knownOp: Algebra.Operation, projectionScope: boole
  * Removes quad component of triples and wrap found bgps in Algebra.GraphOperations
  * Mainly returns same type as first arg
  * @param projectionScope whether we are directly below an EXTEND/ORDER_BY chain rooted at a
- * PROJECT/ASK/DESCRIBE - see {@link inputProjectionScope}.
+ * PROJECT/ASK/CONSTRUCT/DESCRIBE - see {@link inputProjectionScope}.
  */
 export const removeAlgQuadsRecursive: AstIndir<
   'removeQuadsRecursive',
@@ -148,8 +164,14 @@ unknown,
       // below them, not defer further up. FILTER and the multi-branch combinators (JOIN,
       // LEFT_JOIN, MINUS, UNION) do defer: they share a group with sibling patterns, so matching
       // graphs merge into one GRAPH block instead of each wrapping itself separately.
+      // A FILTER on the graph variable is a boundary too: ?g is not bound within GRAPH ?g (18.5).
+      const onlyGraph = <RDF.Term | undefined> (graphNameSet.length === 1 ?
+        operationGraphNames[graphNameSet[0]] :
+        undefined);
       const isBoundary = [ types.PROJECT, types.SERVICE, types.GROUP, types.ORDER_BY ].includes(knownOp.type) ||
-        (knownOp.type === types.EXTEND && projectionScope);
+        (knownOp.type === types.EXTEND && projectionScope) ||
+        (knownOp.type === types.FILTER && onlyGraph?.termType === 'Variable' &&
+          mentionsVariable(knownOp.expression, onlyGraph));
       if (graphNameSet.length === 1 && !isBoundary) {
         graphs.push(operationGraphNames[graphNameSet[0]]);
       } else if (knownOp.type === types.BGP) {

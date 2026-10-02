@@ -253,7 +253,6 @@ export const sparql12ParserBuilder = ParserBuilder.create(sparql11ParserBuilder)
     S12.buildInPredicate,
     S12.buildInObject,
   )
-  .patchRule(S12.selectQuery)
   .patchRule(S12.validateSelectQuery)
   .patchRule(S12.validateSubSelect)
   .patchRule(S12.validateGroupGraphPatternSub)

@@ -59,8 +59,9 @@ export const versionDecl: SparqlRule<'versionDecl', ContextDefinitionVersion> = 
 
 /**
  * [[9]](https://www.w3.org/TR/sparql12-query/#rSelectQuery)
- * (Validated by {@link validateSelectQuery})
+ * @deprecated Same as {@link S11.selectQuery}, the SPARQL 1.2 validation moved to {@link validateSelectQuery}.
  */
+// TODO(major): remove
 export const selectQuery: SparqlGrammarRule<'selectQuery', Omit<QuerySelect, 'type' | 'context' | 'values'>> = <const> {
   name: 'selectQuery',
   impl: ({ ACTION, SUBRULE }) => (C) => {

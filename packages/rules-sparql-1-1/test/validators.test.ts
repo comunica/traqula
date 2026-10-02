@@ -371,7 +371,7 @@ describe('findPatternBoundedVars', () => {
     expect(vars.has('y')).toBe(true);
   });
 
-  it('finds variables in a select query with group and values', ({ expect }) => {
+  it('only finds the projected variables of a select query with group and values', ({ expect }) => {
     const vars = new Set<string>();
     const varX = F.termVariable('x', noLoc);
     const varY = F.termVariable('y', noLoc);
@@ -387,7 +387,7 @@ describe('findPatternBoundedVars', () => {
       values,
     }, noLoc);
     findPatternBoundedVars(query, vars);
-    expect(vars.has('x')).toBe(true);
+    expect([ ...vars ]).toEqual([ 'y' ]);
   });
 
   it('finds variables in a construct query (non-select/describe)', ({ expect }) => {

@@ -1,7 +1,7 @@
 import { symbols } from '../lexer/index.js';
 import type { SparqlRule } from '../sparql11HelperTypes.js';
 import type { Query, SparqlQuery, Update } from '../Sparql11types.js';
-import { updateNoReuseBlankNodeLabels } from '../validation/validators.js';
+import { selectExpressionAliasesNotInValues, updateNoReuseBlankNodeLabels } from '../validation/validators.js';
 import { prologue } from './general.js';
 import type { HandledByBase } from './queryUnit.js';
 import { query, askQuery, constructQuery, describeQuery, selectQuery, valuesClause } from './queryUnit.js';
@@ -37,17 +37,23 @@ export const queryOrUpdate: SparqlRule<'queryOrUpdate', SparqlQuery> = {
           { ALT: () => SUBRULE(askQuery) },
         ]);
         const values = SUBRULE(valuesClause);
-        return ACTION(() => (<Query>{
-          context: prologueValues,
-          ...subType,
-          type: 'query',
-          ...(values && { values }),
-          loc: C.astFactory.sourceLocation(
-            prologueValues.at(0),
-            subType,
-            values,
-          ),
-        }));
+        return ACTION(() => {
+          const query = <Query>{
+            context: prologueValues,
+            ...subType,
+            type: 'query',
+            ...(values && { values }),
+            loc: C.astFactory.sourceLocation(
+              prologueValues.at(0),
+              subType,
+              values,
+            ),
+          };
+          if (!C.skipValidation && C.astFactory.isQuerySelect(query)) {
+            selectExpressionAliasesNotInValues(query);
+          }
+          return query;
+        });
       } },
       { ALT: () => {
         const updates: Update['updates'] = [];

@@ -6,7 +6,7 @@
  */
 import type { RuleDefReturn, Wrap } from '@traqula/core';
 import { traqulaIndentation } from '@traqula/core';
-import { CommonIRIs, funcExpr1, funcExpr3, gram as S11, lex as l11 } from '@traqula/rules-sparql-1-1';
+import { checkNote13, CommonIRIs, funcExpr1, funcExpr3, gram as S11, lex as l11 } from '@traqula/rules-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import * as l12 from './lexer.js';
 import { decodeUchar } from './parserUtils.js';
@@ -18,6 +18,7 @@ import type {
   Expression,
   GraphNode,
   GraphTerm,
+  Pattern,
   PatternBgp,
   QuerySelect,
   SubSelect,
@@ -31,7 +32,12 @@ import type {
   TripleCollectionReifiedTriple,
   TripleNesting,
 } from './sparql12Types.js';
-import { langTagHasCorrectRange, queryProjectionIsGood, selectExpressionAliasesNotInScope } from './validators.js';
+import {
+  findPatternBoundedVars,
+  langTagHasCorrectRange,
+  queryProjectionIsGood,
+  selectExpressionAliasesNotInScope,
+} from './validators.js';
 
 /**
  *[[7]](https://www.w3.org/TR/sparql12-query/#rVersionDecl)
@@ -121,6 +127,40 @@ export const subSelect: SparqlGrammarRule<'subSelect', SubSelect> = <const> {
       }
       return ret;
     });
+  },
+};
+
+/**
+ * [[55]](https://www.w3.org/TR/sparql12-query/#rGroupGraphPatternSub)
+ * (Validator uses the SPARQL 1.2 in-scope variables)
+ */
+export const groupGraphPatternSub: SparqlGrammarRule<'groupGraphPatternSub', Pattern[]> = <const> {
+  name: 'groupGraphPatternSub',
+  impl: ({ ACTION, SUBRULE, CONSUME, MANY, SUBRULE1, SUBRULE2, OPTION1, OPTION2, OPTION3 }) => (C) => {
+    const patterns: Pattern[] = [];
+
+    const bgpPattern = OPTION1(() => SUBRULE1(S11.triplesBlock));
+    if (bgpPattern) {
+      patterns.push(bgpPattern);
+    }
+    MANY(() => {
+      const notTriples = SUBRULE(S11.graphPatternNotTriples);
+      patterns.push(notTriples);
+
+      OPTION2(() => CONSUME(l11.symbols.dot));
+
+      const moreTriples = OPTION3(() => SUBRULE2(S11.triplesBlock));
+      if (moreTriples) {
+        patterns.push(moreTriples);
+      }
+    });
+
+    ACTION(() => !C.skipValidation && checkNote13(
+      <T11.Pattern[]> patterns,
+      <(pattern: T11.Pattern, boundedVars: Set<string>) => void> findPatternBoundedVars,
+    ));
+
+    return patterns;
   },
 };
 

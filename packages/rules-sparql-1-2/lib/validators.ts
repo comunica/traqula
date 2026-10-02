@@ -1,4 +1,9 @@
-import { getAggregatesOfExpression, getExpressionId, getVariablesFromExpression } from '@traqula/rules-sparql-1-1';
+import {
+  getAggregatesOfExpression,
+  getExpressionId,
+  getVariablesFromExpression,
+  selectExpressionAliasesNotInValues,
+} from '@traqula/rules-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import { AstFactory } from './AstFactory.js';
 import type {
@@ -38,12 +43,15 @@ export function findPatternBoundedVars(
 ): void {
   if (F.isQuery(iter) || F.isUpdate(iter)) {
     if (F.isQuerySelect(iter) || F.isQueryDescribe(iter)) {
-      if (iter.where && iter.variables.some(x => F.isWildcard(x))) {
-        findPatternBoundedVars(iter.where, boundedVars);
-      } else {
+      // A projection only exposes the projected variables (18.2.1), wildcards expose everything.
+      if (!iter.variables.some(x => F.isWildcard(x))) {
         for (const v of iter.variables) {
           findPatternBoundedVars(v, boundedVars);
         }
+        return;
+      }
+      if (iter.where) {
+        findPatternBoundedVars(iter.where, boundedVars);
       }
       if (iter.solutionModifiers.group) {
         const grouping = iter.solutionModifiers.group;
@@ -53,11 +61,8 @@ export function findPatternBoundedVars(
           }
         }
       }
-      if (iter.values?.values && iter.values.values.length > 0) {
-        const values = iter.values.values;
-        for (const v of Object.keys(values[0])) {
-          boundedVars.add(v);
-        }
+      if (iter.values) {
+        findPatternBoundedVars(iter.values, boundedVars);
       }
     }
   } else if (F.isTerm(iter)) {
@@ -175,10 +180,11 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
  * > Variables introduced by AS in a SELECT clause must not already be in-scope.
  * See also https://www.w3.org/TR/sparql12-query/#variableScope
  * > The variable v must not be in-scope at the point of the (expr AS v) form.
- * In-scope are the variables bound by the WHERE clause (including subquery projections) and GROUP BY (expr AS v).
+ * In-scope are the variables bound by the WHERE clause (including subquery projections), GROUP BY (expr AS v),
+ * and the trailing VALUES clause (joined before the projection, 18.2.4.3).
  */
 export function selectExpressionAliasesNotInScope(
-  query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where'>,
+  query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
 ): void {
   const selectBinds = query.variables.filter((variable): variable is PatternBind =>
     !F.isTerm(variable) && !F.isWildcard(variable));
@@ -196,4 +202,5 @@ export function selectExpressionAliasesNotInScope(
       }
     }
   }
+  selectExpressionAliasesNotInValues(query);
 }

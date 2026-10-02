@@ -143,6 +143,18 @@ describe('extra parser coverage', () => {
       const result = rawParser.queryUnit('SELECT * WHERE { ?s ?p ?o } VALUES ?x { <http://ex> }', context);
       expect(result).toMatchObject({ subType: 'select', values: { type: 'pattern', subType: 'values', values: [{ x: { value: 'http://ex' }}]}});
     });
+
+    it('throws via queryUnit when a SELECT expression binds a variable of the trailing VALUES', ({ expect }) => {
+      const context = completeParseContext({ astFactory: F });
+      expect(() => rawParser.queryUnit('SELECT (1 AS ?x) WHERE { ?s ?p ?o } VALUES ?x { 1 }', context))
+        .toThrow(/Target id of 'AS' \(\?x\) is already in scope/u);
+    });
+
+    it('parses an ASK query via queryUnit with VALUES clause', ({ expect }) => {
+      const context = completeParseContext({ astFactory: F });
+      const result = rawParser.queryUnit('ASK WHERE { ?s ?p ?o } VALUES ?x { 1 }', context);
+      expect(result).toMatchObject({ subType: 'ask' });
+    });
   });
 
   describe('prototype-key reserved-name bypass (security fix)', () => {

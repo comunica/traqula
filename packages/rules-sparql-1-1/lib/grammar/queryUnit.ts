@@ -17,7 +17,11 @@ import type {
   TermVariable,
   Wildcard,
 } from '../Sparql11types.js';
-import { queryProjectionIsGood, selectExpressionAliasesNotInScope } from '../validation/validators.js';
+import {
+  queryProjectionIsGood,
+  selectExpressionAliasesNotInScope,
+  selectExpressionAliasesNotInValues,
+} from '../validation/validators.js';
 import { datasetClauseStar } from './dataSetClause.js';
 import { expression } from './expression.js';
 import { prologue, var_, varOrIri, varOrTerm } from './general.js';
@@ -63,6 +67,9 @@ export const query: SparqlRule<'query', Query> = <const> {
       };
       if (values) {
         q.values = values;
+        if (!C.skipValidation && C.astFactory.isQuerySelect(q)) {
+          selectExpressionAliasesNotInValues(q);
+        }
       }
       return q;
     });

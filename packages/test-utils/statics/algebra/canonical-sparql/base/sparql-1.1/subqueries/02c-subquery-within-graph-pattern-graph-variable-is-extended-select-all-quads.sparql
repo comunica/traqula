@@ -1,4 +1,4 @@
-SELECT ?x ?p WHERE {
+SELECT ?g WHERE {
   SELECT ?g WHERE {
     GRAPH ?g {
       {

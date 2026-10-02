@@ -107,11 +107,7 @@
   "variables": [
     {
       "termType": "Variable",
-      "value": "x"
-    },
-    {
-      "termType": "Variable",
-      "value": "p"
+      "value": "g"
     }
   ]
 }

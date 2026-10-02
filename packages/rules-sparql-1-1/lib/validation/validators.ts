@@ -119,10 +119,11 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
  * > Variables introduced by AS in a SELECT clause must not already be in-scope.
  * See also https://www.w3.org/TR/sparql12-query/#variableScope
  * > The variable v must not be in-scope at the point of the (expr AS v) form.
- * In-scope are the variables bound by the WHERE clause (including subquery projections) and GROUP BY (expr AS v).
+ * In-scope are the variables bound by the WHERE clause (including subquery projections), GROUP BY (expr AS v),
+ * and the trailing VALUES clause (joined before the projection, 18.2.4.3).
  */
 export function selectExpressionAliasesNotInScope(
-  query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where'>,
+  query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
 ): void {
   const selectBinds = query.variables.filter((variable): variable is PatternBind =>
     !F.isTerm(variable) && !F.isWildcard(variable));
@@ -138,6 +139,22 @@ export function selectExpressionAliasesNotInScope(
       if (inScopeVars.has(variable.value)) {
         throw new Error(`Target id of 'AS' (?${variable.value}) is already in scope`);
       }
+    }
+  }
+  selectExpressionAliasesNotInValues(query);
+}
+
+/**
+ * The trailing VALUES clause is joined before the SELECT expressions are evaluated (18.2.4.3),
+ * so its variables are in scope for those expressions (grammar note 11).
+ */
+export function selectExpressionAliasesNotInValues(
+  query: { variables: readonly (TermVariable | Wildcard | { variable: TermVariable })[]; values?: { values: object[] }},
+): void {
+  const valuesVars = new Set(Object.keys(query.values?.values.at(0) ?? {}));
+  for (const variable of query.variables) {
+    if ('variable' in variable && valuesVars.has(variable.variable.value)) {
+      throw new Error(`Target id of 'AS' (?${variable.variable.value}) is already in scope`);
     }
   }
 }
@@ -158,11 +175,10 @@ export function findPatternBoundedVars(
     }
   } else if (F.isQuery(op)) {
     if (F.isQuerySelect(op) || F.isQueryDescribe(op)) {
-      recurse([
-        ...(op.variables.some(x => F.isWildcard(x)) ? [ op.where ] : op.variables),
-        op.solutionModifiers.group,
-        op.values,
-      ]);
+      // A projection only exposes the projected variables (18.2.1), wildcards expose everything.
+      recurse(op.variables.some(x => F.isWildcard(x)) ?
+          [ op.where, op.solutionModifiers.group, op.values ] :
+        op.variables);
     } else {
       recurse(op.solutionModifiers.group);
     }
@@ -203,7 +219,10 @@ export function findPatternBoundedVars(
  * > In BIND (expr AS v) requires that the variable v is not in-scope from the preceeding elements in the
  *    group graph pattern in which it is used.
  */
-export function checkNote13(patterns: Pattern[]): void {
+export function checkNote13(
+  patterns: Pattern[],
+  findBoundedVars: (pattern: Pattern, boundedVars: Set<string>) => void = findPatternBoundedVars,
+): void {
   for (const [ index, pattern ] of patterns.entries()) {
     if (F.isPatternBind(pattern) && index > 0 && F.isPatternBgp(patterns[index - 1])) {
       const bgp = patterns[index - 1];
@@ -225,7 +244,7 @@ export function checkNote13(patterns: Pattern[]): void {
     if (F.isPatternBind(pattern) && boundedVars.has(pattern.variable.value)) {
       throw new Error(`Variable used to bind is already bound (?${pattern.variable.value})`);
     }
-    findPatternBoundedVars(pattern, boundedVars);
+    findBoundedVars(pattern, boundedVars);
   }
 }
 

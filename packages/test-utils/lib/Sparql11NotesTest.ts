@@ -63,6 +63,9 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
       'SELECT (COUNT(?o) AS ?c) { ?s ?p ?o } GROUP BY ?s',
       'SELECT * { { SELECT (?o + 1 AS ?a) { ?s ?p ?o } } ?a ?p ?o }',
       'ASK { { SELECT * { { SELECT (1 AS ?x) { ?s ?p ?o } } } } }',
+      'SELECT (1 AS ?g) { { SELECT (COUNT(*) AS ?c) { ?s ?p ?o } GROUP BY (?s AS ?g) } }',
+      'SELECT (1 AS ?x) { { SELECT ?s { ?s ?p ?o } VALUES ?x { 1 } } }',
+      'SELECT (1 AS ?y) { ?s ?p ?o } VALUES ?x { 1 }',
     ];
     for (const query of queries) {
       expect(parser.parse(query), query).toMatchObject({});
@@ -84,6 +87,8 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
       'SELECT * { ?s ?p ?o MINUS { ?s ?p ?x } BIND(1 AS ?x) }',
       'SELECT * { ?s ?p ?o FILTER EXISTS { ?s ?p ?x } BIND(1 AS ?x) }',
       'SELECT * { { BIND(1 AS ?x) } UNION { BIND(2 AS ?x) } }',
+      'SELECT * { { SELECT ?s { ?s ?p ?o } GROUP BY ?s (?o AS ?g) } BIND(1 AS ?g) }',
+      'SELECT * { { SELECT ?s { ?s ?p ?o } VALUES ?x { 1 } } BIND(1 AS ?x) }',
     ];
     for (const query of queries) {
       expect(parser.parse(query), query).toMatchObject({});

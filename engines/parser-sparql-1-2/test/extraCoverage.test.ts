@@ -1,6 +1,7 @@
-import { AstFactory } from '@traqula/rules-sparql-1-2';
+import { ParserBuilder } from '@traqula/core';
+import { AstFactory, completeParseContext, gram, lex } from '@traqula/rules-sparql-1-2';
 import { beforeEach, describe, it } from 'vitest';
-import { Parser } from '../lib/index.js';
+import { Parser, sparql12ParserBuilder } from '../lib/index.js';
 
 describe('extra parser-sparql-1-2 coverage', () => {
   const F = new AstFactory({ tracksSourceLocation: false });
@@ -8,6 +9,21 @@ describe('extra parser-sparql-1-2 coverage', () => {
 
   beforeEach(() => {
     F.resetBlankNodeCounter();
+  });
+
+  // TODO(major): remove together with the deprecated S12.selectQuery
+  describe('deprecated selectQuery', () => {
+    const deprecatedParser = ParserBuilder.create(sparql12ParserBuilder)
+      .patchRule(gram.selectQuery)
+      .build({ tokenVocabulary: lex.sparql12LexerBuilder.tokenVocabulary });
+
+    it('parses and validates like the SPARQL 1.1 selectQuery', ({ expect }) => {
+      const context = completeParseContext({ astFactory: F });
+      expect(deprecatedParser.queryOrUpdate('SELECT ?s { ?s ?p ?o }', context))
+        .toMatchObject({ subType: 'select' });
+      expect(() => deprecatedParser.queryOrUpdate('SELECT (1 AS ?s) { ?s ?p ?o }', context))
+        .toThrow(/Target id of 'AS' \(\?s\) is already in scope/u);
+    });
   });
 
   describe('reifier without canCreateBlankNodes', () => {

@@ -1,0 +1,11 @@
+SELECT ?g ?o ?p ?x WHERE {
+  GRAPH ?g {
+    {
+      {
+        ?x ?p ?o .
+        BIND( ?x AS ?var1 )
+      }
+      FILTER ( ( ! BOUND( ?var1 ) || SAMETERM( ?var1 , ?g ) ) )
+    }
+  }
+}

@@ -1,13 +1,8 @@
 SELECT ?x ?p WHERE {
   SELECT ?g WHERE {
     GRAPH ?g {
-      {
-        {
-          ?x ?p ?var0 .
-          BIND( ?x AS ?var1 )
-        }
-        FILTER ( ( ! BOUND( ?var1 ) || SAMETERM( ?var1 , ?g ) ) )
-      }
+      ?x ?p ?var0 .
     }
+    FILTER ( ( ?x = ?g ) )
   }
 }

@@ -5,94 +5,50 @@
     "input": {
       "type": "filter",
       "input": {
-        "type": "extend",
-        "input": {
-          "type": "bgp",
-          "patterns": [
-            {
-              "type": "pattern",
-              "termType": "Quad",
-              "subject": {
-                "termType": "Variable",
-                "value": "x"
-              },
-              "predicate": {
-                "termType": "Variable",
-                "value": "p"
-              },
-              "object": {
-                "termType": "Variable",
-                "value": "var0"
-              },
-              "graph": {
-                "termType": "Variable",
-                "value": "g"
-              }
+        "type": "bgp",
+        "patterns": [
+          {
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": {
+              "termType": "Variable",
+              "value": "x"
+            },
+            "predicate": {
+              "termType": "Variable",
+              "value": "p"
+            },
+            "object": {
+              "termType": "Variable",
+              "value": "var0"
+            },
+            "graph": {
+              "termType": "Variable",
+              "value": "g"
             }
-          ]
-        },
-        "variable": {
-          "termType": "Variable",
-          "value": "var1"
-        },
-        "expression": {
-          "type": "expression",
-          "subType": "term",
-          "term": {
-            "termType": "Variable",
-            "value": "x"
           }
-        }
+        ]
       },
       "expression": {
         "type": "expression",
         "subType": "operator",
-        "operator": "||",
+        "operator": "=",
         "args": [
           {
             "type": "expression",
-            "subType": "operator",
-            "operator": "!",
-            "args": [
-              {
-                "type": "expression",
-                "subType": "operator",
-                "operator": "bound",
-                "args": [
-                  {
-                    "type": "expression",
-                    "subType": "term",
-                    "term": {
-                      "termType": "Variable",
-                      "value": "var1"
-                    }
-                  }
-                ]
-              }
-            ]
+            "subType": "term",
+            "term": {
+              "termType": "Variable",
+              "value": "x"
+            }
           },
           {
             "type": "expression",
-            "subType": "operator",
-            "operator": "sameterm",
-            "args": [
-              {
-                "type": "expression",
-                "subType": "term",
-                "term": {
-                  "termType": "Variable",
-                  "value": "var1"
-                }
-              },
-              {
-                "type": "expression",
-                "subType": "term",
-                "term": {
-                  "termType": "Variable",
-                  "value": "g"
-                }
-              }
-            ]
+            "subType": "term",
+            "term": {
+              "termType": "Variable",
+              "value": "g"
+            }
           }
         ]
       }

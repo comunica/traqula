@@ -108,6 +108,7 @@ PatternGroup,
     const group = c.group;
     const aggregates = c.aggregates;
     const having = c.having;
+    const values = c.values;
     const order = c.order;
     SUBRULE(resetContext);
     c.project = true;
@@ -159,12 +160,14 @@ PatternGroup,
         F.gen(),
       );
     }
+    SUBRULE(registerValues, result);
 
     // Recover state
     c.extend = extend;
     c.group = group;
     c.aggregates = aggregates;
     c.having = having;
+    c.values = values;
     c.order = order;
 
     // Subqueries need to be in a group! Top level grouping is removed at toAst function
@@ -220,6 +223,19 @@ AstIndir<'registerOrderBy', void, [QueryBase, Record<string, Expression>?]> = {
               o),
         F.gen(),
       );
+    }
+  },
+};
+
+/**
+ * The query's trailing VALUES clause is registered by translateAlgJoin, it is consumed here.
+ */
+export const registerValues: AstIndir<'registerValues', void, [QueryBase]> = {
+  name: 'registerValues',
+  fun: () => (c, result) => {
+    if (c.values) {
+      result.values = c.values;
+      c.values = undefined;
     }
   },
 };

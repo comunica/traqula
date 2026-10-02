@@ -204,3 +204,23 @@ export function selectExpressionAliasesNotInScope(
   }
   selectExpressionAliasesNotInValues(query);
 }
+
+/**
+ * SPARQL 1.2 version of the SPARQL 1.1 checkNote13, named after it so it overrides it in the `validation` export.
+ * Grammar note 12 of https://www.w3.org/TR/sparql12-query/#sparqlGrammar (note 13 in SPARQL 1.1)
+ * > The variable assigned in a BIND clause must not already be in-use within the immediately preceding TriplesBlock
+ *   within a GroupGraphPattern.
+ * See also https://www.w3.org/TR/sparql12-query/#variableScope
+ * > The variable v must not be in-scope at the point of BIND (expr AS v).
+ * The in-scope variables include those of the preceding TriplesBlock,
+ * also those within triple terms, reifiers, and annotations.
+ */
+export function checkNote13(patterns: Pattern[]): void {
+  const boundedVars = new Set<string>();
+  for (const pattern of patterns) {
+    if (F.isPatternBind(pattern) && boundedVars.has(pattern.variable.value)) {
+      throw new Error(`Variable used to bind is already bound (?${pattern.variable.value})`);
+    }
+    findPatternBoundedVars(pattern, boundedVars);
+  }
+}

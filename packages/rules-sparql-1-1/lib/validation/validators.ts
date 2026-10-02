@@ -219,10 +219,7 @@ export function findPatternBoundedVars(
  * > In BIND (expr AS v) requires that the variable v is not in-scope from the preceeding elements in the
  *    group graph pattern in which it is used.
  */
-export function checkNote13(
-  patterns: Pattern[],
-  findBoundedVars: (pattern: Pattern, boundedVars: Set<string>) => void = findPatternBoundedVars,
-): void {
+export function checkNote13(patterns: Pattern[]): void {
   for (const [ index, pattern ] of patterns.entries()) {
     if (F.isPatternBind(pattern) && index > 0 && F.isPatternBgp(patterns[index - 1])) {
       const bgp = patterns[index - 1];
@@ -244,7 +241,7 @@ export function checkNote13(
     if (F.isPatternBind(pattern) && boundedVars.has(pattern.variable.value)) {
       throw new Error(`Variable used to bind is already bound (?${pattern.variable.value})`);
     }
-    findBoundedVars(pattern, boundedVars);
+    findPatternBoundedVars(pattern, boundedVars);
   }
 }
 

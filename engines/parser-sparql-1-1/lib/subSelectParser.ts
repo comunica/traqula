@@ -9,6 +9,9 @@ const rules = <const> [
   gram.whereClause,
   gram.solutionModifier,
   gram.valuesClause,
+  gram.validateSubSelect,
+  gram.validateGroupGraphPattern,
+  gram.validateGroupGraphPatternSub,
 ];
 
 export const subSelectParserBuilder = ParserBuilder.create(rules)

@@ -23,11 +23,11 @@ import type {
   UpdateOperationModify,
   UpdateOperationMove,
 } from '../Sparql11types.js';
-import { updateNoReuseBlankNodeLabels } from '../validation/validators.js';
 import { usingClauseStar } from './dataSetClause.js';
 import { prologue, varOrIri, varOrTerm } from './general.js';
 import { iri } from './literals.js';
 import { triplesBlock, triplesTemplate } from './tripleBlock.js';
+import { validateUpdate } from './validation.js';
 import { groupGraphPattern } from './whereClause.js';
 
 /**
@@ -65,19 +65,15 @@ export const update: SparqlRule<'update', Update> = <const> {
         });
       },
     });
-    return ACTION(() => {
-      const update = {
-        type: 'update',
-        updates,
-        loc: C.astFactory.sourceLocation(
-          ...updates.flatMap(x => [ ...x.context, x.operation ]),
-        ),
-      } satisfies Update;
-      if (!C.skipValidation) {
-        updateNoReuseBlankNodeLabels(update);
-      }
-      return update;
-    });
+    const result = ACTION(() => ({
+      type: 'update',
+      updates,
+      loc: C.astFactory.sourceLocation(
+        ...updates.flatMap(x => [ ...x.context, x.operation ]),
+      ),
+    } satisfies Update));
+    SUBRULE(validateUpdate, result);
+    return result;
   },
   gImpl: ({ SUBRULE, PRINT, NEW_LINE }) => (ast, { astFactory: F }) => {
     const [ head, ...tail ] = ast.updates;

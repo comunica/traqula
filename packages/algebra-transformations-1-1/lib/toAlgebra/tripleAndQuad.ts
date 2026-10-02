@@ -133,10 +133,8 @@ AlgebraIndir<'recurseGraph', Algebra.Operation, [Algebra.Operation, RDF.Term, RD
       // if there are it's the same situation as above
       if (algOp.variable.equals(graph)) {
         replacement = SUBRULE(generateFreshVar);
-        // The graph variable is already bound by the patterns, so it cannot be extended.
-        // GRAPH joins its result with the graph name (18.5), so filter on equality instead.
-        // An expression that errors leaves the variable unbound, which is compatible with any graph,
-        // so COALESCE keeps those solutions.
+        // The quads already bind the graph variable, so filter instead of extending it (18.5).
+        // COALESCE keeps solutions where the expression errors, as those left the variable unbound.
         const graphExpression = AF.createTermExpression(algOp.variable);
         return AF.createFilter(
           SUBRULE(recurseGraph, algOp.input, graph, replacement),

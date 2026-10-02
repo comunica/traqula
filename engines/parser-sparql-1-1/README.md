@@ -24,13 +24,6 @@ or
 yarn add @traqula/parser-sparql-1-1
 ```
 
-> [!note]
-> Using this engine as shipped follows semantic versioning: its usage API only breaks in major versions.
-> Its exported builders are part of Traqula's extension API, which may break in minor versions,
-> for example when rules are added or their behavior changes. Patch versions never break.
-> When you extend the builders, depend on a patch range (`~x.y.z`).
-> See [versioning](https://github.com/comunica/traqula#versioning).
-
 ## Import
 
 Either through ESM import:
@@ -129,3 +122,12 @@ const sourceTrackingParser = new Parser({
   lexerConfig: { positionTracking: 'full' },
 });
 ```
+
+## Modifying the build Parser
+
+> [!note]
+> Using this engine as shipped follows semantic versioning: its usage API only breaks in major versions.
+> Its exported builders are part of Traqula's extension API, which may break in minor versions,
+> for example when rules are added or their behavior changes. Patch versions never break.
+> When you extend the builders, depend on a patch range (`~x.y.z`).
+> See [versioning](https://github.com/comunica/traqula#versioning).

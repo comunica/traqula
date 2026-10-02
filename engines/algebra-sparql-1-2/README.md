@@ -26,13 +26,6 @@ or
 yarn add @traqula/algebra-sparql-1-2
 ```
 
-> [!note]
-> Using this engine as shipped follows semantic versioning: its usage API only breaks in major versions.
-> Its exported builders are part of Traqula's extension API, which may break in minor versions,
-> for example when rules are added or their behavior changes. Patch versions never break.
-> When you extend the builders, depend on a patch range (`~x.y.z`).
-> See [versioning](https://github.com/comunica/traqula#versioning).
-
 ## Import
 
 Either through ESM import:
@@ -73,3 +66,12 @@ const generatedQuery = generator.generate(generatedAst);
 ```
 
 The algebra transformer for SPARQL 1.2 is a modification of [the SPARQL 1.1 algebra transformer](../algebra-sparql-1-1); therefore, much of the documentation of that transformer holds here too.
+
+## Modifying the build algebra transformer
+
+> [!note]
+> Using this engine as shipped follows semantic versioning: its usage API only breaks in major versions.
+> Its exported builders are part of Traqula's extension API, which may break in minor versions,
+> for example when rules are added or their behavior changes. Patch versions never break.
+> When you extend the builders, depend on a patch range (`~x.y.z`).
+> See

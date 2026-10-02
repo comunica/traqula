@@ -26,13 +26,6 @@ or
 yarn add @traqula/algebra-sparql-1-1
 ```
 
-> [!note]
-> Using this engine as shipped follows semantic versioning: its usage API only breaks in major versions.
-> Its exported builders are part of Traqula's extension API, which may break in minor versions,
-> for example when rules are added or their behavior changes. Patch versions never break.
-> When you extend the builders, depend on a patch range (`~x.y.z`).
-> See [versioning](https://github.com/comunica/traqula#versioning).
-
 ## Import
 
 Either through ESM import:
@@ -255,6 +248,15 @@ SELECT ?book ?title {
 Some differences from Jena (again, non-exhaustive):
 no prefixes are used (all uris get expanded)
 and the project operation always gets used (even in the case of `SELECT *`).
+
+## Modifying the build algebra transformer
+
+> [!note]
+> Using this engine as shipped follows semantic versioning: its usage API only breaks in major versions.
+> Its exported builders are part of Traqula's extension API, which may break in minor versions,
+> for example when rules are added or their behavior changes. Patch versions never break.
+> When you extend the builders, depend on a patch range (`~x.y.z`).
+> See [versioning](https://github.com/comunica/traqula#versioning).
 
 ## A note on tests
 

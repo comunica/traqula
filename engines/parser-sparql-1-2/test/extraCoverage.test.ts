@@ -59,6 +59,11 @@ describe('extra parser-sparql-1-2 coverage', () => {
     });
   });
 
+  it('throws via queryUnit when a SELECT expression binds a variable of the trailing VALUES', ({ expect }) => {
+    expect(() => parser.parse('SELECT (1 AS ?x) WHERE { ?s ?p ?o } VALUES ?x { 1 }'))
+      .toThrow(/Target id of 'AS' \(\?x\) is already in scope/u);
+  });
+
   describe('skipValidation in SPARQL 1.2 subquery', () => {
     it('does not check subquery projections when skipValidation is true', ({ expect }) => {
       const result = parser.parse(

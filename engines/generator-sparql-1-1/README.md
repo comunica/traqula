@@ -25,13 +25,6 @@ or
 yarn add @traqula/generator-sparql-1-1
 ```
 
-> [!note]
-> Using this engine as shipped follows semantic versioning: its usage API only breaks in major versions.
-> Its exported builders are part of Traqula's extension API, which may break in minor versions,
-> for example when rules are added or their behavior changes. Patch versions never break.
-> When you extend the builders, depend on a patch range (`~x.y.z`).
-> See [versioning](https://github.com/comunica/traqula#versioning).
-
 ## Import
 
 Either through ESM import:
@@ -89,3 +82,12 @@ Whenever this number is negative, no newline will be printed. _(default: 0)_
 
 By default, the generator will emit the round tripped query string where possible.
 In order to create an AST that supports round-tripping, you should make sure the [parser is set up correctly](../parser-sparql-1-1/README.md#collecting-round-tripping-information).
+
+## Modifying the build Generator
+
+> [!note]
+> Using this engine as shipped follows semantic versioning: its usage API only breaks in major versions.
+> Its exported builders are part of Traqula's extension API, which may break in minor versions,
+> for example when rules are added or their behavior changes. Patch versions never break.
+> When you extend the builders, depend on a patch range (`~x.y.z`).
+> See [versioning](https://github.com/comunica/traqula#versioning).

@@ -3,7 +3,7 @@
   "input": {
     "type": "project",
     "input": {
-      "type": "extend",
+      "type": "project",
       "input": {
         "type": "bgp",
         "patterns": [
@@ -29,18 +29,16 @@
           }
         ]
       },
-      "variable": {
-        "termType": "Variable",
-        "value": "var0"
-      },
-      "expression": {
-        "type": "expression",
-        "subType": "term",
-        "term": {
+      "variables": [
+        {
           "termType": "Variable",
-          "value": "o"
+          "value": "x"
+        },
+        {
+          "termType": "Variable",
+          "value": "g"
         }
-      }
+      ]
     },
     "variables": [
       {

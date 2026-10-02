@@ -29,6 +29,27 @@ If you are building a project that depends on Traqula, see the [**guidelines for
 Additionally, a documentation website is generated based on the source code's documentation: [https://comunica.github.io/traqula/](https://comunica.github.io/traqula/).
 The source code itself is available on [GitHub](https://github.com/comunica/traqula/).
 
+## Cite
+
+If you are using or extending Traqula as part of a scientific publication,
+we would appreciate a citation of our [article](https://traqula-resource.jitsedesmet.be/).
+
+```bibtex
+@inproceedings{De_Smet_Traqula_Providing_a_2026,
+    address = {Dubrovnik, HR},
+    author = {De Smet, Jitse and Taelman, Ruben},
+    booktitle = {The Semantic Web},
+    doi = {10.1007/978-3-032-25159-6\_13},
+    month = may,
+    pages = {232--252},
+    publisher = {Springer Nature Switzerland},
+    series = {23rd European Semantic Web Conference (ESWC 2026)},
+    title = {{Traqula: Providing a Foundation for The Evolving SPARQL Ecosystem Through Modular Query Parsing, Transformation, and Generation}},
+    url = {https://traqula-resource.jitsedesmet.be/},
+    year = {2026}
+}
+```
+
 ## License
 
 This software is written by [Jitse De Smet](https://jitsedesmet.be/).

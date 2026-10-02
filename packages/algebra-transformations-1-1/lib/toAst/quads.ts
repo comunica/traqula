@@ -27,7 +27,7 @@ function wrapInGraph(AF: AlgebraFactory, op: Algebra.Operation, graph: RDF.Named
 }
 
 /**
- * Whether the variable occurs in the expression, not counting the patterns of an EXISTS.
+ * Whether the expression mentions the variable, ignoring EXISTS patterns.
  */
 function mentionsVariable(expression: Algebra.Expression, variable: RDF.Variable): boolean {
   if (expression.subType === eTypes.TERM) {
@@ -161,8 +161,7 @@ unknown,
       // below them, not defer further up. FILTER and the multi-branch combinators (JOIN,
       // LEFT_JOIN, MINUS, UNION) do defer: they share a group with sibling patterns, so matching
       // graphs merge into one GRAPH block instead of each wrapping itself separately.
-      // A FILTER on the graph variable is a boundary too: within GRAPH ?g, the variable ?g is not bound (18.5).
-      // Graph names are typed as named nodes, but quads mode puts the GRAPH variable there too
+      // A FILTER on the graph variable is a boundary too: ?g is not bound within GRAPH ?g (18.5).
       const onlyGraph = <RDF.Term | undefined> (graphNameSet.length === 1 ?
         operationGraphNames[graphNameSet[0]] :
         undefined);

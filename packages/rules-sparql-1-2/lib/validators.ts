@@ -1,7 +1,19 @@
-import { getAggregatesOfExpression, getExpressionId, getVariablesFromExpression } from '@traqula/rules-sparql-1-1';
+// TODO(major): consider defining the validation functions with the IndirBuilder pattern,
+//  so they call each other by name and SPARQL 1.2 can patch only the functions that differ
+//  (findPatternBoundedVars, getVariablesFromExpression and queryProjectionIsGood).
+//  The SPARQL 1.2 selectExpressionAliasesNotInScope and checkNote13 copy the SPARQL 1.1 implementation logic,
+//  only to call the SPARQL 1.2 findPatternBoundedVars.
+import {
+  getAggregatesOfExpression,
+  getExpressionId,
+  isGroupedQuery,
+  selectExpressionAliasesNotInValues,
+  selectExpressionAliasesNotUsedEarlier,
+} from '@traqula/rules-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import { AstFactory } from './AstFactory.js';
 import type {
+  Expression,
   Path,
   Pattern,
   PatternBind,
@@ -9,7 +21,6 @@ import type {
   SparqlQuery,
   Term,
   TermLiteral,
-  TermVariable,
   TripleCollection,
   TripleNesting,
   Wildcard,
@@ -33,18 +44,38 @@ export function langTagHasCorrectRange(literal: TermLiteral): void {
   }
 }
 
+/**
+ * Get all variables used in an expression, including those within triple terms.
+ */
+export function getVariablesFromExpression(expression: Expression | Term, variables: Set<string>): void {
+  if (F.isExpressionOperator(expression)) {
+    for (const expr of expression.args) {
+      getVariablesFromExpression(expr, variables);
+    }
+  } else if (F.isTermVariable(expression)) {
+    variables.add(expression.value);
+  } else if (F.isTermTriple(expression)) {
+    getVariablesFromExpression(expression.subject, variables);
+    getVariablesFromExpression(expression.predicate, variables);
+    getVariablesFromExpression(expression.object, variables);
+  }
+}
+
 export function findPatternBoundedVars(
   iter: SparqlQuery | Pattern | TripleNesting | TripleCollection | Path | Term | Wildcard,
   boundedVars: Set<string>,
 ): void {
   if (F.isQuery(iter) || F.isUpdate(iter)) {
     if (F.isQuerySelect(iter) || F.isQueryDescribe(iter)) {
-      if (iter.where && iter.variables.some(x => F.isWildcard(x))) {
-        findPatternBoundedVars(iter.where, boundedVars);
-      } else {
+      // A projection only exposes the projected variables (18.2.1), wildcards expose everything.
+      if (!iter.variables.some(x => F.isWildcard(x))) {
         for (const v of iter.variables) {
           findPatternBoundedVars(v, boundedVars);
         }
+        return;
+      }
+      if (iter.where) {
+        findPatternBoundedVars(iter.where, boundedVars);
       }
       if (iter.solutionModifiers.group) {
         const grouping = iter.solutionModifiers.group;
@@ -54,11 +85,8 @@ export function findPatternBoundedVars(
           }
         }
       }
-      if (iter.values?.values && iter.values.values.length > 0) {
-        const values = iter.values.values;
-        for (const v of Object.keys(values[0])) {
-          boundedVars.add(v);
-        }
+      if (iter.values) {
+        findPatternBoundedVars(iter.values, boundedVars);
       }
     }
   } else if (F.isTerm(iter)) {
@@ -85,6 +113,10 @@ export function findPatternBoundedVars(
       findPatternBoundedVars(item, boundedVars);
     }
   } else if (F.isTripleCollection(iter) || F.isPatternBgp(iter)) {
+    if (F.isTripleCollection(iter)) {
+      // The reifier of a reified triple is only stored as its identifier
+      findPatternBoundedVars(iter.identifier, boundedVars);
+    }
     for (const triple of iter.triples) {
       findPatternBoundedVars(triple, boundedVars);
     }
@@ -149,7 +181,7 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
       } else if (getAggregatesOfExpression(<T11.Expression> selectVar.expression).length === 0) {
         // Current value binding does not use aggregates
         const usedvars = new Set<string>();
-        getVariablesFromExpression(<T11.Expression> selectVar.expression, usedvars);
+        getVariablesFromExpression(selectVar.expression, usedvars);
         for (const usedvar of usedvars) {
           // If the var is created within the select, it is fine.
           if (asBoundVars.has(usedvar)) {
@@ -168,24 +200,63 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
     }
   }
 
-  // NOTE 12: Check if id of each AS-selected column is not yet bound by subquery
-  const subqueries = query.where.patterns.filter(pattern => pattern.type === 'query');
-  if (subqueries.length > 0) {
-    const selectBoundedVars = new Set<string>();
-    for (const variable of variables) {
-      if ('variable' in variable) {
-        selectBoundedVars.add(variable.variable.value);
-      }
-    }
+  selectExpressionAliasesNotInScope(query);
+}
 
-    // Look at in scope variables
-    const vars = subqueries.flatMap<TermVariable | PatternBind | Wildcard>(sub => sub.variables)
-      .map(v => F.isTerm(v) ? v.value : (F.isWildcard(v) ? '*' : v.variable.value));
-    const subqueryIds = new Set(vars);
-    for (const selectedVarId of selectBoundedVars) {
-      if (subqueryIds.has(selectedVarId)) {
-        throw new Error(`Target id of 'AS' (?${selectedVarId}) already used in subquery`);
+/**
+ * Grammar note 11 of https://www.w3.org/TR/sparql12-query/#sparqlGrammar (note 12 in SPARQL 1.1)
+ * > Variables introduced by AS in a SELECT clause must not already be in-scope.
+ * See also https://www.w3.org/TR/sparql12-query/#variableScope
+ * > The variable v must not be in-scope at the point of the (expr AS v) form.
+ * In-scope are the variables bound by the WHERE clause (including subquery projections), or, in a grouped query,
+ * the GROUP BY keys (v and (expr AS v)), and the trailing VALUES clause (joined before the projection, 18.2.4.3).
+ * The variable may also not be used in an earlier SELECT expression.
+ */
+export function selectExpressionAliasesNotInScope(
+  query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
+): void {
+  const selectBinds = query.variables.filter((variable): variable is PatternBind =>
+    !F.isTerm(variable) && !F.isWildcard(variable));
+  if (selectBinds.length > 0) {
+    const inScopeVars = new Set<string>();
+    // Grouping only keeps the variables of the group keys in scope
+    if (!isGroupedQuery(<T11.QuerySelect> <unknown> query)) {
+      findPatternBoundedVars(query.where, inScopeVars);
+    }
+    for (const grouping of query.solutionModifiers.group?.groupings ?? []) {
+      if ('variable' in grouping) {
+        inScopeVars.add(grouping.variable.value);
+      } else if (F.isTermVariable(grouping)) {
+        inScopeVars.add(grouping.value);
       }
     }
+    for (const { variable } of selectBinds) {
+      if (inScopeVars.has(variable.value)) {
+        throw new Error(`Target id of 'AS' (?${variable.value}) is already in scope`);
+      }
+    }
+  }
+  selectExpressionAliasesNotUsedEarlier(query);
+  selectExpressionAliasesNotInValues(query);
+}
+
+/**
+ * SPARQL 1.2 version of the SPARQL 1.1 checkNote13, named after it so it overrides it in the `validation` export.
+ * Grammar note 12 of https://www.w3.org/TR/sparql12-query/#sparqlGrammar (note 13 in SPARQL 1.1)
+ * > The variable assigned in a BIND clause must not already be in-use within the immediately preceding TriplesBlock
+ *   within a GroupGraphPattern.
+ * See also https://www.w3.org/TR/sparql12-query/#variableScope
+ * > In BIND (expr AS v) requires that the variable v is not in-scope from the preceeding elements in the
+ *    group graph pattern in which it is used.
+ * The in-scope variables include those of the preceding TriplesBlock,
+ * also those within triple terms, reifiers, and annotations.
+ */
+export function checkNote13(patterns: Pattern[]): void {
+  const boundedVars = new Set<string>();
+  for (const pattern of patterns) {
+    if (F.isPatternBind(pattern) && boundedVars.has(pattern.variable.value)) {
+      throw new Error(`Variable used to bind is already bound (?${pattern.variable.value})`);
+    }
+    findPatternBoundedVars(pattern, boundedVars);
   }
 }

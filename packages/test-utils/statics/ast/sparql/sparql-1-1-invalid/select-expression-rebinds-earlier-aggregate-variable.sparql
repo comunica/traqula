@@ -1,0 +1,4 @@
+SELECT (COUNT(?x) AS ?c) (1 AS ?x) WHERE {
+  ?s ?p ?o
+}
+GROUP BY ?s

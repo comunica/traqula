@@ -66,6 +66,13 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
       'SELECT (1 AS ?g) { { SELECT (COUNT(*) AS ?c) { ?s ?p ?o } GROUP BY (?s AS ?g) } }',
       'SELECT (1 AS ?x) { { SELECT ?s { ?s ?p ?o } VALUES ?x { 1 } } }',
       'SELECT (1 AS ?y) { ?s ?p ?o } VALUES ?x { 1 }',
+      // Grouping only keeps the group keys in scope
+      'SELECT (123 AS ?z) WHERE { ?s ?p ?z } GROUP BY ?s',
+      'SELECT ?s (COUNT(?z) AS ?z) { ?s ?p ?z } GROUP BY ?s',
+      'SELECT (COUNT(?z) AS ?z) { ?s ?p ?z }',
+      'SELECT (1 AS ?z) { ?s ?p ?z } HAVING (COUNT(*) > 1)',
+      'SELECT (1 AS ?z) { ?s ?p ?z } ORDER BY (COUNT(*))',
+      'SELECT * { { SELECT (COUNT(?z) AS ?z) { ?s ?p ?z } } }',
     ];
     for (const query of queries) {
       expect(parser.parse(query), query).toMatchObject({});

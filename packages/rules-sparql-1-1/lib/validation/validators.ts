@@ -124,8 +124,8 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
  * > Variables introduced by AS in a SELECT clause must not already be in-scope.
  * See also https://www.w3.org/TR/sparql12-query/#variableScope
  * > The variable v must not be in-scope at the point of the (expr AS v) form.
- * In-scope are the variables bound by the WHERE clause (including subquery projections), GROUP BY (v and (expr AS v)),
- * and the trailing VALUES clause (joined before the projection, 18.2.4.3).
+ * In-scope are the variables bound by the WHERE clause (including subquery projections), or, in a grouped query,
+ * the GROUP BY keys (v and (expr AS v)), and the trailing VALUES clause (joined before the projection, 18.2.4.3).
  * The variable may also not be used in an earlier SELECT expression.
  */
 export function selectExpressionAliasesNotInScope(
@@ -135,7 +135,10 @@ export function selectExpressionAliasesNotInScope(
     !F.isTerm(variable) && !F.isWildcard(variable));
   if (selectBinds.length > 0) {
     const inScopeVars = new Set<string>();
-    findPatternBoundedVars(query.where, inScopeVars);
+    // Grouping only keeps the variables of the group keys in scope
+    if (!isGroupedQuery(query)) {
+      findPatternBoundedVars(query.where, inScopeVars);
+    }
     for (const grouping of query.solutionModifiers.group?.groupings ?? []) {
       if ('variable' in grouping) {
         inScopeVars.add(grouping.variable.value);
@@ -151,6 +154,22 @@ export function selectExpressionAliasesNotInScope(
   }
   selectExpressionAliasesNotUsedEarlier(query);
   selectExpressionAliasesNotInValues(query);
+}
+
+/**
+ * A query is grouped when it has a GROUP BY clause or uses aggregates (18.2.4.1).
+ */
+export function isGroupedQuery(query: Pick<QuerySelect, 'variables' | 'solutionModifiers'>): boolean {
+  const { group, having, order } = query.solutionModifiers;
+  if (group) {
+    return true;
+  }
+  const expressions: Expression[] = [
+    ...query.variables.flatMap(variable => 'expression' in variable ? [ variable.expression ] : []),
+    ...having?.having ?? [],
+    ...order?.orderDefs.map(ordering => ordering.expression) ?? [],
+  ];
+  return expressions.some(expression => getAggregatesOfExpression(expression).length > 0);
 }
 
 /**

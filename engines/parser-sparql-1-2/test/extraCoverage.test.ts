@@ -75,7 +75,7 @@ describe('extra parser-sparql-1-2 coverage', () => {
     });
   });
 
-  it('throws via queryUnit when a SELECT expression binds a variable of the trailing VALUES', ({ expect }) => {
+  it('throws when a SELECT expression binds a variable of the trailing VALUES', ({ expect }) => {
     expect(() => parser.parse('SELECT (1 AS ?x) WHERE { ?s ?p ?o } VALUES ?x { 1 }'))
       .toThrow(/Target id of 'AS' \(\?x\) is already in scope/u);
   });

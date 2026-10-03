@@ -21,8 +21,8 @@ yarn add @traqula/core
 ```
 
 > [!note]
-> The builders and transformers in this package follow semantic versioning.
-> Minor versions of the packages that register rules in these builders keep the name, signature and behavior of their rules,
+> The API of the builders and transformers in this package only breaks in major versions.
+> In minor versions, the Traqula packages that ship rules for these builders keep the name, signature and behavior of their rules,
 > but can add rules or change how existing rules are implemented, such as which rules they call.
 > This only affects projects that patch, delete or individually register rules.
 > See [versioning](https://github.com/comunica/traqula#versioning).

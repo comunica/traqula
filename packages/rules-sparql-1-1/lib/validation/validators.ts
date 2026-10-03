@@ -124,8 +124,9 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
  * > Variables introduced by AS in a SELECT clause must not already be in-scope.
  * See also https://www.w3.org/TR/sparql12-query/#variableScope
  * > The variable v must not be in-scope at the point of the (expr AS v) form.
- * In-scope are the variables bound by the WHERE clause (including subquery projections), GROUP BY (expr AS v),
+ * In-scope are the variables bound by the WHERE clause (including subquery projections), GROUP BY (v and (expr AS v)),
  * and the trailing VALUES clause (joined before the projection, 18.2.4.3).
+ * The variable may also not be used in an earlier SELECT expression.
  */
 export function selectExpressionAliasesNotInScope(
   query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
@@ -138,6 +139,8 @@ export function selectExpressionAliasesNotInScope(
     for (const grouping of query.solutionModifiers.group?.groupings ?? []) {
       if ('variable' in grouping) {
         inScopeVars.add(grouping.variable.value);
+      } else if (F.isTermVariable(grouping)) {
+        inScopeVars.add(grouping.value);
       }
     }
     for (const { variable } of selectBinds) {
@@ -146,7 +149,29 @@ export function selectExpressionAliasesNotInScope(
       }
     }
   }
+  selectExpressionAliasesNotUsedEarlier(query);
   selectExpressionAliasesNotInValues(query);
+}
+
+/**
+ * https://www.w3.org/TR/sparql12-query/#variableScope
+ * > In SELECT, the variable v must not be in-scope in the graph pattern of the SELECT clause,
+ * > nor used in another select expression earlier in the clause.
+ */
+export function selectExpressionAliasesNotUsedEarlier(
+  query: { variables: readonly (TermVariable | Wildcard | { variable: TermVariable; expression: object })[] },
+): void {
+  const usedVars = new Set<string>();
+  for (const variable of query.variables) {
+    if ('expression' in variable) {
+      if (usedVars.has(variable.variable.value)) {
+        throw new Error(`Target id of 'AS' (?${variable.variable.value}) is used in an earlier select expression`);
+      }
+      transformer.visitNodeSpecific(<Expression> variable.expression, {}, { term: { variable: { visitor: (var_) => {
+        usedVars.add(var_.value);
+      } }}});
+    }
+  }
 }
 
 /**

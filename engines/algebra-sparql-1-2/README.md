@@ -67,7 +67,7 @@ const generatedQuery = generator.generate(generatedAst);
 
 The algebra transformer for SPARQL 1.2 is a modification of [the SPARQL 1.1 algebra transformer](../algebra-sparql-1-1); therefore, much of the documentation of that transformer holds here too.
 
-## Modifying the build algebra transformer
+## Modifying the built algebra transformer
 
 > [!note]
 > Minor versions keep this engine's API and behavior, and the name, signature and behavior of the rules in its builders,

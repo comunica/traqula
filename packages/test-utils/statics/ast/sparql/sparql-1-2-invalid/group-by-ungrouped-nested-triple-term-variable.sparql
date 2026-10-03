@@ -1,4 +1,4 @@
-SELECT (isTRIPLE(<<( ?s ?p <<( ?a ?b ?o )>> )>>) AS ?t) WHERE {
+SELECT (isTRIPLE(<<( ?s ?p <<( ?s ?p ?o )>> )>>) AS ?t) WHERE {
   ?s ?p ?o
 }
 GROUP BY ?s ?p

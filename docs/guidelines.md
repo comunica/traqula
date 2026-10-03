@@ -244,7 +244,7 @@ When developing a modified parser or generator:
      it(`parses ${test.name}`, async({ expect }) => {
        const { query, astWithSource } = await test.statics();
        // The expected ASTs track source locations, drop them when your parser does not
-       expect(myParser.parse(query)).toEqualParsedQuery(F.forcedAutoGenTree(<object> astWithSource));
+       expect(myParser.parse(query)).toEqualParsedQuery(F.forcedAutoGenTree(astWithSource));
      });
    }
    for (const test of negativeTest('sparql-1-2-invalid')) {

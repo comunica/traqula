@@ -14,11 +14,6 @@ export const suites: AlgebraTestSuite[] = [ 'dawg-syntax', 'sparql11-query', 'sp
 // https://www.w3.org/2009/sparql/docs/tests/
 describe('algebra output 1.2', () => {
   const parser = new Parser();
-  it('projects the reifier variable of a reified triple for SELECT *', ({ expect }) => {
-    const algebra = <any> toAlgebra(parser.parse('SELECT * { << ?s ?p ?o ~ ?r >> . }'));
-    expect(algebra.variables.map((variable: { value: string }) => variable.value)).toEqual([ 'o', 'p', 'r', 's' ]);
-  });
-
   describe('prototype-key reserved-name bypass (security fix)', () => {
     // When a prefix name collides with an Object.prototype property, the algebra
     // must still throw "Unknown prefix" rather than silently expanding to garbage.

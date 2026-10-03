@@ -1,12 +1,12 @@
 # Create Transformer
 
-Transformations in Traqula exist on two levels:
-
 > [!note]
 > Minor versions of Traqula keep the name, signature and behavior of existing rules,
 > but can add rules or change how existing rules are implemented, such as which rules they call.
 > This only affects projects that patch, delete or individually register rules.
 > See [versioning](../../README.md#versioning).
+
+Transformations in Traqula exist on two levels:
 
 1. **AST tree transformers** (`TransformerObject`, `TransformerTyped`, `TransformerSubTyped`):
    These iterate any tree following the format `{ type: string, subType?: string }` and are discussed under [the AST structure docs](../usage/AST-structure.md).

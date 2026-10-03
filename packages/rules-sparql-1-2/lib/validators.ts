@@ -7,6 +7,7 @@ import {
   getAggregatesOfExpression,
   getExpressionId,
   selectExpressionAliasesNotInValues,
+  selectExpressionAliasesNotUsedEarlier,
 } from '@traqula/rules-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import { AstFactory } from './AstFactory.js';
@@ -206,8 +207,9 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
  * > Variables introduced by AS in a SELECT clause must not already be in-scope.
  * See also https://www.w3.org/TR/sparql12-query/#variableScope
  * > The variable v must not be in-scope at the point of the (expr AS v) form.
- * In-scope are the variables bound by the WHERE clause (including subquery projections), GROUP BY (expr AS v),
+ * In-scope are the variables bound by the WHERE clause (including subquery projections), GROUP BY (v and (expr AS v)),
  * and the trailing VALUES clause (joined before the projection, 18.2.4.3).
+ * The variable may also not be used in an earlier SELECT expression.
  */
 export function selectExpressionAliasesNotInScope(
   query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
@@ -220,6 +222,8 @@ export function selectExpressionAliasesNotInScope(
     for (const grouping of query.solutionModifiers.group?.groupings ?? []) {
       if ('variable' in grouping) {
         inScopeVars.add(grouping.variable.value);
+      } else if (F.isTermVariable(grouping)) {
+        inScopeVars.add(grouping.value);
       }
     }
     for (const { variable } of selectBinds) {
@@ -228,6 +232,7 @@ export function selectExpressionAliasesNotInScope(
       }
     }
   }
+  selectExpressionAliasesNotUsedEarlier(query);
   selectExpressionAliasesNotInValues(query);
 }
 

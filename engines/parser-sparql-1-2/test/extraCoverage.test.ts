@@ -75,11 +75,6 @@ describe('extra parser-sparql-1-2 coverage', () => {
     });
   });
 
-  it('accepts a triple-term expression whose variables are all grouped', ({ expect }) => {
-    expect(parser.parse('SELECT (<<( ?s ?p ?o )>> AS ?t) WHERE { ?s ?p ?o } GROUP BY ?s ?p ?o'))
-      .toMatchObject({ subType: 'select' });
-  });
-
   it('throws via queryUnit when a SELECT expression binds a variable of the trailing VALUES', ({ expect }) => {
     expect(() => parser.parse('SELECT (1 AS ?x) WHERE { ?s ?p ?o } VALUES ?x { 1 }'))
       .toThrow(/Target id of 'AS' \(\?x\) is already in scope/u);

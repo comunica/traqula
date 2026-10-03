@@ -6,6 +6,7 @@
 import {
   getAggregatesOfExpression,
   getExpressionId,
+  isGroupedQuery,
   selectExpressionAliasesNotInValues,
   selectExpressionAliasesNotUsedEarlier,
 } from '@traqula/rules-sparql-1-1';
@@ -207,8 +208,8 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
  * > Variables introduced by AS in a SELECT clause must not already be in-scope.
  * See also https://www.w3.org/TR/sparql12-query/#variableScope
  * > The variable v must not be in-scope at the point of the (expr AS v) form.
- * In-scope are the variables bound by the WHERE clause (including subquery projections), GROUP BY (v and (expr AS v)),
- * and the trailing VALUES clause (joined before the projection, 18.2.4.3).
+ * In-scope are the variables bound by the WHERE clause (including subquery projections), or, in a grouped query,
+ * the GROUP BY keys (v and (expr AS v)), and the trailing VALUES clause (joined before the projection, 18.2.4.3).
  * The variable may also not be used in an earlier SELECT expression.
  */
 export function selectExpressionAliasesNotInScope(
@@ -218,7 +219,10 @@ export function selectExpressionAliasesNotInScope(
     !F.isTerm(variable) && !F.isWildcard(variable));
   if (selectBinds.length > 0) {
     const inScopeVars = new Set<string>();
-    findPatternBoundedVars(query.where, inScopeVars);
+    // Grouping only keeps the variables of the group keys in scope
+    if (!isGroupedQuery(<T11.QuerySelect> <unknown> query)) {
+      findPatternBoundedVars(query.where, inScopeVars);
+    }
     for (const grouping of query.solutionModifiers.group?.groupings ?? []) {
       if ('variable' in grouping) {
         inScopeVars.add(grouping.variable.value);
@@ -242,7 +246,8 @@ export function selectExpressionAliasesNotInScope(
  * > The variable assigned in a BIND clause must not already be in-use within the immediately preceding TriplesBlock
  *   within a GroupGraphPattern.
  * See also https://www.w3.org/TR/sparql12-query/#variableScope
- * > The variable v must not be in-scope at the point of BIND (expr AS v).
+ * > In BIND (expr AS v) requires that the variable v is not in-scope from the preceeding elements in the
+ *    group graph pattern in which it is used.
  * The in-scope variables include those of the preceding TriplesBlock,
  * also those within triple terms, reifiers, and annotations.
  */

@@ -169,7 +169,23 @@ export function isGroupedQuery(query: Pick<QuerySelect, 'variables' | 'solutionM
     ...having?.having ?? [],
     ...order?.orderDefs.map(ordering => ordering.expression) ?? [],
   ];
-  return expressions.some(expression => getAggregatesOfExpression(expression).length > 0);
+  return expressions.some(expression => containsAggregate(expression));
+}
+
+/**
+ * Whether an expression contains an aggregate, also when nested in a function call.
+ * A function call using DISTINCT is a custom aggregate:
+ * > Only custom aggregate functions can use the DISTINCT keyword in a function call.
+ */
+function containsAggregate(expression: Expression): boolean {
+  if (F.isExpressionAggregate(expression) ||
+    (F.isExpressionFunctionCall(expression) && expression.distinct)) {
+    return true;
+  }
+  if (F.isExpressionOperator(expression) || F.isExpressionFunctionCall(expression)) {
+    return expression.args.some(arg => containsAggregate(arg));
+  }
+  return false;
 }
 
 /**
@@ -198,9 +214,12 @@ export function selectExpressionAliasesNotUsedEarlier(
  * so its variables are in scope for those expressions (grammar note 11).
  */
 export function selectExpressionAliasesNotInValues(
-  query: { variables: readonly (TermVariable | Wildcard | { variable: TermVariable })[]; values?: { values: object[] }},
+  query: {
+    variables: readonly (TermVariable | Wildcard | { variable: TermVariable })[];
+    values?: { variables: TermVariable[] };
+  },
 ): void {
-  const valuesVars = new Set(Object.keys(query.values?.values.at(0) ?? {}));
+  const valuesVars = new Set(query.values?.variables.map(variable => variable.value));
   for (const variable of query.variables) {
     if ('variable' in variable && valuesVars.has(variable.variable.value)) {
       throw new Error(`Target id of 'AS' (?${variable.variable.value}) is already in scope`);
@@ -244,8 +263,8 @@ export function findPatternBoundedVars(
   } else if (F.isSolutionModifierOrder(op)) {
     recurse(op.orderDefs.map(x => x.expression));
   } else if (F.isPatternValues(op)) {
-    for (const v of Object.keys(op.values.at(0) ?? {})) {
-      boundedVars.add(v);
+    for (const v of op.variables) {
+      boundedVars.add(v.value);
     }
   } else if (F.isPatternBgp(op)) {
     recurse(op.triples);

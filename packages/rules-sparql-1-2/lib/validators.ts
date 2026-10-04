@@ -17,6 +17,7 @@ import type {
   Path,
   Pattern,
   PatternBind,
+  PatternValues,
   QuerySelect,
   SparqlQuery,
   Term,
@@ -131,8 +132,8 @@ export function findPatternBoundedVars(
   } else if (F.isPatternBind(iter)) {
     findPatternBoundedVars(iter.variable, boundedVars);
   } else if (F.isPatternValues(iter)) {
-    for (const variable of Object.keys(iter.values.at(0) ?? {})) {
-      boundedVars.add(variable);
+    for (const variable of iter.variables) {
+      boundedVars.add(variable.value);
     }
   } else if (F.isPatternGraph(iter)) {
     findPatternBoundedVars(iter.name, boundedVars);
@@ -265,7 +266,7 @@ export function checkNote13(patterns: Pattern[]): void {
  * Grammar note 10 of https://www.w3.org/TR/sparql12-query/#sparqlGrammar
  * > Variables in the variable list of a VALUES clause must be unique within that list.
  */
-export function valuesVariablesAreUnique(values: { variables: { value: string }[] }): void {
+export function valuesVariablesAreUnique(values: PatternValues): void {
   const seen = new Set<string>();
   for (const variable of values.variables) {
     if (seen.has(variable.value)) {

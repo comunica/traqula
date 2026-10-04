@@ -493,7 +493,7 @@ describe('queryProjectionIsGood - additional cases', () => {
     expect(() => queryProjectionIsGood(<any>query)).not.toThrow();
   });
 
-  it('throws when AS variable already used in subquery', ({ expect }) => {
+  it('throws when AS variable is projected by a subquery in WHERE', ({ expect }) => {
     const varX = F.termVariable('x', noLoc);
     const binding = { expression: F.termLiteral(noLoc, '1'), variable: varX };
     // Create a mock subquery that projects ?x

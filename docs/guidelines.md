@@ -233,7 +233,7 @@ When developing a modified parser or generator:
    It provides the positive and negative parser tests (`positiveTest`, `negativeTest`),
    the algebra tests (`sparqlAlgebraTests`, `sparqlAlgebraNegativeTests`),
    the SPARQL 1.1 note tests (`importSparql11NoteTests`), and matchers to compare ASTs (`toEqualParsedQuery`).
-   Run them for the parts of the language your extension keeps (each generator accepts a filter on the test name),
+   Run them for the parts of the language your extension keeps (each generator accepts a filter on the test file name),
    so you notice when a new minor version of Traqula changes how the rules you patch are called:
    ```typescript
    import { AstFactory } from '@traqula/rules-sparql-1-2';

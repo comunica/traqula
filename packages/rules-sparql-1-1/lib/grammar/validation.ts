@@ -4,7 +4,6 @@ import {
   checkBlankNodeBGPScope,
   checkNote13,
   queryProjectionIsGood,
-  selectExpressionAliasesNotInScope,
   selectExpressionAliasesNotInValues,
   updateNoReuseBlankNodeLabels,
 } from '../validation/validators.js';
@@ -26,12 +25,12 @@ SparqlGrammarRule<'validateSelectQuery', void, [Pick<QuerySelect, 'variables' | 
 };
 
 /**
- * Validates the projection of a sub-SELECT, see {@link selectExpressionAliasesNotInScope}.
+ * Validates the projection of a sub-SELECT, including its VALUES clause, see {@link queryProjectionIsGood}.
  */
 export const validateSubSelect: SparqlGrammarRule<'validateSubSelect', void, [SubSelect]> = {
   name: 'validateSubSelect',
   impl: ({ ACTION }) => (C, query) => {
-    ACTION(() => !C.skipValidation && selectExpressionAliasesNotInScope(query));
+    ACTION(() => !C.skipValidation && queryProjectionIsGood(query));
   },
 };
 

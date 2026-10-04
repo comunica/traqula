@@ -37,7 +37,6 @@ import {
   checkNote13,
   langTagHasCorrectRange,
   queryProjectionIsGood,
-  selectExpressionAliasesNotInScope,
   valuesVariablesAreUnique,
 } from './validators.js';
 
@@ -107,12 +106,12 @@ export const validateSelectQuery: SparqlGrammarRule<'validateSelectQuery', void,
 
 /**
  * OVERRIDING RULE: {@link S11.validateSubSelect}.
- * Uses the SPARQL 1.2 in-scope variables.
+ * Uses the SPARQL 1.2 projection validation.
  */
 export const validateSubSelect: SparqlGrammarRule<'validateSubSelect', void, [SubSelect]> = {
   name: 'validateSubSelect',
   impl: ({ ACTION }) => (C, query) => {
-    ACTION(() => !C.skipValidation && selectExpressionAliasesNotInScope(query));
+    ACTION(() => !C.skipValidation && queryProjectionIsGood(query));
   },
 };
 

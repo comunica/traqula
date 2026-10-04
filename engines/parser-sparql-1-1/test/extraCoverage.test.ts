@@ -65,6 +65,11 @@ describe('extra parser coverage', () => {
     });
   });
 
+  it('accepts a variable named twice in VALUES (only SPARQL 1.2 forbids this)', ({ expect }) => {
+    expect(() => parser.parse('SELECT * { VALUES (?x ?x) { (1 2) } }')).not.toThrow();
+    expect(() => parser.parse('SELECT * { ?s ?p ?o } VALUES (?x ?x) { (1 2) }')).not.toThrow();
+  });
+
   it('throws when DISTINCT is used in a non-aggregate function call', ({ expect }) => {
     expect(() => parser.parse('SELECT * WHERE { FILTER(<http://ex.org/func>(DISTINCT ?x)) }'))
       .toThrow(/DISTINCT implies that this function is an aggregated function/u);

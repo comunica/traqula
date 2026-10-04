@@ -3,8 +3,15 @@ import type { DataFactory } from 'rdf-data-factory';
 import { describe, it } from 'vitest';
 import type { TestFunction } from 'vitest';
 
+interface ParseContext {
+  prefixes?: Record<string, string>;
+  baseIRI?: string;
+  skipValidation?: boolean;
+  verifyWithNamedAggregators?: Set<string>;
+}
+
 interface Parser {
-  parse: (query: string, context?: { prefixes?: Record<string, string>; baseIRI?: string }) => unknown;
+  parse: (query: string, context?: ParseContext) => unknown;
 }
 
 /**
@@ -16,11 +23,11 @@ interface Parser {
 export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQuad>): void {
   // Only check that parsing fails: error messages are not part of the contract,
   // so engines extending the grammar are free to report a different message.
-  function testErroneousQuery(query: string): TestFunction<object> {
+  function testErroneousQuery(query: string, context?: ParseContext): TestFunction<object> {
     return ({ expect }) => {
       let error: any;
       try {
-        parser.parse(query);
+        parser.parse(query, context);
       } catch (e) {
         error = e;
       }
@@ -80,6 +87,78 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
       'SELECT (1 AS ?z) { ?s ?p ?z } ORDER BY (<http://ex.org/agg>(?z))',
       'PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT (xsd:string(?z) AS ?z) { ?s ?p ?z }',
       'SELECT (1 AS ?z) { ?s ?p ?z } HAVING (<http://ex.org/f>(SUM(?z)) > 1)',
+    ];
+    for (const query of queries) {
+      expect(parser.parse(query), query).toMatchObject({});
+    }
+  });
+
+  describe('with verifyWithNamedAggregators', () => {
+    const context = { verifyWithNamedAggregators: new Set([ 'http://ex.org/agg', 'http://ex.org/my-agg' ]) };
+
+    describe('should throw on a select expression binding a WHERE variable of a query without aggregates', () => {
+      const queries = [
+        'PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT (xsd:string(?z) AS ?z) { ?s ?p ?z }',
+        'SELECT (<http://ex.org/f>(?z) AS ?z) { ?s ?p ?z }',
+        'SELECT (1 AS ?z) { ?s ?p ?z } ORDER BY (<http://ex.org/f>(?z))',
+        'SELECT (1 AS ?z) { ?s ?p ?z } HAVING (<http://ex.org/f>(?z))',
+        'SELECT * { { SELECT (<http://ex.org/f>(?z) AS ?z) { ?s ?p ?z } } }',
+        // A relative IRI without base IRI cannot be resolved, so it is not a known aggregate
+        'SELECT (<agg>(?z) AS ?z) { ?s ?p ?z }',
+        'PREFIX ex: <> SELECT (ex:agg(?z) AS ?z) { ?s ?p ?z }',
+      ];
+      for (const query of queries) {
+        it(query, testErroneousQuery(query, context));
+      }
+    });
+
+    it('should NOT throw on a select expression binding a WHERE variable of a query with aggregates', ({ expect }) => {
+      const queries = [
+        'SELECT (<http://ex.org/agg>(?z) AS ?z) { ?s ?p ?z }',
+        'SELECT (<http://ex.org/agg>(DISTINCT ?z) AS ?z) { ?s ?p ?z }',
+        'PREFIX ex: <http://ex.org/> SELECT (ex:agg(?z) AS ?z) { ?s ?p ?z }',
+        'PREFIX ex: <http://ex.org/> SELECT (ex:my\\-agg(?z) AS ?z) { ?s ?p ?z }',
+        'BASE <http://ex.org/> SELECT (<agg>(?z) AS ?z) { ?s ?p ?z }',
+        'BASE <http://ex.org/sub/> PREFIX ex: <../> SELECT (ex:agg(?z) AS ?z) { ?s ?p ?z }',
+        'BASE <http://ex.org/sub/> BASE <../> SELECT (<agg>(?z) AS ?z) { ?s ?p ?z }',
+        'PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT (xsd:integer(<http://ex.org/agg>(?z)) AS ?z) { ?s ?p ?z }',
+        'PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT (xsd:integer(COUNT(?z)) AS ?z) { ?s ?p ?z }',
+        'SELECT (1 AS ?z) { ?s ?p ?z } HAVING (<http://ex.org/agg>(?z) > 1)',
+        'SELECT (1 AS ?z) { ?s ?p ?z } ORDER BY (<http://ex.org/agg>(?z))',
+        'SELECT * { { SELECT (<http://ex.org/agg>(?z) AS ?z) { ?s ?p ?z } } }',
+      ];
+      for (const query of queries) {
+        expect(parser.parse(query, context), query).toMatchObject({});
+      }
+      expect(parser.parse('SELECT (<agg>(?z) AS ?z) { ?s ?p ?z }', { ...context, baseIRI: 'http://ex.org/' }))
+        .toMatchObject({});
+    });
+
+    describe('should throw on DISTINCT in a function call that is not a known aggregate', () => {
+      const queries = [
+        'SELECT (<http://ex.org/f>(DISTINCT ?z) AS ?y) { ?s ?p ?z }',
+        'SELECT (<http://ex.org/agg>(<http://ex.org/f>(DISTINCT ?z)) AS ?y) { ?s ?p ?z }',
+        'SELECT ?o { ?s ?p ?o } GROUP BY ?o HAVING (<http://ex.org/f>(DISTINCT ?o))',
+        'SELECT (COUNT(*) AS ?c) { ?s ?p ?o } GROUP BY <http://ex.org/f>(DISTINCT ?o)',
+        'SELECT * { ?s ?p ?o FILTER <http://ex.org/f>(DISTINCT ?o) }',
+      ];
+      for (const query of queries) {
+        it(query, testErroneousQuery(query, context));
+      }
+    });
+
+    it('should NOT throw on DISTINCT in a function call when not validating', ({ expect }) => {
+      expect(parser.parse(
+        'SELECT (<http://ex.org/f>(DISTINCT ?z) AS ?y) { ?s ?p ?z }',
+        { ...context, skipValidation: true },
+      )).toMatchObject({});
+    });
+  });
+
+  it('should NOT throw on DISTINCT in a function call without verifyWithNamedAggregators', ({ expect }) => {
+    const queries = [
+      'SELECT (<http://ex.org/f>(DISTINCT ?z) AS ?y) { ?s ?p ?z }',
+      'SELECT (COUNT(*) AS ?c) { ?s ?p ?o } GROUP BY <http://ex.org/f>(DISTINCT ?o)',
     ];
     for (const query of queries) {
       expect(parser.parse(query), query).toMatchObject({});

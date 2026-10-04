@@ -21,6 +21,7 @@ import {
   numericLiteralPositive,
   rdfLiteral,
 } from './literals.js';
+import { validateFunctionCall } from './validation.js';
 import { groupGraphPattern } from './whereClause.js';
 
 /**
@@ -445,12 +446,12 @@ export const iriOrFunction: SparqlRule<'iriOrFunction', TermIri | ExpressionFunc
     const iriVal = SUBRULE(iri);
     const functionCall = OPTION<ExpressionFunctionCall>(() => {
       const args = SUBRULE(argList);
-      return ACTION(() => {
+      const call = ACTION(() => {
         const distinct = args.val.distinct;
         if (!C.parseMode.has('canParseAggregate') && distinct) {
           throw new Error(`DISTINCT implies that this function is an aggregated function, which is not allowed in this context.`);
         }
-        return {
+        return <const> {
           type: 'expression',
           subType: 'functionCall',
           function: iriVal,
@@ -459,6 +460,8 @@ export const iriOrFunction: SparqlRule<'iriOrFunction', TermIri | ExpressionFunc
           loc: C.astFactory.sourceLocation(iriVal, args),
         };
       });
+      SUBRULE(validateFunctionCall, call);
+      return call;
     });
     return functionCall ?? iriVal;
   },

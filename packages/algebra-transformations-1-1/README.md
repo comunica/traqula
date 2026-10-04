@@ -31,6 +31,10 @@ Besides that it also contains all the TypeScript interfaces of the possible outp
 The best way to see what output would be generated is to look in the [`test` folder](../../packages/test-utils/statics/algebra),
 where we have many SPARQL queries and their corresponding algebra output.
 
+An `AggregateExpression` has the keyword of a built-in aggregate (e.g. `count`) as its `aggregator`,
+or the IRI of a custom aggregate when translated with the `verifyWithNamedAggregators` option,
+see [custom aggregates](../../engines/algebra-sparql-1-1#custom-aggregates).
+
 ## Deviations from the spec
 This implementation tries to stay as close to the SPARQL 1.1
 [specification](https://www.w3.org/TR/sparql11-query/#sparqlDefinition),

@@ -1,8 +1,10 @@
 import type { SparqlGrammarRule } from '../sparql11HelperTypes.js';
-import type { Pattern, Query, QuerySelect, SubSelect, Update } from '../Sparql11types.js';
+import type { ExpressionFunctionCall, Pattern, Query, QuerySelect, SubSelect, Update } from '../Sparql11types.js';
 import {
   checkBlankNodeBGPScope,
   checkNote13,
+  functionCallDistinctIsAggregate,
+  namedAggregatorTest,
   queryProjectionIsGood,
   selectExpressionAliasesNotInValues,
   updateNoReuseBlankNodeLabels,
@@ -15,22 +17,24 @@ import {
 
 /**
  * Validates the projection of a SELECT query, see {@link queryProjectionIsGood}.
+ * Uses the `verifyWithNamedAggregators` of the context to decide which function calls are aggregates.
  */
 export const validateSelectQuery:
 SparqlGrammarRule<'validateSelectQuery', void, [Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where'>]> = {
   name: 'validateSelectQuery',
   impl: ({ ACTION }) => (C, query) => {
-    ACTION(() => !C.skipValidation && queryProjectionIsGood(query));
+    ACTION(() => !C.skipValidation && queryProjectionIsGood(query, namedAggregatorTest(C)));
   },
 };
 
 /**
  * Validates the projection of a sub-SELECT, including its VALUES clause, see {@link queryProjectionIsGood}.
+ * Uses the `verifyWithNamedAggregators` of the context to decide which function calls are aggregates.
  */
 export const validateSubSelect: SparqlGrammarRule<'validateSubSelect', void, [SubSelect]> = {
   name: 'validateSubSelect',
   impl: ({ ACTION }) => (C, query) => {
-    ACTION(() => !C.skipValidation && queryProjectionIsGood(query));
+    ACTION(() => !C.skipValidation && queryProjectionIsGood(query, namedAggregatorTest(C)));
   },
 };
 
@@ -72,5 +76,17 @@ export const validateGroupGraphPatternSub: SparqlGrammarRule<'validateGroupGraph
   name: 'validateGroupGraphPatternSub',
   impl: ({ ACTION }) => (C, patterns) => {
     ACTION(() => !C.skipValidation && checkNote13(patterns));
+  },
+};
+
+/**
+ * Validates that only custom aggregates use DISTINCT in a function call, see {@link functionCallDistinctIsAggregate}.
+ * Only validates when the context has `verifyWithNamedAggregators`,
+ * otherwise any function call might be a custom aggregate.
+ */
+export const validateFunctionCall: SparqlGrammarRule<'validateFunctionCall', void, [ExpressionFunctionCall]> = {
+  name: 'validateFunctionCall',
+  impl: ({ ACTION }) => (C, functionCall) => {
+    ACTION(() => !C.skipValidation && functionCallDistinctIsAggregate(functionCall, namedAggregatorTest(C)));
   },
 };

@@ -66,6 +66,23 @@ const generatedAst = toAst(algebra);
 const generatedQuery = generator.generate(generatedAst);
 ```
 
+### Custom aggregates
+
+Custom aggregates are syntactically function calls, so by default, `toAlgebra` translates every function call to a named expression.
+The `verifyWithNamedAggregators` option takes a `Set` of the full IRIs of the custom aggregate functions.
+Function calls in the `SELECT`, `HAVING` and `ORDER BY` clauses whose IRI is in this set are translated as aggregates,
+just like the built-in aggregates: they are grouped (implicitly when there is no `GROUP BY`) and bound to a variable.
+The resulting `AggregateExpression` has the IRI as its `aggregator`, keeps the `distinct` flag, and has the argument as its `expression`.
+Since such an aggregate has a single `expression`, translating a custom aggregate that does not have exactly one argument throws an error.
+
+```typescript
+const ast = parser.parse('PREFIX ex: <http://example.org/> SELECT (ex:median(DISTINCT ?o) AS ?m) { ?s ?p ?o }');
+const algebra = toAlgebra(ast, { verifyWithNamedAggregators: new Set([ 'http://example.org/median' ]) });
+```
+
+`toAst` translates an aggregate whose `aggregator` is an IRI (contains a colon) back to a function call, including `DISTINCT`.
+The [parser](../parser-sparql-1-1#configuration) has an option with the same name to validate a query against the same set.
+
 ## Algebra Types
 
 The algebra object contains a `types` object,
@@ -261,3 +278,4 @@ and the project operation always gets used (even in the case of `SELECT *`).
 
 Every test consists of a sparql file and a corresponding json file containing the algebra result.
 Tests ending with `(quads)` in their name are tested/generated with `quads: true` in the options.
+Tests ending with `-named-aggregators` in their name are tested/generated with `verifyWithNamedAggregators` containing `http://example.org/median`.

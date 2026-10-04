@@ -36,6 +36,7 @@ export function completeParseContext(
     prefixes: Object.assign(Object.create(null), context.prefixes),
     parseMode: context.parseMode ? new Set(context.parseMode) : new Set([ 'canParseVars', 'canCreateBlankNodes' ]),
     skipValidation: context.skipValidation ?? false,
+    verifyWithNamedAggregators: context.verifyWithNamedAggregators,
     /**
      * @deprecated since it cannot be used for string decoding.
      */

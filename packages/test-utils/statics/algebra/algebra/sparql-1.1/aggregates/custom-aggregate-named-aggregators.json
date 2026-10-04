@@ -1,0 +1,143 @@
+{
+  "type": "project",
+  "input": {
+    "type": "orderby",
+    "input": {
+      "type": "extend",
+      "input": {
+        "type": "filter",
+        "input": {
+          "type": "group",
+          "input": {
+            "type": "bgp",
+            "patterns": [
+              {
+                "type": "pattern",
+                "termType": "Quad",
+                "subject": {
+                  "termType": "Variable",
+                  "value": "s"
+                },
+                "predicate": {
+                  "termType": "NamedNode",
+                  "value": "http://example.org/value"
+                },
+                "object": {
+                  "termType": "Variable",
+                  "value": "o"
+                },
+                "graph": {
+                  "termType": "DefaultGraph",
+                  "value": ""
+                }
+              }
+            ]
+          },
+          "variables": [
+            {
+              "termType": "Variable",
+              "value": "s"
+            }
+          ],
+          "aggregates": [
+            {
+              "type": "expression",
+              "subType": "aggregate",
+              "aggregator": "http://example.org/median",
+              "expression": {
+                "type": "expression",
+                "subType": "term",
+                "term": {
+                  "termType": "Variable",
+                  "value": "o"
+                }
+              },
+              "distinct": true,
+              "variable": {
+                "termType": "Variable",
+                "value": "var0"
+              }
+            },
+            {
+              "type": "expression",
+              "subType": "aggregate",
+              "aggregator": "http://example.org/median",
+              "expression": {
+                "type": "expression",
+                "subType": "term",
+                "term": {
+                  "termType": "Variable",
+                  "value": "o"
+                }
+              },
+              "distinct": false,
+              "variable": {
+                "termType": "Variable",
+                "value": "var1"
+              }
+            }
+          ]
+        },
+        "expression": {
+          "type": "expression",
+          "subType": "operator",
+          "operator": ">",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "term",
+              "term": {
+                "termType": "Variable",
+                "value": "var0"
+              }
+            },
+            {
+              "type": "expression",
+              "subType": "term",
+              "term": {
+                "termType": "Literal",
+                "value": "1",
+                "datatype": {
+                  "termType": "NamedNode",
+                  "value": "http://www.w3.org/2001/XMLSchema#integer"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "variable": {
+        "termType": "Variable",
+        "value": "median"
+      },
+      "expression": {
+        "type": "expression",
+        "subType": "term",
+        "term": {
+          "termType": "Variable",
+          "value": "var0"
+        }
+      }
+    },
+    "expressions": [
+      {
+        "type": "expression",
+        "subType": "term",
+        "term": {
+          "termType": "Variable",
+          "value": "var1"
+        }
+      }
+    ]
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "s"
+    },
+    {
+      "termType": "Variable",
+      "value": "median"
+    }
+  ]
+}

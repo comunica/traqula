@@ -149,7 +149,10 @@ export function findPatternBoundedVars(
  * - if group-by, selected variables need to be collected by the group-by
  * - 'select ?var as ?other', ?other cannot be in scope
  */
-export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where'>): void {
+export function queryProjectionIsGood(
+  query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where'>,
+  isAggregateFunction?: T11.AggregateFunctionTest,
+): void {
   // NoGroupByOnWildcardSelect
   if (query.variables.length === 1 && F.isWildcard(query.variables[0])) {
     if (query.solutionModifiers.group !== undefined) {
@@ -201,7 +204,7 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
     }
   }
 
-  selectExpressionAliasesNotInScope(query);
+  selectExpressionAliasesNotInScope(query, isAggregateFunction);
 }
 
 /**
@@ -212,16 +215,19 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
  * In-scope are the variables bound by the WHERE clause (including subquery projections), or, in a grouped query,
  * the GROUP BY keys (v and (expr AS v)), and the trailing VALUES clause (joined before the projection, 18.2.4.3).
  * The variable may also not be used in an earlier SELECT expression.
+ * @param query - The SELECT query to validate.
+ * @param isAggregateFunction - Whether a function call is a custom aggregate, see {@link isGroupedQuery}.
  */
 export function selectExpressionAliasesNotInScope(
   query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
+  isAggregateFunction?: T11.AggregateFunctionTest,
 ): void {
   const selectBinds = query.variables.filter((variable): variable is PatternBind =>
     !F.isTerm(variable) && !F.isWildcard(variable));
   if (selectBinds.length > 0) {
     const inScopeVars = new Set<string>();
     // Grouping only keeps the variables of the group keys in scope
-    if (!isGroupedQuery(<T11.QuerySelect> <unknown> query)) {
+    if (!isGroupedQuery(<T11.QuerySelect> <unknown> query, isAggregateFunction)) {
       findPatternBoundedVars(query.where, inScopeVars);
     }
     for (const grouping of query.solutionModifiers.group?.groupings ?? []) {

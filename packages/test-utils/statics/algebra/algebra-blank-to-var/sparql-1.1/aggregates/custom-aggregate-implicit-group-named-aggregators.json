@@ -1,0 +1,120 @@
+{
+  "type": "project",
+  "input": {
+    "type": "extend",
+    "input": {
+      "type": "extend",
+      "input": {
+        "type": "group",
+        "input": {
+          "type": "bgp",
+          "patterns": [
+            {
+              "type": "pattern",
+              "termType": "Quad",
+              "subject": {
+                "termType": "Variable",
+                "value": "s"
+              },
+              "predicate": {
+                "termType": "NamedNode",
+                "value": "http://example.org/value"
+              },
+              "object": {
+                "termType": "Variable",
+                "value": "o"
+              },
+              "graph": {
+                "termType": "DefaultGraph",
+                "value": ""
+              }
+            }
+          ]
+        },
+        "variables": [],
+        "aggregates": [
+          {
+            "type": "expression",
+            "subType": "aggregate",
+            "aggregator": "http://example.org/median",
+            "expression": {
+              "type": "expression",
+              "subType": "term",
+              "term": {
+                "termType": "Variable",
+                "value": "o"
+              }
+            },
+            "distinct": false,
+            "variable": {
+              "termType": "Variable",
+              "value": "var0"
+            }
+          },
+          {
+            "type": "expression",
+            "subType": "aggregate",
+            "aggregator": "count",
+            "expression": {
+              "type": "expression",
+              "subType": "term",
+              "term": {
+                "termType": "Variable",
+                "value": "o"
+              }
+            },
+            "distinct": false,
+            "variable": {
+              "termType": "Variable",
+              "value": "var1"
+            }
+          }
+        ]
+      },
+      "variable": {
+        "termType": "Variable",
+        "value": "median"
+      },
+      "expression": {
+        "type": "expression",
+        "subType": "named",
+        "name": {
+          "termType": "NamedNode",
+          "value": "http://www.w3.org/2001/XMLSchema#integer"
+        },
+        "args": [
+          {
+            "type": "expression",
+            "subType": "term",
+            "term": {
+              "termType": "Variable",
+              "value": "var0"
+            }
+          }
+        ]
+      }
+    },
+    "variable": {
+      "termType": "Variable",
+      "value": "count"
+    },
+    "expression": {
+      "type": "expression",
+      "subType": "term",
+      "term": {
+        "termType": "Variable",
+        "value": "var1"
+      }
+    }
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "median"
+    },
+    {
+      "termType": "Variable",
+      "value": "count"
+    }
+  ]
+}

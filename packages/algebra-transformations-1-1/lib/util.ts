@@ -4,6 +4,11 @@ import { TransformerSubTyped } from '@traqula/core';
 import type * as A from './algebra.js';
 import { ExpressionTypes, Types } from './algebra.js';
 
+/**
+ * Moved to @traqula/rules-sparql-1-1 so the parser can resolve IRIs too, re-exported to keep this API.
+ */
+export { resolveIRI } from '@traqula/rules-sparql-1-1';
+
 const transformer = new TransformerSubTyped<A.Operation>({}, {
   // Optimization that causes search tree pruning -- do not step into RDF.Term objects, they are outside the algebra.
   [Types.PATTERN]: { ignoreKeys: new Set([ 'subject', 'predicate', 'object', 'graph' ]) } satisfies TransformContext,
@@ -326,115 +331,6 @@ export const visitOperationSub = transformer.visitNodeSpecific.bind(transformer)
  * see {@link TransformerSubTyped.visitNodeSpecificAsync}.
  */
 export const visitOperationSubAsync = transformer.visitNodeSpecificAsync.bind(transformer);
-
-/**
- * Absolute IRIs start with a scheme - [RFC 3986, section 3.1](https://www.rfc-editor.org/rfc/rfc3986#section-3.1)
- */
-const absoluteIriRegex = /^[a-z][\d+.a-z-]*:/iu;
-
-/**
- * [RFC 3986, appendix B](https://www.rfc-editor.org/rfc/rfc3986#appendix-B). Matches every string.
- */
-const iriComponentsRegex = /^(?:([^:/?#]+):)?(?:\/\/([^/?#]*))?([^?#]*)(?:\?([^#]*))?(?:#(.*))?$/su;
-
-/**
- * {@link iriComponentsRegex} without the scheme, so an invalid relative IRI like '1a:b' is kept whole as a path.
- */
-const relativeIriComponentsRegex = /^(?:\/\/([^/?#]*))?([^?#]*)(?:\?([^#]*))?(?:#(.*))?$/su;
-
-/**
- * [RFC 3986, section 5.2.4](https://www.rfc-editor.org/rfc/rfc3986#section-5.2.4)
- */
-function removeDotSegments(path: string): string {
-  let input = path;
-  let output = '';
-  const removeLastOutputSegment = (): void => {
-    const pos = output.lastIndexOf('/');
-    output = output.slice(0, pos > 0 ? pos : 0);
-  };
-  while (input.length > 0) {
-    if (input.startsWith('../')) {
-      input = input.slice(3);
-    } else if (input.startsWith('./') || input.startsWith('/./')) {
-      input = input.slice(2);
-    } else if (input === '/.') {
-      input = '/';
-    } else if (input.startsWith('/../')) {
-      input = input.slice(3);
-      removeLastOutputSegment();
-    } else if (input === '/..') {
-      input = '/';
-      removeLastOutputSegment();
-    } else if (input === '.' || input === '..') {
-      input = '';
-    } else {
-      // Move the first path segment (including its leading '/', if any) to the output
-      const segmentEnd = input.indexOf('/', 1);
-      const segment = segmentEnd === -1 ? input : input.slice(0, segmentEnd);
-      output += segment;
-      input = input.slice(segment.length);
-    }
-  }
-  return output;
-}
-
-/**
- * Resolves relative IRIs against the base IRI as described in the [Syntax for IRIs](https://www.w3.org/TR/sparql12-query/#QSynIRI),
- * using [RFC 3986, section 5.2](https://www.rfc-editor.org/rfc/rfc3986#section-5.2) without normalization.
- * Absolute IRIs are returned unmodified.
- */
-export function resolveIRI(iri: string, base: string | undefined): string {
-  if (absoluteIriRegex.test(iri)) {
-    return iri;
-  }
-  if (!base) {
-    throw new Error(`Cannot resolve relative IRI ${iri} because no base IRI was set.`);
-  }
-  const [ , relativeAuthority, relativePath, relativeQuery, relativeFragment ] =
-    relativeIriComponentsRegex.exec(iri)!;
-  const [ , baseScheme, baseAuthority, basePath, baseQuery ] = iriComponentsRegex.exec(base)!;
-
-  // Transform references - https://www.rfc-editor.org/rfc/rfc3986#section-5.2.2
-  let resolvedAuthority: string | undefined;
-  let resolvedPath: string;
-  let resolvedQuery: string | undefined;
-  if (relativeAuthority === undefined) {
-    if (relativePath === '') {
-      resolvedPath = basePath;
-      resolvedQuery = relativeQuery ?? baseQuery;
-    } else {
-      if (relativePath.startsWith('/')) {
-        resolvedPath = removeDotSegments(relativePath);
-      } else if (baseAuthority !== undefined && basePath === '') {
-        // Merge paths - https://www.rfc-editor.org/rfc/rfc3986#section-5.2.3
-        resolvedPath = removeDotSegments(`/${relativePath}`);
-      } else {
-        resolvedPath = removeDotSegments(basePath.slice(0, basePath.lastIndexOf('/') + 1) + relativePath);
-      }
-      resolvedQuery = relativeQuery;
-    }
-    resolvedAuthority = baseAuthority;
-  } else {
-    resolvedAuthority = relativeAuthority;
-    resolvedPath = removeDotSegments(relativePath);
-    resolvedQuery = relativeQuery;
-  }
-
-  // Component recomposition - https://www.rfc-editor.org/rfc/rfc3986#section-5.3
-  // Like the RFC, a path starting with '//' is not guarded against: '..//g' against 'urn:x/y' gives 'urn://g'.
-  let result = baseScheme === undefined ? '' : `${baseScheme}:`;
-  if (resolvedAuthority !== undefined) {
-    result += `//${resolvedAuthority}`;
-  }
-  result += resolvedPath;
-  if (resolvedQuery !== undefined) {
-    result += `?${resolvedQuery}`;
-  }
-  if (relativeFragment !== undefined) {
-    result += `#${relativeFragment}`;
-  }
-  return result;
-}
 
 // TODO: find a cleaner way
 /**

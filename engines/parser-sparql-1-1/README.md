@@ -61,6 +61,18 @@ Optionally, the following parameters can be set in the Parsers defaultContext:
 
 * `dataFactory`: A custom [RDFJS DataFactory](http://rdf.js.org/#datafactory-interface) to construct terms and triples. _(Default: `require('@rdfjs/data-model')`)_
 * `skipValidation`: Can be used to disable the validation that used variables in a select clause are in scope. _(Default: `false`)_
+* `verifyWithNamedAggregators`: A `Set` of the full IRIs of the custom aggregate functions the query will be evaluated with. _(Default: `undefined`)_
+  Custom aggregates are syntactically function calls, so by default, validation assumes any function call might be an aggregate.
+  For example, `SELECT (<http://ex.org/f>(?o) AS ?o) { ?s ?p ?o }` is accepted, since `?o` is not in scope when `<http://ex.org/f>` is an aggregate.
+  When this set is given, only function calls whose IRI (resolved using the prefixes and base IRI) is in the set are aggregates,
+  so that query is rejected unless the set contains `http://ex.org/f`.
+  Function calls not in the set cannot use `DISTINCT`, since only custom aggregates can.
+
+These parameters can also be given per query, as the second argument of `parse`:
+
+```typescript
+const ast = parser.parse(query, { verifyWithNamedAggregators: new Set([ 'http://example.org/median' ]) });
+```
 
 ## AstFactory and AstTransformer
 

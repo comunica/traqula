@@ -4,10 +4,12 @@
 //  The SPARQL 1.2 selectExpressionAliasesNotInScope and checkNote13 copy the SPARQL 1.1 implementation logic,
 //  only to call the SPARQL 1.2 findPatternBoundedVars.
 import { AstFactory } from '../astFactory.js';
+import type { SparqlContext } from '../sparql11HelperTypes.js';
 import type {
   Wildcard,
   Expression,
   ExpressionAggregate,
+  ExpressionFunctionCall,
   Pattern,
   PatternBgp,
   QuerySelect,
@@ -17,7 +19,7 @@ import type {
   PatternBind,
   Sparql11Nodes,
 } from '../Sparql11types.js';
-import { AstTransformer } from '../utils.js';
+import { AstTransformer, resolveTermIri } from '../utils.js';
 
 const F = new AstFactory();
 const transformer = new AstTransformer();
@@ -75,7 +77,10 @@ export function getVariablesFromExpression(expression: Expression, variables: Se
  * - if group-by, selected variables need to be collected by the group-by
  * - 'select ?var as ?other', ?other cannot be in scope
  */
-export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where'>): void {
+export function queryProjectionIsGood(
+  query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where'>,
+  isAggregateFunction?: AggregateFunctionTest,
+): void {
   // NoGroupByOnWildcardSelect
   if (query.variables.length === 1 && F.isWildcard(query.variables[0])) {
     if (query.solutionModifiers.group !== undefined) {
@@ -116,7 +121,7 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
     }
   }
 
-  selectExpressionAliasesNotInScope(query);
+  selectExpressionAliasesNotInScope(query, isAggregateFunction);
 }
 
 /**
@@ -127,16 +132,19 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
  * In-scope are the variables bound by the WHERE clause (including subquery projections), or, in a grouped query,
  * the GROUP BY keys (v and (expr AS v)), and the trailing VALUES clause (joined before the projection, 18.2.4.3).
  * The variable may also not be used in an earlier SELECT expression.
+ * @param query - The SELECT query to validate.
+ * @param isAggregateFunction - Whether a function call is a custom aggregate, see {@link isGroupedQuery}.
  */
 export function selectExpressionAliasesNotInScope(
   query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
+  isAggregateFunction?: AggregateFunctionTest,
 ): void {
   const selectBinds = query.variables.filter((variable): variable is PatternBind =>
     !F.isTerm(variable) && !F.isWildcard(variable));
   if (selectBinds.length > 0) {
     const inScopeVars = new Set<string>();
     // Grouping only keeps the variables of the group keys in scope
-    if (!isGroupedQuery(query)) {
+    if (!isGroupedQuery(query, isAggregateFunction)) {
       findPatternBoundedVars(query.where, inScopeVars);
     }
     for (const grouping of query.solutionModifiers.group?.groupings ?? []) {
@@ -157,11 +165,50 @@ export function selectExpressionAliasesNotInScope(
 }
 
 /**
- * A query is grouped when it has a GROUP BY clause or uses aggregates (18.2.4.1).
- * Since custom aggregates are syntactically function calls, this returns true for any query that may be grouped,
- * see {@link mayContainAggregate}.
+ * Decides whether a function call is a custom aggregate.
+ * Custom aggregates are syntactically function calls:
+ * > Aggregate functions can be one of the built-in keywords for aggregates or a custom aggregate,
+ * > which is syntactically a function call.
  */
-export function isGroupedQuery(query: Pick<QuerySelect, 'variables' | 'solutionModifiers'>): boolean {
+export type AggregateFunctionTest = (functionCall: ExpressionFunctionCall) => boolean;
+
+/**
+ * Creates the {@link AggregateFunctionTest} described by the `verifyWithNamedAggregators` of the parser context:
+ * a function call is a custom aggregate when its IRI, resolved using the prefixes and base IRI in scope, is in the set.
+ * A function call whose IRI cannot be resolved (a relative IRI without base IRI) is not in the set.
+ * Returns undefined when the context has no `verifyWithNamedAggregators`,
+ * meaning that any function call might be a custom aggregate.
+ */
+export function namedAggregatorTest(
+  context: Pick<SparqlContext, 'prefixes' | 'baseIRI' | 'verifyWithNamedAggregators'>,
+): AggregateFunctionTest | undefined {
+  const { prefixes, baseIRI, verifyWithNamedAggregators: aggregators } = context;
+  if (aggregators === undefined) {
+    return undefined;
+  }
+  return (functionCall) => {
+    let iri: string;
+    try {
+      iri = resolveTermIri(functionCall.function, prefixes, baseIRI);
+    } catch {
+      return false;
+    }
+    return aggregators.has(iri);
+  };
+}
+
+/**
+ * A query is grouped when it has a GROUP BY clause or uses aggregates (18.2.4.1).
+ * Since custom aggregates are syntactically function calls,
+ * any function call is considered a possible aggregate, unless `isAggregateFunction` decides otherwise.
+ * This thus returns true for any query that may be grouped.
+ * @param query - The SELECT query.
+ * @param isAggregateFunction - Whether a function call is a custom aggregate. Default: any function call might be.
+ */
+export function isGroupedQuery(
+  query: Pick<QuerySelect, 'variables' | 'solutionModifiers'>,
+  isAggregateFunction: AggregateFunctionTest = () => true,
+): boolean {
   const { group, having, order } = query.solutionModifiers;
   if (group) {
     return true;
@@ -171,24 +218,40 @@ export function isGroupedQuery(query: Pick<QuerySelect, 'variables' | 'solutionM
     ...having?.having ?? [],
     ...order?.orderDefs.map(ordering => ordering.expression) ?? [],
   ];
-  return expressions.some(expression => mayContainAggregate(expression));
+  return expressions.some(expression => mayContainAggregate(expression, isAggregateFunction));
 }
 
 /**
  * Whether an expression may contain an aggregate, also when nested in a function call.
- * Custom aggregates are syntactically function calls:
- * > Aggregate functions can be one of the built-in keywords for aggregates or a custom aggregate,
- * > which is syntactically a function call.
- * The parser cannot know whether a function is an aggregate, so it leniently assumes any function call might be.
  */
-function mayContainAggregate(expression: Expression): boolean {
-  if (F.isExpressionAggregate(expression) || F.isExpressionFunctionCall(expression)) {
+function mayContainAggregate(expression: Expression, isAggregateFunction: AggregateFunctionTest): boolean {
+  if (F.isExpressionAggregate(expression)) {
     return true;
   }
+  if (F.isExpressionFunctionCall(expression)) {
+    return isAggregateFunction(expression) ||
+      expression.args.some(arg => mayContainAggregate(arg, isAggregateFunction));
+  }
   if (F.isExpressionOperator(expression)) {
-    return expression.args.some(arg => mayContainAggregate(arg));
+    return expression.args.some(arg => mayContainAggregate(arg, isAggregateFunction));
   }
   return false;
+}
+
+/**
+ * From the SPARQL specification:
+ * > Only custom aggregate functions can use the DISTINCT keyword in a function call.
+ * Only validates when an `isAggregateFunction` is given, otherwise any function call might be a custom aggregate.
+ * @param functionCall - The function call to validate.
+ * @param isAggregateFunction - Whether a function call is a custom aggregate.
+ */
+export function functionCallDistinctIsAggregate(
+  functionCall: ExpressionFunctionCall,
+  isAggregateFunction?: AggregateFunctionTest,
+): void {
+  if (functionCall.distinct && isAggregateFunction && !isAggregateFunction(functionCall)) {
+    throw new Error('DISTINCT is only allowed in a function call of a custom aggregate');
+  }
 }
 
 /**

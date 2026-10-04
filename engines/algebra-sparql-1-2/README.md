@@ -65,7 +65,8 @@ const generatedAst = toAst(algebra);
 const generatedQuery = generator.generate(generatedAst);
 ```
 
-The algebra transformer for SPARQL 1.2 is a modification of [the SPARQL 1.1 algebra transformer](../algebra-sparql-1-1); therefore, much of the documentation of that transformer holds here too.
+The algebra transformer for SPARQL 1.2 is a modification of [the SPARQL 1.1 algebra transformer](../algebra-sparql-1-1); therefore, much of the documentation of that transformer holds here too,
+such as the `verifyWithNamedAggregators` option to translate [custom aggregates](../algebra-sparql-1-1#custom-aggregates).
 
 ## Modifying the built algebra transformer
 

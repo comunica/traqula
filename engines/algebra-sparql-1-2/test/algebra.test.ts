@@ -2,6 +2,7 @@ import { Canonicalizer, algebraUtils } from '@traqula/algebra-transformations-1-
 import type { Algebra } from '@traqula/algebra-transformations-1-2';
 import { Parser } from '@traqula/parser-sparql-1-2';
 import {
+  algebraTestNamedAggregators,
   sparqlAlgebraNegativeTests,
   sparqlAlgebraTests,
 } from '@traqula/test-utils';
@@ -36,6 +37,7 @@ describe('algebra output 1.2', () => {
               toAlgebra(ast, {
                 quads: name.endsWith('-quads'),
                 blankToVariable,
+                verifyWithNamedAggregators: algebraTestNamedAggregators(name),
               }),
             );
             expect(canon.canonicalizeQuery(algebra, blankToVariable))

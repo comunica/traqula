@@ -137,6 +137,11 @@ export interface Double extends Multi {
  */
 export interface AggregateExpression extends BaseExpression {
   subType: ExpressionTypes.AGGREGATE;
+  /**
+   * The keyword of a built-in aggregate.
+   * When translated with the `verifyWithNamedAggregators` option, this can also be the IRI of a custom aggregate.
+   * TODO(major): include custom aggregate IRIs in the type.
+   */
   aggregator: 'avg' | 'count' | 'group_concat' | 'max' | 'min' | 'sample' | 'sum';
   distinct: boolean;
   expression: Expression;

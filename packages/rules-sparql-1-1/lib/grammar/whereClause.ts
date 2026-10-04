@@ -28,7 +28,7 @@ import { var_, varOrIri, varOrTerm } from './general.js';
 import { booleanLiteral, iri, numericLiteral, rdfLiteral } from './literals.js';
 import { query, subSelect } from './queryUnit.js';
 import { graphNodePath, triplesBlock } from './tripleBlock.js';
-import { validateGroupGraphPattern, validateGroupGraphPatternSub } from './validation.js';
+import { validateFunctionCall, validateGroupGraphPattern, validateGroupGraphPatternSub } from './validation.js';
 
 /**
  * [[17]](https://www.w3.org/TR/sparql11-query/#rWhereClause)
@@ -545,11 +545,13 @@ export const functionCall: SparqlGrammarRule<'functionCall', ExpressionFunctionC
   impl: ({ ACTION, SUBRULE }) => (C) => {
     const func = SUBRULE(iri);
     const args = SUBRULE(argList);
-    return ACTION(() => C.astFactory.expressionFunctionCall(
+    const result = ACTION(() => C.astFactory.expressionFunctionCall(
       func,
       args.val.args,
       args.val.distinct,
       C.astFactory.sourceLocation(func, args),
     ));
+    SUBRULE(validateFunctionCall, result);
+    return result;
   },
 };

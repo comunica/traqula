@@ -291,21 +291,11 @@ export function findPatternBoundedVars(
  *    group graph pattern in which it is used.
  */
 export function checkNote13(patterns: Pattern[]): void {
-  for (const [ index, pattern ] of patterns.entries()) {
-    if (F.isPatternBind(pattern) && index > 0 && F.isPatternBgp(patterns[index - 1])) {
-      const bgp = patterns[index - 1];
-      // Find variables used.
-      const variables: TermVariable[] = [];
-      // TODO: this is slow! 2.6% self execution
-      transformer.visitNodeSpecific(bgp, {}, { term: { variable: { visitor: (var_) => {
-        variables.push(var_);
-      } }}});
-      if (variables.some(var_ => var_.value === pattern.variable.value)) {
-        throw new Error(`Variable used to bind is already bound (?${pattern.variable.value})`);
-      }
-    }
+  // Only a BIND can violate this note, so there is no need to collect the bounded variables without one.
+  if (!patterns.some(pattern => F.isPatternBind(pattern))) {
+    return;
   }
-
+  // The variables of the immediately preceding TriplesBlock are also collected by findPatternBoundedVars.
   const boundedVars = new Set<string>();
   for (const pattern of patterns) {
     // A bind may not bind a variable in scope, after which its own variable is in scope too.

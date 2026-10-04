@@ -12,7 +12,6 @@ const rules = <const> [
   gram.validateSubSelect,
   gram.validateGroupGraphPattern,
   gram.validateGroupGraphPatternSub,
-  gram.validateDataBlock,
 ];
 
 export const subSelectParserBuilder = ParserBuilder.create(rules)

@@ -128,13 +128,19 @@ export const validateGroupGraphPatternSub: SparqlGrammarRule<'validateGroupGraph
 };
 
 /**
- * OVERRIDING RULE: {@link S11.validateDataBlock}.
+ * OVERRIDING RULE: {@link S11.dataBlock}.
+ * [[66]](https://www.w3.org/TR/sparql12-query/#rDataBlock)
  * SPARQL 1.2 requires the variables of VALUES to be unique (grammar note 10).
  */
-export const validateDataBlock: SparqlGrammarRule<'validateDataBlock', void, [PatternValues]> = {
-  name: 'validateDataBlock',
-  impl: ({ ACTION }) => (C, values) => {
+export const dataBlock: SparqlGrammarRule<'dataBlock', PatternValues> = <const> {
+  name: 'dataBlock',
+  impl: ({ ACTION, SUBRULE, OR }) => (C) => {
+    const values = OR<PatternValues>([
+      { ALT: () => SUBRULE(S11.inlineDataOneVar) },
+      { ALT: () => SUBRULE(S11.inlineDataFull) },
+    ]);
     ACTION(() => !C.skipValidation && valuesVariablesAreUnique(<T11.PatternValues> <unknown> values));
+    return values;
   },
 };
 

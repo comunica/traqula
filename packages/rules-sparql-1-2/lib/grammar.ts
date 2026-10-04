@@ -134,12 +134,9 @@ export const validateGroupGraphPatternSub: SparqlGrammarRule<'validateGroupGraph
  */
 export const dataBlock: SparqlGrammarRule<'dataBlock', PatternValues> = <const> {
   name: 'dataBlock',
-  impl: ({ ACTION, SUBRULE, OR }) => (C) => {
-    const values = OR<PatternValues>([
-      { ALT: () => SUBRULE(S11.inlineDataOneVar) },
-      { ALT: () => SUBRULE(S11.inlineDataFull) },
-    ]);
-    ACTION(() => !C.skipValidation && valuesVariablesAreUnique(<T11.PatternValues> <unknown> values));
+  impl: $ => (C) => {
+    const values = S11.dataBlock.impl($)(C);
+    $.ACTION(() => !C.skipValidation && valuesVariablesAreUnique(values));
     return values;
   },
 };

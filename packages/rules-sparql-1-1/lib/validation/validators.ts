@@ -158,6 +158,8 @@ export function selectExpressionAliasesNotInScope(
 
 /**
  * A query is grouped when it has a GROUP BY clause or uses aggregates (18.2.4.1).
+ * Since custom aggregates are syntactically function calls, this returns true for any query that may be grouped,
+ * see {@link mayContainAggregate}.
  */
 export function isGroupedQuery(query: Pick<QuerySelect, 'variables' | 'solutionModifiers'>): boolean {
   const { group, having, order } = query.solutionModifiers;
@@ -169,21 +171,22 @@ export function isGroupedQuery(query: Pick<QuerySelect, 'variables' | 'solutionM
     ...having?.having ?? [],
     ...order?.orderDefs.map(ordering => ordering.expression) ?? [],
   ];
-  return expressions.some(expression => containsAggregate(expression));
+  return expressions.some(expression => mayContainAggregate(expression));
 }
 
 /**
- * Whether an expression contains an aggregate, also when nested in a function call.
- * A function call using DISTINCT is a custom aggregate:
- * > Only custom aggregate functions can use the DISTINCT keyword in a function call.
+ * Whether an expression may contain an aggregate, also when nested in a function call.
+ * Custom aggregates are syntactically function calls:
+ * > Aggregate functions can be one of the built-in keywords for aggregates or a custom aggregate,
+ * > which is syntactically a function call.
+ * The parser cannot know whether a function is an aggregate, so it leniently assumes any function call might be.
  */
-function containsAggregate(expression: Expression): boolean {
-  if (F.isExpressionAggregate(expression) ||
-    (F.isExpressionFunctionCall(expression) && expression.distinct)) {
+function mayContainAggregate(expression: Expression): boolean {
+  if (F.isExpressionAggregate(expression) || F.isExpressionFunctionCall(expression)) {
     return true;
   }
-  if (F.isExpressionOperator(expression) || F.isExpressionFunctionCall(expression)) {
-    return expression.args.some(arg => containsAggregate(arg));
+  if (F.isExpressionOperator(expression)) {
+    return expression.args.some(arg => mayContainAggregate(arg));
   }
   return false;
 }

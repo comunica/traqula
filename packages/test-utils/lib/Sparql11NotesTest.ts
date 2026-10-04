@@ -73,9 +73,12 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
       'SELECT (1 AS ?z) { ?s ?p ?z } HAVING (COUNT(*) > 1)',
       'SELECT (1 AS ?z) { ?s ?p ?z } ORDER BY (COUNT(*))',
       'SELECT * { { SELECT (COUNT(?z) AS ?z) { ?s ?p ?z } } }',
-      // Aggregates nested in function calls, and custom aggregates (function calls using DISTINCT)
+      // Aggregates nested in function calls, and possible custom aggregates (any function call)
       'PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT (xsd:integer(COUNT(?z)) AS ?z) { ?s ?p ?z }',
       'SELECT (<http://ex.org/agg>(DISTINCT ?z) AS ?z) { ?s ?p ?z }',
+      'SELECT (<http://ex.org/agg>(?z) AS ?z) { ?s ?p ?z }',
+      'SELECT (1 AS ?z) { ?s ?p ?z } ORDER BY (<http://ex.org/agg>(?z))',
+      'PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT (xsd:string(?z) AS ?z) { ?s ?p ?z }',
       'SELECT (1 AS ?z) { ?s ?p ?z } HAVING (<http://ex.org/f>(SUM(?z)) > 1)',
     ];
     for (const query of queries) {

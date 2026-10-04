@@ -1,5 +1,5 @@
 import type { SparqlGrammarRule } from '../sparql11HelperTypes.js';
-import type { Pattern, Query, QuerySelect, SubSelect, Update } from '../Sparql11types.js';
+import type { Pattern, PatternValues, Query, QuerySelect, SubSelect, Update } from '../Sparql11types.js';
 import {
   checkBlankNodeBGPScope,
   checkNote13,
@@ -74,4 +74,14 @@ export const validateGroupGraphPatternSub: SparqlGrammarRule<'validateGroupGraph
   impl: ({ ACTION }) => (C, patterns) => {
     ACTION(() => !C.skipValidation && checkNote13(patterns));
   },
+};
+
+/**
+ * Validates a data block (the variables and rows of VALUES).
+ * SPARQL 1.1 has no constraints beyond the number of values per row, which is checked while parsing.
+ * SPARQL 1.2 patches this rule to require unique variables.
+ */
+export const validateDataBlock: SparqlGrammarRule<'validateDataBlock', void, [PatternValues]> = {
+  name: 'validateDataBlock',
+  impl: () => () => {},
 };

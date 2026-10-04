@@ -260,3 +260,17 @@ export function checkNote13(patterns: Pattern[]): void {
     findPatternBoundedVars(pattern, boundedVars);
   }
 }
+
+/**
+ * Grammar note 10 of https://www.w3.org/TR/sparql12-query/#sparqlGrammar
+ * > Variables in the variable list of a VALUES clause must be unique within that list.
+ */
+export function valuesVariablesAreUnique(values: { variables: { value: string }[] }): void {
+  const seen = new Set<string>();
+  for (const variable of values.variables) {
+    if (seen.has(variable.value)) {
+      throw new Error(`Variable used more than once in VALUES (?${variable.value})`);
+    }
+    seen.add(variable.value);
+  }
+}

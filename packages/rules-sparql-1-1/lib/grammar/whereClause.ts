@@ -28,7 +28,7 @@ import { var_, varOrIri, varOrTerm } from './general.js';
 import { booleanLiteral, iri, numericLiteral, rdfLiteral } from './literals.js';
 import { query, subSelect } from './queryUnit.js';
 import { graphNodePath, triplesBlock } from './tripleBlock.js';
-import { validateGroupGraphPattern, validateGroupGraphPatternSub } from './validation.js';
+import { validateDataBlock, validateGroupGraphPattern, validateGroupGraphPatternSub } from './validation.js';
 
 /**
  * [[17]](https://www.w3.org/TR/sparql11-query/#rWhereClause)
@@ -335,10 +335,14 @@ export const inlineData: SparqlRule<'inlineData', PatternValues> = <const> {
  */
 export const dataBlock: SparqlGrammarRule<'dataBlock', PatternValues> = <const> {
   name: 'dataBlock',
-  impl: ({ SUBRULE, OR }) => () => OR([
-    { ALT: () => SUBRULE(inlineDataOneVar) },
-    { ALT: () => SUBRULE(inlineDataFull) },
-  ]),
+  impl: ({ SUBRULE, OR }) => () => {
+    const values = OR<PatternValues>([
+      { ALT: () => SUBRULE(inlineDataOneVar) },
+      { ALT: () => SUBRULE(inlineDataFull) },
+    ]);
+    SUBRULE(validateDataBlock, values);
+    return values;
+  },
 };
 
 /**

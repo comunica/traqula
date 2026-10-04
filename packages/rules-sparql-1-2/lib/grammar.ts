@@ -20,6 +20,7 @@ import type {
   GraphTerm,
   Pattern,
   PatternBgp,
+  PatternValues,
   QuerySelect,
   SubSelect,
   Term,
@@ -37,6 +38,7 @@ import {
   langTagHasCorrectRange,
   queryProjectionIsGood,
   selectExpressionAliasesNotInScope,
+  valuesVariablesAreUnique,
 } from './validators.js';
 
 /**
@@ -122,6 +124,17 @@ export const validateGroupGraphPatternSub: SparqlGrammarRule<'validateGroupGraph
   name: 'validateGroupGraphPatternSub',
   impl: ({ ACTION }) => (C, patterns) => {
     ACTION(() => !C.skipValidation && checkNote13(patterns));
+  },
+};
+
+/**
+ * OVERRIDING RULE: {@link S11.validateDataBlock}.
+ * SPARQL 1.2 requires the variables of VALUES to be unique (grammar note 10).
+ */
+export const validateDataBlock: SparqlGrammarRule<'validateDataBlock', void, [PatternValues]> = {
+  name: 'validateDataBlock',
+  impl: ({ ACTION }) => (C, values) => {
+    ACTION(() => !C.skipValidation && valuesVariablesAreUnique(<T11.PatternValues> <unknown> values));
   },
 };
 

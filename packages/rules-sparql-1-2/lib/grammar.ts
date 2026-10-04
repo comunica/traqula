@@ -6,7 +6,14 @@
  */
 import type { RuleDefReturn, Wrap } from '@traqula/core';
 import { traqulaIndentation } from '@traqula/core';
-import { CommonIRIs, funcExpr1, funcExpr3, gram as S11, lex as l11 } from '@traqula/rules-sparql-1-1';
+import {
+  CommonIRIs,
+  funcExpr1,
+  funcExpr3,
+  gram as S11,
+  lex as l11,
+  namedAggregatorTest,
+} from '@traqula/rules-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import * as l12 from './lexer.js';
 import { decodeUchar } from './parserUtils.js';
@@ -100,7 +107,7 @@ export const validateSelectQuery: SparqlGrammarRule<'validateSelectQuery', void,
 ]> = {
   name: 'validateSelectQuery',
   impl: ({ ACTION }) => (C, query) => {
-    ACTION(() => !C.skipValidation && queryProjectionIsGood(query));
+    ACTION(() => !C.skipValidation && queryProjectionIsGood(query, namedAggregatorTest(C)));
   },
 };
 
@@ -111,7 +118,7 @@ export const validateSelectQuery: SparqlGrammarRule<'validateSelectQuery', void,
 export const validateSubSelect: SparqlGrammarRule<'validateSubSelect', void, [SubSelect]> = {
   name: 'validateSubSelect',
   impl: ({ ACTION }) => (C, query) => {
-    ACTION(() => !C.skipValidation && queryProjectionIsGood(query));
+    ACTION(() => !C.skipValidation && queryProjectionIsGood(query, namedAggregatorTest(C)));
   },
 };
 

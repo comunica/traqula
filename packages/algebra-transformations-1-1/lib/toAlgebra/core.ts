@@ -16,6 +16,10 @@ export interface AlgebraContext {
   dataFactory: RDF.DataFactory<RDF.BaseQuad> & { variable: Function };
   currentBase: string | undefined;
   currentPrefixes: Record<string, string>;
+  /**
+   * The full IRIs of the custom aggregate functions, see {@link ContextConfigs.verifyWithNamedAggregators}.
+   */
+  verifyWithNamedAggregators?: Set<string>;
 }
 
 export interface ContextConfigs {
@@ -24,6 +28,14 @@ export interface ContextConfigs {
   prefixes?: Record<string, string>;
   baseIRI?: string;
   blankToVariable?: boolean;
+  /**
+   * The full IRIs of the custom aggregate functions.
+   * Custom aggregates are syntactically function calls.
+   * Function calls in the SELECT, HAVING and ORDER BY clauses whose IRI is in this set are translated as aggregates,
+   * with the IRI as aggregator. Other function calls are translated as named expressions.
+   * Default `undefined`: no function call is translated as an aggregate.
+   */
+  verifyWithNamedAggregators?: Set<string>;
 }
 export function createAlgebraContext(config: ContextConfigs): AlgebraContext {
   const dataFactory = config.dataFactory ?? new DataFactory<RDF.BaseQuad>();
@@ -37,6 +49,7 @@ export function createAlgebraContext(config: ContextConfigs): AlgebraContext {
     algebraFactory: new AlgebraFactory(dataFactory),
     currentBase: config.baseIRI,
     currentPrefixes: Object.assign(Object.create(null), config.prefixes),
+    verifyWithNamedAggregators: config.verifyWithNamedAggregators,
   };
 }
 

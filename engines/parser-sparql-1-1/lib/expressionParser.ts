@@ -16,6 +16,7 @@ const rulesNoBuiltIn = <const> [
   gram.brackettedExpression,
   // BuiltInCall,
   gram.iriOrFunction,
+  gram.validateFunctionCall,
   gram.rdfLiteral,
   gram.numericLiteral,
   gram.numericLiteralUnsigned,

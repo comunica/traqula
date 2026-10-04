@@ -107,6 +107,28 @@ GROUP BY ?s`);
     });
   });
 
+  describe('verifyWithNamedAggregators', () => {
+    const verifyWithNamedAggregators = new Set([ 'http://ex.org/agg' ]);
+
+    it('translates a custom aggregate with a relative IRI resolved against the base IRI', ({ expect }) => {
+      const ast = parser.parse('BASE <http://ex.org/> SELECT (<agg>(DISTINCT ?o) AS ?a) { ?s ?p ?o }');
+      const project = <Algebra.Project> toAlgebra(ast, { verifyWithNamedAggregators });
+      const group = <Algebra.Group> (<Algebra.Extend> project.input).input;
+      expect(group.aggregates).toMatchObject([{ aggregator: 'http://ex.org/agg', distinct: true }]);
+    });
+
+    it('throws on a custom aggregate that does not have exactly one argument', ({ expect }) => {
+      for (const query of [
+        'SELECT (<http://ex.org/agg>(?o, ?s) AS ?a) { ?s ?p ?o }',
+        'SELECT (<http://ex.org/agg>() AS ?a) { ?s ?p ?o }',
+      ]) {
+        expect(() => toAlgebra(parser.parse(query), { verifyWithNamedAggregators })).toThrowError(
+          'Custom aggregate <http://ex.org/agg> must have exactly one argument to be translated to algebra',
+        );
+      }
+    });
+  });
+
   describe('variable collision in blank-to-variable translation', () => {
     it('generates unique vars when blank node name collides with existing variable', ({ expect }) => {
       const ast = parser.parse('SELECT ?e_b0 WHERE { _:b0 ?p ?e_b0 }');

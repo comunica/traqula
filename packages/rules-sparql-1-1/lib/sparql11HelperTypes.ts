@@ -7,17 +7,27 @@ export interface SparqlContext {
    */
   astFactory: AstFactory;
   /**
-   * Current scoped prefixes. Only used to validate parsed prefixes are known.
+   * Current scoped prefixes. Used to validate parsed prefixes are known,
+   * and to resolve the IRIs of function calls against `verifyWithNamedAggregators`.
    */
   prefixes: Record<string, string>;
   /**
-   * Currently scoped base IRI. Only used to validate a base is set when parsing.
+   * Currently scoped base IRI. Only used to resolve the IRIs of function calls against `verifyWithNamedAggregators`.
    */
   baseIRI: string | undefined;
   /**
    * Can be used to disable the validation that used variables in a select clause are in scope.
    */
   skipValidation: boolean;
+  /**
+   * The full IRIs of the custom aggregate functions that the query will be evaluated with.
+   * Custom aggregates are syntactically function calls, so without this set,
+   * validation leniently assumes that any function call might be an aggregate.
+   * With this set, only function calls whose IRI is in the set are aggregates,
+   * and only those can use the DISTINCT keyword.
+   * Default `undefined`.
+   */
+  verifyWithNamedAggregators?: Set<string>;
   /**
    * Set of queryModes. Primarily used for note 8, 14.
    */

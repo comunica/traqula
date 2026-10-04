@@ -18,7 +18,10 @@ export const translateAlgPureExpression: AstIndir<'translatePureExpression', Exp
   fun: ({ SUBRULE }) => (_, expr) => {
     switch (expr.subType) {
       case eTypes.AGGREGATE:
-        return SUBRULE(translateAlgAggregateExpression, expr);
+        // Built-in aggregators are keywords, custom aggregators are IRIs
+        return expr.aggregator.includes(':') ?
+          SUBRULE(translateAlgCustomAggregateExpression, expr) :
+          SUBRULE(translateAlgAggregateExpression, expr);
       case eTypes.EXISTENCE:
         return SUBRULE(translateAlgExistenceExpression, expr);
       case eTypes.NAMED:
@@ -67,6 +70,22 @@ AstIndir<'translateAggregateExpression', ExpressionAggregate, [Algebra.Aggregate
       expr.distinct,
       SUBRULE(translateAlgExpressionOrWild, expr.expression),
       expr.separator,
+      F.gen(),
+    ),
+};
+
+/**
+ * Translates an aggregate with a custom aggregator, which is the IRI of the aggregate function,
+ * to a function call, since custom aggregates are syntactically function calls.
+ */
+export const translateAlgCustomAggregateExpression:
+AstIndir<'translateCustomAggregateExpression', ExpressionFunctionCall, [Algebra.AggregateExpression]> = {
+  name: 'translateCustomAggregateExpression',
+  fun: ({ SUBRULE }) => ({ astFactory: F }, expr) =>
+    F.expressionFunctionCall(
+      F.termNamed(F.gen(), expr.aggregator),
+      [ SUBRULE(translateAlgPureExpression, expr.expression) ],
+      expr.distinct,
       F.gen(),
     ),
 };

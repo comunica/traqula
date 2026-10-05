@@ -1,11 +1,11 @@
 import { symbols } from '../lexer/index.js';
 import type { SparqlRule } from '../sparql11HelperTypes.js';
 import type { Query, SparqlQuery, Update } from '../Sparql11types.js';
-import { updateNoReuseBlankNodeLabels } from '../validation/validators.js';
 import { prologue } from './general.js';
 import type { HandledByBase } from './queryUnit.js';
 import { query, askQuery, constructQuery, describeQuery, selectQuery, valuesClause } from './queryUnit.js';
 import { update, update1 } from './updateUnit.js';
+import { validateQuery, validateUpdate } from './validation.js';
 
 export * from './queryUnit.js';
 export * from './updateUnit.js';
@@ -19,6 +19,7 @@ export * from './propertyPaths.js';
 export * from './solutionModifier.js';
 export * from './tripleBlock.js';
 export * from './whereClause.js';
+export * from './validation.js';
 
 /**
  * Query or update, optimized for the Query case.
@@ -37,7 +38,7 @@ export const queryOrUpdate: SparqlRule<'queryOrUpdate', SparqlQuery> = {
           { ALT: () => SUBRULE(askQuery) },
         ]);
         const values = SUBRULE(valuesClause);
-        return ACTION(() => (<Query>{
+        const query = ACTION(() => (<Query>{
           context: prologueValues,
           ...subType,
           type: 'query',
@@ -48,6 +49,8 @@ export const queryOrUpdate: SparqlRule<'queryOrUpdate', SparqlQuery> = {
             values,
           ),
         }));
+        SUBRULE(validateQuery, query);
+        return query;
       } },
       { ALT: () => {
         const updates: Update['updates'] = [];
@@ -68,19 +71,15 @@ export const queryOrUpdate: SparqlRule<'queryOrUpdate', SparqlQuery> = {
             });
           },
         });
-        return ACTION(() => {
-          const update = {
-            type: 'update',
-            updates,
-            loc: C.astFactory.sourceLocation(
-              ...updates.flatMap(x => [ ...x.context, x.operation ]),
-            ),
-          } satisfies Update;
-          if (!C.skipValidation) {
-            updateNoReuseBlankNodeLabels(update);
-          }
-          return update;
-        });
+        const update = ACTION(() => ({
+          type: 'update',
+          updates,
+          loc: C.astFactory.sourceLocation(
+            ...updates.flatMap(x => [ ...x.context, x.operation ]),
+          ),
+        } satisfies Update));
+        SUBRULE(validateUpdate, update);
+        return update;
       } },
     ]);
   },

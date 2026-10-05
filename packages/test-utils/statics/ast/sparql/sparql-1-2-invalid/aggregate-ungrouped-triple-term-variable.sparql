@@ -1,0 +1,3 @@
+SELECT (COUNT(?x) AS ?c) (<<( ?s ?p ?x )>> AS ?t) WHERE {
+  ?s ?p ?x
+}

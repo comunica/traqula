@@ -54,9 +54,60 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
     'SELECT (1 AS ?X ) { SELECT (2 AS ?X ) {} }',
   ));
 
+  it('should NOT throw on a select expression binding a variable that is not in scope', ({ expect }) => {
+    const queries = [
+      'SELECT (?o + 1 AS ?a) (?a * 2 AS ?b) { ?s ?p ?o }',
+      'SELECT (1 AS ?x) { ?s ?p ?o MINUS { ?s ?p ?x } }',
+      'SELECT (1 AS ?x) { ?s ?p ?o FILTER EXISTS { ?s ?p ?x } }',
+      'SELECT (1 AS ?x) { { SELECT ?s { ?s ?p ?x } } }',
+      'SELECT (COUNT(?o) AS ?c) { ?s ?p ?o } GROUP BY ?s',
+      'SELECT * { { SELECT (?o + 1 AS ?a) { ?s ?p ?o } } ?a ?p ?o }',
+      'ASK { { SELECT * { { SELECT (1 AS ?x) { ?s ?p ?o } } } } }',
+      'SELECT (1 AS ?g) { { SELECT (COUNT(*) AS ?c) { ?s ?p ?o } GROUP BY (?s AS ?g) } }',
+      'SELECT (1 AS ?x) { { SELECT ?s { ?s ?p ?o } VALUES ?x { 1 } } }',
+      'SELECT (1 AS ?y) { ?s ?p ?o } VALUES ?x { 1 }',
+      // Grouping only keeps the group keys in scope
+      'SELECT (123 AS ?z) WHERE { ?s ?p ?z } GROUP BY ?s',
+      'SELECT ?s (COUNT(?z) AS ?z) { ?s ?p ?z } GROUP BY ?s',
+      'SELECT (COUNT(?z) AS ?z) { ?s ?p ?z }',
+      'SELECT (1 AS ?z) { ?s ?p ?z } HAVING (COUNT(*) > 1)',
+      'SELECT (1 AS ?z) { ?s ?p ?z } ORDER BY (COUNT(*))',
+      'SELECT * { { SELECT (COUNT(?z) AS ?z) { ?s ?p ?z } } }',
+      // Aggregates nested in function calls, and possible custom aggregates (any function call)
+      'PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT (xsd:integer(COUNT(?z)) AS ?z) { ?s ?p ?z }',
+      'SELECT (<http://ex.org/agg>(DISTINCT ?z) AS ?z) { ?s ?p ?z }',
+      'SELECT (<http://ex.org/agg>(?z) AS ?z) { ?s ?p ?z }',
+      'SELECT (1 AS ?z) { ?s ?p ?z } ORDER BY (<http://ex.org/agg>(?z))',
+      'PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT (xsd:string(?z) AS ?z) { ?s ?p ?z }',
+      'SELECT (1 AS ?z) { ?s ?p ?z } HAVING (<http://ex.org/f>(SUM(?z)) > 1)',
+    ];
+    for (const query of queries) {
+      expect(parser.parse(query), query).toMatchObject({});
+    }
+  });
+
   it('should throw an error on bind to variable in scope', testErroneousQuery(
     'SELECT * { ?s ?p ?o BIND(?o AS ?o) }',
   ));
+
+  it('should throw an error on bind to variable bound by a preceding bind', testErroneousQuery(
+    'SELECT * { ?s ?p ?o BIND(1 AS ?x) BIND(2 AS ?x) }',
+  ));
+
+  it('should NOT throw on bind to variable that is not in scope', ({ expect }) => {
+    const queries = [
+      'SELECT * { ?s ?p ?o BIND(?s AS ?x) ?x ?a ?b }',
+      'SELECT * { { ?s ?p ?o BIND(1 AS ?x) } BIND(2 AS ?y) }',
+      'SELECT * { ?s ?p ?o MINUS { ?s ?p ?x } BIND(1 AS ?x) }',
+      'SELECT * { ?s ?p ?o FILTER EXISTS { ?s ?p ?x } BIND(1 AS ?x) }',
+      'SELECT * { { BIND(1 AS ?x) } UNION { BIND(2 AS ?x) } }',
+      'SELECT * { { SELECT ?s { ?s ?p ?o } GROUP BY ?s (?o AS ?g) } BIND(1 AS ?g) }',
+      'SELECT * { { SELECT ?s { ?s ?p ?o } VALUES ?x { 1 } } BIND(1 AS ?x) }',
+    ];
+    for (const query of queries) {
+      expect(parser.parse(query), query).toMatchObject({});
+    }
+  });
 
   it('should parse when not ending in newline', ({ expect }) => {
     const query = 'select?s{?s?p?o}#wow, what a query';

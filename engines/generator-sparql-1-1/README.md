@@ -82,3 +82,11 @@ Whenever this number is negative, no newline will be printed. _(default: 0)_
 
 By default, the generator will emit the round tripped query string where possible.
 In order to create an AST that supports round-tripping, you should make sure the [parser is set up correctly](../parser-sparql-1-1/README.md#collecting-round-tripping-information).
+
+## Modifying the built Generator
+
+> [!note]
+> Minor versions keep this engine's API and behavior, and the name, signature and behavior of the rules in its builders,
+> but can add rules or change how existing rules are implemented, such as which rules they call.
+> This only affects projects that patch, delete or individually register rules.
+> See [versioning](https://github.com/comunica/traqula#versioning).

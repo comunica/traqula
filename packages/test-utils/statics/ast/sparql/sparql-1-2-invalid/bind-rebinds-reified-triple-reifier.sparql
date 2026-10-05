@@ -1,0 +1,4 @@
+SELECT * WHERE {
+  << ?s ?p ?o ~ ?r >> .
+  BIND(1 AS ?r)
+}

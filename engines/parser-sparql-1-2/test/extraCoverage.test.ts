@@ -26,6 +26,22 @@ describe('extra parser-sparql-1-2 coverage', () => {
     });
   });
 
+  describe('comments end at a carriage return', () => {
+    it('lexes the text after a CR as query text', ({ expect }) => {
+      expect(() => parser.parse('# a\r FILTER junk\nASK {}')).toThrow(/unexpected character: ->j<- at offset: 12/u);
+    });
+
+    it('accepts CR, CRLF, and LF line endings after a comment', ({ expect }) => {
+      expect(parser.parse('# a\rASK {}')).toMatchObject({ subType: 'ask' });
+      expect(parser.parse('# a\r\nASK {}')).toMatchObject({ subType: 'ask' });
+      expect(parser.parse('# a\nASK {}')).toMatchObject({ subType: 'ask' });
+    });
+
+    it('accepts a CR-terminated comment inside a multi-word update keyword', ({ expect }) => {
+      expect(parser.parse('INSERT # a\rDATA { <http://s> <http://p> <http://o> }')).toMatchObject({ type: 'update' });
+    });
+  });
+
   describe('reifier without canCreateBlankNodes', () => {
     it('throws when bare ~ reifier is used without canCreateBlankNodes in parse mode', ({ expect }) => {
       expect(() =>

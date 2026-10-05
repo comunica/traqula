@@ -35,6 +35,22 @@ describe('extra parser coverage', () => {
     });
   });
 
+  describe('comments end at a carriage return', () => {
+    it('lexes the text after a CR as query text', ({ expect }) => {
+      expect(() => parser.parse('# a\r FILTER junk\nASK {}')).toThrow(/unexpected character: ->j<- at offset: 12/u);
+    });
+
+    it('accepts CR, CRLF, and LF line endings after a comment', ({ expect }) => {
+      expect(parser.parse('# a\rASK {}')).toMatchObject({ subType: 'ask' });
+      expect(parser.parse('# a\r\nASK {}')).toMatchObject({ subType: 'ask' });
+      expect(parser.parse('# a\nASK {}')).toMatchObject({ subType: 'ask' });
+    });
+
+    it('accepts a CR-terminated comment inside a multi-word update keyword', ({ expect }) => {
+      expect(parser.parse('INSERT # a\rDATA { <http://s> <http://p> <http://o> }')).toMatchObject({ type: 'update' });
+    });
+  });
+
   describe('prefixed names with colons in the local name', () => {
     it('keeps everything after the first colon as local name', ({ expect }) => {
       const query = <any> parser.parse('PREFIX ex: <http://ex.org/> SELECT * WHERE { ex:a:b:c ?p ?o }');

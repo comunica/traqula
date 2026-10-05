@@ -4,6 +4,12 @@ Traqula allows you to create a new parser by manipulating an existing parser thr
 To create a parser, read [how to create a parser](./create-parser.md).
 A [tutorial on parser manipulation within Comunica](https://comunica.dev/docs/modify/getting_started/contribute_new_operation/) provides a practical example on parser modifications.
 
+> [!note]
+> Minor versions of Traqula keep the name, signature and behavior of existing rules,
+> but can add rules or change how existing rules are implemented, such as which rules they call.
+> This only affects projects that patch, delete or individually register rules.
+> See [versioning](../../README.md#versioning).
+
 ## Modify the lexer
 
 In case your modification requires an additional lexerToken, or the removal of a lexerToken, you should manipulate the original LexerBuilder accordingly.
@@ -52,6 +58,25 @@ The ParserBuilder has a few functions that facilitate parser modification:
 * **merge**: Merge another ParserBuilder with this ParserBuilder, resolving duplicate rules when able and throwing when not.
 * **deleteRule**: Delete a given rule by providing the name of said rule.
 * **widenContext**: In your new rule requires the Parser To have a wider context, this generic function without arguments allows you to register this change.
+
+### Overriding validators
+
+The SPARQL grammars run their AST validators (e.g., the in-scope checks of `SELECT (expr AS ?v)` and `BIND`)
+through validation rules such as `validateSelectQuery`, `validateSubSelect` and `validateGroupGraphPatternSub`.
+These rules consume no tokens and only validate when `skipValidation` is `false`.
+Patch them like any other rule to change or disable a specific validation:
+
+```typescript
+const lenientBuilder = ParserBuilder.create(sparql11ParserBuilder)
+  .patchRule(<typeof gram.validateGroupGraphPatternSub> {
+    name: 'validateGroupGraphPatternSub',
+    impl: () => () => {},
+  });
+```
+
+> [!note]
+> A minor version can add validation rules, or move a validation into its own rule.
+> See [versioning](../../README.md#versioning).
 
 ## Building the parser
 

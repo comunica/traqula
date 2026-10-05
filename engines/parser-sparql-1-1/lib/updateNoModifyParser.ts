@@ -44,6 +44,7 @@ const rulesNoUpdate1 = <const>[
   gram.graphOrDefault,
   gram.quadData,
   gram.quads,
+  gram.validateUpdate,
 ];
 
 /**

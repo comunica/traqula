@@ -30,11 +30,13 @@ describe.skip('algebra test generate', () => {
             expect(() => {
               astFactory.resetBlankNodeCounter();
               const ast = parser.parse(query, { astFactory });
-              const algebra = algebraUtils.objectify(toAlgebra(ast, {
+              const rawAlgebra = toAlgebra(ast, {
                 quads: name.endsWith('-quads'),
                 blankToVariable,
-              }));
-              const canonicalString = generator.generate(toAst(algebra));
+              });
+              const algebra = algebraUtils.objectify(rawAlgebra);
+              // Same as the canonical SPARQL tests: generate from the algebra itself, not its JSON form
+              const canonicalString = generator.generate(toAst(rawAlgebra));
 
               const algebraFileName = `${name}.json`;
               let newPath = blankToVariable ? rootJsonBlankToVariable : rootJson;

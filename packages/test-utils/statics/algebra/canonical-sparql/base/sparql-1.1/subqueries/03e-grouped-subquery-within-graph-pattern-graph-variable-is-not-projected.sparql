@@ -1,0 +1,10 @@
+SELECT ?c ?g ?x WHERE {
+  GRAPH ?g {
+    {
+      SELECT ?x ( COUNT( * ) AS ?c ) WHERE {
+        ?x ?p ?g .
+      }
+      GROUP BY ?x ?g
+    }
+  }
+}

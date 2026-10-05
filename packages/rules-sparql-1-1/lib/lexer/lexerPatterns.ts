@@ -37,6 +37,6 @@ export const stringLiteralLong2Pattern = new RegExp(`"""(("|(""))?([^"\\\\]|(${e
 export const wsPattern = /[\u0009\u000A\u000D ]/;
 export const nilPattern = new RegExp(`\\((${wsPattern.source})*\\)`);
 export const anonPattern = new RegExp(`\\[(${wsPattern.source})*\\]`);
-export const commentPattern = /#[^\n]*/;
+export const commentPattern = /#[^\n\r]*/;
 // Need to ensure the blank closes
-export const atLeastOneBlankPattern = new RegExp(`(((${wsPattern.source})+)|((${commentPattern.source})\n))+`);
+export const atLeastOneBlankPattern = new RegExp(`(((${wsPattern.source})+)|((${commentPattern.source})(\r\n|\r|\n)))+`);

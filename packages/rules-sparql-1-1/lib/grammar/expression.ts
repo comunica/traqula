@@ -21,6 +21,7 @@ import {
   numericLiteralPositive,
   rdfLiteral,
 } from './literals.js';
+import { prefixOperators } from './prefixOperators.js';
 import { groupGraphPattern } from './whereClause.js';
 
 /**
@@ -105,7 +106,6 @@ export const expressionList: SparqlGrammarRule<'expressionList', Wrap<Expression
 
 const optimizedBracketsInfixOperator = new Set([ '||', '&&', '=', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/' ]);
 const infixOperators = new Set([ 'in', 'notin', '||', '&&', '=', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/' ]);
-const prefixOperator: Record<string, string> = { '!': '', uplus: '+', uminus: '-' };
 
 /**
  * [[110]](https://www.w3.org/TR/sparql11-query/#rExpression)
@@ -145,11 +145,11 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
         SUBRULE(argList, F.wrap({ args: right, distinct: false }, ast.loc));
       }
       F.printFilter(ast, () => PRINT_WORD(')'));
-    } else if (typeof prefixOperator[ast.operator] === 'string') {
+    } else if (prefixOperators.has(ast.operator)) {
       const [ expr ] = <[Expression]>ast.args;
-      F.printFilter(ast, () => PRINT_WORD(prefixOperator[ast.operator] || ast.operator.toUpperCase()));
+      F.printFilter(ast, () => PRINT_WORD(prefixOperators.get(ast.operator)!));
       // A prefix operator only accepts a primary expression: `- ( - ?x )`, not `- - ?x`
-      const addBrackets = F.isExpressionOperator(expr) && typeof prefixOperator[expr.operator] === 'string';
+      const addBrackets = F.isExpressionOperator(expr) && prefixOperators.has(expr.operator);
       if (addBrackets) {
         F.printFilter(ast, () => PRINT_WORD('('));
       }

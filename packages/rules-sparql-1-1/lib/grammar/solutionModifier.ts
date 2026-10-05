@@ -15,6 +15,7 @@ import type {
 import { builtInCall } from './builtIn.js';
 import { brackettedExpression, expression } from './expression.js';
 import { var_ } from './general.js';
+import { prefixOperators } from './prefixOperators.js';
 import { constraint, functionCall } from './whereClause.js';
 
 /**
@@ -51,8 +52,7 @@ export const solutionModifier: SparqlRule<'solutionModifier', SolutionModifiers>
 };
 
 // HAVING and GROUP BY conditions must be a call or bracketed (GROUP BY also allows a variable).
-// `expression` brackets infix operators itself, so only terms and these prefix operators need added brackets.
-const prefixOperators = new Set([ '!', 'uplus', 'uminus' ]);
+// `expression` brackets infix operators itself, so only terms and prefix operators need added brackets.
 
 /**
  * [[19]](https://www.w3.org/TR/sparql11-query/#rGroupClause)

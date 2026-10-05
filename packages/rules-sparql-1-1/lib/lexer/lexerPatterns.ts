@@ -39,4 +39,4 @@ export const nilPattern = new RegExp(`\\((${wsPattern.source})*\\)`);
 export const anonPattern = new RegExp(`\\[(${wsPattern.source})*\\]`);
 export const commentPattern = /#[^\n\r]*/;
 // Need to ensure the blank closes
-export const atLeastOneBlankPattern = new RegExp(`(((${wsPattern.source})+)|((${commentPattern.source})[\\r\\n]))+`);
+export const atLeastOneBlankPattern = new RegExp(`(((${wsPattern.source})+)|((${commentPattern.source})(\r\n|\r|\n)))+`);

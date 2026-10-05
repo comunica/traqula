@@ -13,9 +13,8 @@ import type {
   SolutionModifiers,
 } from '../Sparql11types.js';
 import { builtInCall } from './builtIn.js';
-import { brackettedExpression, expression } from './expression.js';
+import { brackettedExpression, expression, prefixOperators } from './expression.js';
 import { var_ } from './general.js';
-import { prefixOperators } from './prefixOperators.js';
 import { constraint, functionCall } from './whereClause.js';
 
 /**

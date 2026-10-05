@@ -21,7 +21,6 @@ import {
   numericLiteralPositive,
   rdfLiteral,
 } from './literals.js';
-import { prefixOperators } from './prefixOperators.js';
 import { groupGraphPattern } from './whereClause.js';
 
 /**
@@ -106,6 +105,14 @@ export const expressionList: SparqlGrammarRule<'expressionList', Wrap<Expression
 
 const optimizedBracketsInfixOperator = new Set([ '||', '&&', '=', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/' ]);
 const infixOperators = new Set([ 'in', 'notin', '||', '&&', '=', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/' ]);
+/**
+ * The prefix operators of an expression operation, mapped to the symbol they are generated as.
+ */
+export const prefixOperators: ReadonlyMap<string, string> = new Map([
+  [ '!', '!' ],
+  [ 'uplus', '+' ],
+  [ 'uminus', '-' ],
+]);
 
 /**
  * [[110]](https://www.w3.org/TR/sparql11-query/#rExpression)

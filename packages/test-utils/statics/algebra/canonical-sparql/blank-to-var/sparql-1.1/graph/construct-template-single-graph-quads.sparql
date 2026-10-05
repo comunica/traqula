@@ -1,4 +1,5 @@
 CONSTRUCT {
+  ?s ?p ?g .
 }
 WHERE {
   GRAPH <http://www.example.org/g> {

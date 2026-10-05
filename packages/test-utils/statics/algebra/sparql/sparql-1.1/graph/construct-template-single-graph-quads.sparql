@@ -1,5 +1,5 @@
 prefix ex: <http://www.example.org/>
 
-construct {} where {
+construct { ?s ?p ?g } where {
     graph ex:g { ?s ?p ?o }
 }

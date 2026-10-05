@@ -55,6 +55,27 @@ Projects that only use the engines or call existing rules can depend on a caret 
 Projects that patch, delete or individually register rules should depend on a tilde range (`~x.y.z`) and test their extension when moving to a new minor version.
 See the [guidelines for dependent projects](docs/guidelines.md#versioning) on how to limit the impact of these changes.
 
+## Cite
+
+If you are using or extending Traqula as part of a scientific publication,
+we would appreciate a citation of our [article](https://traqula-resource.jitsedesmet.be/).
+
+```bibtex
+@inproceedings{De_Smet_Traqula_Providing_a_2026,
+    address = {Dubrovnik, HR},
+    author = {De Smet, Jitse and Taelman, Ruben},
+    booktitle = {The Semantic Web},
+    doi = {10.1007/978-3-032-25159-6\_13},
+    month = may,
+    pages = {232--252},
+    publisher = {Springer Nature Switzerland},
+    series = {23rd European Semantic Web Conference (ESWC 2026)},
+    title = {{Traqula: Providing a Foundation for The Evolving SPARQL Ecosystem Through Modular Query Parsing, Transformation, and Generation}},
+    url = {https://traqula-resource.jitsedesmet.be/},
+    year = {2026}
+}
+```
+
 ## License
 
 This software is written by [Jitse De Smet](https://jitsedesmet.be/).

@@ -3,6 +3,12 @@
 Modifying a generator follows the same builder pattern as [modifying a parser](./modify-parser.md),
 but using `GeneratorBuilder` and `GeneratorRule` from `@traqula/core`.
 
+> [!note]
+> Minor versions of Traqula keep the name, signature and behavior of existing rules,
+> but can add rules or change how existing rules are implemented, such as which rules they call.
+> This only affects projects that patch, delete or individually register rules.
+> See [versioning](../../README.md#versioning).
+
 ## Copy First
 
 As with all builders, **start by creating a copy** of the generator builder you're extending:

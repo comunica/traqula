@@ -13,5 +13,5 @@ SELECT ?v ?ebv WHERE {
     "2020-01-01T00:00:00Z"^^xsd:dateTime
     :a
   }
-  BIND( ! ! ?v AS ?ebv )
+  BIND( ! ( ! ?v ) AS ?ebv )
 }

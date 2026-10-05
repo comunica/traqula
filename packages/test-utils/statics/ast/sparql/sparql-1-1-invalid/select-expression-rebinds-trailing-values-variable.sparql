@@ -1,0 +1,4 @@
+SELECT (1 AS ?x) WHERE {
+  ?s ?p ?o
+}
+VALUES ?x { 1 }

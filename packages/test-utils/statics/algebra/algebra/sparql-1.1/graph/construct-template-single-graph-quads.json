@@ -1,0 +1,50 @@
+{
+  "type": "construct",
+  "input": {
+    "type": "bgp",
+    "patterns": [
+      {
+        "type": "pattern",
+        "termType": "Quad",
+        "subject": {
+          "termType": "Variable",
+          "value": "s"
+        },
+        "predicate": {
+          "termType": "Variable",
+          "value": "p"
+        },
+        "object": {
+          "termType": "Variable",
+          "value": "o"
+        },
+        "graph": {
+          "termType": "NamedNode",
+          "value": "http://www.example.org/g"
+        }
+      }
+    ]
+  },
+  "template": [
+    {
+      "type": "pattern",
+      "termType": "Quad",
+      "subject": {
+        "termType": "Variable",
+        "value": "s"
+      },
+      "predicate": {
+        "termType": "Variable",
+        "value": "p"
+      },
+      "object": {
+        "termType": "Variable",
+        "value": "g"
+      },
+      "graph": {
+        "termType": "DefaultGraph",
+        "value": ""
+      }
+    }
+  ]
+}

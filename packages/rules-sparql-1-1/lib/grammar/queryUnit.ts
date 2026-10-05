@@ -17,12 +17,12 @@ import type {
   TermVariable,
   Wildcard,
 } from '../Sparql11types.js';
-import { queryProjectionIsGood } from '../validation/validators.js';
 import { datasetClauseStar } from './dataSetClause.js';
 import { expression } from './expression.js';
 import { prologue, var_, varOrIri, varOrTerm } from './general.js';
 import { solutionModifier } from './solutionModifier.js';
 import { triplesBlock, triplesTemplate } from './tripleBlock.js';
+import { validateQuery, validateSelectQuery, validateSubSelect } from './validation.js';
 import { inlineData, whereClause } from './whereClause.js';
 
 /**
@@ -50,7 +50,7 @@ export const query: SparqlRule<'query', Query> = <const> {
     ]);
     const values = SUBRULE(valuesClause);
 
-    return ACTION(() => {
+    const result = ACTION(() => {
       const q = <Query> {
         context: prologueValues,
         ...subType,
@@ -66,6 +66,8 @@ export const query: SparqlRule<'query', Query> = <const> {
       }
       return q;
     });
+    SUBRULE(validateQuery, result);
+    return result;
   },
   gImpl: ({ SUBRULE }) => (ast, { astFactory: F }) => {
     SUBRULE(prologue, ast.context);
@@ -95,7 +97,7 @@ export const selectQuery: SparqlRule<'selectQuery', Omit<QuerySelect, HandledByB
     const where = SUBRULE(whereClause);
     const modifiers = SUBRULE(solutionModifier);
 
-    return ACTION(() => {
+    const result = ACTION(() => {
       const ret = {
         subType: 'select',
         where: where.val,
@@ -111,11 +113,10 @@ export const selectQuery: SparqlRule<'selectQuery', Omit<QuerySelect, HandledByB
           modifiers.limitOffset,
         ),
       } satisfies RuleDefReturn<typeof selectQuery>;
-      if (!C.skipValidation) {
-        queryProjectionIsGood(ret);
-      }
       return ret;
     });
+    SUBRULE(validateSelectQuery, result);
+    return result;
   },
   gImpl: ({ SUBRULE }) => (ast, { astFactory: F }) => {
     SUBRULE(selectClause, F.wrap({
@@ -140,7 +141,7 @@ export const subSelect: SparqlGrammarRule<'subSelect', SubSelect> = <const> {
     const modifiers = SUBRULE(solutionModifier);
     const values = SUBRULE(valuesClause);
 
-    return ACTION(() => C.astFactory.querySelect({
+    const result = ACTION(() => C.astFactory.querySelect({
       where: where.val,
       datasets: C.astFactory.datasetClauses([], C.astFactory.sourceLocation()),
       context: [],
@@ -156,6 +157,8 @@ export const subSelect: SparqlGrammarRule<'subSelect', SubSelect> = <const> {
       modifiers.limitOffset,
       values,
     )));
+    SUBRULE(validateSubSelect, result);
+    return result;
   },
 };
 

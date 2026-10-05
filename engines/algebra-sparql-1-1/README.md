@@ -249,6 +249,14 @@ Some differences from Jena (again, non-exhaustive):
 no prefixes are used (all uris get expanded)
 and the project operation always gets used (even in the case of `SELECT *`).
 
+## Modifying the built algebra transformer
+
+> [!note]
+> Minor versions keep this engine's API and behavior, and the name, signature and behavior of the rules in its builders,
+> but can add rules or change how existing rules are implemented, such as which rules they call.
+> This only affects projects that patch, delete or individually register rules.
+> See [versioning](https://github.com/comunica/traqula#versioning).
+
 ## A note on tests
 
 Every test consists of a sparql file and a corresponding json file containing the algebra result.

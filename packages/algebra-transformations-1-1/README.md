@@ -17,6 +17,12 @@ or
 yarn add @traqula/algebra-transformations-1-1
 ```
 
+> [!note]
+> Minor versions keep the name, signature and behavior of this package's rules,
+> but can add rules or change how existing rules are implemented, such as which rules they call.
+> This only affects projects that patch, delete or individually register rules.
+> See [versioning](https://github.com/comunica/traqula#versioning).
+
 ## Algebra object
 The algebra object contains a `types` object,
 which contains all possible values for the `type` field in the output results.

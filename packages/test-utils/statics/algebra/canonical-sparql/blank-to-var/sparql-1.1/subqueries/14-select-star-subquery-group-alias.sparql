@@ -1,0 +1,6 @@
+SELECT ?s WHERE {
+  SELECT ?s WHERE {
+    ?s ?p ?o .
+  }
+  GROUP BY ?s ( ?o AS ?g )
+}

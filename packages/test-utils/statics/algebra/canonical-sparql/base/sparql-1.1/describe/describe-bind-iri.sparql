@@ -1,0 +1,4 @@
+DESCRIBE <http://example.org/a> ?t ?s WHERE {
+  ?s ?p ?o .
+  BIND( STR( ?o ) AS ?t )
+}

@@ -2,6 +2,7 @@ import type * as RDF from '@rdfjs/types';
 import type { AlgebraFactory } from '../algebraFactory.js';
 import type { Algebra } from '../index.js';
 import { types } from '../toAlgebra/index.js';
+import { visitOperationSub } from '../util.js';
 import type { AstIndir } from './core.js';
 import { eTypes } from './core.js';
 
@@ -24,6 +25,21 @@ function wrapInGraph(AF: AlgebraFactory, op: Algebra.Operation, graph: RDF.Named
     return { ...op, expression: wrapInGraph(AF, op.expression, graph) };
   }
   return op;
+}
+
+/**
+ * Whether the expression mentions the variable, ignoring EXISTS patterns.
+ */
+function mentionsVariable(expression: Algebra.Expression, variable: RDF.Variable): boolean {
+  let found = false;
+  visitOperationSub(expression, {}, { [types.EXPRESSION]: {
+    [eTypes.EXISTENCE]: { preVisitor: () => ({ continue: false }) },
+    [eTypes.TERM]: { preVisitor: (term) => {
+      found = term.term.termType === 'Variable' && term.term.value === variable.value;
+      return { shortcut: found };
+    } },
+  }});
+  return found;
 }
 
 /**
@@ -148,8 +164,14 @@ unknown,
       // below them, not defer further up. FILTER and the multi-branch combinators (JOIN,
       // LEFT_JOIN, MINUS, UNION) do defer: they share a group with sibling patterns, so matching
       // graphs merge into one GRAPH block instead of each wrapping itself separately.
+      // A FILTER on the graph variable is a boundary too: ?g is not bound within GRAPH ?g (18.5).
+      const onlyGraph = <RDF.Term | undefined> (graphNameSet.length === 1 ?
+        operationGraphNames[graphNameSet[0]] :
+        undefined);
       const isBoundary = [ types.PROJECT, types.SERVICE, types.GROUP, types.ORDER_BY ].includes(knownOp.type) ||
-        (knownOp.type === types.EXTEND && projectionScope);
+        (knownOp.type === types.EXTEND && projectionScope) ||
+        (knownOp.type === types.FILTER && onlyGraph?.termType === 'Variable' &&
+          mentionsVariable(knownOp.expression, onlyGraph));
       if (graphNameSet.length === 1 && !isBoundary) {
         graphs.push(operationGraphNames[graphNameSet[0]]);
       } else if (knownOp.type === types.BGP) {

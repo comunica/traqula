@@ -50,3 +50,11 @@ const abstractSyntaxTree = parser.parse('SELECT * { ?s ?p ?o }');
 
 This parser is a simple grammar extension to the [parser-sparql-1-1](https://github.com/comunica/traqula/tree/main/engines/parser-sparql-1-1).
 As such, most, if not all, documentation of that parser holds for this one too.
+
+## Modifying the built Parser
+
+> [!note]
+> Minor versions keep this engine's API and behavior, and the name, signature and behavior of the rules in its builders,
+> but can add rules or change how existing rules are implemented, such as which rules they call.
+> This only affects projects that patch, delete or individually register rules.
+> See [versioning](https://github.com/comunica/traqula#versioning).

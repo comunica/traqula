@@ -18,8 +18,11 @@ import type {
   Expression,
   GraphNode,
   GraphTerm,
+  Pattern,
   PatternBgp,
+  PatternValues,
   QuerySelect,
+  SubSelect,
   Term,
   TermBlank,
   TermIri,
@@ -30,7 +33,12 @@ import type {
   TripleCollectionReifiedTriple,
   TripleNesting,
 } from './sparql12Types.js';
-import { langTagHasCorrectRange, queryProjectionIsGood } from './validators.js';
+import {
+  checkNote13,
+  langTagHasCorrectRange,
+  queryProjectionIsGood,
+  valuesVariablesAreUnique,
+} from './validators.js';
 
 /**
  *[[7]](https://www.w3.org/TR/sparql12-query/#rVersionDecl)
@@ -52,8 +60,9 @@ export const versionDecl: SparqlRule<'versionDecl', ContextDefinitionVersion> = 
 
 /**
  * [[9]](https://www.w3.org/TR/sparql12-query/#rSelectQuery)
- * (Validator has changed: https://github.com/w3c/sparql-query/pull/380)
+ * @deprecated Same as {@link S11.selectQuery}, the SPARQL 1.2 validation moved to {@link validateSelectQuery}.
  */
+// TODO(major): remove
 export const selectQuery: SparqlGrammarRule<'selectQuery', Omit<QuerySelect, 'type' | 'context' | 'values'>> = <const> {
   name: 'selectQuery',
   impl: ({ ACTION, SUBRULE }) => (C) => {
@@ -62,27 +71,72 @@ export const selectQuery: SparqlGrammarRule<'selectQuery', Omit<QuerySelect, 'ty
     const where = SUBRULE(S11.whereClause);
     const modifiers = SUBRULE(S11.solutionModifier);
 
-    return ACTION(() => {
-      const ret = {
-        subType: 'select',
-        where: where.val,
-        solutionModifiers: modifiers,
-        datasets: from,
-        ...selectVal.val,
-        loc: C.astFactory.sourceLocation(
-          selectVal,
-          where,
-          modifiers.group,
-          modifiers.having,
-          modifiers.order,
-          modifiers.limitOffset,
-        ),
-      } satisfies RuleDefReturn<typeof selectQuery>;
-      if (!C.skipValidation) {
-        queryProjectionIsGood(ret);
-      }
-      return ret;
-    });
+    const result = ACTION(() => ({
+      subType: 'select',
+      where: where.val,
+      solutionModifiers: modifiers,
+      datasets: from,
+      ...selectVal.val,
+      loc: C.astFactory.sourceLocation(
+        selectVal,
+        where,
+        modifiers.group,
+        modifiers.having,
+        modifiers.order,
+        modifiers.limitOffset,
+      ),
+    } satisfies RuleDefReturn<typeof selectQuery>));
+    SUBRULE(validateSelectQuery, result);
+    return result;
+  },
+};
+
+/**
+ * OVERRIDING RULE: {@link S11.validateSelectQuery}.
+ * (Validator has changed: https://github.com/w3c/sparql-query/pull/380)
+ */
+export const validateSelectQuery: SparqlGrammarRule<'validateSelectQuery', void, [
+  Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where'>,
+]> = {
+  name: 'validateSelectQuery',
+  impl: ({ ACTION }) => (C, query) => {
+    ACTION(() => !C.skipValidation && queryProjectionIsGood(query));
+  },
+};
+
+/**
+ * OVERRIDING RULE: {@link S11.validateSubSelect}.
+ * Uses the SPARQL 1.2 projection validation.
+ */
+export const validateSubSelect: SparqlGrammarRule<'validateSubSelect', void, [SubSelect]> = {
+  name: 'validateSubSelect',
+  impl: ({ ACTION }) => (C, query) => {
+    ACTION(() => !C.skipValidation && queryProjectionIsGood(query));
+  },
+};
+
+/**
+ * OVERRIDING RULE: {@link S11.validateGroupGraphPatternSub}.
+ * Uses the SPARQL 1.2 in-scope variables.
+ */
+export const validateGroupGraphPatternSub: SparqlGrammarRule<'validateGroupGraphPatternSub', void, [Pattern[]]> = {
+  name: 'validateGroupGraphPatternSub',
+  impl: ({ ACTION }) => (C, patterns) => {
+    ACTION(() => !C.skipValidation && checkNote13(patterns));
+  },
+};
+
+/**
+ * OVERRIDING RULE: {@link S11.dataBlock}.
+ * [[66]](https://www.w3.org/TR/sparql12-query/#rDataBlock)
+ * SPARQL 1.2 requires the variables of VALUES to be unique (grammar note 10).
+ */
+export const dataBlock: SparqlGrammarRule<'dataBlock', PatternValues> = <const> {
+  name: 'dataBlock',
+  impl: $ => (C) => {
+    const values = S11.dataBlock.impl($)(C);
+    $.ACTION(() => !C.skipValidation && valuesVariablesAreUnique(values));
+    return values;
   },
 };
 

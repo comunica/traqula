@@ -3,6 +3,12 @@
 Modifying a transformer follows the same builder pattern as [modifying a parser](./modify-parser.md),
 using `IndirBuilder` and `IndirDef` from `@traqula/core` as described in [creating a transformer](./create-transformer.md).
 
+> [!note]
+> Minor versions of Traqula keep the name, signature and behavior of existing rules,
+> but can add rules or change how existing rules are implemented, such as which rules they call.
+> This only affects projects that patch, delete or individually register rules.
+> See [versioning](../../README.md#versioning).
+
 ## Modifying Indirection-Based Transformers
 
 As with all builders, **start by creating a copy** of the builder you're extending:

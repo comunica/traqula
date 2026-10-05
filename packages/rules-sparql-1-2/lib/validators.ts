@@ -253,6 +253,10 @@ export function selectExpressionAliasesNotInScope(
  * also those within triple terms, reifiers, and annotations.
  */
 export function checkNote13(patterns: Pattern[]): void {
+  // Only a BIND can violate this note, so there is no need to collect the bounded variables without one.
+  if (!patterns.some(pattern => F.isPatternBind(pattern))) {
+    return;
+  }
   const boundedVars = new Set<string>();
   for (const pattern of patterns) {
     if (F.isPatternBind(pattern) && boundedVars.has(pattern.variable.value)) {

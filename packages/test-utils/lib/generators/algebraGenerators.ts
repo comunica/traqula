@@ -173,7 +173,7 @@ export type NegativeAlgebraSuite = 'sparql-1.1-negative' | 'sparql-1.2-negative'
  * Yields test cases for negative (invalid) algebra-level tests.
  * Each test provides a SPARQL query that should fail during algebra transformation.
  * @param suite - The negative test suite to iterate.
- * @param filter - Optional filter predicate applied to the test file name.
+ * @param filter - Optional filter predicate applied to the test file name (without extension).
  */
 export function* sparqlAlgebraNegativeTests(
   suite: NegativeAlgebraSuite,

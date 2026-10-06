@@ -1,0 +1,3 @@
+SELECT * WHERE {
+  { SELECT (?o + 1 AS ?o) WHERE { ?s ?p ?o } }
+}

@@ -1,9 +1,10 @@
 // TODO: find a cleaner way
 /**
  * Outputs a JSON object corresponding to the input algebra-like.
+ * Primitive values (including null and undefined) are returned as-is.
  */
 export function objectify(algebra: any): any {
-  if (algebra.termType) {
+  if (algebra?.termType) {
     if (algebra.termType === 'Quad') {
       return {
         type: 'pattern',

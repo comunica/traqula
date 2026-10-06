@@ -1,0 +1,5 @@
+DESCRIBE ?s WHERE {
+  GRAPH ?g {
+    ?s ?p ?o .
+  }
+}

@@ -22,13 +22,13 @@ import type {
   TermVariable,
   ValuePatternRow,
 } from '../Sparql11types.js';
-import { checkBlankNodeBGPScope, checkNote13 } from '../validation/validators.js';
 import { builtInCall } from './builtIn.js';
 import { argList, brackettedExpression, expression } from './expression.js';
 import { var_, varOrIri, varOrTerm } from './general.js';
 import { booleanLiteral, iri, numericLiteral, rdfLiteral } from './literals.js';
 import { query, subSelect } from './queryUnit.js';
 import { graphNodePath, triplesBlock } from './tripleBlock.js';
+import { validateGroupGraphPattern, validateGroupGraphPatternSub } from './validation.js';
 
 /**
  * [[17]](https://www.w3.org/TR/sparql11-query/#rWhereClause)
@@ -59,7 +59,7 @@ export const groupGraphPattern: SparqlRule<'groupGraphPattern', PatternGroup> = 
     ]);
     const close = CONSUME(l.symbols.RCurly);
 
-    ACTION(() => !C.skipValidation && checkBlankNodeBGPScope(patterns));
+    SUBRULE(validateGroupGraphPattern, patterns);
 
     return ACTION(() => C.astFactory.patternGroup(patterns, C.astFactory.sourceLocation(open, close)));
   },
@@ -112,7 +112,7 @@ export const generatePattern: SparqlGeneratorRule<'generatePattern', Pattern> = 
 export const groupGraphPatternSub:
 SparqlGrammarRule<'groupGraphPatternSub', Pattern[]> = <const> {
   name: 'groupGraphPatternSub',
-  impl: ({ ACTION, SUBRULE, CONSUME, MANY, SUBRULE1, SUBRULE2, OPTION1, OPTION2, OPTION3 }) => (C) => {
+  impl: ({ SUBRULE, CONSUME, MANY, SUBRULE1, SUBRULE2, OPTION1, OPTION2, OPTION3 }) => () => {
     const patterns: Pattern[] = [];
 
     const bgpPattern = OPTION1(() => SUBRULE1(triplesBlock));
@@ -131,7 +131,7 @@ SparqlGrammarRule<'groupGraphPatternSub', Pattern[]> = <const> {
       }
     });
 
-    ACTION(() => !C.skipValidation && checkNote13(patterns));
+    SUBRULE(validateGroupGraphPatternSub, patterns);
 
     return patterns;
   },

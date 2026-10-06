@@ -189,7 +189,25 @@ export const translateAlgGroup: AstIndir<'translateGroup', Pattern | Pattern[], 
 
 export const translateAlgJoin: AstIndir<'translateJoin', Pattern[], [Algebra.Join]> = {
   name: 'translateJoin',
-  fun: ({ SUBRULE }) => ({ astFactory: F }, op) => {
+  fun: ({ SUBRULE }) => (c, op) => {
+    const F = c.astFactory;
+    // A VALUES joined on top of a group (possibly through HAVING filters) is the query's trailing VALUES clause.
+    // It needs to be handled by translateAlgProject, inside the WHERE clause it would be joined before the grouping.
+    // Join is commutative, so the VALUES can be either operand.
+    const valuesIndex = op.input.findIndex(input => input.type === types.VALUES);
+    if (op.input.length === 2 && valuesIndex >= 0) {
+      const values = <Algebra.Values> op.input[valuesIndex];
+      const groupInput = op.input[1 - valuesIndex];
+      let filterInput = groupInput;
+      while (filterInput.type === types.FILTER) {
+        filterInput = filterInput.input;
+      }
+      if (filterInput.type === types.GROUP) {
+        c.values = SUBRULE(translateAlgValues, values);
+        return SUBRULE(operationAlgInputAsPatternList, groupInput);
+      }
+    }
+
     // An OPTIONAL or MINUS applies to everything preceding it in its group.
     // Operands other than the first must thus be scoped by their own group when they contain one,
     // and thus get rewrapped ina  group, otherwise Join(A, Minus(B, C)) would be read back as Minus(Join(A, B), C).

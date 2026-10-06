@@ -219,6 +219,15 @@ GROUP BY ?s`);
     });
   });
 
+  describe('algebraUtils.objectify', () => {
+    it('returns primitives, null and undefined as-is', ({ expect }) => {
+      expect(algebraUtils.objectify(null)).toBeNull();
+      expect(algebraUtils.objectify(undefined)).toBeUndefined();
+      expect(algebraUtils.objectify({ a: null, b: undefined, c: [ 1, 'x', false ]}))
+        .toEqual({ a: null, b: undefined, c: [ 1, 'x', false ]});
+    });
+  });
+
   describe('createAlgebraContext with prefixes', () => {
     it('passes prefixes to the algebra context', ({ expect }) => {
       const ast = parser.parse('PREFIX ex: <http://example.org/> SELECT * WHERE { ex:s ex:p ex:o }');

@@ -1,6 +1,6 @@
 import type * as RDF from '@rdfjs/types';
 import type { IndirDef } from '@traqula/core';
-import type { Expression } from '@traqula/rules-sparql-1-1';
+import type { Expression, PatternValues } from '@traqula/rules-sparql-1-1';
 import { AstFactory, AstTransformer } from '@traqula/rules-sparql-1-1';
 import * as Algebra from '../algebra.js';
 import { AlgebraFactory } from '../algebraFactory.js';
@@ -28,6 +28,10 @@ export interface AstContext {
    * All HAVING conditions (filters directly on top of a group) found in our suboperations
    */
   having: Expression[];
+  /**
+   * The VALUES joined on top of a group found in our suboperations, the query's trailing VALUES clause
+   */
+  values?: PatternValues;
   /**
    * All orderings found in our suboperations
    */
@@ -62,6 +66,7 @@ export const resetContext: AstIndir<'resetContext', void, []> = {
     c.group = [];
     c.aggregates = [];
     c.having = [];
+    c.values = undefined;
     c.order = [];
   },
 };

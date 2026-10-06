@@ -1,0 +1,6 @@
+SELECT ?g ?o ?p ?x WHERE {
+  GRAPH ?g {
+    ?x ?p ?o .
+  }
+  FILTER ( ( COALESCE( ?x , ?g ) = ?g ) )
+}

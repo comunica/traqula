@@ -72,10 +72,6 @@ describe('sparql algebra 1.1 output', () => {
       // 2x Sequence path introduces new variable that is then scoped in projection
       'sequence-paths-in-anonymous-node',
       'sparql-9-3c',
-      // Values is pushed from being solution modifier to being in patternGroup
-      'sparql-values-clause',
-      // Same reason
-      'no-space-select',
     ].includes(x))) {
       it(`can algebra circle ${name}`, async({ expect }) => {
         const { query } = await statics();

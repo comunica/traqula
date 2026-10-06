@@ -20,7 +20,7 @@ describe('sparql 1.2 algebra transformer', () => {
     for (const suite of suites) {
       describe(suite, () => {
         for (const test of sparqlAlgebraTests(suite, false, false)) {
-          const { name, json, quads } = test;
+          const { name, json, quads, verifyWithNamedAggregators } = test;
           const expected = <Algebra.Operation> json;
           it (name, ({ expect }) => {
             const genAst = toAst(expected);
@@ -28,7 +28,7 @@ describe('sparql 1.2 algebra transformer', () => {
             const genQuery = generator.generate(genAst);
             // Console.log(genQuery);
             const ast = parser.parse(genQuery);
-            const algebra = algebraUtils.objectify(toAlgebra(ast, { quads }));
+            const algebra = algebraUtils.objectify(toAlgebra(ast, { quads, verifyWithNamedAggregators }));
             expect(canon.canonicalizeQuery(algebra, false)).toEqual(canon.canonicalizeQuery(expected, false));
           });
         }
@@ -42,11 +42,11 @@ describe('sparql 1.2 algebra transformer', () => {
       for (const blankToVariable of [ true, false ]) {
         describe(`${suite}${blankToVariable ? ' with blank to var' : ''}`, () => {
           for (const test of sparqlAlgebraTests(suite, blankToVariable, true)) {
-            const { name, quads, canonicalSparql, sparql } = test;
+            const { name, quads, canonicalSparql, sparql, verifyWithNamedAggregators } = test;
             it (name, ({ expect }) => {
               astFactory.resetBlankNodeCounter();
               const parsedAst = parser.parse(sparql, { astFactory });
-              const algebra = toAlgebra(parsedAst, { quads, blankToVariable });
+              const algebra = toAlgebra(parsedAst, { quads, blankToVariable, verifyWithNamedAggregators });
               // Console.log(JSON.stringify(algebra, null, 2));
               const genAst = toAst(algebra);
               const canonical = generator.generate(genAst);

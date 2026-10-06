@@ -2,6 +2,7 @@ import type * as RDF from '@rdfjs/types';
 import type {
   Expression,
   ExpressionAggregate,
+  ExpressionAggregateDefault,
   Ordering,
   PatternBind,
   Query,
@@ -18,6 +19,7 @@ import {
   inScopeVariables,
   translateDatasetClause,
   translateInlineData,
+  translateNamed,
   translateTerm,
 } from './general.js';
 import { translateExpression } from './patterns.js';
@@ -178,11 +180,32 @@ export type MapAggregateType = Wildcard | Expression | Ordering | PatternBind;
 /**
  * Rewrites some of the input sparql object to make use of aggregate variables
  * It thus replaces aggregates by their representative variable and registers the mapping.
+ * Function calls whose IRI is in `verifyWithNamedAggregators` are custom aggregates,
+ * they are registered as an aggregate with their full IRI as aggregation.
  */
 export const mapAggregate:
 AlgebraIndir<'mapAggregate', MapAggregateType, [MapAggregateType, Record<string, ExpressionAggregate>]> = {
   name: 'mapAggregate',
-  fun: ({ SUBRULE }) => ({ astFactory: F }, thingy, aggregates): MapAggregateType => {
+  fun: ({ SUBRULE }) => ({ astFactory: F, verifyWithNamedAggregators }, input, aggregates): MapAggregateType => {
+    let thingy = input;
+    if (verifyWithNamedAggregators && F.isExpressionFunctionCall(thingy)) {
+      const aggregator = SUBRULE(translateNamed, thingy.function).value;
+      if (verifyWithNamedAggregators.has(aggregator)) {
+        // Algebra aggregates have a single expression, like the built-in aggregates.
+        if (thingy.args.length !== 1) {
+          throw new Error(`Custom aggregate <${aggregator}> must have exactly one argument to be translated to algebra`);
+        }
+        thingy = {
+          type: 'expression',
+          subType: 'aggregate',
+          aggregation: aggregator,
+          distinct: thingy.distinct,
+          expression: [ thingy.args[0] ],
+          loc: thingy.loc,
+        } satisfies ExpressionAggregateDefault;
+      }
+    }
+
     if (F.isExpressionAggregate(thingy)) {
       // Needed to take away the difference in the various `loc` descriptions
       const canonicalAggregate = F.forcedAutoGenTree<ExpressionAggregate>(thingy);

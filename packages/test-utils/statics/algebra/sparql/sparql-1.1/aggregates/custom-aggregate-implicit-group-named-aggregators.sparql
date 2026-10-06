@@ -1,0 +1,7 @@
+PREFIX ex: <http://example.org/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT (xsd:integer(ex:median(?o)) AS ?median) (COUNT(?o) AS ?count)
+WHERE {
+  ?s ex:value ?o .
+}

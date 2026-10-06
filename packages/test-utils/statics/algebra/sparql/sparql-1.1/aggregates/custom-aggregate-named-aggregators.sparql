@@ -1,0 +1,9 @@
+PREFIX ex: <http://example.org/>
+
+SELECT ?s (ex:median(DISTINCT ?o) AS ?median)
+WHERE {
+  ?s ex:value ?o .
+}
+GROUP BY ?s
+HAVING (ex:median(DISTINCT ?o) > 1)
+ORDER BY (ex:median(?o))

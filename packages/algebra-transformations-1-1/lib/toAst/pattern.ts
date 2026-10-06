@@ -193,8 +193,11 @@ export const translateAlgJoin: AstIndir<'translateJoin', Pattern[], [Algebra.Joi
     const F = c.astFactory;
     // A VALUES joined on top of a group (possibly through HAVING filters) is the query's trailing VALUES clause.
     // It needs to be handled by translateAlgProject, inside the WHERE clause it would be joined before the grouping.
-    const [ groupInput, values ] = op.input;
-    if (op.input.length === 2 && values.type === types.VALUES) {
+    // Join is commutative, so the VALUES can be either operand.
+    const valuesIndex = op.input.findIndex(input => input.type === types.VALUES);
+    if (op.input.length === 2 && valuesIndex >= 0) {
+      const values = <Algebra.Values> op.input[valuesIndex];
+      const groupInput = op.input[1 - valuesIndex];
       let filterInput = groupInput;
       while (filterInput.type === types.FILTER) {
         filterInput = filterInput.input;

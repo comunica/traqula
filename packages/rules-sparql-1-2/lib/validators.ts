@@ -150,6 +150,8 @@ export function findPatternBoundedVars(
  *   or bound by the trailing VALUES clause, which is joined after grouping (18.2.4.3).
  *   Section 11.4 only mentions the group-by variables, but the algebra of 18.2.4.3 binds the VALUES variables
  *   before the projection, as do the tests of https://github.com/w3c/rdf-tests/pull/383.
+ *   This also holds when the WHERE pattern binds that variable: grouping drops the ungrouped pattern binding,
+ *   so the projected value is the one of the VALUES clause.
  * - 'select ?var as ?other', ?other cannot be in scope
  */
 export function queryProjectionIsGood(

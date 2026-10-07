@@ -42,11 +42,11 @@ export const validateSubSelect: SparqlGrammarRule<'validateSubSelect', void, [Su
  */
 export const validateQuery: SparqlGrammarRule<'validateQuery', void, [Query]> = {
   name: 'validateQuery',
-  impl: ({ ACTION, SUBRULE }) => (C, query) => {
-    // Validation rules consume no tokens, so this subrule does not need to be recorded in the grammar.
-    if (ACTION(() => C.astFactory.isQuerySelect(query))) {
-      SUBRULE(validateSelectQuery, <QuerySelect> query);
-    }
+  impl: ({ OPTION, SUBRULE }) => (C, query) => {
+    OPTION({
+      GATE: () => C.astFactory.isQuerySelect(query),
+      DEF: () => SUBRULE(validateSelectQuery, <QuerySelect> query),
+    });
   },
 };
 

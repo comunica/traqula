@@ -1,28 +1,19 @@
 {
   "type": "describe",
   "input": {
-    "type": "join",
-    "input": [
+    "type": "values",
+    "variables": [
       {
-        "type": "bgp",
-        "patterns": []
-      },
+        "termType": "Variable",
+        "value": "v"
+      }
+    ],
+    "bindings": [
       {
-        "type": "values",
-        "variables": [
-          {
-            "termType": "Variable",
-            "value": "v"
-          }
-        ],
-        "bindings": [
-          {
-            "v": {
-              "termType": "NamedNode",
-              "value": "http://example.org/a"
-            }
-          }
-        ]
+        "v": {
+          "termType": "NamedNode",
+          "value": "http://example.org/a"
+        }
       }
     ]
   },

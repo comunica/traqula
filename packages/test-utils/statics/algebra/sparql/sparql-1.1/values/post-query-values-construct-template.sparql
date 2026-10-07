@@ -1,0 +1,3 @@
+CONSTRUCT { ?s <http://example.org/v> ?v }
+WHERE { ?s ?p ?o }
+VALUES ?v { 1 }

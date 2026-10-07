@@ -4,8 +4,8 @@
 //  The SPARQL 1.2 selectExpressionAliasesNotInScope and checkNote13 copy the SPARQL 1.1 implementation logic,
 //  only to call the SPARQL 1.2 findPatternBoundedVars.
 import {
-  getAggregatesOfExpression,
   getExpressionId,
+  hasBuiltInAggregate,
   isGroupedQuery,
   selectExpressionAliasesNotInValues,
   selectExpressionAliasesNotUsedEarlier,
@@ -162,14 +162,11 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
   // Check for projection of ungrouped variable
   // Check can be skipped in case of wildcard select.
   const variables = <Exclude<typeof query.variables, [Wildcard]>> query.variables;
-  const hasCountAggregate = variables.flatMap(
-    varVal => F.isTerm(varVal) ? [] : getAggregatesOfExpression(<T11.Expression> varVal.expression),
-  ).some(agg => agg.aggregation === 'count' && !agg.expression.some(arg => F.isWildcard(arg)));
   const groupBy = query.solutionModifiers.group;
-  if (hasCountAggregate || groupBy) {
+  if (groupBy !== undefined || hasBuiltInAggregate(<T11.QuerySelect> <unknown> query)) {
     // We have to check whether
     //  1. Variables used in projection are usable given the group by clause
-    //  2. A selectCount will create an implicit group by clause.
+    //  2. An aggregate will create an implicit group by clause.
     // Variables bound by preceding (expr AS ?var) expressions are in scope for later expressions.
     const asBoundVars = new Set<string>();
     for (const selectVar of variables) {
@@ -179,8 +176,8 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
           .includes((getExpressionId(selectVar)))) {
           throw new Error('Variable not allowed in projection');
         }
-      } else if (getAggregatesOfExpression(<T11.Expression> selectVar.expression).length === 0) {
-        // Current value binding does not use aggregates
+      } else {
+        // Only collects the variables outside of aggregates and function calls (possibly custom aggregates)
         const usedvars = new Set<string>();
         getVariablesFromExpression(selectVar.expression, usedvars);
         for (const usedvar of usedvars) {

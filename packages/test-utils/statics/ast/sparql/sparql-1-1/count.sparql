@@ -1,3 +1,4 @@
 select ?p (count(*) as ?n) {
   [ ?p [] ].
 }
+group by ?p

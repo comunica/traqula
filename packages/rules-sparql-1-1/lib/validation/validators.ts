@@ -29,7 +29,7 @@ export function getAggregatesOfExpression(expression: Expression): ExpressionAgg
   if (F.isExpressionAggregate(expression)) {
     return [ expression ];
   }
-  if (F.isExpressionOperator(expression)) {
+  if (F.isExpressionOperator(expression) || F.isExpressionFunctionCall(expression)) {
     const aggregates: ExpressionAggregate[] = [];
     for (const arg of expression.args) {
       aggregates.push(...getAggregatesOfExpression(arg));
@@ -88,22 +88,19 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
   // Check for projection of ungrouped variable
   // Check can be skipped in case of wildcard select.
   const variables = <Exclude<typeof query.variables, [Wildcard]>> query.variables;
-  const hasCountAggregate = variables.flatMap(
-    varVal => F.isTerm(varVal) ? [] : getAggregatesOfExpression(varVal.expression),
-  ).some(agg => agg.aggregation === 'count' && !agg.expression.some(arg => F.isWildcard(arg)));
   const groupBy = query.solutionModifiers.group;
-  if (hasCountAggregate || groupBy) {
+  if (groupBy !== undefined || hasBuiltInAggregate(query)) {
     // We have to check whether
     //  1. Variables used in projection are usable given the group by clause
-    //  2. A selectCount will create an implicit group by clause.
+    //  2. An aggregate will create an implicit group by clause.
     for (const selectVar of variables) {
       if (F.isTerm(selectVar)) {
         if (!groupBy || !groupBy.groupings.map(groupvar => getExpressionId(groupvar))
           .includes((getExpressionId(selectVar)))) {
           throw new Error('Variable not allowed in projection');
         }
-      } else if (getAggregatesOfExpression(selectVar.expression).length === 0) {
-        // Current value binding does not use aggregates
+      } else {
+        // Only collects the variables outside of aggregates and function calls (possibly custom aggregates)
         const usedvars = new Set<string>();
         getVariablesFromExpression(selectVar.expression, usedvars);
         for (const usedvar of usedvars) {
@@ -162,16 +159,31 @@ export function selectExpressionAliasesNotInScope(
  * see {@link mayContainAggregate}.
  */
 export function isGroupedQuery(query: Pick<QuerySelect, 'variables' | 'solutionModifiers'>): boolean {
-  const { group, having, order } = query.solutionModifiers;
-  if (group) {
+  if (query.solutionModifiers.group) {
     return true;
   }
-  const expressions: Expression[] = [
+  return getAggregationScopeExpressions(query).some(expression => mayContainAggregate(expression));
+}
+
+/**
+ * Whether the query uses a built-in aggregate, which makes it grouped, even without GROUP BY (18.2.4.1).
+ * Unlike {@link isGroupedQuery}, function calls are not assumed to be custom aggregates,
+ * so queries using custom functions without GROUP BY are not treated as grouped.
+ */
+export function hasBuiltInAggregate(query: Pick<QuerySelect, 'variables' | 'solutionModifiers'>): boolean {
+  return getAggregationScopeExpressions(query).some(expression => getAggregatesOfExpression(expression).length > 0);
+}
+
+/**
+ * The expressions of the SELECT, HAVING, and ORDER BY clauses, which are those that can contain aggregates.
+ */
+function getAggregationScopeExpressions(query: Pick<QuerySelect, 'variables' | 'solutionModifiers'>): Expression[] {
+  const { having, order } = query.solutionModifiers;
+  return [
     ...query.variables.flatMap(variable => 'expression' in variable ? [ variable.expression ] : []),
     ...having?.having ?? [],
     ...order?.orderDefs.map(ordering => ordering.expression) ?? [],
   ];
-  return expressions.some(expression => mayContainAggregate(expression));
 }
 
 /**

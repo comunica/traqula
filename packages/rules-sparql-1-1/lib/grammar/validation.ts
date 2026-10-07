@@ -9,7 +9,8 @@ import {
 
 /**
  * Validation rules wrap the validator functions so a parser builder can patch them.
- * They do not consume any tokens and only validate when `skipValidation` is false.
+ * They do not consume any tokens and only validate when `skipValidation` is false,
+ * either themselves or through the validation rules they invoke.
  */
 
 /**

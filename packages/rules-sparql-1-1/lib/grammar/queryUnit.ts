@@ -89,7 +89,9 @@ export const query: SparqlRule<'query', Query> = <const> {
 /**
  * [[7]](https://www.w3.org/TR/sparql11-query/#rSelectQuery)
  * Does not validate the projection: that depends on the trailing VALUES clause (18.2.4.3),
- * so {@link query} validates it once that clause is parsed, see {@link validateQuery}.
+ * so {@link query} and `queryOrUpdate` validate it once that clause is parsed, see {@link validateQuery}.
+ * Callers that invoke this rule directly should invoke `validateSelectQuery` on its result,
+ * including the trailing VALUES clause, themselves.
  */
 export const selectQuery: SparqlRule<'selectQuery', Omit<QuerySelect, HandledByBase>> = <const> {
   name: 'selectQuery',

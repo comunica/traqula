@@ -14,15 +14,14 @@ import {
 
 /**
  * Validates the projection of a SELECT query, including its trailing VALUES clause, see {@link queryProjectionIsGood}.
- * Invoked by {@link validateQuery}, which passes any query form, other query forms are ignored.
+ * Invoked by {@link validateQuery} once the trailing VALUES clause is parsed.
  */
-export const validateSelectQuery:
-SparqlGrammarRule<'validateSelectQuery', void, [Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where'>]> = {
+export const validateSelectQuery: SparqlGrammarRule<'validateSelectQuery', void, [
+  Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
+]> = {
   name: 'validateSelectQuery',
   impl: ({ ACTION }) => (C, query) => {
-    // TODO(major): take a Query, so other query forms are excluded by the type instead of at runtime.
-    ACTION(() => !C.skipValidation && (!C.astFactory.isQuery(query) || C.astFactory.isQuerySelect(query)) &&
-      queryProjectionIsGood(query));
+    ACTION(() => !C.skipValidation && queryProjectionIsGood(query));
   },
 };
 
@@ -43,9 +42,11 @@ export const validateSubSelect: SparqlGrammarRule<'validateSubSelect', void, [Su
  */
 export const validateQuery: SparqlGrammarRule<'validateQuery', void, [Query]> = {
   name: 'validateQuery',
-  impl: ({ SUBRULE }) => (_, query) => {
-    // TODO(major): remove this cast once validateSelectQuery takes a Query.
-    SUBRULE(validateSelectQuery, <QuerySelect> query);
+  impl: ({ ACTION, SUBRULE }) => (C, query) => {
+    // Validation rules consume no tokens, so this subrule does not need to be recorded in the grammar.
+    if (ACTION(() => C.astFactory.isQuerySelect(query))) {
+      SUBRULE(validateSelectQuery, <QuerySelect> query);
+    }
   },
 };
 

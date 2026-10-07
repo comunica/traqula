@@ -1,4 +1,4 @@
-SELECT ?v (COUNT(*) AS ?c) WHERE {
+SELECT ?v (COUNT(?o) AS ?c) WHERE {
   ?s ?p ?o
 }
 VALUES ?v { 1 }

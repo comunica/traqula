@@ -60,7 +60,8 @@ export const versionDecl: SparqlRule<'versionDecl', ContextDefinitionVersion> = 
 
 /**
  * [[9]](https://www.w3.org/TR/sparql12-query/#rSelectQuery)
- * @deprecated Same as {@link S11.selectQuery}, the SPARQL 1.2 validation moved to {@link validateSelectQuery}.
+ * @deprecated Same as {@link S11.selectQuery}, the SPARQL 1.2 validation moved to {@link validateSelectQuery},
+ * which {@link S11.validateQuery} invokes once the trailing VALUES clause is parsed.
  */
 // TODO(major): remove
 export const selectQuery: SparqlGrammarRule<'selectQuery', Omit<QuerySelect, 'type' | 'context' | 'values'>> = <const> {
@@ -95,13 +96,11 @@ export const selectQuery: SparqlGrammarRule<'selectQuery', Omit<QuerySelect, 'ty
  * (Validator has changed: https://github.com/w3c/sparql-query/pull/380)
  */
 export const validateSelectQuery: SparqlGrammarRule<'validateSelectQuery', void, [
-  Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where'>,
+  Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
 ]> = {
   name: 'validateSelectQuery',
   impl: ({ ACTION }) => (C, query) => {
-    // TODO(major): take a Query, so other query forms are excluded by the type instead of at runtime.
-    ACTION(() => !C.skipValidation && (!C.astFactory.isQuery(query) || C.astFactory.isQuerySelect(query)) &&
-      queryProjectionIsGood(query));
+    ACTION(() => !C.skipValidation && queryProjectionIsGood(query));
   },
 };
 

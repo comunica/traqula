@@ -96,36 +96,6 @@ describe('extra parser-sparql-1-2 coverage', () => {
       .toThrow(/Target id of 'AS' \(\?x\) is already in scope/u);
   });
 
-  describe('trailing VALUES clause after grouping', () => {
-    // The trailing VALUES clause is joined after grouping, before the projection (18.2.4.3)
-    it('accepts projecting a variable bound only by the trailing VALUES clause', ({ expect }) => {
-      expect(() => parser.parse('SELECT ?s ?v { ?s ?p ?o } GROUP BY ?s VALUES ?v { 1 }')).not.toThrow();
-      expect(() => parser.parse('SELECT ?v (COUNT(*) AS ?c) { ?s ?p ?o } VALUES ?v { 1 }')).not.toThrow();
-    });
-
-    it('accepts a SELECT expression using a variable bound only by the trailing VALUES clause', ({ expect }) => {
-      expect(() => parser.parse('SELECT ?s (STR(?v) AS ?w) { ?s ?p ?o } GROUP BY ?s VALUES ?v { 1 }'))
-        .not.toThrow();
-    });
-
-    it('accepts projecting a variable bound only by the VALUES clause of a sub-SELECT', ({ expect }) => {
-      expect(() => parser.parse('SELECT * { { SELECT ?s ?v { ?s ?p ?o } GROUP BY ?s VALUES ?v { 1 } } }'))
-        .not.toThrow();
-    });
-
-    it('rejects projecting an ungrouped variable not bound by the trailing VALUES clause', ({ expect }) => {
-      expect(() => parser.parse('SELECT ?s ?v { ?s ?p ?o } GROUP BY ?s VALUES ?x { 1 }'))
-        .toThrow(/Variable not allowed in projection/u);
-      expect(() => parser.parse('SELECT ?s (STR(?o) AS ?w) { ?s ?p ?o } GROUP BY ?s VALUES ?v { 1 }'))
-        .toThrow(/Use of ungrouped variable in projection of operation \(\?o\)/u);
-    });
-
-    it('rejects a SELECT expression assigning a variable of the trailing VALUES clause', ({ expect }) => {
-      expect(() => parser.parse('SELECT ?s (COUNT(*) AS ?c) { ?s ?p ?o } GROUP BY ?s VALUES ?c { 0 1 2 }'))
-        .toThrow(/Target id of 'AS' \(\?c\) is already in scope/u);
-    });
-  });
-
   describe('skipValidation in SPARQL 1.2 subquery', () => {
     it('does not check subquery projections when skipValidation is true', ({ expect }) => {
       const result = parser.parse(

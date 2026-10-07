@@ -1,5 +1,5 @@
 import type { SparqlGrammarRule } from '../sparql11HelperTypes.js';
-import type { Pattern, Query, SubSelect, Update } from '../Sparql11types.js';
+import type { Pattern, Query, QuerySelect, SubSelect, Update } from '../Sparql11types.js';
 import {
   checkBlankNodeBGPScope,
   checkNote13,
@@ -14,12 +14,15 @@ import {
 
 /**
  * Validates the projection of a SELECT query, including its trailing VALUES clause, see {@link queryProjectionIsGood}.
- * Other query forms are ignored.
+ * Invoked by {@link validateQuery}, which passes any query form, other query forms are ignored.
  */
-export const validateSelectQuery: SparqlGrammarRule<'validateSelectQuery', void, [Query]> = {
+export const validateSelectQuery:
+SparqlGrammarRule<'validateSelectQuery', void, [Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where'>]> = {
   name: 'validateSelectQuery',
   impl: ({ ACTION }) => (C, query) => {
-    ACTION(() => !C.skipValidation && C.astFactory.isQuerySelect(query) && queryProjectionIsGood(query));
+    // TODO(major): take a Query, so other query forms are excluded by the type instead of at runtime.
+    ACTION(() => !C.skipValidation && (!C.astFactory.isQuery(query) || C.astFactory.isQuerySelect(query)) &&
+      queryProjectionIsGood(query));
   },
 };
 
@@ -41,7 +44,8 @@ export const validateSubSelect: SparqlGrammarRule<'validateSubSelect', void, [Su
 export const validateQuery: SparqlGrammarRule<'validateQuery', void, [Query]> = {
   name: 'validateQuery',
   impl: ({ SUBRULE }) => (_, query) => {
-    SUBRULE(validateSelectQuery, query);
+    // TODO(major): remove this cast once validateSelectQuery takes a Query.
+    SUBRULE(validateSelectQuery, <QuerySelect> query);
   },
 };
 

@@ -21,7 +21,6 @@ import type {
   Pattern,
   PatternBgp,
   PatternValues,
-  Query,
   QuerySelect,
   SubSelect,
   Term,
@@ -95,10 +94,14 @@ export const selectQuery: SparqlGrammarRule<'selectQuery', Omit<QuerySelect, 'ty
  * OVERRIDING RULE: {@link S11.validateSelectQuery}.
  * (Validator has changed: https://github.com/w3c/sparql-query/pull/380)
  */
-export const validateSelectQuery: SparqlGrammarRule<'validateSelectQuery', void, [Query]> = {
+export const validateSelectQuery: SparqlGrammarRule<'validateSelectQuery', void, [
+  Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where'>,
+]> = {
   name: 'validateSelectQuery',
   impl: ({ ACTION }) => (C, query) => {
-    ACTION(() => !C.skipValidation && C.astFactory.isQuerySelect(query) && queryProjectionIsGood(query));
+    // TODO(major): take a Query, so other query forms are excluded by the type instead of at runtime.
+    ACTION(() => !C.skipValidation && (!C.astFactory.isQuery(query) || C.astFactory.isQuerySelect(query)) &&
+      queryProjectionIsGood(query));
   },
 };
 

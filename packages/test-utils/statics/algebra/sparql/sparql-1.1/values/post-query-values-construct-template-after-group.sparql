@@ -1,0 +1,4 @@
+CONSTRUCT { ?s <http://example.org/rank> ?rank }
+WHERE { ?s ?p ?o }
+GROUP BY ?s
+VALUES (?s ?rank) { (<http://example.org/a> 1) }

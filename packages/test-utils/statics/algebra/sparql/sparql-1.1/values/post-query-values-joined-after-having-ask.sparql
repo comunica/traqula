@@ -1,0 +1,5 @@
+ASK
+WHERE { ?s ?p ?o }
+GROUP BY ?s
+HAVING (?v = 1)
+VALUES ?v { 1 }

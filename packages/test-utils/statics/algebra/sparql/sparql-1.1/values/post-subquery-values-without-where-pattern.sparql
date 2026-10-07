@@ -1,0 +1,6 @@
+SELECT * WHERE {
+  {
+    SELECT * WHERE {}
+    VALUES ?v { 1 }
+  }
+}

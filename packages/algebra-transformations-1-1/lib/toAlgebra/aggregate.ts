@@ -20,7 +20,7 @@ import {
   translateInlineData,
   translateTerm,
 } from './general.js';
-import { translateExpression } from './patterns.js';
+import { simplifiedJoin, translateExpression } from './patterns.js';
 import { translateBasicGraphPattern, translateQuad } from './tripleAndQuad.js';
 
 /**
@@ -81,7 +81,7 @@ export const translateAggregates: AlgebraIndir<'translateAggregates', Algebra.Op
 
     // 18.2.4.3
     if (query.values) {
-      res = AF.createJoin([ res, SUBRULE(translateInlineData, query.values) ]);
+      res = SUBRULE(simplifiedJoin, res, SUBRULE(translateInlineData, query.values));
     }
 
     // 18.2.4.4

@@ -1,0 +1,4 @@
+PREFIX ex: <http://example.org/>
+CONSTRUCT { ?s <http://example.org/v> ?v }
+WHERE { ?s ?p ?o . VALUES ?s { ex:s1 ex:s2 } }
+GROUP BY ?s

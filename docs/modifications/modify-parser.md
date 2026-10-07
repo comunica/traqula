@@ -64,9 +64,6 @@ The ParserBuilder has a few functions that facilitate parser modification:
 The SPARQL grammars run their AST validators (e.g., the in-scope checks of `SELECT (expr AS ?v)` and `BIND`)
 through validation rules such as `validateSelectQuery`, `validateSubSelect` and `validateGroupGraphPatternSub`.
 These rules consume no tokens and only validate when `skipValidation` is `false`.
-The projection check of a `SELECT` query depends on its trailing `VALUES` clause,
-so `validateQuery` runs it by invoking `validateSelectQuery` once that clause is parsed:
-disabling `validateQuery` disables the projection check too, and deleting `validateSelectQuery` requires patching `validateQuery`.
 Patch them like any other rule to change or disable a specific validation:
 
 ```typescript

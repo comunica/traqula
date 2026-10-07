@@ -1,10 +1,9 @@
 import type { SparqlGrammarRule } from '../sparql11HelperTypes.js';
-import type { Pattern, Query, QuerySelect, SubSelect, Update } from '../Sparql11types.js';
+import type { Pattern, Query, SubSelect, Update } from '../Sparql11types.js';
 import {
   checkBlankNodeBGPScope,
   checkNote13,
   queryProjectionIsGood,
-  selectExpressionAliasesNotInValues,
   updateNoReuseBlankNodeLabels,
 } from '../validation/validators.js';
 
@@ -14,13 +13,13 @@ import {
  */
 
 /**
- * Validates the projection of a SELECT query, see {@link queryProjectionIsGood}.
+ * Validates the projection of a SELECT query, including its trailing VALUES clause, see {@link queryProjectionIsGood}.
+ * Other query forms are ignored.
  */
-export const validateSelectQuery:
-SparqlGrammarRule<'validateSelectQuery', void, [Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where'>]> = {
+export const validateSelectQuery: SparqlGrammarRule<'validateSelectQuery', void, [Query]> = {
   name: 'validateSelectQuery',
   impl: ({ ACTION }) => (C, query) => {
-    ACTION(() => !C.skipValidation && queryProjectionIsGood(query));
+    ACTION(() => !C.skipValidation && C.astFactory.isQuerySelect(query) && queryProjectionIsGood(query));
   },
 };
 
@@ -35,13 +34,14 @@ export const validateSubSelect: SparqlGrammarRule<'validateSubSelect', void, [Su
 };
 
 /**
- * Validates a query against its trailing VALUES clause, see {@link selectExpressionAliasesNotInValues}.
+ * Validates a query, including its trailing VALUES clause, see {@link validateSelectQuery}.
+ * The trailing VALUES clause is joined before the projection (18.2.4.3),
+ * so the projection can only be validated once it is parsed.
  */
 export const validateQuery: SparqlGrammarRule<'validateQuery', void, [Query]> = {
   name: 'validateQuery',
-  impl: ({ ACTION }) => (C, query) => {
-    ACTION(() => !C.skipValidation && C.astFactory.isQuerySelect(query) &&
-      selectExpressionAliasesNotInValues(query));
+  impl: ({ SUBRULE }) => (_, query) => {
+    SUBRULE(validateSelectQuery, query);
   },
 };
 

@@ -146,10 +146,13 @@ export function findPatternBoundedVars(
 /**
  * Verify that the projected variables (select head) are allowed:
  * - no group-by on select *
- * - if group-by, selected variables need to be collected by the group-by
+ * - if group-by, selected variables need to be collected by the group-by,
+ *   or bound by the trailing VALUES clause, which is joined after grouping (18.2.4.3)
  * - 'select ?var as ?other', ?other cannot be in scope
  */
-export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where'>): void {
+export function queryProjectionIsGood(
+  query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
+): void {
   // NoGroupByOnWildcardSelect
   if (query.variables.length === 1 && F.isWildcard(query.variables[0])) {
     if (query.solutionModifiers.group !== undefined) {
@@ -172,11 +175,12 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
     //  2. A selectCount will create an implicit group by clause.
     // Variables bound by preceding (expr AS ?var) expressions are in scope for later expressions.
     const asBoundVars = new Set<string>();
+    const valuesVars = new Set(query.values?.variables.map(variable => variable.value));
     for (const selectVar of variables) {
       if (F.isTerm(selectVar)) {
-        if (!groupBy || !groupBy.groupings.map(groupvar =>
+        if (!valuesVars.has(selectVar.value) && (!groupBy || !groupBy.groupings.map(groupvar =>
           getExpressionId(<T11.Expression | T11.SolutionModifierGroupBind> groupvar))
-          .includes((getExpressionId(selectVar)))) {
+          .includes((getExpressionId(selectVar))))) {
           throw new Error('Variable not allowed in projection');
         }
       } else if (getAggregatesOfExpression(<T11.Expression> selectVar.expression).length === 0) {
@@ -184,8 +188,8 @@ export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'so
         const usedvars = new Set<string>();
         getVariablesFromExpression(selectVar.expression, usedvars);
         for (const usedvar of usedvars) {
-          // If the var is created within the select, it is fine.
-          if (asBoundVars.has(usedvar)) {
+          // If the var is created within the select or bound by the trailing VALUES clause, it is fine.
+          if (asBoundVars.has(usedvar) || valuesVars.has(usedvar)) {
             continue;
           }
           if (!groupBy || !groupBy.groupings.map(groupVar =>

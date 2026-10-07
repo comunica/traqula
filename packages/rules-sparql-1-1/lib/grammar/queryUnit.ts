@@ -22,7 +22,7 @@ import { expression } from './expression.js';
 import { prologue, var_, varOrIri, varOrTerm } from './general.js';
 import { solutionModifier } from './solutionModifier.js';
 import { triplesBlock, triplesTemplate } from './tripleBlock.js';
-import { validateQuery, validateSelectQuery, validateSubSelect } from './validation.js';
+import { validateQuery, validateSubSelect } from './validation.js';
 import { inlineData, whereClause } from './whereClause.js';
 
 /**
@@ -115,7 +115,6 @@ export const selectQuery: SparqlRule<'selectQuery', Omit<QuerySelect, HandledByB
       } satisfies RuleDefReturn<typeof selectQuery>;
       return ret;
     });
-    SUBRULE(validateSelectQuery, result);
     return result;
   },
   gImpl: ({ SUBRULE }) => (ast, { astFactory: F }) => {

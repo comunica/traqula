@@ -21,6 +21,7 @@ import type {
   Pattern,
   PatternBgp,
   PatternValues,
+  Query,
   QuerySelect,
   SubSelect,
   Term,
@@ -86,7 +87,6 @@ export const selectQuery: SparqlGrammarRule<'selectQuery', Omit<QuerySelect, 'ty
         modifiers.limitOffset,
       ),
     } satisfies RuleDefReturn<typeof selectQuery>));
-    SUBRULE(validateSelectQuery, result);
     return result;
   },
 };
@@ -95,12 +95,10 @@ export const selectQuery: SparqlGrammarRule<'selectQuery', Omit<QuerySelect, 'ty
  * OVERRIDING RULE: {@link S11.validateSelectQuery}.
  * (Validator has changed: https://github.com/w3c/sparql-query/pull/380)
  */
-export const validateSelectQuery: SparqlGrammarRule<'validateSelectQuery', void, [
-  Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where'>,
-]> = {
+export const validateSelectQuery: SparqlGrammarRule<'validateSelectQuery', void, [Query]> = {
   name: 'validateSelectQuery',
   impl: ({ ACTION }) => (C, query) => {
-    ACTION(() => !C.skipValidation && queryProjectionIsGood(query));
+    ACTION(() => !C.skipValidation && C.astFactory.isQuerySelect(query) && queryProjectionIsGood(query));
   },
 };
 

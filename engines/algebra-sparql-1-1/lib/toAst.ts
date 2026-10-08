@@ -84,6 +84,9 @@ import {
   algToSparql,
   registerAlgGroupBy,
   replaceAlgAggregatorVariables,
+  collectAlgVariables,
+  requiresAlgSubquery,
+  wrapAlgInSubquery,
 } from '@traqula/algebra-transformations-1-1';
 import { IndirBuilder } from '@traqula/core';
 import type { SparqlQuery } from '@traqula/rules-sparql-1-1';
@@ -150,9 +153,14 @@ export const toAst11Builder = IndirBuilder
     removeAlgQuads,
     removeAlgQuadsRecursive,
     splitAlgBgpToGraphs,
+  )
+  .addMany(
     // QueryUnit
     translateAlgConstruct,
     replaceAlgAggregatorVariables,
+    collectAlgVariables,
+    requiresAlgSubquery,
+    wrapAlgInSubquery,
     translateAlgProject,
     registerAlgGroupBy,
     registerOrderBy,

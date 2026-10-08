@@ -16,7 +16,7 @@ import type {
 import type { Algebra } from '../index.js';
 import { types } from '../toAlgebra/index.js';
 import { inScopeVariables } from '../util.js';
-import type { AstContext, AstIndir } from './core.js';
+import type { AstIndir } from './core.js';
 import { resetContext } from './core.js';
 import { translateAlgExpressionOrOrdering, translateAlgPureExpression } from './expression.js';
 import type { RdfTermToAst } from './general.js';
@@ -67,62 +67,100 @@ AstIndir<'replaceAggregatorVariables', unknown, [unknown, Record<string, Express
 };
 
 /**
- * Collects the names of all variables in the given value, not descending into the given keys.
+ * Collects the names of all variables in the given value, not descending into the given keys at the top level.
  */
-function collectVariables(value: unknown, names: Set<string>, ignoreKeys: string[] = []): Set<string> {
-  if ((<RDF.Term> value)?.termType === 'Variable') {
-    names.add((<RDF.Variable> value).value);
-  } else if (typeof value === 'object' && value !== null) {
-    for (const [ key, child ] of Object.entries(value)) {
-      if (!ignoreKeys.includes(key)) {
-        collectVariables(child, names);
+export const collectAlgVariables:
+AstIndir<'collectVariables', Set<string>, [unknown, Set<string>, string[]?]> = {
+  name: 'collectVariables',
+  fun: ({ SUBRULE }) => (_, value, names, ignoreKeys = []) => {
+    if ((<RDF.Term> value)?.termType === 'Variable') {
+      names.add((<RDF.Variable> value).value);
+    } else if (typeof value === 'object' && value !== null) {
+      for (const [ key, child ] of Object.entries(value)) {
+        if (!ignoreKeys.includes(key)) {
+          SUBRULE(collectAlgVariables, child, names);
+        }
       }
     }
-  }
-  return names;
-}
+    return names;
+  },
+};
 
 /**
- * Moves the extends of a SELECT's input, from the outermost one binding a variable in `cut` inward,
- * into a SELECT subquery projecting everything they bind.
- * Orderings in between stay outside, since a subquery does not keep its order.
- * Aggregate variables are only projected when the outer query references them.
+ * Whether the query form needs the extends and group of its input to be evaluated in a SELECT subquery.
+ * Above a group, extends that would become BINDs are evaluated before the grouping.
+ * Without a SELECT clause, a query form can moreover only read the group variables of a group.
+ * @param op the query form
+ * @param bindVariables the variables of the extends that are not placed as SELECT expressions or group conditions
+ * @param aggregateVariables the variables the aggregates of the group are bound to
  */
-function wrapExtendsInSubquery(
-  c: AstContext,
-  op: Algebra.Project,
-  cut: Set<string>,
-  aggregateVariables: Set<string>,
-): Algebra.Project {
-  const outerVariables = collectVariables(op.variables, new Set());
-  const orderings: Algebra.OrderBy[] = [];
-  function stripOrderings(input: Algebra.Operation): Algebra.Operation {
-    if (input.type === types.ORDER_BY) {
-      orderings.push(input);
-      collectVariables(input.expressions, outerVariables);
-      return stripOrderings(input.input);
+export const requiresAlgSubquery: AstIndir<
+  'requiresSubquery',
+boolean,
+[Algebra.Project | Algebra.Ask | Algebra.Describe | Algebra.Construct, Set<string>, Set<string>]
+> = {
+  name: 'requiresSubquery',
+  fun: ({ SUBRULE }) => ({ group, aggregates }, op, bindVariables, aggregateVariables) => {
+    if (group.length === 0 && aggregates.length === 0) {
+      return false;
     }
-    if (input.type === types.EXTEND) {
-      return { ...input, input: stripOrderings(input.input) };
+    if (bindVariables.size > 0) {
+      return true;
     }
-    return input;
-  }
-  function wrap(input: Algebra.Operation): Algebra.Operation {
-    if (input.type === types.ORDER_BY || (input.type === types.EXTEND && !cut.has(input.variable.value))) {
-      collectVariables(input, outerVariables, [ 'input' ]);
-      return { ...input, input: wrap(input.input) };
+    if (op.type === types.PROJECT) {
+      return false;
     }
-    const subqueryInput = stripOrderings(input);
-    const projection = inScopeVariables(subqueryInput)
-      .filter(variable => !aggregateVariables.has(variable.value) || outerVariables.has(variable.value));
-    let result: Algebra.Operation = c.algebraFactory.createProject(subqueryInput, projection);
-    for (const ordering of orderings.reverse()) {
-      result = { ...ordering, input: result };
+    const formVariables = SUBRULE(collectAlgVariables, op, new Set(), [ 'input' ]);
+    return [ ...aggregateVariables ].some(variable => formVariables.has(variable));
+  },
+};
+
+/**
+ * Moves the input of a query form, from the outermost extend binding one of `bindVariables` inward,
+ * into a SELECT subquery projecting everything it binds.
+ * Orderings in that part stay outside, since a subquery does not keep its order.
+ * Aggregate variables are only projected when the outer query references them.
+ * @param op the query form
+ * @param bindVariables the variables of the extends that are not placed as SELECT expressions or group conditions
+ * @param aggregateVariables the variables the aggregates of the group are bound to
+ */
+export const wrapAlgInSubquery: AstIndir<
+  'wrapInSubquery',
+Algebra.Project | Algebra.Ask | Algebra.Describe | Algebra.Construct,
+[Algebra.Project | Algebra.Ask | Algebra.Describe | Algebra.Construct, Set<string>, Set<string>]
+> = {
+  name: 'wrapInSubquery',
+  fun: ({ SUBRULE }) => ({ algebraFactory: AF }, op, bindVariables, aggregateVariables) => {
+    const outerVariables = SUBRULE(collectAlgVariables, op, new Set(), [ 'input' ]);
+    const orderings: Algebra.OrderBy[] = [];
+    function stripOrderings(input: Algebra.Operation): Algebra.Operation {
+      if (input.type === types.ORDER_BY) {
+        orderings.push(input);
+        SUBRULE(collectAlgVariables, input.expressions, outerVariables);
+        return stripOrderings(input.input);
+      }
+      if (input.type === types.EXTEND) {
+        return { ...input, input: stripOrderings(input.input) };
+      }
+      return input;
     }
-    return result;
-  }
-  return { ...op, input: wrap(op.input) };
-}
+    function wrap(input: Algebra.Operation): Algebra.Operation {
+      if (input.type === types.ORDER_BY || (input.type === types.EXTEND && !bindVariables.has(input.variable.value))) {
+        SUBRULE(collectAlgVariables, input, outerVariables, [ 'input' ]);
+        return { ...input, input: wrap(input.input) };
+      }
+      const subqueryInput = stripOrderings(input);
+      const projection = inScopeVariables(subqueryInput)
+        .filter(variable => !aggregateVariables.has(variable.value) || outerVariables.has(variable.value));
+      let result: Algebra.Operation = AF.createProject(subqueryInput, projection);
+      for (const ordering of orderings.reverse()) {
+        result = { ...ordering, input: result };
+      }
+      return result;
+    }
+    return { ...op, input: wrap(op.input) };
+  },
+};
 
 export const translateAlgProject:
 AstIndir<
@@ -208,17 +246,15 @@ PatternGroup,
     }
     SUBRULE(registerAlgGroupBy, result, extensions);
     SUBRULE(registerOrderBy, result, unselectedAggregators);
-    // DESCRIBE can only list terms, not `(expr AS ?variable)`, so its extends stay BINDs in the WHERE clause.
+    // DESCRIBE can only list terms, not `(expr AS ?variable)`, so its extends are left as BINDs.
     SUBRULE(registerVariables, select, variables, type === types.DESCRIBE ? Object.create(null) : extensions);
     // The extends that are not SELECT expressions or group conditions are left, they would become BINDs.
-    //  Above a group, a BIND would be evaluated before the grouping, so these extends move into a SELECT subquery.
-    const bindVariables = Object.keys(extensions);
-    if (type === types.PROJECT && bindVariables.length > 0 && (c.group.length > 0 || c.aggregates.length > 0)) {
-      const aggregateVariables = new Set(c.aggregates.map(aggregate => aggregate.variable.value));
+    const bindVariables = new Set(Object.keys(extensions));
+    const aggregateVariables = new Set(Object.keys(aggregators));
+    if (SUBRULE(requiresAlgSubquery, op, bindVariables, aggregateVariables)) {
       // Recover state and translate again, with the input wrapped in a subquery
       Object.assign(c, { extend, group, aggregates, having, values, order });
-      const wrapped = wrapExtendsInSubquery(c, <Algebra.Project> op, new Set(bindVariables), aggregateVariables);
-      return SUBRULE(translateAlgProject, wrapped, type);
+      return SUBRULE(translateAlgProject, SUBRULE(wrapAlgInSubquery, op, bindVariables, aggregateVariables), type);
     }
     SUBRULE(putExtensionsInGroup, result, extensions);
 

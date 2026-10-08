@@ -15,7 +15,8 @@ import type {
 } from '@traqula/rules-sparql-1-1';
 import type { Algebra } from '../index.js';
 import { types } from '../toAlgebra/index.js';
-import type { AstIndir } from './core.js';
+import { inScopeVariables } from '../util.js';
+import type { AstContext, AstIndir } from './core.js';
 import { resetContext } from './core.js';
 import { translateAlgExpressionOrOrdering, translateAlgPureExpression } from './expression.js';
 import type { RdfTermToAst } from './general.js';
@@ -64,6 +65,64 @@ AstIndir<'replaceAggregatorVariables', unknown, [unknown, Record<string, Express
     return s;
   },
 };
+
+/**
+ * Collects the names of all variables in the given value, not descending into the given keys.
+ */
+function collectVariables(value: unknown, names: Set<string>, ignoreKeys: string[] = []): Set<string> {
+  if ((<RDF.Term> value)?.termType === 'Variable') {
+    names.add((<RDF.Variable> value).value);
+  } else if (typeof value === 'object' && value !== null) {
+    for (const [ key, child ] of Object.entries(value)) {
+      if (!ignoreKeys.includes(key)) {
+        collectVariables(child, names);
+      }
+    }
+  }
+  return names;
+}
+
+/**
+ * Moves the extends of a SELECT's input, from the outermost one binding a variable in `cut` inward,
+ * into a SELECT subquery projecting everything they bind.
+ * Orderings in between stay outside, since a subquery does not keep its order.
+ * Aggregate variables are only projected when the outer query references them.
+ */
+function wrapExtendsInSubquery(
+  c: AstContext,
+  op: Algebra.Project,
+  cut: Set<string>,
+  aggregateVariables: Set<string>,
+): Algebra.Project {
+  const outerVariables = collectVariables(op.variables, new Set());
+  const orderings: Algebra.OrderBy[] = [];
+  function stripOrderings(input: Algebra.Operation): Algebra.Operation {
+    if (input.type === types.ORDER_BY) {
+      orderings.push(input);
+      collectVariables(input.expressions, outerVariables);
+      return stripOrderings(input.input);
+    }
+    if (input.type === types.EXTEND) {
+      return { ...input, input: stripOrderings(input.input) };
+    }
+    return input;
+  }
+  function wrap(input: Algebra.Operation): Algebra.Operation {
+    if (input.type === types.ORDER_BY || (input.type === types.EXTEND && !cut.has(input.variable.value))) {
+      collectVariables(input, outerVariables, [ 'input' ]);
+      return { ...input, input: wrap(input.input) };
+    }
+    const subqueryInput = stripOrderings(input);
+    const projection = inScopeVariables(subqueryInput)
+      .filter(variable => !aggregateVariables.has(variable.value) || outerVariables.has(variable.value));
+    let result: Algebra.Operation = c.algebraFactory.createProject(subqueryInput, projection);
+    for (const ordering of orderings.reverse()) {
+      result = { ...ordering, input: result };
+    }
+    return result;
+  }
+  return { ...op, input: wrap(op.input) };
+}
 
 export const translateAlgProject:
 AstIndir<
@@ -151,6 +210,16 @@ PatternGroup,
     SUBRULE(registerOrderBy, result, unselectedAggregators);
     // DESCRIBE can only list terms, not `(expr AS ?variable)`, so its extends stay BINDs in the WHERE clause.
     SUBRULE(registerVariables, select, variables, type === types.DESCRIBE ? Object.create(null) : extensions);
+    // The extends that are not SELECT expressions or group conditions are left, they would become BINDs.
+    //  Above a group, a BIND would be evaluated before the grouping, so these extends move into a SELECT subquery.
+    const bindVariables = Object.keys(extensions);
+    if (type === types.PROJECT && bindVariables.length > 0 && (c.group.length > 0 || c.aggregates.length > 0)) {
+      const aggregateVariables = new Set(c.aggregates.map(aggregate => aggregate.variable.value));
+      // Recover state and translate again, with the input wrapped in a subquery
+      Object.assign(c, { extend, group, aggregates, having, values, order });
+      const wrapped = wrapExtendsInSubquery(c, <Algebra.Project> op, new Set(bindVariables), aggregateVariables);
+      return SUBRULE(translateAlgProject, wrapped, type);
+    }
     SUBRULE(putExtensionsInGroup, result, extensions);
 
     // Filters on top of the group are HAVING conditions, they can reference the aggregators

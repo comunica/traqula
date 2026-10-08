@@ -15,7 +15,7 @@ import type {
 } from '@traqula/rules-sparql-1-1';
 import type { Algebra } from '../index.js';
 import { types } from '../toAlgebra/index.js';
-import { inScopeVariables } from '../util.js';
+import { inScopeVariables, visitObject } from '../util.js';
 import type { AstIndir } from './core.js';
 import { resetContext } from './core.js';
 import { translateAlgExpressionOrOrdering, translateAlgPureExpression } from './expression.js';
@@ -67,21 +67,21 @@ AstIndir<'replaceAggregatorVariables', unknown, [unknown, Record<string, Express
 };
 
 /**
- * Collects the names of all variables in the given value, not descending into the given keys at the top level.
+ * Collects the names of all variables in the given value, not descending into the given keys of the value itself.
  */
 export const collectAlgVariables:
-AstIndir<'collectVariables', Set<string>, [unknown, Set<string>, string[]?]> = {
+AstIndir<'collectVariables', Set<string>, [object, Set<string>, string[]?]> = {
   name: 'collectVariables',
-  fun: ({ SUBRULE }) => (_, value, names, ignoreKeys = []) => {
-    if ((<RDF.Term> value)?.termType === 'Variable') {
-      names.add((<RDF.Variable> value).value);
-    } else if (typeof value === 'object' && value !== null) {
-      for (const [ key, child ] of Object.entries(value)) {
-        if (!ignoreKeys.includes(key)) {
-          SUBRULE(collectAlgVariables, child, names);
+  fun: () => (_, value, names, ignoreKeys = []) => {
+    visitObject(
+      value,
+      (object) => {
+        if ((<RDF.Term> object).termType === 'Variable') {
+          names.add((<RDF.Variable> object).value);
         }
-      }
-    }
+      },
+      object => (object === value ? { ignoreKeys: new Set(ignoreKeys) } : {}),
+    );
     return names;
   },
 };

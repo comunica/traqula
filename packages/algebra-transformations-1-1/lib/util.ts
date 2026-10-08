@@ -279,6 +279,15 @@ export const visitOperation = transformer.visitNode.bind(transformer);
 export const visitOperationAsync = transformer.visitNodeAsync.bind(transformer);
 
 /**
+ * Visits every object in the given object, deepest first, regardless of its type.
+ * Unlike {@link visitOperation}, it also steps into the RDF terms.
+ * @param startObject the object from which we will start visiting.
+ * @param visitor callback called on every visited object.
+ * @param preVisitor callback providing the {@link VisitContext} for an object, before its descendants are visited.
+ */
+export const visitObject = transformer.visitObject.bind(transformer);
+
+/**
  * Visits an object and it's descendants, similar to {@link visitOperation},
  * but also allowing you to target subTypes. e.g.:
  * e.g.:

@@ -260,5 +260,6 @@ and the project operation always gets used (even in the case of `SELECT *`).
 
 ## A note on tests
 
-Every test consists of a sparql file and a corresponding json file containing the algebra result.
-Tests ending with `-quads` in their name are tested/generated with `quads: true` in the options.
+Every test consists of a sparql file and two corresponding json files containing the algebra result:
+one generated with `quads: false`, and one, ending with `-quads`, generated with `quads: true`.
+See [the fixtures README](../../packages/test-utils/statics/algebra/README.md) for the full layout.

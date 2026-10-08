@@ -3,18 +3,23 @@
 This directory holds the static fixtures used by the algebra-conversion tests in
 `engines/algebra-sparql-1-1` and `engines/algebra-sparql-1-2`.
 
-Every test case is **one SPARQL query**, represented **five times**. All five representations live at the *same relative path*, which is how the
+Every test case is **one SPARQL query**, translated both with `quads: false` and with `quads: true`.
+The query is stored once; each of the four derived representations is stored twice,
+once at `NN` (`quads: false`) and once at `NN-quads` (`quads: true`).
+All representations live at the *same relative path*, which is how the
 test generators pair them up.
 
 ```
 statics/algebra/
-├── sparql/                        <suite>/.../NN.sparql          the input query
-├── algebra/                       <suite>/.../NN.json             expected algebra (blankToVariable: false)
-├── algebra-blank-to-var/          <suite>/.../NN.json             expected algebra (blankToVariable: true)
+├── sparql/                        <suite>/.../NN.sparql                    the input query
+├── algebra/                       <suite>/.../NN{,-quads}.json             expected algebra (blankToVariable: false)
+├── algebra-blank-to-var/          <suite>/.../NN{,-quads}.json             expected algebra (blankToVariable: true)
 └── canonical-sparql/
-    ├── base/                      <suite>/.../NN.sparql            algebra → AST → generator round-trip (blankToVariable: false)
-    └── blank-to-var/              <suite>/.../NN.sparql            same round-trip (blankToVariable: true)
+    ├── base/                      <suite>/.../NN{,-quads}.sparql           algebra → AST → generator round-trip (blankToVariable: false)
+    └── blank-to-var/              <suite>/.../NN{,-quads}.sparql           same round-trip (blankToVariable: true)
 ```
+
+Do not name a query in `sparql/` with a `-quads` suffix: both variants are always derived from the single query.
 
 `<suite>` is one of the `AlgebraTestSuite` values: `dawg-syntax`, `sparql-1.1`,
 `sparql11-query`, `sparql12`.
@@ -57,7 +62,7 @@ elsewhere. Both the SPARQL 1.1 and the SPARQL 1.2 engine run them.
 
     *Skip step 2-3 if you added a negative test.*
 
-2. **Generate the other four files automatically.**
+2. **Generate the other eight files automatically.**
 
     Use the generator scripts:
 

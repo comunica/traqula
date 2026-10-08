@@ -4,10 +4,9 @@ import { algebraUtils } from '@traqula/algebra-transformations-1-1';
 import { Generator } from '@traqula/generator-sparql-1-1';
 import { Parser } from '@traqula/parser-sparql-1-1';
 import { AstFactory } from '@traqula/rules-sparql-1-1';
-import { sparqlQueries, getStaticFilePath } from '@traqula/test-utils';
+import { type AlgebraTestSuite, sparqlQueries, getStaticFilePath } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
 import { toAlgebra, toAst } from '../lib/index.js';
-import { suites } from './algebra.test.js';
 
 // WARNING: use this script with caution!
 // After running this script, manual inspection of the output is needed to make sure that conversion happened correctly.
@@ -19,6 +18,8 @@ const rootJsonBlankToVariable = join(rootDir, 'algebra-blank-to-var');
 
 const canonicalSparqlBase = join(rootDir, 'canonical-sparql', 'base');
 const canonicalSparqlBlankToVar = join(rootDir, 'canonical-sparql', 'blank-to-var');
+// Not imported from algebra.test.ts: collecting those tests fails while fixtures are still missing.
+const suites: AlgebraTestSuite[] = [ 'dawg-syntax', 'sparql11-query', 'sparql-1.1' ];
 
 describe.skip('algebra test generate', () => {
   const astFactory = new AstFactory();

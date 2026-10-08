@@ -409,6 +409,20 @@ GROUP BY ?s`);
       const result = toAst(<Algebra.Operation>deleteInsert);
       expect(result).toMatchObject({ updates: [{ operation: { subType: 'deletewhere' }}]});
     });
+
+    it('round-trips an empty DELETE WHERE', ({ expect }) => {
+      const result = roundTripQuads('DELETE WHERE {}');
+      expect(result).toMatch(/^DELETE WHERE \{\s*\}$/u);
+      expect(roundTripQuads(result)).toBe(result);
+      expect(roundTripQuads('DELETE WHERE {}; DELETE WHERE {}'))
+        .toMatch(/^DELETE WHERE \{\s*\}\s*;\s*DELETE WHERE \{\s*\}$/u);
+    });
+
+    it('round-trips an empty DELETE template with a non-empty WHERE', ({ expect }) => {
+      const result = roundTripQuads('DELETE {} WHERE { ?s ?p ?o }');
+      expect(result).toMatch(/^DELETE \{\s*\}\s*WHERE/u);
+      expect(roundTripQuads(result)).toBe(result);
+    });
   });
 
   describe('translateAlgCompositeUpdate with NOP', () => {

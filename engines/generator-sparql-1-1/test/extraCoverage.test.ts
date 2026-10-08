@@ -151,4 +151,12 @@ SELECT * WHERE { VALUES ?x { ex:a ex:b ex:c } ?x ?x ?x }`);
       expect(() => parser.parse(out)).not.toThrow();
     });
   });
+
+  describe('modify gImpl with empty templates', () => {
+    it('prints an empty DELETE template when both templates are empty', ({ expect }) => {
+      const out = generator.generate(F.forcedAutoGenTree(parser.parse('DELETE {} WHERE { ?s ?p ?o }')));
+      expect(out).toMatch(/^DELETE \{\s*\}\s*WHERE/u);
+      expect(() => parser.parse(out)).not.toThrow();
+    });
+  });
 });

@@ -1,4 +1,5 @@
 import type * as RDF from '@rdfjs/types';
+import type { PreOrderMappingReturn } from '@traqula/core';
 import type {
   BasicGraphPattern,
   Expression,
@@ -14,13 +15,19 @@ import type {
   TermVariable,
 } from '@traqula/rules-sparql-1-1';
 import type { Algebra } from '../index.js';
-import { types } from '../toAlgebra/index.js';
+import { isVariable, types } from '../toAlgebra/index.js';
+import { algebraTransformer, inScopeVariables, visitObject } from '../util.js';
 import type { AstIndir } from './core.js';
-import { resetContext } from './core.js';
+import { findAlgGroupBelow, resetContext } from './core.js';
 import { translateAlgExpressionOrOrdering, translateAlgPureExpression } from './expression.js';
 import type { RdfTermToAst } from './general.js';
 import { translateAlgPattern, translateAlgTerm } from './general.js';
 import { translateAlgPatternNew } from './pattern.js';
+
+/**
+ * Only steps into the operations a callback asks to continue into.
+ */
+const chainTransformer = algebraTransformer({ continue: false });
 
 /**
  * Only delegates to {@link translateAlgProject}, like the other query forms.
@@ -65,14 +72,157 @@ AstIndir<'replaceAggregatorVariables', unknown, [unknown, Record<string, Express
   },
 };
 
+/**
+ * Collects the names of all variables in the given value, not descending into the given keys of the value itself.
+ */
+export const collectAlgVariables:
+AstIndir<'collectVariables', Set<string>, [object, Set<string>, string[]?]> = {
+  name: 'collectVariables',
+  fun: () => (_, value, names, ignoreKeysList = []) => {
+    const ignoreKeys = new Set(ignoreKeysList);
+    visitObject(
+      value,
+      (object) => {
+        const term = <RDF.Term> object;
+        if (isVariable(term)) {
+          names.add(term.value);
+        }
+      },
+      object => (object === value ? { ignoreKeys } : {}),
+    );
+    return names;
+  },
+};
+
+/**
+ * The query forms {@link translateAlgProject} translates.
+ */
+export type AlgQueryForm = Algebra.Project | Algebra.Ask | Algebra.Describe | Algebra.Construct;
+
+/**
+ * Where the input of a query form is cut into a SELECT subquery by {@link wrapAlgInSubquery}.
+ */
+export interface AlgSubqueryCut {
+  /**
+   * The outermost operation of the input that moves into the subquery.
+   */
+  start: Algebra.Operation;
+  /**
+   * The variables the aggregates of the group are bound to.
+   */
+  aggregateVariables: Set<string>;
+}
+
+/**
+ * SELECT expressions are evaluated after the WHERE clause, so an extend can only become a SELECT expression
+ * when all extends around it do too. From the first unprojected extend inward, extends are BINDs.
+ * @return how many of the given extends, outermost first, can become SELECT expressions.
+ */
+function countSelectableExtends(
+  outermostFirst: Algebra.Extend[],
+  isProjected: (variable: RDF.Variable) => boolean,
+): number {
+  const firstUnprojected = outermostFirst.findIndex(extend => !isProjected(extend.variable));
+  return firstUnprojected < 0 ? outermostFirst.length : firstUnprojected;
+}
+
+/**
+ * Determines whether the query form needs the extends and group of its input to be evaluated in a SELECT subquery.
+ * Above a group, extends that are not SELECT expressions would be BINDs, evaluated before the grouping.
+ * Without a SELECT clause, a query form can moreover only read the group variables of a group.
+ * The group is found by {@link findAlgGroupBelow}, below the chain of extends and orderings of the input.
+ * @return the cut, or undefined when no subquery is needed.
+ */
+export const findAlgSubqueryCut: AstIndir<'findSubqueryCut', AlgSubqueryCut | undefined, [AlgQueryForm]> = {
+  name: 'findSubqueryCut',
+  fun: ({ SUBRULE }) => (_, op) => {
+    // The extends on top of the input, outermost first
+    const chainExtends: Algebra.Extend[] = [];
+    let input = op.input;
+    while (input.type === types.EXTEND || input.type === types.ORDER_BY) {
+      if (input.type === types.EXTEND) {
+        chainExtends.push(input);
+      }
+      input = input.input;
+    }
+    const group = SUBRULE(findAlgGroupBelow, input, 'values');
+    if (group) {
+      const aggregateVariables = new Set(group.aggregates.map(aggregate => aggregate.variable.value));
+      // Without a SELECT clause, no extend can become a SELECT expression
+      const projected = new Set(op.type === types.PROJECT ? op.variables.map(variable => variable.value) : []);
+      const selectable = countSelectableExtends(chainExtends, variable => projected.has(variable.value));
+      if (selectable < chainExtends.length) {
+        return { start: chainExtends[selectable], aggregateVariables };
+      }
+      if (op.type !== types.PROJECT) {
+        // Without a SELECT clause, the aggregate variables are only visible from a subquery
+        const formVariables = SUBRULE(collectAlgVariables, op, new Set(), [ 'input' ]);
+        const readsAggregate = [ ...aggregateVariables ].some(variable => formVariables.has(variable));
+        return readsAggregate ? { start: input, aggregateVariables } : undefined;
+      }
+    }
+  },
+};
+
+/**
+ * Moves the input of a query form, from the cut's `start` inward,
+ * into a SELECT subquery projecting everything it binds.
+ * Orderings in that part stay outside, since a subquery does not keep its order.
+ * Aggregate variables are only projected when the outer query references them.
+ */
+export const wrapAlgInSubquery: AstIndir<'wrapInSubquery', AlgQueryForm, [AlgQueryForm, AlgSubqueryCut]> = {
+  name: 'wrapInSubquery',
+  fun: ({ SUBRULE }) => ({ algebraFactory: AF }, op, { start, aggregateVariables }) => {
+    const outerVariables = new Set<string>();
+    function wrap(input: Algebra.Operation): Algebra.Operation {
+      // Lift the orderings out of the part that moves into the subquery
+      const orderings: Algebra.OrderBy[] = [];
+      const subqueryInput = chainTransformer.transformNodePreOrder<'unsafe', Algebra.Operation>(input, {
+        [types.EXTEND]: extend => ({ newValue: extend, continue: true }),
+        [types.ORDER_BY]: (ordering) => {
+          orderings.push(ordering);
+          SUBRULE(collectAlgVariables, ordering.expressions, outerVariables);
+          return { newValue: ordering.input, continue: true, reTransform: true };
+        },
+      });
+      const projection = inScopeVariables(subqueryInput)
+        .filter(variable => !aggregateVariables.has(variable.value) || outerVariables.has(variable.value));
+      return orderings.reduceRight<Algebra.Operation>(
+        (result, ordering) => ({ ...ordering, input: result }),
+        AF.createProject(subqueryInput, projection),
+      );
+    }
+    // Walk down from the query form to the start of the subquery, through the orderings and extends that stay outside
+    const step = (operation: AlgQueryForm | Algebra.Extend | Algebra.OrderBy): PreOrderMappingReturn => {
+      SUBRULE(collectAlgVariables, operation, outerVariables, [ 'input' ]);
+      if (operation.input === start) {
+        return { newValue: { ...operation, input: wrap(operation.input) }};
+      }
+      return { newValue: operation, continue: true };
+    };
+    return chainTransformer.transformNodePreOrder<'unsafe', typeof op>(op, {
+      [types.PROJECT]: step,
+      [types.ASK]: step,
+      [types.DESCRIBE]: step,
+      [types.CONSTRUCT]: step,
+      [types.EXTEND]: step,
+      [types.ORDER_BY]: step,
+    });
+  },
+};
+
 export const translateAlgProject:
 AstIndir<
   'translateProject',
 PatternGroup,
-[Algebra.Project | Algebra.Ask | Algebra.Describe | Algebra.Construct, string]
+[AlgQueryForm, string]
 > = {
   name: 'translateProject',
   fun: ({ SUBRULE }) => (c, op, type) => {
+    const cut = SUBRULE(findAlgSubqueryCut, op);
+    if (cut) {
+      op = SUBRULE(wrapAlgInSubquery, op, cut);
+    }
     const F = c.astFactory;
     const result: QueryBase = <any> {
       type: 'query',
@@ -249,10 +399,7 @@ AstIndir<'registerVariables', void, [QuerySelect, RDF.Variable[] | undefined, Re
       const unplacedExtends = extend.filter(extend => unplacedExpressions[extend.variable.value]);
       const isProjected = (variable: RDF.Variable): boolean => variables.some(term => term.value === variable.value);
 
-      // SELECT expressions are evaluated after the WHERE clause, so an extend can only become a SELECT expression
-      //  when all extends around it do too. From the first unprojected extend inward, extends stay BINDs.
-      const firstUnprojected = unplacedExtends.findIndex(extend => !isProjected(extend.variable));
-      const selectedExtends = firstUnprojected < 0 ? unplacedExtends : unplacedExtends.slice(0, firstUnprojected);
+      const selectedExtends = unplacedExtends.slice(0, countSelectableExtends(unplacedExtends, isProjected));
       const extendsKeptAsBind = new Set(
         unplacedExtends.slice(selectedExtends.length).map(extend => extend.variable.value),
       );

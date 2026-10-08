@@ -1,0 +1,10 @@
+SELECT ?s ?e WHERE {
+  {
+    SELECT ?s ( ?s AS ?e ) WHERE {
+      ?s ?p ?o .
+    }
+    GROUP BY ?s
+    ORDER BY ASC ( ?s )
+  }
+  FILTER ( BOUND( ?e ) )
+}

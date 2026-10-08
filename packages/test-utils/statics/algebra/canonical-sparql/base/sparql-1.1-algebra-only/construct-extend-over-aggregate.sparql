@@ -1,0 +1,9 @@
+CONSTRUCT {
+  ?s <ex:count> ?c .
+}
+WHERE {
+  SELECT ?s ( COUNT( ?o ) AS ?c ) WHERE {
+    ?s ?p ?o .
+  }
+  GROUP BY ?s
+}

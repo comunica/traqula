@@ -435,7 +435,8 @@ export const modify: SparqlRule<'modify', UpdateOperationModify> = <const> {
       F.printFilter(ast, () => PRINT_WORDS('WITH'));
       SUBRULE(iri, ast.graph);
     }
-    if (ast.delete.length > 0) {
+    // Modify needs at least one template: print an empty DELETE template when both are empty.
+    if (ast.delete.length > 0 || ast.insert.length === 0) {
       F.printFilter(ast, () => {
         C[traqulaIndentation] += indentInc;
         PRINT_WORDS('DELETE', '{');

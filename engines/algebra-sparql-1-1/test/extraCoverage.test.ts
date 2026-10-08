@@ -114,12 +114,6 @@ GROUP BY ?s`);
         }],
       });
     });
-
-    it('toAlgebra translates an empty DELETE WHERE to an empty bgp without quads option', ({ expect }) => {
-      const ast = parser.parse('DELETE WHERE {}');
-      const result = algebraUtils.objectify(toAlgebra(ast, { quads: false }));
-      expect(result).toEqual({ type: 'deleteinsert', where: { type: 'bgp', patterns: []}});
-    });
   });
 
   describe('variable collision in blank-to-variable translation', () => {

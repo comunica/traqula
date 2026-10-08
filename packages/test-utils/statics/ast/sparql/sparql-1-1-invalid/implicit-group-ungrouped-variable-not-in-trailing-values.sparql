@@ -1,0 +1,4 @@
+SELECT ?s (COUNT(?o) AS ?c) WHERE {
+  ?s ?p ?o
+}
+VALUES ?v { 1 }

@@ -121,9 +121,8 @@ and embedded into the patterns it contained.
 The default value for this parameter is `false`.
 For update queries, even in the case of `quads: false`, the DELETE and INSERT templates are always converted to quads.
 The WHERE clause, including that of the `DELETE WHERE` shortcut, follows the `quads` option.
-With `quads: false`, `WITH <g>` is translated by wrapping the WHERE clause in a `graph` operation for `<g>`.
-This differs from SPARQL Update in one edge case: when `<g>` is not a graph in the dataset,
-the `graph` operation has no solutions, even when the WHERE clause matches no data (e.g. only `FILTER NOT EXISTS` or `BIND`).
+With `quads: false`, `WITH <g>` (without `USING`) is translated by wrapping the WHERE clause in a `graph` operation for `<g>`,
+following the [formal mapping of SPARQL Update](https://www.w3.org/TR/sparql12-update/#mappingRequestsToOperations).
 ```
 PREFIX : <http://www.example.org/>
 

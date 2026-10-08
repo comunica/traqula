@@ -1,5 +1,5 @@
 <p align="center">
-    <img alt="Traqula logo" width="70%" style="border-radius: 20px" src="/assets/white-on-red/logo-white-on-red-lettered-social.png">
+    <img alt="Traqula logo" width="70%" style="border-radius: 20px" src="../../assets/white-on-red/logo-white-on-red-lettered-social.png">
 </p>
 
 <p align="center">
@@ -54,3 +54,11 @@ const queryString = generator.generate(ast);
 
 Note that a single generator cannot generate multiple queries in parallel.
 The generator is constructed as a simple extension of the existing [SPARQL 1.1 generator](../generator-sparql-1-1), the documentation of that generator thus also holds for this one.
+
+## Modifying the built Generator
+
+> [!note]
+> Minor versions keep this engine's API and behavior, and the name, signature and behavior of the rules in its builders,
+> but can add rules or change how existing rules are implemented, such as which rules they call.
+> This only affects projects that patch, delete or individually register rules.
+> See [versioning](https://github.com/comunica/traqula#versioning).

@@ -9,6 +9,7 @@ import { traqulaIndentation } from '@traqula/core';
 import { CommonIRIs, funcExpr1, funcExpr3, gram as S11, lex as l11 } from '@traqula/rules-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import * as l12 from './lexer.js';
+import { decodeUchar } from './parserUtils.js';
 import type { SparqlGeneratorRule, SparqlGrammarRule, SparqlRule } from './sparql12HelperTypes.js';
 import type {
   Annotation,
@@ -17,7 +18,11 @@ import type {
   Expression,
   GraphNode,
   GraphTerm,
+  Pattern,
   PatternBgp,
+  PatternValues,
+  QuerySelect,
+  SubSelect,
   Term,
   TermBlank,
   TermIri,
@@ -28,7 +33,12 @@ import type {
   TripleCollectionReifiedTriple,
   TripleNesting,
 } from './sparql12Types.js';
-import { langTagHasCorrectRange } from './validators.js';
+import {
+  checkNote13,
+  langTagHasCorrectRange,
+  queryProjectionIsGood,
+  valuesVariablesAreUnique,
+} from './validators.js';
 
 /**
  *[[7]](https://www.w3.org/TR/sparql12-query/#rVersionDecl)
@@ -49,14 +59,96 @@ export const versionDecl: SparqlRule<'versionDecl', ContextDefinitionVersion> = 
 };
 
 /**
+ * [[9]](https://www.w3.org/TR/sparql12-query/#rSelectQuery)
+ * @deprecated Same as {@link S11.selectQuery}, the SPARQL 1.2 validation moved to {@link validateSelectQuery},
+ * which {@link S11.validateQuery} invokes once the trailing VALUES clause is parsed.
+ */
+// TODO(major): remove
+export const selectQuery: SparqlGrammarRule<'selectQuery', Omit<QuerySelect, 'type' | 'context' | 'values'>> = <const> {
+  name: 'selectQuery',
+  impl: ({ ACTION, SUBRULE }) => (C) => {
+    const selectVal = SUBRULE(S11.selectClause);
+    const from = SUBRULE(S11.datasetClauseStar);
+    const where = SUBRULE(S11.whereClause);
+    const modifiers = SUBRULE(S11.solutionModifier);
+
+    const result = ACTION(() => ({
+      subType: 'select',
+      where: where.val,
+      solutionModifiers: modifiers,
+      datasets: from,
+      ...selectVal.val,
+      loc: C.astFactory.sourceLocation(
+        selectVal,
+        where,
+        modifiers.group,
+        modifiers.having,
+        modifiers.order,
+        modifiers.limitOffset,
+      ),
+    } satisfies RuleDefReturn<typeof selectQuery>));
+    return result;
+  },
+};
+
+/**
+ * OVERRIDING RULE: {@link S11.validateSelectQuery}.
+ * (Validator has changed: https://github.com/w3c/sparql-query/pull/380)
+ */
+export const validateSelectQuery: SparqlGrammarRule<'validateSelectQuery', void, [
+  Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
+]> = {
+  name: 'validateSelectQuery',
+  impl: ({ ACTION }) => (C, query) => {
+    ACTION(() => !C.skipValidation && queryProjectionIsGood(query));
+  },
+};
+
+/**
+ * OVERRIDING RULE: {@link S11.validateSubSelect}.
+ * Uses the SPARQL 1.2 projection validation.
+ */
+export const validateSubSelect: SparqlGrammarRule<'validateSubSelect', void, [SubSelect]> = {
+  name: 'validateSubSelect',
+  impl: ({ ACTION }) => (C, query) => {
+    ACTION(() => !C.skipValidation && queryProjectionIsGood(query));
+  },
+};
+
+/**
+ * OVERRIDING RULE: {@link S11.validateGroupGraphPatternSub}.
+ * Uses the SPARQL 1.2 in-scope variables.
+ */
+export const validateGroupGraphPatternSub: SparqlGrammarRule<'validateGroupGraphPatternSub', void, [Pattern[]]> = {
+  name: 'validateGroupGraphPatternSub',
+  impl: ({ ACTION }) => (C, patterns) => {
+    ACTION(() => !C.skipValidation && checkNote13(patterns));
+  },
+};
+
+/**
+ * OVERRIDING RULE: {@link S11.dataBlock}.
+ * [[66]](https://www.w3.org/TR/sparql12-query/#rDataBlock)
+ * SPARQL 1.2 requires the variables of VALUES to be unique (grammar note 10).
+ */
+export const dataBlock: SparqlGrammarRule<'dataBlock', PatternValues> = <const> {
+  name: 'dataBlock',
+  impl: $ => (C) => {
+    const values = S11.dataBlock.impl($)(C);
+    $.ACTION(() => !C.skipValidation && valuesVariablesAreUnique(values));
+    return values;
+  },
+};
+
+/**
  * [[8]](https://www.w3.org/TR/sparql12-query/#rVersionSpecifier)
  */
 export const versionSpecifier: SparqlGrammarRule<'versionSpecifier', Wrap<string>> = {
   name: 'versionSpecifier',
   impl: ({ ACTION, CONSUME, OR }) => (C) => {
     const token = OR([
-      { ALT: () => CONSUME(l11.terminals.stringLiteral1) },
-      { ALT: () => CONSUME(l11.terminals.stringLiteral2) },
+      { ALT: () => CONSUME(l12.stringLiteral1) },
+      { ALT: () => CONSUME(l12.stringLiteral2) },
     ]);
     return ACTION(() => C.astFactory.wrap(token.image.slice(1, -1), C.astFactory.sourceLocation(token)));
   },
@@ -632,6 +724,7 @@ SparqlGrammarRule<'exprTripleTermObject', RuleDefReturn<typeof exprTripleTermSub
     ]),
 };
 
+// TODO next major: fix builtIn
 export const buildInLangDir = funcExpr1(l12.buildInLangDir);
 export const buildInLangStrDir = funcExpr3(l12.buildInStrLangDir);
 export const buildInHasLang = funcExpr1(l12.buildInHasLang);
@@ -694,6 +787,92 @@ export const rdfLiteral: SparqlGrammarRule<'rdfLiteral', RuleDefReturn<typeof S1
         ));
       } },
     ])) ?? value;
+  },
+};
+
+/**
+ * OVERRIDING RULE: {@link S11.string}.
+ * [[155]](https://www.w3.org/TR/sparql12-query/#rString)
+ *
+ * Uses the SPARQL 1.2 string tokens (which include UCHAR in their patterns).
+ * Applies single-pass decoding of UCHAR and ECHAR sequences so that a backslash
+ * produced by a UCHAR (e.g. \u005C → \) is never re-interpreted as an ECHAR prefix.
+ * Per the SPARQL 1.2 spec exapmles: \u005Cn -> \n
+ */
+export const string: SparqlGrammarRule<'string', T11.TermLiteralStr> = {
+  name: 'string',
+  impl: ({ ACTION, CONSUME, OR }) => (C) => {
+    const tuple = OR([
+      { ALT: () => {
+        const token = CONSUME(l12.stringLiteral1);
+        return <const>[ token, token.image.slice(1, -1) ];
+      } },
+      { ALT: () => {
+        const token = CONSUME(l12.stringLiteral2);
+        return <const>[ token, token.image.slice(1, -1) ];
+      } },
+      { ALT: () => {
+        const token = CONSUME(l12.stringLiteralLong1);
+        return <const>[ token, token.image.slice(3, -3) ];
+      } },
+      { ALT: () => {
+        const token = CONSUME(l12.stringLiteralLong2);
+        return <const>[ token, token.image.slice(3, -3) ];
+      } },
+    ]);
+    return ACTION(() => {
+      const [ token, raw ] = tuple;
+      const F = C.astFactory;
+      // Single-pass: decode UCHAR and ECHAR together so a backslash from a UCHAR
+      // is never re-processed as an ECHAR prefix.
+      const ecmap: Record<string, string> = {
+        t: '\t',
+        n: '\n',
+        r: '\r',
+        b: '\b',
+        f: '\f',
+        '"': '"',
+        '\'': '\'',
+        '\\': '\\',
+      };
+      const value = raw.replaceAll(
+        /\\u([\dA-Fa-f]{4})|\\U([\dA-Fa-f]{8})|\\(.)/gsu,
+        (_, u4: string | undefined, u8: string | undefined, echar: string | undefined) => {
+          if (u4 !== undefined || u8 !== undefined) {
+            return decodeUchar((u4 ?? u8)!);
+          }
+          return ecmap[echar!];
+        },
+      );
+      // Catch literal surrogate code units embedded directly in the query (not via \uXXXX).
+      if (/[\uD800-\uDBFF](?:[^\uDC00-\uDFFF]|$)/u.test(value)) {
+        throw new Error(`Invalid unicode codepoint of surrogate pair without corresponding codepoint`);
+      }
+      return F.termLiteral(F.sourceLocation(token), value);
+    });
+  },
+};
+
+/**
+ * OVERRIDING RULE: {@link S11.iriFull}.
+ * [[160]](https://www.w3.org/TR/sparql12-query/#rIRIREF)
+ *
+ * Uses the SPARQL 1.2 IRI token (which includes UCHAR in its pattern) and applies
+ * codepoint escape decoding via {@link SparqlContext.codepointEscape}.
+ */
+export const iriFull: SparqlGrammarRule<'iriFull', T11.TermIriFull> = {
+  name: 'iriFull',
+  impl: ({ ACTION, CONSUME }) => (C) => {
+    const iriToken = CONSUME(l12.iriRef);
+    return ACTION(() => {
+      const raw = iriToken.image.slice(1, -1);
+      return C.astFactory.termNamed(
+        C.astFactory.sourceLocation(iriToken),
+        // TODO: next major replace with implementation of codePointEscape.
+        //  The function no longer serves the intended purpose since it is not reusable for `string`.
+        C.codepointEscape(raw),
+      );
+    });
   },
 };
 

@@ -1,5 +1,6 @@
 import type * as RDF from '@rdfjs/types';
 import type { IndirDef } from '@traqula/core';
+import type { Expression, PatternValues } from '@traqula/rules-sparql-1-1';
 import { AstFactory, AstTransformer } from '@traqula/rules-sparql-1-1';
 import * as Algebra from '../algebra.js';
 import { AlgebraFactory } from '../algebraFactory.js';
@@ -24,6 +25,14 @@ export interface AstContext {
    */
   aggregates: Algebra.BoundAggregate[];
   /**
+   * All HAVING conditions (filters directly on top of a group) found in our suboperations
+   */
+  having: Expression[];
+  /**
+   * The VALUES joined on top of a group found in our suboperations, the query's trailing VALUES clause
+   */
+  values?: PatternValues;
+  /**
    * All orderings found in our suboperations
    */
   order: Algebra.Expression[];
@@ -38,6 +47,7 @@ export function createAstContext(): AstContext {
     extend: [],
     group: [],
     aggregates: [],
+    having: [],
     order: [],
     algebraFactory: new AlgebraFactory(),
     astFactory: new AstFactory(),
@@ -55,6 +65,8 @@ export const resetContext: AstIndir<'resetContext', void, []> = {
     c.extend = [];
     c.group = [];
     c.aggregates = [];
+    c.having = [];
+    c.values = undefined;
     c.order = [];
   },
 };
@@ -62,9 +74,9 @@ export const resetContext: AstIndir<'resetContext', void, []> = {
 export const registerProjection: AstIndir<'registerProjection', void, [Algebra.Operation]> = {
   name: 'registerProjection',
   fun: () => (c, op) => {
-    // GRAPH was added because the way graphs get added back here is not the same as how they get added in the future
-    // ^ seems fine but might have to be changed if problems get detected in the future
-    if (op.type !== types.EXTEND && op.type !== types.ORDER_BY && op.type !== types.GRAPH) {
+    // GRAPH closes projection scope: Graph(?g, P) joins {?g} onto P's result, so an EXTEND
+    // inside P must render as a BIND, not get hoisted into the outer SELECT list.
+    if (op.type !== types.EXTEND && op.type !== types.ORDER_BY) {
       c.project = false;
     }
   },

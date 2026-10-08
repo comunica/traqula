@@ -1,0 +1,94 @@
+{
+  "type": "project",
+  "input": {
+    "type": "join",
+    "input": [
+      {
+        "type": "bgp",
+        "patterns": [
+          {
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": {
+              "termType": "Variable",
+              "value": "a"
+            },
+            "predicate": {
+              "termType": "NamedNode",
+              "value": "http://example.org/p"
+            },
+            "object": {
+              "termType": "Variable",
+              "value": "b"
+            },
+            "graph": {
+              "termType": "DefaultGraph",
+              "value": ""
+            }
+          }
+        ]
+      },
+      {
+        "type": "leftjoin",
+        "input": [
+          {
+            "type": "bgp",
+            "patterns": [
+              {
+                "type": "pattern",
+                "termType": "Quad",
+                "subject": {
+                  "termType": "Variable",
+                  "value": "c"
+                },
+                "predicate": {
+                  "termType": "NamedNode",
+                  "value": "http://example.org/p"
+                },
+                "object": {
+                  "termType": "Variable",
+                  "value": "d"
+                },
+                "graph": {
+                  "termType": "DefaultGraph",
+                  "value": ""
+                }
+              }
+            ]
+          },
+          {
+            "type": "bgp",
+            "patterns": [
+              {
+                "type": "pattern",
+                "termType": "Quad",
+                "subject": {
+                  "termType": "Variable",
+                  "value": "a"
+                },
+                "predicate": {
+                  "termType": "NamedNode",
+                  "value": "http://example.org/p"
+                },
+                "object": {
+                  "termType": "Variable",
+                  "value": "e"
+                },
+                "graph": {
+                  "termType": "DefaultGraph",
+                  "value": ""
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "a"
+    }
+  ]
+}

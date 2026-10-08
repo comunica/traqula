@@ -13,8 +13,12 @@ export {
   ExpressionTypes,
   Canonicalizer,
 } from '@traqula/algebra-transformations-1-1';
+export type * from './utils.js';
+
+// TODO next major: donnot export this as an object, use disambiguation instead
 type OverriddenKeys = keyof typeof algebraUtils11 & keyof typeof algebraUtils12;
-export const algebraUtils = <Omit<typeof algebraUtils11, OverriddenKeys> & typeof algebraUtils12> {
+export type AlgebraUtils = Omit<typeof algebraUtils11, OverriddenKeys> & typeof algebraUtils12;
+export const algebraUtils: AlgebraUtils = {
   ...algebraUtils11,
   ...algebraUtils12,
 };

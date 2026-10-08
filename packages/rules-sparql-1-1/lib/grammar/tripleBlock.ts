@@ -331,6 +331,8 @@ function collectionImpl<T extends string>(name: T, allowPaths: boolean): SparqlR
       // Only every 2 triple is relevant. The odd triples are linking triples.
       for (const [ idx, triple ] of ast.triples.entries()) {
         if (idx % 2 === 0) {
+          // Separate the items, otherwise `( ?a ex:b )` would be generated as `( ?aex:b )`
+          F.printFilter(ast, () => PRINT_WORD(''));
           SUBRULE(graphNodePath, triple.object);
         }
       }

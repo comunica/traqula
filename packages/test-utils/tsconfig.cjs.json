@@ -7,5 +7,10 @@
     "declaration": false,
     "outDir": "dist/cjs",
     "skipLibCheck": true
-  }
+  },
+  "include": [
+    "lib/**/*.ts"
+  ],
+  "exclude": ["dist/**", "lib/index.ts"]
+
 }

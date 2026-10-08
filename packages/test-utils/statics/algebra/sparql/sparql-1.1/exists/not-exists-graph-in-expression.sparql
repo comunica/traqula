@@ -1,0 +1,6 @@
+prefix ex: <http://www.example.org/>
+
+select ?s where {
+    ?s ex:p ?g .
+    filter (?s != ?g && not exists { graph ex:graph { ?s ex:q ?o } })
+}

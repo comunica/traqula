@@ -1,5 +1,5 @@
 <p align="center">
-    <img alt="Traqula logo" width="70%" style="border-radius: 20px" src="/assets/white-on-red/logo-white-on-red-lettered-social.png">
+    <img alt="Traqula logo" width="70%" style="border-radius: 20px" src="../../assets/white-on-red/logo-white-on-red-lettered-social.png">
 </p>
 
 <p align="center">
@@ -122,3 +122,11 @@ const sourceTrackingParser = new Parser({
   lexerConfig: { positionTracking: 'full' },
 });
 ```
+
+## Modifying the built Parser
+
+> [!note]
+> Minor versions keep this engine's API and behavior, and the name, signature and behavior of the rules in its builders,
+> but can add rules or change how existing rules are implemented, such as which rules they call.
+> This only affects projects that patch, delete or individually register rules.
+> See [versioning](https://github.com/comunica/traqula#versioning).

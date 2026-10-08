@@ -10,7 +10,7 @@ describe('lexerBuilder', () => {
     it('throws Token not found when the before-anchor is not in the list', ({ expect }) => {
       const builder = LexerBuilder.create().add(TokenA);
       // TokenB is not in the builder, so it cannot be used as the anchor
-      expect(() => (<any>builder).addBefore(TokenB, TokenC)).toThrow('Token not found');
+      expect(() => builder.addBefore(<any>TokenB, TokenC)).toThrow('Token not found');
     });
   });
 
@@ -18,14 +18,45 @@ describe('lexerBuilder', () => {
     it('throws Token not found when the after-anchor is not in the list', ({ expect }) => {
       const builder = LexerBuilder.create().add(TokenA);
       // TokenB is not in the builder
-      expect(() => (<any>builder).addAfter(TokenB, TokenC)).toThrow('Token not found');
+      expect(() => builder.addAfter(<any> TokenB, TokenC)).toThrow('Token not found');
     });
   });
 
   describe('delete', () => {
     it('throws Token not found when the token is not in the list', ({ expect }) => {
       const builder = LexerBuilder.create().add(TokenA);
-      expect(() => (<any>builder).delete(TokenB)).toThrow('Token not found');
+      expect(() => builder.delete(<any> TokenB)).toThrow('Token not found');
+    });
+
+    it('deletes when the token is in the list', ({ expect }) => {
+      const builder = LexerBuilder.create().add(TokenA);
+      expect(() => builder.delete(TokenA)).not.toThrow();
+    });
+  });
+
+  describe('deleteName', () => {
+    it('throws Token not found when the token is not in the list', ({ expect }) => {
+      const builder = LexerBuilder.create().add(TokenA);
+      expect(() => (builder).deleteToken(<any> TokenB.name))
+        .toThrow('Token with name "TokenB" not found');
+    });
+
+    it('deletes when the token is in the list', ({ expect }) => {
+      const builder = LexerBuilder.create().add(TokenA);
+      expect(() => builder.deleteToken(TokenA.name)).not.toThrow();
+    });
+  });
+
+  describe('replace', () => {
+    it('throws Token not found when the token is not in the list', ({ expect }) => {
+      const builder = LexerBuilder.create().add(TokenA);
+      expect(() => (builder).replace(<any> TokenB))
+        .toThrow('Token with name "TokenB" not found');
+    });
+
+    it('deletes when the token is in the list', ({ expect }) => {
+      const builder = LexerBuilder.create().add(TokenA);
+      expect(() => builder.replace(TokenA)).not.toThrow();
     });
   });
 

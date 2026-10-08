@@ -34,11 +34,13 @@ describe.skip('algebra 1.2 test generate', () => {
               expect(() => {
                 astFactory.resetBlankNodeCounter();
                 const ast = parser.parse(query, { astFactory });
-                const algebra = algebraUtils.objectify(toAlgebra(ast, {
+                const rawAlgebra = toAlgebra(ast, {
                   quads,
                   blankToVariable,
-                }));
-                const canonicalString = generator.generate(toAst(algebra));
+                });
+                const algebra = algebraUtils.objectify(rawAlgebra);
+                // Same as the canonical SPARQL tests: generate from the algebra itself, not its JSON form
+                const canonicalString = generator.generate(toAst(rawAlgebra));
 
                 const algebraFileName = `${name}${suffix}.json`;
                 let newPath = blankToVariable ? rootJsonBlankToVariable : rootJson;
@@ -58,7 +60,7 @@ describe.skip('algebra 1.2 test generate', () => {
 
                 writeFileSync(
                   join(blankToVariable ? rootJsonBlankToVariable : rootJson, algebraFileName),
-                  JSON.stringify(algebra, null, 2),
+                  `${JSON.stringify(algebra, null, 2)}\n`,
                 );
                 writeFileSync(
                   join(blankToVariable ? canonicalSparqlBlankToVar : canonicalSparqlBase, `${name}${suffix}.sparql`),

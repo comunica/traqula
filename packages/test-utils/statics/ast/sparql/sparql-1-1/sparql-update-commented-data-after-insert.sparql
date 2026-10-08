@@ -1,0 +1,2 @@
+INSERT # DATA
+DATA { GRAPH <ex:G> { <ex:s> <ex:p> 'o1', 'o2', 'o3' } }

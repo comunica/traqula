@@ -19,9 +19,9 @@ jobs:
           - 24.x
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
           cache: yarn
@@ -43,20 +43,23 @@ jobs:
           - windows-latest
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
           cache: yarn
       - run: yarn install --immutable
       - run: yarn build
       - run: yarn test
+      - name: Trust Coveralls Homebrew tap (Homebrew 6 requirement)
+        if: runner.os == 'macOS'
+        run: brew trust coverallsapp/coveralls
       - name: Submit coverage results
         uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.github_token }}
-          flag-name: run-${{ matrix.node-version }}
+          flag-name: run-${{ matrix.node-version }}-${{ matrix.os }}
           parallel: true
 
   coveralls:
@@ -82,23 +85,27 @@ jobs:
           - macos-latest
           - ubuntu-latest
           - windows-latest
-          - macos-14
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ matrix.node-version }}
           cache: yarn
       - run: yarn install --immutable
       - run: yarn build
+      # Refresh the cached W3C test suites weekly, so new upstream tests are picked up
+      - name: Determine RDF test suite cache week
+        id: rdf-test-suite-week
+        shell: bash
+        run: echo "week=$(date -u +%G-%V)" >> "$GITHUB_OUTPUT"
       - name: Load RDF test suite cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             .rdf-test-suite-cache
-          key: rdftestsuite-${{ hashFiles('yarn.lock') }}
+          key: rdftestsuite-${{ hashFiles('yarn.lock') }}-${{ steps.rdf-test-suite-week.outputs.week }}
       - run: yarn spec:all
       - name: Generate earl
         if: matrix.node-version == '22.x' && matrix.os == 'ubuntu-latest'
@@ -116,8 +123,8 @@ jobs:
     steps:
       - name: Ensure line endings are consistent
         run: git config --global core.autocrlf input
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.DEFAULT_NODE_VERSION }}
           cache: yarn

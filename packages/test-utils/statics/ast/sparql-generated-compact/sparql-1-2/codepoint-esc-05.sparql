@@ -1,0 +1,1 @@
+SELECT ?v WHERE { VALUES ?v { <http://example/abc👾> } }

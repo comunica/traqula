@@ -17,6 +17,36 @@ interface SubTypedNode {
   value: string;
 }
 
+interface Filter {
+  type: 'filter';
+  [key: string]: any;
+}
+
+interface Union {
+  type: 'union';
+  [key: string]: any;
+}
+
+interface Leaf {
+  type: 'leaf';
+  [key: string]: any;
+}
+
+interface DeepChain {
+  type: string;
+  depth: number;
+  child?: DeepChain;
+}
+
+interface CategoryTree {
+  type: string;
+  subType?: string;
+  value?: string;
+  child?: CategoryTree;
+  other?: CategoryTree;
+  deep?: { untyped: boolean };
+}
+
 describe('transformer', () => {
   const transformer = new TransformerTyped<Fruit | Vegetable>();
   it('makes copies when needed', ({ expect }) => {
@@ -247,6 +277,34 @@ describe('transformerSubTyped', () => {
     expect(result.value).toBe('transformed-a');
   });
 
+  it('transformNodeSpecific hands the original (pre-transform) node to the specific transform', ({ expect }) => {
+    const tree = {
+      type: 'category',
+      subType: 'a',
+      value: 'root',
+      child: { type: 'category', subType: 'b', value: 'child' },
+    };
+
+    let seenOrig: any;
+    let seenCopy: any;
+    transformer.transformNodeSpecific(tree, {}, {
+      category: {
+        a: {
+          transform: (copy: any, orig: any) => {
+            seenCopy = copy;
+            seenOrig = orig;
+            return copy;
+          },
+        },
+        b: { transform: (copy: any) => ({ ...copy, value: 'transformed-b' }) },
+      },
+    });
+
+    // The copy has its descendants already transformed, the orig still holds the input descendants.
+    expect(seenCopy.child.value).toBe('transformed-b');
+    expect(seenOrig.child.value).toBe('child');
+  });
+
   it('visitNodeSpecific visits by subType', ({ expect }) => {
     const visited: string[] = [];
     const tree = {
@@ -290,7 +348,13 @@ describe('transformerTyped without-type branches', () => {
 
   it('transformNode ignores objects without a type property', ({ expect }) => {
     const obj = { type: 'fruit', child: { noType: true }};
-    const result = <any> transformer.transformNode(obj, {});
+    const result = <typeof obj> transformer.transformNode(obj, {});
+    expect(result.child).toMatchObject({ noType: true });
+  });
+
+  it('transformNodePreOrder ignores objects without a type property', ({ expect }) => {
+    const obj = { type: 'fruit', child: { noType: true }};
+    const result = transformer.transformNodePreOrder<'unsafe', typeof obj>(obj, {});
     expect(result.child).toMatchObject({ noType: true });
   });
 
@@ -399,6 +463,13 @@ describe('transformerObject stack overflow', () => {
     expect(() => tiny.transformObject(nested, x => x)).toThrow(/Transform object stack overflowed/u);
   });
 
+  it('transformObjectPreOrder throws when stack overflows', ({ expect }) => {
+    const tiny = new TinyTransformer();
+    const nested = { a: { b: 'deep' }};
+    expect(() => tiny.transformObjectPreOrder(nested, copy => ({ newValue: copy })))
+      .toThrow(/Transform object stack overflowed/u);
+  });
+
   it('visitObject throws when stack overflows', ({ expect }) => {
     const tiny = new TinyTransformer();
     const nested = { a: { b: 'deep' }};
@@ -447,5 +518,913 @@ describe('transformerObject array with null/primitive elements', () => {
     expect(visited).not.toContain('c');
     // 'b' itself IS visited
     expect(visited).toContain('b');
+  });
+});
+
+describe('transformerObject preOrder', () => {
+  const transformer = new TransformerObject();
+
+  it('maps an object before its descendants', ({ expect }) => {
+    const mapped: string[] = [];
+    const tree = { name: 'root', child: { name: 'child', child: { name: 'grandchild' }}};
+
+    const result = <typeof tree> transformer.transformObjectPreOrder(tree, (copy) => {
+      mapped.push((<{ name: string }>copy).name);
+      return { newValue: copy };
+    });
+
+    // Pre-order means the outermost object first
+    expect(mapped).toEqual([ 'root', 'child', 'grandchild' ]);
+    expect(result).not.toBe(tree);
+    expect(result.child).not.toBe(tree.child);
+    expect(result.child.child).not.toBe(tree.child.child);
+    expect(result).toEqual(tree);
+  });
+
+  it('iterates into the mapping result instead of the object it replaced', ({ expect }) => {
+    const mapped: string[] = [];
+    const tree = { name: 'root', child: { name: 'replaced', child: { name: 'gone' }}};
+
+    const result = <typeof tree> transformer.transformObjectPreOrder(tree, (copy) => {
+      mapped.push((<{ name: string }>copy).name);
+      if ((<{ name: string }>copy).name === 'replaced') {
+        return { newValue: { name: 'replacement', child: { name: 'new' }}};
+      }
+      return { newValue: copy };
+    });
+
+    // The descendants of the replacement are iterated, those of the object it replaced are not
+    expect(mapped).toEqual([ 'root', 'replaced', 'new' ]);
+    expect(result.child).toMatchObject({ name: 'replacement', child: { name: 'new' }});
+  });
+
+  it('only shallowly copies, so descendants written by a mapper are those of the input tree', ({ expect }) => {
+    const grandChild = { name: 'grandchild' };
+    const child = { name: 'child', child: grandChild };
+    const tree = { name: 'root', child };
+
+    const result = <typeof tree> transformer.transformObjectPreOrder(tree, (copy) => {
+      if ((<{ name: string }>copy).name === 'root') {
+        (<any>copy).child.touched = 'yes';
+      }
+      return { newValue: copy };
+    });
+
+    expect(child).toMatchObject({ touched: 'yes' });
+    expect(result.child).toMatchObject({ touched: 'yes' });
+    expect(result.child).not.toBe(child);
+    expect(grandChild).not.toMatchObject({ touched: 'yes' });
+  });
+
+  it('does not map the returned value again unless asked to reTransform', ({ expect }) => {
+    const depth = { depth: 0 };
+    const stopsRightAway = <typeof depth> transformer.transformObjectPreOrder(depth, (copy) => {
+      const d = (<typeof depth>copy).depth;
+      return d < 3 ? { newValue: { depth: d + 1 }} : { newValue: copy };
+    });
+    expect(stopsRightAway).toEqual({ depth: 1 });
+
+    const untilStable = <typeof depth> transformer.transformObjectPreOrder(depth, (copy) => {
+      const d = (<typeof depth>copy).depth;
+      return d < 3 ? { newValue: { depth: d + 1 }, reTransform: true } : { newValue: copy };
+    });
+    expect(untilStable).toEqual({ depth: 3 });
+  });
+
+  it('does not map arrays as a whole, but hands back their elements', ({ expect }) => {
+    const mapped: string[] = [];
+    const tree = { name: 'root', items: [{ name: 'one' }, { name: 'two' }]};
+
+    const result = <typeof tree> transformer.transformObjectPreOrder(tree, (copy) => {
+      mapped.push((<{ name: string }>copy).name);
+      if ((<{ name: string }>copy).name === 'two') {
+        return { newValue: [{ name: 'two-a' }, { name: 'two-b' }]};
+      }
+      return { newValue: copy };
+    });
+
+    // The array itself is never given to the mapper, and neither is the one replacing 'two',
+    // their elements are mapped in turn.
+    expect(mapped).toEqual([ 'root', 'one', 'two', 'two-a', 'two-b' ]);
+    expect(result.items).not.toBe(tree.items);
+    expect(result.items).toMatchObject([{ name: 'one' }, [{ name: 'two-a' }, { name: 'two-b' }]]);
+  });
+
+  it('throws when the rewrites of a position do not converge', ({ expect }) => {
+    class ImpatientTransformer extends TransformerObject {
+      protected override readonly maxNodeRewrites = 5;
+    }
+    const impatient = new ImpatientTransformer();
+
+    expect(() => impatient.transformObjectPreOrder(
+      { name: 'loop' },
+      copy => ({ newValue: copy, reTransform: true }),
+    )).toThrow(/Pre order transform did not converge/u);
+
+    // Wrapping the argument in an array counts as a rewrite of that position too
+    expect(() => impatient.transformObjectPreOrder(
+      { name: 'wrap' },
+      copy => ({ newValue: [ copy ]}),
+    )).toThrow(/Pre order transform did not converge/u);
+  });
+
+  it('knows continue and shortcut', ({ expect }) => {
+    const deep = { name: 'deep' };
+    const doNotContinue = <any> transformer.transformObjectPreOrder(
+      { name: 'root', child: deep },
+      copy => ({ newValue: copy, continue: false }),
+    );
+    expect(doNotContinue).not.toBe(deep);
+    expect(doNotContinue.child).toBe(deep);
+
+    const mapped: string[] = [];
+    const a = { name: 'a', child: { name: 'aChild' }};
+    const shortcutted = <any> transformer.transformObjectPreOrder(
+      { name: 'root', a, b: { name: 'b' }},
+      (copy) => {
+        mapped.push((<any>copy).name);
+        return { newValue: copy, shortcut: (<any>copy).name === 'b' };
+      },
+    );
+    // The stack is unwound in reverse, so 'b' is mapped first, and ends the traversal
+    expect(mapped).toEqual([ 'root', 'b' ]);
+    // What is left on the stack keeps the place it has in the copy of its parent
+    expect(shortcutted.a).toBe(a);
+  });
+
+  it('knows shallowKeys and ignoreKeys', ({ expect }) => {
+    const ignored = { name: 'ignored' };
+    const shallow = { name: 'shallow', child: { name: 'shallowChild' }};
+    const mapped: string[] = [];
+
+    const result = <any> transformer.transformObjectPreOrder(
+      { name: 'root', ignored, shallow, kept: { name: 'kept' }},
+      (copy) => {
+        mapped.push((<any>copy).name);
+        return {
+          newValue: copy,
+          ignoreKeys: new Set([ 'ignored' ]),
+          shallowKeys: new Set([ 'shallow' ]),
+        };
+      },
+    );
+
+    expect(mapped).toEqual([ 'root', 'kept' ]);
+    expect(result.ignored).toBe(ignored);
+    expect(result.shallow).not.toBe(shallow);
+    expect(result.shallow.child).toBe(shallow.child);
+  });
+
+  it('does not copy when the default context says not to', ({ expect }) => {
+    const noCopy = new TransformerObject({ copy: false });
+    const tree = { name: 'root', child: { name: 'child' }};
+
+    const result = <any> noCopy.transformObjectPreOrder(tree, copy => ({ newValue: copy }));
+
+    expect(result).toBe(tree);
+    expect(result.child).toBe(tree.child);
+  });
+
+  it('stops iterating when the mapper returns a primitive', ({ expect }) => {
+    const mapped: string[] = [];
+    const tree = { name: 'root', child: { name: 'child', child: { name: 'gone' }}};
+
+    const result = <any> transformer.transformObjectPreOrder(tree, (copy) => {
+      mapped.push((<any>copy).name);
+      return (<any>copy).name === 'child' ? { newValue: 'primitive' } : { newValue: copy };
+    });
+
+    expect(mapped).toEqual([ 'root', 'child' ]);
+    expect(result).toMatchObject({ name: 'root', child: 'primitive' });
+  });
+
+  it('skips null/primitive values in arrays', ({ expect }) => {
+    const obj = { items: [ null, 42, 'hello', { name: 'real' }]};
+    const mapped: string[] = [];
+
+    const result = transformer.transformObjectPreOrder(obj, (copy) => {
+      if ((<any>copy).name) {
+        mapped.push((<any>copy).name);
+      }
+      return { newValue: copy };
+    });
+
+    expect(mapped).toEqual([ 'real' ]);
+    expect(result).toMatchObject(obj);
+  });
+});
+
+describe('transformerTyped preOrder', () => {
+  const transformer = new TransformerTyped<Fruit | Vegetable>();
+
+  it('only dispatches the registered types, but iterates into all of them', ({ expect }) => {
+    const tree: Fruit = { type: 'fruit', in: { type: 'vegetable', in: { type: 'fruit' }}};
+
+    const result = <any> transformer.transformNodePreOrder(tree, {
+      fruit: (copy: any) => ({ newValue: { ...copy, mapped: 'yes' }}),
+    });
+
+    expect(result.mapped).toBe('yes');
+    expect(result.in.mapped).toBeUndefined();
+    expect(result.in.in.mapped).toBe('yes');
+  });
+
+  it('sinks a node into the tree by iterating into the node it returns', ({ expect }) => {
+    const pushDown = new TransformerTyped<Filter | Union | Leaf>();
+    const tree: Filter = {
+      type: 'filter',
+      expression: 'e',
+      input: {
+        type: 'union',
+        input: [
+          { type: 'leaf', name: 'leaf1' },
+          { type: 'union', input: [{ type: 'leaf', name: 'leaf2' }, { type: 'leaf', name: 'leaf3' }]},
+        ],
+      },
+    };
+
+    const result = <any> pushDown.transformNodePreOrder(tree, {
+      filter: (copy: any) => {
+        // Sink the filter into every branch of a union - both new filters keep sinking on their own.
+        if (copy.input.type === 'union') {
+          const branches = copy.input.input.map((branch: any) => ({ ...copy, input: branch }));
+          return { newValue: { ...copy.input, input: branches }};
+        }
+        // Anything else is a barrier: returning the copy untouched stops the descent of this filter.
+        return { newValue: copy };
+      },
+    });
+
+    expect(result).toEqual({
+      type: 'union',
+      input: [
+        { type: 'filter', expression: 'e', input: { type: 'leaf', name: 'leaf1' }},
+        {
+          type: 'union',
+          input: [
+            { type: 'filter', expression: 'e', input: { type: 'leaf', name: 'leaf2' }},
+            { type: 'filter', expression: 'e', input: { type: 'leaf', name: 'leaf3' }},
+          ],
+        },
+      ],
+    });
+  });
+
+  it('completes the per type defaults with the context of the callback', ({ expect }) => {
+    const skipped = { type: 'vegetable', name: 'skipped' };
+    const defaulting = new TransformerTyped<Fruit | Vegetable>({}, {
+      fruit: { ignoreKeys: new Set([ 'skipped' ]) },
+    });
+    const tree: Fruit = { type: 'fruit', skipped, kept: { type: 'vegetable', name: 'kept' }};
+
+    const mapped: string[] = [];
+    const useDefaults = <any> defaulting.transformNodePreOrder(tree, {
+      vegetable: (copy: any) => {
+        mapped.push(copy.name);
+        return { newValue: copy };
+      },
+    });
+    // The default of the fruit applies even though it has no callback
+    expect(mapped).toEqual([ 'kept' ]);
+    expect(useDefaults.skipped).toBe(skipped);
+    expect(useDefaults.kept).not.toBe(tree.kept);
+
+    const overwritten = <any> defaulting.transformNodePreOrder(tree, {
+      fruit: (copy: any) => ({ newValue: copy, ignoreKeys: new Set([ 'kept' ]) }),
+    });
+    // The context returned by the callback wins from the default of that type
+    expect(overwritten.skipped).not.toBe(skipped);
+    expect(overwritten.kept).toBe(tree.kept);
+  });
+
+  it('never re-transforms a node without a callback', ({ expect }) => {
+    const reTransforming = new TransformerTyped<Fruit | Vegetable>({ reTransform: true });
+
+    // The default would keep handing the vegetable back to the traversal, but it is not dispatched
+    const untouched = <any> reTransforming.transformNodePreOrder({ type: 'vegetable', val: 'blep' }, {});
+    expect(untouched).toEqual({ type: 'vegetable', val: 'blep' });
+
+    // A dispatched node does inherit the default, until its callback says otherwise
+    const untilStable = <any> reTransforming.transformNodePreOrder({ type: 'fruit', count: 0 }, {
+      fruit: (copy: any) => (copy.count < 3 ?
+          { newValue: { ...copy, count: copy.count + 1 }} :
+          { newValue: copy, reTransform: false }),
+    });
+    expect(untilStable).toEqual({ type: 'fruit', count: 3 });
+  });
+});
+
+describe('transformerSubTyped preOrder', () => {
+  type Nodes = SubTypedNode | Fruit | Vegetable;
+  const transformer = new TransformerSubTyped<Nodes>();
+
+  it('transformNodeSpecificPreOrder targets subTypes', ({ expect }) => {
+    const node: SubTypedNode = { type: 'category', subType: 'a', value: 'original' };
+
+    const result = <SubTypedNode> transformer.transformNodeSpecificPreOrder(node, {}, {
+      category: {
+        a: (copy: any) => ({ newValue: { ...copy, value: 'transformed-a' }}),
+        b: (copy: any) => ({ newValue: { ...copy, value: 'transformed-b' }}),
+      },
+    });
+
+    expect(result.value).toBe('transformed-a');
+  });
+
+  it('transformNodeSpecificPreOrder falls back to the callback of the type', ({ expect }) => {
+    const tree: SubTypedNode = { type: 'category', subType: 'b', value: 'original' };
+
+    const result = <SubTypedNode> transformer.transformNodeSpecificPreOrder(
+      tree,
+      { category: (copy: any) => ({ newValue: { ...copy, value: 'transformed-type' }}) },
+      { category: { a: (copy: any) => ({ newValue: { ...copy, value: 'transformed-a' }}) }},
+    );
+
+    expect(result.value).toBe('transformed-type');
+  });
+
+  it('transformNodeSpecificPreOrder only dispatches nodes carrying a subType', ({ expect }) => {
+    // TODO(major): this should change. The first array should call always (same for the other functions).
+    const tree = {
+      type: 'category',
+      value: 'no-subType',
+      child: { type: 'category', subType: 'b', value: 'child' },
+    };
+
+    const result = <any> transformer.transformNodeSpecificPreOrder(
+      tree,
+      { category: (copy: any) => ({ newValue: { ...copy, mapped: 'yes' }}) },
+      {},
+    );
+
+    expect(result.mapped).toBeUndefined();
+    expect(result.child.mapped).toBe('yes');
+  });
+
+  it('transformNodeSpecificPreOrder does not apply the per type defaults', ({ expect }) => {
+    const defaulting = new TransformerSubTyped<Nodes>({}, {
+      category: { ignoreKeys: new Set([ 'child' ]) },
+    });
+    const tree = {
+      type: 'category',
+      subType: 'a',
+      value: 'root',
+      child: { type: 'category', subType: 'b', value: 'child' },
+    };
+
+    const mapped: string[] = [];
+    defaulting.transformNodeSpecificPreOrder(
+      tree,
+      { category: (copy: any) => {
+        mapped.push(copy.value);
+        return { newValue: copy };
+      } },
+      {},
+    );
+
+    // Contrary to transformNodePreOrder, the ignoreKeys of the category are not picked up
+    expect(mapped).toEqual([ 'root', 'child' ]);
+  });
+});
+
+describe('transformerObject async', () => {
+  const transformer = new TransformerObject();
+  const delay = (): Promise<void> => new Promise(resolve => setTimeout(resolve, Math.random() * 3));
+
+  function buildDeepChain(depth: number): DeepChain {
+    let node: DeepChain = { type: 'leaf', depth: 0 };
+    for (let index = 1; index <= depth; index++) {
+      node = { type: 'node', depth: index, child: node };
+    }
+    return node;
+  }
+
+  function buildBranchingTree(): { name: string; [key: string]: unknown } {
+    return {
+      name: 'root',
+      left: { name: 'left', a: { name: 'la' }, b: { name: 'lb' }},
+      right: { name: 'right', c: { name: 'rc', d: { name: 'rcd' }}},
+      list: [{ name: 'l0' }, { name: 'l1' }],
+    };
+  }
+
+  it('sync methods return a plain value, not a Promise', ({ expect }) => {
+    const tree = buildBranchingTree();
+    const post = transformer.transformObject(tree, copy => copy);
+    const pre = transformer.transformObjectPreOrder(tree, copy => ({ newValue: copy }));
+    expect(post).not.toBeInstanceOf(Promise);
+    expect(pre).not.toBeInstanceOf(Promise);
+    expect(transformer.visitObject(tree, () => {})).not.toBeInstanceOf(Promise);
+  });
+
+  it('async methods handle a very deep tree without call-stack overflow', async({ expect }) => {
+    const depth = 100_000;
+
+    const postSync = <DeepChain> transformer.transformObject(buildDeepChain(depth), copy => copy);
+    expect(postSync.depth).toBe(depth);
+    const postAsync = <DeepChain> await transformer.transformObjectAsync(
+      buildDeepChain(depth),
+      copy => Promise.resolve(copy),
+    );
+    expect(postAsync.depth).toBe(depth);
+
+    const preSync = <DeepChain> transformer
+      .transformObjectPreOrder(buildDeepChain(depth), copy => ({ newValue: copy }));
+    expect(preSync.depth).toBe(depth);
+    const preAsync = <DeepChain> await transformer.transformObjectPreOrderAsync(
+      buildDeepChain(depth),
+      copy => Promise.resolve({ newValue: copy }),
+    );
+    expect(preAsync.depth).toBe(depth);
+  });
+
+  it('async traversal is strictly sequential, matching sync order (post-order)', async({ expect }) => {
+    const syncLog: string[] = [];
+    transformer.transformObject(buildBranchingTree(), (copy) => {
+      if ((<{ name: string }>copy).name) {
+        syncLog.push((<{ name: string }>copy).name);
+      }
+      return copy;
+    });
+
+    const asyncLog: string[] = [];
+    await transformer.transformObjectAsync(buildBranchingTree(), async(copy) => {
+      await delay();
+      if ((<{ name: string }>copy).name) {
+        asyncLog.push((<{ name: string }>copy).name);
+      }
+      return copy;
+    });
+
+    expect(asyncLog).toEqual(syncLog);
+  });
+
+  it('async traversal is strictly sequential, matching sync order (pre-order)', async({ expect }) => {
+    const syncLog: string[] = [];
+    transformer.transformObjectPreOrder(buildBranchingTree(), (copy) => {
+      if ((<{ name: string }>copy).name) {
+        syncLog.push((<{ name: string }>copy).name);
+      }
+      return { newValue: copy };
+    });
+
+    const asyncLog: string[] = [];
+    await transformer.transformObjectPreOrderAsync(buildBranchingTree(), async(copy) => {
+      await delay();
+      if ((<{ name: string }>copy).name) {
+        asyncLog.push((<{ name: string }>copy).name);
+      }
+      return { newValue: copy };
+    });
+
+    expect(asyncLog).toEqual(syncLog);
+  });
+
+  it('async produces results deep-equal to sync (post-order)', async({ expect }) => {
+    const logic = (copy: object): object => ({ ...copy, visited: true });
+    const sync = transformer.transformObject(buildBranchingTree(), logic);
+    const asyncResult = await transformer.transformObjectAsync(
+      buildBranchingTree(),
+      copy => Promise.resolve(logic(copy)),
+    );
+    expect(asyncResult).toEqual(sync);
+  });
+
+  it('async produces results deep-equal to sync (pre-order)', async({ expect }) => {
+    const logic = (copy: object): { newValue: object } => ({ newValue: { ...copy, visited: true }});
+    const sync = transformer.transformObjectPreOrder(buildBranchingTree(), logic);
+    const asyncResult = await transformer.transformObjectPreOrderAsync(
+      buildBranchingTree(),
+      copy => Promise.resolve(logic(copy)),
+    );
+    expect(asyncResult).toEqual(sync);
+  });
+
+  it('async method handles a mapper that mixes sync and async returns', async({ expect }) => {
+    const tree = { name: 'root', a: { name: 'a' }, b: { name: 'b' }};
+    const result = <{ tag: string; a: { tag: string }; b: { tag: string }}>
+      await transformer.transformObjectAsync(tree, (copy) => {
+        const tagged = { ...copy, tag: (<{ name: string }>copy).name };
+        // Return a promise for some nodes, a plain value for others
+        return (<{ name: string }>copy).name === 'a' ? Promise.resolve(tagged) : tagged;
+      });
+    expect(result.tag).toBe('root');
+    expect(result.a.tag).toBe('a');
+    expect(result.b.tag).toBe('b');
+  });
+
+  it('sync method stores a promise a mapper returns as-is (post-order)', async({ expect }) => {
+    const promise = Promise.resolve(1);
+    const result = <Promise<number>> transformer.transformObject({ name: 'root' }, () => promise);
+    expect(result).toBe(promise);
+    await expect(result).resolves.toBe(1);
+  });
+
+  it('sync method stores a promise a mapper returns as-is (pre-order)', async({ expect }) => {
+    const promise = Promise.resolve(1);
+    const result = <Promise<number>> transformer
+      .transformObjectPreOrder({ name: 'root' }, () => ({ newValue: promise }));
+    expect(result).toBe(promise);
+    await expect(result).resolves.toBe(1);
+  });
+
+  it('handles a shortcut taken from inside a resolved promise (post-order)', async({ expect }) => {
+    const tree = buildBranchingTree();
+    const syncMapped: string[] = [];
+    transformer.transformObject(
+      tree,
+      (copy) => {
+        if ((<{ name: string }>copy).name) {
+          syncMapped.push((<{ name: string }>copy).name);
+        }
+        return copy;
+      },
+      orig => ((<{ name: string }>orig).name === 'right' ? { shortcut: true } : {}),
+    );
+
+    const asyncMapped: string[] = [];
+    await transformer.transformObjectAsync(
+      buildBranchingTree(),
+      async(copy) => {
+        await delay();
+        if ((<{ name: string }>copy).name) {
+          asyncMapped.push((<{ name: string }>copy).name);
+        }
+        return copy;
+      },
+      orig => Promise.resolve((<{ name: string }>orig).name === 'right' ? { shortcut: true } : {}),
+    );
+    expect(asyncMapped).toEqual(syncMapped);
+  });
+
+  it('transformObjectAsync supports an async pre-visitor together with an async mapper', async({ expect }) => {
+    const tree = { name: 'root', child: { name: 'child', leaf: 1 }};
+    const result = <{ mapped: boolean; child: { mapped: boolean }}> await transformer.transformObjectAsync(
+      tree,
+      async(copy) => {
+        await delay();
+        return { ...copy, mapped: true };
+      },
+      async() => {
+        await delay();
+        return {};
+      },
+    );
+    expect(result.mapped).toBe(true);
+    expect(result.child.mapped).toBe(true);
+  });
+
+  it('handles a shortcut taken from inside a resolved promise (pre-order)', async({ expect }) => {
+    const a = { name: 'a', child: { name: 'aChild' }};
+    const tree = { name: 'root', a, b: { name: 'b' }};
+
+    const mapped: string[] = [];
+    const shortcutted = <{ a: object }> await transformer.transformObjectPreOrderAsync(
+      tree,
+      async(copy) => {
+        await delay();
+        mapped.push((<{ name: string }>copy).name);
+        return { newValue: copy, shortcut: (<{ name: string }>copy).name === 'b' };
+      },
+    );
+    expect(mapped).toEqual([ 'root', 'b' ]);
+    // What is left on the stack keeps the place it has in the copy of its parent
+    expect(shortcutted.a).toBe(a);
+  });
+
+  it('async pre-order still throws (as a rejection) on reTransform non-convergence', async({ expect }) => {
+    class Impatient extends TransformerObject {
+      protected override readonly maxNodeRewrites = 5;
+    }
+    const impatient = new Impatient();
+    await expect(impatient.transformObjectPreOrderAsync(
+      { count: 0 },
+      copy => Promise.resolve({ newValue: copy, reTransform: true }),
+    )).rejects.toThrow(/did not converge/u);
+  });
+
+  it('async pre-order still throws (as a rejection) on array-wrapping non-convergence', async({ expect }) => {
+    class Impatient extends TransformerObject {
+      protected override readonly maxNodeRewrites = 5;
+    }
+    const impatient = new Impatient();
+    await expect(impatient.transformObjectPreOrderAsync(
+      { count: 0 },
+      copy => Promise.resolve({ newValue: [ copy ]}),
+    )).rejects.toThrow(/did not converge/u);
+  });
+
+  it('propagates a rejection from a mapper (post-order)', async({ expect }) => {
+    await expect(transformer.transformObjectAsync(
+      { name: 'root' },
+      () => Promise.reject(new Error('boom')),
+    )).rejects.toThrow(/boom/u);
+  });
+
+  it('propagates a rejection from a mapper (pre-order)', async({ expect }) => {
+    await expect(transformer.transformObjectPreOrderAsync(
+      { name: 'root' },
+      () => Promise.reject(new Error('boom')),
+    )).rejects.toThrow(/boom/u);
+  });
+
+  it('propagates a rejection from a visitor', async({ expect }) => {
+    await expect(transformer.visitObjectAsync(
+      { name: 'root' },
+      () => Promise.reject(new Error('boom')),
+    )).rejects.toThrow(/boom/u);
+  });
+
+  it('visitObjectAsync visits deeper objects first, sequentially', async({ expect }) => {
+    const tree = buildBranchingTree();
+    const syncLog: string[] = [];
+    transformer.visitObject(tree, (obj) => {
+      if ((<{ name: string }>obj).name) {
+        syncLog.push((<{ name: string }>obj).name);
+      }
+    });
+
+    const asyncLog: string[] = [];
+    await transformer.visitObjectAsync(buildBranchingTree(), async(obj) => {
+      await delay();
+      if ((<{ name: string }>obj).name) {
+        asyncLog.push((<{ name: string }>obj).name);
+      }
+    });
+    expect(asyncLog).toEqual(syncLog);
+  });
+});
+
+describe('transformerTyped/SubTyped async', () => {
+  const delay = (): Promise<void> => new Promise(resolve => setTimeout(resolve, Math.random() * 3));
+
+  it('transformNodeAsync dispatches per type with async callbacks', async({ expect }) => {
+    const typed = new TransformerTyped<Fruit | Vegetable>();
+    const tree: Fruit = { type: 'fruit', child: { type: 'vegetable', val: 1 }};
+    const result = <{ tag: string; child: { tag: string }}> await typed.transformNodeAsync(tree, {
+      fruit: { transform: async(copy) => {
+        await delay();
+        return { ...copy, tag: 'F' };
+      } },
+      vegetable: { transform: copy => ({ ...copy, tag: 'V' }) },
+    });
+    expect(result.tag).toBe('F');
+    expect(result.child.tag).toBe('V');
+  });
+
+  it('transformNodePreOrderAsync dispatches and honours per-type defaults', async({ expect }) => {
+    const typed = new TransformerTyped<Fruit | Vegetable>();
+    const tree: Fruit = { type: 'fruit', child: { type: 'vegetable', val: 1 }};
+    const seen: string[] = [];
+    await typed.transformNodePreOrderAsync(tree, {
+      fruit: async(copy) => {
+        await delay();
+        seen.push('fruit');
+        return { newValue: copy };
+      },
+      vegetable: (copy) => {
+        seen.push('vegetable');
+        return { newValue: copy };
+      },
+    });
+    expect(seen).toEqual([ 'fruit', 'vegetable' ]);
+  });
+
+  it('visitNodeAsync visits per type sequentially', async({ expect }) => {
+    const typed = new TransformerTyped<Fruit | Vegetable>();
+    const tree: Fruit = { type: 'fruit', child: { type: 'vegetable', val: 1 }};
+    const visited: string[] = [];
+    await typed.visitNodeAsync(tree, {
+      fruit: { visitor: async() => {
+        await delay();
+        visited.push('fruit');
+      } },
+      vegetable: { visitor: () => {
+        visited.push('vegetable');
+      } },
+    });
+    // Post-order: deeper vegetable visited before fruit
+    expect(visited).toEqual([ 'vegetable', 'fruit' ]);
+  });
+
+  it('transformNodeSpecificAsync dispatches on subType', async({ expect }) => {
+    const sub = new TransformerSubTyped<SubTypedNode>();
+    const tree: SubTypedNode = { type: 'category', subType: 'a', value: 'root' };
+    const result = <{ tag: string }> await sub.transformNodeSpecificAsync(tree, {}, {
+      category: { a: { transform: async(copy: SubTypedNode) => {
+        await delay();
+        return { ...copy, tag: 'A' };
+      } }},
+    });
+    expect(result.tag).toBe('A');
+  });
+
+  it('transformNodeSpecificPreOrderAsync dispatches on subType', async({ expect }) => {
+    const sub = new TransformerSubTyped<SubTypedNode>();
+    const tree: SubTypedNode = { type: 'category', subType: 'b', value: 'root' };
+    const seen: string[] = [];
+    await sub.transformNodeSpecificPreOrderAsync(tree, {}, {
+      category: { b: async(copy: SubTypedNode) => {
+        await delay();
+        seen.push(copy.subType);
+        return { newValue: copy };
+      } },
+    });
+    expect(seen).toEqual([ 'b' ]);
+  });
+
+  it('visitNodeSpecificAsync visits on subType', async({ expect }) => {
+    const sub = new TransformerSubTyped<SubTypedNode>();
+    const tree: SubTypedNode = { type: 'category', subType: 'a', value: 'root' };
+    const visited: string[] = [];
+    await sub.visitNodeSpecificAsync(tree, {}, {
+      category: { a: { visitor: async() => {
+        await delay();
+        visited.push('a');
+      } }},
+    });
+    expect(visited).toEqual([ 'a' ]);
+  });
+});
+
+describe('transformer async branch coverage', () => {
+  const transformer = new TransformerObject();
+  const delay = (): Promise<void> => new Promise(resolve => setTimeout(resolve, Math.random() * 2));
+
+  it('transformObjectAsync maps an array of primitives via an async mapper', async({ expect }) => {
+    const tree = { name: 'root', list: [ 1, 2, 3 ]};
+    const result = <{ list: number[] }> await transformer.transformObjectAsync(tree, async(copy) => {
+      await delay();
+      return copy;
+    });
+    expect(result.list).toEqual([ 1, 2, 3 ]);
+  });
+
+  it('visitObjectAsync visits a node whose last child is an array of primitives', async({ expect }) => {
+    const visited: string[] = [];
+    const tree = { name: 'root', list: [ 1, 2 ]};
+    await transformer.visitObjectAsync(tree, async(obj) => {
+      await delay();
+      if ((<{ name: string }>obj).name) {
+        visited.push((<{ name: string }>obj).name);
+      }
+    });
+    expect(visited).toEqual([ 'root' ]);
+  });
+
+  it('visitObjectAsync supports an async pre-visitor together with an async visitor', async({ expect }) => {
+    const visited: string[] = [];
+    const tree = { name: 'root', child: { name: 'child', leaf: 1 }};
+    await transformer.visitObjectAsync(
+      tree,
+      async(obj) => {
+        await delay();
+        if ((<{ name: string }>obj).name) {
+          visited.push((<{ name: string }>obj).name);
+        }
+      },
+      async() => {
+        await delay();
+        return {};
+      },
+    );
+    expect(visited).toEqual([ 'child', 'root' ]);
+  });
+
+  it('transformNodeAsync covers async/sync/absent pre-visitors and mappers', async({ expect }) => {
+    const typed = new TransformerTyped<Fruit | Vegetable>({}, { fruit: { continue: true }});
+    const tree: Fruit = {
+      type: 'fruit',
+      child: { type: 'vegetable', deep: { untyped: true }},
+    };
+    const result = <{ f: number; child: { type: string; deep: { untyped: boolean }}}>
+      await typed.transformNodeAsync(tree, {
+        fruit: { transform: async(copy) => {
+          await delay();
+          return { ...copy, f: 1 };
+        }, preVisitor: async() => ({}) },
+        vegetable: { preVisitor: () => ({ continue: true }) },
+      });
+    expect(result.f).toBe(1);
+    expect(result.child.type).toBe('vegetable');
+    expect(result.child.deep.untyped).toBe(true);
+  });
+
+  it('transformNodePreOrderAsync covers async/sync/absent callbacks', async({ expect }) => {
+    const typed = new TransformerTyped<Fruit | Vegetable>({}, { fruit: { continue: true }});
+    const tree: Fruit = { type: 'fruit', child: { type: 'vegetable', deep: { untyped: true }}};
+    const seen: string[] = [];
+    await typed.transformNodePreOrderAsync(tree, {
+      fruit: async(copy) => {
+        await delay();
+        seen.push('fruit');
+        return { newValue: copy };
+      },
+      vegetable: (copy) => {
+        seen.push('vegetable');
+        return { newValue: copy };
+      },
+    });
+    expect(seen).toEqual([ 'fruit', 'vegetable' ]);
+  });
+
+  it('visitNodeAsync covers async/sync/absent pre-visitors and visitors', async({ expect }) => {
+    const typed = new TransformerTyped<Fruit | Vegetable>({}, { fruit: { continue: true }});
+    const tree: Fruit = { type: 'fruit', child: { type: 'vegetable', deep: { untyped: true }}};
+    const visited: string[] = [];
+    await typed.visitNodeAsync(tree, {
+      fruit: { visitor: async() => {
+        await delay();
+        visited.push('fruit');
+      }, preVisitor: async() => ({}) },
+      vegetable: { preVisitor: () => ({}) },
+    });
+    expect(visited).toEqual([ 'fruit' ]);
+  });
+
+  it('transformNodeSpecificAsync covers specific, type-fallback and absent callbacks', async({ expect }) => {
+    const sub = new TransformerSubTyped<SubTypedNode>();
+    const tree: CategoryTree = {
+      type: 'category',
+      subType: 'a',
+      value: 'root',
+      child: {
+        type: 'category',
+        subType: 'b',
+        value: 'child',
+        other: { type: 'widget', subType: 'z', value: 'w' },
+        deep: { untyped: true },
+      },
+    };
+    const result = <{ viaSpecific: boolean; child: { viaType: boolean }}>
+      await sub.transformNodeSpecificAsync(tree, {
+        category: { transform: copy => ({ ...copy, viaType: true }), preVisitor: () => ({}) },
+      }, {
+        category: { a: { transform: async(copy: SubTypedNode) => {
+          await delay();
+          return { ...copy, viaSpecific: true };
+        }, preVisitor: () => ({}) }},
+      });
+    expect(result.viaSpecific).toBe(true);
+    expect(result.child.viaType).toBe(true);
+  });
+
+  it('transformNodeSpecificPreOrderAsync covers specific, type-fallback and absent callbacks', async({ expect }) => {
+    const sub = new TransformerSubTyped<SubTypedNode>();
+    const tree: CategoryTree = {
+      type: 'category',
+      subType: 'a',
+      value: 'root',
+      child: {
+        type: 'category',
+        subType: 'b',
+        value: 'child',
+        other: { type: 'widget', subType: 'z', value: 'w' },
+        deep: { untyped: true },
+      },
+    };
+    const seen: string[] = [];
+    await sub.transformNodeSpecificPreOrderAsync(tree, {
+      category: (copy) => {
+        seen.push(`type:${String(copy.subType)}`);
+        return { newValue: copy };
+      },
+    }, {
+      category: { a: async(copy: SubTypedNode) => {
+        await delay();
+        seen.push(`specific:${copy.subType}`);
+        return { newValue: copy };
+      } },
+    });
+    expect(seen).toEqual([ 'specific:a', 'type:b' ]);
+  });
+
+  it('visitNodeSpecificAsync covers specific, type-fallback and absent callbacks', async({ expect }) => {
+    const sub = new TransformerSubTyped<SubTypedNode>();
+    const tree: CategoryTree = {
+      type: 'category',
+      subType: 'a',
+      value: 'root',
+      child: {
+        type: 'category',
+        subType: 'b',
+        value: 'child',
+        other: { type: 'widget', subType: 'z', value: 'w' },
+        deep: { untyped: true },
+      },
+    };
+    const visited: string[] = [];
+    await sub.visitNodeSpecificAsync(tree, {
+      category: { visitor: (op) => {
+        visited.push(`type:${String(op.subType)}`);
+      }, preVisitor: () => ({}) },
+    }, {
+      category: { a: { visitor: async(op: SubTypedNode) => {
+        await delay();
+        visited.push(`specific:${op.subType}`);
+      }, preVisitor: () => ({}) }},
+    });
+    // Deepest first: child (b via type) before root (a via specific)
+    expect(visited).toEqual([ 'type:b', 'specific:a' ]);
   });
 });

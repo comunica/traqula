@@ -1,9 +1,8 @@
 {
   "name": "@traqula/test-utils",
   "type": "module",
-  "version": "1.1.0",
+  "version": "1.5.0-alpha.0",
   "description": "Test utils used by the Traqula monorepo",
-  "lsd:module": true,
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -13,7 +12,11 @@
   "bugs": {
     "url": "https://github.com/comunica/traqula/issues"
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "**/index.js",
+    "**/indexCjs.js",
+    "**/matchers/toEqualParsedQuery.js"
+  ],
   "publishConfig": {
     "access": "public"
   },
@@ -22,7 +25,7 @@
     ".": {
       "types": "./dist/esm/lib/index.d.ts",
       "import": "./dist/esm/lib/index.js",
-      "require": "./dist/cjs/lib/index.js"
+      "require": "./dist/cjs/lib/indexCjs.js"
     }
   },
   "main": "dist/esm/lib/index.js",

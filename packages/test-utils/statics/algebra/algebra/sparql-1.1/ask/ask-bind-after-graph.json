@@ -1,0 +1,57 @@
+{
+  "type": "ask",
+  "input": {
+    "type": "extend",
+    "input": {
+      "type": "graph",
+      "input": {
+        "type": "bgp",
+        "patterns": [
+          {
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": {
+              "termType": "Variable",
+              "value": "s"
+            },
+            "predicate": {
+              "termType": "Variable",
+              "value": "p"
+            },
+            "object": {
+              "termType": "Variable",
+              "value": "o"
+            },
+            "graph": {
+              "termType": "DefaultGraph",
+              "value": ""
+            }
+          }
+        ]
+      },
+      "name": {
+        "termType": "NamedNode",
+        "value": "http://example.org/g"
+      }
+    },
+    "variable": {
+      "termType": "Variable",
+      "value": "x"
+    },
+    "expression": {
+      "type": "expression",
+      "subType": "operator",
+      "operator": "str",
+      "args": [
+        {
+          "type": "expression",
+          "subType": "term",
+          "term": {
+            "termType": "Variable",
+            "value": "o"
+          }
+        }
+      ]
+    }
+  }
+}

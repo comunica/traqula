@@ -1,5 +1,11 @@
 # Create Transformer
 
+> [!note]
+> Minor versions of Traqula keep the name, signature and behavior of existing rules,
+> but can add rules or change how existing rules are implemented, such as which rules they call.
+> This only affects projects that patch, delete or individually register rules.
+> See [versioning](../../README.md#versioning).
+
 Transformations in Traqula exist on two levels:
 
 1. **AST tree transformers** (`TransformerObject`, `TransformerTyped`, `TransformerSubTyped`):
@@ -119,4 +125,4 @@ const toAlgebra = algebraBuilder.build();
 const result = toAlgebra.translateQuery({ prefixes: new Map() }, myQueryAST);
 ```
 
-For a complete, real-world example, see the [SPARQL algebra transformer](../../packages/algebra-transformations-1-1/lib/toAlgebra.ts).
+For a complete, real-world example, see the [SPARQL algebra transformer](../../packages/algebra-transformations-1-1/lib/toAlgebra/toAlgebra.ts).

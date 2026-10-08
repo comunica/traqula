@@ -105,7 +105,14 @@ export const expressionList: SparqlGrammarRule<'expressionList', Wrap<Expression
 
 const optimizedBracketsInfixOperator = new Set([ '||', '&&', '=', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/' ]);
 const infixOperators = new Set([ 'in', 'notin', '||', '&&', '=', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/' ]);
-const prefixOperator: Record<string, string> = { '!': '', uplus: '+', uminus: '-' };
+/**
+ * The prefix operators of an expression operation, mapped to the symbol they are generated as.
+ */
+export const prefixOperators: ReadonlyMap<string, string> = new Map([
+  [ '!', '!' ],
+  [ 'uplus', '+' ],
+  [ 'uminus', '-' ],
+]);
 
 /**
  * [[110]](https://www.w3.org/TR/sparql11-query/#rExpression)
@@ -126,6 +133,7 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
       SUBRULE(aggregate, ast);
     } else if (infixOperators.has(ast.operator)) {
       // We know it will be expressionOperator
+      // Always bracketed: HAVING and GROUP BY generation relies on this
       const [ left, ...right ] = ast.args;
       F.printFilter(ast, () => PRINT_WORD('('));
       SUBRULE(expression, left);
@@ -144,10 +152,18 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
         SUBRULE(argList, F.wrap({ args: right, distinct: false }, ast.loc));
       }
       F.printFilter(ast, () => PRINT_WORD(')'));
-    } else if (typeof prefixOperator[ast.operator] === 'string') {
+    } else if (prefixOperators.has(ast.operator)) {
       const [ expr ] = <[Expression]>ast.args;
-      F.printFilter(ast, () => PRINT_WORD(prefixOperator[ast.operator] || ast.operator.toUpperCase()));
+      F.printFilter(ast, () => PRINT_WORD(prefixOperators.get(ast.operator)!));
+      // A prefix operator only accepts a primary expression: `- ( - ?x )`, not `- - ?x`
+      const addBrackets = F.isExpressionOperator(expr) && prefixOperators.has(expr.operator);
+      if (addBrackets) {
+        F.printFilter(ast, () => PRINT_WORD('('));
+      }
       SUBRULE(expression, expr);
+      if (addBrackets) {
+        F.printFilter(ast, () => PRINT_WORD(')'));
+      }
     } else {
       F.printFilter(ast, () => PRINT_WORD(ast.operator.toUpperCase(), '('));
       const [ head, ...tail ] = ast.args;

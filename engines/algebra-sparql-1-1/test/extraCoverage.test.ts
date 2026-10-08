@@ -1,5 +1,5 @@
 import type { Algebra } from '@traqula/algebra-transformations-1-1';
-import { AlgebraFactory, algebraUtils, createAstContext, createAlgebraContext }
+import { AlgebraFactory, Canonicalizer, algebraUtils, createAstContext, createAlgebraContext }
   from '@traqula/algebra-transformations-1-1';
 import { Generator } from '@traqula/generator-sparql-1-1';
 import { Parser } from '@traqula/parser-sparql-1-1';
@@ -70,6 +70,34 @@ GROUP BY ( ?y AS ?x )`);
     });
   });
 
+  describe('projection of an aggregate variable', () => {
+    const s = AF.dataFactory.variable!('s');
+    const p = AF.dataFactory.variable!('p');
+    const o = AF.dataFactory.variable!('o');
+    const var0 = AF.dataFactory.variable!('var0');
+    const project = AF.createProject(
+      AF.createGroup(
+        AF.createBgp([ AF.createPattern(s, p, o) ]),
+        [ s ],
+        [ AF.createBoundAggregate(var0, 'count', AF.createTermExpression(o), false) ],
+      ),
+      [ var0, s ],
+    );
+
+    it('selects the aggregate bound to the variable', ({ expect }) => {
+      const result = generator.generate(F.forcedAutoGenTree(toAst(project)));
+      expect(result).toBe(`SELECT ( COUNT( ?o ) AS ?var0 ) ?s WHERE {
+  ?s ?p ?o .
+}
+GROUP BY ?s`);
+    });
+
+    it('generates a query that parses and round-trips unchanged', ({ expect }) => {
+      const result = generator.generate(F.forcedAutoGenTree(toAst(project)));
+      expect(roundTrip(result)).toBe(result);
+    });
+  });
+
   describe('insert/DELETE without quads option works', () => {
     it('toAlgebra succeeds when INSERT DATA is converted without quads option', ({ expect }) => {
       const ast = parser.parse('INSERT DATA { <http://s> <http://p> <http://o> }');
@@ -125,14 +153,19 @@ GROUP BY ( ?y AS ?x )`);
   });
 
   describe('recurseGraph EXTEND handling', () => {
-    it('handles GRAPH with BIND that shadows graph variable name', ({ expect }) => {
-      // TODO: I actually feel like this is wrong. It relates to our graph issues in Comunica
+    it('keeps a BIND inside its GRAPH, even when it shadows the graph variable name', ({ expect }) => {
+      // The BIND must stay inside the GRAPH: hoisting it out would read the always-bound graph
+      // name instead of whatever the pattern itself bound to ?o - a different query, not a
+      // rendering choice.
       const result = roundTrip(
         'SELECT * WHERE { GRAPH ?g { ?s <http://p> ?o BIND(?o AS ?g) } }',
       );
-      expect(result).toBe(`SELECT ( ?o AS ?g ) ?o ?s WHERE {
+      expect(result).toBe(`SELECT ?g ?o ?s WHERE {
   GRAPH ?g {
-    ?s <http://p> ?o .
+    {
+      ?s <http://p> ?o .
+      BIND( ?o AS ?g )
+    }
   }
 }`);
     });
@@ -144,6 +177,63 @@ GROUP BY ( ?y AS ?x )`);
       const algebra = toAlgebra(ast);
       const variables = algebraUtils.inScopeVariables(algebra);
       expect(variables.map(v => v.value)).toMatchObject([ 'o', 's' ]);
+    });
+  });
+
+  /**
+   * https://www.w3.org/TR/sparql12-query/#variableScope
+   * > Not visible: only in filter, exists/not exists, masked by a subselect,
+   * > non-projected GROUP variables, only in the right hand side of MINUS
+   */
+  describe('algebraUtils.inScopeVariables hides variables that cannot be in a solution mapping', () => {
+    function scopeOfWhere(query: string, quads = false): string[] {
+      const algebra = <Algebra.Project> toAlgebra(parser.parse(query), { quads });
+      return algebraUtils.inScopeVariables(algebra.input).map(v => v.value).sort();
+    }
+
+    it('does not descend into the pattern of an EXISTS', ({ expect }) => {
+      expect(scopeOfWhere('SELECT * WHERE { ?s ?p ?o FILTER EXISTS { ?hidden <http://a> <http://b> } }'))
+        .toEqual([ 'o', 'p', 's' ]);
+    });
+
+    it('does not descend into the pattern of a NOT EXISTS', ({ expect }) => {
+      expect(scopeOfWhere('SELECT * WHERE { ?s ?p ?o FILTER NOT EXISTS { ?hidden <http://a> <http://b> } }'))
+        .toEqual([ 'o', 'p', 's' ]);
+    });
+
+    it('does not descend into an EXISTS used outside of a FILTER', ({ expect }) => {
+      expect(scopeOfWhere('SELECT * WHERE { ?s ?p ?o BIND(EXISTS { ?hidden <http://a> <http://b> } AS ?b) }'))
+        .toEqual([ 'b', 'o', 'p', 's' ]);
+    });
+
+    it('only exposes the keys and aggregates of a GROUP', ({ expect }) => {
+      // The aggregate is bound to ?var0 by the group, ?c is bound by the extend above it.
+      // var0 is out of scope for the project (since it cannot be targetted to be projected,
+      // but is in scope before the select.
+      expect(scopeOfWhere('SELECT ?s (COUNT(?o) AS ?c) WHERE { ?s ?p ?o } GROUP BY ?s'))
+        .toEqual([ 'c', 's', 'var0' ]);
+    });
+
+    it('does not expose the variables of a CONSTRUCT template', ({ expect }) => {
+      const algebra = toAlgebra(parser.parse('CONSTRUCT { ?s <http://a> ?hidden } WHERE { ?s ?p ?o }'));
+      expect(algebraUtils.inScopeVariables(algebra).map(v => v.value).sort()).toEqual([ 'o', 'p', 's' ]);
+    });
+
+    it('does not expose the variables of a DELETE template', ({ expect }) => {
+      const algebra = toAlgebra(
+        parser.parse('DELETE { ?s <http://a> ?hidden } WHERE { ?s ?p ?o }'),
+        { quads: true },
+      );
+      expect(algebraUtils.inScopeVariables(algebra).map(v => v.value).sort()).toEqual([ 'o', 'p', 's' ]);
+    });
+  });
+
+  describe('algebraUtils.objectify', () => {
+    it('returns primitives, null and undefined as-is', ({ expect }) => {
+      expect(algebraUtils.objectify(null)).toBeNull();
+      expect(algebraUtils.objectify(undefined)).toBeUndefined();
+      expect(algebraUtils.objectify({ a: null, b: undefined, c: [ 1, 'x', false ]}))
+        .toEqual({ a: null, b: undefined, c: [ 1, 'x', false ]});
     });
   });
 
@@ -247,6 +337,34 @@ GROUP BY ( ?y AS ?x )`);
       const operatorExpr = AF.createOperatorExpression('>', [ termX, termY ]);
       const result = transformer.translateAnyExpression(c, operatorExpr);
       expect(result).toMatchObject({ operator: '>' });
+    });
+  });
+
+  // TODO(major): remove together with the deprecated filterReplace and objectContainsVariable
+  describe('deprecated filterReplace', () => {
+    it('moves filters mentioning an aggregator variable to the havings, also in nested groups', ({ expect }) => {
+      const transformer = toAst11Builder.build();
+      const c = createAstContext();
+      const query = <any> parser.parse('SELECT * { ?s ?p ?o FILTER(?agg > 1) FILTER(?x) { FILTER(STR(?agg)) } }');
+      const aggregate = F.termVariable('replaced', F.gen());
+      const havings: any[] = [];
+      const result = <any> transformer.filterReplace(c, query.where, { agg: aggregate }, havings);
+      expect(havings).toMatchObject([
+        { type: 'expression', args: [{ value: 'replaced' }]},
+        { type: 'expression', subType: 'operation', operator: '>', args: [{ value: 'replaced' }, {}]},
+      ]);
+      expect(result.patterns).toMatchObject([
+        { type: 'pattern', subType: 'bgp' },
+        { type: 'pattern', subType: 'filter', expression: { value: 'x' }},
+        { type: 'pattern', subType: 'group', patterns: []},
+      ]);
+    });
+
+    it('returns non-group patterns as is', ({ expect }) => {
+      const transformer = toAst11Builder.build();
+      const c = createAstContext();
+      const bgp = F.patternBgp([], F.gen());
+      expect(transformer.filterReplace(c, bgp, {}, [])).toBe(bgp);
     });
   });
 
@@ -486,6 +604,54 @@ GROUP BY ( ?y AS ?x )`);
       expect(result3.object).toBe(other);
     });
   });
+
+  describe('prefixed names with PN_LOCAL_ESC escapes', () => {
+    it('removes the escaping backslashes when expanding the IRI', ({ expect }) => {
+      // Note that the double `\\` means the SPARQL parser will see only a single `\`
+      const ast = parser.parse('PREFIX : <http://example/> SELECT * { :a :b :c\\~z\\. }');
+      const result = toAlgebra(ast, {});
+      expect(result).toMatchObject({
+        input: { patterns: [{ object: { value: 'http://example/c~z.' }}]},
+      });
+    });
+
+    it('keeps percent-encodings when expanding the IRI', ({ expect }) => {
+      const ast = parser.parse('PREFIX : <http://example/> SELECT * { :a :b%3D :c\\~z\\. }');
+      const result = toAlgebra(ast, {});
+      expect(result).toMatchObject({
+        input: { patterns: [{ predicate: { value: 'http://example/b%3D' }, object: { value: 'http://example/c~z.' }}]},
+      });
+    });
+
+    it('generates a query that parses again', ({ expect }) => {
+      const result = roundTripQuads('PREFIX : <http://example/> SELECT * { :a :b%3D :c\\~z\\. }');
+      expect(result).toContain('<http://example/c~z.>');
+      expect(roundTripQuads(result)).toBe(result);
+    });
+  });
+
+  it('registers the graph of every pattern when removing quads from an array directly', ({ expect }) => {
+    const transformer = toAst11Builder.build();
+    const c = createAstContext();
+    const g = AF.dataFactory.namedNode('http://example/g');
+    const pattern = AF.createPattern(
+      AF.dataFactory.variable!('s'),
+      AF.dataFactory.variable!('p'),
+      AF.dataFactory.variable!('o'),
+      g,
+    );
+    const graphs: unknown[] = [];
+    const result = transformer.removeQuadsRecursive(c, [ pattern, pattern ], <any> graphs, false);
+    expect(graphs).toEqual([ g, g ]);
+    expect(result).toMatchObject([{ type: 'pattern' }, { type: 'pattern' }]);
+  });
+
+  it('wraps the input of an EXISTS within an aggregate in its GRAPH', ({ expect }) => {
+    const result = roundTripQuads(`PREFIX : <http://example/>
+SELECT (COUNT(EXISTS { GRAPH ?g { ?s :q ?o } }) AS ?c) WHERE { ?s :p ?g }`);
+    expect(result.replaceAll(/\s+/gu, ' ')).toContain('COUNT( EXISTS { GRAPH ?g {');
+    expect(roundTripQuads(result)).toBe(result);
+  });
 });
 
 describe('algebraGenerators filter', () => {
@@ -628,5 +794,115 @@ describe('queryUnit.ts (toAst): registerGroupBy direct call', () => {
     const describe = AF.createDescribe(bgp, [ s ]);
     const result = toAst(<Algebra.Operation>describe);
     expect(result).toBeDefined();
+  });
+
+  describe('prototype-key reserved-name bypass (security fix)', () => {
+    // When a prefix name collides with an Object.prototype property, the algebra
+    // must still throw "Unknown prefix" rather than silently expanding to garbage.
+    it('throws Unknown prefix for constructor when not declared', ({ expect }) => {
+      const ast = parser.parse('SELECT * WHERE { ?s constructor:foo ?o }', { skipValidation: true });
+      expect(() => toAlgebra(ast, {})).toThrow(/Unknown prefix: constructor/u);
+    });
+
+    it('correctly expands a declared prefix whose name is a prototype key', ({ expect }) => {
+      const ast = parser.parse('PREFIX constructor: <http://ex.org/> SELECT * WHERE { ?s constructor:foo ?o }');
+      const result = toAlgebra(ast, {});
+      expect(result).toMatchObject({
+        input: { patterns: [{ predicate: { value: 'http://ex.org/foo' }}]},
+      });
+    });
+
+    it('correctly expands a prototype-key prefix passed via config', ({ expect }) => {
+      const ast = parser.parse('SELECT * WHERE { ?s constructor:foo ?o }', { skipValidation: true });
+      const result = toAlgebra(ast, { prefixes: { constructor: 'http://ex.org/' }});
+      expect(result).toMatchObject({
+        input: { patterns: [{ predicate: { value: 'http://ex.org/foo' }}]},
+      });
+    });
+
+    it('translates blank nodes whose labels are prototype keys to variables', ({ expect }) => {
+      const transformer = toAlgebra11Builder.build();
+      const c = createAlgebraContext({});
+      const bgp = AF.createBgp([
+        AF.createPattern(
+          AF.dataFactory.blankNode('constructor'),
+          AF.dataFactory.variable!('p'),
+          AF.dataFactory.blankNode('__proto__'),
+        ),
+      ]);
+      expect(transformer.translateBlankNodesToVariables(c, bgp)).toEqual(AF.createBgp([
+        AF.createPattern(
+          AF.dataFactory.variable!('constructor'),
+          AF.dataFactory.variable!('p'),
+          AF.dataFactory.variable!('__proto__'),
+        ),
+      ]));
+    });
+
+    it('canonicalizes variables whose names are prototype keys', ({ expect }) => {
+      const canon = new Canonicalizer();
+      const bgpOf = (name: string): Algebra.Bgp => AF.createBgp([
+        AF.createPattern(AF.dataFactory.variable!(name), AF.dataFactory.variable!('p'), AF.dataFactory.variable!(name)),
+      ]);
+      expect(canon.canonicalizeQuery(bgpOf('constructor'), true)).toEqual(canon.canonicalizeQuery(bgpOf('x'), true));
+    });
+  });
+
+  describe('canonicalizer', () => {
+    const DF = AF.dataFactory;
+
+    it('returns patterns and paths themselves, not wrapped', ({ expect }) => {
+      const p = DF.namedNode('http://ex.org/p');
+      const op = AF.createJoin([
+        AF.createBgp([ AF.createPattern(DF.blankNode('b'), p, DF.variable!('x')) ]),
+        AF.createPath(DF.variable!('x'), AF.createLink(p), DF.blankNode('b')),
+      ]);
+      const result = <Algebra.Join> new Canonicalizer().canonicalizeQuery(op, true);
+      expect(result).toEqual(AF.createJoin([
+        AF.createBgp([ AF.createPattern(DF.blankNode('value_0'), p, DF.variable!('value_1')) ]),
+        AF.createPath(DF.variable!('value_1'), AF.createLink(p), DF.blankNode('value_0')),
+      ]));
+    });
+
+    it('renames blank nodes of CONSTRUCT templates, keeping them blank nodes', ({ expect }) => {
+      const p = DF.namedNode('http://ex.org/p');
+      const op = AF.createConstruct(
+        AF.createBgp([ AF.createPattern(DF.variable!('s'), p, DF.variable!('o')) ]),
+        [ AF.createPattern(DF.blankNode('g_7'), p, DF.variable!('o')) ],
+      );
+      expect(new Canonicalizer().canonicalizeQuery(op, true)).toEqual(AF.createConstruct(
+        AF.createBgp([ AF.createPattern(DF.variable!('value_2'), p, DF.variable!('value_1')) ]),
+        [ AF.createPattern(DF.blankNode('value_0'), p, DF.variable!('value_1')) ],
+      ));
+    });
+
+    it('sorts the variables of a projection', ({ expect }) => {
+      const bgp = AF.createBgp([ AF.createPattern(DF.variable!('s'), DF.variable!('p'), DF.variable!('o')) ]);
+      const [ o, p, s ] = [ 'o', 'p', 's' ].map(name => DF.variable!(name));
+      expect(new Canonicalizer().canonicalizeQuery(AF.createProject(bgp, [ s, o, p ]), false))
+        .toEqual(AF.createProject(bgp, [ o, p, s ]));
+    });
+
+    it('renames a term in and outside a quoted triple once', ({ expect }) => {
+      const p = DF.namedNode('http://ex.org/p');
+      const quoted = AF.createPattern(DF.blankNode('b'), p, DF.namedNode('http://ex.org/o'));
+      const op = AF.createBgp([ AF.createPattern(quoted, p, DF.blankNode('b')) ]);
+      expect(new Canonicalizer().canonicalizeQuery(op, false)).toEqual(AF.createBgp([ AF.createPattern(
+        AF.createPattern(DF.blankNode('value_0'), p, DF.namedNode('http://ex.org/o')),
+        p,
+        DF.blankNode('value_0'),
+      ) ]));
+    });
+  });
+
+  describe('resolving relative IRIs', () => {
+    it('keeps a first segment with an invalid scheme as a path', ({ expect }) => {
+      // <1a:b> is not a valid IRI, so this result is arbitrary and the query should in principle be rejected.
+      // This test only tracks regressions in how such IRIs are handled.
+      const ast = parser.parse('BASE <http://h/a/b> SELECT * WHERE { <1a:b> ?p ?o }');
+      expect(toAlgebra(ast)).toMatchObject({
+        input: { patterns: [{ subject: { value: 'http://h/a/1a:b' }}]},
+      });
+    });
   });
 });

@@ -1,0 +1,83 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://citation-file-format.github.io/cff-initializer-javascript/#/ to generate yours today!
+
+cff-version: 1.2.0
+title: Traqula
+message: 'If you use this software, please cite the article.'
+type: software
+authors:
+  - family-names: De Smet
+    given-names: Jitse
+    orcid: 'https://orcid.org/0009-0002-6513-5013'
+  - family-names: Ruben
+    given-names: Taelman
+    orcid: 'https://orcid.org/0000-0001-5118-256X'
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.17793334
+repository-code: 'https://github.com/comunica/traqula'
+url: 'https://github.com/comunica/traqula'
+abstract: >-
+  SPARQL engines continue to diverge in the versions and
+  language extensions they support. With SPARQL 1.2 nearing
+  completion and the working group’s plans toward future
+  maintenance, this divergence is likely to grow. As a
+  result, language tools that aim to support multiple SPARQL
+  versions and dialects face increasing maintenance costs.
+  Furthermore, areas such as SPARQL federation become harder
+  to manage. To address these challenges, we introduce
+  Traqula, a modular TypeScript-based framework for parsing,
+  transforming, and generating SPARQL queries. This article
+  presents Traqula’s architecture and its builder-based
+  dependency-injection design, and we show how these
+  components provide modular support for SPARQL 1.1 and 1.2
+  parsing and generation. Traqula enables round-tripping,
+  supports generic algebraic and AST transformations, and
+  delivers significantly faster parsing compared to current
+  JavaScript-based SPARQL parsing. Traqula’s modular
+  architecture enables flexible experimentation for
+  researchers, and it is production-ready thanks to
+  extensive testing and modern development techniques.
+  Looking forward, Traqula lays the groundwork for
+  supporting additional query languages, developing generic
+  rewriting modules for SPARQL federation engines, and
+  building robust tooling for an increasingly diverse SPARQL
+  ecosystem.
+keywords:
+  - SPARQL
+  - query
+  - algebra
+  - modularity
+  - parser
+  - generator
+license: MIT
+version: 1.0.0
+date-released: '2025-12-02'
+preferred-citation:
+  type: conference-paper
+  authors:
+    - family-names: De Smet
+      given-names: Jitse
+    - family-names: Taelman
+      given-names: Ruben
+  doi: 10.1007/978-3-032-25159-6_13
+  isbn: 978-3-032-25159-6
+  collection-title: The Semantic Web
+  collection-type: proceedings
+  conference:
+    name: 23rd European Semantic Web Conference (ESWC 2026)
+    city: Dubrovnik
+    country: HR
+    date-start: "2026-05-10"
+    date-end: "2026-05-14"
+  publisher:
+    name: Springer Nature Switzerland
+    address: Cham
+  year: 2026
+  month: 5
+  start: 232
+  end: 252
+  title: >-
+    Traqula: Providing a Foundation for The Evolving SPARQL Ecosystem Through
+    Modular Query Parsing, Transformation, and Generation
+  url: https://traqula-resource.jitsedesmet.be/

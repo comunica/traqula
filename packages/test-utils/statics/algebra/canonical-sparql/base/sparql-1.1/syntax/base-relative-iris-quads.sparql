@@ -1,0 +1,20 @@
+SELECT ?res0 ?res1 ?res2 ?res3 ?res4 ?res5 WHERE {
+  OPTIONAL {
+    <http://example.com/xxx/abc> <http://example.org/ns#p> ?res0 .
+  }
+  OPTIONAL {
+    <http://example.com/xxx/def> <http://example.org/ns#p> ?res1 .
+  }
+  OPTIONAL {
+    <http://example.com/xxx/abc#ghi> <http://example.org/ns#p> ?res2 .
+  }
+  OPTIONAL {
+    <http://example.com/xxx/jkl> <http://example.org/ns#p> ?res3 .
+  }
+  OPTIONAL {
+    <http://example.com/mno> <http://example.org/ns#p> ?res4 .
+  }
+  OPTIONAL {
+    <http://example.com/pqr> <http://example.org/ns#p> ?res5 .
+  }
+}

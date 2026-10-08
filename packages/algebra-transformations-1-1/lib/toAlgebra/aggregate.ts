@@ -20,7 +20,7 @@ import {
   translateInlineData,
   translateTerm,
 } from './general.js';
-import { translateExpression } from './patterns.js';
+import { simplifiedJoin, translateExpression } from './patterns.js';
 import { translateBasicGraphPattern, translateQuad } from './tripleAndQuad.js';
 
 /**
@@ -31,7 +31,7 @@ export const translateAggregates: AlgebraIndir<'translateAggregates', Algebra.Op
   fun: ({ SUBRULE }) => ({ astFactory: F, algebraFactory: AF, dataFactory: DF }, query, res) => {
     const bindPatterns: PatternBind[] = [];
 
-    const varAggrMap: Record<string, ExpressionAggregate> = {};
+    const varAggrMap: Record<string, ExpressionAggregate> = Object.create(null);
     const variables = F.isQuerySelect(query) || F.isQueryDescribe(query) ?
       query.variables.map(x => SUBRULE(mapAggregate, x, varAggrMap)) :
       undefined;
@@ -81,7 +81,7 @@ export const translateAggregates: AlgebraIndir<'translateAggregates', Algebra.Op
 
     // 18.2.4.3
     if (query.values) {
-      res = AF.createJoin([ res, SUBRULE(translateInlineData, query.values) ]);
+      res = SUBRULE(simplifiedJoin, res, SUBRULE(translateInlineData, query.values));
     }
 
     // 18.2.4.4
@@ -160,7 +160,7 @@ export const translateAggregates: AlgebraIndir<'translateAggregates', Algebra.Op
     // Slicing needs to happen after construct/describe
     // 18.2.5.5
     const limitOffset = query.solutionModifiers.limitOffset;
-    if (limitOffset?.limit ?? limitOffset?.offset) {
+    if (limitOffset?.limit !== undefined || limitOffset?.offset) {
       res = AF.createSlice(res, limitOffset.offset ?? 0, limitOffset.limit);
     }
 

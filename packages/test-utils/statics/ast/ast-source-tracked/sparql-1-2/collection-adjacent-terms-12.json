@@ -1,0 +1,745 @@
+{
+  "context": [
+    {
+      "type": "contextDef",
+      "subType": "prefix",
+      "key": "ex",
+      "value": {
+        "type": "term",
+        "subType": "namedNode",
+        "value": "http://example.org/",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 11,
+          "end": 32
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 0,
+        "end": 32
+      }
+    }
+  ],
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "s",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 52,
+                "end": 54
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "p",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 55,
+                "end": 59
+              },
+              "prefix": "ex"
+            },
+            "object": {
+              "type": "tripleCollection",
+              "subType": "list",
+              "identifier": {
+                "type": "term",
+                "subType": "blankNode",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                },
+                "label": "g_1"
+              },
+              "triples": [
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_1"
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    }
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "literal",
+                    "value": "a",
+                    "langOrIri": "en--ltr",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 62,
+                      "end": 73
+                    }
+                  },
+                  "annotations": [],
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 62,
+                    "end": 73
+                  }
+                },
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_1"
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    }
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_2"
+                  },
+                  "annotations": [],
+                  "loc": {
+                    "sourceLocationType": "autoGenerate"
+                  }
+                },
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_2"
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    }
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "b",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 74,
+                      "end": 78
+                    },
+                    "prefix": "ex"
+                  },
+                  "annotations": [],
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 74,
+                    "end": 78
+                  }
+                },
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_2"
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    }
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_3"
+                  },
+                  "annotations": [],
+                  "loc": {
+                    "sourceLocationType": "autoGenerate"
+                  }
+                },
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_3"
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    }
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "literal",
+                    "value": "c",
+                    "langOrIri": "en",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 79,
+                      "end": 85
+                    }
+                  },
+                  "annotations": [],
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 79,
+                    "end": 85
+                  }
+                },
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_3"
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    }
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_4"
+                  },
+                  "annotations": [],
+                  "loc": {
+                    "sourceLocationType": "autoGenerate"
+                  }
+                },
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_4"
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    }
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "d",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 86,
+                      "end": 90
+                    },
+                    "prefix": "ex"
+                  },
+                  "annotations": [],
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 86,
+                    "end": 90
+                  }
+                },
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_4"
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    }
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_5"
+                  },
+                  "annotations": [],
+                  "loc": {
+                    "sourceLocationType": "autoGenerate"
+                  }
+                },
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_5"
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    }
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "triple",
+                    "subject": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "e",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 95,
+                        "end": 99
+                      },
+                      "prefix": "ex"
+                    },
+                    "predicate": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "f",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 100,
+                        "end": 104
+                      },
+                      "prefix": "ex"
+                    },
+                    "object": {
+                      "type": "term",
+                      "subType": "namedNode",
+                      "value": "g",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 105,
+                        "end": 109
+                      },
+                      "prefix": "ex"
+                    },
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 91,
+                      "end": 113
+                    }
+                  },
+                  "annotations": [],
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 91,
+                    "end": 113
+                  }
+                },
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_5"
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    }
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_6"
+                  },
+                  "annotations": [],
+                  "loc": {
+                    "sourceLocationType": "autoGenerate"
+                  }
+                },
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_6"
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    }
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "h",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 114,
+                      "end": 118
+                    },
+                    "prefix": "ex"
+                  },
+                  "annotations": [],
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 114,
+                    "end": 118
+                  }
+                },
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_6"
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    }
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_7"
+                  },
+                  "annotations": [],
+                  "loc": {
+                    "sourceLocationType": "autoGenerate"
+                  }
+                },
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_7"
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    }
+                  },
+                  "object": {
+                    "type": "tripleCollection",
+                    "subType": "reifiedTriple",
+                    "triples": [
+                      {
+                        "type": "triple",
+                        "subject": {
+                          "type": "term",
+                          "subType": "namedNode",
+                          "value": "i",
+                          "loc": {
+                            "sourceLocationType": "source",
+                            "start": 122,
+                            "end": 126
+                          },
+                          "prefix": "ex"
+                        },
+                        "predicate": {
+                          "type": "term",
+                          "subType": "namedNode",
+                          "value": "j",
+                          "loc": {
+                            "sourceLocationType": "source",
+                            "start": 127,
+                            "end": 131
+                          },
+                          "prefix": "ex"
+                        },
+                        "object": {
+                          "type": "term",
+                          "subType": "namedNode",
+                          "value": "k",
+                          "loc": {
+                            "sourceLocationType": "source",
+                            "start": 132,
+                            "end": 136
+                          },
+                          "prefix": "ex"
+                        },
+                        "annotations": [],
+                        "loc": {
+                          "sourceLocationType": "source",
+                          "start": 122,
+                          "end": 136
+                        }
+                      }
+                    ],
+                    "identifier": {
+                      "type": "term",
+                      "subType": "blankNode",
+                      "loc": {
+                        "sourceLocationType": "noMaterialize"
+                      },
+                      "label": "g_0"
+                    },
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 119,
+                      "end": 139
+                    }
+                  },
+                  "annotations": [],
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 119,
+                    "end": 139
+                  }
+                },
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_7"
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    }
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_8"
+                  },
+                  "annotations": [],
+                  "loc": {
+                    "sourceLocationType": "autoGenerate"
+                  }
+                },
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_8"
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#first",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    }
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "l",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 140,
+                      "end": 144
+                    },
+                    "prefix": "ex"
+                  },
+                  "annotations": [],
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 140,
+                    "end": 144
+                  }
+                },
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "blankNode",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    },
+                    "label": "g_8"
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#rest",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    }
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "http://www.w3.org/1999/02/22-rdf-syntax-ns#nil",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    }
+                  },
+                  "annotations": [],
+                  "loc": {
+                    "sourceLocationType": "autoGenerate"
+                  }
+                }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 60,
+                "end": 146
+              }
+            },
+            "annotations": [],
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 52,
+              "end": 146
+            }
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 52,
+          "end": 148
+        }
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 48,
+      "end": 150
+    }
+  },
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "wildcard",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 40,
+        "end": 41
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "inlinedSource",
+    "newSource": "PREFIX ex: <http://example.org/>\nSELECT * WHERE {\n  ?s ex:p ( \"a\"@en--ltr ex:b \"c\"@en ex:d <<( ex:e ex:f ex:g )>> ex:h << ex:i ex:j ex:k >> ex:l ) .\n}\n",
+    "start": 0,
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 150
+    },
+    "startOnNew": 0,
+    "endOnNew": 150
+  },
+  "type": "query"
+}

@@ -1,0 +1,1 @@
+SELECT ( COUNT( ?v ) AS ?count ) ( ( ?count + "1"^^<http://www.w3.org/2001/XMLSchema#integer> ) AS ?countPlusOne ) WHERE { VALUES ?v { "0"^^<http://www.w3.org/2001/XMLSchema#integer> "1"^^<http://www.w3.org/2001/XMLSchema#integer> "2"^^<http://www.w3.org/2001/XMLSchema#integer> "3"^^<http://www.w3.org/2001/XMLSchema#integer> } }

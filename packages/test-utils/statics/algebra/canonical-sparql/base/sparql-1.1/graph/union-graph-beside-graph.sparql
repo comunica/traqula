@@ -1,0 +1,13 @@
+SELECT ?a ?b ?c ?d ?e ?f WHERE {
+  GRAPH <http://www.example.org/g> {
+    ?a ?b ?c .
+  }
+  {
+    ?a ?b ?d .
+  }
+  UNION {
+    GRAPH <http://www.example.org/g> {
+      ?a ?e ?f .
+    }
+  }
+}

@@ -1,0 +1,5 @@
+SELECT * WHERE {
+  ?s ?p ?o ~ ?x .
+  OPTIONAL { ?s ?q ?r }
+  BIND(1 AS ?x)
+}

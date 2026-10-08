@@ -63,3 +63,7 @@ When migrating from [SPARQL.JS](https://github.com/RubenVerborgh/SPARQL.js/) or 
 - [Design decisions](./design.md)
 - [Transformation catalogue](./transformation-catalogue.md)
 - [API documentation (TypeDoc)](https://comunica.github.io/traqula/)
+
+---
+
+{@include ../README.md}

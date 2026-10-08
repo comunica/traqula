@@ -14,6 +14,6 @@
     { "path": "../generator-sparql-1-1" },
     { "path": "../parser-sparql-1-1" }
   ],
-  "include": ["lib/**/*.ts", "test/**/*.ts"],
+  "include": ["lib/**/*.ts", "test/**/*.ts", "spec/**/*.ts"],
   "exclude": ["dist/**"]
 }

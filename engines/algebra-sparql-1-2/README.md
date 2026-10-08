@@ -1,5 +1,5 @@
 <p align="center">
-    <img alt="Traqula logo" width="70%" style="border-radius: 20px" src="/assets/white-on-red/logo-white-on-red-lettered-social.png">
+    <img alt="Traqula logo" width="70%" style="border-radius: 20px" src="../../assets/white-on-red/logo-white-on-red-lettered-social.png">
 </p>
 
 <p align="center">
@@ -66,3 +66,11 @@ const generatedQuery = generator.generate(generatedAst);
 ```
 
 The algebra transformer for SPARQL 1.2 is a modification of [the SPARQL 1.1 algebra transformer](../algebra-sparql-1-1); therefore, much of the documentation of that transformer holds here too.
+
+## Modifying the built algebra transformer
+
+> [!note]
+> Minor versions keep this engine's API and behavior, and the name, signature and behavior of the rules in its builders,
+> but can add rules or change how existing rules are implemented, such as which rules they call.
+> This only affects projects that patch, delete or individually register rules.
+> See [versioning](https://github.com/comunica/traqula#versioning).

@@ -1,3 +1,4 @@
+import { traqulaIndentation } from '@traqula/core';
 import { Parser } from '@traqula/parser-sparql-1-1';
 import { AstFactory, completeGeneratorContext } from '@traqula/rules-sparql-1-1';
 import { beforeEach, describe, it } from 'vitest';
@@ -128,6 +129,26 @@ describe('extra generator coverage', () => {
       const lit = F.termLiteral(F.gen(), '42', typeIri);
       const result = rawGenerator.rdfLiteral(lit, context);
       expect(result).toBe(' 42 ');
+    });
+  });
+
+  describe('inlineData gImpl cell separators', () => {
+    const autoGen = (query: string): string => generator.generate(
+      F.forcedAutoGenTree(parser.parse(query)),
+      { [traqulaIndentation]: -1, indentInc: 0 },
+    );
+
+    it('separates adjacent prefixed names in a multi-variable row', ({ expect }) => {
+      const out = autoGen(`PREFIX ex: <http://example.org/>
+SELECT * WHERE { VALUES (?s ?p ?o) { (ex:a ex:b ex:c) } ?s ?p ?o }`);
+      expect(out).toContain('( ex:a ex:b ex:c )');
+      expect(() => parser.parse(out)).not.toThrow();
+    });
+
+    it('round-trips a single-variable VALUES block of prefixed names', ({ expect }) => {
+      const out = autoGen(`PREFIX ex: <http://example.org/>
+SELECT * WHERE { VALUES ?x { ex:a ex:b ex:c } ?x ?x ?x }`);
+      expect(() => parser.parse(out)).not.toThrow();
     });
   });
 });

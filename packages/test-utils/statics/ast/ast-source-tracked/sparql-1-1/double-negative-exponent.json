@@ -1,0 +1,94 @@
+{
+  "context": [],
+  "subType": "ask",
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "filter",
+        "expression": {
+          "type": "expression",
+          "subType": "operation",
+          "operator": "=",
+          "args": [
+            {
+              "type": "term",
+              "subType": "literal",
+              "value": "-3e0",
+              "langOrIri": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "http://www.w3.org/2001/XMLSchema#double",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 17,
+                "end": 23
+              }
+            },
+            {
+              "type": "term",
+              "subType": "literal",
+              "value": "0",
+              "langOrIri": {
+                "type": "term",
+                "subType": "namedNode",
+                "value": "http://www.w3.org/2001/XMLSchema#integer",
+                "loc": {
+                  "sourceLocationType": "noMaterialize"
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 26,
+                "end": 27
+              }
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 16,
+            "end": 28
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 10,
+          "end": 28
+        }
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 4,
+      "end": 30
+    }
+  },
+  "solutionModifiers": {},
+  "loc": {
+    "sourceLocationType": "inlinedSource",
+    "newSource": "ASK {\n    FILTER((-3e0) = 0)\n}",
+    "start": 0,
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 30
+    },
+    "startOnNew": 0,
+    "endOnNew": 30
+  },
+  "type": "query"
+}

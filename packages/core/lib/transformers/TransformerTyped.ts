@@ -1,6 +1,6 @@
 import type { Typed } from '../types.js';
-import type { TransformContext, VisitContext } from './TransformerObject.js';
-import { TransformerObject } from './TransformerObject.js';
+import type { Awaitable, PreOrderMappingReturn, TransformContext, VisitContext } from './TransformerObject.js';
+import { isPromise, TransformerObject } from './TransformerObject.js';
 
 /**
  * Controls whether transform callbacks receive fully typed nodes (`'unsafe'`) or
@@ -82,8 +82,8 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     };
     const nodeDefaults = this.defaultNodePreVisitor;
     const preVisitWrapper = (curObject: object): VisitContext => {
-      let ogPreVisit: ((node: any) => VisitContext) | undefined;
-      let nodeContext: VisitContext = {};
+      let ogPreVisit: ((node: any) => TransformContext) | undefined;
+      let nodeContext: TransformContext = {};
       const casted = <Typed<Nodes['type']>>curObject;
       if (casted.type) {
         ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
@@ -92,6 +92,130 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
       return ogPreVisit ? { ...nodeContext, ...ogPreVisit(casted) } : nodeContext;
     };
     return <any> this.transformObject(startObject, transformWrapper, preVisitWrapper);
+  }
+
+  /**
+   * Async variant of {@link transformNode}, supporting promise-returning callbacks.
+   * The traversal is strictly sequential (depth-first) - it does not parallelise siblings.
+   */
+  public transformNodeAsync<Safe extends Safeness = 'safe', OutType = unknown>(
+    startObject: object,
+    nodeCallBacks: {[T in Nodes['type']]?: {
+      transform?: (
+        copy: SafeWrap<Safe, Extract<Nodes, Typed<T>>>,
+        orig: Extract<Nodes, Typed<T>>,
+      ) => Awaitable<unknown>;
+      preVisitor?: (orig: Extract<Nodes, Typed<T>>) => Awaitable<TransformContext>;
+    }},
+  ): Promise<Safe extends 'unsafe' ? OutType : unknown> {
+    const transformWrapper = (copy: object, orig: object): Awaitable<unknown> => {
+      let ogTransform: ((copy: any, orig: any) => Awaitable<unknown>) | undefined;
+      const casted = <Typed<Nodes['type']>>copy;
+      if (casted.type) {
+        ogTransform = nodeCallBacks[casted.type]?.transform;
+      }
+      return ogTransform ? ogTransform(casted, orig) : copy;
+    };
+    const nodeDefaults = this.defaultNodePreVisitor;
+    const preVisitWrapper = (curObject: object): Awaitable<TransformContext> => {
+      let ogPreVisit: ((node: any) => Awaitable<TransformContext>) | undefined;
+      let nodeContext: TransformContext = {};
+      const casted = <Typed<Nodes['type']>>curObject;
+      if (casted.type) {
+        ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
+        nodeContext = nodeDefaults[casted.type] ?? nodeContext;
+      }
+      if (!ogPreVisit) {
+        return nodeContext;
+      }
+      const result = ogPreVisit(casted);
+      return isPromise(result) ?
+        result.then((res): TransformContext => ({ ...nodeContext, ...res })) :
+          { ...nodeContext, ...result };
+    };
+    return <any> this.transformObjectAsync(startObject, transformWrapper, preVisitWrapper);
+  }
+
+  /**
+   * Transform a single node ({@link Typed}) pre-order,
+   * the dual of {@link this.transformObjectPreOrder} with the same type specification as {@link this.transformNode}:
+   * a node is transformed _before_ its descendants, and we iterate into the result of that transformation.
+   * This is what you want when a node has to travel deeper into the tree:
+   * the callback only describes how a node swaps places with the node right below it,
+   * the copy it sank into is dispatched in turn, and swaps places with the node below that one.
+   *
+   * Contrary to {@link this.transformNode}, a callback does not just return the value taking the place of
+   * the node, it returns a {@link PreOrderMappingReturn}: that value, plus the {@link TransformContext} of
+   * that value. Since the callback decides what we iterate into, it is the one telling us how to iterate
+   * into it, so there is no separate preVisitor - it only completes the per type defaults of this
+   * transformer, which are looked up using the type of the node it was called on.
+   * A node without a callback is left alone: it keeps those defaults, but is never re-transformed.
+   *
+   * Also contrary to {@link this.transformNode}, the descendants of the node given to the callback are not
+   * transformed yet: they are the nodes of the input tree itself.
+   * @param startObject the object from which we will start the transformation,
+   *   potentially visiting and transforming its descendants along the way.
+   * @param nodeCallBacks a dictionary mapping the various node types to a mapper.
+   *    The mapper allows you to manipulate the copy of the current node, and expects you to return the
+   *    value that should take the current nodes place, together with the context of that value.
+   *    That context steers how we iterate into the returned value.
+   * @return the result of transforming the startObject and the descendants of its rewrites.
+   */
+  public transformNodePreOrder<Safe extends Safeness = 'safe', OutType = unknown>(
+    startObject: object,
+    nodeCallBacks: {[T in Nodes['type']]?:
+      (copy: SafeWrap<Safe, Extract<Nodes, Typed<T>>>, orig: Extract<Nodes, Typed<T>>) => PreOrderMappingReturn;
+    },
+  ): Safe extends 'unsafe' ? OutType : unknown {
+    const nodeDefaults = this.defaultNodePreVisitor;
+    const preTransformWrapper = (copy: object, orig: object): PreOrderMappingReturn => {
+      let ogPreTransform: ((copy: any, orig: any) => PreOrderMappingReturn) | undefined;
+      let nodeContext: TransformContext = {};
+      const casted = <Typed<Nodes['type']>>copy;
+      if (casted.type) {
+        ogPreTransform = nodeCallBacks[casted.type];
+        nodeContext = nodeDefaults[casted.type] ?? nodeContext;
+      }
+      return ogPreTransform ?
+          { ...nodeContext, ...ogPreTransform(copy, orig) } :
+          { ...nodeContext, newValue: copy, reTransform: false };
+    };
+
+    return <any> this.transformObjectPreOrder(startObject, preTransformWrapper);
+  }
+
+  /**
+   * Async variant of {@link transformNodePreOrder}, supporting promise-returning callbacks.
+   * The traversal is strictly sequential (depth-first) - it does not parallelise siblings.
+   */
+  public transformNodePreOrderAsync<Safe extends Safeness = 'safe', OutType = unknown>(
+    startObject: object,
+    nodeCallBacks: {[T in Nodes['type']]?:
+      (
+        copy: SafeWrap<Safe, Extract<Nodes, Typed<T>>>,
+        orig: Extract<Nodes, Typed<T>>,
+      ) => Awaitable<PreOrderMappingReturn>;
+    },
+  ): Promise<Safe extends 'unsafe' ? OutType : unknown> {
+    const nodeDefaults = this.defaultNodePreVisitor;
+    const preTransformWrapper = (copy: object, orig: object): Awaitable<PreOrderMappingReturn> => {
+      let ogPreTransform: ((copy: any, orig: any) => Awaitable<PreOrderMappingReturn>) | undefined;
+      let nodeContext: TransformContext = {};
+      const casted = <Typed<Nodes['type']>>copy;
+      if (casted.type) {
+        ogPreTransform = nodeCallBacks[casted.type];
+        nodeContext = nodeDefaults[casted.type] ?? nodeContext;
+      }
+      if (!ogPreTransform) {
+        return { ...nodeContext, newValue: copy, reTransform: false };
+      }
+      const result = ogPreTransform(copy, orig);
+      return isPromise(result) ?
+        result.then((res): PreOrderMappingReturn => ({ ...nodeContext, ...res })) :
+          { ...nodeContext, ...result };
+    };
+
+    return <any> this.transformObjectPreOrderAsync(startObject, preTransformWrapper);
   }
 
   /**
@@ -137,5 +261,45 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
       return ogPreVisit ? { ...nodeContext, ...ogPreVisit(casted) } : nodeContext;
     };
     return this.visitObject(startObject, visitorWrapper, preVisitWrapper);
+  }
+
+  /**
+   * Async variant of {@link visitNode}, supporting promise-returning callbacks.
+   * The traversal is strictly sequential (depth-first) - it does not parallelise siblings.
+   */
+  public visitNodeAsync(
+    startObject: object,
+    nodeCallBacks: {[T in Nodes['type']]?: {
+      visitor?: (op: Extract<Nodes, Typed<T>>) => Awaitable<void>;
+      preVisitor?: (op: Extract<Nodes, Typed<T>>) => Awaitable<VisitContext>;
+    }},
+  ): Promise<void> {
+    const visitorWrapper = (curObject: object): Awaitable<void> => {
+      const casted = <Typed<Nodes['type']>>curObject;
+      if (casted.type) {
+        const ogTransform = nodeCallBacks[casted.type]?.visitor;
+        if (ogTransform) {
+          return ogTransform(<any> casted);
+        }
+      }
+    };
+    const nodeDefaults = this.defaultNodePreVisitor;
+    const preVisitWrapper = (curObject: object): Awaitable<VisitContext> => {
+      let ogPreVisit: ((node: any) => Awaitable<VisitContext>) | undefined;
+      let nodeContext: VisitContext = {};
+      const casted = <Typed<Nodes['type']>>curObject;
+      if (casted.type) {
+        ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
+        nodeContext = nodeDefaults[casted.type] ?? nodeContext;
+      }
+      if (!ogPreVisit) {
+        return nodeContext;
+      }
+      const result = ogPreVisit(casted);
+      return isPromise(result) ?
+        result.then((res): VisitContext => ({ ...nodeContext, ...res })) :
+          { ...nodeContext, ...result };
+    };
+    return this.visitObjectAsync(startObject, visitorWrapper, preVisitWrapper);
   }
 }

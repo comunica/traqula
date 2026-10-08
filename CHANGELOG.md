@@ -1,6 +1,144 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.5.0-alpha.0"></a>
+## [v1.5.0-alpha.0](https://github.com/comunica/traqula/compare/v1.4.0...v1.5.0-alpha.0) - 2026-10-05
+
+* [Bracket nested prefix operators when generating (#219)](https://github.com/comunica/traqula/commit/4d85261b28e094b6db5622c2e0738d957793c379)
+* [Add cite section to repo README (#221)](https://github.com/comunica/traqula/commit/988167fa96d8e250d9299779f0e96d7c6256b535)
+* [Reject SELECT expressions and BINDs whose variable is already in scope (#210)](https://github.com/comunica/traqula/commit/3d1d966dd704f6c579a74a0bd5767f868af9fe99)
+* [Keep quad-mode extends from rebinding the graph variable (#201)](https://github.com/comunica/traqula/commit/a45cd4a7fdf10b3ee16f6646dc2fcc160a446a5a)
+* [Keep BINDs of DESCRIBE variables in the WHERE clause (#213)](https://github.com/comunica/traqula/commit/0c47de872879ab26af4db386e73c3448e9db0cc6)
+* [Replace placeholder assertions in SPARQL 1.1 notes tests (#208)](https://github.com/comunica/traqula/commit/4b60f2f8497c3ce110f9d6efc8d43bda67648d49)
+* [Keep literal direction when generating SPARQL 1.2 algebra fixtures (#207)](https://github.com/comunica/traqula/commit/efdb1f32828006b875e14081937259de6fca6196)
+* [Keep GROUP BY and HAVING when translating CONSTRUCT algebra to AST (#211)](https://github.com/comunica/traqula/commit/98174df7f7d10bbc03d0b76fbbee8d86bf938675)
+* [Fix unparseable HAVING and GROUP BY generation (#206)](https://github.com/comunica/traqula/commit/1a4929ffc1f5811de236ad361be8770ab5245f61)
+* [Substitute aggregates in ORDER BY when translating algebra to AST (#204)](https://github.com/comunica/traqula/commit/3e3340424de00c9ea27e5f6dd64be355aa5b3633)
+* [Lift extends into SELECT in nesting order (#203)](https://github.com/comunica/traqula/commit/2c477e45926f52028803eeaf93011b8c51b3b5cf)
+* [Translate group extends back to GROUP BY expressions in toAst (#202)](https://github.com/comunica/traqula/commit/a8f1e5b2fe10cee33f18bfb9c40e2f47c37c1088)
+* [Translate every filter on top of a group to HAVING in toAst (#205)](https://github.com/comunica/traqula/commit/c6fd17b03bcfe3014b883b5d932f5a7b039d3d5f)
+* [Fix algebra transformers on Object.prototype names and repair Canonicalizer output (#199)](https://github.com/comunica/traqula/commit/00dc1eea7ff1aa777924f9758f3676ced7b07c9c)
+* [Scope OPTIONAL and MINUS in non-first join operands when converting algebra to SPARQL  (#200)](https://github.com/comunica/traqula/commit/fd583929d2850ca68c113e78b4dd39d8dfc7a22e)
+* [Select aggregates that a projection selects directly (#198)](https://github.com/comunica/traqula/commit/d120a31be2b0e5c0cbf7c64eec4917958f8c5f4b)
+
+<a name="v1.4.0"></a>
+## [v1.4.0](https://github.com/comunica/traqula/compare/v1.3.1...v1.4.0) - 2026-09-25
+
+* [Resolve relative IRIs according to RFC 3986 (#196)](https://github.com/comunica/traqula/commit/4e179b9ad2a67fe4033d745c9c7988ead8314342)
+* [Fix generator term separation (#195)](https://github.com/comunica/traqula/commit/927ad48aec7b5da3c543a86dc53888f7c736c0ee)
+* [Narrow return type of wrapInGraph added in last commit - c2c6f3e](https://github.com/comunica/traqula/commit/cf4ac26f6bf0a280248da47763a9944bd37ddc90)
+* [Add round-trip spec tests for the algebra transformers (#194)](https://github.com/comunica/traqula/commit/c2c6f3ee106bdf8e890a190c3713baa7d8785003)
+* [Align spec test coverage across SPARQL parsers (#192)](https://github.com/comunica/traqula/commit/9023ec05c0facacc7cc21ce826dac0d5232b7ad0)
+
+<a name="v1.3.1"></a>
+## [v1.3.1](https://github.com/comunica/traqula/compare/v1.3.0...v1.3.1) - 2026-09-14
+
+* [Give a sub-SELECT its own group when binds join it (#190)](https://github.com/comunica/traqula/commit/49c6f249b9111657848971768b5c82d982aa3625)
+
+<a name="v1.3.0"></a>
+## [v1.3.0](https://github.com/comunica/traqula/compare/v1.2.2...v1.3.0) - 2026-09-09
+
+* [Async transformers (#187)](https://github.com/comunica/traqula/commit/7e1c7bfb6faf8cda89a95627adb88784953d252a)
+
+<a name="v1.2.2"></a>
+## [v1.2.2](https://github.com/comunica/traqula/compare/v1.2.1...v1.2.2) - 2026-09-02
+
+* [Fix toAst hoisting EXTEND out of GRAPH  (#186)](https://github.com/comunica/traqula/commit/6689a684038e32d8f1f16901a3a998960ac362db)
+* [Update dependency markdown-it to v15.0.1 (#185)](https://github.com/comunica/traqula/commit/e83ffd216b530af930152dc271ac92a454fb3d92)
+* [Update dependency axios to v1.20.0 (#184)](https://github.com/comunica/traqula/commit/7db0a5764dc55afd0581d0b8af04ea2f57c93658)
+* [Update dependency picomatch to v4.0.7 (#183)](https://github.com/comunica/traqula/commit/e8a745172a28ea0accae72aa00aaa10e0fd57215)
+
+<a name="v1.2.1"></a>
+## [v1.2.1](https://github.com/comunica/traqula/compare/v1.2.0...v1.2.1) - 2026-08-27
+
+* [Prevent filter hoisting into leftJoins when filters are not declared in immediate child group (#182)](https://github.com/comunica/traqula/commit/fa033405519c20baf7782e425da4ba44a4eec212)
+* [Add validation for BlankNode scoping (grammar rule 8) using checkBlankNodeBGPScope (#176)](https://github.com/comunica/traqula/commit/896dfa7868f93bfef9448ca58d69a5e6a70d825a)
+* [Fix `LIMIT 0` not being transformed to algebra (#175)](https://github.com/comunica/traqula/commit/351e1ab66e6b572ce7be27ed544fe34e849b71db)
+
+
+* [Brand the TypeDoc site title with the Traqula logo and red (#174)](https://github.com/comunica/traqula/commit/015812b00719fe361d3fa33d61fce294bb4a9ad1)
+* [Use docs/index.md as the documentation landing page (#173)](https://github.com/comunica/traqula/commit/8e880291587cc29f389c035ef68d362e2ab906f9)
+* [Fix TypeDoc broken links (#172)](https://github.com/comunica/traqula/commit/0f5f04f2fad2d104857f8389b33a27596896608e)
+* [Update dependency axios to v1.19.0 (#177)](https://github.com/comunica/traqula/commit/14378e89a559e5a851e87a7bf6bd1e82dd3682be)
+
+<a name="v1.2.0"></a>
+## [v1.2.0](https://github.com/comunica/traqula/compare/v1.1.8...v1.2.0) - 2026-08-05
+
+* [Parse evaluation spec tests and fix exponent parsing (#171)](https://github.com/comunica/traqula/commit/56f48fb4bf6012267692d794646b412093a05d4f)
+* [Narrow algebraUtils.inScopeVariables results (#166)](https://github.com/comunica/traqula/commit/bc95d2a6a089b5e7215edef8955dcf408acba5f0)
+* [Extend core transformer with transformObjectPreOrder and typed extensions](https://github.com/comunica/traqula/commit/122da6caa9d1b6b21f910f797c4304850a2d686c)
+* [chore(deps): update dependency markdown-it to v15 (#170)](https://github.com/comunica/traqula/commit/b0670c1807008487a64f2e4327492a108f6360f0)
+* [chore(deps): update dependency flatted to v3.4.4 (#169)](https://github.com/comunica/traqula/commit/fda5db5673dc7b189221886e22f1f44073cfa853)
+* [chore(deps): update dependency minimatch to v10.2.6 (#164)](https://github.com/comunica/traqula/commit/0c9c91f8079b1808dc3bf7e59eb2fc1cd724e68c)
+* [chore(deps): update dependency flatted to v3.4.3 (#162)](https://github.com/comunica/traqula/commit/1661952f017daa21b6b23d08957add47442394bc)
+* [chore(deps): update dependency tar to v7.5.22 (#161)](https://github.com/comunica/traqula/commit/072c57f72eca44435486afd58d04bbf8f86209b2)
+* [chore(deps): update actions/setup-node action to v7](https://github.com/comunica/traqula/commit/eb534010ed77cd42a0e6d21ff3dc5434612fe60a)
+* [chore(deps): update dependency tar to v7.5.20 (#152)](https://github.com/comunica/traqula/commit/cf422e57fd7e5b54ee26b95bf3d27f5d6521901e)
+* [chore(deps): update dependency markdown-it to v14.3.0 (#153)](https://github.com/comunica/traqula/commit/edfea82538b73e4b16339a622296a1b55014df8b)
+* [chore(deps): update dependency picomatch to v4.0.5 (#154)](https://github.com/comunica/traqula/commit/c9c60cc7cb64d5fb4afe989f14271f1c37886486)
+* [chore: name devcontainer and install claude cli in it](https://github.com/comunica/traqula/commit/866591f90e9666838fea4a0509ef191be3600d08)
+* [chore: add TODO major for type in builtIn 1.2 tokens and rules](https://github.com/comunica/traqula/commit/2f0b12350ffb09d464596f74d0cbc3702ebb06cd)
+* [chore: Remove devcontainer setup from git](https://github.com/comunica/traqula/commit/52f6cec7f662ce6aab6917dcd476e88394983b4c)
+
+<a name="v1.1.8"></a>
+## [v1.1.8](https://github.com/comunica/traqula/compare/v1.1.7...v1.1.8) - 2026-07-09
+
+### TODO: categorize commits, choose titles from: Added, Changed, Deprecated, Removed, Fixed, Security.
+* [feat: test-utils export expect-functions independent (#158)](https://github.com/comunica/traqula/commit/e564b62bab8394e40e90fb251ba5b3961697f610)
+
+<a name="v1.1.7"></a>
+## [v1.1.7](https://github.com/comunica/traqula/compare/v1.1.6...v1.1.7) - 2026-07-07
+
+* [Fix: export submodule types as flat types of module - fix downstream TS2883 (#156)](https://github.com/comunica/traqula/commit/0378c691ede3d0716b37743b55be122ce685a8d8)
+* [Chore: deprecate support for macOS 14 (#157)](https://github.com/comunica/traqula/commit/17ccad8b1d0fdfb61a51821067092c3d51988dba)
+* [chore(deps): update dependency axios to v1.18.1 (#151)](https://github.com/comunica/traqula/commit/ae5285555d333c11d4032a2a548b246038fb1a19)
+* [chore(deps): update actions/cache action to v6](https://github.com/comunica/traqula/commit/3c625feb92a2f1ed8d031167e33b82ed016910a3)
+
+<a name="v1.1.6"></a>
+## [v1.1.6](https://github.com/comunica/traqula/compare/v1.1.5...v1.1.6) - 2026-06-19
+
+* [Update static 1.2 spec - rdf-tests 348 (#150)](https://github.com/comunica/traqula/commit/3057be5cd7e19019baed2d7b29db402526510b58)
+* [chore(deps): update actions/checkout action to v7](https://github.com/comunica/traqula/commit/a09122756a791f1809558aefdbbe8b8c1b116bd2)
+
+<a name="v1.1.5"></a>
+## [v1.1.5](https://github.com/comunica/traqula/compare/v1.1.4...v1.1.5) - 2026-06-18
+
+* [Fix: double packaging test-utils through side-effect endpoint  (#149)](https://github.com/comunica/traqula/commit/db786becebbd77b842189da87c2f413a44ab275d)
+* [chore(deps): update dependency axios to v1.18.0 (#146)](https://github.com/comunica/traqula/commit/b0f02e151ecf1e49f83f57966d09eb1778a8124e)
+* [Chore(deps-dev): Bump esbuild from 0.28.0 to 0.28.1 (#148)](https://github.com/comunica/traqula/commit/f02ba78de45a3530cfdb6d9c956e988c680d4735)
+
+<a name="v1.1.4"></a>
+## [v1.1.4](https://github.com/comunica/traqula/compare/v1.1.3...v1.1.4) - 2026-06-10
+
+* [Fix: reserved key (#147)](https://github.com/comunica/traqula/commit/476e96514b2f8d72e16de76c4659207d89e2ae2e)
+
+<a name="v1.1.3"></a>
+## [v1.1.3](https://github.com/comunica/traqula/compare/v1.1.2...v1.1.3) - 2026-06-09
+
+* [Test: code point escape (#145)](https://github.com/comunica/traqula/commit/4bddbd6cb17bcbdfc05a19147e0fd4cda47b4104)
+
+<a name="v1.1.2"></a>
+## [v1.1.2](https://github.com/comunica/traqula/compare/v1.1.1...v1.1.2) - 2026-06-05
+
+* [feat: allow AS-bound variable references (#142)](https://github.com/comunica/traqula/commit/bbe54ebadce5f99b3a6297257a1b5c82bcff20a9)
+* [Add citation.cff](https://github.com/comunica/traqula/commit/d5c22968a67c8f6fdaa2c4587fc537bdc721d144)
+
+* [Chore: update dependency tar to v7.5.16 (#144)](https://github.com/comunica/traqula/commit/c8f6b87191526066da701b5743a75282b32a1d38)
+* [Chore: Update dependency markdown-it to v14.2.0 (#141)](https://github.com/comunica/traqula/commit/3cc4d5c353bf7a7e60dbd9f1130451a2e6d31d21)
+* [Chore: Update dependency axios to v1.16.1 (#140)](https://github.com/comunica/traqula/commit/afd9d97798ece27482d1671bd4f3c4088826e6b9)
+* [Chore: Update dependency axios to v1.16.0 (#132)](https://github.com/comunica/traqula/commit/fce3b123924afe4568771bcf9bf695baefcfa780)
+* [Chore: Update dependency tar to v7.5.15 (#139)](https://github.com/comunica/traqula/commit/80a0735eb9de86138e2648321464af7a90fe30a8)
+
+<a name="v1.1.1"></a>
+## [v1.1.1](https://github.com/comunica/traqula/compare/v1.1.0...v1.1.1) - 2026-05-09
+
+* [Fix: separate adjacent cells in VALUES data rows (#138)](https://github.com/comunica/traqula/commit/33f91da55e6fec7b4f1427a73ab011fb0b4b690d)
+* [Docs: increase documentation quality throughout (#130)](https://github.com/comunica/traqula/commit/1873a1b0260d6e9edb54ffa083b860e20fc57724)
+* [Chore: Update dependency tar to v7.5.14 (#135)](https://github.com/comunica/traqula/commit/7b13a53f71041a229813a72a0564ab3399d1317c)
+* [Chore: Update dependency ajv to v6.15.0 (#128)](https://github.com/comunica/traqula/commit/b369711c5ba3a744148d1f1b8aac46afd78a0c14)
+* [Chore: add devcontainer](https://github.com/comunica/traqula/commit/da88bb976bc46a78d3de6c0a9c66a58611913a93)
+* [Chore: Fix typo in README.md for SPARQL generator (#131)](https://github.com/comunica/traqula/commit/2f17f733c89222325eae742e7d19f3fdfcb9fab1)
+
 <a name="v1.1.0"></a>
 ## [v1.1.0](https://github.com/comunica/traqula/compare/v1.0.7...v1.1.0) - 2026-04-29
 

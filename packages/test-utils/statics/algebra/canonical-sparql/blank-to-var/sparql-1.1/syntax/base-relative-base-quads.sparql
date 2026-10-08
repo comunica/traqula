@@ -1,0 +1,4 @@
+SELECT * WHERE {
+  <http://example.com/a/d/> <http://example.com/a/d/f/p> <http://other.example/y?q#r> .
+  <http://example.com/a/d/?q2> <http://example.com/a/d/f/p> <http://example.com/a/d/i> .
+}

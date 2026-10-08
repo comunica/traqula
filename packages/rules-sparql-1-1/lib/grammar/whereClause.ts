@@ -22,13 +22,13 @@ import type {
   TermVariable,
   ValuePatternRow,
 } from '../Sparql11types.js';
-import { checkNote13 } from '../validation/validators.js';
 import { builtInCall } from './builtIn.js';
 import { argList, brackettedExpression, expression } from './expression.js';
 import { var_, varOrIri, varOrTerm } from './general.js';
 import { booleanLiteral, iri, numericLiteral, rdfLiteral } from './literals.js';
 import { query, subSelect } from './queryUnit.js';
 import { graphNodePath, triplesBlock } from './tripleBlock.js';
+import { validateGroupGraphPattern, validateGroupGraphPatternSub } from './validation.js';
 
 /**
  * [[17]](https://www.w3.org/TR/sparql11-query/#rWhereClause)
@@ -58,6 +58,8 @@ export const groupGraphPattern: SparqlRule<'groupGraphPattern', PatternGroup> = 
       { ALT: () => SUBRULE(groupGraphPatternSub) },
     ]);
     const close = CONSUME(l.symbols.RCurly);
+
+    SUBRULE(validateGroupGraphPattern, patterns);
 
     return ACTION(() => C.astFactory.patternGroup(patterns, C.astFactory.sourceLocation(open, close)));
   },
@@ -110,7 +112,7 @@ export const generatePattern: SparqlGeneratorRule<'generatePattern', Pattern> = 
 export const groupGraphPatternSub:
 SparqlGrammarRule<'groupGraphPatternSub', Pattern[]> = <const> {
   name: 'groupGraphPatternSub',
-  impl: ({ ACTION, SUBRULE, CONSUME, MANY, SUBRULE1, SUBRULE2, OPTION1, OPTION2, OPTION3 }) => (C) => {
+  impl: ({ SUBRULE, CONSUME, MANY, SUBRULE1, SUBRULE2, OPTION1, OPTION2, OPTION3 }) => () => {
     const patterns: Pattern[] = [];
 
     const bgpPattern = OPTION1(() => SUBRULE1(triplesBlock));
@@ -129,7 +131,7 @@ SparqlGrammarRule<'groupGraphPatternSub', Pattern[]> = <const> {
       }
     });
 
-    ACTION(() => !C.skipValidation && checkNote13(patterns));
+    SUBRULE(validateGroupGraphPatternSub, patterns);
 
     return patterns;
   },
@@ -313,6 +315,7 @@ export const inlineData: SparqlRule<'inlineData', PatternValues> = <const> {
           F.printFilter(ast, () => PRINT_WORD('UNDEF'));
         } else {
           SUBRULE(graphNodePath, mapping[var_]);
+          F.printFilter(ast, () => PRINT_WORD(''));
         }
       }
       F.printFilter(ast, () => {
@@ -350,7 +353,7 @@ export const inlineDataOneVar: SparqlGrammarRule<'inlineDataOneVar', PatternValu
     MANY(() => {
       const value = SUBRULE(dataBlockValue);
       ACTION(() => {
-        res.push({ [varVal.value]: value });
+        res.push(Object.assign(Object.create(null), { [varVal.value]: value }));
       });
     });
     const close = CONSUME(l.symbols.RCurly);
@@ -384,7 +387,7 @@ export const inlineDataFull: SparqlGrammarRule<'inlineDataFull', PatternValues> 
         CONSUME1(l.symbols.LCurly);
         MANY1(() => {
           CONSUME2(l.terminals.nil);
-          res.push({});
+          res.push(Object.create(null));
         });
         const close = CONSUME1(l.symbols.RCurly);
 
@@ -399,7 +402,7 @@ export const inlineDataFull: SparqlGrammarRule<'inlineDataFull', PatternValues> 
         CONSUME2(l.symbols.LCurly);
         MANY3(() => {
           let parsedValues = 0;
-          const currentRow: ValuePatternRow = {};
+          const currentRow: ValuePatternRow = Object.create(null);
           CONSUME2(l.symbols.LParen);
           MANY4(() => {
             ACTION(() => {

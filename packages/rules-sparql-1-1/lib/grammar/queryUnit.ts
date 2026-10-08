@@ -17,12 +17,12 @@ import type {
   TermVariable,
   Wildcard,
 } from '../Sparql11types.js';
-import { queryProjectionIsGood } from '../validation/validators.js';
 import { datasetClauseStar } from './dataSetClause.js';
 import { expression } from './expression.js';
 import { prologue, var_, varOrIri, varOrTerm } from './general.js';
 import { solutionModifier } from './solutionModifier.js';
 import { triplesBlock, triplesTemplate } from './tripleBlock.js';
+import { validateQuery, validateSubSelect } from './validation.js';
 import { inlineData, whereClause } from './whereClause.js';
 
 /**
@@ -50,7 +50,7 @@ export const query: SparqlRule<'query', Query> = <const> {
     ]);
     const values = SUBRULE(valuesClause);
 
-    return ACTION(() => {
+    const result = ACTION(() => {
       const q = <Query> {
         context: prologueValues,
         ...subType,
@@ -66,6 +66,8 @@ export const query: SparqlRule<'query', Query> = <const> {
       }
       return q;
     });
+    SUBRULE(validateQuery, result);
+    return result;
   },
   gImpl: ({ SUBRULE }) => (ast, { astFactory: F }) => {
     SUBRULE(prologue, ast.context);
@@ -86,6 +88,10 @@ export const query: SparqlRule<'query', Query> = <const> {
 
 /**
  * [[7]](https://www.w3.org/TR/sparql11-query/#rSelectQuery)
+ * Does not validate the projection: that depends on the trailing VALUES clause (18.2.4.3),
+ * so {@link query} and `queryOrUpdate` validate it once that clause is parsed, see {@link validateQuery}.
+ * Callers that invoke this rule directly should invoke `validateSelectQuery` on its result,
+ * including the trailing VALUES clause, themselves.
  */
 export const selectQuery: SparqlRule<'selectQuery', Omit<QuerySelect, HandledByBase>> = <const> {
   name: 'selectQuery',
@@ -95,7 +101,7 @@ export const selectQuery: SparqlRule<'selectQuery', Omit<QuerySelect, HandledByB
     const where = SUBRULE(whereClause);
     const modifiers = SUBRULE(solutionModifier);
 
-    return ACTION(() => {
+    const result = ACTION(() => {
       const ret = {
         subType: 'select',
         where: where.val,
@@ -111,11 +117,9 @@ export const selectQuery: SparqlRule<'selectQuery', Omit<QuerySelect, HandledByB
           modifiers.limitOffset,
         ),
       } satisfies RuleDefReturn<typeof selectQuery>;
-      if (!C.skipValidation) {
-        queryProjectionIsGood(ret);
-      }
       return ret;
     });
+    return result;
   },
   gImpl: ({ SUBRULE }) => (ast, { astFactory: F }) => {
     SUBRULE(selectClause, F.wrap({
@@ -140,7 +144,7 @@ export const subSelect: SparqlGrammarRule<'subSelect', SubSelect> = <const> {
     const modifiers = SUBRULE(solutionModifier);
     const values = SUBRULE(valuesClause);
 
-    return ACTION(() => C.astFactory.querySelect({
+    const result = ACTION(() => C.astFactory.querySelect({
       where: where.val,
       datasets: C.astFactory.datasetClauses([], C.astFactory.sourceLocation()),
       context: [],
@@ -156,6 +160,8 @@ export const subSelect: SparqlGrammarRule<'subSelect', SubSelect> = <const> {
       modifiers.limitOffset,
       values,
     )));
+    SUBRULE(validateSubSelect, result);
+    return result;
   },
 };
 
@@ -397,6 +403,8 @@ export const describeQuery: SparqlRule<'describeQuery', Omit<QueryDescribe, Hand
       F.printFilter(ast, () => PRINT_WORD('*'));
     } else {
       for (const variable of (<Exclude<QueryDescribe['variables'], [Wildcard]>> ast.variables)) {
+        // Separate the targets, otherwise `DESCRIBE ?s ex:a` would be generated as `DESCRIBE ?sex:a`
+        F.printFilter(ast, () => PRINT_WORD(''));
         SUBRULE(varOrTerm, variable);
       }
     }

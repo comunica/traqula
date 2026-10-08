@@ -1,0 +1,168 @@
+{
+  "context": [],
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "values",
+        "variables": [
+          {
+            "type": "term",
+            "subType": "variable",
+            "value": "v",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 71,
+              "end": 73
+            }
+          }
+        ],
+        "values": [
+          {
+            "v": {
+              "type": "term",
+              "subType": "literal",
+              "value": "abc\\def",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 80,
+                "end": 94
+              }
+            }
+          },
+          {
+            "v": {
+              "type": "term",
+              "subType": "literal",
+              "value": "abc\\tuv",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 99,
+                "end": 113
+              }
+            }
+          },
+          {
+            "v": {
+              "type": "term",
+              "subType": "literal",
+              "value": "\\A",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 118,
+                "end": 127
+              }
+            }
+          },
+          {
+            "v": {
+              "type": "term",
+              "subType": "literal",
+              "value": "\\u005C",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 132,
+                "end": 141
+              }
+            }
+          },
+          {
+            "v": {
+              "type": "term",
+              "subType": "literal",
+              "value": "\\\\",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 146,
+                "end": 160
+              }
+            }
+          },
+          {
+            "v": {
+              "type": "term",
+              "subType": "literal",
+              "value": "\\\\",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 165,
+                "end": 175
+              }
+            }
+          },
+          {
+            "v": {
+              "type": "term",
+              "subType": "literal",
+              "value": "\\\\",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 180,
+                "end": 186
+              }
+            }
+          },
+          {
+            "v": {
+              "type": "term",
+              "subType": "literal",
+              "value": "\\n",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 191,
+                "end": 200
+              }
+            }
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 64,
+          "end": 204
+        }
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 60,
+      "end": 206
+    }
+  },
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "term",
+      "subType": "variable",
+      "value": "v",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 57,
+        "end": 59
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "inlinedSource",
+    "newSource": "# Codepoint escape are not reused during parsing\n\nSELECT ?v {\n  VALUES ?v {\n    \"abc\\u005Cdef\"\n    \"abc\\u005Ctuv\"\n    \"\\u005CA\"\n    \"\\\\u005C\"\n    \"\\u005C\\u005C\"\n    \"\\\\\\u005C\"\n    \"\\\\\\\\\"\n    \"\\u005Cn\"\n  }\n}\n",
+    "start": 0,
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 50,
+      "end": 206
+    },
+    "startOnNew": 50,
+    "endOnNew": 206
+  },
+  "type": "query"
+}

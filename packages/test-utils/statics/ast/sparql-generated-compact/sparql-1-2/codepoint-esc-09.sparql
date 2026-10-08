@@ -1,0 +1,1 @@
+SELECT ?v WHERE { VALUES ?v { "abc\\def" "abc\\tuv" "\\A" "\\u005C" "\\\\" "\\\\" "\\\\" "\\n" } }

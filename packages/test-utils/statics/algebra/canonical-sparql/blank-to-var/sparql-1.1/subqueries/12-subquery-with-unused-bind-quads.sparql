@@ -1,0 +1,8 @@
+SELECT ?x WHERE {
+  {
+    SELECT ?x ?y WHERE {
+      ?x <http://www.example.org/schema#p> ?y .
+    }
+  }
+  BIND( ?y AS ?z )
+}

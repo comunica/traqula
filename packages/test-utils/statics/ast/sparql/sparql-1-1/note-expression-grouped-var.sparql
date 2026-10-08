@@ -1,0 +1,1 @@
+SELECT (?x + 1 AS ?result) WHERE { ?s ?p ?x } GROUP BY ?x

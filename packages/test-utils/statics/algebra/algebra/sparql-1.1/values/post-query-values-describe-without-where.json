@@ -1,0 +1,26 @@
+{
+  "type": "describe",
+  "input": {
+    "type": "values",
+    "variables": [
+      {
+        "termType": "Variable",
+        "value": "v"
+      }
+    ],
+    "bindings": [
+      {
+        "v": {
+          "termType": "NamedNode",
+          "value": "http://example.org/a"
+        }
+      }
+    ]
+  },
+  "terms": [
+    {
+      "termType": "Variable",
+      "value": "v"
+    }
+  ]
+}

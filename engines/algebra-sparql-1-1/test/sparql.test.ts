@@ -3,7 +3,7 @@ import { Canonicalizer, algebraUtils } from '@traqula/algebra-transformations-1-
 import { Generator as Generator11 } from '@traqula/generator-sparql-1-1';
 import { Parser as Parser11 } from '@traqula/parser-sparql-1-1';
 import { AstFactory } from '@traqula/rules-sparql-1-1';
-import { positiveTest, sparqlAlgebraTests } from '@traqula/test-utils';
+import { positiveTest, sparqlAlgebraOnlyTests, sparqlAlgebraTests } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
 import { toAlgebra, toAst } from '../lib/index.js';
 import { suites } from './algebra.test.js';
@@ -58,15 +58,20 @@ describe('sparql algebra 1.1 output', () => {
     }
   });
 
+  describe('sparqlAlgebraOnlyTests Canonical SPARQL', () => {
+    for (const { name, json, canonicalSparql } of sparqlAlgebraOnlyTests('sparql-1.1-algebra-only')) {
+      it (name, ({ expect }) => {
+        const canonical = generator.generate(toAst(<Algebra.Operation> json));
+        expect(canonical.trim()).toEqual(canonicalSparql.trim());
+      });
+    }
+  });
+
   describe('static 11', () => {
     for (const { name, statics } of positiveTest('sparql-1-1', x => ![
       // 2x Sequence path introduces new variable that is then scoped in projection
       'sequence-paths-in-anonymous-node',
       'sparql-9-3c',
-      // Values is pushed from being solution modifier to being in patternGroup
-      'sparql-values-clause',
-      // Same reason
-      'no-space-select',
     ].includes(x))) {
       it(`can algebra circle ${name}`, async({ expect }) => {
         const { query } = await statics();

@@ -3,15 +3,43 @@ import { AstFactory } from './AstFactory.js';
 import type { SparqlContext, SparqlGeneratorContext } from './sparql12HelperTypes.js';
 import type { Sparql12Nodes } from './sparql12Types.js';
 
+/**
+ * Decode UCHAR codepoint escapes (\\uXXXX / \\UXXXXXXXX) within a string according to
+ * [SPARQL 1.2 §19.2](https://www.w3.org/TR/sparql12-query/#sec-escapes).
+ *
+ * Unlike the SPARQL 1.1 variant, this function rejects surrogate code points (U+D800–U+DFFF)
+ * even when they would form a valid surrogate pair.
+ * @deprecated will be removed in next MAJOR in favor of the less usecase dependent {@link decodeUchar}.
+ */
+export function sparql12CodepointEscape(input: string): string {
+  return input.replaceAll(
+    /\\u([0-9a-fA-F]{4})|\\U([0-9a-fA-F]{8})/gu,
+    (_, unicode4: string | undefined, unicode8: string | undefined) =>
+      decodeUchar((unicode4 ?? unicode8)!),
+  );
+}
+
+export function decodeUchar(hex: string): string {
+  const codePoint = Number.parseInt(hex, 16);
+  if (codePoint >= 0xD800 && codePoint <= 0xDFFF) {
+    throw new Error(`Illegal codepoint escape: surrogate code point U+${hex.toUpperCase()}`);
+  }
+  return String.fromCodePoint(codePoint);
+}
+
 export function completeParseContext(
   context: Partial<SparqlContext>,
 ): SparqlContext {
   return {
     astFactory: context.astFactory ?? new AstFactory({ tracksSourceLocation: false }),
     baseIRI: context.baseIRI,
-    prefixes: { ...context.prefixes },
+    prefixes: Object.assign(Object.create(null), context.prefixes),
     parseMode: context.parseMode ? new Set(context.parseMode) : new Set([ 'canParseVars', 'canCreateBlankNodes' ]),
     skipValidation: context.skipValidation ?? false,
+    /**
+     * @deprecated since it cannot be used for string decoding.
+     */
+    codepointEscape: context.codepointEscape ?? sparql12CodepointEscape,
   };
 }
 
@@ -34,7 +62,7 @@ Partial<SparqlContext & SparqlGeneratorContext & { origSource: string; offset?: 
 ): T {
   return {
     ...context,
-    prefixes: { ...context.prefixes },
+    prefixes: Object.assign(Object.create(null), context.prefixes),
     parseMode: new Set(context.parseMode),
   };
 }

@@ -46,7 +46,7 @@ export type IndirectionMap<RuleNames extends string> = {[Key in RuleNames]: Indi
  * Converts a list of ruledefs to a record mapping a name to the corresponding ruledef.
  */
 export function listToIndirectionMap<T extends readonly IndirDef[]>(rules: T): ParseIndirsToObject<T> {
-  const newRules: Record<string, IndirDef> = {};
+  const newRules: Record<string, IndirDef> = Object.create(null);
   for (const rule of rules) {
     newRules[rule.name] = rule;
   }

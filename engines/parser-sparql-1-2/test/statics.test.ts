@@ -96,11 +96,7 @@ describe('a SPARQL 1.2 parser', () => {
   });
 
   describe('negative sparql 1.2', () => {
-    const skip = new Set([
-      'sparql-1-2-syntax-compound-tripleterm-subject',
-      'sparql-1-2-syntax-subject-tripleterm',
-    ]);
-    for (const { name, statics } of negativeTest('sparql-1-2-invalid', name => !skip.has(name))) {
+    for (const { name, statics } of negativeTest('sparql-1-2-invalid')) {
       it(`should NOT parse ${name}`, async({ expect }) => {
         const { query } = await statics();
         expect(() => sourceTrackingParser.parse(query, context), 'source tracking').toThrow();

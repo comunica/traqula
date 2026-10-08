@@ -1,0 +1,6 @@
+prefix ex: <http://www.example.org/>
+
+select * where {
+    ?s ex:p ?g .
+    filter (if(?s, exists { graph ex:a { ?s ex:q ?o } }, exists { graph ex:b { ?s ex:q ?o } }))
+}

@@ -5,7 +5,7 @@ import type * as A from './algebra.js';
 import { ExpressionTypes, Types } from './algebra.js';
 
 const transformer = new TransformerSubTyped<A.Operation>({}, {
-  // Optimization that causes search tree pruning
+  // Optimization that causes search tree pruning -- do not step into RDF.Term objects, they are outside the algebra.
   [Types.PATTERN]: { ignoreKeys: new Set([ 'subject', 'predicate', 'object', 'graph' ]) } satisfies TransformContext,
   [Types.EXPRESSION]: { ignoreKeys: new Set([ 'name', 'term', 'wildcard', 'variable' ]) } satisfies VisitContext,
   [Types.DESCRIBE]: { ignoreKeys: new Set([ 'terms' ]) },
@@ -75,6 +75,69 @@ const transformer = new TransformerSubTyped<A.Operation>({}, {
 export const mapOperation = transformer.transformNode.bind(transformer);
 
 /**
+ * Async variant of {@link mapOperation}, accepting promise-returning callbacks and returning a Promise.
+ * The traversal stays strictly sequential (depth-first); see {@link TransformerTyped.transformNodeAsync}.
+ */
+export const mapOperationAsync = transformer.transformNodeAsync.bind(transformer);
+
+/**
+ * Transform a single operation pre-order, the dual of {@link mapOperation}: an operation is mapped
+ * _before_ its descendants, and we iterate into the result of that mapping.
+ * This is what you want for an operation that has to travel deeper into the tree,
+ * like a filter pushdown: the callback only describes how the filter swaps places with the operation right
+ * below it, and the filters it sank into are mapped in turn.
+ * e.g. sinking a filter into every branch of the unions below it:
+ * ```ts
+ * mapOperationPreOrder({
+ *   type: Algebra.Types.FILTER,
+ *   expression,
+ *   input: {
+ *     type: Algebra.Types.UNION,
+ *     input: [{ type: Algebra.Types.BGP }, { type: Algebra.Types.BGP }],
+ *   },
+ * }, {
+ *   [Algebra.Types.FILTER]: (filter) => {
+ *     if (filter.input.type === Algebra.Types.UNION) {
+ *       return { newValue: algebraFactory.createUnion(
+ *         filter.input.input.map(branch => algebraFactory.createFilter(branch, filter.expression)),
+ *         false,
+ *       ) };
+ *     }
+ *     // Any other operation is a barrier for this filter
+ *     return { newValue: filter };
+ *   },
+ * });
+ * const returns = {
+ *   type: Algebra.Types.UNION,
+ *   input: [
+ *     { type: Algebra.Types.FILTER, expression, input: { type: Algebra.Types.BGP }},
+ *     { type: Algebra.Types.FILTER, expression, input: { type: Algebra.Types.BGP }},
+ *   ],
+ * };
+ * ```
+ * Contrary to {@link mapOperation}, a callback returns the value taking the place of the operation together
+ * with the {@link TransformContext} of that value, so there is no separate preVisitor. The descendants of
+ * the operation it is called on are not mapped yet either - they are the operations of the input tree
+ * itself - so changing the properties _of a descendant_ writes straight into that tree.
+ * Both are documented in detail on {@link TransformerTyped.transformNodePreOrder}.
+ * @param startObject the object from which we will start the transformation,
+ *   potentially visiting and transforming its descendants along the way.
+ * @param nodeCallBacks a dictionary mapping the various operation types to a mapper.
+ *    The mapper allows you to manipulate the copy of the current operation, and expects you to return the
+ *    value that should take the current operations place, together with the context of that value.
+ *    That context steers how we iterate into the returned value.
+ * @return the result of transforming the startObject and the descendants of its rewrites.
+ */
+export const mapOperationPreOrder = transformer.transformNodePreOrder.bind(transformer);
+
+/**
+ * Async variant of {@link mapOperationPreOrder}, accepting promise-returning callbacks and returning a
+ * Promise. The traversal stays strictly sequential (depth-first);
+ * see {@link TransformerTyped.transformNodePreOrderAsync}.
+ */
+export const mapOperationPreOrderAsync = transformer.transformNodePreOrderAsync.bind(transformer);
+
+/**
  * Transform a single operation, similar to {@link mapOperation}, but also allowing you to target subTypes.
  * e.g. wrapping a distinct around the all project operations not contained in an aggregate expression
  * (invalid algebra anyway):
@@ -131,6 +194,52 @@ export const mapOperation = transformer.transformNode.bind(transformer);
 export const mapOperationSub = transformer.transformNodeSpecific.bind(transformer);
 
 /**
+ * Async variant of {@link mapOperationSub}, accepting promise-returning callbacks and returning a Promise.
+ * The traversal stays strictly sequential (depth-first);
+ * see {@link TransformerSubTyped.transformNodeSpecificAsync}.
+ */
+export const mapOperationSubAsync = transformer.transformNodeSpecificAsync.bind(transformer);
+
+/**
+ * Transform a single operation pre-order, similar to {@link mapOperationPreOrder},
+ * but also allowing you to target subTypes - it is to {@link mapOperationSub} what
+ * {@link mapOperationPreOrder} is to {@link mapOperation}.
+ * e.g. replacing every aggregate expression, and iterating into the operator expression it becomes:
+ * ```ts
+ * mapOperationSubPreOrder(
+ *   algebraFactory.createAggregateExpression('count', inner, false),
+ *   {},
+ *   { [Algebra.Types.EXPRESSION]: { [Algebra.ExpressionTypes.AGGREGATE]: copy =>
+ *     ({ newValue: algebraFactory.createOperatorExpression('!', [ copy.expression ]) }),
+ *   }},
+ * );
+ * ```
+ * Just like {@link mapOperationSub}, a callback registered for the subType of an operation takes
+ * precedence over the one registered for its type.
+ * The same caveats as on {@link mapOperationPreOrder} apply: the callback returns the value taking the
+ * place of the operation together with the {@link TransformContext} of that value, and the descendants
+ * it is handed are those of the input tree.
+ * They are documented in detail on {@link TransformerSubTyped.transformNodeSpecificPreOrder}.
+ * @param startObject the object from which we will start the transformation,
+ *   potentially visiting and transforming its descendants along the way.
+ * @param nodeCallBacks a dictionary mapping the various operation types to a mapper.
+ *    The mapper allows you to manipulate the copy of the current operation, and expects you to return the
+ *    value that should take the current operations place, together with the context of that value.
+ *    That context steers how we iterate into the returned value.
+ * @param nodeSpecificCallBacks Same as nodeCallBacks but using an additional level of indirection to
+ *     indicate the subType.
+ * @return the result of transforming the startObject and the descendants of its rewrites.
+ */
+export const mapOperationSubPreOrder = transformer.transformNodeSpecificPreOrder.bind(transformer);
+
+/**
+ * Async variant of {@link mapOperationSubPreOrder}, accepting promise-returning callbacks and returning a
+ * Promise. The traversal stays strictly sequential (depth-first);
+ * see {@link TransformerSubTyped.transformNodeSpecificPreOrderAsync}.
+ */
+export const mapOperationSubPreOrderAsync = transformer.transformNodeSpecificPreOrderAsync.bind(transformer);
+
+/**
  * Similar to {@link mapOperation}, but only visiting instead of copying and transforming explicitly.
  * e.g.:
  * ```ts
@@ -162,6 +271,12 @@ export const mapOperationSub = transformer.transformNodeSpecific.bind(transforme
  *    similar to {@link mapOperation}.
  */
 export const visitOperation = transformer.visitNode.bind(transformer);
+
+/**
+ * Async variant of {@link visitOperation}, accepting promise-returning callbacks and returning a Promise.
+ * The traversal stays strictly sequential (depth-first); see {@link TransformerTyped.visitNodeAsync}.
+ */
+export const visitOperationAsync = transformer.visitNodeAsync.bind(transformer);
 
 /**
  * Visits an object and it's descendants, similar to {@link visitOperation},
@@ -206,56 +321,128 @@ export const visitOperation = transformer.visitNode.bind(transformer);
 export const visitOperationSub = transformer.visitNodeSpecific.bind(transformer);
 
 /**
- * Resolves an IRI against a base path in accordance to the [Syntax for IRIs](https://www.w3.org/TR/sparql11-query/#QSynIRI)
+ * Async variant of {@link visitOperationSub}, accepting promise-returning callbacks and returning a Promise.
+ * The traversal stays strictly sequential (depth-first);
+ * see {@link TransformerSubTyped.visitNodeSpecificAsync}.
+ */
+export const visitOperationSubAsync = transformer.visitNodeSpecificAsync.bind(transformer);
+
+/**
+ * Absolute IRIs start with a scheme - [RFC 3986, section 3.1](https://www.rfc-editor.org/rfc/rfc3986#section-3.1)
+ */
+const absoluteIriRegex = /^[a-z][\d+.a-z-]*:/iu;
+
+/**
+ * [RFC 3986, appendix B](https://www.rfc-editor.org/rfc/rfc3986#appendix-B). Matches every string.
+ */
+const iriComponentsRegex = /^(?:([^:/?#]+):)?(?:\/\/([^/?#]*))?([^?#]*)(?:\?([^#]*))?(?:#(.*))?$/su;
+
+/**
+ * {@link iriComponentsRegex} without the scheme, so an invalid relative IRI like '1a:b' is kept whole as a path.
+ */
+const relativeIriComponentsRegex = /^(?:\/\/([^/?#]*))?([^?#]*)(?:\?([^#]*))?(?:#(.*))?$/su;
+
+/**
+ * [RFC 3986, section 5.2.4](https://www.rfc-editor.org/rfc/rfc3986#section-5.2.4)
+ */
+function removeDotSegments(path: string): string {
+  let input = path;
+  let output = '';
+  const removeLastOutputSegment = (): void => {
+    const pos = output.lastIndexOf('/');
+    output = output.slice(0, pos > 0 ? pos : 0);
+  };
+  while (input.length > 0) {
+    if (input.startsWith('../')) {
+      input = input.slice(3);
+    } else if (input.startsWith('./') || input.startsWith('/./')) {
+      input = input.slice(2);
+    } else if (input === '/.') {
+      input = '/';
+    } else if (input.startsWith('/../')) {
+      input = input.slice(3);
+      removeLastOutputSegment();
+    } else if (input === '/..') {
+      input = '/';
+      removeLastOutputSegment();
+    } else if (input === '.' || input === '..') {
+      input = '';
+    } else {
+      // Move the first path segment (including its leading '/', if any) to the output
+      const segmentEnd = input.indexOf('/', 1);
+      const segment = segmentEnd === -1 ? input : input.slice(0, segmentEnd);
+      output += segment;
+      input = input.slice(segment.length);
+    }
+  }
+  return output;
+}
+
+/**
+ * Resolves relative IRIs against the base IRI as described in the [Syntax for IRIs](https://www.w3.org/TR/sparql12-query/#QSynIRI),
+ * using [RFC 3986, section 5.2](https://www.rfc-editor.org/rfc/rfc3986#section-5.2) without normalization.
+ * Absolute IRIs are returned unmodified.
  */
 export function resolveIRI(iri: string, base: string | undefined): string {
-  // Return absolute IRIs unmodified
-  if (/^[a-z][\d+.a-z-]*:/iu.test(iri)) {
+  if (absoluteIriRegex.test(iri)) {
     return iri;
   }
   if (!base) {
     throw new Error(`Cannot resolve relative IRI ${iri} because no base IRI was set.`);
   }
-  switch (iri[0]) {
-    // An empty relative IRI indicates the base IRI
-    case undefined:
-      return base;
-      // Resolve relative fragment IRIs against the base IRI
-    case '#':
-      return base + iri;
-      // Resolve relative query string IRIs by replacing the query string
-    case '?':
-      return base.replace(/(?:\?.*)?$/u, iri);
-      // Resolve root relative IRIs at the root of the base IRI
-    case '/': {
-      // Since the empty string natches, this always matches something.
-      const baseRoot = /^(?:[a-z]+:\/*)?[^/]*/u.exec(base)![0];
-      return baseRoot + iri;
+  const [ , relativeAuthority, relativePath, relativeQuery, relativeFragment ] =
+    relativeIriComponentsRegex.exec(iri)!;
+  const [ , baseScheme, baseAuthority, basePath, baseQuery ] = iriComponentsRegex.exec(base)!;
+
+  // Transform references - https://www.rfc-editor.org/rfc/rfc3986#section-5.2.2
+  let resolvedAuthority: string | undefined;
+  let resolvedPath: string;
+  let resolvedQuery: string | undefined;
+  if (relativeAuthority === undefined) {
+    if (relativePath === '') {
+      resolvedPath = basePath;
+      resolvedQuery = relativeQuery ?? baseQuery;
+    } else {
+      if (relativePath.startsWith('/')) {
+        resolvedPath = removeDotSegments(relativePath);
+      } else if (baseAuthority !== undefined && basePath === '') {
+        // Merge paths - https://www.rfc-editor.org/rfc/rfc3986#section-5.2.3
+        resolvedPath = removeDotSegments(`/${relativePath}`);
+      } else {
+        resolvedPath = removeDotSegments(basePath.slice(0, basePath.lastIndexOf('/') + 1) + relativePath);
+      }
+      resolvedQuery = relativeQuery;
     }
-    // Resolve all other IRIs at the base IRI's path
-    default: {
-      // Const lastSemi = base.lastIndexOf(':');
-      // const lastSlash = base.lastIndexOf('/');
-      // let basePath;
-      // if (lastSlash === -1 && lastSemi === -1) {
-      //   basePath = '';
-      // } else if (lastSlash > lastSemi) {
-      //   basePath = base.slice(0, lastSlash);
-      // } else {
-      //   basePath = base.slice(0, lastSemi);
-      // }
-      const basePath = base.replace(/[^/:]*$/u, '');
-      return basePath + iri;
-    }
+    resolvedAuthority = baseAuthority;
+  } else {
+    resolvedAuthority = relativeAuthority;
+    resolvedPath = removeDotSegments(relativePath);
+    resolvedQuery = relativeQuery;
   }
+
+  // Component recomposition - https://www.rfc-editor.org/rfc/rfc3986#section-5.3
+  // Like the RFC, a path starting with '//' is not guarded against: '..//g' against 'urn:x/y' gives 'urn://g'.
+  let result = baseScheme === undefined ? '' : `${baseScheme}:`;
+  if (resolvedAuthority !== undefined) {
+    result += `//${resolvedAuthority}`;
+  }
+  result += resolvedPath;
+  if (resolvedQuery !== undefined) {
+    result += `?${resolvedQuery}`;
+  }
+  if (relativeFragment !== undefined) {
+    result += `#${relativeFragment}`;
+  }
+  return result;
 }
 
 // TODO: find a cleaner way
 /**
  * Outputs a JSON object corresponding to the input algebra-like.
+ * Primitive values (including null and undefined) are returned as-is.
  */
 export function objectify(algebra: any): any {
-  if (algebra.termType) {
+  if (algebra?.termType) {
     if (algebra.termType === 'Quad') {
       return {
         type: 'pattern',
@@ -279,19 +466,24 @@ export function objectify(algebra: any): any {
     return algebra.map(e => objectify(e));
   }
   if (algebra === Object(algebra)) {
-    const result: any = {};
-    for (const key of Object.keys(algebra)) {
-      result[key] = objectify(algebra[key]);
-    }
-    return result;
+    return Object.fromEntries(Object.keys(algebra)
+      .map(key => [ key, objectify(algebra[key]) ]));
   }
   return algebra;
 }
 
 /**
- * Detects all in-scope variables.
+ * Detects all [in-scope variables](https://www.w3.org/TR/sparql12-query/#variableScope).
  * In practice this means iterating through the entire algebra tree, finding all variables,
- * and stopping when a project function is found.
+ * and stopping at every operation that hides the variables of its input:
+ * - PROJECT only exposes the variables it projects.
+ * - GROUP only exposes its keys and the variables its aggregates are bound to.
+ * - The right-hand side of a MINUS is not in scope, only the left-hand side is.
+ * - The pattern of an `(NOT) EXISTS` is not in scope
+ *   ("use of a variable in FILTER or in MINUS does not cause the variable to be in-scope
+ *   outside of those forms").
+ * - The templates of a CONSTRUCT or a DELETE/INSERT consume solution mappings,
+ *   they do not produce them, so their variables are not in scope either.
  * @param {Operation} op - Input algebra tree.
  * @param visitor the visitor to be used to traverse the various nodes.
  * Allows you to provide a visitor with different default preVisitor cotexts.
@@ -301,7 +493,7 @@ export function inScopeVariables(
   op: A.BaseOperation,
   visitor: typeof visitOperation = visitOperation,
 ): RDF.Variable[] {
-  const variables: Record<string, RDF.Variable> = {};
+  const variables: Record<string, RDF.Variable> = Object.create(null);
 
   function addVariable(v: RDF.Variable): void {
     variables[v.value] = v;
@@ -339,11 +531,25 @@ export function inScopeVariables(
   function visitingRecursion(curOp: A.BaseOperation): void {
     // https://www.w3.org/TR/sparql11-query/#variableScope
     visitor(curOp, {
-      [Types.EXPRESSION]: { visitor: (op: A.Expression & { variable?: RDF.Variable }) => {
-        if (op.subType === ExpressionTypes.AGGREGATE && (op).variable) {
-          addVariable((op).variable);
-        }
-      } },
+      [Types.CONSTRUCT]: {
+        // The variables of the template are consumed, they are not in scope.
+        preVisitor: () => ({ ignoreKeys: new Set([ 'template' ]) }),
+      },
+      [Types.DELETE_INSERT]: {
+        // The variables of the templates are consumed, they are not in scope.
+        preVisitor: () => ({ ignoreKeys: new Set([ 'delete', 'insert' ]) }),
+      },
+      [Types.EXPRESSION]: {
+        // Variables only used within an expression are not in scope,
+        // this includes the pattern of an (NOT) EXISTS.
+        preVisitor: (op: A.Expression) =>
+          op.subType === ExpressionTypes.EXISTENCE ? { continue: false } : {},
+        visitor: (op: A.Expression & { variable?: RDF.Variable }) => {
+          if (op.subType === ExpressionTypes.AGGREGATE && op.variable) {
+            addVariable(op.variable);
+          }
+        },
+      },
       [Types.EXTEND]: { visitor: op =>
         addVariable(op.variable),
       },
@@ -352,11 +558,16 @@ export function inScopeVariables(
           addVariable(op.name);
         }
       } },
-      [Types.GROUP]: { visitor: (op) => {
-        for (const v of op.variables) {
-          addVariable(v);
-        }
-      } },
+      [Types.GROUP]: {
+        // A group only outputs its keys and the variables its aggregates are bound to,
+        // the variables of its input are not visible above it.
+        preVisitor: () => ({ ignoreKeys: new Set([ 'variables', 'input' ]) }),
+        visitor: (op) => {
+          for (const v of op.variables) {
+            addVariable(v);
+          }
+        },
+      },
       [Types.PATH]: { visitor: (op) => {
         // Subject
         if (op.subject.termType === 'Variable') {

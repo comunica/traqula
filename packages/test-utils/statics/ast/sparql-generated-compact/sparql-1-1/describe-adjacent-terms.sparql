@@ -1,0 +1,1 @@
+PREFIX ex: <http://example.org/> DESCRIBE ?s ?o ex:a ex:b <http://example.org/c> ?e ex:d WHERE { ?s ex:p ?o . ?s ex:q ?e . }

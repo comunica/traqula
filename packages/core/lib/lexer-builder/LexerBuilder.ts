@@ -149,8 +149,11 @@ export class LexerBuilder<NAMES extends string = string> {
   /**
    * Remove tokens from the builder by reference.
    * @param token - One or more tokens to remove. Throws if a token is not found.
+   * @deprecated use deleteName instead. (This function will be removed in next major)
+   *    It does not work under replaced tokens.
    */
   public delete<Name extends NAMES>(...token: NamedToken<Name>[]): LexerBuilder<Exclude<NAMES, Name>> {
+    // TODO: remove in next major
     for (const t of token) {
       const index = this.tokens.indexOf(t);
       if (index === -1) {
@@ -158,6 +161,33 @@ export class LexerBuilder<NAMES extends string = string> {
       }
       this.tokens.splice(index, 1);
     }
+    return this;
+  }
+
+  /**
+   * Delete a token based on its name.
+   */
+  public deleteToken<U extends NAMES>(...names: U[]): LexerBuilder<Exclude<NAMES, U>> {
+    for (const name of names) {
+      const index = this.tokens.findIndex(x => x.name === name);
+      if (index === -1) {
+        throw new Error(`Token with name "${name}" not found`);
+      }
+      this.tokens.splice(index, 1);
+    }
+    return this;
+  }
+
+  /**
+   * Replace token with the same name with a new one.
+   * @param token
+   */
+  public replace<Name extends NAMES>(token: NamedToken<Name>): LexerBuilder<NAMES> {
+    const index = this.tokens.findIndex(x => x.name === token.name);
+    if (index === -1) {
+      throw new Error(`Token with name "${token.name}" not found`);
+    }
+    this.tokens[index] = token;
     return this;
   }
 

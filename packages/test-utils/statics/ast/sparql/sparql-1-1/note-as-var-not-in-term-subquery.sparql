@@ -1,0 +1,1 @@
+SELECT (1 AS ?x) WHERE { SELECT ?y WHERE { ?y ?p ?o } }

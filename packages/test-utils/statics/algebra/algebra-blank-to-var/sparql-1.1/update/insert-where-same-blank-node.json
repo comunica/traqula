@@ -1,0 +1,80 @@
+{
+  "type": "compositeupdate",
+  "updates": [
+    {
+      "type": "deleteinsert",
+      "insert": [
+        {
+          "type": "pattern",
+          "termType": "Quad",
+          "subject": {
+            "termType": "BlankNode",
+            "value": "e_b"
+          },
+          "predicate": {
+            "termType": "NamedNode",
+            "value": "http://example.org/p"
+          },
+          "object": {
+            "termType": "NamedNode",
+            "value": "http://example.org/o"
+          },
+          "graph": {
+            "termType": "NamedNode",
+            "value": "http://example.org/g1"
+          }
+        }
+      ]
+    },
+    {
+      "type": "deleteinsert",
+      "insert": [
+        {
+          "type": "pattern",
+          "termType": "Quad",
+          "subject": {
+            "termType": "BlankNode",
+            "value": "e_b"
+          },
+          "predicate": {
+            "termType": "NamedNode",
+            "value": "http://example.org/p"
+          },
+          "object": {
+            "termType": "NamedNode",
+            "value": "http://example.org/o"
+          },
+          "graph": {
+            "termType": "NamedNode",
+            "value": "http://example.org/g2"
+          }
+        }
+      ]
+    },
+    {
+      "type": "deleteinsert",
+      "insert": [
+        {
+          "type": "pattern",
+          "termType": "Quad",
+          "subject": {
+            "termType": "BlankNode",
+            "value": "e_c"
+          },
+          "predicate": {
+            "termType": "NamedNode",
+            "value": "http://example.org/p"
+          },
+          "object": {
+            "termType": "NamedNode",
+            "value": "http://example.org/o"
+          },
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
+          }
+        }
+      ]
+    }
+  ]
+}

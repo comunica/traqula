@@ -36,7 +36,7 @@ export function createAlgebraContext(config: ContextConfigs): AlgebraContext {
     dataFactory,
     algebraFactory: new AlgebraFactory(dataFactory),
     currentBase: config.baseIRI,
-    currentPrefixes: config.prefixes ? { ...config.prefixes } : {},
+    currentPrefixes: Object.assign(Object.create(null), config.prefixes),
   };
 }
 

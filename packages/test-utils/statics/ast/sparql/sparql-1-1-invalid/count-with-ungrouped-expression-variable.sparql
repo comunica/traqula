@@ -1,0 +1,1 @@
+SELECT (COUNT(?y) AS ?cnt) (?y + 1 AS ?result) WHERE { ?s ?p ?y }

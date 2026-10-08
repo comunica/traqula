@@ -29,6 +29,15 @@ const transformer = new TransformerSubTyped<A.Operation>({}, {
 });
 
 /**
+ * Creates a transformer over the algebra, with the given default context on top of the defaults of the other utilities.
+ * e.g. `algebraTransformer({ continue: false })` only steps into the operations a callback asks to continue into.
+ * @param defaultContext the default context of every visited object.
+ */
+export function algebraTransformer(defaultContext: TransformContext): TransformerSubTyped<A.Operation> {
+  return transformer.clone(defaultContext);
+}
+
+/**
  * Transform a single operation.
  * e.g. wrapping a distinct around the outermost project:
  * ```ts
@@ -277,6 +286,15 @@ export const visitOperation = transformer.visitNode.bind(transformer);
  * The traversal stays strictly sequential (depth-first); see {@link TransformerTyped.visitNodeAsync}.
  */
 export const visitOperationAsync = transformer.visitNodeAsync.bind(transformer);
+
+/**
+ * Visits every object in the given object, deepest first, regardless of its type.
+ * Unlike {@link visitOperation}, it also steps into the RDF terms.
+ * @param startObject the object from which we will start visiting.
+ * @param visitor callback called on every visited object.
+ * @param preVisitor callback providing the {@link VisitContext} for an object, before its descendants are visited.
+ */
+export const visitObject = transformer.visitObject.bind(transformer);
 
 /**
  * Visits an object and it's descendants, similar to {@link visitOperation},

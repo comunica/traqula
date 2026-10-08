@@ -3,6 +3,7 @@ import type {
 } from '@traqula/algebra-transformations-1-1';
 import {
   registerProjection,
+  findAlgGroupBelow,
   resetContext,
   translateAlgAggregateExpression,
   translateAlgAnyExpression,
@@ -84,6 +85,9 @@ import {
   algToSparql,
   registerAlgGroupBy,
   replaceAlgAggregatorVariables,
+  collectAlgVariables,
+  findAlgSubqueryCut,
+  wrapAlgInSubquery,
 } from '@traqula/algebra-transformations-1-1';
 import { IndirBuilder } from '@traqula/core';
 import type { SparqlQuery } from '@traqula/rules-sparql-1-1';
@@ -94,7 +98,7 @@ import type { SparqlQuery } from '@traqula/rules-sparql-1-1';
  * Use {@link IndirBuilder.create IndirBuilder.create(toAst11Builder)} to extend it.
  */
 export const toAst11Builder = IndirBuilder
-  .create(<const> [ resetContext, registerProjection ])
+  .create(<const> [ resetContext, registerProjection, findAlgGroupBelow ])
   .addMany(
     translateAlgPureExpression,
     translateAlgExpressionOrWild,
@@ -150,9 +154,14 @@ export const toAst11Builder = IndirBuilder
     removeAlgQuads,
     removeAlgQuadsRecursive,
     splitAlgBgpToGraphs,
+  )
+  .addMany(
     // QueryUnit
     translateAlgConstruct,
     replaceAlgAggregatorVariables,
+    collectAlgVariables,
+    findAlgSubqueryCut,
+    wrapAlgInSubquery,
     translateAlgProject,
     registerAlgGroupBy,
     registerOrderBy,

@@ -12,7 +12,7 @@ import type {
 import type * as Algebra from '../algebra.js';
 import { types } from '../toAlgebra/index.js';
 import type { AstIndir } from './core.js';
-import { registerProjection } from './core.js';
+import { findAlgGroupBelow, registerProjection } from './core.js';
 import { translateAlgPureExpression } from './expression.js';
 import type {
   RdfTermToAst,
@@ -133,13 +133,10 @@ export const translateAlgFrom: AstIndir<'translateFrom', PatternGroup, [Algebra.
 export const translateAlgFilter: AstIndir<'translateFilter', PatternGroup, [Algebra.Filter]> = {
   name: 'translateFilter',
   fun: ({ SUBRULE }) => ({ astFactory: F, having }, op) => {
-    let filterInput = op.input;
-    while (filterInput.type === types.FILTER) {
-      filterInput = filterInput.input;
-    }
+    const isHaving = SUBRULE(findAlgGroupBelow, op.input, 'having') !== undefined;
     const input = SUBRULE(translateAlgPatternNew, op.input);
     const expression = SUBRULE(translateAlgPureExpression, op.expression);
-    if (filterInput.type === types.GROUP) {
+    if (isHaving) {
       having.push(expression);
       // Stacked HAVING conditions should not introduce nested groups
       return F.isPatternGroup(input) ? input : F.patternGroup([ input ].flat(), F.gen());
@@ -193,19 +190,10 @@ export const translateAlgJoin: AstIndir<'translateJoin', Pattern[], [Algebra.Joi
     const F = c.astFactory;
     // A VALUES joined on top of a group (possibly through HAVING filters) is the query's trailing VALUES clause.
     // It needs to be handled by translateAlgProject, inside the WHERE clause it would be joined before the grouping.
-    // Join is commutative, so the VALUES can be either operand.
-    const valuesIndex = op.input.findIndex(input => input.type === types.VALUES);
-    if (op.input.length === 2 && valuesIndex >= 0) {
-      const values = <Algebra.Values> op.input[valuesIndex];
-      const groupInput = op.input[1 - valuesIndex];
-      let filterInput = groupInput;
-      while (filterInput.type === types.FILTER) {
-        filterInput = filterInput.input;
-      }
-      if (filterInput.type === types.GROUP) {
-        c.values = SUBRULE(translateAlgValues, values);
-        return SUBRULE(operationAlgInputAsPatternList, groupInput);
-      }
+    if (SUBRULE(findAlgGroupBelow, op, 'values')) {
+      const valuesIndex = op.input.findIndex(input => input.type === types.VALUES);
+      c.values = SUBRULE(translateAlgValues, <Algebra.Values> op.input[valuesIndex]);
+      return SUBRULE(operationAlgInputAsPatternList, op.input[1 - valuesIndex]);
     }
 
     // An OPTIONAL or MINUS applies to everything preceding it in its group.

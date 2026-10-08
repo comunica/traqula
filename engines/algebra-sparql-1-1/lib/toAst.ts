@@ -3,6 +3,7 @@ import type {
 } from '@traqula/algebra-transformations-1-1';
 import {
   registerProjection,
+  findAlgGroupBelow,
   resetContext,
   translateAlgAggregateExpression,
   translateAlgAnyExpression,
@@ -97,7 +98,7 @@ import type { SparqlQuery } from '@traqula/rules-sparql-1-1';
  * Use {@link IndirBuilder.create IndirBuilder.create(toAst11Builder)} to extend it.
  */
 export const toAst11Builder = IndirBuilder
-  .create(<const> [ resetContext, registerProjection ])
+  .create(<const> [ resetContext, registerProjection, findAlgGroupBelow ])
   .addMany(
     translateAlgPureExpression,
     translateAlgExpressionOrWild,

@@ -18,7 +18,7 @@ import type { Algebra } from '../index.js';
 import { types } from '../toAlgebra/index.js';
 import { algebraTransformer, inScopeVariables, visitObject } from '../util.js';
 import type { AstIndir } from './core.js';
-import { resetContext } from './core.js';
+import { findAlgGroupBelow, resetContext } from './core.js';
 import { translateAlgExpressionOrOrdering, translateAlgPureExpression } from './expression.js';
 import type { RdfTermToAst } from './general.js';
 import { translateAlgPattern, translateAlgTerm } from './general.js';
@@ -116,8 +116,7 @@ export interface AlgSubqueryCut {
  * Determines whether the query form needs the extends and group of its input to be evaluated in a SELECT subquery.
  * Above a group, extends that are not SELECT expressions would be BINDs, evaluated before the grouping.
  * Without a SELECT clause, a query form can moreover only read the group variables of a group.
- * The group is found below the chain of extends and orderings of the input,
- * a trailing VALUES clause and HAVING conditions, like the pattern rules find it.
+ * The group is found by {@link findAlgGroupBelow}, below the chain of extends and orderings of the input.
  * @return the cut, or undefined when no subquery is needed.
  */
 export const findAlgSubqueryCut: AstIndir<'findSubqueryCut', AlgSubqueryCut | undefined, [AlgQueryForm]> = {
@@ -132,19 +131,11 @@ export const findAlgSubqueryCut: AstIndir<'findSubqueryCut', AlgSubqueryCut | un
       }
       input = input.input;
     }
-    if (input.type === types.JOIN && input.input.length === 2) {
-      const valuesIndex = input.input.findIndex(operand => operand.type === types.VALUES);
-      if (valuesIndex >= 0) {
-        input = input.input[1 - valuesIndex];
-      }
-    }
-    while (input.type === types.FILTER) {
-      input = input.input;
-    }
-    if (input.type !== types.GROUP) {
+    const group = SUBRULE(findAlgGroupBelow, input, 'values');
+    if (!group) {
       return;
     }
-    const aggregateVariables = new Set(input.aggregates.map(aggregate => aggregate.variable.value));
+    const aggregateVariables = new Set(group.aggregates.map(aggregate => aggregate.variable.value));
     let bindExtends = chainExtends;
     if (op.type === types.PROJECT) {
       // SELECT expressions are evaluated after the WHERE clause, so an extend can only become a SELECT expression

@@ -14,6 +14,7 @@ import type {
 import { Algebra } from '../index.js';
 import { inScopeVariables } from '../util.js';
 import type { AstIndir } from './core.js';
+import { findAlgGroupBelow } from './core.js';
 import { translateAlgPureExpression } from './expression.js';
 import { translateAlgPatternIntoGroup, translateAlgPatternNew } from './pattern.js';
 
@@ -68,13 +69,9 @@ export const translateAlgExtend: AstIndir<'translateExtend', Pattern | Pattern[]
       return op;
     }
     const input = collectExtends(op);
-    // Extends over a group (possibly through HAVING conditions) are evaluated before the grouping as BINDs.
+    // Extends over a group would be BINDs evaluated before the grouping.
     //  Outside the chain on top of a query form, they are evaluated in a SELECT subquery of their own instead.
-    let groupInput = input;
-    while (groupInput.type === Algebra.Types.FILTER) {
-      groupInput = groupInput.input;
-    }
-    if (groupInput.type === Algebra.Types.GROUP) {
+    if (SUBRULE(findAlgGroupBelow, input, 'projection')) {
       return SUBRULE(translateAlgPatternIntoGroup, algebraFactory.createProject(op, inScopeVariables(op)));
     }
     return F.patternGroup([

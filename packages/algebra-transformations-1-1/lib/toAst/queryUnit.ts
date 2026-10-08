@@ -94,60 +94,86 @@ AstIndir<'collectVariables', Set<string>, [object, Set<string>, string[]?]> = {
 };
 
 /**
- * Whether the query form needs the extends and group of its input to be evaluated in a SELECT subquery.
- * Above a group, extends that would become BINDs are evaluated before the grouping.
- * Without a SELECT clause, a query form can moreover only read the group variables of a group.
- * @param op the query form
- * @param bindExpressions the expressions of the extends that are not placed as SELECT expressions or group conditions,
- *   by variable
- * @param aggregators the aggregates of the group, by the variable they are bound to
+ * The query forms {@link translateAlgProject} translates.
  */
-export const requiresAlgSubquery: AstIndir<
-  'requiresSubquery',
-boolean,
-[
-  Algebra.Project | Algebra.Ask | Algebra.Describe | Algebra.Construct,
-  Record<string, Expression>,
-  Record<string, Expression>,
-]
-> = {
-  name: 'requiresSubquery',
-  fun: ({ SUBRULE }) => ({ group, aggregates }, op, bindExpressions, aggregators) => {
-    if (group.length === 0 && aggregates.length === 0) {
-      return false;
+export type AlgQueryForm = Algebra.Project | Algebra.Ask | Algebra.Describe | Algebra.Construct;
+
+/**
+ * Where the input of a query form is cut into a SELECT subquery by {@link wrapAlgInSubquery}.
+ */
+export interface AlgSubqueryCut {
+  /**
+   * The variables of the extends that move into the subquery.
+   */
+  bindVariables: Set<string>;
+  /**
+   * The variables the aggregates of the group are bound to.
+   */
+  aggregateVariables: Set<string>;
+}
+
+/**
+ * Determines whether the query form needs the extends and group of its input to be evaluated in a SELECT subquery.
+ * Above a group, extends that are not SELECT expressions would be BINDs, evaluated before the grouping.
+ * Without a SELECT clause, a query form can moreover only read the group variables of a group.
+ * The group is found below the chain of extends and orderings of the input,
+ * a trailing VALUES clause and HAVING conditions, like the pattern rules find it.
+ * @return the cut, or undefined when no subquery is needed.
+ */
+export const findAlgSubqueryCut: AstIndir<'findSubqueryCut', AlgSubqueryCut | undefined, [AlgQueryForm]> = {
+  name: 'findSubqueryCut',
+  fun: ({ SUBRULE }) => (_, op) => {
+    // The extends on top of the input, outermost first
+    const chainExtends: Algebra.Extend[] = [];
+    let input = op.input;
+    while (input.type === types.EXTEND || input.type === types.ORDER_BY) {
+      if (input.type === types.EXTEND) {
+        chainExtends.push(input);
+      }
+      input = input.input;
     }
-    if (Object.keys(bindExpressions).length > 0) {
-      return true;
+    if (input.type === types.JOIN && input.input.length === 2) {
+      const valuesIndex = input.input.findIndex(operand => operand.type === types.VALUES);
+      if (valuesIndex >= 0) {
+        input = input.input[1 - valuesIndex];
+      }
     }
+    while (input.type === types.FILTER) {
+      input = input.input;
+    }
+    if (input.type !== types.GROUP) {
+      return;
+    }
+    const aggregateVariables = new Set(input.aggregates.map(aggregate => aggregate.variable.value));
+    let bindExtends = chainExtends;
     if (op.type === types.PROJECT) {
-      return false;
+      // SELECT expressions are evaluated after the WHERE clause, so an extend can only become a SELECT expression
+      //  when all extends around it do too. From the first unprojected extend inward, extends would be BINDs.
+      const projected = new Set(op.variables.map(variable => variable.value));
+      const firstUnprojected = chainExtends.findIndex(extend => !projected.has(extend.variable.value));
+      bindExtends = firstUnprojected < 0 ? [] : chainExtends.slice(firstUnprojected);
+    } else if (bindExtends.length === 0) {
+      // Without a SELECT clause, the aggregate variables are only visible from a subquery
+      const formVariables = SUBRULE(collectAlgVariables, op, new Set(), [ 'input' ]);
+      const readsAggregate = [ ...aggregateVariables ].some(variable => formVariables.has(variable));
+      return readsAggregate ? { bindVariables: new Set(), aggregateVariables } : undefined;
     }
-    const formVariables = SUBRULE(collectAlgVariables, op, new Set(), [ 'input' ]);
-    return Object.keys(aggregators).some(variable => formVariables.has(variable));
+    if (bindExtends.length === 0) {
+      return;
+    }
+    return { bindVariables: new Set(bindExtends.map(extend => extend.variable.value)), aggregateVariables };
   },
 };
 
 /**
- * Moves the input of a query form, from the outermost extend binding one of `bindExpressions` inward,
+ * Moves the input of a query form, from the outermost extend binding one of the cut's `bindVariables` inward,
  * into a SELECT subquery projecting everything it binds.
  * Orderings in that part stay outside, since a subquery does not keep its order.
  * Aggregate variables are only projected when the outer query references them.
- * @param op the query form
- * @param bindExpressions the expressions of the extends that are not placed as SELECT expressions or group conditions,
- *   by variable
- * @param aggregators the aggregates of the group, by the variable they are bound to
  */
-export const wrapAlgInSubquery: AstIndir<
-  'wrapInSubquery',
-Algebra.Project | Algebra.Ask | Algebra.Describe | Algebra.Construct,
-[
-  Algebra.Project | Algebra.Ask | Algebra.Describe | Algebra.Construct,
-  Record<string, Expression>,
-  Record<string, Expression>,
-]
-> = {
+export const wrapAlgInSubquery: AstIndir<'wrapInSubquery', AlgQueryForm, [AlgQueryForm, AlgSubqueryCut]> = {
   name: 'wrapInSubquery',
-  fun: ({ SUBRULE }) => ({ algebraFactory: AF }, op, bindExpressions, aggregators) => {
+  fun: ({ SUBRULE }) => ({ algebraFactory: AF }, op, { bindVariables, aggregateVariables }) => {
     const outerVariables = new Set<string>();
     const orderings: Algebra.OrderBy[] = [];
     function wrap(input: Algebra.Operation): Algebra.Operation {
@@ -157,11 +183,11 @@ Algebra.Project | Algebra.Ask | Algebra.Describe | Algebra.Construct,
         [types.ORDER_BY]: (ordering) => {
           orderings.push(ordering);
           SUBRULE(collectAlgVariables, ordering.expressions, outerVariables);
-          return { newValue: ordering.input, reTransform: true };
+          return { newValue: ordering.input, continue: true, reTransform: true };
         },
       });
       const projection = inScopeVariables(subqueryInput)
-        .filter(variable => !aggregators[variable.value] || outerVariables.has(variable.value));
+        .filter(variable => !aggregateVariables.has(variable.value) || outerVariables.has(variable.value));
       return orderings.reduceRight<Algebra.Operation>(
         (result, ordering) => ({ ...ordering, input: result }),
         AF.createProject(subqueryInput, projection),
@@ -171,7 +197,7 @@ Algebra.Project | Algebra.Ask | Algebra.Describe | Algebra.Construct,
     const step = <T extends Algebra.Operation & { input: Algebra.Operation }>(operation: T): PreOrderMappingReturn => {
       SUBRULE(collectAlgVariables, operation, outerVariables, [ 'input' ]);
       const input = operation.input;
-      if (input.type === types.ORDER_BY || (input.type === types.EXTEND && !bindExpressions[input.variable.value])) {
+      if (input.type === types.ORDER_BY || (input.type === types.EXTEND && !bindVariables.has(input.variable.value))) {
         return { newValue: operation, continue: true };
       }
       return { newValue: { ...operation, input: wrap(input) }};
@@ -191,10 +217,14 @@ export const translateAlgProject:
 AstIndir<
   'translateProject',
 PatternGroup,
-[Algebra.Project | Algebra.Ask | Algebra.Describe | Algebra.Construct, string]
+[AlgQueryForm, string]
 > = {
   name: 'translateProject',
   fun: ({ SUBRULE }) => (c, op, type) => {
+    const cut = SUBRULE(findAlgSubqueryCut, op);
+    if (cut) {
+      op = SUBRULE(wrapAlgInSubquery, op, cut);
+    }
     const F = c.astFactory;
     const result: QueryBase = <any> {
       type: 'query',
@@ -226,8 +256,12 @@ PatternGroup,
 
     // Backup values in case of nested queries
     // everything in extend, group, etc. is irrelevant for this project call
-    const { extend, group, aggregates, having, values, order } = c;
-    const saved = { extend, group, aggregates, having, values, order };
+    const extend = c.extend;
+    const group = c.group;
+    const aggregates = c.aggregates;
+    const having = c.having;
+    const values = c.values;
+    const order = c.order;
     SUBRULE(resetContext);
     c.project = true;
 
@@ -267,14 +301,8 @@ PatternGroup,
     }
     SUBRULE(registerAlgGroupBy, result, extensions);
     SUBRULE(registerOrderBy, result, unselectedAggregators);
-    // DESCRIBE can only list terms, not `(expr AS ?variable)`, so none of its extends are placed.
+    // DESCRIBE can only list terms, not `(expr AS ?variable)`, so its extends stay BINDs in the WHERE clause.
     SUBRULE(registerVariables, select, variables, type === types.DESCRIBE ? Object.create(null) : extensions);
-    // The extends that are not SELECT expressions or group conditions are left, they would become BINDs.
-    if (SUBRULE(requiresAlgSubquery, op, extensions, aggregators)) {
-      // Recover state and translate again, with the input wrapped in a subquery
-      Object.assign(c, saved);
-      return SUBRULE(translateAlgProject, SUBRULE(wrapAlgInSubquery, op, extensions, aggregators), type);
-    }
     SUBRULE(putExtensionsInGroup, result, extensions);
 
     // Filters on top of the group are HAVING conditions, they can reference the aggregators
@@ -287,7 +315,12 @@ PatternGroup,
     SUBRULE(registerValues, result);
 
     // Recover state
-    Object.assign(c, saved);
+    c.extend = extend;
+    c.group = group;
+    c.aggregates = aggregates;
+    c.having = having;
+    c.values = values;
+    c.order = order;
 
     // Subqueries need to be in a group! Top level grouping is removed at toAst function
     return F.patternGroup([ select ], F.gen());

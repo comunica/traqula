@@ -12,6 +12,7 @@ import type {
   TripleNesting,
 } from '@traqula/rules-sparql-1-1';
 import { Algebra } from '../index.js';
+import { inScopeVariables } from '../util.js';
 import type { AstIndir } from './core.js';
 import { translateAlgPureExpression } from './expression.js';
 import { translateAlgPatternIntoGroup, translateAlgPatternNew } from './pattern.js';
@@ -52,7 +53,7 @@ export const translateAlgTerm: AstIndir<'translateTerm', Term, [RDF.Term]> = {
  */
 export const translateAlgExtend: AstIndir<'translateExtend', Pattern | Pattern[], [Algebra.Extend]> = {
   name: 'translateExtend',
-  fun: ({ SUBRULE }) => ({ astFactory: F, project, extend }, op) => {
+  fun: ({ SUBRULE }) => ({ astFactory: F, algebraFactory, project, extend }, op) => {
     if (project) {
       extend.push(op);
       return SUBRULE(translateAlgPatternNew, op.input);
@@ -67,6 +68,15 @@ export const translateAlgExtend: AstIndir<'translateExtend', Pattern | Pattern[]
       return op;
     }
     const input = collectExtends(op);
+    // Extends over a group (possibly through HAVING conditions) are evaluated before the grouping as BINDs.
+    //  Outside the chain on top of a query form, they are evaluated in a SELECT subquery of their own instead.
+    let groupInput = input;
+    while (groupInput.type === Algebra.Types.FILTER) {
+      groupInput = groupInput.input;
+    }
+    if (groupInput.type === Algebra.Types.GROUP) {
+      return SUBRULE(translateAlgPatternIntoGroup, algebraFactory.createProject(op, inScopeVariables(op)));
+    }
     return F.patternGroup([
       SUBRULE(translateAlgPatternNew, input),
       ...extendsOperations.reverse().map(extend => F.patternBind(

@@ -133,10 +133,9 @@ export const translateAlgFrom: AstIndir<'translateFrom', PatternGroup, [Algebra.
 export const translateAlgFilter: AstIndir<'translateFilter', PatternGroup, [Algebra.Filter]> = {
   name: 'translateFilter',
   fun: ({ SUBRULE }) => ({ astFactory: F, having }, op) => {
-    const isHaving = SUBRULE(findAlgGroupBelow, op.input, 'having') !== undefined;
     const input = SUBRULE(translateAlgPatternNew, op.input);
     const expression = SUBRULE(translateAlgPureExpression, op.expression);
-    if (isHaving) {
+    if (SUBRULE(findAlgGroupBelow, op.input, 'having')) {
       having.push(expression);
       // Stacked HAVING conditions should not introduce nested groups
       return F.isPatternGroup(input) ? input : F.patternGroup([ input ].flat(), F.gen());

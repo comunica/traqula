@@ -59,6 +59,11 @@ export const translateAlgExtend: AstIndir<'translateExtend', Pattern | Pattern[]
       extend.push(op);
       return SUBRULE(translateAlgPatternNew, op.input);
     }
+    // Extends over a group would be BINDs evaluated before the grouping.
+    //  Outside the chain on top of a query form, they are evaluated in a SELECT subquery of their own instead.
+    if (SUBRULE(findAlgGroupBelow, op, 'projection')) {
+      return SUBRULE(translateAlgPatternIntoGroup, algebraFactory.createProject(op, inScopeVariables(op)));
+    }
     // Many extends can be put in a single group
     const extendsOperations: Algebra.Extend[] = [];
     function collectExtends(op: Algebra.Operation): Algebra.Operation {
@@ -69,11 +74,6 @@ export const translateAlgExtend: AstIndir<'translateExtend', Pattern | Pattern[]
       return op;
     }
     const input = collectExtends(op);
-    // Extends over a group would be BINDs evaluated before the grouping.
-    //  Outside the chain on top of a query form, they are evaluated in a SELECT subquery of their own instead.
-    if (SUBRULE(findAlgGroupBelow, input, 'projection')) {
-      return SUBRULE(translateAlgPatternIntoGroup, algebraFactory.createProject(op, inScopeVariables(op)));
-    }
     return F.patternGroup([
       SUBRULE(translateAlgPatternNew, input),
       ...extendsOperations.reverse().map(extend => F.patternBind(

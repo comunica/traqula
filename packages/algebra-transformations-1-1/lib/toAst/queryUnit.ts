@@ -15,7 +15,7 @@ import type {
   TermVariable,
 } from '@traqula/rules-sparql-1-1';
 import type { Algebra } from '../index.js';
-import { types } from '../toAlgebra/index.js';
+import { isVariable, types } from '../toAlgebra/index.js';
 import { algebraTransformer, inScopeVariables, visitObject } from '../util.js';
 import type { AstIndir } from './core.js';
 import { findAlgGroupBelow, resetContext } from './core.js';
@@ -83,8 +83,9 @@ AstIndir<'collectVariables', Set<string>, [object, Set<string>, string[]?]> = {
     visitObject(
       value,
       (object) => {
-        if ((<RDF.Term> object).termType === 'Variable') {
-          names.add((<RDF.Variable> object).value);
+        const term = <RDF.Term> object;
+        if (isVariable(term)) {
+          names.add(term.value);
         }
       },
       object => (object === value ? { ignoreKeys } : {}),
@@ -103,13 +104,26 @@ export type AlgQueryForm = Algebra.Project | Algebra.Ask | Algebra.Describe | Al
  */
 export interface AlgSubqueryCut {
   /**
-   * The variables of the extends that move into the subquery.
+   * The outermost operation of the input that moves into the subquery.
    */
-  bindVariables: Set<string>;
+  start: Algebra.Operation;
   /**
    * The variables the aggregates of the group are bound to.
    */
   aggregateVariables: Set<string>;
+}
+
+/**
+ * SELECT expressions are evaluated after the WHERE clause, so an extend can only become a SELECT expression
+ * when all extends around it do too. From the first unprojected extend inward, extends are BINDs.
+ * @return how many of the given extends, outermost first, can become SELECT expressions.
+ */
+function countSelectableExtends(
+  outermostFirst: Algebra.Extend[],
+  isProjected: (variable: RDF.Variable) => boolean,
+): number {
+  const firstUnprojected = outermostFirst.findIndex(extend => !isProjected(extend.variable));
+  return firstUnprojected < 0 ? outermostFirst.length : firstUnprojected;
 }
 
 /**
@@ -136,39 +150,35 @@ export const findAlgSubqueryCut: AstIndir<'findSubqueryCut', AlgSubqueryCut | un
       return;
     }
     const aggregateVariables = new Set(group.aggregates.map(aggregate => aggregate.variable.value));
-    let bindExtends = chainExtends;
-    if (op.type === types.PROJECT) {
-      // SELECT expressions are evaluated after the WHERE clause, so an extend can only become a SELECT expression
-      //  when all extends around it do too. From the first unprojected extend inward, extends would be BINDs.
-      const projected = new Set(op.variables.map(variable => variable.value));
-      const firstUnprojected = chainExtends.findIndex(extend => !projected.has(extend.variable.value));
-      bindExtends = firstUnprojected < 0 ? [] : chainExtends.slice(firstUnprojected);
-    } else if (bindExtends.length === 0) {
-      // Without a SELECT clause, the aggregate variables are only visible from a subquery
-      const formVariables = SUBRULE(collectAlgVariables, op, new Set(), [ 'input' ]);
-      const readsAggregate = [ ...aggregateVariables ].some(variable => formVariables.has(variable));
-      return readsAggregate ? { bindVariables: new Set(), aggregateVariables } : undefined;
+    // Without a SELECT clause, no extend can become a SELECT expression
+    const projected = new Set(op.type === types.PROJECT ? op.variables.map(variable => variable.value) : []);
+    const selectable = countSelectableExtends(chainExtends, variable => projected.has(variable.value));
+    if (selectable < chainExtends.length) {
+      return { start: chainExtends[selectable], aggregateVariables };
     }
-    if (bindExtends.length === 0) {
+    if (op.type === types.PROJECT) {
       return;
     }
-    return { bindVariables: new Set(bindExtends.map(extend => extend.variable.value)), aggregateVariables };
+    // Without a SELECT clause, the aggregate variables are only visible from a subquery
+    const formVariables = SUBRULE(collectAlgVariables, op, new Set(), [ 'input' ]);
+    const readsAggregate = [ ...aggregateVariables ].some(variable => formVariables.has(variable));
+    return readsAggregate ? { start: input, aggregateVariables } : undefined;
   },
 };
 
 /**
- * Moves the input of a query form, from the outermost extend binding one of the cut's `bindVariables` inward,
+ * Moves the input of a query form, from the cut's `start` inward,
  * into a SELECT subquery projecting everything it binds.
  * Orderings in that part stay outside, since a subquery does not keep its order.
  * Aggregate variables are only projected when the outer query references them.
  */
 export const wrapAlgInSubquery: AstIndir<'wrapInSubquery', AlgQueryForm, [AlgQueryForm, AlgSubqueryCut]> = {
   name: 'wrapInSubquery',
-  fun: ({ SUBRULE }) => ({ algebraFactory: AF }, op, { bindVariables, aggregateVariables }) => {
+  fun: ({ SUBRULE }) => ({ algebraFactory: AF }, op, { start, aggregateVariables }) => {
     const outerVariables = new Set<string>();
-    const orderings: Algebra.OrderBy[] = [];
     function wrap(input: Algebra.Operation): Algebra.Operation {
       // Lift the orderings out of the part that moves into the subquery
+      const orderings: Algebra.OrderBy[] = [];
       const subqueryInput = chainTransformer.transformNodePreOrder<'unsafe', Algebra.Operation>(input, {
         [types.EXTEND]: extend => ({ newValue: extend, continue: true }),
         [types.ORDER_BY]: (ordering) => {
@@ -184,14 +194,13 @@ export const wrapAlgInSubquery: AstIndir<'wrapInSubquery', AlgQueryForm, [AlgQue
         AF.createProject(subqueryInput, projection),
       );
     }
-    // Walk down from the query form, the subquery starts below the last ordering or extend that stays outside
-    const step = <T extends Algebra.Operation & { input: Algebra.Operation }>(operation: T): PreOrderMappingReturn => {
+    // Walk down from the query form to the start of the subquery, through the orderings and extends that stay outside
+    const step = (operation: AlgQueryForm | Algebra.Extend | Algebra.OrderBy): PreOrderMappingReturn => {
       SUBRULE(collectAlgVariables, operation, outerVariables, [ 'input' ]);
-      const input = operation.input;
-      if (input.type === types.ORDER_BY || (input.type === types.EXTEND && !bindVariables.has(input.variable.value))) {
-        return { newValue: operation, continue: true };
+      if (operation.input === start) {
+        return { newValue: { ...operation, input: wrap(operation.input) }};
       }
-      return { newValue: { ...operation, input: wrap(input) }};
+      return { newValue: operation, continue: true };
     };
     return chainTransformer.transformNodePreOrder<'unsafe', typeof op>(op, {
       [types.PROJECT]: step,
@@ -392,10 +401,7 @@ AstIndir<'registerVariables', void, [QuerySelect, RDF.Variable[] | undefined, Re
       const unplacedExtends = extend.filter(extend => unplacedExpressions[extend.variable.value]);
       const isProjected = (variable: RDF.Variable): boolean => variables.some(term => term.value === variable.value);
 
-      // SELECT expressions are evaluated after the WHERE clause, so an extend can only become a SELECT expression
-      //  when all extends around it do too. From the first unprojected extend inward, extends stay BINDs.
-      const firstUnprojected = unplacedExtends.findIndex(extend => !isProjected(extend.variable));
-      const selectedExtends = firstUnprojected < 0 ? unplacedExtends : unplacedExtends.slice(0, firstUnprojected);
+      const selectedExtends = unplacedExtends.slice(0, countSelectableExtends(unplacedExtends, isProjected));
       const extendsKeptAsBind = new Set(
         unplacedExtends.slice(selectedExtends.length).map(extend => extend.variable.value),
       );

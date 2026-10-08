@@ -72,7 +72,8 @@ AstIndir<'replaceAggregatorVariables', unknown, [unknown, Record<string, Express
 export const collectAlgVariables:
 AstIndir<'collectVariables', Set<string>, [object, Set<string>, string[]?]> = {
   name: 'collectVariables',
-  fun: () => (_, value, names, ignoreKeys = []) => {
+  fun: () => (_, value, names, ignoreKeysList = []) => {
+    const ignoreKeys = new Set(ignoreKeysList);
     visitObject(
       value,
       (object) => {
@@ -80,7 +81,7 @@ AstIndir<'collectVariables', Set<string>, [object, Set<string>, string[]?]> = {
           names.add((<RDF.Variable> object).value);
         }
       },
-      object => (object === value ? { ignoreKeys: new Set(ignoreKeys) } : {}),
+      object => (object === value ? { ignoreKeys } : {}),
     );
     return names;
   },

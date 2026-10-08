@@ -29,6 +29,15 @@ const transformer = new TransformerSubTyped<A.Operation>({}, {
 });
 
 /**
+ * Creates a transformer over the algebra, with the given default context on top of the defaults of the other utilities.
+ * e.g. `algebraTransformer({ continue: false })` only steps into the operations a callback asks to continue into.
+ * @param defaultContext the default context of every visited object.
+ */
+export function algebraTransformer(defaultContext: TransformContext): TransformerSubTyped<A.Operation> {
+  return transformer.clone(defaultContext);
+}
+
+/**
  * Transform a single operation.
  * e.g. wrapping a distinct around the outermost project:
  * ```ts

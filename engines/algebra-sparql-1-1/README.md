@@ -119,7 +119,11 @@ indicating whether patterns should be translated to triple or quad patterns.
 In the case of quads the `graph` operation will be removed
 and embedded into the patterns it contained.
 The default value for this parameter is `false`.
-For update queries, even in the case of `quads: false`, the target triple patterns are converted to quads.
+For update queries, even in the case of `quads: false`, the DELETE and INSERT templates are always converted to quads.
+The WHERE clause, including that of the `DELETE WHERE` shortcut, follows the `quads` option.
+With `quads: false`, `WITH <g>` is translated by wrapping the WHERE clause in a `graph` operation for `<g>`.
+This differs from SPARQL Update in one edge case: when `<g>` is not a graph in the dataset,
+the `graph` operation has no solutions, even when the WHERE clause matches no data (e.g. only `FILTER NOT EXISTS` or `BIND`).
 ```
 PREFIX : <http://www.example.org/>
 

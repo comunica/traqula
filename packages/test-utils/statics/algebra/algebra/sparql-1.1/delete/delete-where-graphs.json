@@ -6,23 +6,19 @@
       "termType": "Quad",
       "subject": {
         "termType": "Variable",
-        "value": "person"
+        "value": "a"
       },
       "predicate": {
         "termType": "NamedNode",
-        "value": "http://xmlns.com/foaf/0.1/givenName"
+        "value": "http://example.org/p"
       },
       "object": {
-        "termType": "Literal",
-        "value": "Fred",
-        "datatype": {
-          "termType": "NamedNode",
-          "value": "http://www.w3.org/2001/XMLSchema#string"
-        }
+        "termType": "Variable",
+        "value": "b"
       },
       "graph": {
-        "termType": "NamedNode",
-        "value": "http://example.com/names"
+        "termType": "DefaultGraph",
+        "value": ""
       }
     },
     {
@@ -30,19 +26,19 @@
       "termType": "Quad",
       "subject": {
         "termType": "Variable",
-        "value": "person"
+        "value": "b"
       },
       "predicate": {
-        "termType": "Variable",
-        "value": "property1"
+        "termType": "NamedNode",
+        "value": "http://example.org/q"
       },
       "object": {
         "termType": "Variable",
-        "value": "value1"
+        "value": "c"
       },
       "graph": {
-        "termType": "NamedNode",
-        "value": "http://example.com/names"
+        "termType": "Variable",
+        "value": "g"
       }
     },
     {
@@ -50,19 +46,19 @@
       "termType": "Quad",
       "subject": {
         "termType": "Variable",
-        "value": "person"
+        "value": "c"
       },
       "predicate": {
-        "termType": "Variable",
-        "value": "property2"
+        "termType": "NamedNode",
+        "value": "http://example.org/r"
       },
       "object": {
         "termType": "Variable",
-        "value": "value2"
+        "value": "d"
       },
       "graph": {
         "termType": "NamedNode",
-        "value": "http://example.com/addresses"
+        "value": "http://example.org/g1"
       }
     }
   ],
@@ -70,6 +66,31 @@
     "type": "join",
     "input": [
       {
+        "type": "bgp",
+        "patterns": [
+          {
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": {
+              "termType": "Variable",
+              "value": "a"
+            },
+            "predicate": {
+              "termType": "NamedNode",
+              "value": "http://example.org/p"
+            },
+            "object": {
+              "termType": "Variable",
+              "value": "b"
+            },
+            "graph": {
+              "termType": "DefaultGraph",
+              "value": ""
+            }
+          }
+        ]
+      },
+      {
         "type": "graph",
         "input": {
           "type": "bgp",
@@ -79,39 +100,15 @@
               "termType": "Quad",
               "subject": {
                 "termType": "Variable",
-                "value": "person"
+                "value": "b"
               },
               "predicate": {
                 "termType": "NamedNode",
-                "value": "http://xmlns.com/foaf/0.1/givenName"
-              },
-              "object": {
-                "termType": "Literal",
-                "value": "Fred",
-                "datatype": {
-                  "termType": "NamedNode",
-                  "value": "http://www.w3.org/2001/XMLSchema#string"
-                }
-              },
-              "graph": {
-                "termType": "DefaultGraph",
-                "value": ""
-              }
-            },
-            {
-              "type": "pattern",
-              "termType": "Quad",
-              "subject": {
-                "termType": "Variable",
-                "value": "person"
-              },
-              "predicate": {
-                "termType": "Variable",
-                "value": "property1"
+                "value": "http://example.org/q"
               },
               "object": {
                 "termType": "Variable",
-                "value": "value1"
+                "value": "c"
               },
               "graph": {
                 "termType": "DefaultGraph",
@@ -121,8 +118,8 @@
           ]
         },
         "name": {
-          "termType": "NamedNode",
-          "value": "http://example.com/names"
+          "termType": "Variable",
+          "value": "g"
         }
       },
       {
@@ -135,15 +132,15 @@
               "termType": "Quad",
               "subject": {
                 "termType": "Variable",
-                "value": "person"
+                "value": "c"
               },
               "predicate": {
-                "termType": "Variable",
-                "value": "property2"
+                "termType": "NamedNode",
+                "value": "http://example.org/r"
               },
               "object": {
                 "termType": "Variable",
-                "value": "value2"
+                "value": "d"
               },
               "graph": {
                 "termType": "DefaultGraph",
@@ -154,7 +151,7 @@
         },
         "name": {
           "termType": "NamedNode",
-          "value": "http://example.com/addresses"
+          "value": "http://example.org/g1"
         }
       }
     ]

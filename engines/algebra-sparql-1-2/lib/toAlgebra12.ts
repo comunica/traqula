@@ -120,8 +120,8 @@ export const toAlgebra12Builder = IndirBuilder
  * @param options - Optional options object. Current options:
  * @param options.dataFactory - The Datafactory used to generate terms. Default @rdfjs/data-model.
  * @param options.quads - Boolean indicating whether triples should be converted to Quads
- *       (consuming the GRAPH statements).
- *        Default false. - In case of false, graph targets of updates are still pushed down
+ *        (consuming the GRAPH statements). Default false.
+ *        The DELETE and INSERT templates of updates are always converted to quads.
  * @param options.prefixes - Pre-defined prefixes for the given query. Default empty.
  * @param options.baseIRI - Base IRI that should be used for the query.
  *        Default undefined (throws error if required).

@@ -146,23 +146,21 @@ export const findAlgSubqueryCut: AstIndir<'findSubqueryCut', AlgSubqueryCut | un
       input = input.input;
     }
     const group = SUBRULE(findAlgGroupBelow, input, 'values');
-    if (!group) {
-      return;
+    if (group) {
+      const aggregateVariables = new Set(group.aggregates.map(aggregate => aggregate.variable.value));
+      // Without a SELECT clause, no extend can become a SELECT expression
+      const projected = new Set(op.type === types.PROJECT ? op.variables.map(variable => variable.value) : []);
+      const selectable = countSelectableExtends(chainExtends, variable => projected.has(variable.value));
+      if (selectable < chainExtends.length) {
+        return { start: chainExtends[selectable], aggregateVariables };
+      }
+      if (op.type !== types.PROJECT) {
+        // Without a SELECT clause, the aggregate variables are only visible from a subquery
+        const formVariables = SUBRULE(collectAlgVariables, op, new Set(), [ 'input' ]);
+        const readsAggregate = [ ...aggregateVariables ].some(variable => formVariables.has(variable));
+        return readsAggregate ? { start: input, aggregateVariables } : undefined;
+      }
     }
-    const aggregateVariables = new Set(group.aggregates.map(aggregate => aggregate.variable.value));
-    // Without a SELECT clause, no extend can become a SELECT expression
-    const projected = new Set(op.type === types.PROJECT ? op.variables.map(variable => variable.value) : []);
-    const selectable = countSelectableExtends(chainExtends, variable => projected.has(variable.value));
-    if (selectable < chainExtends.length) {
-      return { start: chainExtends[selectable], aggregateVariables };
-    }
-    if (op.type === types.PROJECT) {
-      return;
-    }
-    // Without a SELECT clause, the aggregate variables are only visible from a subquery
-    const formVariables = SUBRULE(collectAlgVariables, op, new Set(), [ 'input' ]);
-    const readsAggregate = [ ...aggregateVariables ].some(variable => formVariables.has(variable));
-    return readsAggregate ? { start: input, aggregateVariables } : undefined;
   },
 };
 

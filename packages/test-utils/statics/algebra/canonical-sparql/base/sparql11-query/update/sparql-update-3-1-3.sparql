@@ -1,0 +1,15 @@
+DELETE {
+  GRAPH <http://example/addresses> {
+    ?person <http://xmlns.com/foaf/0.1/givenName> "Bill"^^<http://www.w3.org/2001/XMLSchema#string> .
+  }
+}
+INSERT {
+  GRAPH <http://example/addresses> {
+    ?person <http://xmlns.com/foaf/0.1/givenName> "William"^^<http://www.w3.org/2001/XMLSchema#string> .
+  }
+}
+WHERE {
+  GRAPH <http://example/addresses> {
+    ?person <http://xmlns.com/foaf/0.1/givenName> "Bill"^^<http://www.w3.org/2001/XMLSchema#string> .
+  }
+}

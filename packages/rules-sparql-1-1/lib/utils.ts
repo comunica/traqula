@@ -1,4 +1,4 @@
-import { TransformerSubTyped } from '@traqula/core';
+import { TransformerSubTyped, visitOnlyKnownKeys } from '@traqula/core';
 import type { Sparql11Nodes } from './Sparql11types.js';
 
 /**
@@ -60,3 +60,82 @@ export enum CommonIRIs {
  * ```
  */
 export class AstTransformer extends TransformerSubTyped<Sparql11Nodes> {}
+
+/**
+ * Contexts per node type that only visit the known keys that can hold objects, see {@link visitOnlyKnownKeys}.
+ */
+export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql11Nodes>({
+  path: { type: false, subType: false, loc: false, items: true },
+  pattern: {
+    type: false,
+    subType: false,
+    loc: false,
+    silent: false,
+    values: true,
+    name: true,
+    variable: true,
+    expression: true,
+    variables: true,
+    patterns: true,
+    triples: true,
+  },
+  update: { type: false, subType: false, loc: false, updates: true },
+  query: {
+    type: false,
+    subType: false,
+    loc: false,
+    distinct: false,
+    reduced: false,
+    values: true,
+    template: true,
+    context: true,
+    solutionModifiers: true,
+    datasets: true,
+    where: true,
+    variables: true,
+  },
+  graph: { type: false, subType: false, loc: false, graph: true, triples: true },
+  graphRef: { type: false, subType: false, loc: false, graph: true },
+  updateOperation: {
+    type: false,
+    subType: false,
+    loc: false,
+    silent: false,
+    data: true,
+    source: true,
+    destination: true,
+    from: true,
+    graph: true,
+    where: true,
+    delete: true,
+    insert: true,
+  },
+  datasetClauses: { type: false, subType: false, loc: false, clauses: true },
+  tripleCollection: { type: false, subType: false, loc: false, triples: true, identifier: true },
+  triple: { type: false, subType: false, loc: false, object: true, subject: true, predicate: true },
+  solutionModifier: {
+    type: false,
+    subType: false,
+    loc: false,
+    offset: false,
+    limit: false,
+    having: true,
+    orderDefs: true,
+    groupings: true,
+  },
+  expression: {
+    type: false,
+    subType: false,
+    loc: false,
+    distinct: false,
+    operator: false,
+    separator: false,
+    aggregation: false,
+    function: true,
+    args: true,
+    expression: true,
+  },
+  contextDef: { type: false, subType: false, loc: false, key: false, value: true },
+  wildcard: { type: false, subType: false, loc: false },
+  term: { type: false, subType: false, loc: false, value: false, label: false, prefix: false, langOrIri: true },
+});

@@ -1,7 +1,0 @@
-SELECT ?o ( COUNT( * ) AS ?c ) WHERE {
-  ?s ?p ?o .
-}
-GROUP BY ?s
-VALUES ?o {
-  "1"^^<http://www.w3.org/2001/XMLSchema#integer>
-}

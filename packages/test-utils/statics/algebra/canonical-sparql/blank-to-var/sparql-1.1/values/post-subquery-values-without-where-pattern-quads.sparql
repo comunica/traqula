@@ -1,7 +1,0 @@
-SELECT ?v WHERE {
-  SELECT ?v WHERE {
-    VALUES ?v {
-      "1"^^<http://www.w3.org/2001/XMLSchema#integer>
-    }
-  }
-}

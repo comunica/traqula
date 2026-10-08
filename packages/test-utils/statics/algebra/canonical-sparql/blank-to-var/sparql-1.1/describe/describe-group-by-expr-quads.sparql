@@ -1,5 +1,0 @@
-DESCRIBE ?s ?len WHERE {
-  ?s ?p ?o .
-}
-GROUP BY ?s ?p ( STRLEN( STR( ?o ) ) AS ?len )
-HAVING ( COUNT( * ) > "1"^^<http://www.w3.org/2001/XMLSchema#integer> )

@@ -1,6 +1,0 @@
-DESCRIBE ?s WHERE {
-  GRAPH <http://example.org/g> {
-    ?s ?p ?o .
-  }
-  BIND( STR( ?o ) AS ?x )
-}

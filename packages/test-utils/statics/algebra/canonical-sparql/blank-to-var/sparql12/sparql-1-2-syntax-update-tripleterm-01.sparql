@@ -1,3 +1,0 @@
-INSERT DATA {
-  <http://example.com/ns#s> <http://example.com/ns#p> <<( <http://example.com/ns#a> <http://example.com/ns#b> <http://example.com/ns#c> )>> .
-}

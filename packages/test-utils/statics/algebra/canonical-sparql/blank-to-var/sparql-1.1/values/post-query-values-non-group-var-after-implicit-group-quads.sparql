@@ -1,6 +1,0 @@
-SELECT ( COUNT( * ) AS ?count ) WHERE {
-  ?s ?p ?o .
-}
-VALUES ?o {
-  <http://example.org/a>
-}

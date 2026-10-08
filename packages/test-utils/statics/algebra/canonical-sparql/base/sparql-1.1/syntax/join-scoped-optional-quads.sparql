@@ -1,9 +1,0 @@
-SELECT ?a WHERE {
-  ?a <http://example.org/p> ?b .
-  {
-    ?c <http://example.org/p> ?d .
-    OPTIONAL {
-      ?a <http://example.org/p> ?e .
-    }
-  }
-}

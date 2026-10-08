@@ -1,6 +1,0 @@
-SELECT ?__proto__ ?constructor ?toString WHERE {
-  ?__proto__ ?constructor ?toString .
-  VALUES( ?__proto__ ?constructor ){
-    ( <http://example.org/a> UNDEF )
-  }
-}

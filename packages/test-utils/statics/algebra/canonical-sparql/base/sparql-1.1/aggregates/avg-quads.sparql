@@ -1,3 +1,0 @@
-SELECT ( AVG( ?o ) AS ?avg ) WHERE {
-  ?s <http://www.example.org/dec> ?o .
-}

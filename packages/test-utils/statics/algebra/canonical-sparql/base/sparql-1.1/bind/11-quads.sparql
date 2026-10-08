@@ -1,7 +1,0 @@
-SELECT ?s ?v ?z WHERE {
-  {
-    BIND( "4"^^<http://www.w3.org/2001/XMLSchema#integer> AS ?z )
-  }
-  ?s <http://example.org/p> ?v .
-  FILTER ( ( ?v = ?z ) )
-}

@@ -1,3 +1,0 @@
-SELECT ?name FROM NAMED <http://example.org/alice> FROM NAMED <http://example.org/bob> WHERE {
-  ?x <http://xmlns.com/foaf/0.1/name> ?name .
-}

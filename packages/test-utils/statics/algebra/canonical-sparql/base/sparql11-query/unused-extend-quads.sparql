@@ -1,5 +1,0 @@
-SELECT ( ?duration AS ?d ) WHERE {
-  ?a <http://mydom#startTime> ?st .
-  ?a <http://mydom#endTime> ?et .
-  BIND( ( ?et - ?st ) AS ?duration )
-}

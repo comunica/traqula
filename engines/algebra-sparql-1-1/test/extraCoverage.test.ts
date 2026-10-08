@@ -114,6 +114,30 @@ GROUP BY ?s`);
         }],
       });
     });
+
+    it('toAlgebra wraps the WHERE of a WITH modify in a graph without quads option', ({ expect }) => {
+      const ast = parser.parse('WITH <http://g> DELETE { ?s ?p ?o } WHERE { ?s ?p ?o }');
+      const result = algebraUtils.objectify(toAlgebra(ast, { quads: false }));
+      expect(result).toMatchObject({
+        type: 'deleteinsert',
+        delete: [{
+          type: 'pattern',
+          termType: 'Quad',
+          graph: { termType: 'NamedNode', value: 'http://g' },
+        }],
+        where: {
+          type: 'graph',
+          name: { termType: 'NamedNode', value: 'http://g' },
+          input: {
+            type: 'bgp',
+            patterns: [{
+              type: 'pattern',
+              graph: { termType: 'DefaultGraph', value: '' },
+            }],
+          },
+        },
+      });
+    });
   });
 
   describe('variable collision in blank-to-variable translation', () => {

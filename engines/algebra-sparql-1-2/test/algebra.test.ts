@@ -25,12 +25,16 @@ describe('algebra output 1.2', () => {
     describe(suite, () => {
       for (const blankToVariable of [ true, false ]) {
         for (const test of sparqlAlgebraTests(suite, blankToVariable, true)) {
-          const { name, json, quads, sparql: query } = test;
+          const { name, json, sparql: query } = test;
+          // If (!name.includes('sparql-1-2-syntax-nested-anonreifier-01') ||
+          //   blankToVariable || name.includes('-quads')) {
+          //   continue;
+          // }
           it(`${name}${blankToVariable ? ' (no blanks)' : ''}`, ({ expect }) => {
             const ast = parser.parse(query);
             const algebra = algebraUtils.objectify(
               toAlgebra(ast, {
-                quads,
+                quads: name.endsWith('-quads'),
                 blankToVariable,
               }),
             );

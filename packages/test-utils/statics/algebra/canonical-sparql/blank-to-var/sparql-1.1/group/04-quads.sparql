@@ -1,7 +1,0 @@
-SELECT ?X ( SAMPLE( ?v ) AS ?S ) WHERE {
-  ?s <http://example/p> ?v .
-  OPTIONAL {
-    ?s <http://example/q> ?w .
-  }
-}
-GROUP BY ( COALESCE( ?w , "1605-11-05"^^<http://www.w3.org/2001/XMLSchema#date> ) AS ?X )

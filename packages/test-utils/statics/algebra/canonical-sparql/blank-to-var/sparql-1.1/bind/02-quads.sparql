@@ -1,3 +1,0 @@
-SELECT ?o ( ( ?o + "10"^^<http://www.w3.org/2001/XMLSchema#integer> ) AS ?z ) ( ( ?o + "100"^^<http://www.w3.org/2001/XMLSchema#integer> ) AS ?z2 ) WHERE {
-  ?s ?p ?o .
-}

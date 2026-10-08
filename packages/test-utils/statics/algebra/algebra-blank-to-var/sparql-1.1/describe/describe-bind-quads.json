@@ -21,8 +21,8 @@
             "value": "o"
           },
           "graph": {
-            "termType": "DefaultGraph",
-            "value": ""
+            "termType": "Variable",
+            "value": "g"
           }
         }
       ]

@@ -1,4 +1,0 @@
-SELECT ( MAX( ?y ) AS ?yy ) WHERE {
-  ?x ?y ?z .
-}
-GROUP BY ( STR( ?x ) AS ?var1 )

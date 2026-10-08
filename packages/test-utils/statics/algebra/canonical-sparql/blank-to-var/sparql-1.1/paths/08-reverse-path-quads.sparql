@@ -1,3 +1,0 @@
-ASK WHERE {
-  <http://www.example.org/instance#a> <http://www.example.org/schema#p> <http://www.example.org/instance#b> .
-}

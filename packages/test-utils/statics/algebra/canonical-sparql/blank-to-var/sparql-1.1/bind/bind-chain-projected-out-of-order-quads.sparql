@@ -1,3 +1,0 @@
-SELECT ( ?o AS ?b ) ( ?b AS ?a ) WHERE {
-  ?s ?p ?o .
-}

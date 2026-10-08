@@ -1,6 +1,0 @@
-SELECT ?__proto__ ?o ?p ?s ?type WHERE {
-  ?s ?p ?o .
-  VALUES( ?type ?__proto__ ){
-    ( <http://example.org/a> <http://example.org/b> )
-  }
-}

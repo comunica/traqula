@@ -1,4 +1,0 @@
-DESCRIBE ?o ?p ?s ?t WHERE {
-  ?s ?p ?o .
-  BIND( STR( ?o ) AS ?t )
-}

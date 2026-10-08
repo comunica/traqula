@@ -1,3 +1,0 @@
-SELECT ?o ?p WHERE {
-  <http://example/abc> ?p ?o .
-}

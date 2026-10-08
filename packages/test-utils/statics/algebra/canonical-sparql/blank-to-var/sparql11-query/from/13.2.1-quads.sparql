@@ -1,3 +1,0 @@
-SELECT ?name FROM <http://example.org/foaf/aliceFoaf> WHERE {
-  ?x <http://xmlns.com/foaf/0.1/name> ?name .
-}

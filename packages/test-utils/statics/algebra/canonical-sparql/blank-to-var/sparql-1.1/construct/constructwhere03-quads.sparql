@@ -1,8 +1,0 @@
-CONSTRUCT {
-  <http://example.org/s2> <http://example.org/p> ?o1 .
-  <http://example.org/s2> <http://example.org/p> ?o2 .
-}
-WHERE {
-  <http://example.org/s2> <http://example.org/p> ?o1 .
-  <http://example.org/s2> <http://example.org/p> ?o2 .
-}

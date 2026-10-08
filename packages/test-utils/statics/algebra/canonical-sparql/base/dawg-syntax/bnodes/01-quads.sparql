@@ -1,3 +1,0 @@
-SELECT * WHERE {
-  _:g_0 <http://example.org/ns#p> <http://example.org/ns#q> .
-}

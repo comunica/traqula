@@ -1,8 +1,0 @@
-SELECT ?s WHERE {
-  SELECT ?s WHERE {
-    ?s ?p ?o .
-    VALUES ?x {
-      "1"^^<http://www.w3.org/2001/XMLSchema#integer>
-    }
-  }
-}

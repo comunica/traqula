@@ -1,7 +1,0 @@
-SELECT ?s ( STR( ?v ) AS ?w ) WHERE {
-  ?s ?p ?o .
-}
-GROUP BY ?s
-VALUES ?v {
-  "1"^^<http://www.w3.org/2001/XMLSchema#integer>
-}

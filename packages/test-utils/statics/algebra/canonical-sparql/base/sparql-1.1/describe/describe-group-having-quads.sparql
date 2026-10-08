@@ -1,5 +1,0 @@
-DESCRIBE ?s ?p WHERE {
-  ?s ?p ?o .
-}
-GROUP BY ?s ?p
-HAVING ( COUNT( * ) > "1"^^<http://www.w3.org/2001/XMLSchema#integer> )

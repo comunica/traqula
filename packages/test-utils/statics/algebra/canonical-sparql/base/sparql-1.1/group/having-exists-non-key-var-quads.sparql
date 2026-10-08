@@ -1,7 +1,0 @@
-SELECT ?s WHERE {
-  ?s ?p ?o .
-}
-GROUP BY ?s
-HAVING EXISTS {
-  ?s <http://example/q> ?o .
-}

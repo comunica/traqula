@@ -456,6 +456,8 @@ export interface CompositeUpdate extends BaseOperation {
 
 export interface DeleteInsert extends BaseOperation {
   type: Types.DELETE_INSERT;
+  // TODO(major): keep [] for a template that is written but empty, leaving undefined for an absent clause.
+  //  Now toAlgebra translates both to undefined, so `DELETE {}` and `INSERT {}` share one algebra.
   delete?: Pattern[];
   insert?: Pattern[];
   where?: Operation;

@@ -21,8 +21,15 @@ export interface SparqlContext {
   /**
    * Reject select expressions that use a variable bound by an earlier select expression in a grouped query,
    * like `SELECT (COUNT(?o) AS ?c) (?c + 1 AS ?d) WHERE { ?s ?p ?o }`.
-   * The SPARQL 1.1 text of section 11.4 does not allow them, https://github.com/w3c/sparql-query/pull/380 does.
-   * Defaults to false.
+   * In an ungrouped query, this reuse is always allowed:
+   * https://www.w3.org/TR/sparql11-query/#selectExpressions
+   * > In SELECT expressions, the variable may be used in an expression later in the same SELECT clause
+   * In a grouped query, the SPARQL 1.1 text does not allow it,
+   * since only aggregates, constants, and GROUP BY variables may be projected:
+   * https://www.w3.org/TR/sparql11-query/#aggregateRestrictions
+   * SPARQL 1.2 allows it (https://github.com/w3c/sparql-query/pull/380):
+   * https://www.w3.org/TR/sparql12-query/#aggregateRestrictions
+   * Defaults to false, following SPARQL 1.2.
    */
   rejectGroupedSelectAliasReuse: boolean;
   /**

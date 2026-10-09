@@ -85,9 +85,11 @@ export interface ProjectionValidationOptions {
  *   Section 11.4 only mentions the group-by variables, but the algebra of 18.2.4.3 binds the VALUES variables
  *   before the projection, as do the tests of https://github.com/w3c/rdf-tests/pull/383.
  * - if grouped, select expressions may use variables bound by preceding (expr AS ?var) expressions,
- *   as clarified by https://github.com/w3c/sparql-query/pull/380.
- *   The SPARQL 1.1 text of section 11.4 does not mention them,
- *   so {@link ProjectionValidationOptions.rejectGroupedSelectAliasReuse} rejects them.
+ *   as https://www.w3.org/TR/sparql12-query/#aggregateRestrictions allows
+ *   (https://github.com/w3c/sparql-query/pull/380).
+ *   Ungrouped queries always allow them (https://www.w3.org/TR/sparql11-query/#selectExpressions),
+ *   but the SPARQL 1.1 text for grouped queries (https://www.w3.org/TR/sparql11-query/#aggregateRestrictions)
+ *   does not, so {@link ProjectionValidationOptions.rejectGroupedSelectAliasReuse} rejects them.
  * - 'select ?var as ?other', ?other cannot be in scope
  */
 export function queryProjectionIsGood(

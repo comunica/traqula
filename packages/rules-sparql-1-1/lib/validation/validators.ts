@@ -191,7 +191,8 @@ export function queryProjectionIsGood(
 /**
  * Verify that the variables of a grouped DESCRIBE query are grouped,
  * as for the projection of {@link queryProjectionRespectsGrouping}.
- * DESCRIBE * is not checked, since the spec only restricts the use of SELECT *.
+ * DESCRIBE * is not checked, since it only describes the variables in scope,
+ * which are the grouped ones in a grouped query (see {@link findPatternBoundedVars}).
  */
 export function describeProjectionIsGood(query: QueryDescribe): void {
   queryProjectionRespectsGrouping({
@@ -258,14 +259,18 @@ export function isGroupedQuery(query: Pick<QuerySelect, 'variables' | 'solutionM
  * Unlike {@link isGroupedQuery}, function calls are not assumed to be custom aggregates,
  * so queries using custom functions without GROUP BY are not treated as grouped.
  */
-export function hasBuiltInAggregate(query: Pick<QuerySelect, 'variables' | 'solutionModifiers'>): boolean {
+export function hasBuiltInAggregate(
+  query: Pick<QuerySelect | QueryDescribe, 'variables' | 'solutionModifiers'>,
+): boolean {
   return getAggregationScopeExpressions(query).some(expression => getAggregatesOfExpression(expression).length > 0);
 }
 
 /**
  * The expressions of the SELECT, HAVING, and ORDER BY clauses, which are those that can contain aggregates.
  */
-function getAggregationScopeExpressions(query: Pick<QuerySelect, 'variables' | 'solutionModifiers'>): Expression[] {
+function getAggregationScopeExpressions(
+  query: Pick<QuerySelect | QueryDescribe, 'variables' | 'solutionModifiers'>,
+): Expression[] {
   const { having, order } = query.solutionModifiers;
   return [
     ...query.variables.flatMap(variable => 'expression' in variable ? [ variable.expression ] : []),
@@ -329,10 +334,18 @@ export function findPatternBoundedVars(
     }
   } else if (F.isQuery(op)) {
     if (F.isQuerySelect(op) || F.isQueryDescribe(op)) {
-      // A projection only exposes the projected variables (18.2.1), wildcards expose everything.
-      recurse(op.variables.some(x => F.isWildcard(x)) ?
-          [ op.where, op.solutionModifiers.group, op.values ] :
-        op.variables);
+      if (!op.variables.some(x => F.isWildcard(x))) {
+        // A projection only exposes the projected variables (18.2.1).
+        recurse(op.variables);
+      } else if (op.solutionModifiers.group === undefined && !hasBuiltInAggregate(op)) {
+        // A wildcard exposes everything in scope.
+        recurse([ op.where, op.values ]);
+      } else {
+        // Grouping (18.2.4.1) only keeps the group keys in scope,
+        // next to the trailing VALUES clause, which is joined after grouping (18.2.4.3).
+        const group = op.solutionModifiers.group;
+        recurse([ ...group?.groupings.filter(grouping => F.isTermVariable(grouping)) ?? [], group, op.values ]);
+      }
     } else {
       recurse(op.solutionModifiers.group);
     }

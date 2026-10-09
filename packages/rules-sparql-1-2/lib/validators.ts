@@ -4,6 +4,7 @@
 //  The SPARQL 1.2 queryProjectionIsGood, selectExpressionAliasesNotInScope and checkNote13
 //  only exist (and partially copy the SPARQL 1.1 logic) to call the SPARQL 1.2 findPatternBoundedVars.
 import {
+  hasBuiltInAggregate,
   isGroupedQuery,
   queryProjectionRespectsGrouping,
   selectExpressionAliasesNotInValues,
@@ -49,22 +50,24 @@ export function findPatternBoundedVars(
 ): void {
   if (F.isQuery(iter) || F.isUpdate(iter)) {
     if (F.isQuerySelect(iter) || F.isQueryDescribe(iter)) {
-      // A projection only exposes the projected variables (18.2.1), wildcards expose everything.
+      // A projection only exposes the projected variables (18.2.1), wildcards expose everything in scope.
       if (!iter.variables.some(x => F.isWildcard(x))) {
         for (const v of iter.variables) {
           findPatternBoundedVars(v, boundedVars);
         }
         return;
       }
-      if (iter.where) {
+      // Grouping (18.2.4.1) only keeps the group keys in scope,
+      // next to the trailing VALUES clause, which is joined after grouping (18.2.4.3).
+      const group = iter.solutionModifiers.group;
+      if (iter.where && group === undefined && !hasBuiltInAggregate(<T11.QuerySelect> <unknown> iter)) {
         findPatternBoundedVars(iter.where, boundedVars);
       }
-      if (iter.solutionModifiers.group) {
-        const grouping = iter.solutionModifiers.group;
-        for (const g of grouping.groupings) {
-          if ('variable' in g) {
-            findPatternBoundedVars(g.variable, boundedVars);
-          }
+      for (const grouping of group?.groupings ?? []) {
+        if ('variable' in grouping) {
+          findPatternBoundedVars(grouping.variable, boundedVars);
+        } else if (F.isTermVariable(grouping)) {
+          boundedVars.add(grouping.value);
         }
       }
       if (iter.values) {

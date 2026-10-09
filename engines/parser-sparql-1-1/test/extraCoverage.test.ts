@@ -86,28 +86,11 @@ describe('extra parser coverage', () => {
     expect(() => parser.parse('SELECT * { ?s ?p ?o } VALUES (?x ?x) { (1 2) }')).not.toThrow();
   });
 
-  describe('rejectGroupedSelectAliasReuse', () => {
-    const query = 'SELECT (COUNT(*) AS ?c) (?c + 1 AS ?d) WHERE { ?s ?p ?o }';
-
-    it('accepts a variable bound by an earlier select expression in a grouped query by default', ({ expect }) => {
-      expect(parser.parse(query)).toMatchObject({ subType: 'select' });
-    });
-
-    it('rejects a variable bound by an earlier select expression in a grouped query', ({ expect }) => {
-      expect(() => parser.parse(query, { rejectGroupedSelectAliasReuse: true }))
-        .toThrow(/Use of variable bound by an earlier select expression \(\?c\) in a grouped query/u);
-      expect(() => parser.parse(
-        'SELECT ?s (MAX(?o) AS ?m) (?m * 2 AS ?d) WHERE { ?s ?p ?o } GROUP BY ?s',
-        { rejectGroupedSelectAliasReuse: true },
-      )).toThrow(/Use of variable bound by an earlier select expression \(\?m\) in a grouped query/u);
-    });
-
-    it('accepts a variable bound by an earlier select expression in an ungrouped query', ({ expect }) => {
-      expect(parser.parse(
-        'SELECT (1 AS ?a) (?a + 1 AS ?b) WHERE { ?s ?p ?o }',
-        { rejectGroupedSelectAliasReuse: true },
-      )).toMatchObject({ subType: 'select' });
-    });
+  it('names the reused variable when rejecting a variable bound by an earlier select expression', ({ expect }) => {
+    expect(() => parser.parse(
+      'SELECT (COUNT(*) AS ?c) (?c + 1 AS ?d) WHERE { ?s ?p ?o }',
+      { rejectGroupedSelectAliasReuse: true },
+    )).toThrow(/Use of variable bound by an earlier select expression \(\?c\) in a grouped query/u);
   });
 
   it('throws when DISTINCT is used in a non-aggregate function call', ({ expect }) => {

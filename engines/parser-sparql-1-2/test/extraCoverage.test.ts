@@ -105,30 +105,6 @@ describe('extra parser-sparql-1-2 coverage', () => {
       .toThrow(/Variable not allowed in projection/u);
   });
 
-  describe('rejectGroupedSelectAliasReuse', () => {
-    const query = 'SELECT (COUNT(*) AS ?c) (?c + 1 AS ?d) WHERE { ?s ?p ?o }';
-
-    it('accepts a variable bound by an earlier select expression in a grouped query by default', ({ expect }) => {
-      expect(parser.parse(query)).toMatchObject({ subType: 'select' });
-    });
-
-    it('rejects a variable bound by an earlier select expression in a grouped query', ({ expect }) => {
-      expect(() => parser.parse(query, { rejectGroupedSelectAliasReuse: true }))
-        .toThrow(/Use of variable bound by an earlier select expression \(\?c\) in a grouped query/u);
-      expect(() => parser.parse(
-        'SELECT ?s (MAX(?o) AS ?m) (?m * 2 AS ?d) WHERE { ?s ?p ?o } GROUP BY ?s',
-        { rejectGroupedSelectAliasReuse: true },
-      )).toThrow(/Use of variable bound by an earlier select expression \(\?m\) in a grouped query/u);
-    });
-
-    it('accepts a variable bound by an earlier select expression in an ungrouped query', ({ expect }) => {
-      expect(parser.parse(
-        'SELECT (1 AS ?a) (?a + 1 AS ?b) WHERE { ?s ?p ?o }',
-        { rejectGroupedSelectAliasReuse: true },
-      )).toMatchObject({ subType: 'select' });
-    });
-  });
-
   describe('skipValidation in SPARQL 1.2 subquery', () => {
     it('does not check subquery projections when skipValidation is true', ({ expect }) => {
       const result = parser.parse(

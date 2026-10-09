@@ -15,7 +15,6 @@ import type {
   QueryDescribe,
   QuerySelect,
   TermVariable,
-  SolutionModifierGroup,
   SolutionModifierGroupBind,
   Update,
   PatternBind,
@@ -89,13 +88,26 @@ export function getExpressionId(expression: SolutionModifierGroupBind | Expressi
  * The variables a GROUP BY clause keeps in scope (18.2.4.1): its variable keys and the variables of its
  * (expr AS ?var) keys. Other keys, like expressions or (SPARQL 1.2) triple terms, keep no variable in scope.
  */
-export function getGroupKeyVariables(group: Pick<SolutionModifierGroup, 'groupings'> | undefined): TermVariable[] {
+export function getGroupKeyVariables(
+  group: { groupings: readonly (object | Pick<SolutionModifierGroupBind, 'variable'>)[] } | undefined,
+): TermVariable[] {
   return group?.groupings.flatMap((grouping) => {
     if ('variable' in grouping) {
       return [ grouping.variable ];
     }
-    return F.isTermVariable(grouping) ? [ grouping ] : [];
+    return F.isTermVariable(grouping) ? [ <TermVariable> grouping ] : [];
   }) ?? [];
+}
+
+/**
+ * The variables in scope after grouping: the variables of the group keys (see {@link getGroupKeyVariables}),
+ * and those of the trailing VALUES clause, which is joined after grouping (18.2.4.3).
+ */
+export function getGroupedVariables(query: {
+  solutionModifiers: { group?: Parameters<typeof getGroupKeyVariables>[0] };
+  values?: { variables: readonly TermVariable[] };
+}): TermVariable[] {
+  return [ ...getGroupKeyVariables(query.solutionModifiers.group), ...query.values?.variables ?? [] ];
 }
 
 /**
@@ -144,7 +156,7 @@ export function queryProjectionRespectsGrouping(
     if (query.solutionModifiers.group !== undefined) {
       throw new Error('GROUP BY not allowed with wildcard');
     }
-    if (hasBuiltInAggregate(query)) {
+    if (isGroupedQuery(query, false)) {
       throw new Error('Aggregates not allowed with wildcard');
     }
     return;
@@ -154,18 +166,13 @@ export function queryProjectionRespectsGrouping(
   // Check for projection of ungrouped variable
   // Check can be skipped in case of wildcard select.
   const variables = <Exclude<typeof query.variables, [Wildcard]>> query.variables;
-  const groupBy = query.solutionModifiers.group;
-  if (groupBy !== undefined || hasBuiltInAggregate(query)) {
+  if (isGroupedQuery(query, false)) {
     // We have to check whether
     //  1. Variables used in projection are usable given the group by clause
     //  2. An aggregate will create an implicit group by clause.
     // Variables bound by preceding (expr AS ?var) expressions are in scope for later expressions.
     const asBoundVars = new Set<string>();
-    // The variables of the GROUP BY keys and of the trailing VALUES clause
-    const groupedVars = new Set([
-      ...getGroupKeyVariables(groupBy).map(variable => variable.value),
-      ...query.values?.variables.map(variable => variable.value) ?? [],
-    ]);
+    const groupedVars = new Set(getGroupedVariables(query).map(variable => variable.value));
     for (const selectVar of variables) {
       if (F.isTerm(selectVar)) {
         if (!groupedVars.has(selectVar.value)) {
@@ -254,25 +261,20 @@ export function selectExpressionAliasesNotInScope(
  * Custom aggregates are syntactically function calls:
  * > Aggregate functions can be one of the built-in keywords for aggregates or a custom aggregate,
  * > which is syntactically a function call.
- * The parser cannot know whether a function is an aggregate, so it leniently assumes any function call might be,
- * and this returns true for any query that may be grouped.
+ * The parser cannot know whether a function is an aggregate, so by default it leniently assumes any function call
+ * might be, and this returns true for any query that may be grouped.
+ * Without `assumeCustomAggregates`, only a GROUP BY clause or a built-in aggregate group the query,
+ * as they do in the algebra.
  */
-export function isGroupedQuery(query: Pick<QuerySelect, 'variables' | 'solutionModifiers'>): boolean {
+export function isGroupedQuery(
+  query: Pick<QuerySelect | QueryDescribe, 'variables' | 'solutionModifiers'>,
+  assumeCustomAggregates = true,
+): boolean {
   if (query.solutionModifiers.group) {
     return true;
   }
-  return getAggregationScopeExpressions(query).some(expression => findAggregates(expression, true).length > 0);
-}
-
-/**
- * Whether the query uses a built-in aggregate, which makes it grouped, even without GROUP BY (18.2.4.1).
- * Unlike {@link isGroupedQuery}, function calls are not assumed to be custom aggregates,
- * so queries using custom functions without GROUP BY are not treated as grouped.
- */
-export function hasBuiltInAggregate(
-  query: Pick<QuerySelect | QueryDescribe, 'variables' | 'solutionModifiers'>,
-): boolean {
-  return getAggregationScopeExpressions(query).some(expression => getAggregatesOfExpression(expression).length > 0);
+  return getAggregationScopeExpressions(query)
+    .some(expression => findAggregates(expression, assumeCustomAggregates).length > 0);
 }
 
 /**
@@ -347,13 +349,12 @@ export function findPatternBoundedVars(
       if (!op.variables.some(x => F.isWildcard(x))) {
         // A projection only exposes the projected variables (18.2.1).
         recurse(op.variables);
-      } else if (op.solutionModifiers.group === undefined && !hasBuiltInAggregate(op)) {
+      } else if (isGroupedQuery(op, false)) {
+        // A wildcard exposes everything in scope, which grouping limits (18.2.4.1).
+        recurse(getGroupedVariables(op));
+      } else {
         // A wildcard exposes everything in scope.
         recurse([ op.where, op.values ]);
-      } else {
-        // Grouping (18.2.4.1) only keeps the group keys in scope,
-        // next to the trailing VALUES clause, which is joined after grouping (18.2.4.3).
-        recurse([ ...getGroupKeyVariables(op.solutionModifiers.group), op.values ]);
       }
     } else {
       recurse(op.solutionModifiers.group);

@@ -1,4 +1,5 @@
-import type { QueryDescribe, SolutionModifierGroupBind } from '@traqula/rules-sparql-1-1';
+import type { Expression as Expression11, QueryDescribe, SolutionModifierGroupBind } from '@traqula/rules-sparql-1-1';
+import { getVariablesFromExpression } from '@traqula/rules-sparql-1-1';
 import { describe, it } from 'vitest';
 import type {
   Annotation,
@@ -8,7 +9,6 @@ import type {
 import {
   AstFactory,
   findPatternBoundedVars,
-  getVariablesFromExpression,
   langTagHasCorrectRange,
   completeParseContext,
 } from '../lib/index.js';
@@ -70,10 +70,10 @@ describe('completeParseContext', () => {
   });
 });
 
-describe('getVariablesFromExpression (sparql-1-2)', () => {
+describe('getVariablesFromExpression on SPARQL 1.2 expressions', () => {
   it('collects the variables within triple terms', ({ expect }) => {
     const variables = new Set<string>();
-    getVariablesFromExpression(F.termTriple(
+    getVariablesFromExpression(<Expression11> <unknown> F.termTriple(
       F.termVariable('s', noLoc),
       F.termNamed(noLoc, 'http://example.org/p'),
       F.termTriple(F.termVariable('a', noLoc), F.termVariable('b', noLoc), F.termVariable('c', noLoc), noLoc),

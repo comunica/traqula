@@ -4,7 +4,6 @@
 //  The SPARQL 1.2 queryProjectionIsGood, selectExpressionAliasesNotInScope and checkNote13
 //  only exist (and partially copy the SPARQL 1.1 logic) to call the SPARQL 1.2 findPatternBoundedVars.
 import {
-  getVariablesFromExpression as getVariablesFromExpression11,
   isGroupedQuery,
   queryProjectionRespectsGrouping,
   selectExpressionAliasesNotInValues,
@@ -13,7 +12,6 @@ import {
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import { AstFactory } from './AstFactory.js';
 import type {
-  Expression,
   Path,
   Pattern,
   PatternBind,
@@ -43,14 +41,6 @@ export function langTagHasCorrectRange(literal: TermLiteral): void {
       }
     }
   }
-}
-
-/**
- * Get all variables used in an expression, including those within triple terms,
- * see {@link T11.getVariablesFromExpression}.
- */
-export function getVariablesFromExpression(expression: Expression | Term, variables: Set<string>): void {
-  getVariablesFromExpression11(<T11.Expression> expression, variables);
 }
 
 export function findPatternBoundedVars(

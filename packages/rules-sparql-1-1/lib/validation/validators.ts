@@ -9,6 +9,7 @@ import type {
   Wildcard,
   Expression,
   ExpressionAggregate,
+  ExpressionFunctionCall,
   Pattern,
   PatternBgp,
   QueryDescribe,
@@ -41,15 +42,29 @@ const skipPatternOperation = { patternOperation: stopVisit };
  * Does not look inside aggregates, nor in EXISTS or NOT EXISTS patterns.
  */
 export function getAggregatesOfExpression(expression: Expression): ExpressionAggregate[] {
-  const aggregates: ExpressionAggregate[] = [];
+  return <ExpressionAggregate[]> findAggregates(expression, false);
+}
+
+/**
+ * Get the built-in aggregates of an expression, and, if `functionCalls` is set, its function calls,
+ * which may be custom aggregates.
+ * Does not look inside them, nor in EXISTS or NOT EXISTS patterns.
+ */
+function findAggregates(
+  expression: Expression,
+  functionCalls: boolean,
+): (ExpressionAggregate | ExpressionFunctionCall)[] {
+  const found: (ExpressionAggregate | ExpressionFunctionCall)[] = [];
+  const onFound = { preVisitor: (node: ExpressionAggregate | ExpressionFunctionCall) => {
+    found.push(node);
+    return { continue: false };
+  } };
   expressionTransformer.visitNodeSpecific(expression, {}, { expression: {
     ...skipPatternOperation,
-    aggregate: { preVisitor: (aggregate) => {
-      aggregates.push(aggregate);
-      return { continue: false };
-    } },
+    aggregate: onFound,
+    ...functionCalls ? { functionCall: onFound } : {},
   }});
-  return aggregates;
+  return found;
 }
 
 /**
@@ -225,14 +240,17 @@ export function selectExpressionAliasesNotInScope(
 
 /**
  * A query is grouped when it has a GROUP BY clause or uses aggregates (18.2.4.1).
- * Since custom aggregates are syntactically function calls, this returns true for any query that may be grouped,
- * see {@link mayContainAggregate}.
+ * Custom aggregates are syntactically function calls:
+ * > Aggregate functions can be one of the built-in keywords for aggregates or a custom aggregate,
+ * > which is syntactically a function call.
+ * The parser cannot know whether a function is an aggregate, so it leniently assumes any function call might be,
+ * and this returns true for any query that may be grouped.
  */
 export function isGroupedQuery(query: Pick<QuerySelect, 'variables' | 'solutionModifiers'>): boolean {
   if (query.solutionModifiers.group) {
     return true;
   }
-  return getAggregationScopeExpressions(query).some(expression => mayContainAggregate(expression));
+  return getAggregationScopeExpressions(query).some(expression => findAggregates(expression, true).length > 0);
 }
 
 /**
@@ -241,7 +259,7 @@ export function isGroupedQuery(query: Pick<QuerySelect, 'variables' | 'solutionM
  * so queries using custom functions without GROUP BY are not treated as grouped.
  */
 export function hasBuiltInAggregate(query: Pick<QuerySelect, 'variables' | 'solutionModifiers'>): boolean {
-  return getAggregationScopeExpressions(query).some(expression => containsAggregate(expression, false));
+  return getAggregationScopeExpressions(query).some(expression => getAggregatesOfExpression(expression).length > 0);
 }
 
 /**
@@ -254,35 +272,6 @@ function getAggregationScopeExpressions(query: Pick<QuerySelect, 'variables' | '
     ...having?.having ?? [],
     ...order?.orderDefs.map(ordering => ordering.expression) ?? [],
   ];
-}
-
-/**
- * Whether an expression may contain an aggregate, also when nested in a function call.
- * Custom aggregates are syntactically function calls:
- * > Aggregate functions can be one of the built-in keywords for aggregates or a custom aggregate,
- * > which is syntactically a function call.
- * The parser cannot know whether a function is an aggregate, so it leniently assumes any function call might be.
- */
-function mayContainAggregate(expression: Expression): boolean {
-  return containsAggregate(expression, true);
-}
-
-/**
- * Whether an expression contains a built-in aggregate, or, if `functionCalls` is set, a function call.
- * Stops at the first one found, and does not look in EXISTS or NOT EXISTS patterns.
- */
-function containsAggregate(expression: Expression, functionCalls: boolean): boolean {
-  let found = false;
-  const onFound = { preVisitor: (): { shortcut: true } => {
-    found = true;
-    return { shortcut: true };
-  } };
-  expressionTransformer.visitNodeSpecific(expression, {}, { expression: {
-    ...skipPatternOperation,
-    aggregate: onFound,
-    ...functionCalls ? { functionCall: onFound } : {},
-  }});
-  return found;
 }
 
 /**

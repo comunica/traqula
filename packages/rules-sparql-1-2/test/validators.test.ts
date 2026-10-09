@@ -81,16 +81,6 @@ describe('getVariablesFromExpression on SPARQL 1.2 expressions', () => {
     ), variables);
     expect(variables).toEqual(new Set([ 's', 'a', 'b', 'c' ]));
   });
-
-  it('skips the variables within aggregates and function calls', ({ expect }) => {
-    const variables = new Set<string>();
-    getVariablesFromExpression(F.expressionOperation('+', [
-      F.termVariable('x', noLoc),
-      F.aggregate('count', false, F.termVariable('y', noLoc), undefined, noLoc),
-      F.expressionFunctionCall(F.termNamed(noLoc, 'http://example.org/f'), [ F.termVariable('z', noLoc) ], false, noLoc),
-    ], noLoc), variables);
-    expect(variables).toEqual(new Set([ 'x' ]));
-  });
 });
 
 describe('findPatternBoundedVars (sparql-1-2)', () => {

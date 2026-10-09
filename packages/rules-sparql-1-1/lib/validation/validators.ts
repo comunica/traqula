@@ -4,6 +4,7 @@
 //  The SPARQL 1.2 queryProjectionIsGood, selectExpressionAliasesNotInScope and checkNote13
 //  only exist (and partially copy the SPARQL 1.1 logic) to call the SPARQL 1.2 findPatternBoundedVars.
 import { AstFactory } from '../astFactory.js';
+import type { SparqlContext } from '../sparql11HelperTypes.js';
 import type {
   Wildcard,
   Expression,
@@ -22,12 +23,17 @@ import { AstTransformer } from '../utils.js';
 
 const F = new AstFactory();
 const transformer = new AstTransformer();
+/**
+ * Walks expressions, skipping the source locations, which hold no expressions or variables.
+ */
+const expressionTransformer = new AstTransformer({ ignoreKeys: new Set([ 'loc' ]) });
 
+const stopVisit = { preVisitor: () => ({ continue: false }) };
 /**
  * Stops visiting an expression that starts a new query level: the pattern of an EXISTS or NOT EXISTS,
  * whose aggregates and variables do not belong to the expression.
  */
-const skipPatternOperation = { patternOperation: { preVisitor: () => ({ continue: false }) }};
+const skipPatternOperation = { patternOperation: stopVisit };
 
 /**
  * Get all built-in aggregates of an expression, also when nested in operators or function calls.
@@ -35,7 +41,7 @@ const skipPatternOperation = { patternOperation: { preVisitor: () => ({ continue
  */
 export function getAggregatesOfExpression(expression: Expression): ExpressionAggregate[] {
   const aggregates: ExpressionAggregate[] = [];
-  transformer.visitNodeSpecific(expression, {}, { expression: {
+  expressionTransformer.visitNodeSpecific(expression, {}, { expression: {
     ...skipPatternOperation,
     aggregate: { preVisitor: (aggregate) => {
       aggregates.push(aggregate);
@@ -68,11 +74,11 @@ export function getExpressionId(expression: SolutionModifierGroupBind | Expressi
  * nor in EXISTS or NOT EXISTS patterns.
  */
 export function getVariablesFromExpression(expression: Expression, variables: Set<string>): void {
-  transformer.visitNodeSpecific(expression, {}, {
+  expressionTransformer.visitNodeSpecific(expression, {}, {
     expression: {
       ...skipPatternOperation,
-      aggregate: { preVisitor: () => ({ continue: false }) },
-      functionCall: { preVisitor: () => ({ continue: false }) },
+      aggregate: stopVisit,
+      functionCall: stopVisit,
     },
     term: { variable: { visitor: (variable) => {
       variables.add(variable.value);
@@ -81,11 +87,9 @@ export function getVariablesFromExpression(expression: Expression, variables: Se
 }
 
 /**
- * Options of {@link queryProjectionIsGood}, set by the equally named fields of the parse context.
+ * Options of {@link queryProjectionIsGood}, the equally named fields of the parse context.
  */
-export interface ProjectionValidationOptions {
-  rejectGroupedSelectAliasReuse?: boolean;
-}
+export type ProjectionValidationOptions = Pick<SparqlContext, 'rejectGroupedSelectAliasReuse'>;
 
 /**
  * Verify that the projected variables (select head) respect the grouping of the query:
@@ -127,22 +131,25 @@ export function queryProjectionRespectsGrouping(
     //  2. An aggregate will create an implicit group by clause.
     // Variables bound by preceding (expr AS ?var) expressions are in scope for later expressions.
     const asBoundVars = new Set<string>();
-    const valuesVars = new Set(query.values?.variables.map(variable => variable.value));
+    // The variables of the GROUP BY keys and of the trailing VALUES clause
+    const groupedVars = new Set([
+      ...groupBy?.groupings.map(grouping => getExpressionId(grouping)) ?? [],
+      ...query.values?.variables.map(variable => variable.value) ?? [],
+    ]);
     for (const selectVar of variables) {
       if (F.isTerm(selectVar)) {
-        if (!valuesVars.has(selectVar.value) && (!groupBy || !groupBy.groupings
-          .map(groupvar => getExpressionId(groupvar)).includes((getExpressionId(selectVar))))) {
+        if (!groupedVars.has(selectVar.value)) {
           throw new Error('Variable not allowed in projection');
         }
       } else {
         const usedvars = new Set<string>();
         getVariablesFromExpression(selectVar.expression, usedvars);
         for (const usedvar of usedvars) {
-          if (asBoundVars.has(usedvar) && options.rejectGroupedSelectAliasReuse) {
-            throw new Error(`Use of variable bound by an earlier select expression (?${usedvar}) in a grouped query`);
-          }
-          if (!asBoundVars.has(usedvar) && !valuesVars.has(usedvar) && (!groupBy || !groupBy.groupings
-            .map(groupVar => getExpressionId(groupVar)).includes(usedvar))) {
+          if (asBoundVars.has(usedvar)) {
+            if (options.rejectGroupedSelectAliasReuse) {
+              throw new Error(`Use of variable bound by an earlier select expression (?${usedvar}) in a grouped query`);
+            }
+          } else if (!groupedVars.has(usedvar)) {
             throw new Error(`Use of ungrouped variable in projection of operation (?${usedvar})`);
           }
         }
@@ -233,7 +240,7 @@ export function isGroupedQuery(query: Pick<QuerySelect, 'variables' | 'solutionM
  * so queries using custom functions without GROUP BY are not treated as grouped.
  */
 export function hasBuiltInAggregate(query: Pick<QuerySelect, 'variables' | 'solutionModifiers'>): boolean {
-  return getAggregationScopeExpressions(query).some(expression => getAggregatesOfExpression(expression).length > 0);
+  return getAggregationScopeExpressions(query).some(expression => containsAggregate(expression, false));
 }
 
 /**
@@ -256,17 +263,25 @@ function getAggregationScopeExpressions(query: Pick<QuerySelect, 'variables' | '
  * The parser cannot know whether a function is an aggregate, so it leniently assumes any function call might be.
  */
 function mayContainAggregate(expression: Expression): boolean {
-  let mayContain = false;
-  const found = (): { shortcut: true } => {
-    mayContain = true;
+  return containsAggregate(expression, true);
+}
+
+/**
+ * Whether an expression contains a built-in aggregate, or, if `functionCalls` is set, a function call.
+ * Stops at the first one found, and does not look in EXISTS or NOT EXISTS patterns.
+ */
+function containsAggregate(expression: Expression, functionCalls: boolean): boolean {
+  let found = false;
+  const onFound = { preVisitor: (): { shortcut: true } => {
+    found = true;
     return { shortcut: true };
-  };
-  transformer.visitNodeSpecific(expression, {}, { expression: {
+  } };
+  expressionTransformer.visitNodeSpecific(expression, {}, { expression: {
     ...skipPatternOperation,
-    aggregate: { preVisitor: found },
-    functionCall: { preVisitor: found },
+    aggregate: onFound,
+    ...functionCalls ? { functionCall: onFound } : {},
   }});
-  return mayContain;
+  return found;
 }
 
 /**

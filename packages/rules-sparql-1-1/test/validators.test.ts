@@ -9,6 +9,8 @@ import {
   checkBlankNodeBGPScope,
   checkNote13,
   findPatternBoundedVars,
+  getAggregatesOfExpression,
+  getVariablesFromExpression,
   queryProjectionIsGood,
   updateNoReuseBlankNodeLabels,
 } from '../lib/index.js';
@@ -69,6 +71,37 @@ describe('queryProjectionIsGood', () => {
     };
 
     expect(() => queryProjectionIsGood(<any>query)).not.toThrow();
+  });
+});
+
+describe('getAggregatesOfExpression', () => {
+  it('finds aggregates nested in operators and function calls, but not in EXISTS patterns', ({ expect }) => {
+    const count = F.aggregate('count', false, F.termVariable('y', noLoc), undefined, noLoc);
+    const sum = F.aggregate('sum', false, F.termVariable('z', noLoc), undefined, noLoc);
+    const max = F.aggregate('max', false, F.termVariable('w', noLoc), undefined, noLoc);
+    const exists = F.expressionPatternOperation(
+      'exists',
+      F.patternGroup([ F.patternFilter(max, noLoc) ], noLoc),
+      noLoc,
+    );
+    const aggregates = getAggregatesOfExpression(F.expressionOperation('+', [
+      F.expressionFunctionCall(F.termNamed(noLoc, 'http://example.org/f'), [ count ], false, noLoc),
+      sum,
+      exists,
+    ], noLoc));
+    expect(new Set(aggregates)).toEqual(new Set([ count, sum ]));
+  });
+});
+
+describe('getVariablesFromExpression', () => {
+  it('skips the variables within aggregates and function calls', ({ expect }) => {
+    const variables = new Set<string>();
+    getVariablesFromExpression(F.expressionOperation('+', [
+      F.termVariable('x', noLoc),
+      F.aggregate('count', false, F.termVariable('y', noLoc), undefined, noLoc),
+      F.expressionFunctionCall(F.termNamed(noLoc, 'http://example.org/f'), [ F.termVariable('z', noLoc) ], false, noLoc),
+    ], noLoc), variables);
+    expect(variables).toEqual(new Set([ 'x' ]));
   });
 });
 

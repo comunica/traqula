@@ -93,7 +93,7 @@ export const selectQuery: SparqlGrammarRule<'selectQuery', Omit<QuerySelect, 'ty
 
 /**
  * OVERRIDING RULE: {@link S11.validateSelectQuery}.
- * (Validator has changed: https://github.com/w3c/sparql-query/pull/380)
+ * Uses the SPARQL 1.2 projection validation, which differs in the in-scope variables (findPatternBoundedVars).
  */
 export const validateSelectQuery: SparqlGrammarRule<'validateSelectQuery', void, [
   Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,

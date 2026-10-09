@@ -70,6 +70,8 @@ export type UpdateOperationDeleteWhere = UpdateOperationInsertDeleteDelWhere & {
 export type UpdateOperationModify = UpdateOperationBase & {
   subType: 'modify';
   graph: TermIri | undefined;
+  // TODO(major): make insert and delete `Quads[] | undefined`: undefined when the clause is absent,
+  //  [] when it is written but empty. Now `DELETE {}`, `INSERT {}`, and `DELETE {} INSERT {}` share one AST.
   insert: Quads[];
   delete: Quads[];
   from: DatasetClauses;

@@ -31,7 +31,7 @@ export interface SparqlContext {
    * https://www.w3.org/TR/sparql12-query/#aggregateRestrictions
    * Defaults to false, following SPARQL 1.2.
    */
-  rejectGroupedSelectAliasReuse: boolean;
+  rejectGroupedSelectAliasReuse?: boolean;
   /**
    * Set of queryModes. Primarily used for note 8, 14.
    */

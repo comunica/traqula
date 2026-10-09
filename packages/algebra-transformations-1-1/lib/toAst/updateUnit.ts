@@ -194,7 +194,8 @@ AstIndir<'cleanUpUpdateOperationModify', LikeModify, [UpdateOperationModify, Alg
       return asCasted;
     }
     // Check if deleteWhere when modify but isomorphic.
-    if (!op.insert && op.where && op.where.type === 'bgp' && isomorphic(op.delete!, op.where.patterns)) {
+    // An empty DELETE template has no delete key, e.g. `DELETE WHERE {}`.
+    if (!op.insert && op.where && op.where.type === 'bgp' && isomorphic(op.delete ?? [], op.where.patterns)) {
       const asCasted = <UpdateOperationDeleteWhere & { where?: unknown; delete?: unknown }> <unknown> copy;
       asCasted.data = copy.delete;
       delete asCasted.where;

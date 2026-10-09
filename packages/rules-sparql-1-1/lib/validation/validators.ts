@@ -24,9 +24,10 @@ import { AstTransformer } from '../utils.js';
 const F = new AstFactory();
 const transformer = new AstTransformer();
 /**
- * Walks expressions, skipping the source locations, which hold no expressions or variables.
+ * Walks expressions, skipping the keys that hold no expressions or variables:
+ * the source locations, the datatype IRI of a literal, and the IRI of a function call.
  */
-const expressionTransformer = new AstTransformer({ ignoreKeys: new Set([ 'loc' ]) });
+const expressionTransformer = new AstTransformer({ ignoreKeys: new Set([ 'loc', 'langOrIri', 'function' ]) });
 
 const stopVisit = { preVisitor: () => ({ continue: false }) };
 /**

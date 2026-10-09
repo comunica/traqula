@@ -9,6 +9,7 @@ import type {
   TermVariable,
   Wildcard,
 } from '@traqula/rules-sparql-1-1';
+import { getGroupedVariables } from '@traqula/rules-sparql-1-1';
 import equal from 'fast-deep-equal';
 import type { Algebra } from '../index.js';
 import type { AlgebraIndir, FlattenedTriple } from './core.js';
@@ -44,7 +45,8 @@ export const translateAggregates: AlgebraIndir<'translateAggregates', Algebra.Op
 
     // Step: GROUP BY - If we found an aggregate, in group by or implicitly, do Group function.
     // 18.2.4.1 Grouping and Aggregation
-    if (query.solutionModifiers.group ?? Object.keys(varAggrMap).length > 0) {
+    const grouped = query.solutionModifiers.group !== undefined || Object.keys(varAggrMap).length > 0;
+    if (grouped) {
       const aggregates = Object.keys(varAggrMap).map(var_ =>
         SUBRULE(translateBoundAggregate, varAggrMap[var_], DF.variable(var_)));
       const vars: RDF.Variable[] = [];
@@ -90,7 +92,11 @@ export const translateAggregates: AlgebraIndir<'translateAggregates', Algebra.Op
     if (variables) {
       // Sort variables for consistent output
       if (variables.some(wild => F.isWildcard(wild))) {
-        PatternValues = [ ...SUBRULE(inScopeVariables, query).values() ].map(x => DF.variable(x))
+        // Grouping only keeps the variables of the group keys and the trailing VALUES clause in scope
+        const inScope = grouped ?
+          new Set(getGroupedVariables(query).map(variable => variable.value)) :
+          SUBRULE(inScopeVariables, query);
+        PatternValues = [ ...inScope.values() ].map(x => DF.variable(x))
           .sort((left, right) => left.value.localeCompare(right.value));
       } else {
         // Wildcard has been filtered out above

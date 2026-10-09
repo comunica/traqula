@@ -67,8 +67,10 @@ function findAggregates(
   return found;
 }
 
+// TODO(major): remove getExpressionId, which the validation no longer uses.
 /**
  * Return the variable value id of an expression if bounded
+ * @deprecated Use {@link getGroupKeyVariables} for the variables that group keys keep in scope.
  */
 export function getExpressionId(expression: SolutionModifierGroupBind | Expression | TermVariable): string | undefined {
   // Check if grouping
@@ -212,8 +214,8 @@ export function queryProjectionIsGood(
 /**
  * Verify that the variables of a grouped DESCRIBE query are grouped,
  * as for the projection of {@link queryProjectionRespectsGrouping}.
- * DESCRIBE * is not checked, since it only describes the variables in scope,
- * which are the grouped ones in a grouped query (see {@link findPatternBoundedVars}).
+ * DESCRIBE * is not checked, since toAlgebra expands it to the variables in scope,
+ * which are the grouped ones in a grouped query (see {@link getGroupedVariables}).
  */
 export function describeProjectionIsGood(query: QueryDescribe): void {
   queryProjectionRespectsGrouping({
@@ -267,7 +269,7 @@ export function selectExpressionAliasesNotInScope(
  * as they do in the algebra.
  */
 export function isGroupedQuery(
-  query: Pick<QuerySelect | QueryDescribe, 'variables' | 'solutionModifiers'>,
+  query: Pick<QuerySelect, 'variables' | 'solutionModifiers'>,
   assumeCustomAggregates = true,
 ): boolean {
   if (query.solutionModifiers.group) {
@@ -280,9 +282,7 @@ export function isGroupedQuery(
 /**
  * The expressions of the SELECT, HAVING, and ORDER BY clauses, which are those that can contain aggregates.
  */
-function getAggregationScopeExpressions(
-  query: Pick<QuerySelect | QueryDescribe, 'variables' | 'solutionModifiers'>,
-): Expression[] {
+function getAggregationScopeExpressions(query: Pick<QuerySelect, 'variables' | 'solutionModifiers'>): Expression[] {
   const { having, order } = query.solutionModifiers;
   return [
     ...query.variables.flatMap(variable => 'expression' in variable ? [ variable.expression ] : []),
@@ -346,16 +346,10 @@ export function findPatternBoundedVars(
     }
   } else if (F.isQuery(op)) {
     if (F.isQuerySelect(op) || F.isQueryDescribe(op)) {
-      if (!op.variables.some(x => F.isWildcard(x))) {
-        // A projection only exposes the projected variables (18.2.1).
-        recurse(op.variables);
-      } else if (isGroupedQuery(op, false)) {
-        // A wildcard exposes everything in scope, which grouping limits (18.2.4.1).
-        recurse(getGroupedVariables(op));
-      } else {
-        // A wildcard exposes everything in scope.
-        recurse([ op.where, op.values ]);
-      }
+      // A projection only exposes the projected variables (18.2.1), wildcards expose everything.
+      recurse(op.variables.some(x => F.isWildcard(x)) ?
+          [ op.where, op.solutionModifiers.group, op.values ] :
+        op.variables);
     } else {
       recurse(op.solutionModifiers.group);
     }

@@ -4,7 +4,6 @@
 //  The SPARQL 1.2 queryProjectionIsGood, selectExpressionAliasesNotInScope and checkNote13
 //  only exist (and partially copy the SPARQL 1.1 logic) to call the SPARQL 1.2 findPatternBoundedVars.
 import {
-  getGroupedVariables,
   getGroupKeyVariables,
   isGroupedQuery,
   queryProjectionRespectsGrouping,
@@ -51,22 +50,23 @@ export function findPatternBoundedVars(
 ): void {
   if (F.isQuery(iter) || F.isUpdate(iter)) {
     if (F.isQuerySelect(iter) || F.isQueryDescribe(iter)) {
-      // A projection only exposes the projected variables (18.2.1), wildcards expose everything in scope.
+      // A projection only exposes the projected variables (18.2.1), wildcards expose everything.
       if (!iter.variables.some(x => F.isWildcard(x))) {
         for (const v of iter.variables) {
           findPatternBoundedVars(v, boundedVars);
         }
         return;
       }
-      // Grouping limits the variables in scope (18.2.4.1).
-      if (isGroupedQuery(<T11.QuerySelect> <unknown> iter, false)) {
-        for (const variable of getGroupedVariables(iter)) {
-          boundedVars.add(variable.value);
-        }
-        return;
-      }
       if (iter.where) {
         findPatternBoundedVars(iter.where, boundedVars);
+      }
+      if (iter.solutionModifiers.group) {
+        const grouping = iter.solutionModifiers.group;
+        for (const g of grouping.groupings) {
+          if ('variable' in g) {
+            findPatternBoundedVars(g.variable, boundedVars);
+          }
+        }
       }
       if (iter.values) {
         findPatternBoundedVars(iter.values, boundedVars);

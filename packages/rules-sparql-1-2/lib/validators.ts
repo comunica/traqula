@@ -4,6 +4,7 @@
 //  The SPARQL 1.2 queryProjectionIsGood, selectExpressionAliasesNotInScope and checkNote13
 //  only exist (and partially copy the SPARQL 1.1 logic) to call the SPARQL 1.2 findPatternBoundedVars.
 import {
+  getGroupKeyVariables,
   hasBuiltInAggregate,
   isGroupedQuery,
   queryProjectionRespectsGrouping,
@@ -63,12 +64,8 @@ export function findPatternBoundedVars(
       if (iter.where && group === undefined && !hasBuiltInAggregate(<T11.QuerySelect> <unknown> iter)) {
         findPatternBoundedVars(iter.where, boundedVars);
       }
-      for (const grouping of group?.groupings ?? []) {
-        if ('variable' in grouping) {
-          findPatternBoundedVars(grouping.variable, boundedVars);
-        } else if (F.isTermVariable(grouping)) {
-          boundedVars.add(grouping.value);
-        }
+      for (const variable of getGroupKeyVariables(<T11.SolutionModifierGroup | undefined> <unknown> group)) {
+        boundedVars.add(variable.value);
       }
       if (iter.values) {
         findPatternBoundedVars(iter.values, boundedVars);
@@ -159,12 +156,9 @@ export function selectExpressionAliasesNotInScope(
     if (!isGroupedQuery(<T11.QuerySelect> <unknown> query)) {
       findPatternBoundedVars(query.where, inScopeVars);
     }
-    for (const grouping of query.solutionModifiers.group?.groupings ?? []) {
-      if ('variable' in grouping) {
-        inScopeVars.add(grouping.variable.value);
-      } else if (F.isTermVariable(grouping)) {
-        inScopeVars.add(grouping.value);
-      }
+    const group = <T11.SolutionModifierGroup | undefined> <unknown> query.solutionModifiers.group;
+    for (const variable of getGroupKeyVariables(group)) {
+      inScopeVars.add(variable.value);
     }
     for (const { variable } of selectBinds) {
       if (inScopeVars.has(variable.value)) {

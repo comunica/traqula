@@ -96,6 +96,15 @@ describe('extra parser-sparql-1-2 coverage', () => {
       .toThrow(/Target id of 'AS' \(\?x\) is already in scope/u);
   });
 
+  it('keeps no variable in scope for a triple term group key', ({ expect }) => {
+    expect(parser.parse('SELECT (COUNT(*) AS ?c) WHERE { ?s ?p ?o } GROUP BY (<<( ?s ?p ?o )>>)'))
+      .toMatchObject({ subType: 'select' });
+    expect(parser.parse('DESCRIBE ?s WHERE { ?s ?p ?o } GROUP BY ?s (<<( ?s ?p ?o )>>)'))
+      .toMatchObject({ subType: 'describe' });
+    expect(() => parser.parse('SELECT ?s WHERE { ?s ?p ?o } GROUP BY (<<( ?s ?p ?o )>>)'))
+      .toThrow(/Variable not allowed in projection/u);
+  });
+
   describe('rejectGroupedSelectAliasReuse', () => {
     const query = 'SELECT (COUNT(*) AS ?c) (?c + 1 AS ?d) WHERE { ?s ?p ?o }';
 

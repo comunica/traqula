@@ -15,6 +15,7 @@ import type {
   QueryDescribe,
   QuerySelect,
   TermVariable,
+  SolutionModifierGroup,
   SolutionModifierGroupBind,
   Update,
   PatternBind,
@@ -85,6 +86,19 @@ export function getExpressionId(expression: SolutionModifierGroupBind | Expressi
 }
 
 /**
+ * The variables a GROUP BY clause keeps in scope (18.2.4.1): its variable keys and the variables of its
+ * (expr AS ?var) keys. Other keys, like expressions or (SPARQL 1.2) triple terms, keep no variable in scope.
+ */
+export function getGroupKeyVariables(group: Pick<SolutionModifierGroup, 'groupings'> | undefined): TermVariable[] {
+  return group?.groupings.flatMap((grouping) => {
+    if ('variable' in grouping) {
+      return [ grouping.variable ];
+    }
+    return F.isTermVariable(grouping) ? [ grouping ] : [];
+  }) ?? [];
+}
+
+/**
  * Get all variables used in an expression, including those within (SPARQL 1.2) triple terms.
  * Does not look inside aggregates and function calls (possibly custom aggregates),
  * nor in EXISTS or NOT EXISTS patterns.
@@ -149,7 +163,7 @@ export function queryProjectionRespectsGrouping(
     const asBoundVars = new Set<string>();
     // The variables of the GROUP BY keys and of the trailing VALUES clause
     const groupedVars = new Set([
-      ...groupBy?.groupings.map(grouping => getExpressionId(grouping)) ?? [],
+      ...getGroupKeyVariables(groupBy).map(variable => variable.value),
       ...query.values?.variables.map(variable => variable.value) ?? [],
     ]);
     for (const selectVar of variables) {
@@ -222,12 +236,8 @@ export function selectExpressionAliasesNotInScope(
     if (!isGroupedQuery(query)) {
       findPatternBoundedVars(query.where, inScopeVars);
     }
-    for (const grouping of query.solutionModifiers.group?.groupings ?? []) {
-      if ('variable' in grouping) {
-        inScopeVars.add(grouping.variable.value);
-      } else if (F.isTermVariable(grouping)) {
-        inScopeVars.add(grouping.value);
-      }
+    for (const variable of getGroupKeyVariables(query.solutionModifiers.group)) {
+      inScopeVars.add(variable.value);
     }
     for (const { variable } of selectBinds) {
       if (inScopeVars.has(variable.value)) {
@@ -343,8 +353,7 @@ export function findPatternBoundedVars(
       } else {
         // Grouping (18.2.4.1) only keeps the group keys in scope,
         // next to the trailing VALUES clause, which is joined after grouping (18.2.4.3).
-        const group = op.solutionModifiers.group;
-        recurse([ ...group?.groupings.filter(grouping => F.isTermVariable(grouping)) ?? [], group, op.values ]);
+        recurse([ ...getGroupKeyVariables(op.solutionModifiers.group), op.values ]);
       }
     } else {
       recurse(op.solutionModifiers.group);

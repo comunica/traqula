@@ -8,6 +8,7 @@ import type {
 import {
   AstFactory,
   findPatternBoundedVars,
+  getVariablesFromExpression,
   langTagHasCorrectRange,
   completeParseContext,
 } from '../lib/index.js';
@@ -66,6 +67,29 @@ describe('completeParseContext', () => {
   it('sets skipValidation to true when explicitly provided', ({ expect }) => {
     const ctx = completeParseContext({ skipValidation: true });
     expect(ctx.skipValidation).toBe(true);
+  });
+});
+
+describe('getVariablesFromExpression (sparql-1-2)', () => {
+  it('collects the variables within triple terms', ({ expect }) => {
+    const variables = new Set<string>();
+    getVariablesFromExpression(F.termTriple(
+      F.termVariable('s', noLoc),
+      F.termNamed(noLoc, 'http://example.org/p'),
+      F.termTriple(F.termVariable('a', noLoc), F.termVariable('b', noLoc), F.termVariable('c', noLoc), noLoc),
+      noLoc,
+    ), variables);
+    expect(variables).toEqual(new Set([ 's', 'a', 'b', 'c' ]));
+  });
+
+  it('skips the variables within aggregates and function calls', ({ expect }) => {
+    const variables = new Set<string>();
+    getVariablesFromExpression(F.expressionOperation('+', [
+      F.termVariable('x', noLoc),
+      F.aggregate('count', false, F.termVariable('y', noLoc), undefined, noLoc),
+      F.expressionFunctionCall(F.termNamed(noLoc, 'http://example.org/f'), [ F.termVariable('z', noLoc) ], false, noLoc),
+    ], noLoc), variables);
+    expect(variables).toEqual(new Set([ 'x' ]));
   });
 });
 

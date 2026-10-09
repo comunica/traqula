@@ -1,12 +1,12 @@
 // TODO(major): consider defining the validation functions with the IndirBuilder pattern,
 //  so they call each other by name and SPARQL 1.2 can patch only the functions that differ
-//  (findPatternBoundedVars, getVariablesFromExpression and queryProjectionIsGood).
-//  The SPARQL 1.2 selectExpressionAliasesNotInScope and checkNote13 copy the SPARQL 1.1 implementation logic,
-//  only to call the SPARQL 1.2 findPatternBoundedVars.
+//  (findPatternBoundedVars).
+//  The SPARQL 1.2 queryProjectionIsGood, selectExpressionAliasesNotInScope and checkNote13
+//  only exist (and partially copy the SPARQL 1.1 logic) to call the SPARQL 1.2 findPatternBoundedVars.
 import {
-  getExpressionId,
-  hasBuiltInAggregate,
+  getVariablesFromExpression as getVariablesFromExpression11,
   isGroupedQuery,
+  queryProjectionRespectsGrouping,
   selectExpressionAliasesNotInValues,
   selectExpressionAliasesNotUsedEarlier,
 } from '@traqula/rules-sparql-1-1';
@@ -46,20 +46,11 @@ export function langTagHasCorrectRange(literal: TermLiteral): void {
 }
 
 /**
- * Get all variables used in an expression, including those within triple terms.
+ * Get all variables used in an expression, including those within triple terms,
+ * see {@link T11.getVariablesFromExpression}.
  */
 export function getVariablesFromExpression(expression: Expression | Term, variables: Set<string>): void {
-  if (F.isExpressionOperator(expression)) {
-    for (const expr of expression.args) {
-      getVariablesFromExpression(expr, variables);
-    }
-  } else if (F.isTermVariable(expression)) {
-    variables.add(expression.value);
-  } else if (F.isTermTriple(expression)) {
-    getVariablesFromExpression(expression.subject, variables);
-    getVariablesFromExpression(expression.predicate, variables);
-    getVariablesFromExpression(expression.object, variables);
-  }
+  getVariablesFromExpression11(<T11.Expression> expression, variables);
 }
 
 export function findPatternBoundedVars(
@@ -145,63 +136,13 @@ export function findPatternBoundedVars(
 
 /**
  * SPARQL 1.2 version of {@link T11.queryProjectionIsGood}, see that function for the checks.
- * It differs in the variables collected from select expressions, which include those within triple terms.
+ * It differs in the in-scope variables of {@link selectExpressionAliasesNotInScope}.
  */
 export function queryProjectionIsGood(
   query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
   options: T11.ProjectionValidationOptions = {},
 ): void {
-  const query11 = <T11.QuerySelect> <unknown> query;
-  // NoGroupByOnWildcardSelect
-  if (query.variables.length === 1 && F.isWildcard(query.variables[0])) {
-    if (query.solutionModifiers.group !== undefined) {
-      throw new Error('GROUP BY not allowed with wildcard');
-    }
-    if (hasBuiltInAggregate(query11)) {
-      throw new Error('Aggregates not allowed with wildcard');
-    }
-    return;
-  }
-
-  // CannotProjectUngroupedVars - can be skipped if `SELECT *`
-  // Check for projection of ungrouped variable
-  // Check can be skipped in case of wildcard select.
-  const variables = <Exclude<typeof query.variables, [Wildcard]>> query.variables;
-  const groupBy = query.solutionModifiers.group;
-  if (groupBy !== undefined || hasBuiltInAggregate(query11)) {
-    // We have to check whether
-    //  1. Variables used in projection are usable given the group by clause
-    //  2. An aggregate will create an implicit group by clause.
-    // Variables bound by preceding (expr AS ?var) expressions are in scope for later expressions.
-    const asBoundVars = new Set<string>();
-    const valuesVars = new Set(query.values?.variables.map(variable => variable.value));
-    for (const selectVar of variables) {
-      if (F.isTerm(selectVar)) {
-        if (!valuesVars.has(selectVar.value) && (!groupBy || !groupBy.groupings.map(groupvar =>
-          getExpressionId(<T11.Expression | T11.SolutionModifierGroupBind> groupvar))
-          .includes((getExpressionId(selectVar))))) {
-          throw new Error('Variable not allowed in projection');
-        }
-      } else {
-        // Only collects the variables outside of aggregates and function calls (possibly custom aggregates),
-        // including those within triple terms
-        const usedvars = new Set<string>();
-        getVariablesFromExpression(selectVar.expression, usedvars);
-        for (const usedvar of usedvars) {
-          if (asBoundVars.has(usedvar) && options.rejectGroupedSelectAliasReuse) {
-            throw new Error(`Use of variable bound by an earlier select expression (?${usedvar}) in a grouped query`);
-          }
-          if (!asBoundVars.has(usedvar) && !valuesVars.has(usedvar) && (!groupBy || !groupBy.groupings
-            .map(groupVar => getExpressionId(<T11.Expression | T11.SolutionModifierGroupBind>groupVar))
-            .includes(usedvar))) {
-            throw new Error(`Use of ungrouped variable in projection of operation (?${usedvar})`);
-          }
-        }
-        asBoundVars.add(selectVar.variable.value);
-      }
-    }
-  }
-
+  queryProjectionRespectsGrouping(<T11.QuerySelect> <unknown> query, options);
   selectExpressionAliasesNotInScope(query);
 }
 

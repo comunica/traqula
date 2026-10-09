@@ -1,8 +1,8 @@
 // TODO(major): consider defining the validation functions with the IndirBuilder pattern,
 //  so they call each other by name and SPARQL 1.2 can patch only the functions that differ
-//  (findPatternBoundedVars, getVariablesFromExpression and queryProjectionIsGood).
-//  The SPARQL 1.2 selectExpressionAliasesNotInScope and checkNote13 copy the SPARQL 1.1 implementation logic,
-//  only to call the SPARQL 1.2 findPatternBoundedVars.
+//  (findPatternBoundedVars).
+//  The SPARQL 1.2 queryProjectionIsGood, selectExpressionAliasesNotInScope and checkNote13
+//  only exist (and partially copy the SPARQL 1.1 logic) to call the SPARQL 1.2 findPatternBoundedVars.
 import { AstFactory } from '../astFactory.js';
 import type {
   Wildcard,
@@ -24,20 +24,25 @@ const F = new AstFactory();
 const transformer = new AstTransformer();
 
 /**
- * Get all 'aggregate' rules from an expression
+ * Stops visiting an expression that starts a new query level: the pattern of an EXISTS or NOT EXISTS,
+ * whose aggregates and variables do not belong to the expression.
+ */
+const skipPatternOperation = { patternOperation: { preVisitor: () => ({ continue: false }) }};
+
+/**
+ * Get all built-in aggregates of an expression, also when nested in operators or function calls.
+ * Does not look inside aggregates, nor in EXISTS or NOT EXISTS patterns.
  */
 export function getAggregatesOfExpression(expression: Expression): ExpressionAggregate[] {
-  if (F.isExpressionAggregate(expression)) {
-    return [ expression ];
-  }
-  if (F.isExpressionOperator(expression) || F.isExpressionFunctionCall(expression)) {
-    const aggregates: ExpressionAggregate[] = [];
-    for (const arg of expression.args) {
-      aggregates.push(...getAggregatesOfExpression(arg));
-    }
-    return aggregates;
-  }
-  return [];
+  const aggregates: ExpressionAggregate[] = [];
+  transformer.visitNodeSpecific(expression, {}, { expression: {
+    ...skipPatternOperation,
+    aggregate: { preVisitor: (aggregate) => {
+      aggregates.push(aggregate);
+      return { continue: false };
+    } },
+  }});
+  return aggregates;
 }
 
 /**
@@ -58,16 +63,21 @@ export function getExpressionId(expression: SolutionModifierGroupBind | Expressi
 }
 
 /**
- * Get all variables used in an expression
+ * Get all variables used in an expression, including those within (SPARQL 1.2) triple terms.
+ * Does not look inside aggregates and function calls (possibly custom aggregates),
+ * nor in EXISTS or NOT EXISTS patterns.
  */
 export function getVariablesFromExpression(expression: Expression, variables: Set<string>): void {
-  if (F.isExpressionOperator(expression)) {
-    for (const expr of expression.args) {
-      getVariablesFromExpression(expr, variables);
-    }
-  } else if (F.isTerm(expression) && F.isTermVariable(expression)) {
-    variables.add(expression.value);
-  }
+  transformer.visitNodeSpecific(expression, {}, {
+    expression: {
+      ...skipPatternOperation,
+      aggregate: { preVisitor: () => ({ continue: false }) },
+      functionCall: { preVisitor: () => ({ continue: false }) },
+    },
+    term: { variable: { visitor: (variable) => {
+      variables.add(variable.value);
+    } }},
+  });
 }
 
 /**
@@ -78,7 +88,7 @@ export interface ProjectionValidationOptions {
 }
 
 /**
- * Verify that the projected variables (select head) are allowed:
+ * Verify that the projected variables (select head) respect the grouping of the query:
  * - no select * in a grouped query (GROUP BY, or a built-in aggregate in HAVING or ORDER BY)
  * - if grouped, selected variables need to be collected by the group-by,
  *   or bound by the trailing VALUES clause, which is joined after grouping (18.2.4.3).
@@ -90,10 +100,9 @@ export interface ProjectionValidationOptions {
  *   Ungrouped queries always allow them (https://www.w3.org/TR/sparql11-query/#selectExpressions),
  *   but the SPARQL 1.1 text for grouped queries (https://www.w3.org/TR/sparql11-query/#aggregateRestrictions)
  *   does not, so {@link ProjectionValidationOptions.rejectGroupedSelectAliasReuse} rejects them.
- * - 'select ?var as ?other', ?other cannot be in scope
  */
-export function queryProjectionIsGood(
-  query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
+export function queryProjectionRespectsGrouping(
+  query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'values'>,
   options: ProjectionValidationOptions = {},
 ): void {
   // NoGroupByOnWildcardSelect
@@ -126,7 +135,6 @@ export function queryProjectionIsGood(
           throw new Error('Variable not allowed in projection');
         }
       } else {
-        // Only collects the variables outside of aggregates and function calls (possibly custom aggregates)
         const usedvars = new Set<string>();
         getVariablesFromExpression(selectVar.expression, usedvars);
         for (const usedvar of usedvars) {
@@ -142,21 +150,30 @@ export function queryProjectionIsGood(
       }
     }
   }
+}
 
+/**
+ * Verify that the projected variables (select head) are allowed:
+ * - they respect the grouping of the query, see {@link queryProjectionRespectsGrouping}
+ * - 'select ?var as ?other', ?other cannot be in scope, see {@link selectExpressionAliasesNotInScope}
+ */
+export function queryProjectionIsGood(
+  query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
+  options: ProjectionValidationOptions = {},
+): void {
+  queryProjectionRespectsGrouping(query, options);
   selectExpressionAliasesNotInScope(query);
 }
 
 /**
  * Verify that the variables of a grouped DESCRIBE query are grouped,
- * as for the projection of {@link queryProjectionIsGood}.
+ * as for the projection of {@link queryProjectionRespectsGrouping}.
  * DESCRIBE * is not checked, since the spec only restricts the use of SELECT *.
  */
 export function describeProjectionIsGood(query: QueryDescribe): void {
-  queryProjectionIsGood({
+  queryProjectionRespectsGrouping({
     variables: query.variables.filter((variable): variable is TermVariable => F.isTermVariable(variable)),
     solutionModifiers: query.solutionModifiers,
-    // The where clause is only used for select expressions, which DESCRIBE does not have
-    where: query.where ?? F.patternGroup([], F.gen()),
     values: query.values,
   });
 }
@@ -239,13 +256,17 @@ function getAggregationScopeExpressions(query: Pick<QuerySelect, 'variables' | '
  * The parser cannot know whether a function is an aggregate, so it leniently assumes any function call might be.
  */
 function mayContainAggregate(expression: Expression): boolean {
-  if (F.isExpressionAggregate(expression) || F.isExpressionFunctionCall(expression)) {
-    return true;
-  }
-  if (F.isExpressionOperator(expression)) {
-    return expression.args.some(arg => mayContainAggregate(arg));
-  }
-  return false;
+  let mayContain = false;
+  const found = (): { shortcut: true } => {
+    mayContain = true;
+    return { shortcut: true };
+  };
+  transformer.visitNodeSpecific(expression, {}, { expression: {
+    ...skipPatternOperation,
+    aggregate: { preVisitor: found },
+    functionCall: { preVisitor: found },
+  }});
+  return mayContain;
 }
 
 /**

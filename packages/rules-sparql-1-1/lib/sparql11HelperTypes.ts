@@ -18,6 +18,8 @@ export interface SparqlContext {
    * Can be used to disable the validation that used variables in a select clause are in scope.
    */
   skipValidation: boolean;
+  // TODO(major): make required, like skipValidation. It is optional to not break contexts built without
+  //  completeParseContext.
   /**
    * Reject select expressions that use a variable bound by an earlier select expression in a grouped query,
    * like `SELECT (COUNT(?o) AS ?c) (?c + 1 AS ?d) WHERE { ?s ?p ?o }`.

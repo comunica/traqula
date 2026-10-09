@@ -100,7 +100,7 @@ export const validateSelectQuery: SparqlGrammarRule<'validateSelectQuery', void,
 ]> = {
   name: 'validateSelectQuery',
   impl: ({ ACTION }) => (C, query) => {
-    ACTION(() => !C.skipValidation && queryProjectionIsGood(query));
+    ACTION(() => !C.skipValidation && queryProjectionIsGood(query, C));
   },
 };
 
@@ -111,7 +111,7 @@ export const validateSelectQuery: SparqlGrammarRule<'validateSelectQuery', void,
 export const validateSubSelect: SparqlGrammarRule<'validateSubSelect', void, [SubSelect]> = {
   name: 'validateSubSelect',
   impl: ({ ACTION }) => (C, query) => {
-    ACTION(() => !C.skipValidation && queryProjectionIsGood(query));
+    ACTION(() => !C.skipValidation && queryProjectionIsGood(query, C));
   },
 };
 

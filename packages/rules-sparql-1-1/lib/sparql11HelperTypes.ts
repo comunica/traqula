@@ -19,6 +19,13 @@ export interface SparqlContext {
    */
   skipValidation: boolean;
   /**
+   * Reject select expressions that use a variable bound by an earlier select expression in a grouped query,
+   * like `SELECT (COUNT(?o) AS ?c) (?c + 1 AS ?d) WHERE { ?s ?p ?o }`.
+   * The SPARQL 1.1 text of section 11.4 does not allow them, https://github.com/w3c/sparql-query/pull/380 does.
+   * Defaults to false.
+   */
+  rejectGroupedSelectAliasReuse: boolean;
+  /**
    * Set of queryModes. Primarily used for note 8, 14.
    */
   parseMode: Set<'canParseVars' | 'canCreateBlankNodes' | 'inAggregate' | 'canParseAggregate' | string>;

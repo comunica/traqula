@@ -3,6 +3,7 @@ import type { Pattern, Query, QuerySelect, SubSelect, Update } from '../Sparql11
 import {
   checkBlankNodeBGPScope,
   checkNote13,
+  describeProjectionIsGood,
   queryProjectionIsGood,
   updateNoReuseBlankNodeLabels,
 } from '../validation/validators.js';
@@ -22,7 +23,7 @@ export const validateSelectQuery: SparqlGrammarRule<'validateSelectQuery', void,
 ]> = {
   name: 'validateSelectQuery',
   impl: ({ ACTION }) => (C, query) => {
-    ACTION(() => !C.skipValidation && queryProjectionIsGood(query));
+    ACTION(() => !C.skipValidation && queryProjectionIsGood(query, C));
   },
 };
 
@@ -32,22 +33,24 @@ export const validateSelectQuery: SparqlGrammarRule<'validateSelectQuery', void,
 export const validateSubSelect: SparqlGrammarRule<'validateSubSelect', void, [SubSelect]> = {
   name: 'validateSubSelect',
   impl: ({ ACTION }) => (C, query) => {
-    ACTION(() => !C.skipValidation && queryProjectionIsGood(query));
+    ACTION(() => !C.skipValidation && queryProjectionIsGood(query, C));
   },
 };
 
 /**
- * Validates a query, including its trailing VALUES clause, see {@link validateSelectQuery}.
+ * Validates a query, including its trailing VALUES clause,
+ * see {@link validateSelectQuery} and {@link describeProjectionIsGood}.
  * The trailing VALUES clause is joined before the projection (18.2.4.3),
  * so the projection can only be validated once it is parsed.
  */
 export const validateQuery: SparqlGrammarRule<'validateQuery', void, [Query]> = {
   name: 'validateQuery',
-  impl: ({ OPTION, SUBRULE }) => (C, query) => {
+  impl: ({ ACTION, OPTION, SUBRULE }) => (C, query) => {
     OPTION({
       GATE: () => C.astFactory.isQuerySelect(query),
       DEF: () => SUBRULE(validateSelectQuery, <QuerySelect> query),
     });
+    ACTION(() => !C.skipValidation && C.astFactory.isQueryDescribe(query) && describeProjectionIsGood(query));
   },
 };
 

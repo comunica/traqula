@@ -10,6 +10,7 @@ import type {
   ExpressionAggregate,
   Pattern,
   PatternBgp,
+  QueryDescribe,
   QuerySelect,
   TermVariable,
   SolutionModifierGroupBind,
@@ -70,21 +71,36 @@ export function getVariablesFromExpression(expression: Expression, variables: Se
 }
 
 /**
+ * Options of {@link queryProjectionIsGood}, set by the equally named fields of the parse context.
+ */
+export interface ProjectionValidationOptions {
+  rejectGroupedSelectAliasReuse?: boolean;
+}
+
+/**
  * Verify that the projected variables (select head) are allowed:
- * - no group-by on select *
- * - if group-by, selected variables need to be collected by the group-by,
+ * - no select * in a grouped query (GROUP BY, or a built-in aggregate in HAVING or ORDER BY)
+ * - if grouped, selected variables need to be collected by the group-by,
  *   or bound by the trailing VALUES clause, which is joined after grouping (18.2.4.3).
  *   Section 11.4 only mentions the group-by variables, but the algebra of 18.2.4.3 binds the VALUES variables
  *   before the projection, as do the tests of https://github.com/w3c/rdf-tests/pull/383.
+ * - if grouped, select expressions may use variables bound by preceding (expr AS ?var) expressions,
+ *   as clarified by https://github.com/w3c/sparql-query/pull/380.
+ *   The SPARQL 1.1 text of section 11.4 does not mention them,
+ *   so {@link ProjectionValidationOptions.rejectGroupedSelectAliasReuse} rejects them.
  * - 'select ?var as ?other', ?other cannot be in scope
  */
 export function queryProjectionIsGood(
   query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
+  options: ProjectionValidationOptions = {},
 ): void {
   // NoGroupByOnWildcardSelect
   if (query.variables.length === 1 && F.isWildcard(query.variables[0])) {
     if (query.solutionModifiers.group !== undefined) {
       throw new Error('GROUP BY not allowed with wildcard');
+    }
+    if (hasBuiltInAggregate(query)) {
+      throw new Error('Aggregates not allowed with wildcard');
     }
     return;
   }
@@ -98,6 +114,8 @@ export function queryProjectionIsGood(
     // We have to check whether
     //  1. Variables used in projection are usable given the group by clause
     //  2. An aggregate will create an implicit group by clause.
+    // Variables bound by preceding (expr AS ?var) expressions are in scope for later expressions.
+    const asBoundVars = new Set<string>();
     const valuesVars = new Set(query.values?.variables.map(variable => variable.value));
     for (const selectVar of variables) {
       if (F.isTerm(selectVar)) {
@@ -110,16 +128,35 @@ export function queryProjectionIsGood(
         const usedvars = new Set<string>();
         getVariablesFromExpression(selectVar.expression, usedvars);
         for (const usedvar of usedvars) {
-          if (!valuesVars.has(usedvar) && (!groupBy || !groupBy.groupings.map(groupVar => getExpressionId(groupVar))
-            .includes(usedvar))) {
+          if (asBoundVars.has(usedvar) && options.rejectGroupedSelectAliasReuse) {
+            throw new Error(`Use of variable bound by an earlier select expression (?${usedvar}) in a grouped query`);
+          }
+          if (!asBoundVars.has(usedvar) && !valuesVars.has(usedvar) && (!groupBy || !groupBy.groupings
+            .map(groupVar => getExpressionId(groupVar)).includes(usedvar))) {
             throw new Error(`Use of ungrouped variable in projection of operation (?${usedvar})`);
           }
         }
+        asBoundVars.add(selectVar.variable.value);
       }
     }
   }
 
   selectExpressionAliasesNotInScope(query);
+}
+
+/**
+ * Verify that the variables of a grouped DESCRIBE query are grouped,
+ * as for the projection of {@link queryProjectionIsGood}.
+ * DESCRIBE * is not checked, since the spec only restricts the use of SELECT *.
+ */
+export function describeProjectionIsGood(query: QueryDescribe): void {
+  queryProjectionIsGood({
+    variables: query.variables.filter((variable): variable is TermVariable => F.isTermVariable(variable)),
+    solutionModifiers: query.solutionModifiers,
+    // The where clause is only used for select expressions, which DESCRIBE does not have
+    where: query.where ?? F.patternGroup([], F.gen()),
+    values: query.values,
+  });
 }
 
 /**

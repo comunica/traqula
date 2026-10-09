@@ -144,21 +144,21 @@ export function findPatternBoundedVars(
 }
 
 /**
- * Verify that the projected variables (select head) are allowed:
- * - no group-by on select *
- * - if group-by, selected variables need to be collected by the group-by,
- *   or bound by the trailing VALUES clause, which is joined after grouping (18.2.4.3).
- *   Section 11.4 only mentions the group-by variables, but the algebra of 18.2.4.3 binds the VALUES variables
- *   before the projection, as do the tests of https://github.com/w3c/rdf-tests/pull/383.
- * - 'select ?var as ?other', ?other cannot be in scope
+ * SPARQL 1.2 version of {@link T11.queryProjectionIsGood}, see that function for the checks.
+ * It differs in the variables collected from select expressions, which include those within triple terms.
  */
 export function queryProjectionIsGood(
   query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
+  options: T11.ProjectionValidationOptions = {},
 ): void {
+  const query11 = <T11.QuerySelect> <unknown> query;
   // NoGroupByOnWildcardSelect
   if (query.variables.length === 1 && F.isWildcard(query.variables[0])) {
     if (query.solutionModifiers.group !== undefined) {
       throw new Error('GROUP BY not allowed with wildcard');
+    }
+    if (hasBuiltInAggregate(query11)) {
+      throw new Error('Aggregates not allowed with wildcard');
     }
     return;
   }
@@ -168,7 +168,7 @@ export function queryProjectionIsGood(
   // Check can be skipped in case of wildcard select.
   const variables = <Exclude<typeof query.variables, [Wildcard]>> query.variables;
   const groupBy = query.solutionModifiers.group;
-  if (groupBy !== undefined || hasBuiltInAggregate(<T11.QuerySelect> <unknown> query)) {
+  if (groupBy !== undefined || hasBuiltInAggregate(query11)) {
     // We have to check whether
     //  1. Variables used in projection are usable given the group by clause
     //  2. An aggregate will create an implicit group by clause.
@@ -183,22 +183,20 @@ export function queryProjectionIsGood(
           throw new Error('Variable not allowed in projection');
         }
       } else {
-        // Only collects the variables outside of aggregates and function calls (possibly custom aggregates)
+        // Only collects the variables outside of aggregates and function calls (possibly custom aggregates),
+        // including those within triple terms
         const usedvars = new Set<string>();
         getVariablesFromExpression(selectVar.expression, usedvars);
         for (const usedvar of usedvars) {
-          // If the var is created within the select or bound by the trailing VALUES clause, it is fine.
-          if (asBoundVars.has(usedvar) || valuesVars.has(usedvar)) {
-            continue;
+          if (asBoundVars.has(usedvar) && options.rejectGroupedSelectAliasReuse) {
+            throw new Error(`Use of variable bound by an earlier select expression (?${usedvar}) in a grouped query`);
           }
-          if (!groupBy || !groupBy.groupings.map(groupVar =>
-            getExpressionId(<T11.Expression | T11.SolutionModifierGroupBind>groupVar)).includes(usedvar)) {
+          if (!asBoundVars.has(usedvar) && !valuesVars.has(usedvar) && (!groupBy || !groupBy.groupings
+            .map(groupVar => getExpressionId(<T11.Expression | T11.SolutionModifierGroupBind>groupVar))
+            .includes(usedvar))) {
             throw new Error(`Use of ungrouped variable in projection of operation (?${usedvar})`);
           }
         }
-      }
-      if (!F.isTerm(selectVar)) {
-        // Register a var is created by a bind
         asBoundVars.add(selectVar.variable.value);
       }
     }

@@ -1,0 +1,7 @@
+PREFIX : <http://example.org/>
+
+DELETE WHERE {
+  ?a :p ?b .
+  GRAPH ?g { ?b :q ?c }
+  GRAPH :g1 { ?c :r ?d }
+}

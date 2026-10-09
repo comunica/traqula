@@ -88,18 +88,27 @@ Algebra.Update,
 [UpdateOperationInsertData | UpdateOperationDeleteData | UpdateOperationDeleteWhere | UpdateOperationModify]
 > = {
   name: 'translateInsertDelete',
-  fun: ({ SUBRULE }) => ({ useQuads, algebraFactory: AF, astFactory: F }, op) => {
-    if (!useQuads) {
-      throw new Error('INSERT/DELETE operations are only supported with quads option enabled');
-    }
-
+  fun: ({ SUBRULE }) => ({ algebraFactory: AF, astFactory: F, useQuads }, op) => {
+    // The DELETE and INSERT templates are always quads, the WHERE clause follows `useQuads`.
     const deleteTriples: Algebra.Pattern[] = [];
     const insertTriples: Algebra.Pattern[] = [];
     let where: Algebra.Operation | undefined;
     if (F.isUpdateOperationDeleteData(op) || F.isUpdateOperationDeleteWhere(op)) {
       deleteTriples.push(...op.data.flatMap(quad => SUBRULE(translateUpdateTriplesBlock, quad, undefined)));
       if (F.isUpdateOperationDeleteWhere(op)) {
-        where = AF.createBgp(deleteTriples);
+        if (useQuads) {
+          where = AF.createBgp(deleteTriples);
+        } else {
+          // Without quads, the GRAPH blocks of the pattern are kept as graph operations
+          const blocks = op.data.map((block) => {
+            if (F.isGraphQuads(block)) {
+              const bgp = AF.createBgp(SUBRULE(translateUpdateTriplesBlock, block.triples, undefined));
+              return AF.createGraph(bgp, <RDF.NamedNode | RDF.Variable> SUBRULE(translateTerm, block.graph));
+            }
+            return AF.createBgp(SUBRULE(translateUpdateTriplesBlock, block, undefined));
+          });
+          where = blocks.length > 1 ? AF.createJoin(blocks) : blocks.at(0) ?? AF.createBgp([]);
+        }
       }
     } else if (F.isUpdateOperationInsertData(op)) {
       insertTriples.push(...op.data.flatMap(quad => SUBRULE(translateUpdateTriplesBlock, quad, undefined)));
@@ -114,8 +123,11 @@ Algebra.Update,
         if (use.default.length > 0 || use.named.length > 0) {
           where = AF.createFrom(where, use.default, use.named);
         } else if (F.isUpdateOperationModify(op) && op.graph) {
-          // This is equivalent
-          where = SUBRULE(recurseGraph, where, SUBRULE(translateNamed, op.graph), undefined);
+          if (useQuads) {
+            where = SUBRULE(recurseGraph, where, SUBRULE(translateNamed, op.graph), undefined);
+          } else {
+            where = AF.createGraph(where, SUBRULE(translateNamed, op.graph));
+          }
         }
       }
     }

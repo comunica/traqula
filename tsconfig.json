@@ -7,6 +7,7 @@
     { "path": "packages/rules-sparql-1-1" },
     { "path": "packages/rules-sparql-1-1-adjust" },
     { "path": "packages/rules-sparql-1-2" },
+    { "path": "packages/sparqljs-traqula-transformations" },
     { "path": "packages/test-utils" },
 
     { "path": "engines/algebra-sparql-1-1" },
@@ -15,7 +16,8 @@
     { "path": "engines/generator-sparql-1-2" },
     { "path": "engines/parser-sparql-1-1" },
     { "path": "engines/parser-sparql-1-1-adjust" },
-    { "path": "engines/parser-sparql-1-2" }
+    { "path": "engines/parser-sparql-1-2" },
+    { "path": "engines/sparql-js-to-traqula-1-1" }
   ],
   "files": [],
   "include": [],

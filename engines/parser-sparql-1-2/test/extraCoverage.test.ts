@@ -96,6 +96,17 @@ describe('extra parser-sparql-1-2 coverage', () => {
       .toThrow(/Target id of 'AS' \(\?x\) is already in scope/u);
   });
 
+  it('reports a forward reference to a later select expression in a grouped query as such', ({ expect }) => {
+    expect(() => parser.parse('SELECT (?d + 1 AS ?e) (COUNT(*) AS ?d) WHERE { ?s ?p ?o }'))
+      .toThrow(/Target id of 'AS' \(\?d\) is used in an earlier select expression/u);
+    expect(() => parser.parse('SELECT (?d + 1 AS ?e) (?s AS ?d) WHERE { ?s ?p ?o } GROUP BY ?s'))
+      .toThrow(/Target id of 'AS' \(\?d\) is used in an earlier select expression/u);
+    expect(() => parser.parse('SELECT (?o AS ?e) (COUNT(*) AS ?d) WHERE { ?s ?p ?o }'))
+      .toThrow(/Use of ungrouped variable in projection of operation \(\?o\)/u);
+    expect(() => parser.parse('SELECT (?o + 1 AS ?e) ?o WHERE { ?s ?p ?o } GROUP BY ?s'))
+      .toThrow(/Use of ungrouped variable in projection of operation \(\?o\)/u);
+  });
+
   it('keeps no variable in scope for a triple term group key', ({ expect }) => {
     expect(parser.parse('SELECT (COUNT(*) AS ?c) WHERE { ?s ?p ?o } GROUP BY (<<( ?s ?p ?o )>>)'))
       .toMatchObject({ subType: 'select' });

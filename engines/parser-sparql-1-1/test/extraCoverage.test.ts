@@ -93,6 +93,17 @@ describe('extra parser coverage', () => {
     )).toThrow(/Use of variable bound by an earlier select expression \(\?c\) in a grouped query/u);
   });
 
+  it('reports a forward reference to a later select expression in a grouped query as such', ({ expect }) => {
+    expect(() => parser.parse('SELECT (?d + 1 AS ?e) (COUNT(*) AS ?d) WHERE { ?s ?p ?o }'))
+      .toThrow(/Target id of 'AS' \(\?d\) is used in an earlier select expression/u);
+    expect(() => parser.parse('SELECT (?d + 1 AS ?e) (?s AS ?d) WHERE { ?s ?p ?o } GROUP BY ?s'))
+      .toThrow(/Target id of 'AS' \(\?d\) is used in an earlier select expression/u);
+    expect(() => parser.parse('SELECT (?o AS ?e) (COUNT(*) AS ?d) WHERE { ?s ?p ?o }'))
+      .toThrow(/Use of ungrouped variable in projection of operation \(\?o\)/u);
+    expect(() => parser.parse('SELECT (?o + 1 AS ?e) ?o WHERE { ?s ?p ?o } GROUP BY ?s'))
+      .toThrow(/Use of ungrouped variable in projection of operation \(\?o\)/u);
+  });
+
   it('throws when DISTINCT is used in a non-aggregate function call', ({ expect }) => {
     expect(() => parser.parse('SELECT * WHERE { FILTER(<http://ex.org/func>(DISTINCT ?x)) }'))
       .toThrow(/DISTINCT implies that this function is an aggregated function/u);

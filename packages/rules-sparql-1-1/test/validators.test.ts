@@ -104,6 +104,35 @@ describe('getVariablesFromExpression', () => {
     ], noLoc), variables);
     expect(variables).toEqual(new Set([ 'x' ]));
   });
+
+  it('collects the variables of EXISTS patterns separately, only when asked', ({ expect }) => {
+    const v = (name: string): ReturnType<typeof F.termVariable> => F.termVariable(name, noLoc);
+    const bgp = (...terms: ReturnType<typeof v>[]): Pattern =>
+      F.patternBgp([ F.triple(...<[any, any, any]> terms, noLoc) ], noLoc);
+    // The sub-SELECT only exposes its projected variable ?q
+    const subSelect = F.querySelect({
+      variables: [ v('q') ],
+      context: [],
+      datasets: F.datasetClauses([], noLoc),
+      solutionModifiers: {},
+      where: F.patternGroup([ bgp(v('q'), v('hidden'), v('o')) ], noLoc),
+    }, noLoc);
+    const exists = F.expressionPatternOperation(
+      'exists',
+      F.patternGroup([ bgp(v('s'), v('p'), v('o')), <Pattern> <unknown> subSelect ], noLoc),
+      noLoc,
+    );
+    const expression = F.expressionOperation('&&', [ v('x'), exists ], noLoc);
+
+    const variables = new Set<string>();
+    getVariablesFromExpression(expression, variables);
+    expect(variables).toEqual(new Set([ 'x' ]));
+
+    const existsVariables = new Set<string>();
+    getVariablesFromExpression(expression, variables, existsVariables);
+    expect(variables).toEqual(new Set([ 'x' ]));
+    expect(existsVariables).toEqual(new Set([ 's', 'p', 'o', 'q' ]));
+  });
 });
 
 describe('checkNote13', () => {

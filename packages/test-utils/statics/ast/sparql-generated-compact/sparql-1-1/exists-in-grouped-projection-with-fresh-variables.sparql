@@ -1,0 +1,1 @@
+SELECT ?s ( COUNT( * ) AS ?c ) ( EXISTS { ?s ?q ?z . FILTER ( ( ?z != ?c ) ) } AS ?x ) WHERE { ?s ?p ?o . } GROUP BY ?s

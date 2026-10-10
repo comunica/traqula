@@ -1,0 +1,16 @@
+SELECT ?s ( EXISTS {
+  SELECT ?s ( STR( ?p ) AS ?t ) WHERE {
+    ?s ?p ?r .
+  }
+}
+AS ?x ) ( NOT EXISTS {
+  {
+    SELECT * WHERE {
+      ?s ?q ?r .
+    }
+  }
+}
+AS ?y ) WHERE {
+  ?s ?p ?o .
+}
+GROUP BY ?s

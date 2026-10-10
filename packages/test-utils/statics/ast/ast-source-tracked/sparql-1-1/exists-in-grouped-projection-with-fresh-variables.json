@@ -1,0 +1,290 @@
+{
+  "context": [],
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "s",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 80,
+                "end": 82
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "variable",
+              "value": "p",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 83,
+                "end": 85
+              }
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "o",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 86,
+                "end": 88
+              }
+            },
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 80,
+              "end": 88
+            }
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 80,
+          "end": 88
+        }
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 78,
+      "end": 90
+    }
+  },
+  "solutionModifiers": {
+    "group": {
+      "type": "solutionModifier",
+      "subType": "group",
+      "groupings": [
+        {
+          "type": "term",
+          "subType": "variable",
+          "value": "s",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 100,
+            "end": 102
+          }
+        }
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 91,
+        "end": 102
+      }
+    }
+  },
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "term",
+      "subType": "variable",
+      "value": "s",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 7,
+        "end": 9
+      }
+    },
+    {
+      "type": "pattern",
+      "subType": "bind",
+      "expression": {
+        "type": "expression",
+        "subType": "aggregate",
+        "aggregation": "count",
+        "distinct": false,
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 11,
+          "end": 19
+        },
+        "expression": [
+          {
+            "type": "wildcard",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 17,
+              "end": 18
+            }
+          }
+        ]
+      },
+      "variable": {
+        "type": "term",
+        "subType": "variable",
+        "value": "c",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 23,
+          "end": 25
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 10,
+        "end": 26
+      }
+    },
+    {
+      "type": "pattern",
+      "subType": "bind",
+      "expression": {
+        "type": "expression",
+        "subType": "patternOperation",
+        "operator": "exists",
+        "args": {
+          "type": "pattern",
+          "subType": "group",
+          "patterns": [
+            {
+              "type": "pattern",
+              "subType": "bgp",
+              "triples": [
+                {
+                  "type": "triple",
+                  "subject": {
+                    "type": "term",
+                    "subType": "variable",
+                    "value": "s",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 37,
+                      "end": 39
+                    }
+                  },
+                  "predicate": {
+                    "type": "term",
+                    "subType": "variable",
+                    "value": "q",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 40,
+                      "end": 42
+                    }
+                  },
+                  "object": {
+                    "type": "term",
+                    "subType": "variable",
+                    "value": "z",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 43,
+                      "end": 45
+                    }
+                  },
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 37,
+                    "end": 45
+                  }
+                }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 37,
+                "end": 45
+              }
+            },
+            {
+              "type": "pattern",
+              "subType": "filter",
+              "expression": {
+                "type": "expression",
+                "subType": "operation",
+                "operator": "!=",
+                "args": [
+                  {
+                    "type": "term",
+                    "subType": "variable",
+                    "value": "z",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 53,
+                      "end": 55
+                    }
+                  },
+                  {
+                    "type": "term",
+                    "subType": "variable",
+                    "value": "c",
+                    "loc": {
+                      "sourceLocationType": "source",
+                      "start": 59,
+                      "end": 61
+                    }
+                  }
+                ],
+                "loc": {
+                  "sourceLocationType": "source",
+                  "start": 52,
+                  "end": 62
+                }
+              },
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 46,
+                "end": 62
+              }
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 35,
+            "end": 64
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 28,
+          "end": 64
+        }
+      },
+      "variable": {
+        "type": "term",
+        "subType": "variable",
+        "value": "x",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 68,
+          "end": 70
+        }
+      },
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 27,
+        "end": 71
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "inlinedSource",
+    "newSource": "SELECT ?s (COUNT(*) AS ?c) (EXISTS { ?s ?q ?z FILTER(?z != ?c) } AS ?x) WHERE { ?s ?p ?o } GROUP BY ?s\n",
+    "start": 0,
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 102
+    },
+    "startOnNew": 0,
+    "endOnNew": 102
+  },
+  "type": "query"
+}

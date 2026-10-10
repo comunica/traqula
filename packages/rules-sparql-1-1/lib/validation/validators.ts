@@ -12,6 +12,7 @@ import type {
   ExpressionFunctionCall,
   Pattern,
   PatternBgp,
+  PatternGroup,
   QueryDescribe,
   QuerySelect,
   TermVariable,
@@ -32,10 +33,16 @@ const expressionTransformer = new AstTransformer({ ignoreKeys: new Set([ 'loc', 
 
 const stopVisit = { preVisitor: () => ({ continue: false }) };
 /**
- * Stops visiting an expression that starts a new query level: the pattern of an EXISTS or NOT EXISTS,
- * whose aggregates and variables do not belong to the expression.
+ * Stops visiting the pattern of an EXISTS or NOT EXISTS, whose aggregates do not belong to the expression:
+ * an aggregate within the pattern can only be in a sub-SELECT, which is a query level of its own.
+ * The variables of the pattern do belong to the expression, see {@link getVariablesFromExpression}.
  */
 const skipPatternOperation = { patternOperation: stopVisit };
+/**
+ * The keys of a SELECT * sub-query whose variables are not projected: those of its solution modifiers,
+ * besides the keys the {@link expressionTransformer} skips.
+ */
+const wildcardSubSelectIgnoredKeys = new Set([ 'loc', 'langOrIri', 'function', 'solutionModifiers' ]);
 
 /**
  * Get all built-in aggregates of an expression, also when nested in operators or function calls.
@@ -114,16 +121,52 @@ export function getGroupedVariables(query: {
 
 /**
  * Get all variables used in an expression, including those within (SPARQL 1.2) triple terms.
- * Does not look inside aggregates and function calls (possibly custom aggregates),
- * nor in EXISTS or NOT EXISTS patterns.
+ * Does not look inside aggregates and function calls (possibly custom aggregates).
+ * The patterns of EXISTS and NOT EXISTS are only searched when `existsVariables` is given,
+ * which then collects their variables, see {@link getExistsPatternVariables}.
  */
-export function getVariablesFromExpression(expression: Expression, variables: Set<string>): void {
+export function getVariablesFromExpression(
+  expression: Expression,
+  variables: Set<string>,
+  existsVariables?: Set<string>,
+): void {
   expressionTransformer.visitNodeSpecific(expression, {}, {
     expression: {
-      ...skipPatternOperation,
+      patternOperation: { preVisitor: (operation) => {
+        if (existsVariables) {
+          getExistsPatternVariables(operation.args, existsVariables);
+        }
+        return { continue: false };
+      } },
       aggregate: stopVisit,
       functionCall: stopVisit,
     },
+    term: { variable: { visitor: (variable) => {
+      variables.add(variable.value);
+    } }},
+  });
+}
+
+/**
+ * Get the variables of the pattern of an EXISTS or NOT EXISTS that the solution it is evaluated for can bind.
+ * The pattern is no query level of its own: EXISTS substitutes the current solution into it
+ * (https://www.w3.org/TR/sparql11-query/#defn_evalExists),
+ * so these are all its variables, also those of expressions, nested EXISTS patterns,
+ * and (SPARQL 1.2) triple terms.
+ * A sub-SELECT within it is a query level of its own, of which only the projected variables are collected.
+ */
+export function getExistsPatternVariables(pattern: Pattern, variables: Set<string>): void {
+  expressionTransformer.visitNodeSpecific(pattern, {}, {
+    query: { select: { preVisitor: (query) => {
+      if (F.isWildcard(query.variables[0])) {
+        // SELECT * projects the variables in scope of its WHERE and VALUES clauses.
+        return { ignoreKeys: wildcardSubSelectIgnoredKeys };
+      }
+      for (const variable of <Exclude<typeof query.variables, [Wildcard]>> query.variables) {
+        variables.add(F.isTerm(variable) ? variable.value : variable.variable.value);
+      }
+      return { continue: false };
+    } }},
     term: { variable: { visitor: (variable) => {
       variables.add(variable.value);
     } }},
@@ -148,10 +191,25 @@ export type ProjectionValidationOptions = Pick<SparqlContext, 'rejectGroupedSele
  *   Ungrouped queries always allow them (https://www.w3.org/TR/sparql11-query/#selectExpressions),
  *   but the SPARQL 1.1 text for grouped queries (https://www.w3.org/TR/sparql11-query/#aggregateRestrictions)
  *   does not, so {@link ProjectionValidationOptions.rejectGroupedSelectAliasReuse} rejects them.
+ * - if grouped, the above also holds for the variables of EXISTS and NOT EXISTS patterns in select expressions
+ *   (see {@link getExistsPatternVariables}) that are in scope in the WHERE clause or bound by an earlier
+ *   select expression. EXISTS substitutes the grouped solution into its pattern,
+ *   so an ungrouped variable of the WHERE clause is silently unbound there, which SPARQL 1.1 forbids:
+ *   > variables that appear in the query pattern, but are not in the GROUP BY clause, can only be projected
+ *   > or used in select expressions if they are aggregated.
+ *   The other, fresh, variables of those patterns are accepted: SPARQL 1.1 does not restrict them,
+ *   and they mean the same in grouped and ungrouped queries.
+ *   Only a strict reading of the SPARQL 1.2 text would also reject them:
+ *   > every occurrence of a variable that appears in projection or SELECT expressions of that query level
+ * @param query the query whose projection to check, its WHERE clause is only needed for EXISTS patterns.
+ * @param options see {@link ProjectionValidationOptions}.
+ * @param findWhereBoundVars collects the variables in scope in the WHERE clause,
+ *   defaults to {@link findPatternBoundedVars}.
  */
 export function queryProjectionRespectsGrouping(
-  query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'values'>,
+  query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'values'> & { where?: PatternGroup },
   options: ProjectionValidationOptions = {},
+  findWhereBoundVars: (where: PatternGroup, boundedVars: Set<string>) => void = findPatternBoundedVars,
 ): void {
   // NoGroupByOnWildcardSelect
   if (query.variables.length === 1 && F.isWildcard(query.variables[0])) {
@@ -175,6 +233,7 @@ export function queryProjectionRespectsGrouping(
     // Variables bound by preceding (expr AS ?var) expressions are in scope for later expressions.
     const asBoundVars = new Set<string>();
     const groupedVars = new Set(getGroupedVariables(query).map(variable => variable.value));
+    let whereVars: Set<string> | undefined;
     for (const selectVar of variables) {
       if (F.isTerm(selectVar)) {
         if (!groupedVars.has(selectVar.value)) {
@@ -182,7 +241,22 @@ export function queryProjectionRespectsGrouping(
         }
       } else {
         const usedvars = new Set<string>();
-        getVariablesFromExpression(selectVar.expression, usedvars);
+        const existsVars = new Set<string>();
+        getVariablesFromExpression(selectVar.expression, usedvars, existsVars);
+        if (existsVars.size > 0) {
+          // Only a SELECT expression can contain an EXISTS, and a SELECT query always has a WHERE clause.
+          if (!whereVars) {
+            whereVars = new Set();
+            findWhereBoundVars(<PatternGroup> query.where, whereVars);
+          }
+          for (const existsVar of existsVars) {
+            // Grouped variables are allowed anyway. Variables neither in scope in the WHERE clause,
+            // nor bound by an earlier select expression, are fresh variables of the EXISTS pattern.
+            if (whereVars.has(existsVar) || asBoundVars.has(existsVar)) {
+              usedvars.add(existsVar);
+            }
+          }
+        }
         for (const usedvar of usedvars) {
           if (asBoundVars.has(usedvar)) {
             if (options.rejectGroupedSelectAliasReuse) {

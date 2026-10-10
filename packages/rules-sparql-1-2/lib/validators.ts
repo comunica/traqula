@@ -127,13 +127,18 @@ export function findPatternBoundedVars(
 
 /**
  * SPARQL 1.2 version of {@link T11.queryProjectionIsGood}, see that function for the checks.
- * It differs in the in-scope variables of {@link selectExpressionAliasesNotInScope}.
+ * It differs in the in-scope variables of the WHERE clause, used by {@link T11.queryProjectionRespectsGrouping}
+ * and {@link selectExpressionAliasesNotInScope}.
  */
 export function queryProjectionIsGood(
   query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
   options: T11.ProjectionValidationOptions = {},
 ): void {
-  queryProjectionRespectsGrouping(<T11.QuerySelect> <unknown> query, options);
+  queryProjectionRespectsGrouping(
+    <T11.QuerySelect> <unknown> query,
+    options,
+    (where, boundedVars) => findPatternBoundedVars(<Pattern> <unknown> where, boundedVars),
+  );
   selectExpressionAliasesNotInScope(query);
 }
 

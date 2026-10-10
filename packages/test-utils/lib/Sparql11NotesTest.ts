@@ -102,6 +102,9 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
       expect(() => parser.parse(query, reject)).toThrow(Error);
       expect(() => parser.parse('SELECT ?s (MAX(?o) AS ?m) (?m * 2 AS ?d) WHERE { ?s ?p ?o } GROUP BY ?s', reject))
         .toThrow(Error);
+      const existsQuery = 'SELECT (COUNT(*) AS ?c) (EXISTS { <ex:s> <ex:p> ?c } AS ?d) WHERE { ?s ?p ?o }';
+      expect(parser.parse(existsQuery)).toMatchObject({});
+      expect(() => parser.parse(existsQuery, reject)).toThrow(Error);
     });
 
     it('accepts a variable bound by an earlier select expression in an ungrouped query', ({ expect }) => {

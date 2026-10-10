@@ -1,0 +1,1 @@
+SELECT ?s (EXISTS { ?s <http://ex.org/r> <<( ?s <http://ex.org/q> ?o )>> } AS ?x) WHERE { ?s <http://ex.org/p> <<( ?a <http://ex.org/q> ?o )>> } GROUP BY ?s

@@ -1,0 +1,1 @@
+SELECT ?s (EXISTS { SELECT ?p WHERE { ?s ?p ?r } } AS ?x) WHERE { ?s ?p ?o } GROUP BY ?s

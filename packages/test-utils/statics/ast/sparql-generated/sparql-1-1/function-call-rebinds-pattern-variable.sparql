@@ -1,0 +1,3 @@
+SELECT ( <http://example.org/f> ( ?s ) AS ?o ) WHERE {
+  ?s ?p ?o .
+}

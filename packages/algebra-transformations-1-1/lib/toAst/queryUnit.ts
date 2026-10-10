@@ -297,7 +297,9 @@ PatternGroup,
         }
       }
     }
-    SUBRULE(registerAlgGroupBy, result, extensions);
+    // `DESCRIBE *` of a grouped query describes its named group keys,
+    //  so a DESCRIBE without terms can only be written with unnamed group keys.
+    SUBRULE(registerAlgGroupBy, result, extensions, type === types.DESCRIBE && variables!.length === 0);
     SUBRULE(registerOrderBy, result, unselectedAggregators);
     // DESCRIBE can only list terms, not `(expr AS ?variable)`, so its extends stay BINDs in the WHERE clause.
     SUBRULE(registerVariables, select, variables, type === types.DESCRIBE ? Object.create(null) : extensions);
@@ -325,9 +327,15 @@ PatternGroup,
   },
 };
 
-export const registerAlgGroupBy: AstIndir<'registerGroupBy', void, [QueryBase, Record<string, Expression>]> = {
+/**
+ * Registers the GROUP BY clause, placing the expressions of the extensions binding its keys.
+ * @param unnamedKeys - Whether keys bound by an extension become unnamed group expressions
+ *  instead of `(expression AS ?key)`.
+ */
+export const registerAlgGroupBy:
+AstIndir<'registerGroupBy', void, [QueryBase, Record<string, Expression>, boolean?]> = {
   name: 'registerGroupBy',
-  fun: ({ SUBRULE }) => ({ astFactory: F, group }, result, extensions) => {
+  fun: ({ SUBRULE }) => ({ astFactory: F, group }, result, extensions, unnamedKeys = false) => {
     if (group.length > 0) {
       result.solutionModifiers.group = F.solutionModifierGroup(
         group.map((variable) => {
@@ -336,6 +344,9 @@ export const registerAlgGroupBy: AstIndir<'registerGroupBy', void, [QueryBase, R
             const result = extensions[v.value];
             // Make sure there is only 1 'AS' statement
             delete extensions[v.value];
+            if (unnamedKeys) {
+              return result;
+            }
             return {
               variable: v,
               value: result,

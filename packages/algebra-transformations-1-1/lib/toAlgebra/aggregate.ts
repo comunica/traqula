@@ -53,9 +53,8 @@ export const translateAggregates: AlgebraIndir<'translateAggregates', Algebra.Op
       if (query.solutionModifiers.group) {
         for (const expression of query.solutionModifiers.group.groupings) {
           // https://www.w3.org/TR/sparql11-query/#rGroupCondition
-          if (F.isTerm(expression)) {
-            // This will always be a var, otherwise sparql would be invalid
-            vars.push(<RDF.Variable>SUBRULE(translateTerm, expression));
+          if (F.isTermVariable(expression)) {
+            vars.push(<AstToRdfTerm<typeof expression>>SUBRULE(translateTerm, expression));
           } else {
             let var_: RDF.Variable;
             let expr: Expression;
@@ -63,6 +62,8 @@ export const translateAggregates: AlgebraIndir<'translateAggregates', Algebra.Op
               var_ = <AstToRdfTerm<typeof expression.variable>>SUBRULE(translateTerm, expression.variable);
               expr = expression.value;
             } else {
+              // Unnamed expressions, including non-variable terms like constants or (SPARQL 1.2) triple terms,
+              // are bound to a fresh variable
               var_ = SUBRULE(generateFreshVar);
               expr = expression;
             }

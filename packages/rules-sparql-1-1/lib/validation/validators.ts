@@ -137,7 +137,9 @@ export type ProjectionValidationOptions = Pick<SparqlContext, 'rejectGroupedSele
 
 /**
  * Verify that the projected variables (select head) respect the grouping of the query:
- * - no select * in a grouped query (GROUP BY, or a built-in aggregate in HAVING or ORDER BY)
+ * - no select * in a grouped query (GROUP BY, or a built-in aggregate in HAVING or ORDER BY).
+ *   With `assumeCustomAggregates`, a function call, which may be a custom aggregate, also groups the query,
+ *   see {@link isGroupedQuery}.
  * - if grouped, selected variables need to be collected by the group-by,
  *   or bound by the trailing VALUES clause, which is joined after grouping (18.2.4.3).
  *   Section 11.4 only mentions the group-by variables, but the algebra of 18.2.4.3 binds the VALUES variables
@@ -152,13 +154,14 @@ export type ProjectionValidationOptions = Pick<SparqlContext, 'rejectGroupedSele
 export function queryProjectionRespectsGrouping(
   query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'values'>,
   options: ProjectionValidationOptions = {},
+  assumeCustomAggregates = false,
 ): void {
   // NoGroupByOnWildcardSelect
   if (query.variables.length === 1 && F.isWildcard(query.variables[0])) {
     if (query.solutionModifiers.group !== undefined) {
       throw new Error('GROUP BY not allowed with wildcard');
     }
-    if (isGroupedQuery(query, false)) {
+    if (isGroupedQuery(query, assumeCustomAggregates)) {
       throw new Error('Aggregates not allowed with wildcard');
     }
     return;
@@ -168,7 +171,7 @@ export function queryProjectionRespectsGrouping(
   // Check for projection of ungrouped variable
   // Check can be skipped in case of wildcard select.
   const variables = <Exclude<typeof query.variables, [Wildcard]>> query.variables;
-  if (isGroupedQuery(query, false)) {
+  if (isGroupedQuery(query, assumeCustomAggregates)) {
     // We have to check whether
     //  1. Variables used in projection are usable given the group by clause
     //  2. An aggregate will create an implicit group by clause.
@@ -202,6 +205,8 @@ export function queryProjectionRespectsGrouping(
  * Verify that the projected variables (select head) are allowed:
  * - they respect the grouping of the query, see {@link queryProjectionRespectsGrouping}
  * - 'select ?var as ?other', ?other cannot be in scope, see {@link selectExpressionAliasesNotInScope}
+ * - when only a function call could group the query, they are valid when it is a custom aggregate,
+ *   or when no function call is, see {@link projectionValidForSomeCustomAggregateReading}
  */
 export function queryProjectionIsGood(
   query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
@@ -209,6 +214,43 @@ export function queryProjectionIsGood(
 ): void {
   queryProjectionRespectsGrouping(query, options);
   selectExpressionAliasesNotInScope(query);
+  projectionValidForSomeCustomAggregateReading(
+    query,
+    options,
+    assumeCustomAggregates => selectExpressionAliasesNotInScope(query, assumeCustomAggregates),
+  );
+}
+
+/**
+ * {@link queryProjectionRespectsGrouping} only checks the grouping when the query is grouped without custom aggregates,
+ * while {@link selectExpressionAliasesNotInScope} leniently assumes a function call might be a custom aggregate.
+ * When a function call is all that would group the query, the query must be valid under one of those readings:
+ * - the function calls are not aggregates, so the variables of the WHERE clause are in scope of the aliases, or
+ * - one of them is a custom aggregate, so the projection must respect the (implicit) grouping.
+ * For example, `SELECT (ex:f(?s) AS ?x) (?s AS ?o) WHERE { ?s ?p ?o }` is invalid in both,
+ * since ?o is already in scope, and ?s is not grouped.
+ * The checks that already ran cover the remaining combinations:
+ * the grouping is only checked when the readings agree,
+ * and an alias in scope when grouped is also in scope when not.
+ * The alias check is given as a callback, since SPARQL 1.2 collects the in-scope variables differently.
+ */
+export function projectionValidForSomeCustomAggregateReading(
+  query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'values'>,
+  options: ProjectionValidationOptions,
+  aliasesNotInScope: (assumeCustomAggregates: boolean) => void,
+): void {
+  if (isGroupedQuery(query, false) || !isGroupedQuery(query)) {
+    return;
+  }
+  try {
+    aliasesNotInScope(false);
+  } catch (error: unknown) {
+    try {
+      queryProjectionRespectsGrouping(query, options, true);
+    } catch {
+      throw error;
+    }
+  }
 }
 
 /**
@@ -233,16 +275,19 @@ export function describeProjectionIsGood(query: QueryDescribe): void {
  * In-scope are the variables bound by the WHERE clause (including subquery projections), or, in a grouped query,
  * the GROUP BY keys (v and (expr AS v)), and the trailing VALUES clause (joined before the projection, 18.2.4.3).
  * The variable may also not be used in an earlier SELECT expression.
+ * By default, a function call is assumed to possibly be a custom aggregate that groups the query,
+ * see {@link isGroupedQuery}.
  */
 export function selectExpressionAliasesNotInScope(
   query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
+  assumeCustomAggregates = true,
 ): void {
   const selectBinds = query.variables.filter((variable): variable is PatternBind =>
     !F.isTerm(variable) && !F.isWildcard(variable));
   if (selectBinds.length > 0) {
     const inScopeVars = new Set<string>();
     // Grouping only keeps the variables of the group keys in scope
-    if (!isGroupedQuery(query)) {
+    if (!isGroupedQuery(query, assumeCustomAggregates)) {
       findPatternBoundedVars(query.where, inScopeVars);
     }
     for (const variable of getGroupKeyVariables(query.solutionModifiers.group)) {

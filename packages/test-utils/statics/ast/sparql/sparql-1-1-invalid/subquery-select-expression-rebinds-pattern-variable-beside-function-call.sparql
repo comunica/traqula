@@ -1,0 +1,1 @@
+SELECT * WHERE { { SELECT (<http://example.org/f>(?s) AS ?x) (?s AS ?o) WHERE { ?s ?p ?o } } }

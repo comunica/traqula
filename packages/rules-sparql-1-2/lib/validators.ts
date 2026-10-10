@@ -6,6 +6,7 @@
 import {
   getGroupKeyVariables,
   isGroupedQuery,
+  projectionValidForSomeCustomAggregateReading,
   queryProjectionRespectsGrouping,
   selectExpressionAliasesNotInValues,
   selectExpressionAliasesNotUsedEarlier,
@@ -135,6 +136,11 @@ export function queryProjectionIsGood(
 ): void {
   queryProjectionRespectsGrouping(<T11.QuerySelect> <unknown> query, options);
   selectExpressionAliasesNotInScope(query);
+  projectionValidForSomeCustomAggregateReading(
+    <T11.QuerySelect> <unknown> query,
+    options,
+    assumeCustomAggregates => selectExpressionAliasesNotInScope(query, assumeCustomAggregates),
+  );
 }
 
 /**
@@ -145,16 +151,19 @@ export function queryProjectionIsGood(
  * In-scope are the variables bound by the WHERE clause (including subquery projections), or, in a grouped query,
  * the GROUP BY keys (v and (expr AS v)), and the trailing VALUES clause (joined before the projection, 18.2.4.3).
  * The variable may also not be used in an earlier SELECT expression.
+ * By default, a function call is assumed to possibly be a custom aggregate that groups the query,
+ * see {@link T11.isGroupedQuery}.
  */
 export function selectExpressionAliasesNotInScope(
   query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
+  assumeCustomAggregates = true,
 ): void {
   const selectBinds = query.variables.filter((variable): variable is PatternBind =>
     !F.isTerm(variable) && !F.isWildcard(variable));
   if (selectBinds.length > 0) {
     const inScopeVars = new Set<string>();
     // Grouping only keeps the variables of the group keys in scope
-    if (!isGroupedQuery(<T11.QuerySelect> <unknown> query)) {
+    if (!isGroupedQuery(<T11.QuerySelect> <unknown> query, assumeCustomAggregates)) {
       findPatternBoundedVars(query.where, inScopeVars);
     }
     for (const variable of getGroupKeyVariables(query.solutionModifiers.group)) {

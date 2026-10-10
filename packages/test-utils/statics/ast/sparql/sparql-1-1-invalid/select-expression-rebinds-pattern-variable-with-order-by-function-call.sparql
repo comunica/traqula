@@ -1,0 +1,1 @@
+SELECT (?s AS ?o) WHERE { ?s ?p ?o } ORDER BY <http://example.org/f>(?s)

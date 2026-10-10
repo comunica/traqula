@@ -175,7 +175,7 @@ export function queryProjectionRespectsGrouping(
     // Variables bound by preceding (expr AS ?var) expressions are in scope for later expressions.
     const asBoundVars = new Set<string>();
     const groupedVars = new Set(getGroupedVariables(query).map(variable => variable.value));
-    for (const selectVar of variables) {
+    for (const [ index, selectVar ] of variables.entries()) {
       if (F.isTerm(selectVar)) {
         if (!groupedVars.has(selectVar.value)) {
           throw new Error('Variable not allowed in projection');
@@ -189,6 +189,11 @@ export function queryProjectionRespectsGrouping(
               throw new Error(`Use of variable bound by an earlier select expression (?${usedvar}) in a grouped query`);
             }
           } else if (!groupedVars.has(usedvar)) {
+            // A forward reference to the target of a later select expression,
+            // reported as selectExpressionAliasesNotUsedEarlier would.
+            if (variables.slice(index + 1).some(later => !F.isTerm(later) && later.variable.value === usedvar)) {
+              throw new Error(`Target id of 'AS' (?${usedvar}) is used in an earlier select expression`);
+            }
             throw new Error(`Use of ungrouped variable in projection of operation (?${usedvar})`);
           }
         }

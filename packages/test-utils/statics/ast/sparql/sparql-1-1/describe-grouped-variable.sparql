@@ -1,0 +1,1 @@
+DESCRIBE ?s WHERE { ?s ?p ?o } GROUP BY ?s

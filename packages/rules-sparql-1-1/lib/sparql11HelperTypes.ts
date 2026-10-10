@@ -18,6 +18,22 @@ export interface SparqlContext {
    * Can be used to disable the validation that used variables in a select clause are in scope.
    */
   skipValidation: boolean;
+  // TODO(major): make required, like skipValidation. It is optional to not break contexts built without
+  //  completeParseContext.
+  /**
+   * Reject select expressions that use a variable bound by an earlier select expression in a grouped query,
+   * like `SELECT (COUNT(?o) AS ?c) (?c + 1 AS ?d) WHERE { ?s ?p ?o }`.
+   * In an ungrouped query, this reuse is always allowed:
+   * https://www.w3.org/TR/sparql11-query/#selectExpressions
+   * > In SELECT expressions, the variable may be used in an expression later in the same SELECT clause
+   * In a grouped query, the SPARQL 1.1 text does not allow it,
+   * since only aggregates, constants, and GROUP BY variables may be projected:
+   * https://www.w3.org/TR/sparql11-query/#aggregateRestrictions
+   * SPARQL 1.2 allows it (https://github.com/w3c/sparql-query/pull/380):
+   * https://www.w3.org/TR/sparql12-query/#aggregateRestrictions
+   * Defaults to false, following SPARQL 1.2 and since the algebra does not really care.
+   */
+  rejectGroupedSelectAliasReuse?: boolean;
   /**
    * Set of queryModes. Primarily used for note 8, 14.
    */

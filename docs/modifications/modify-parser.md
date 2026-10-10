@@ -62,7 +62,8 @@ The ParserBuilder has a few functions that facilitate parser modification:
 ### Overriding validators
 
 The SPARQL grammars run their AST validators (e.g., the in-scope checks of `SELECT (expr AS ?v)` and `BIND`)
-through validation rules such as `validateSelectQuery`, `validateSubSelect` and `validateGroupGraphPatternSub`.
+through validation rules such as `validateSelectQuery`, `validateDescribeQuery`, `validateSubSelect` and
+`validateGroupGraphPatternSub`.
 These rules consume no tokens and only validate when `skipValidation` is `false`.
 Patch them like any other rule to change or disable a specific validation:
 

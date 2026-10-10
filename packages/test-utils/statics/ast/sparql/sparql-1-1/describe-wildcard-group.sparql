@@ -1,0 +1,4 @@
+DESCRIBE *
+WHERE { ?s ?p ?o }
+GROUP BY ?s (STR(?p) AS ?type) STRLEN(?o)
+VALUES ?v { 1 }

@@ -1,0 +1,130 @@
+{
+  "type": "describe",
+  "input": {
+    "type": "join",
+    "input": [
+      {
+        "type": "group",
+        "input": {
+          "type": "extend",
+          "input": {
+            "type": "extend",
+            "input": {
+              "type": "bgp",
+              "patterns": [
+                {
+                  "type": "pattern",
+                  "termType": "Quad",
+                  "subject": {
+                    "termType": "Variable",
+                    "value": "s"
+                  },
+                  "predicate": {
+                    "termType": "Variable",
+                    "value": "p"
+                  },
+                  "object": {
+                    "termType": "Variable",
+                    "value": "o"
+                  },
+                  "graph": {
+                    "termType": "DefaultGraph",
+                    "value": ""
+                  }
+                }
+              ]
+            },
+            "variable": {
+              "termType": "Variable",
+              "value": "type"
+            },
+            "expression": {
+              "type": "expression",
+              "subType": "operator",
+              "operator": "str",
+              "args": [
+                {
+                  "type": "expression",
+                  "subType": "term",
+                  "term": {
+                    "termType": "Variable",
+                    "value": "p"
+                  }
+                }
+              ]
+            }
+          },
+          "variable": {
+            "termType": "Variable",
+            "value": "var0"
+          },
+          "expression": {
+            "type": "expression",
+            "subType": "operator",
+            "operator": "strlen",
+            "args": [
+              {
+                "type": "expression",
+                "subType": "term",
+                "term": {
+                  "termType": "Variable",
+                  "value": "o"
+                }
+              }
+            ]
+          }
+        },
+        "variables": [
+          {
+            "termType": "Variable",
+            "value": "s"
+          },
+          {
+            "termType": "Variable",
+            "value": "type"
+          },
+          {
+            "termType": "Variable",
+            "value": "var0"
+          }
+        ],
+        "aggregates": []
+      },
+      {
+        "type": "values",
+        "variables": [
+          {
+            "termType": "Variable",
+            "value": "v"
+          }
+        ],
+        "bindings": [
+          {
+            "v": {
+              "termType": "Literal",
+              "value": "1",
+              "datatype": {
+                "termType": "NamedNode",
+                "value": "http://www.w3.org/2001/XMLSchema#integer"
+              }
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "terms": [
+    {
+      "termType": "Variable",
+      "value": "s"
+    },
+    {
+      "termType": "Variable",
+      "value": "type"
+    },
+    {
+      "termType": "Variable",
+      "value": "v"
+    }
+  ]
+}

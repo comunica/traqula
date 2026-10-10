@@ -86,6 +86,13 @@ describe('extra parser coverage', () => {
     expect(() => parser.parse('SELECT * { ?s ?p ?o } VALUES (?x ?x) { (1 2) }')).not.toThrow();
   });
 
+  it('names the reused variable when rejecting a variable bound by an earlier select expression', ({ expect }) => {
+    expect(() => parser.parse(
+      'SELECT (COUNT(*) AS ?c) (?c + 1 AS ?d) WHERE { ?s ?p ?o }',
+      { rejectGroupedSelectAliasReuse: true },
+    )).toThrow(/Use of variable bound by an earlier select expression \(\?c\) in a grouped query/u);
+  });
+
   it('throws when DISTINCT is used in a non-aggregate function call', ({ expect }) => {
     expect(() => parser.parse('SELECT * WHERE { FILTER(<http://ex.org/func>(DISTINCT ?x)) }'))
       .toThrow(/DISTINCT implies that this function is an aggregated function/u);

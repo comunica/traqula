@@ -1,0 +1,8 @@
+SELECT ?s ( EXISTS {
+  SELECT ( MAX( ?o ) AS ?m ) WHERE {
+    ?s ?p ?o .
+  }
+}
+AS ?e ) WHERE {
+  ?s ?p ?o .
+}

@@ -1,0 +1,3 @@
+DESCRIBE *
+WHERE { ?s ?p ?o }
+HAVING (COUNT(?o) > 1)

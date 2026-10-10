@@ -61,6 +61,7 @@ Optionally, the following parameters can be set in the Parsers defaultContext:
 
 * `dataFactory`: A custom [RDFJS DataFactory](http://rdf.js.org/#datafactory-interface) to construct terms and triples. _(Default: `require('@rdfjs/data-model')`)_
 * `skipValidation`: Can be used to disable the validation that used variables in a select clause are in scope. _(Default: `false`)_
+* `rejectGroupedSelectAliasReuse`: Reject select expressions that use a variable bound by an earlier select expression in a grouped query, like `SELECT (COUNT(?o) AS ?c) (?c + 1 AS ?d) WHERE { ?s ?p ?o }`, as the SPARQL 1.1 text requires. SPARQL 1.2 allows this reuse. _(Default: `false`)_
 
 ## AstFactory and AstTransformer
 

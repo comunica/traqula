@@ -1,0 +1,1 @@
+SELECT (MAX(?o) AS ?m) ?o WHERE { ?s ?p ?o }

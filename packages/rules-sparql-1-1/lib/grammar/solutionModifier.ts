@@ -80,7 +80,14 @@ export const groupClause: SparqlRule<'groupClause', SolutionModifierGroup> = <co
     for (const grouping of ast.groupings) {
       // Separate the conditions, otherwise `GROUP BY ?a ex:f(?b)` would be generated as `GROUP BY ?aex:f(?b)`
       F.printFilter(ast, () => PRINT_WORDS(''));
-      if (F.isExpression(grouping)) {
+      // Not `F.isExpression`: it does not know the expressions of SPARQL 1.2, like triple terms
+      if ('variable' in grouping) {
+        F.printFilter(ast, () => PRINT_WORDS('('));
+        SUBRULE(expression, grouping.value);
+        F.printFilter(ast, () => PRINT_WORDS('AS'));
+        SUBRULE(var_, grouping.variable);
+        F.printFilter(ast, () => PRINT_WORDS(')'));
+      } else {
         // `GROUP BY (!?a)`, not `GROUP BY ! ?a`
         const addBrackets = (F.isTerm(grouping) && !F.isTermVariable(grouping)) ||
           (F.isExpressionOperator(grouping) && prefixOperators.has(grouping.operator));
@@ -91,12 +98,6 @@ export const groupClause: SparqlRule<'groupClause', SolutionModifierGroup> = <co
         if (addBrackets) {
           F.printFilter(grouping, () => PRINT_WORDS(')'));
         }
-      } else {
-        F.printFilter(ast, () => PRINT_WORDS('('));
-        SUBRULE(expression, grouping.value);
-        F.printFilter(ast, () => PRINT_WORDS('AS'));
-        SUBRULE(var_, grouping.variable);
-        F.printFilter(ast, () => PRINT_WORDS(')'));
       }
     }
   },

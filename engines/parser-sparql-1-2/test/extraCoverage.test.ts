@@ -99,6 +99,8 @@ describe('extra parser-sparql-1-2 coverage', () => {
   it('reports a forward reference to a later select expression in a grouped query as such', ({ expect }) => {
     expect(() => parser.parse('SELECT (?d + 1 AS ?e) (COUNT(*) AS ?d) WHERE { ?s ?p ?o }'))
       .toThrow(/Target id of 'AS' \(\?d\) is used in an earlier select expression/u);
+    expect(() => parser.parse('SELECT (?o + ?d AS ?e) (COUNT(*) AS ?d) WHERE { ?s ?p ?o }'))
+      .toThrow(/Target id of 'AS' \(\?d\) is used in an earlier select expression/u);
     expect(() => parser.parse('SELECT (?d + 1 AS ?e) (?s AS ?d) WHERE { ?s ?p ?o } GROUP BY ?s'))
       .toThrow(/Target id of 'AS' \(\?d\) is used in an earlier select expression/u);
     expect(() => parser.parse('SELECT (?o AS ?e) (COUNT(*) AS ?d) WHERE { ?s ?p ?o }'))

@@ -1,4 +1,4 @@
-import type { SourceLocation, SubTyped } from '@traqula/core';
+import type { SourceLocation, SubTyped, Typed } from '@traqula/core';
 import { AstFactory as Sparql11Factory } from '@traqula/rules-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import type {
@@ -35,6 +35,15 @@ export class AstFactory extends Sparql11Factory {
 
   public isTermTriple(obj: object): obj is SubTyped<'term', 'triple'> {
     return this.isOfSubType(obj, 'term', 'triple');
+  }
+
+  /**
+   * SPARQL 1.2 expressions can also be triple terms.
+   * An override can not widen the type predicate of SPARQL 1.1, so it does not mention triple terms.
+   */
+  public override isExpression(obj: object):
+    obj is SubTyped<'term', 'namedNode' | 'variable' | 'literal'> | Typed<'expression'> {
+    return super.isExpression(obj) || this.isTermTriple(obj);
   }
 
   public tripleCollectionReifiedTriple(

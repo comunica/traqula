@@ -203,17 +203,19 @@ export function queryProjectionRespectsGrouping(
 
 /**
  * Verify that the projected variables (select head) are allowed:
- * - they respect the grouping of the query, see {@link queryProjectionRespectsGrouping}
  * - 'select ?var as ?other', ?other cannot be in scope, see {@link selectExpressionAliasesNotInScope}
+ * - they respect the grouping of the query, see {@link queryProjectionRespectsGrouping}
  * - when only a function call could group the query, they are valid when it is a custom aggregate,
  *   or when no function call is, see {@link projectionValidForSomeCustomAggregateReading}
+ * The aliases are checked first, so a select expression using the target of a later one
+ * is not reported as using an ungrouped variable.
  */
 export function queryProjectionIsGood(
   query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
   options: ProjectionValidationOptions = {},
 ): void {
-  queryProjectionRespectsGrouping(query, options);
   selectExpressionAliasesNotInScope(query);
+  queryProjectionRespectsGrouping(query, options);
   projectionValidForSomeCustomAggregateReading(
     query,
     options,

@@ -133,8 +133,8 @@ export function queryProjectionIsGood(
   query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
   options: T11.ProjectionValidationOptions = {},
 ): void {
-  queryProjectionRespectsGrouping(<T11.QuerySelect> <unknown> query, options);
   selectExpressionAliasesNotInScope(query);
+  queryProjectionRespectsGrouping(<T11.QuerySelect> <unknown> query, options);
 }
 
 /**

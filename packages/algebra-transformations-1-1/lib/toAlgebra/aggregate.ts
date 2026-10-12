@@ -195,13 +195,17 @@ AlgebraIndir<'mapAggregate', MapAggregateType, [MapAggregateType, Record<string,
   name: 'mapAggregate',
   fun: ({ SUBRULE }) => ({ astFactory: F, transformer, namedAggregatorCallback }, thingy, aggregates):
   MapAggregateType => {
-    const isCustomAggregate = namedAggregatorCallback !== undefined && F.isExpressionFunctionCall(thingy) &&
-      namedAggregatorCallback(SUBRULE(translateNamed, thingy.function).value);
+    let isCustomAggregate = false;
+    if (namedAggregatorCallback !== undefined && F.isExpressionFunctionCall(thingy)) {
+      const functionName = SUBRULE(translateNamed, thingy.function);
+      isCustomAggregate = namedAggregatorCallback(functionName.value);
+    }
     if (F.isExpressionAggregate(thingy) || isCustomAggregate) {
       // Ignore the differences in `loc` and in how IRIs are written (prefixed, relative or full)
       const canonicalAggregate = <ExpressionAggregate> transformer.transformNodeSpecific<'unsafe', object>(
         F.forcedAutoGenTree(thingy),
         {},
+        // TODO: why is this needed? Do we need a full traversal? Why was it not needed before?
         { term: { namedNode: { transform: iri =>
           F.termNamed(F.gen(), SUBRULE(translateNamed, <TermIri> iri).value) }}},
       );

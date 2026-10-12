@@ -71,7 +71,7 @@ const generatedQuery = generator.generate(generatedAst);
 Custom aggregates are syntactically function calls.
 Pass `namedAggregatorCallback: (iri: string) => boolean` to translate the function calls it accepts as aggregates:
 named expressions marked with `aggregate: true` and `distinct`, grouped and bound like built-in aggregates.
-Give the [parser](../parser-sparql-1-1#configuration) the same callback, since `toAlgebra` does not validate the query.
+Give the [parser](../parser-sparql-1-1#configuration) the same callback, since `toAlgebra` does not validate the query itself.
 
 ```typescript
 const isAggregate = (iri: string) => iri === 'http://example.org/median';

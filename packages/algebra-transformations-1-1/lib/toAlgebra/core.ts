@@ -16,6 +16,7 @@ export interface AlgebraContext {
   dataFactory: RDF.DataFactory<RDF.BaseQuad> & { variable: Function };
   currentBase: string | undefined;
   currentPrefixes: Record<string, string>;
+  // TODO (major): optional type can become mandatory here.
   namedAggregatorCallback?: (iri: string) => boolean;
 }
 

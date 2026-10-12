@@ -50,6 +50,7 @@ const noFunctionCall: AggregateFunctionTest = () => false;
  * Does not look inside aggregates, nor in EXISTS or NOT EXISTS patterns.
  */
 export function getAggregatesOfExpression(expression: Expression): ExpressionAggregate[] {
+  // TODO in a comment like this, why is `noFunctionCall` correct? the function context should help in the explanation
   return <ExpressionAggregate[]> findAggregates(expression, noFunctionCall);
 }
 
@@ -129,6 +130,7 @@ export function getGroupedVariables(query: {
 export function getVariablesFromExpression(
   expression: Expression,
   variables: Set<string>,
+  // TODO again in a normal comment liek the (`//`) why is this the good default here?
   isAggregateFunction: AggregateFunctionTest = anyFunctionCall,
 ): void {
   expressionTransformer.visitNodeSpecific(expression, {}, {
@@ -158,8 +160,8 @@ export type ProjectionValidationOptions =
 export function namedAggregatorTest(
   context: Pick<ProjectionValidationOptions, 'prefixes' | 'baseIRI' | 'namedAggregatorCallback'>,
 ): AggregateFunctionTest | undefined {
-  const { prefixes = Object.create(null), baseIRI, namedAggregatorCallback: isCustomAggregate } = context;
-  if (isCustomAggregate === undefined) {
+  const { prefixes = Object.create(null), baseIRI, namedAggregatorCallback } = context;
+  if (namedAggregatorCallback === undefined) {
     return undefined;
   }
   return (functionCall) => {
@@ -169,7 +171,7 @@ export function namedAggregatorTest(
     } catch {
       return false;
     }
-    return isCustomAggregate(iri);
+    return namedAggregatorCallback(iri);
   };
 }
 
@@ -194,13 +196,13 @@ export function queryProjectionRespectsGrouping(
   options: ProjectionValidationOptions = {},
 ): void {
   const isAggregateFunction = namedAggregatorTest(options);
-  const grouped = isGroupedQuery(query, isAggregateFunction ?? noFunctionCall);
+  const isGrouped = isGroupedQuery(query, isAggregateFunction ?? noFunctionCall);
   // NoGroupByOnWildcardSelect
   if (query.variables.length === 1 && F.isWildcard(query.variables[0])) {
     if (query.solutionModifiers.group !== undefined) {
       throw new Error('GROUP BY not allowed with wildcard');
     }
-    if (grouped) {
+    if (isGrouped) {
       throw new Error('Aggregates not allowed with wildcard');
     }
     return;
@@ -210,7 +212,7 @@ export function queryProjectionRespectsGrouping(
   // Check for projection of ungrouped variable
   // Check can be skipped in case of wildcard select.
   const variables = <Exclude<typeof query.variables, [Wildcard]>> query.variables;
-  if (grouped) {
+  if (isGrouped) {
     // We have to check whether
     //  1. Variables used in projection are usable given the group by clause
     //  2. An aggregate will create an implicit group by clause.
@@ -312,6 +314,7 @@ export function selectExpressionAliasesNotInScope(
  */
 export function isGroupedQuery(
   query: Pick<QuerySelect, 'variables' | 'solutionModifiers'>,
+  // TODO: same as before, say in a `//` why this is a good default. (as always, be concie. One sentence.)
   isAggregateFunction: AggregateFunctionTest = anyFunctionCall,
 ): boolean {
   if (query.solutionModifiers.group) {

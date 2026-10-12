@@ -5,7 +5,8 @@ import type * as A from './algebra.js';
 import { ExpressionTypes, Types } from './algebra.js';
 
 /**
- * Moved to @traqula/rules-sparql-1-1 so the parser can resolve IRIs too, re-exported to keep this API.
+ * @deprecated Moved to @traqula/rules-sparql-1-1 so the parser can resolve IRIs too, re-exported to keep this API.
+ * TODO (major) remove the re-eport
  */
 export { resolveIRI } from '@traqula/rules-sparql-1-1';
 

@@ -71,6 +71,7 @@ Optionally, the following parameters can be set in the Parsers defaultContext:
   Like the built-in aggregates, custom aggregates are then only allowed in the `SELECT`, `HAVING` and `ORDER BY` clauses,
   and not within (the arguments of) another aggregate.
   The callback can be called multiple times for the same function call, so it should be cheap and return the same result.
+  Give [`toAlgebra`](../algebra-sparql-1-1#custom-aggregates) the same callback, so it translates the same function calls as aggregates.
 
 These parameters can also be given per query, as the second argument of `parse`:
 

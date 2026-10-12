@@ -291,6 +291,8 @@ export interface Group extends Single {
    * The aggregates of the group, each bound to a variable.
    * When translated with the `verifyWithNamedAggregators` option,
    * this can also contain custom aggregates, see {@link BoundNamedAggregate}.
+   * Their `subType` is {@link ExpressionTypes.NAMED} instead of {@link ExpressionTypes.AGGREGATE},
+   * so they have no `aggregator` or `expression`.
    * TODO(major): include BoundNamedAggregate in the type.
    */
   aggregates: BoundAggregate[];

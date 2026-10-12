@@ -82,7 +82,28 @@ const algebra = toAlgebra(ast, { verifyWithNamedAggregators: iri => iri === 'htt
 ```
 
 `toAst` translates them back to function calls, including `DISTINCT`, which does not need the option.
-The [parser](../parser-sparql-1-1#configuration) has an option with the same name, so the same callback can validate the query.
+
+Give the [parser](../parser-sparql-1-1#configuration) the same callback, through its option with the same name.
+Without it, the parser cannot know which function calls are aggregates, so it does not reject queries that are invalid once they are,
+and `toAlgebra` does not validate the query itself.
+For example, the parser accepts `SELECT ?s (ex:median(?o) AS ?m) { ?s ?p ?o }` without the callback,
+and `toAlgebra` then translates it to a projection of `?s`, a variable that is not grouped.
+
+The type of `Group.aggregates` is still `BoundAggregate[]`, but with this option, it can also contain custom aggregates.
+Check the `subType` of each aggregate to tell them apart:
+
+```typescript
+import { Algebra } from '@traqula/algebra-transformations-1-1';
+
+for (const aggregate of group.aggregates) {
+  if (aggregate.subType === Algebra.ExpressionTypes.AGGREGATE) {
+    // A built-in aggregate (COUNT, SUM, ...): use aggregate.aggregator, aggregate.expression and aggregate.distinct
+  } else {
+    // A custom aggregate: a named expression, use its name, args and distinct
+    const custom = <Algebra.BoundNamedAggregate> <unknown> aggregate;
+  }
+}
+```
 
 ## Algebra Types
 

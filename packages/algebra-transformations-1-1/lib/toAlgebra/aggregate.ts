@@ -194,12 +194,19 @@ export type MapAggregateType = Wildcard | Expression | Ordering | PatternBind;
 export const mapAggregate:
 AlgebraIndir<'mapAggregate', MapAggregateType, [MapAggregateType, Record<string, ExpressionAggregate>]> = {
   name: 'mapAggregate',
-  fun: ({ SUBRULE }) => ({ astFactory: F, verifyWithNamedAggregators }, thingy, aggregates): MapAggregateType => {
+  fun: ({ SUBRULE }) => (c, thingy, aggregates): MapAggregateType => {
+    const { astFactory: F, transformer, verifyWithNamedAggregators } = c;
     const isCustomAggregate = verifyWithNamedAggregators !== undefined && F.isExpressionFunctionCall(thingy) &&
       verifyWithNamedAggregators(SUBRULE(translateNamed, thingy.function).value);
     if (F.isExpressionAggregate(thingy) || isCustomAggregate) {
-      // Needed to take away the difference in the various `loc` descriptions
-      const canonicalAggregate = <ExpressionAggregate> F.forcedAutoGenTree(thingy);
+      // Needed to take away the difference in the various `loc` descriptions,
+      //  and in how IRIs are written (prefixed or relative), so `ex:f(?x)` and `<http://example.org/f>(?x)` match.
+      const canonicalAggregate = <ExpressionAggregate> transformer.transformNodeSpecific<'unsafe', object>(
+        F.forcedAutoGenTree(thingy),
+        {},
+        { term: { namedNode: { transform: iri =>
+          F.termNamed(F.gen(), SUBRULE(translateNamed, <TermIri> iri).value) }}},
+      );
       let val: TermVariable | undefined;
       // Look for the matching aggregate
       for (const [ key, aggregate ] of Object.entries(aggregates)) {

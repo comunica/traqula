@@ -130,6 +130,24 @@ GROUP BY ?s`);
       expect(expression).not.toHaveProperty('aggregate');
       expect(expression).not.toHaveProperty('distinct');
     });
+
+    it('binds a custom aggregate once when its IRIs are written differently', ({ expect }) => {
+      const ast = parser.parse(`PREFIX ex: <http://ex.org/> SELECT (ex:agg(?o, ex:x) AS ?a) { ?s ?p ?o }
+        ORDER BY <http://ex.org/agg>(?o, <http://ex.org/x>)`);
+      const project = <Algebra.Project> toAlgebra(ast, { verifyWithNamedAggregators });
+      const orderBy = <Algebra.OrderBy> project.input;
+      const group = <Algebra.Group> (<Algebra.Extend> orderBy.input).input;
+      expect(group.aggregates).toHaveLength(1);
+      expect(orderBy.expressions).toMatchObject([{ term: { value: group.aggregates[0].variable.value }}]);
+    });
+  });
+
+  it('binds a built-in aggregate once when its IRIs are written differently', ({ expect }) => {
+    const ast = parser.parse(`PREFIX ex: <http://ex.org/> SELECT (COUNT(ex:x) AS ?a) (COUNT(<http://ex.org/x>) AS ?b)
+      { ?s ?p ?o }`);
+    const project = <Algebra.Project> toAlgebra(ast);
+    const group = <Algebra.Group> (<Algebra.Extend> (<Algebra.Extend> project.input).input).input;
+    expect(group.aggregates).toHaveLength(1);
   });
 
   describe('variable collision in blank-to-variable translation', () => {

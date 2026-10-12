@@ -134,7 +134,7 @@ export function queryProjectionIsGood(
   query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
   options: T11.ProjectionValidationOptions = {},
 ): void {
-  selectExpressionAliasesNotInScope(query, namedAggregatorTest(options));
+  selectExpressionAliasesNotInScope(query, options);
   queryProjectionRespectsGrouping(<T11.QuerySelect> <unknown> query, options);
 }
 
@@ -147,17 +147,19 @@ export function queryProjectionIsGood(
  * the GROUP BY keys (v and (expr AS v)), and the trailing VALUES clause (joined before the projection, 18.2.4.3).
  * The variable may also not be used in an earlier SELECT expression.
  * @param query - The SELECT query to validate.
- * @param isAggregateFunction - Whether a function call is a custom aggregate, see {@link isGroupedQuery}.
+ * @param options - Decide which function calls are custom aggregates, see {@link T11.namedAggregatorTest}.
  */
 export function selectExpressionAliasesNotInScope(
   query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
-  isAggregateFunction?: T11.AggregateFunctionTest,
+  options: T11.ProjectionValidationOptions,
 ): void {
   const selectBinds = query.variables.filter((variable): variable is PatternBind =>
     !F.isTerm(variable) && !F.isWildcard(variable));
   if (selectBinds.length > 0) {
     const inScopeVars = new Set<string>();
-    // Grouping only keeps the variables of the group keys in scope
+    // Grouping only keeps the variables of the group keys in scope.
+    // Without a callback, any function call might be an aggregate, so fewer variables are in scope.
+    const isAggregateFunction = namedAggregatorTest(options) ?? (() => true);
     if (!isGroupedQuery(<T11.QuerySelect> <unknown> query, isAggregateFunction)) {
       findPatternBoundedVars(query.where, inScopeVars);
     }

@@ -93,8 +93,6 @@ AstIndir<'translateNamedExpression', ExpressionFunctionCall, [Algebra.NamedExpre
     F.expressionFunctionCall(
       <RdfTermToAst<typeof expr.name>> SUBRULE(translateAlgTerm, expr.name),
       expr.args.map(x => SUBRULE(translateAlgPureExpression, x)),
-      // TODO: double check we have a test: since we added this
-      //  is it so that we could not round trip a named aggregate function with DISTINCT?
       expr.distinct === true,
       F.gen(),
     ),

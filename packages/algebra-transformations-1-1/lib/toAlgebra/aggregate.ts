@@ -193,7 +193,7 @@ export type MapAggregateType = Wildcard | Expression | Ordering | PatternBind;
 export const mapAggregate:
 AlgebraIndir<'mapAggregate', MapAggregateType, [MapAggregateType, Record<string, ExpressionAggregate>]> = {
   name: 'mapAggregate',
-  fun: ({ SUBRULE }) => ({ astFactory: F, transformer, namedAggregatorCallback }, thingy, aggregates):
+  fun: ({ SUBRULE }) => ({ astFactory: F, namedAggregatorCallback }, thingy, aggregates):
   MapAggregateType => {
     let isCustomAggregate = false;
     if (namedAggregatorCallback !== undefined && F.isExpressionFunctionCall(thingy)) {
@@ -201,14 +201,8 @@ AlgebraIndir<'mapAggregate', MapAggregateType, [MapAggregateType, Record<string,
       isCustomAggregate = namedAggregatorCallback(functionName.value);
     }
     if (F.isExpressionAggregate(thingy) || isCustomAggregate) {
-      // Ignore the differences in `loc` and in how IRIs are written (prefixed, relative or full)
-      const canonicalAggregate = <ExpressionAggregate> transformer.transformNodeSpecific<'unsafe', object>(
-        F.forcedAutoGenTree(thingy),
-        {},
-        // TODO: why is this needed? Do we need a full traversal? Why was it not needed before?
-        { term: { namedNode: { transform: iri =>
-          F.termNamed(F.gen(), SUBRULE(translateNamed, <TermIri> iri).value) }}},
-      );
+      // Needed to take away the difference in the various `loc` descriptions
+      const canonicalAggregate = <ExpressionAggregate> F.forcedAutoGenTree<object>(thingy);
       let val: TermVariable | undefined;
       // Look for the matching aggregate
       for (const [ key, aggregate ] of Object.entries(aggregates)) {

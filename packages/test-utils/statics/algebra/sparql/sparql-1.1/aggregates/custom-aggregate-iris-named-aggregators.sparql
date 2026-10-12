@@ -6,5 +6,5 @@ WHERE {
   ?s ex:value ?o .
 }
 GROUP BY ?s
-HAVING (ex:median(?o) > 1)
+HAVING (<median>(?o) > 1)
 ORDER BY (<median>(?o))

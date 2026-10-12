@@ -50,7 +50,7 @@ const noFunctionCall: AggregateFunctionTest = () => false;
  * Does not look inside aggregates, nor in EXISTS or NOT EXISTS patterns.
  */
 export function getAggregatesOfExpression(expression: Expression): ExpressionAggregate[] {
-  // TODO in a comment like this, why is `noFunctionCall` correct? the function context should help in the explanation
+  // Only built-in aggregates are returned, so function calls are searched like any other expression.
   return <ExpressionAggregate[]> findAggregates(expression, noFunctionCall);
 }
 
@@ -130,7 +130,7 @@ export function getGroupedVariables(query: {
 export function getVariablesFromExpression(
   expression: Expression,
   variables: Set<string>,
-  // TODO again in a normal comment liek the (`//`) why is this the good default here?
+  // Without a test, any function call might be an aggregate, whose arguments need not be grouped.
   isAggregateFunction: AggregateFunctionTest = anyFunctionCall,
 ): void {
   expressionTransformer.visitNodeSpecific(expression, {}, {
@@ -196,6 +196,7 @@ export function queryProjectionRespectsGrouping(
   options: ProjectionValidationOptions = {},
 ): void {
   const isAggregateFunction = namedAggregatorTest(options);
+  // Without a callback, no function call groups the query, so fewer variables need to be grouped.
   const isGrouped = isGroupedQuery(query, isAggregateFunction ?? noFunctionCall);
   // NoGroupByOnWildcardSelect
   if (query.variables.length === 1 && F.isWildcard(query.variables[0])) {
@@ -253,7 +254,7 @@ export function queryProjectionIsGood(
   query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
   options: ProjectionValidationOptions = {},
 ): void {
-  selectExpressionAliasesNotInScope(query, namedAggregatorTest(options));
+  selectExpressionAliasesNotInScope(query, options);
   queryProjectionRespectsGrouping(query, options);
 }
 
@@ -280,18 +281,19 @@ export function describeProjectionIsGood(query: QueryDescribe, options: Projecti
  * the GROUP BY keys (v and (expr AS v)), and the trailing VALUES clause (joined before the projection, 18.2.4.3).
  * The variable may also not be used in an earlier SELECT expression.
  * @param query - The SELECT query to validate.
- * @param isAggregateFunction - Whether a function call is a custom aggregate, see {@link isGroupedQuery}.
+ * @param options - Decide which function calls are custom aggregates, see {@link namedAggregatorTest}.
  */
 export function selectExpressionAliasesNotInScope(
   query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
-  isAggregateFunction?: AggregateFunctionTest,
+  options: ProjectionValidationOptions,
 ): void {
   const selectBinds = query.variables.filter((variable): variable is PatternBind =>
     !F.isTerm(variable) && !F.isWildcard(variable));
   if (selectBinds.length > 0) {
     const inScopeVars = new Set<string>();
-    // Grouping only keeps the variables of the group keys in scope
-    if (!isGroupedQuery(query, isAggregateFunction)) {
+    // Grouping only keeps the variables of the group keys in scope.
+    // Without a callback, any function call might be an aggregate, so fewer variables are in scope.
+    if (!isGroupedQuery(query, namedAggregatorTest(options) ?? anyFunctionCall)) {
       findPatternBoundedVars(query.where, inScopeVars);
     }
     for (const variable of getGroupKeyVariables(query.solutionModifiers.group)) {
@@ -310,12 +312,11 @@ export function selectExpressionAliasesNotInScope(
 /**
  * A query is grouped when it has a GROUP BY clause or uses aggregates (18.2.4.1).
  * @param query - The SELECT query.
- * @param isAggregateFunction - Whether a function call is a custom aggregate. Default: any function call might be.
+ * @param isAggregateFunction - Whether a function call is a custom aggregate.
  */
 export function isGroupedQuery(
   query: Pick<QuerySelect, 'variables' | 'solutionModifiers'>,
-  // TODO: same as before, say in a `//` why this is a good default. (as always, be concie. One sentence.)
-  isAggregateFunction: AggregateFunctionTest = anyFunctionCall,
+  isAggregateFunction: AggregateFunctionTest,
 ): boolean {
   if (query.solutionModifiers.group) {
     return true;

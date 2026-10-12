@@ -175,7 +175,7 @@ export type ProjectionValidationOptions =
 export function namedAggregatorTest(
   context: Pick<ProjectionValidationOptions, 'prefixes' | 'baseIRI' | 'verifyWithNamedAggregators'>,
 ): AggregateFunctionTest | undefined {
-  const { prefixes = {}, baseIRI, verifyWithNamedAggregators: isCustomAggregate } = context;
+  const { prefixes = Object.create(null), baseIRI, verifyWithNamedAggregators: isCustomAggregate } = context;
   if (isCustomAggregate === undefined) {
     return undefined;
   }

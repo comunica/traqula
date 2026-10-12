@@ -131,6 +131,29 @@ GROUP BY ?s`);
       expect(expression).not.toHaveProperty('distinct');
     });
 
+    it('keeps the variables of custom aggregates in scope of their group', ({ expect }) => {
+      const ast = parser.parse('SELECT ?s (<http://ex.org/agg>(?o) AS ?a) { ?s ?p ?o } GROUP BY ?s');
+      const project = <Algebra.Project> toAlgebra(ast, { verifyWithNamedAggregators });
+      const group = <Algebra.Group> (<Algebra.Extend> project.input).input;
+      expect(algebraUtils.inScopeVariables(group).map(variable => variable.value).sort())
+        .toEqual([ group.aggregates[0].variable.value, 's' ].sort());
+    });
+
+    it('only calls the callback of the parser with absolute IRIs', ({ expect }) => {
+      const iris: string[] = [];
+      const record = (iri: string): boolean => {
+        iris.push(iri);
+        return false;
+      };
+      parser.parse('BASE <sub/> SELECT (<agg>(?o) AS ?a) { ?s ?p ?o }', { verifyWithNamedAggregators: record });
+      parser.parse('BASE <sub/> SELECT (<agg>(?o) AS ?a) { ?s ?p ?o }', {
+        verifyWithNamedAggregators: record,
+        baseIRI: 'http://ex.org/',
+      });
+      expect(iris.length).toBeGreaterThan(0);
+      expect(iris.every(iri => iri === 'http://ex.org/sub/agg')).toBe(true);
+    });
+
     it('binds a custom aggregate once when its IRIs are written differently', ({ expect }) => {
       const ast = parser.parse(`PREFIX ex: <http://ex.org/> SELECT (ex:agg(?o, ex:x) AS ?a) { ?s ?p ?o }
         ORDER BY <http://ex.org/agg>(?o, <http://ex.org/x>)`);

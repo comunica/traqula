@@ -1,4 +1,5 @@
 import { TransformerSubTyped } from '@traqula/core';
+import { AstFactory } from './astFactory.js';
 import { pnLocalEscPattern } from './lexer/lexerPatterns.js';
 import type { Sparql11Nodes, TermIri } from './Sparql11types.js';
 
@@ -171,6 +172,7 @@ export function resolveIRI(iri: string, base: string | undefined): string {
   return result;
 }
 
+const F = new AstFactory();
 const pnLocalEscGlobal = new RegExp(pnLocalEscPattern.source, 'gu');
 
 /**
@@ -183,7 +185,7 @@ const pnLocalEscGlobal = new RegExp(pnLocalEscPattern.source, 'gu');
  */
 export function resolveTermIri(term: TermIri, prefixes: Record<string, string>, baseIRI: string | undefined): string {
   let fullIri = term.value;
-  if ('prefix' in term) {
+  if (F.isTermNamedPrefixed(term)) {
     const expanded = prefixes[term.prefix];
     if (!expanded) {
       throw new Error(`Unknown prefix: ${term.prefix}`);

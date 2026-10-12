@@ -126,15 +126,18 @@ export const validateFunctionCall: SparqlGrammarRule<'validateFunctionCall', voi
   name: 'validateFunctionCall',
   impl: ({ ACTION }) => (C, functionCall) => {
     ACTION(() => {
-      if (C.skipValidation) {
+      const isAggregateFunction = C.skipValidation ? undefined : namedAggregatorTest(C);
+      if (!isAggregateFunction) {
         return;
       }
-      const isAggregateFunction = namedAggregatorTest(C);
-      functionCallDistinctIsAggregate(functionCall, isAggregateFunction);
-      customAggregateIsAllowed(functionCall, isAggregateFunction, {
-        canParseAggregate: C.parseMode.has('canParseAggregate'),
-        inAggregate: C.parseMode.has('inAggregate'),
-      });
+      const isAggregate = isAggregateFunction(functionCall);
+      functionCallDistinctIsAggregate(functionCall, isAggregate);
+      if (isAggregate) {
+        customAggregateIsAllowed(functionCall, isAggregateFunction, {
+          canParseAggregate: C.parseMode.has('canParseAggregate'),
+          inAggregate: C.parseMode.has('inAggregate'),
+        });
+      }
     });
   },
 };

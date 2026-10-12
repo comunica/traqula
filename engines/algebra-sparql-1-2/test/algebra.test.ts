@@ -1,11 +1,7 @@
 import { Canonicalizer, algebraUtils } from '@traqula/algebra-transformations-1-2';
 import type { Algebra } from '@traqula/algebra-transformations-1-2';
 import { Parser } from '@traqula/parser-sparql-1-2';
-import {
-  algebraTestNamedAggregators,
-  sparqlAlgebraNegativeTests,
-  sparqlAlgebraTests,
-} from '@traqula/test-utils';
+import { sparqlAlgebraNegativeTests, sparqlAlgebraTests } from '@traqula/test-utils';
 import type {
   NegativeAlgebraSuite,
   AlgebraTestSuite,
@@ -26,7 +22,7 @@ describe('algebra output 1.2', () => {
     describe(suite, () => {
       for (const blankToVariable of [ true, false ]) {
         for (const test of sparqlAlgebraTests(suite, blankToVariable, true)) {
-          const { name, json, sparql: query } = test;
+          const { name, json, sparql: query, verifyWithNamedAggregators } = test;
           // If (!name.includes('sparql-1-2-syntax-nested-anonreifier-01') ||
           //   blankToVariable || name.includes('-quads')) {
           //   continue;
@@ -37,7 +33,7 @@ describe('algebra output 1.2', () => {
               toAlgebra(ast, {
                 quads: name.endsWith('-quads'),
                 blankToVariable,
-                verifyWithNamedAggregators: algebraTestNamedAggregators(name),
+                verifyWithNamedAggregators,
               }),
             );
             expect(canon.canonicalizeQuery(algebra, blankToVariable))

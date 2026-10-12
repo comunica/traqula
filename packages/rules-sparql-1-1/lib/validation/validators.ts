@@ -211,12 +211,13 @@ export function queryProjectionRespectsGrouping(
   options: ProjectionValidationOptions = {},
 ): void {
   const isAggregateFunction = namedAggregatorTest(options);
+  const grouped = isGroupedQuery(query, isAggregateFunction ?? noFunctionCall);
   // NoGroupByOnWildcardSelect
   if (query.variables.length === 1 && F.isWildcard(query.variables[0])) {
     if (query.solutionModifiers.group !== undefined) {
       throw new Error('GROUP BY not allowed with wildcard');
     }
-    if (isGroupedQuery(query, isAggregateFunction ?? noFunctionCall)) {
+    if (grouped) {
       throw new Error('Aggregates not allowed with wildcard');
     }
     return;
@@ -226,7 +227,7 @@ export function queryProjectionRespectsGrouping(
   // Check for projection of ungrouped variable
   // Check can be skipped in case of wildcard select.
   const variables = <Exclude<typeof query.variables, [Wildcard]>> query.variables;
-  if (isGroupedQuery(query, isAggregateFunction ?? noFunctionCall)) {
+  if (grouped) {
     // We have to check whether
     //  1. Variables used in projection are usable given the group by clause
     //  2. An aggregate will create an implicit group by clause.
@@ -360,40 +361,32 @@ function getAggregationScopeExpressions(query: Pick<QuerySelect, 'variables' | '
 /**
  * From the SPARQL specification:
  * > Only custom aggregate functions can use the DISTINCT keyword in a function call.
- * Only validates when an `isAggregateFunction` is given, otherwise any function call might be a custom aggregate.
  * @param functionCall - The function call to validate.
- * @param isAggregateFunction - Whether a function call is a custom aggregate.
+ * @param isAggregate - Whether the function call is a custom aggregate.
  */
-export function functionCallDistinctIsAggregate(
-  functionCall: ExpressionFunctionCall,
-  isAggregateFunction?: AggregateFunctionTest,
-): void {
-  if (functionCall.distinct && isAggregateFunction && !isAggregateFunction(functionCall)) {
+export function functionCallDistinctIsAggregate(functionCall: ExpressionFunctionCall, isAggregate: boolean): void {
+  if (functionCall.distinct && !isAggregate) {
     throw new Error('DISTINCT is only allowed in a function call of a custom aggregate');
   }
 }
 
 /**
- * Validates that a custom aggregate is only used where the parser allows the built-in aggregates:
+ * Validates that a call of a custom aggregate is only used where the parser allows the built-in aggregates:
  * - only in the SELECT, HAVING, and ORDER BY clauses.
  * - not within an aggregate function, nor containing one in its arguments,
  *   see https://www.w3.org/2013/sparql-errata#errata-query-5 and the grammar notes of SPARQL 1.2:
  *   > The expression argument of an aggregate function cannot contain an aggregate function.
- * Only validates when an `isAggregateFunction` is given, otherwise any function call might be a custom aggregate.
- * @param functionCall - The function call to validate.
- * @param isAggregateFunction - Whether a function call is a custom aggregate.
+ * @param functionCall - The call of a custom aggregate to validate.
+ * @param isAggregateFunction - Whether a function call is a custom aggregate, to search the arguments.
  * @param position - Where the function call is.
  * @param position.canParseAggregate - Whether aggregates are allowed there.
  * @param position.inAggregate - Whether it is within the arguments of a built-in aggregate.
  */
 export function customAggregateIsAllowed(
   functionCall: ExpressionFunctionCall,
-  isAggregateFunction: AggregateFunctionTest | undefined,
+  isAggregateFunction: AggregateFunctionTest,
   position: { canParseAggregate: boolean; inAggregate: boolean },
 ): void {
-  if (!isAggregateFunction?.(functionCall)) {
-    return;
-  }
   if (!position.canParseAggregate) {
     throw new Error('Aggregates are only allowed in SELECT, HAVING, and ORDER BY clauses.');
   }

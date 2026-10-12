@@ -2,7 +2,7 @@ import type { Algebra } from '@traqula/algebra-transformations-1-1';
 import { Canonicalizer, algebraUtils } from '@traqula/algebra-transformations-1-1';
 import { Parser } from '@traqula/parser-sparql-1-1';
 import type { AlgebraTestSuite } from '@traqula/test-utils';
-import { algebraTestNamedAggregators, sparqlAlgebraNegativeTests, sparqlAlgebraTests } from '@traqula/test-utils';
+import { sparqlAlgebraNegativeTests, sparqlAlgebraTests } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
 import { toAlgebra } from '../lib/index.js';
 
@@ -19,14 +19,14 @@ describe('algebra output', () => {
     describe(suite, () => {
       for (const blankToVariable of [ true, false ]) {
         for (const test of sparqlAlgebraTests(suite, blankToVariable, true)) {
-          const { name, json, sparql: query } = test;
+          const { name, json, sparql: query, verifyWithNamedAggregators } = test;
           it(`${name}${blankToVariable ? ' (no blanks)' : ''}`, ({ expect }) => {
             const ast = parser.parse(query);
             const algebra = algebraUtils.objectify(
               toAlgebra(ast, {
                 quads: name.endsWith('-quads'),
                 blankToVariable,
-                verifyWithNamedAggregators: algebraTestNamedAggregators(name),
+                verifyWithNamedAggregators,
               }),
             );
             expect(canon.canonicalizeQuery(algebra, blankToVariable))

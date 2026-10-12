@@ -95,7 +95,7 @@ AstIndir<'translateNamedExpression', ExpressionFunctionCall, [Algebra.NamedExpre
     F.expressionFunctionCall(
       <RdfTermToAst<typeof expr.name>> SUBRULE(translateAlgTerm, expr.name),
       expr.args.map(x => SUBRULE(translateAlgPureExpression, x)),
-      expr.aggregate === true && expr.distinct === true,
+      expr.distinct === true,
       F.gen(),
     ),
 };

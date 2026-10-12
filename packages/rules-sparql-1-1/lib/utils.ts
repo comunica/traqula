@@ -183,11 +183,10 @@ const pnLocalEscGlobal = new RegExp(pnLocalEscPattern.source, 'gu');
  */
 export function resolveTermIri(term: TermIri, prefixes: Record<string, string>, baseIRI: string | undefined): string {
   let fullIri = term.value;
-  const prefix = (<{ prefix?: unknown }> term).prefix;
-  if (typeof prefix === 'string') {
-    const expanded = prefixes[prefix];
+  if ('prefix' in term) {
+    const expanded = prefixes[term.prefix];
     if (!expanded) {
-      throw new Error(`Unknown prefix: ${prefix}`);
+      throw new Error(`Unknown prefix: ${term.prefix}`);
     }
     // Remove the backslash of PN_LOCAL_ESC escapes, percent-encodings (PLX) are kept as is.
     // "The RDF string of the IRI is formed by unescaping the reserved characters in the second argument, PN_LOCAL,

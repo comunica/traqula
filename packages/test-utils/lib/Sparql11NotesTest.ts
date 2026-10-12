@@ -24,6 +24,12 @@ interface Parser {
 export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQuad>): void {
   // Only check that parsing fails: error messages are not part of the contract,
   // so engines extending the grammar are free to report a different message.
+  function testValidQuery(query: string, context?: ParseContext): TestFunction<object> {
+    return ({ expect }) => {
+      expect(parser.parse(query, context)).toMatchObject({});
+    };
+  }
+
   function testErroneousQuery(query: string, context?: ParseContext): TestFunction<object> {
     return ({ expect }) => {
       let error: any;
@@ -133,7 +139,7 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
       }
     });
 
-    it('should NOT throw on a select expression binding a WHERE variable of a query with aggregates', ({ expect }) => {
+    describe('should NOT throw on a select expression binding a WHERE variable of a query with aggregates', () => {
       const queries = [
         'SELECT (<http://ex.org/agg>(?z) AS ?z) { ?s ?p ?z }',
         'SELECT (<http://ex.org/agg>(DISTINCT ?z) AS ?z) { ?s ?p ?z }',
@@ -149,10 +155,12 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
         'SELECT * { { SELECT (<http://ex.org/agg>(?z) AS ?z) { ?s ?p ?z } } }',
       ];
       for (const query of queries) {
-        expect(parser.parse(query, context), query).toMatchObject({});
+        it(query, testValidQuery(query, context));
       }
-      expect(parser.parse('SELECT (<agg>(?z) AS ?z) { ?s ?p ?z }', { ...context, baseIRI: 'http://ex.org/' }))
-        .toMatchObject({});
+      it('with the base IRI of the context', testValidQuery(
+        'SELECT (<agg>(?z) AS ?z) { ?s ?p ?z }',
+        { ...context, baseIRI: 'http://ex.org/' },
+      ));
     });
 
     describe('should throw on DISTINCT in a function call that is not a known aggregate', () => {
@@ -187,14 +195,14 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
       }
     });
 
-    it('should NOT throw on grouped variables in a query grouped by a known aggregate', ({ expect }) => {
+    describe('should NOT throw on grouped variables in a query grouped by a known aggregate', () => {
       const queries = [
         'SELECT ?s (<http://ex.org/agg>(?o) AS ?a) { ?s ?p ?o } GROUP BY ?s',
         'SELECT (<http://ex.org/f>(?s) AS ?a) (COUNT(*) AS ?c) { ?s ?p ?o } GROUP BY ?s',
         'DESCRIBE ?s { ?s ?p ?o } GROUP BY ?s HAVING (<http://ex.org/agg>(?o) > 1)',
       ];
       for (const query of queries) {
-        expect(parser.parse(query, context), query).toMatchObject({});
+        it(query, testValidQuery(query, context));
       }
     });
 
@@ -224,30 +232,30 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
       }
     });
 
-    it('should NOT throw on a function call that is not a known aggregate within an aggregate', ({ expect }) => {
+    describe('should NOT throw on a function call that is not a known aggregate within an aggregate', () => {
       const queries = [
         'SELECT (<http://ex.org/agg>(<http://ex.org/f>(?o)) AS ?a) { ?s ?p ?o }',
         'SELECT (COUNT(<http://ex.org/f>(?o)) AS ?a) { ?s ?p ?o }',
         'SELECT (<http://ex.org/agg>(?o) + COUNT(?o) AS ?a) { ?s ?p ?o }',
       ];
       for (const query of queries) {
-        expect(parser.parse(query, context), query).toMatchObject({});
+        it(query, testValidQuery(query, context));
       }
     });
   });
 
-  it('should NOT throw on possibly nested or misplaced aggregates without verifyWithNamedAggregators', ({ expect }) => {
+  describe('should NOT throw on possibly nested or misplaced aggregates without verifyWithNamedAggregators', () => {
     const queries = [
       'SELECT (<http://ex.org/agg>(COUNT(?o)) AS ?a) { ?s ?p ?o }',
       'SELECT (COUNT(<http://ex.org/agg>(?o)) AS ?a) { ?s ?p ?o }',
       'SELECT * { ?s ?p ?o FILTER(<http://ex.org/agg>(?o) > 1) }',
     ];
     for (const query of queries) {
-      expect(parser.parse(query), query).toMatchObject({});
+      it(query, testValidQuery(query));
     }
   });
 
-  it('should NOT throw on queries that function calls might group without verifyWithNamedAggregators', ({ expect }) => {
+  describe('should NOT throw on queries that function calls might group without verifyWithNamedAggregators', () => {
     const queries = [
       'SELECT ?s (<http://ex.org/agg>(?o) AS ?a) { ?s ?p ?o }',
       'SELECT (<http://ex.org/f>(?o) AS ?a) (COUNT(*) AS ?c) { ?s ?p ?o }',
@@ -255,17 +263,17 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
       'DESCRIBE ?s { ?s ?p ?o } HAVING (<http://ex.org/agg>(?o) > 1)',
     ];
     for (const query of queries) {
-      expect(parser.parse(query), query).toMatchObject({});
+      it(query, testValidQuery(query));
     }
   });
 
-  it('should NOT throw on DISTINCT in a function call without verifyWithNamedAggregators', ({ expect }) => {
+  describe('should NOT throw on DISTINCT in a function call without verifyWithNamedAggregators', () => {
     const queries = [
       'SELECT (<http://ex.org/f>(DISTINCT ?z) AS ?y) { ?s ?p ?z }',
       'SELECT (COUNT(*) AS ?c) { ?s ?p ?o } GROUP BY <http://ex.org/f>(DISTINCT ?o)',
     ];
     for (const query of queries) {
-      expect(parser.parse(query), query).toMatchObject({});
+      it(query, testValidQuery(query));
     }
   });
 

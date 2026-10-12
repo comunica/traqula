@@ -8,11 +8,11 @@ export interface SparqlContext {
   astFactory: AstFactory;
   /**
    * Current scoped prefixes. Used to validate parsed prefixes are known,
-   * and to resolve the IRIs of function calls against `verifyWithNamedAggregators`.
+   * and to resolve the IRIs of function calls for `verifyWithNamedAggregators`.
    */
   prefixes: Record<string, string>;
   /**
-   * Currently scoped base IRI. Only used to resolve the IRIs of function calls against `verifyWithNamedAggregators`.
+   * Currently scoped base IRI. Only used to resolve the IRIs of function calls for `verifyWithNamedAggregators`.
    */
   baseIRI: string | undefined;
   /**
@@ -36,14 +36,17 @@ export interface SparqlContext {
    */
   rejectGroupedSelectAliasReuse?: boolean;
   /**
-   * The full IRIs of the custom aggregate functions that the query will be evaluated with.
-   * Custom aggregates are syntactically function calls, so without this set,
+   * Decides whether the function with the given full IRI is a custom aggregate
+   * of the engine that will evaluate the query.
+   * The IRI of a function call is resolved using the prefixes and base IRI in scope before it is passed.
+   * Custom aggregates are syntactically function calls, so without this callback,
    * validation leniently assumes that any function call might be an aggregate.
-   * With this set, only function calls whose IRI is in the set are aggregates,
+   * With this callback, only function calls for which it returns true are aggregates,
    * and only those can use the DISTINCT keyword.
+   * It can be called multiple times for the same function call, so it should be cheap and return the same result.
    * Default `undefined`.
    */
-  verifyWithNamedAggregators?: Set<string>;
+  verifyWithNamedAggregators?: (iri: string) => boolean;
   /**
    * Set of queryModes. Primarily used for note 8, 14.
    */

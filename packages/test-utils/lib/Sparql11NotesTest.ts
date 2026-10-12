@@ -8,7 +8,7 @@ interface ParseContext {
   baseIRI?: string;
   skipValidation?: boolean;
   rejectGroupedSelectAliasReuse?: boolean;
-  verifyWithNamedAggregators?: Set<string>;
+  verifyWithNamedAggregators?: (iri: string) => boolean;
 }
 
 interface Parser {
@@ -114,7 +114,8 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
   });
 
   describe('with verifyWithNamedAggregators', () => {
-    const context = { verifyWithNamedAggregators: new Set([ 'http://ex.org/agg', 'http://ex.org/my-agg' ]) };
+    const aggregates = new Set([ 'http://ex.org/agg', 'http://ex.org/my-agg' ]);
+    const context = { verifyWithNamedAggregators: (iri: string): boolean => aggregates.has(iri) };
 
     describe('should throw on a select expression binding a WHERE variable of a query without aggregates', () => {
       const queries = [
@@ -173,6 +174,41 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
         { ...context, skipValidation: true },
       )).toMatchObject({});
     });
+
+    describe('should throw on ungrouped variables in a query grouped by a known aggregate', () => {
+      const queries = [
+        'SELECT ?s (<http://ex.org/agg>(?o) AS ?a) { ?s ?p ?o }',
+        'SELECT (<http://ex.org/f>(?o) AS ?a) (COUNT(*) AS ?c) { ?s ?p ?o }',
+        'SELECT * { ?s ?p ?o } HAVING (<http://ex.org/agg>(?o) > 1)',
+        'DESCRIBE ?s { ?s ?p ?o } HAVING (<http://ex.org/agg>(?o) > 1)',
+      ];
+      for (const query of queries) {
+        it(query, testErroneousQuery(query, context));
+      }
+    });
+
+    it('should NOT throw on grouped variables in a query grouped by a known aggregate', ({ expect }) => {
+      const queries = [
+        'SELECT ?s (<http://ex.org/agg>(?o) AS ?a) { ?s ?p ?o } GROUP BY ?s',
+        'SELECT (<http://ex.org/f>(?s) AS ?a) (COUNT(*) AS ?c) { ?s ?p ?o } GROUP BY ?s',
+        'DESCRIBE ?s { ?s ?p ?o } GROUP BY ?s HAVING (<http://ex.org/agg>(?o) > 1)',
+      ];
+      for (const query of queries) {
+        expect(parser.parse(query, context), query).toMatchObject({});
+      }
+    });
+  });
+
+  it('should NOT throw on queries that function calls might group without verifyWithNamedAggregators', ({ expect }) => {
+    const queries = [
+      'SELECT ?s (<http://ex.org/agg>(?o) AS ?a) { ?s ?p ?o }',
+      'SELECT (<http://ex.org/f>(?o) AS ?a) (COUNT(*) AS ?c) { ?s ?p ?o }',
+      'SELECT * { ?s ?p ?o } HAVING (<http://ex.org/agg>(?o) > 1)',
+      'DESCRIBE ?s { ?s ?p ?o } HAVING (<http://ex.org/agg>(?o) > 1)',
+    ];
+    for (const query of queries) {
+      expect(parser.parse(query), query).toMatchObject({});
+    }
   });
 
   it('should NOT throw on DISTINCT in a function call without verifyWithNamedAggregators', ({ expect }) => {

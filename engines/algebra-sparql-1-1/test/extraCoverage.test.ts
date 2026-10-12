@@ -108,7 +108,7 @@ GROUP BY ?s`);
   });
 
   describe('verifyWithNamedAggregators', () => {
-    const verifyWithNamedAggregators = new Set([ 'http://ex.org/agg' ]);
+    const verifyWithNamedAggregators = (iri: string): boolean => iri === 'http://ex.org/agg';
 
     it('translates a custom aggregate with a relative IRI resolved against the base IRI', ({ expect }) => {
       const ast = parser.parse('BASE <http://ex.org/> SELECT (<agg>(DISTINCT ?o) AS ?a) { ?s ?p ?o }');

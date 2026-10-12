@@ -156,7 +156,7 @@ export function getVariablesFromExpression(
 
 /**
  * Options of {@link queryProjectionIsGood}, the equally named fields of the parse context.
- * The prefixes and base IRI are used to resolve the IRIs of function calls against `verifyWithNamedAggregators`,
+ * The prefixes and base IRI are used to resolve the IRIs of function calls for `verifyWithNamedAggregators`,
  * see {@link namedAggregatorTest}.
  */
 export type ProjectionValidationOptions =
@@ -165,17 +165,18 @@ export type ProjectionValidationOptions =
 
 /**
  * Creates the {@link AggregateFunctionTest} described by the `verifyWithNamedAggregators` of the parser context:
- * a function call is a custom aggregate when its IRI, resolved using the prefixes and base IRI in scope, is in the set.
+ * a function call is a custom aggregate when the callback returns true for its IRI,
+ * resolved using the prefixes and base IRI in scope.
  * A function call whose IRI cannot be resolved (an unknown prefix, or a relative IRI without base IRI)
- * is not in the set.
+ * is not a custom aggregate, the callback is not called for it.
  * Returns undefined when the context has no `verifyWithNamedAggregators`,
  * meaning that any function call might be a custom aggregate.
  */
 export function namedAggregatorTest(
   context: Pick<ProjectionValidationOptions, 'prefixes' | 'baseIRI' | 'verifyWithNamedAggregators'>,
 ): AggregateFunctionTest | undefined {
-  const { prefixes = {}, baseIRI, verifyWithNamedAggregators: aggregators } = context;
-  if (aggregators === undefined) {
+  const { prefixes = {}, baseIRI, verifyWithNamedAggregators: isCustomAggregate } = context;
+  if (isCustomAggregate === undefined) {
     return undefined;
   }
   return (functionCall) => {
@@ -185,7 +186,7 @@ export function namedAggregatorTest(
     } catch {
       return false;
     }
-    return aggregators.has(iri);
+    return isCustomAggregate(iri);
   };
 }
 
@@ -203,7 +204,7 @@ export function namedAggregatorTest(
  *   but the SPARQL 1.1 text for grouped queries (https://www.w3.org/TR/sparql11-query/#aggregateRestrictions)
  *   does not, so {@link ProjectionValidationOptions.rejectGroupedSelectAliasReuse} rejects them.
  * Function calls only group the query when {@link ProjectionValidationOptions.verifyWithNamedAggregators}
- * names them as custom aggregates, as they do in the algebra.
+ * decides they are custom aggregates, as they do in the algebra.
  */
 export function queryProjectionRespectsGrouping(
   query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'values'>,

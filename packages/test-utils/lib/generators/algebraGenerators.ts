@@ -33,15 +33,15 @@ function getRootCanonicalSparqlBlankToVar(): string {
  * fixtures whose name ends in `-named-aggregators` use the custom aggregate `http://example.org/median`.
  * @param name - The name of the test fixture.
  */
-export function algebraTestNamedAggregators(name: string): Set<string> | undefined {
-  return name.endsWith('-named-aggregators') ? new Set([ 'http://example.org/median' ]) : undefined;
+export function algebraTestNamedAggregators(name: string): ((iri: string) => boolean) | undefined {
+  return name.endsWith('-named-aggregators') ? iri => iri === 'http://example.org/median' : undefined;
 }
 
 export interface algebraTestGen {
   name: string;
   json: unknown;
   quads: boolean;
-  verifyWithNamedAggregators: Set<string> | undefined;
+  verifyWithNamedAggregators: ((iri: string) => boolean) | undefined;
   sparql: string | undefined;
   canonicalSparql: string | undefined;
 }

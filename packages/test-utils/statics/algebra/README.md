@@ -33,7 +33,7 @@ algebra translation (see `sparqlAlgebraNegativeTests`). Those only need a
 elsewhere. Both the SPARQL 1.1 and the SPARQL 1.2 engine run them.
 
 Fixtures whose name ends in `-named-aggregators` are translated with
-`verifyWithNamedAggregators` containing `http://example.org/median` (see `algebraTestNamedAggregators`),
+a `verifyWithNamedAggregators` that only accepts `http://example.org/median` (see `algebraTestNamedAggregators`),
 so that function call is translated as a custom aggregate.
 
 ## What each folder is for

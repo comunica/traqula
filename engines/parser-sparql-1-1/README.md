@@ -61,18 +61,20 @@ Optionally, the following parameters can be set in the Parsers defaultContext:
 
 * `dataFactory`: A custom [RDFJS DataFactory](http://rdf.js.org/#datafactory-interface) to construct terms and triples. _(Default: `require('@rdfjs/data-model')`)_
 * `skipValidation`: Can be used to disable the validation that used variables in a select clause are in scope. _(Default: `false`)_
-* `verifyWithNamedAggregators`: A `Set` of the full IRIs of the custom aggregate functions the query will be evaluated with. _(Default: `undefined`)_
+* `rejectGroupedSelectAliasReuse`: Reject select expressions that use a variable bound by an earlier select expression in a grouped query, like `SELECT (COUNT(?o) AS ?c) (?c + 1 AS ?d) WHERE { ?s ?p ?o }`, as the SPARQL 1.1 text requires. SPARQL 1.2 allows this reuse. _(Default: `false`)_
+* `verifyWithNamedAggregators`: A callback `(iri: string) => boolean` that decides whether the function with the given full IRI is a custom aggregate of the engine the query will be evaluated with. _(Default: `undefined`)_
   Custom aggregates are syntactically function calls, so by default, validation assumes any function call might be an aggregate.
   For example, `SELECT (<http://ex.org/f>(?o) AS ?o) { ?s ?p ?o }` is accepted, since `?o` is not in scope when `<http://ex.org/f>` is an aggregate.
-  When this set is given, only function calls whose IRI (resolved using the prefixes and base IRI) is in the set are aggregates,
-  so that query is rejected unless the set contains `http://ex.org/f`.
-  Function calls not in the set cannot use `DISTINCT`, since only custom aggregates can.
-* `rejectGroupedSelectAliasReuse`: Reject select expressions that use a variable bound by an earlier select expression in a grouped query, like `SELECT (COUNT(?o) AS ?c) (?c + 1 AS ?d) WHERE { ?s ?p ?o }`, as the SPARQL 1.1 text requires. SPARQL 1.2 allows this reuse. _(Default: `false`)_
+  When this callback is given, only function calls for whose IRI (resolved using the prefixes and base IRI) it returns `true` are aggregates,
+  so that query is rejected unless it returns `true` for `http://ex.org/f`.
+  Other function calls cannot use `DISTINCT`, since only custom aggregates can.
+  The callback can be called multiple times for the same function call, so it should be cheap and return the same result.
 
 These parameters can also be given per query, as the second argument of `parse`:
 
 ```typescript
-const ast = parser.parse(query, { verifyWithNamedAggregators: new Set([ 'http://example.org/median' ]) });
+const customAggregates = new Set([ 'http://example.org/median' ]);
+const ast = parser.parse(query, { verifyWithNamedAggregators: iri => customAggregates.has(iri) });
 ```
 
 ## AstFactory and AstTransformer

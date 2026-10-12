@@ -187,7 +187,7 @@ export type MapAggregateType = Wildcard | Expression | Ordering | PatternBind;
 /**
  * Rewrites some of the input sparql object to make use of aggregate variables
  * It thus replaces aggregates by their representative variable and registers the mapping.
- * Function calls whose IRI is in `verifyWithNamedAggregators` are custom aggregates,
+ * Function calls for whose IRI `verifyWithNamedAggregators` returns true are custom aggregates,
  * they are registered as an aggregate with their full IRI as aggregation.
  */
 export const mapAggregate:
@@ -197,7 +197,7 @@ AlgebraIndir<'mapAggregate', MapAggregateType, [MapAggregateType, Record<string,
     let thingy = input;
     if (verifyWithNamedAggregators && F.isExpressionFunctionCall(thingy)) {
       const aggregator = SUBRULE(translateNamed, thingy.function).value;
-      if (verifyWithNamedAggregators.has(aggregator)) {
+      if (verifyWithNamedAggregators(aggregator)) {
         // Algebra aggregates have a single expression, like the built-in aggregates.
         if (thingy.args.length !== 1) {
           throw new Error(`Custom aggregate <${aggregator}> must have exactly one argument to be translated to algebra`);

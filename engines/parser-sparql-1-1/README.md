@@ -68,6 +68,8 @@ Optionally, the following parameters can be set in the Parsers defaultContext:
   When this callback is given, only function calls for whose IRI (resolved using the prefixes and base IRI) it returns `true` are aggregates,
   so that query is rejected unless it returns `true` for `http://ex.org/f`.
   Other function calls cannot use `DISTINCT`, since only custom aggregates can.
+  Like the built-in aggregates, custom aggregates are then only allowed in the `SELECT`, `HAVING` and `ORDER BY` clauses,
+  and not within (the arguments of) another aggregate.
   The callback can be called multiple times for the same function call, so it should be cheap and return the same result.
 
 These parameters can also be given per query, as the second argument of `parse`:

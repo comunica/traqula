@@ -374,6 +374,36 @@ export function functionCallDistinctIsAggregate(
 }
 
 /**
+ * Validates that a custom aggregate is only used where the parser allows the built-in aggregates:
+ * - only in the SELECT, HAVING, and ORDER BY clauses.
+ * - not within an aggregate function, nor containing one in its arguments,
+ *   see https://www.w3.org/2013/sparql-errata#errata-query-5 and the grammar notes of SPARQL 1.2:
+ *   > The expression argument of an aggregate function cannot contain an aggregate function.
+ * Only validates when an `isAggregateFunction` is given, otherwise any function call might be a custom aggregate.
+ * @param functionCall - The function call to validate.
+ * @param isAggregateFunction - Whether a function call is a custom aggregate.
+ * @param position - Where the function call is.
+ * @param position.canParseAggregate - Whether aggregates are allowed there.
+ * @param position.inAggregate - Whether it is within the arguments of a built-in aggregate.
+ */
+export function customAggregateIsAllowed(
+  functionCall: ExpressionFunctionCall,
+  isAggregateFunction: AggregateFunctionTest | undefined,
+  position: { canParseAggregate: boolean; inAggregate: boolean },
+): void {
+  if (!isAggregateFunction?.(functionCall)) {
+    return;
+  }
+  if (!position.canParseAggregate) {
+    throw new Error('Aggregates are only allowed in SELECT, HAVING, and ORDER BY clauses.');
+  }
+  if (position.inAggregate ||
+    functionCall.args.some(arg => findAggregates(arg, isAggregateFunction).length > 0)) {
+    throw new Error('An aggregate function is not allowed within an aggregate function.');
+  }
+}
+
+/**
  * https://www.w3.org/TR/sparql12-query/#variableScope
  * > In SELECT, the variable v must not be in-scope in the graph pattern of the SELECT clause,
  * > nor used in another select expression earlier in the clause.

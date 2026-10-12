@@ -11,6 +11,7 @@ import type {
 import {
   checkBlankNodeBGPScope,
   checkNote13,
+  customAggregateIsAllowed,
   describeProjectionIsGood,
   functionCallDistinctIsAggregate,
   namedAggregatorTest,
@@ -115,13 +116,25 @@ export const validateGroupGraphPatternSub: SparqlGrammarRule<'validateGroupGraph
 };
 
 /**
- * Validates that only custom aggregates use DISTINCT in a function call, see {@link functionCallDistinctIsAggregate}.
+ * Validates a function call, after its arguments are parsed:
+ * only custom aggregates use DISTINCT (see {@link functionCallDistinctIsAggregate}),
+ * and custom aggregates are only used where aggregates are allowed (see {@link customAggregateIsAllowed}).
  * Only validates when the context has `verifyWithNamedAggregators`,
  * otherwise any function call might be a custom aggregate.
  */
 export const validateFunctionCall: SparqlGrammarRule<'validateFunctionCall', void, [ExpressionFunctionCall]> = {
   name: 'validateFunctionCall',
   impl: ({ ACTION }) => (C, functionCall) => {
-    ACTION(() => !C.skipValidation && functionCallDistinctIsAggregate(functionCall, namedAggregatorTest(C)));
+    ACTION(() => {
+      if (C.skipValidation) {
+        return;
+      }
+      const isAggregateFunction = namedAggregatorTest(C);
+      functionCallDistinctIsAggregate(functionCall, isAggregateFunction);
+      customAggregateIsAllowed(functionCall, isAggregateFunction, {
+        canParseAggregate: C.parseMode.has('canParseAggregate'),
+        inAggregate: C.parseMode.has('inAggregate'),
+      });
+    });
   },
 };

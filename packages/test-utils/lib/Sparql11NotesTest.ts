@@ -197,6 +197,54 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
         expect(parser.parse(query, context), query).toMatchObject({});
       }
     });
+
+    describe('should throw on a known aggregate within an aggregate', () => {
+      const queries = [
+        'SELECT (<http://ex.org/agg>(COUNT(?o)) AS ?a) { ?s ?p ?o }',
+        'SELECT (<http://ex.org/agg>(1 + MAX(?o)) AS ?a) { ?s ?p ?o }',
+        'SELECT (COUNT(<http://ex.org/agg>(?o)) AS ?a) { ?s ?p ?o }',
+        'PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT (SUM(xsd:integer(<http://ex.org/agg>(?o))) AS ?a) { ?s ?p ?o }',
+        'SELECT (<http://ex.org/agg>(<http://ex.org/my-agg>(?o)) AS ?a) { ?s ?p ?o }',
+        'SELECT ?s { ?s ?p ?o } GROUP BY ?s HAVING (<http://ex.org/agg>(<http://ex.org/agg>(?o)) > 1)',
+      ];
+      for (const query of queries) {
+        it(query, testErroneousQuery(query, context));
+      }
+    });
+
+    describe('should throw on a known aggregate outside the SELECT, HAVING, and ORDER BY clauses', () => {
+      const queries = [
+        'SELECT * { ?s ?p ?o FILTER(<http://ex.org/agg>(?o) > 1) }',
+        'SELECT * { ?s ?p ?o FILTER <http://ex.org/agg>(?o) }',
+        'SELECT * { ?s ?p ?o BIND(<http://ex.org/agg>(?o) AS ?a) }',
+        'SELECT (COUNT(*) AS ?c) { ?s ?p ?o } GROUP BY (<http://ex.org/agg>(?o))',
+      ];
+      for (const query of queries) {
+        it(query, testErroneousQuery(query, context));
+      }
+    });
+
+    it('should NOT throw on a function call that is not a known aggregate within an aggregate', ({ expect }) => {
+      const queries = [
+        'SELECT (<http://ex.org/agg>(<http://ex.org/f>(?o)) AS ?a) { ?s ?p ?o }',
+        'SELECT (COUNT(<http://ex.org/f>(?o)) AS ?a) { ?s ?p ?o }',
+        'SELECT (<http://ex.org/agg>(?o) + COUNT(?o) AS ?a) { ?s ?p ?o }',
+      ];
+      for (const query of queries) {
+        expect(parser.parse(query, context), query).toMatchObject({});
+      }
+    });
+  });
+
+  it('should NOT throw on possibly nested or misplaced aggregates without verifyWithNamedAggregators', ({ expect }) => {
+    const queries = [
+      'SELECT (<http://ex.org/agg>(COUNT(?o)) AS ?a) { ?s ?p ?o }',
+      'SELECT (COUNT(<http://ex.org/agg>(?o)) AS ?a) { ?s ?p ?o }',
+      'SELECT * { ?s ?p ?o FILTER(<http://ex.org/agg>(?o) > 1) }',
+    ];
+    for (const query of queries) {
+      expect(parser.parse(query), query).toMatchObject({});
+    }
   });
 
   it('should NOT throw on queries that function calls might group without verifyWithNamedAggregators', ({ expect }) => {

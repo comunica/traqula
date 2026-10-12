@@ -43,6 +43,8 @@ export interface SparqlContext {
    * validation leniently assumes that any function call might be an aggregate.
    * With this callback, only function calls for which it returns true are aggregates,
    * and only those can use the DISTINCT keyword.
+   * Like the built-in aggregates, they are then only allowed in the SELECT, HAVING, and ORDER BY clauses,
+   * and not within another aggregate.
    * It can be called multiple times for the same function call, so it should be cheap and return the same result.
    * Default `undefined`.
    */

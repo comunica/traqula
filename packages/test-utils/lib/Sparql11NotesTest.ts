@@ -154,6 +154,54 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
     'SELECT (SUM(COUNT(?lprice)) AS ?totalPrice) { }',
   ));
 
+  describe('aggregates in a group graph pattern nested in a clause that allows aggregates', () => {
+    const invalidQueries = {
+      'FILTER in EXISTS in SELECT': 'SELECT (EXISTS { ?s ?p ?o FILTER(COUNT(?o) > 1) } AS ?e) WHERE { ?s ?p ?o }',
+      'FILTER in NOT EXISTS in SELECT':
+        'SELECT (NOT EXISTS { ?s ?p ?o FILTER(COUNT(?o) > 1) } AS ?e) WHERE { ?s ?p ?o }',
+      'BIND in EXISTS in SELECT': 'SELECT (EXISTS { ?s ?p ?o BIND(SUM(?o) AS ?x) } AS ?e) WHERE { ?s ?p ?o }',
+      'BIND in NOT EXISTS in SELECT':
+        'SELECT (NOT EXISTS { ?s ?p ?o BIND(SUM(?o) AS ?x) } AS ?e) WHERE { ?s ?p ?o }',
+      'FILTER in EXISTS in HAVING':
+        'SELECT ?s { ?s ?p ?o } GROUP BY ?s HAVING (EXISTS { ?s ?p ?o FILTER(SUM(?o) > 1) })',
+      'FILTER in NOT EXISTS in HAVING':
+        'SELECT ?s { ?s ?p ?o } GROUP BY ?s HAVING (NOT EXISTS { ?s ?p ?o FILTER(SUM(?o) > 1) })',
+      'BIND in EXISTS in HAVING':
+        'SELECT ?s { ?s ?p ?o } GROUP BY ?s HAVING (EXISTS { ?s ?p ?o BIND(MAX(?o) AS ?x) })',
+      'BIND in NOT EXISTS in HAVING':
+        'SELECT ?s { ?s ?p ?o } GROUP BY ?s HAVING (NOT EXISTS { ?s ?p ?o BIND(MAX(?o) AS ?x) })',
+      'FILTER in EXISTS in ORDER BY': 'SELECT ?s { ?s ?p ?o } ORDER BY (EXISTS { ?s ?p ?o FILTER(COUNT(?o) > 1) })',
+      'nested group in EXISTS in SELECT':
+        'SELECT (EXISTS { { ?s ?p ?o FILTER(COUNT(?o) > 1) } } AS ?e) WHERE { ?s ?p ?o }',
+      'EXISTS in an aggregate in SELECT':
+        'SELECT (COUNT(EXISTS { ?s ?p ?o FILTER(COUNT(?o) > 1) }) AS ?n) WHERE { ?s ?p ?o }',
+      'GROUP BY of a sub-SELECT in EXISTS in SELECT':
+        'SELECT (EXISTS { { SELECT (COUNT(*) AS ?c) { ?s ?p ?o } GROUP BY (COUNT(?o)) } } AS ?e) WHERE { ?s ?p ?o }',
+      'aggregate within an aggregate in a sub-SELECT in EXISTS in SELECT':
+        'SELECT (EXISTS { { SELECT (SUM(COUNT(?o)) AS ?c) { ?s ?p ?o } } } AS ?e) WHERE { ?s ?p ?o }',
+    };
+    for (const [ name, query ] of Object.entries(invalidQueries)) {
+      it(`should throw an error on an aggregate in ${name}`, testErroneousQuery(query));
+    }
+
+    it('should NOT throw on aggregates in the clauses of a sub-SELECT', ({ expect }) => {
+      const queries = [
+        'SELECT (EXISTS { { SELECT (COUNT(?o) AS ?c) WHERE { ?s ?p ?o } } } AS ?e) WHERE { ?s ?p ?o }',
+        'SELECT (NOT EXISTS { { SELECT ?s { ?s ?p ?o } GROUP BY ?s HAVING (SUM(?o) > 1) } } AS ?e) { ?s ?p ?o }',
+        'SELECT ?s {} GROUP BY ?s HAVING (EXISTS { { SELECT ?s { ?s ?p ?o } GROUP BY ?s ORDER BY (MAX(?o)) } })',
+        'SELECT (COUNT(EXISTS { { SELECT (COUNT(?o) AS ?c) { ?s ?p ?o } } }) AS ?n) { ?s ?p ?o }',
+        'SELECT (EXISTS { { SELECT (COUNT(?o) AS ?c) { ?s ?p ?o } } } AS ?e) (SUM(?o) AS ?t) { ?s ?p ?o }',
+      ];
+      for (const query of queries) {
+        expect(parser.parse(query), query).toMatchObject({});
+      }
+    });
+
+    it('should still throw on an aggregate within an aggregate after a nested group graph pattern', testErroneousQuery(
+      'SELECT (SUM(EXISTS { { SELECT (COUNT(?o) AS ?c) { ?s ?p ?o } } } + COUNT(?o)) AS ?n) { ?s ?p ?o }',
+    ));
+  });
+
   describe('with pre-defined prefixes', () => {
     const prefixes = { a: 'ex:abc#', b: 'ex:def#' };
 

@@ -274,15 +274,17 @@ export function queryProjectionRespectsGrouping(
 
 /**
  * Verify that the projected variables (select head) are allowed:
- * - they respect the grouping of the query, see {@link queryProjectionRespectsGrouping}
  * - 'select ?var as ?other', ?other cannot be in scope, see {@link selectExpressionAliasesNotInScope}
+ * - they respect the grouping of the query, see {@link queryProjectionRespectsGrouping}
+ * The aliases are checked first, so a select expression using the target of a later one
+ * is not reported as using an ungrouped variable.
  */
 export function queryProjectionIsGood(
   query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
   options: ProjectionValidationOptions = {},
 ): void {
-  queryProjectionRespectsGrouping(query, options);
   selectExpressionAliasesNotInScope(query);
+  queryProjectionRespectsGrouping(query, options);
 }
 
 /**

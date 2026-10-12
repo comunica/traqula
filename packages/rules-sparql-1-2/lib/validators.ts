@@ -134,12 +134,12 @@ export function queryProjectionIsGood(
   query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
   options: T11.ProjectionValidationOptions = {},
 ): void {
+  selectExpressionAliasesNotInScope(query);
   queryProjectionRespectsGrouping(
     <T11.QuerySelect> <unknown> query,
     options,
     (where, boundedVars) => findPatternBoundedVars(<Pattern> <unknown> where, boundedVars),
   );
-  selectExpressionAliasesNotInScope(query);
 }
 
 /**

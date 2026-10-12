@@ -1,0 +1,112 @@
+{
+  "type": "project",
+  "input": {
+    "type": "extend",
+    "input": {
+      "type": "extend",
+      "input": {
+        "type": "extend",
+        "input": {
+          "type": "group",
+          "input": {
+            "type": "bgp",
+            "patterns": [
+              {
+                "type": "pattern",
+                "termType": "Quad",
+                "subject": {
+                  "termType": "Variable",
+                  "value": "s"
+                },
+                "predicate": {
+                  "termType": "Variable",
+                  "value": "p"
+                },
+                "object": {
+                  "termType": "Variable",
+                  "value": "o"
+                },
+                "graph": {
+                  "termType": "DefaultGraph",
+                  "value": ""
+                }
+              }
+            ]
+          },
+          "variables": [
+            {
+              "termType": "Variable",
+              "value": "s"
+            }
+          ],
+          "aggregates": [
+            {
+              "type": "expression",
+              "subType": "aggregate",
+              "aggregator": "count",
+              "expression": {
+                "type": "expression",
+                "subType": "term",
+                "term": {
+                  "termType": "Variable",
+                  "value": "o"
+                }
+              },
+              "distinct": false,
+              "variable": {
+                "termType": "Variable",
+                "value": "var0"
+              }
+            }
+          ]
+        },
+        "variable": {
+          "termType": "Variable",
+          "value": "c"
+        },
+        "expression": {
+          "type": "expression",
+          "subType": "term",
+          "term": {
+            "termType": "Variable",
+            "value": "var0"
+          }
+        }
+      },
+      "variable": {
+        "termType": "Variable",
+        "value": "s2"
+      },
+      "expression": {
+        "type": "expression",
+        "subType": "term",
+        "term": {
+          "termType": "Variable",
+          "value": "s"
+        }
+      }
+    },
+    "variable": {
+      "termType": "Variable",
+      "value": "c2"
+    },
+    "expression": {
+      "type": "expression",
+      "subType": "term",
+      "term": {
+        "termType": "Variable",
+        "value": "c"
+      }
+    }
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "s2"
+    },
+    {
+      "termType": "Variable",
+      "value": "c2"
+    }
+  ]
+}

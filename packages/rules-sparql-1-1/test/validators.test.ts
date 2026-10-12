@@ -9,6 +9,9 @@ import {
   checkBlankNodeBGPScope,
   checkNote13,
   findPatternBoundedVars,
+  getAggregatesOfExpression,
+  getExpressionId,
+  getVariablesFromExpression,
   queryProjectionIsGood,
   updateNoReuseBlankNodeLabels,
 } from '../lib/index.js';
@@ -69,6 +72,37 @@ describe('queryProjectionIsGood', () => {
     };
 
     expect(() => queryProjectionIsGood(<any>query)).not.toThrow();
+  });
+});
+
+describe('getAggregatesOfExpression', () => {
+  it('finds aggregates nested in operators and function calls, but not in EXISTS patterns', ({ expect }) => {
+    const count = F.aggregate('count', false, F.termVariable('y', noLoc), undefined, noLoc);
+    const sum = F.aggregate('sum', false, F.termVariable('z', noLoc), undefined, noLoc);
+    const max = F.aggregate('max', false, F.termVariable('w', noLoc), undefined, noLoc);
+    const exists = F.expressionPatternOperation(
+      'exists',
+      F.patternGroup([ F.patternFilter(max, noLoc) ], noLoc),
+      noLoc,
+    );
+    const aggregates = getAggregatesOfExpression(F.expressionOperation('+', [
+      F.expressionFunctionCall(F.termNamed(noLoc, 'http://example.org/f'), [ count ], false, noLoc),
+      sum,
+      exists,
+    ], noLoc));
+    expect(new Set(aggregates)).toEqual(new Set([ count, sum ]));
+  });
+});
+
+describe('getVariablesFromExpression', () => {
+  it('skips the variables within aggregates and function calls', ({ expect }) => {
+    const variables = new Set<string>();
+    getVariablesFromExpression(F.expressionOperation('+', [
+      F.termVariable('x', noLoc),
+      F.aggregate('count', false, F.termVariable('y', noLoc), undefined, noLoc),
+      F.expressionFunctionCall(F.termNamed(noLoc, 'http://example.org/f'), [ F.termVariable('z', noLoc) ], false, noLoc),
+    ], noLoc), variables);
+    expect(variables).toEqual(new Set([ 'x' ]));
   });
 });
 
@@ -430,26 +464,18 @@ describe('findPatternBoundedVars', () => {
   });
 });
 
-describe('queryProjectionIsGood - additional cases', () => {
-  it('returns id for aggregate with variable expression', ({ expect }) => {
+describe('getExpressionId', () => {
+  it('returns the id of a variable, a group bind, and an aggregate with variable expression', ({ expect }) => {
     const varX = F.termVariable('x', noLoc);
-    const agg = F.aggregate('count', false, varX, undefined, noLoc);
-    // Build a GROUP BY with the aggregate as grouping
-    const query = {
-      variables: [ varX ],
-      solutionModifiers: {
-        group: {
-          type: 'solutionModifier',
-          subType: 'group',
-          groupings: [ agg ],
-        },
-      },
-      where: { type: 'group', patterns: []},
-    };
-    // This exercises getExpressionId with aggregate case
-    expect(() => queryProjectionIsGood(<any>query)).not.toThrow();
+    const sum = F.expressionOperation('+', [ varX ], noLoc);
+    expect(getExpressionId(varX)).toBe('x');
+    expect(getExpressionId({ variable: varX, value: sum, loc: noLoc })).toBe('x');
+    expect(getExpressionId(F.aggregate('count', false, varX, undefined, noLoc))).toBe('x');
+    expect(getExpressionId(sum)).toBeUndefined();
   });
+});
 
+describe('queryProjectionIsGood - additional cases', () => {
   it('throws on ungrouped variable in expression binding', ({ expect }) => {
     const varX = F.termVariable('x', noLoc);
     const varY = F.termVariable('y', noLoc);

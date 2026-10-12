@@ -10,6 +10,7 @@ import type {
   TermVariable,
   Wildcard,
 } from '@traqula/rules-sparql-1-1';
+import { getGroupedVariables } from '@traqula/rules-sparql-1-1';
 import equal from 'fast-deep-equal';
 import type { Algebra } from '../index.js';
 import type { AlgebraIndir, FlattenedTriple } from './core.js';
@@ -22,7 +23,7 @@ import {
   translateNamed,
   translateTerm,
 } from './general.js';
-import { translateExpression } from './patterns.js';
+import { simplifiedJoin, translateExpression } from './patterns.js';
 import { translateBasicGraphPattern, translateQuad } from './tripleAndQuad.js';
 
 /**
@@ -46,16 +47,16 @@ export const translateAggregates: AlgebraIndir<'translateAggregates', Algebra.Op
 
     // Step: GROUP BY - If we found an aggregate, in group by or implicitly, do Group function.
     // 18.2.4.1 Grouping and Aggregation
-    if (query.solutionModifiers.group ?? Object.keys(varAggrMap).length > 0) {
+    const grouped = query.solutionModifiers.group !== undefined || Object.keys(varAggrMap).length > 0;
+    if (grouped) {
       const aggregates = Object.keys(varAggrMap).map(var_ =>
         SUBRULE(translateBoundAggregate, varAggrMap[var_], DF.variable(var_)));
       const vars: RDF.Variable[] = [];
       if (query.solutionModifiers.group) {
         for (const expression of query.solutionModifiers.group.groupings) {
           // https://www.w3.org/TR/sparql11-query/#rGroupCondition
-          if (F.isTerm(expression)) {
-            // This will always be a var, otherwise sparql would be invalid
-            vars.push(<RDF.Variable>SUBRULE(translateTerm, expression));
+          if (F.isTermVariable(expression)) {
+            vars.push(<AstToRdfTerm<typeof expression>>SUBRULE(translateTerm, expression));
           } else {
             let var_: RDF.Variable;
             let expr: Expression;
@@ -63,6 +64,8 @@ export const translateAggregates: AlgebraIndir<'translateAggregates', Algebra.Op
               var_ = <AstToRdfTerm<typeof expression.variable>>SUBRULE(translateTerm, expression.variable);
               expr = expression.value;
             } else {
+              // Unnamed expressions, including non-variable terms like constants or (SPARQL 1.2) triple terms,
+              // are bound to a fresh variable
               var_ = SUBRULE(generateFreshVar);
               expr = expression;
             }
@@ -83,7 +86,7 @@ export const translateAggregates: AlgebraIndir<'translateAggregates', Algebra.Op
 
     // 18.2.4.3
     if (query.values) {
-      res = AF.createJoin([ res, SUBRULE(translateInlineData, query.values) ]);
+      res = SUBRULE(simplifiedJoin, res, SUBRULE(translateInlineData, query.values));
     }
 
     // 18.2.4.4
@@ -92,7 +95,11 @@ export const translateAggregates: AlgebraIndir<'translateAggregates', Algebra.Op
     if (variables) {
       // Sort variables for consistent output
       if (variables.some(wild => F.isWildcard(wild))) {
-        PatternValues = [ ...SUBRULE(inScopeVariables, query).values() ].map(x => DF.variable(x))
+        // Grouping only keeps the variables of the group keys and the trailing VALUES clause in scope
+        const inScope = grouped ?
+          new Set(getGroupedVariables(query).map(variable => variable.value)) :
+          SUBRULE(inScopeVariables, query);
+        PatternValues = [ ...inScope.values() ].map(x => DF.variable(x))
           .sort((left, right) => left.value.localeCompare(right.value));
       } else {
         // Wildcard has been filtered out above

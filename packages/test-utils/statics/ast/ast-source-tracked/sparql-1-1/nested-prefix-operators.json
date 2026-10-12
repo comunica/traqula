@@ -1,0 +1,448 @@
+{
+  "context": [],
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bind",
+        "expression": {
+          "type": "expression",
+          "subType": "operation",
+          "operator": "uminus",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "operation",
+              "operator": "uminus",
+              "args": [
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "x",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 27,
+                    "end": 29
+                  }
+                }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 25,
+                "end": 30
+              }
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 24,
+            "end": 30
+          }
+        },
+        "variable": {
+          "type": "term",
+          "subType": "variable",
+          "value": "a",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 34,
+            "end": 36
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 19,
+          "end": 37
+        }
+      },
+      {
+        "type": "pattern",
+        "subType": "bind",
+        "expression": {
+          "type": "expression",
+          "subType": "operation",
+          "operator": "uplus",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "operation",
+              "operator": "uminus",
+              "args": [
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "x",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 48,
+                    "end": 50
+                  }
+                }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 46,
+                "end": 51
+              }
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 45,
+            "end": 51
+          }
+        },
+        "variable": {
+          "type": "term",
+          "subType": "variable",
+          "value": "b",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 55,
+            "end": 57
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 40,
+          "end": 58
+        }
+      },
+      {
+        "type": "pattern",
+        "subType": "bind",
+        "expression": {
+          "type": "expression",
+          "subType": "operation",
+          "operator": "uminus",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "operation",
+              "operator": "uplus",
+              "args": [
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "x",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 69,
+                    "end": 71
+                  }
+                }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 67,
+                "end": 72
+              }
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 66,
+            "end": 72
+          }
+        },
+        "variable": {
+          "type": "term",
+          "subType": "variable",
+          "value": "c",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 76,
+            "end": 78
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 61,
+          "end": 79
+        }
+      },
+      {
+        "type": "pattern",
+        "subType": "bind",
+        "expression": {
+          "type": "expression",
+          "subType": "operation",
+          "operator": "!",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "operation",
+              "operator": "!",
+              "args": [
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "x",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 90,
+                    "end": 92
+                  }
+                }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 88,
+                "end": 93
+              }
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 87,
+            "end": 93
+          }
+        },
+        "variable": {
+          "type": "term",
+          "subType": "variable",
+          "value": "d",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 97,
+            "end": 99
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 82,
+          "end": 100
+        }
+      },
+      {
+        "type": "pattern",
+        "subType": "bind",
+        "expression": {
+          "type": "expression",
+          "subType": "operation",
+          "operator": "!",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "operation",
+              "operator": "uminus",
+              "args": [
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "x",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 111,
+                    "end": 113
+                  }
+                }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 109,
+                "end": 114
+              }
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 108,
+            "end": 114
+          }
+        },
+        "variable": {
+          "type": "term",
+          "subType": "variable",
+          "value": "e",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 118,
+            "end": 120
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 103,
+          "end": 121
+        }
+      },
+      {
+        "type": "pattern",
+        "subType": "bind",
+        "expression": {
+          "type": "expression",
+          "subType": "operation",
+          "operator": "uminus",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "operation",
+              "operator": "uminus",
+              "args": [
+                {
+                  "type": "expression",
+                  "subType": "operation",
+                  "operator": "uminus",
+                  "args": [
+                    {
+                      "type": "term",
+                      "subType": "variable",
+                      "value": "x",
+                      "loc": {
+                        "sourceLocationType": "source",
+                        "start": 134,
+                        "end": 136
+                      }
+                    }
+                  ],
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 132,
+                    "end": 137
+                  }
+                }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 130,
+                "end": 138
+              }
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 129,
+            "end": 138
+          }
+        },
+        "variable": {
+          "type": "term",
+          "subType": "variable",
+          "value": "f",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 142,
+            "end": 144
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 124,
+          "end": 145
+        }
+      },
+      {
+        "type": "pattern",
+        "subType": "bind",
+        "expression": {
+          "type": "expression",
+          "subType": "operation",
+          "operator": "uminus",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "operation",
+              "operator": "+",
+              "args": [
+                {
+                  "type": "term",
+                  "subType": "variable",
+                  "value": "x",
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 155,
+                    "end": 157
+                  }
+                },
+                {
+                  "type": "term",
+                  "subType": "literal",
+                  "value": "1",
+                  "langOrIri": {
+                    "type": "term",
+                    "subType": "namedNode",
+                    "value": "http://www.w3.org/2001/XMLSchema#integer",
+                    "loc": {
+                      "sourceLocationType": "noMaterialize"
+                    }
+                  },
+                  "loc": {
+                    "sourceLocationType": "source",
+                    "start": 160,
+                    "end": 161
+                  }
+                }
+              ],
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 154,
+                "end": 162
+              }
+            }
+          ],
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 153,
+            "end": 162
+          }
+        },
+        "variable": {
+          "type": "term",
+          "subType": "variable",
+          "value": "g",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 166,
+            "end": 168
+          }
+        },
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 148,
+          "end": 169
+        }
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 15,
+      "end": 171
+    }
+  },
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "wildcard",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 7,
+        "end": 8
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "inlinedSource",
+    "newSource": "SELECT * WHERE {\n  BIND(-(-?x) AS ?a)\n  BIND(+(-?x) AS ?b)\n  BIND(-(+?x) AS ?c)\n  BIND(!(!?x) AS ?d)\n  BIND(!(-?x) AS ?e)\n  BIND(-(-(-?x)) AS ?f)\n  BIND(-(?x + 1) AS ?g)\n}\n",
+    "start": 0,
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 171
+    },
+    "startOnNew": 0,
+    "endOnNew": 171
+  },
+  "type": "query"
+}

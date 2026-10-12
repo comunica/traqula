@@ -1,0 +1,12 @@
+SELECT ?s ( COUNT( * ) AS ?count ) WHERE {
+  GRAPH ?g {
+    ?s ?p ?o .
+  }
+}
+GROUP BY ?s
+ORDER BY ASC ( ?count )
+LIMIT 2
+VALUES ?s {
+  <http://example.org/a>
+  <http://example.org/b>
+}

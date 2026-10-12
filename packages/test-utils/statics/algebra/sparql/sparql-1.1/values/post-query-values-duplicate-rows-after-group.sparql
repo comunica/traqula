@@ -1,0 +1,4 @@
+SELECT ?s (COUNT(*) AS ?count)
+WHERE { ?s ?p ?o }
+GROUP BY ?s
+VALUES ?s { <http://example.org/a> <http://example.org/a> }

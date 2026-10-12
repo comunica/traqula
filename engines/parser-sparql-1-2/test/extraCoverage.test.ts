@@ -26,6 +26,22 @@ describe('extra parser-sparql-1-2 coverage', () => {
     });
   });
 
+  describe('comments end at a carriage return', () => {
+    it('lexes the text after a CR as query text', ({ expect }) => {
+      expect(() => parser.parse('# a\r FILTER junk\nASK {}')).toThrow(/unexpected character: ->j<- at offset: 12/u);
+    });
+
+    it('accepts CR, CRLF, and LF line endings after a comment', ({ expect }) => {
+      expect(parser.parse('# a\rASK {}')).toMatchObject({ subType: 'ask' });
+      expect(parser.parse('# a\r\nASK {}')).toMatchObject({ subType: 'ask' });
+      expect(parser.parse('# a\nASK {}')).toMatchObject({ subType: 'ask' });
+    });
+
+    it('accepts a CR-terminated comment inside a multi-word update keyword', ({ expect }) => {
+      expect(parser.parse('INSERT # a\rDATA { <http://s> <http://p> <http://o> }')).toMatchObject({ type: 'update' });
+    });
+  });
+
   describe('reifier without canCreateBlankNodes', () => {
     it('throws when bare ~ reifier is used without canCreateBlankNodes in parse mode', ({ expect }) => {
       expect(() =>
@@ -78,6 +94,28 @@ describe('extra parser-sparql-1-2 coverage', () => {
   it('throws when a SELECT expression binds a variable of the trailing VALUES', ({ expect }) => {
     expect(() => parser.parse('SELECT (1 AS ?x) WHERE { ?s ?p ?o } VALUES ?x { 1 }'))
       .toThrow(/Target id of 'AS' \(\?x\) is already in scope/u);
+  });
+
+  it('reports a forward reference to a later select expression in a grouped query as such', ({ expect }) => {
+    expect(() => parser.parse('SELECT (?d + 1 AS ?e) (COUNT(*) AS ?d) WHERE { ?s ?p ?o }'))
+      .toThrow(/Target id of 'AS' \(\?d\) is used in an earlier select expression/u);
+    expect(() => parser.parse('SELECT (?o + ?d AS ?e) (COUNT(*) AS ?d) WHERE { ?s ?p ?o }'))
+      .toThrow(/Target id of 'AS' \(\?d\) is used in an earlier select expression/u);
+    expect(() => parser.parse('SELECT (?d + 1 AS ?e) (?s AS ?d) WHERE { ?s ?p ?o } GROUP BY ?s'))
+      .toThrow(/Target id of 'AS' \(\?d\) is used in an earlier select expression/u);
+    expect(() => parser.parse('SELECT (?o AS ?e) (COUNT(*) AS ?d) WHERE { ?s ?p ?o }'))
+      .toThrow(/Use of ungrouped variable in projection of operation \(\?o\)/u);
+    expect(() => parser.parse('SELECT (?o + 1 AS ?e) ?o WHERE { ?s ?p ?o } GROUP BY ?s'))
+      .toThrow(/Use of ungrouped variable in projection of operation \(\?o\)/u);
+  });
+
+  it('keeps no variable in scope for a triple term group key', ({ expect }) => {
+    expect(parser.parse('SELECT (COUNT(*) AS ?c) WHERE { ?s ?p ?o } GROUP BY (<<( ?s ?p ?o )>>)'))
+      .toMatchObject({ subType: 'select' });
+    expect(parser.parse('DESCRIBE ?s WHERE { ?s ?p ?o } GROUP BY ?s (<<( ?s ?p ?o )>>)'))
+      .toMatchObject({ subType: 'describe' });
+    expect(() => parser.parse('SELECT ?s WHERE { ?s ?p ?o } GROUP BY (<<( ?s ?p ?o )>>)'))
+      .toThrow(/Variable not allowed in projection/u);
   });
 
   describe('skipValidation in SPARQL 1.2 subquery', () => {

@@ -1,4 +1,5 @@
-import type { QueryDescribe, SolutionModifierGroupBind } from '@traqula/rules-sparql-1-1';
+import type { Expression as Expression11, QueryDescribe, SolutionModifierGroupBind } from '@traqula/rules-sparql-1-1';
+import { getVariablesFromExpression } from '@traqula/rules-sparql-1-1';
 import { describe, it } from 'vitest';
 import type {
   Annotation,
@@ -66,6 +67,19 @@ describe('completeParseContext', () => {
   it('sets skipValidation to true when explicitly provided', ({ expect }) => {
     const ctx = completeParseContext({ skipValidation: true });
     expect(ctx.skipValidation).toBe(true);
+  });
+});
+
+describe('getVariablesFromExpression on SPARQL 1.2 expressions', () => {
+  it('collects the variables within triple terms', ({ expect }) => {
+    const variables = new Set<string>();
+    getVariablesFromExpression(<Expression11> <unknown> F.termTriple(
+      F.termVariable('s', noLoc),
+      F.termNamed(noLoc, 'http://example.org/p'),
+      F.termTriple(F.termVariable('a', noLoc), F.termVariable('b', noLoc), F.termVariable('c', noLoc), noLoc),
+      noLoc,
+    ), variables);
+    expect(variables).toEqual(new Set([ 's', 'a', 'b', 'c' ]));
   });
 });
 

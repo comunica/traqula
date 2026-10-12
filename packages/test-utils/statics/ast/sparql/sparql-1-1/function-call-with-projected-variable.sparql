@@ -1,0 +1,1 @@
+SELECT (<http://example.org/f>(?x) AS ?y) ?x WHERE { ?s ?p ?x }

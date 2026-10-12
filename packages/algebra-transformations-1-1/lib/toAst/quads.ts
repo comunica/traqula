@@ -129,6 +129,12 @@ unknown,
     // Track all the unique graph names for the entire Operation
     const operationGraphNames: Record<string, RDF.NamedNode | RDF.DefaultGraph> = Object.create(null);
     for (const [ key, value ] of Object.entries(knownOp)) {
+      // A CONSTRUCT template holds the triples to produce, not patterns of the WHERE clause:
+      // it is never wrapped in a GRAPH, and does not change how the WHERE clause is wrapped.
+      if (knownOp.type === types.CONSTRUCT && key === 'template') {
+        result[key] = value;
+        continue;
+      }
       const newGraphs: (RDF.NamedNode | RDF.DefaultGraph)[] = [];
       // Only `input` ever continues a projection-scope chain; every other key (an EXTEND's own
       // `expression`, for instance) starts fresh outside of it - see `inputProjectionScope`.
@@ -161,14 +167,23 @@ unknown,
     if (graphNameSet.length > 0) {
       // PROJECT/SERVICE/GROUP/ORDER_BY, and EXTEND in projection scope, never bracket their
       // input - they're external SELECT state, not a pattern - so the GRAPH must wrap right
-      // below them, not defer further up. FILTER and the multi-branch combinators (JOIN,
+      // below them, not defer further up. The same goes for the other query forms, ASK/DESCRIBE/CONSTRUCT,
+      // whose WHERE clause would otherwise lose its GRAPH. FILTER and the multi-branch combinators (JOIN,
       // LEFT_JOIN, MINUS, UNION) do defer: they share a group with sibling patterns, so matching
       // graphs merge into one GRAPH block instead of each wrapping itself separately.
       // A FILTER on the graph variable is a boundary too: ?g is not bound within GRAPH ?g (18.5).
       const onlyGraph = <RDF.Term | undefined> (graphNameSet.length === 1 ?
         operationGraphNames[graphNameSet[0]] :
         undefined);
-      const isBoundary = [ types.PROJECT, types.SERVICE, types.GROUP, types.ORDER_BY ].includes(knownOp.type) ||
+      const isBoundary = [
+        types.PROJECT,
+        types.ASK,
+        types.DESCRIBE,
+        types.CONSTRUCT,
+        types.SERVICE,
+        types.GROUP,
+        types.ORDER_BY,
+      ].includes(knownOp.type) ||
         (knownOp.type === types.EXTEND && projectionScope) ||
         (knownOp.type === types.FILTER && onlyGraph?.termType === 'Variable' &&
           mentionsVariable(knownOp.expression, onlyGraph));

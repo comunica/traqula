@@ -6,14 +6,7 @@
  */
 import type { RuleDefReturn, Wrap } from '@traqula/core';
 import { traqulaIndentation } from '@traqula/core';
-import {
-  CommonIRIs,
-  funcExpr1,
-  funcExpr3,
-  gram as S11,
-  lex as l11,
-  namedAggregatorTest,
-} from '@traqula/rules-sparql-1-1';
+import { CommonIRIs, funcExpr1, funcExpr3, gram as S11, lex as l11 } from '@traqula/rules-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import * as l12 from './lexer.js';
 import { decodeUchar } from './parserUtils.js';
@@ -67,7 +60,8 @@ export const versionDecl: SparqlRule<'versionDecl', ContextDefinitionVersion> = 
 
 /**
  * [[9]](https://www.w3.org/TR/sparql12-query/#rSelectQuery)
- * @deprecated Same as {@link S11.selectQuery}, the SPARQL 1.2 validation moved to {@link validateSelectQuery}.
+ * @deprecated Same as {@link S11.selectQuery}, the SPARQL 1.2 validation moved to {@link validateSelectQuery},
+ * which {@link S11.validateQuery} invokes once the trailing VALUES clause is parsed.
  */
 // TODO(major): remove
 export const selectQuery: SparqlGrammarRule<'selectQuery', Omit<QuerySelect, 'type' | 'context' | 'values'>> = <const> {
@@ -93,21 +87,20 @@ export const selectQuery: SparqlGrammarRule<'selectQuery', Omit<QuerySelect, 'ty
         modifiers.limitOffset,
       ),
     } satisfies RuleDefReturn<typeof selectQuery>));
-    SUBRULE(validateSelectQuery, result);
     return result;
   },
 };
 
 /**
  * OVERRIDING RULE: {@link S11.validateSelectQuery}.
- * (Validator has changed: https://github.com/w3c/sparql-query/pull/380)
+ * Uses the SPARQL 1.2 projection validation, which differs in the in-scope variables (findPatternBoundedVars).
  */
 export const validateSelectQuery: SparqlGrammarRule<'validateSelectQuery', void, [
-  Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where'>,
+  Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
 ]> = {
   name: 'validateSelectQuery',
   impl: ({ ACTION }) => (C, query) => {
-    ACTION(() => !C.skipValidation && queryProjectionIsGood(query, namedAggregatorTest(C)));
+    ACTION(() => !C.skipValidation && queryProjectionIsGood(query, C));
   },
 };
 
@@ -118,7 +111,7 @@ export const validateSelectQuery: SparqlGrammarRule<'validateSelectQuery', void,
 export const validateSubSelect: SparqlGrammarRule<'validateSubSelect', void, [SubSelect]> = {
   name: 'validateSubSelect',
   impl: ({ ACTION }) => (C, query) => {
-    ACTION(() => !C.skipValidation && queryProjectionIsGood(query, namedAggregatorTest(C)));
+    ACTION(() => !C.skipValidation && queryProjectionIsGood(query, C));
   },
 };
 

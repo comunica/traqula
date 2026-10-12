@@ -1,0 +1,173 @@
+{
+  "context": [],
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "bgp",
+        "triples": [
+          {
+            "type": "triple",
+            "subject": {
+              "type": "term",
+              "subType": "variable",
+              "value": "s",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 23,
+                "end": 25
+              }
+            },
+            "predicate": {
+              "type": "term",
+              "subType": "variable",
+              "value": "p",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 26,
+                "end": 28
+              }
+            },
+            "object": {
+              "type": "term",
+              "subType": "variable",
+              "value": "o",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 29,
+                "end": 31
+              }
+            },
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 23,
+              "end": 31
+            }
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 23,
+          "end": 31
+        }
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 19,
+      "end": 33
+    }
+  },
+  "solutionModifiers": {
+    "group": {
+      "type": "solutionModifier",
+      "subType": "group",
+      "groupings": [
+        {
+          "type": "term",
+          "subType": "variable",
+          "value": "s",
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 43,
+            "end": 45
+          }
+        }
+      ],
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 34,
+        "end": 45
+      }
+    }
+  },
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "term",
+      "subType": "variable",
+      "value": "s",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 7,
+        "end": 9
+      }
+    },
+    {
+      "type": "term",
+      "subType": "variable",
+      "value": "v",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 10,
+        "end": 12
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "inlinedSource",
+    "newSource": "SELECT ?s ?v WHERE {\n  ?s ?p ?o\n}\nGROUP BY ?s\nVALUES ?v { 1 }\n",
+    "start": 0,
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 61
+    },
+    "startOnNew": 0,
+    "endOnNew": 61
+  },
+  "type": "query",
+  "values": {
+    "type": "pattern",
+    "subType": "values",
+    "variables": [
+      {
+        "type": "term",
+        "subType": "variable",
+        "value": "v",
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 53,
+          "end": 55
+        }
+      }
+    ],
+    "values": [
+      {
+        "v": {
+          "type": "term",
+          "subType": "literal",
+          "value": "1",
+          "langOrIri": {
+            "type": "term",
+            "subType": "namedNode",
+            "value": "http://www.w3.org/2001/XMLSchema#integer",
+            "loc": {
+              "sourceLocationType": "noMaterialize"
+            }
+          },
+          "loc": {
+            "sourceLocationType": "source",
+            "start": 58,
+            "end": 59
+          }
+        }
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 46,
+      "end": 61
+    }
+  }
+}

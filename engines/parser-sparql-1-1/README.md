@@ -67,6 +67,7 @@ Optionally, the following parameters can be set in the Parsers defaultContext:
   When this set is given, only function calls whose IRI (resolved using the prefixes and base IRI) is in the set are aggregates,
   so that query is rejected unless the set contains `http://ex.org/f`.
   Function calls not in the set cannot use `DISTINCT`, since only custom aggregates can.
+* `rejectGroupedSelectAliasReuse`: Reject select expressions that use a variable bound by an earlier select expression in a grouped query, like `SELECT (COUNT(?o) AS ?c) (?c + 1 AS ?d) WHERE { ?s ?p ?o }`, as the SPARQL 1.1 text requires. SPARQL 1.2 allows this reuse. _(Default: `false`)_
 
 These parameters can also be given per query, as the second argument of `parse`:
 

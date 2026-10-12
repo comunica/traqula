@@ -1,29 +1,40 @@
 import type { SparqlGrammarRule } from '../sparql11HelperTypes.js';
-import type { ExpressionFunctionCall, Pattern, Query, QuerySelect, SubSelect, Update } from '../Sparql11types.js';
+import type {
+  ExpressionFunctionCall,
+  Pattern,
+  Query,
+  QueryDescribe,
+  QuerySelect,
+  SubSelect,
+  Update,
+} from '../Sparql11types.js';
 import {
   checkBlankNodeBGPScope,
   checkNote13,
+  describeProjectionIsGood,
   functionCallDistinctIsAggregate,
   namedAggregatorTest,
   queryProjectionIsGood,
-  selectExpressionAliasesNotInValues,
   updateNoReuseBlankNodeLabels,
 } from '../validation/validators.js';
 
 /**
  * Validation rules wrap the validator functions so a parser builder can patch them.
- * They do not consume any tokens and only validate when `skipValidation` is false.
+ * They do not consume any tokens and only validate when `skipValidation` is false,
+ * either themselves or through the validation rules they invoke.
  */
 
 /**
- * Validates the projection of a SELECT query, see {@link queryProjectionIsGood}.
+ * Validates the projection of a SELECT query, including its trailing VALUES clause, see {@link queryProjectionIsGood}.
+ * Invoked by {@link validateQuery} once the trailing VALUES clause is parsed.
  * Uses the `verifyWithNamedAggregators` of the context to decide which function calls are aggregates.
  */
-export const validateSelectQuery:
-SparqlGrammarRule<'validateSelectQuery', void, [Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where'>]> = {
+export const validateSelectQuery: SparqlGrammarRule<'validateSelectQuery', void, [
+  Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
+]> = {
   name: 'validateSelectQuery',
   impl: ({ ACTION }) => (C, query) => {
-    ACTION(() => !C.skipValidation && queryProjectionIsGood(query, namedAggregatorTest(C)));
+    ACTION(() => !C.skipValidation && queryProjectionIsGood(query, C));
   },
 };
 
@@ -34,18 +45,42 @@ SparqlGrammarRule<'validateSelectQuery', void, [Pick<QuerySelect, 'variables' | 
 export const validateSubSelect: SparqlGrammarRule<'validateSubSelect', void, [SubSelect]> = {
   name: 'validateSubSelect',
   impl: ({ ACTION }) => (C, query) => {
-    ACTION(() => !C.skipValidation && queryProjectionIsGood(query, namedAggregatorTest(C)));
+    ACTION(() => !C.skipValidation && queryProjectionIsGood(query, C));
   },
 };
 
 /**
- * Validates a query against its trailing VALUES clause, see {@link selectExpressionAliasesNotInValues}.
+ * Validates the variables of a DESCRIBE query, including its trailing VALUES clause,
+ * see {@link describeProjectionIsGood}.
+ * Invoked by {@link validateQuery} once the trailing VALUES clause is parsed.
+ * Uses the `verifyWithNamedAggregators` of the context to decide which function calls are aggregates.
+ */
+export const validateDescribeQuery: SparqlGrammarRule<'validateDescribeQuery', void, [QueryDescribe]> = {
+  name: 'validateDescribeQuery',
+  impl: ({ ACTION }) => (C, query) => {
+    ACTION(() => !C.skipValidation && describeProjectionIsGood(query, C));
+  },
+};
+
+/**
+ * Validates a query, including its trailing VALUES clause,
+ * see {@link validateSelectQuery} and {@link validateDescribeQuery}.
+ * The trailing VALUES clause is joined before the projection (18.2.4.3),
+ * so the projection can only be validated once it is parsed.
  */
 export const validateQuery: SparqlGrammarRule<'validateQuery', void, [Query]> = {
   name: 'validateQuery',
-  impl: ({ ACTION }) => (C, query) => {
-    ACTION(() => !C.skipValidation && C.astFactory.isQuerySelect(query) &&
-      selectExpressionAliasesNotInValues(query));
+  impl: ({ OPTION1, OPTION2, SUBRULE }) => (C, query) => {
+    // Validation rules consume no tokens, and chevrotain only allows the last alternative of an OR to be empty,
+    // so gated OPTIONs pick the validation of the query type.
+    OPTION1({
+      GATE: () => C.astFactory.isQuerySelect(query),
+      DEF: () => SUBRULE(validateSelectQuery, <QuerySelect> query),
+    });
+    OPTION2({
+      GATE: () => C.astFactory.isQueryDescribe(query),
+      DEF: () => SUBRULE(validateDescribeQuery, <QueryDescribe> query),
+    });
   },
 };
 

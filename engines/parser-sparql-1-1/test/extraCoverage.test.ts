@@ -35,6 +35,22 @@ describe('extra parser coverage', () => {
     });
   });
 
+  describe('comments end at a carriage return', () => {
+    it('lexes the text after a CR as query text', ({ expect }) => {
+      expect(() => parser.parse('# a\r FILTER junk\nASK {}')).toThrow(/unexpected character: ->j<- at offset: 12/u);
+    });
+
+    it('accepts CR, CRLF, and LF line endings after a comment', ({ expect }) => {
+      expect(parser.parse('# a\rASK {}')).toMatchObject({ subType: 'ask' });
+      expect(parser.parse('# a\r\nASK {}')).toMatchObject({ subType: 'ask' });
+      expect(parser.parse('# a\nASK {}')).toMatchObject({ subType: 'ask' });
+    });
+
+    it('accepts a CR-terminated comment inside a multi-word update keyword', ({ expect }) => {
+      expect(parser.parse('INSERT # a\rDATA { <http://s> <http://p> <http://o> }')).toMatchObject({ type: 'update' });
+    });
+  });
+
   describe('prefixed names with colons in the local name', () => {
     it('keeps everything after the first colon as local name', ({ expect }) => {
       const query = <any> parser.parse('PREFIX ex: <http://ex.org/> SELECT * WHERE { ex:a:b:c ?p ?o }');
@@ -68,6 +84,26 @@ describe('extra parser coverage', () => {
   it('accepts a variable named twice in VALUES (only SPARQL 1.2 forbids this)', ({ expect }) => {
     expect(() => parser.parse('SELECT * { VALUES (?x ?x) { (1 2) } }')).not.toThrow();
     expect(() => parser.parse('SELECT * { ?s ?p ?o } VALUES (?x ?x) { (1 2) }')).not.toThrow();
+  });
+
+  it('names the reused variable when rejecting a variable bound by an earlier select expression', ({ expect }) => {
+    expect(() => parser.parse(
+      'SELECT (COUNT(*) AS ?c) (?c + 1 AS ?d) WHERE { ?s ?p ?o }',
+      { rejectGroupedSelectAliasReuse: true },
+    )).toThrow(/Use of variable bound by an earlier select expression \(\?c\) in a grouped query/u);
+  });
+
+  it('reports a forward reference to a later select expression in a grouped query as such', ({ expect }) => {
+    expect(() => parser.parse('SELECT (?d + 1 AS ?e) (COUNT(*) AS ?d) WHERE { ?s ?p ?o }'))
+      .toThrow(/Target id of 'AS' \(\?d\) is used in an earlier select expression/u);
+    expect(() => parser.parse('SELECT (?o + ?d AS ?e) (COUNT(*) AS ?d) WHERE { ?s ?p ?o }'))
+      .toThrow(/Target id of 'AS' \(\?d\) is used in an earlier select expression/u);
+    expect(() => parser.parse('SELECT (?d + 1 AS ?e) (?s AS ?d) WHERE { ?s ?p ?o } GROUP BY ?s'))
+      .toThrow(/Target id of 'AS' \(\?d\) is used in an earlier select expression/u);
+    expect(() => parser.parse('SELECT (?o AS ?e) (COUNT(*) AS ?d) WHERE { ?s ?p ?o }'))
+      .toThrow(/Use of ungrouped variable in projection of operation \(\?o\)/u);
+    expect(() => parser.parse('SELECT (?o + 1 AS ?e) ?o WHERE { ?s ?p ?o } GROUP BY ?s'))
+      .toThrow(/Use of ungrouped variable in projection of operation \(\?o\)/u);
   });
 
   it('throws when DISTINCT is used in a non-aggregate function call', ({ expect }) => {

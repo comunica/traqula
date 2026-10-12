@@ -3,3 +3,4 @@ SELECT ?p ( COUNT( * ) AS ?n ) WHERE {
     ?p _:g_1 ;
   ] .
 }
+GROUP BY ?p

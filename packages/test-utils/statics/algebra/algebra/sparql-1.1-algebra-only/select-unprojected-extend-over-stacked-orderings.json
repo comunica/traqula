@@ -1,0 +1,134 @@
+{
+  "type": "project",
+  "input": {
+    "type": "extend",
+    "input": {
+      "type": "orderby",
+      "input": {
+        "type": "extend",
+        "input": {
+          "type": "orderby",
+          "input": {
+            "type": "group",
+            "input": {
+              "type": "bgp",
+              "patterns": [
+                {
+                  "type": "pattern",
+                  "termType": "Quad",
+                  "subject": {
+                    "termType": "Variable",
+                    "value": "s"
+                  },
+                  "predicate": {
+                    "termType": "Variable",
+                    "value": "p"
+                  },
+                  "object": {
+                    "termType": "Variable",
+                    "value": "o"
+                  },
+                  "graph": {
+                    "termType": "DefaultGraph",
+                    "value": ""
+                  }
+                }
+              ]
+            },
+            "variables": [
+              {
+                "termType": "Variable",
+                "value": "s"
+              }
+            ],
+            "aggregates": [
+              {
+                "type": "expression",
+                "subType": "aggregate",
+                "aggregator": "count",
+                "expression": {
+                  "type": "expression",
+                  "subType": "term",
+                  "term": {
+                    "termType": "Variable",
+                    "value": "o"
+                  }
+                },
+                "distinct": false,
+                "variable": {
+                  "termType": "Variable",
+                  "value": "var0"
+                }
+              }
+            ]
+          },
+          "expressions": [
+            {
+              "type": "expression",
+              "subType": "term",
+              "term": {
+                "termType": "Variable",
+                "value": "s"
+              }
+            }
+          ]
+        },
+        "variable": {
+          "termType": "Variable",
+          "value": "c"
+        },
+        "expression": {
+          "type": "expression",
+          "subType": "term",
+          "term": {
+            "termType": "Variable",
+            "value": "var0"
+          }
+        }
+      },
+      "expressions": [
+        {
+          "type": "expression",
+          "subType": "operator",
+          "operator": "desc",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "term",
+              "term": {
+                "termType": "Variable",
+                "value": "var0"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "variable": {
+      "termType": "Variable",
+      "value": "y"
+    },
+    "expression": {
+      "type": "expression",
+      "subType": "term",
+      "term": {
+        "termType": "Literal",
+        "value": "1",
+        "datatype": {
+          "termType": "NamedNode",
+          "value": "http://www.w3.org/2001/XMLSchema#string"
+        }
+      }
+    }
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "s"
+    },
+    {
+      "termType": "Variable",
+      "value": "c"
+    }
+  ]
+}

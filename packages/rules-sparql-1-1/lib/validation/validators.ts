@@ -1,8 +1,8 @@
 // TODO(major): consider defining the validation functions with the IndirBuilder pattern,
 //  so they call each other by name and SPARQL 1.2 can patch only the functions that differ
-//  (findPatternBoundedVars, getVariablesFromExpression and queryProjectionIsGood).
-//  The SPARQL 1.2 selectExpressionAliasesNotInScope and checkNote13 copy the SPARQL 1.1 implementation logic,
-//  only to call the SPARQL 1.2 findPatternBoundedVars.
+//  (findPatternBoundedVars).
+//  The SPARQL 1.2 queryProjectionIsGood, selectExpressionAliasesNotInScope and checkNote13
+//  only exist (and partially copy the SPARQL 1.1 logic) to call the SPARQL 1.2 findPatternBoundedVars.
 import { AstFactory } from '../astFactory.js';
 import type { SparqlContext } from '../sparql11HelperTypes.js';
 import type {
@@ -12,6 +12,7 @@ import type {
   ExpressionFunctionCall,
   Pattern,
   PatternBgp,
+  QueryDescribe,
   QuerySelect,
   TermVariable,
   SolutionModifierGroupBind,
@@ -23,26 +24,70 @@ import { AstTransformer, resolveTermIri } from '../utils.js';
 
 const F = new AstFactory();
 const transformer = new AstTransformer();
+/**
+ * Walks expressions, skipping the keys that hold no expressions or variables:
+ * the source locations, the datatype IRI of a literal, and the IRI of a function call.
+ */
+const expressionTransformer = new AstTransformer({ ignoreKeys: new Set([ 'loc', 'langOrIri', 'function' ]) });
+
+const stopVisit = { preVisitor: () => ({ continue: false }) };
+/**
+ * Stops visiting an expression that starts a new query level: the pattern of an EXISTS or NOT EXISTS,
+ * whose aggregates and variables do not belong to the expression.
+ */
+const skipPatternOperation = { patternOperation: stopVisit };
 
 /**
- * Get all 'aggregate' rules from an expression
+ * Decides whether a function call is a custom aggregate.
+ * Custom aggregates are syntactically function calls:
+ * > Aggregate functions can be one of the built-in keywords for aggregates or a custom aggregate,
+ * > which is syntactically a function call.
+ */
+export type AggregateFunctionTest = (functionCall: ExpressionFunctionCall) => boolean;
+
+/**
+ * Any function call might be a custom aggregate: the lenient assumption when the custom aggregates are unknown.
+ */
+const anyFunctionCall: AggregateFunctionTest = () => true;
+/**
+ * No function call is a custom aggregate: what the algebra assumes when the custom aggregates are unknown.
+ */
+const noFunctionCall: AggregateFunctionTest = () => false;
+
+/**
+ * Get all built-in aggregates of an expression, also when nested in operators or function calls.
+ * Does not look inside aggregates, nor in EXISTS or NOT EXISTS patterns.
  */
 export function getAggregatesOfExpression(expression: Expression): ExpressionAggregate[] {
-  if (F.isExpressionAggregate(expression)) {
-    return [ expression ];
-  }
-  if (F.isExpressionOperator(expression)) {
-    const aggregates: ExpressionAggregate[] = [];
-    for (const arg of expression.args) {
-      aggregates.push(...getAggregatesOfExpression(arg));
-    }
-    return aggregates;
-  }
-  return [];
+  return <ExpressionAggregate[]> findAggregates(expression, noFunctionCall);
 }
 
 /**
+ * Get the built-in aggregates of an expression, and the function calls that `isAggregateFunction` decides are
+ * custom aggregates.
+ * Does not look inside them, nor in EXISTS or NOT EXISTS patterns, but does look inside other function calls.
+ */
+function findAggregates(
+  expression: Expression,
+  isAggregateFunction: AggregateFunctionTest,
+): (ExpressionAggregate | ExpressionFunctionCall)[] {
+  const found: (ExpressionAggregate | ExpressionFunctionCall)[] = [];
+  const onFound = (node: ExpressionAggregate | ExpressionFunctionCall): { continue: boolean } => {
+    found.push(node);
+    return { continue: false };
+  };
+  expressionTransformer.visitNodeSpecific(expression, {}, { expression: {
+    ...skipPatternOperation,
+    aggregate: { preVisitor: onFound },
+    functionCall: { preVisitor: functionCall => isAggregateFunction(functionCall) ? onFound(functionCall) : {}},
+  }});
+  return found;
+}
+
+// TODO(major): remove getExpressionId, which the validation no longer uses.
+/**
  * Return the variable value id of an expression if bounded
+ * @deprecated Use {@link getGroupKeyVariables} for the variables that group keys keep in scope.
  */
 export function getExpressionId(expression: SolutionModifierGroupBind | Expression | TermVariable): string | undefined {
   // Check if grouping
@@ -59,32 +104,119 @@ export function getExpressionId(expression: SolutionModifierGroupBind | Expressi
 }
 
 /**
- * Get all variables used in an expression
+ * The variables a GROUP BY clause keeps in scope (18.2.4.1): its variable keys and the variables of its
+ * (expr AS ?var) keys. Other keys, like expressions or (SPARQL 1.2) triple terms, keep no variable in scope.
  */
-export function getVariablesFromExpression(expression: Expression, variables: Set<string>): void {
-  if (F.isExpressionOperator(expression)) {
-    for (const expr of expression.args) {
-      getVariablesFromExpression(expr, variables);
+export function getGroupKeyVariables(
+  group: { groupings: readonly (object | Pick<SolutionModifierGroupBind, 'variable'>)[] } | undefined,
+): TermVariable[] {
+  return group?.groupings.flatMap((grouping) => {
+    if ('variable' in grouping) {
+      return [ grouping.variable ];
     }
-  } else if (F.isTerm(expression) && F.isTermVariable(expression)) {
-    variables.add(expression.value);
-  }
+    return F.isTermVariable(grouping) ? [ <TermVariable> grouping ] : [];
+  }) ?? [];
 }
 
 /**
- * Verify that the projected variables (select head) are allowed:
- * - no group-by on select *
- * - if group-by, selected variables need to be collected by the group-by
- * - 'select ?var as ?other', ?other cannot be in scope
+ * The variables in scope after grouping: the variables of the group keys (see {@link getGroupKeyVariables}),
+ * and those of the trailing VALUES clause, which is joined after grouping (18.2.4.3).
  */
-export function queryProjectionIsGood(
-  query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where'>,
-  isAggregateFunction?: AggregateFunctionTest,
+export function getGroupedVariables(query: {
+  solutionModifiers: { group?: Parameters<typeof getGroupKeyVariables>[0] };
+  values?: { variables: readonly TermVariable[] };
+}): TermVariable[] {
+  return [ ...getGroupKeyVariables(query.solutionModifiers.group), ...query.values?.variables ?? [] ];
+}
+
+/**
+ * Get all variables used in an expression, including those within (SPARQL 1.2) triple terms.
+ * Does not look inside aggregates and function calls that may be custom aggregates,
+ * nor in EXISTS or NOT EXISTS patterns.
+ * @param expression - The expression to get the variables of.
+ * @param variables - The set to add the variables to.
+ * @param isAggregateFunction - Whether a function call is a custom aggregate. Default: any function call might be.
+ */
+export function getVariablesFromExpression(
+  expression: Expression,
+  variables: Set<string>,
+  isAggregateFunction: AggregateFunctionTest = anyFunctionCall,
 ): void {
+  expressionTransformer.visitNodeSpecific(expression, {}, {
+    expression: {
+      ...skipPatternOperation,
+      aggregate: stopVisit,
+      functionCall: { preVisitor: functionCall => ({ continue: !isAggregateFunction(functionCall) }) },
+    },
+    term: { variable: { visitor: (variable) => {
+      variables.add(variable.value);
+    } }},
+  });
+}
+
+/**
+ * Options of {@link queryProjectionIsGood}, the equally named fields of the parse context.
+ * The prefixes and base IRI are used to resolve the IRIs of function calls against `verifyWithNamedAggregators`,
+ * see {@link namedAggregatorTest}.
+ */
+export type ProjectionValidationOptions =
+  Pick<SparqlContext, 'rejectGroupedSelectAliasReuse' | 'verifyWithNamedAggregators'> &
+  Partial<Pick<SparqlContext, 'prefixes' | 'baseIRI'>>;
+
+/**
+ * Creates the {@link AggregateFunctionTest} described by the `verifyWithNamedAggregators` of the parser context:
+ * a function call is a custom aggregate when its IRI, resolved using the prefixes and base IRI in scope, is in the set.
+ * A function call whose IRI cannot be resolved (an unknown prefix, or a relative IRI without base IRI)
+ * is not in the set.
+ * Returns undefined when the context has no `verifyWithNamedAggregators`,
+ * meaning that any function call might be a custom aggregate.
+ */
+export function namedAggregatorTest(
+  context: Pick<ProjectionValidationOptions, 'prefixes' | 'baseIRI' | 'verifyWithNamedAggregators'>,
+): AggregateFunctionTest | undefined {
+  const { prefixes = {}, baseIRI, verifyWithNamedAggregators: aggregators } = context;
+  if (aggregators === undefined) {
+    return undefined;
+  }
+  return (functionCall) => {
+    let iri: string;
+    try {
+      iri = resolveTermIri(functionCall.function, prefixes, baseIRI);
+    } catch {
+      return false;
+    }
+    return aggregators.has(iri);
+  };
+}
+
+/**
+ * Verify that the projected variables (select head) respect the grouping of the query:
+ * - no select * in a grouped query (GROUP BY, or a built-in aggregate in HAVING or ORDER BY)
+ * - if grouped, selected variables need to be collected by the group-by,
+ *   or bound by the trailing VALUES clause, which is joined after grouping (18.2.4.3).
+ *   Section 11.4 only mentions the group-by variables, but the algebra of 18.2.4.3 binds the VALUES variables
+ *   before the projection, as do the tests of https://github.com/w3c/rdf-tests/pull/383.
+ * - if grouped, select expressions may use variables bound by preceding (expr AS ?var) expressions,
+ *   as https://www.w3.org/TR/sparql12-query/#aggregateRestrictions allows
+ *   (https://github.com/w3c/sparql-query/pull/380).
+ *   Ungrouped queries always allow them (https://www.w3.org/TR/sparql11-query/#selectExpressions),
+ *   but the SPARQL 1.1 text for grouped queries (https://www.w3.org/TR/sparql11-query/#aggregateRestrictions)
+ *   does not, so {@link ProjectionValidationOptions.rejectGroupedSelectAliasReuse} rejects them.
+ * Function calls only group the query when {@link ProjectionValidationOptions.verifyWithNamedAggregators}
+ * names them as custom aggregates, as they do in the algebra.
+ */
+export function queryProjectionRespectsGrouping(
+  query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'values'>,
+  options: ProjectionValidationOptions = {},
+): void {
+  const isAggregateFunction = namedAggregatorTest(options);
   // NoGroupByOnWildcardSelect
   if (query.variables.length === 1 && F.isWildcard(query.variables[0])) {
     if (query.solutionModifiers.group !== undefined) {
       throw new Error('GROUP BY not allowed with wildcard');
+    }
+    if (isGroupedQuery(query, isAggregateFunction ?? noFunctionCall)) {
+      throw new Error('Aggregates not allowed with wildcard');
     }
     return;
   }
@@ -93,35 +225,63 @@ export function queryProjectionIsGood(
   // Check for projection of ungrouped variable
   // Check can be skipped in case of wildcard select.
   const variables = <Exclude<typeof query.variables, [Wildcard]>> query.variables;
-  const hasCountAggregate = variables.flatMap(
-    varVal => F.isTerm(varVal) ? [] : getAggregatesOfExpression(varVal.expression),
-  ).some(agg => agg.aggregation === 'count' && !agg.expression.some(arg => F.isWildcard(arg)));
-  const groupBy = query.solutionModifiers.group;
-  if (hasCountAggregate || groupBy) {
+  if (isGroupedQuery(query, isAggregateFunction ?? noFunctionCall)) {
     // We have to check whether
     //  1. Variables used in projection are usable given the group by clause
-    //  2. A selectCount will create an implicit group by clause.
+    //  2. An aggregate will create an implicit group by clause.
+    // Variables bound by preceding (expr AS ?var) expressions are in scope for later expressions.
+    const asBoundVars = new Set<string>();
+    const groupedVars = new Set(getGroupedVariables(query).map(variable => variable.value));
     for (const selectVar of variables) {
       if (F.isTerm(selectVar)) {
-        if (!groupBy || !groupBy.groupings.map(groupvar => getExpressionId(groupvar))
-          .includes((getExpressionId(selectVar)))) {
+        if (!groupedVars.has(selectVar.value)) {
           throw new Error('Variable not allowed in projection');
         }
-      } else if (getAggregatesOfExpression(selectVar.expression).length === 0) {
-        // Current value binding does not use aggregates
+      } else {
         const usedvars = new Set<string>();
-        getVariablesFromExpression(selectVar.expression, usedvars);
+        getVariablesFromExpression(selectVar.expression, usedvars, isAggregateFunction);
         for (const usedvar of usedvars) {
-          if (!groupBy || !groupBy.groupings.map(groupVar => getExpressionId(groupVar))
-            .includes(usedvar)) {
+          if (asBoundVars.has(usedvar)) {
+            if (options.rejectGroupedSelectAliasReuse) {
+              throw new Error(`Use of variable bound by an earlier select expression (?${usedvar}) in a grouped query`);
+            }
+          } else if (!groupedVars.has(usedvar)) {
             throw new Error(`Use of ungrouped variable in projection of operation (?${usedvar})`);
           }
         }
+        asBoundVars.add(selectVar.variable.value);
       }
     }
   }
+}
 
-  selectExpressionAliasesNotInScope(query, isAggregateFunction);
+/**
+ * Verify that the projected variables (select head) are allowed:
+ * - 'select ?var as ?other', ?other cannot be in scope, see {@link selectExpressionAliasesNotInScope}
+ * - they respect the grouping of the query, see {@link queryProjectionRespectsGrouping}
+ * The aliases are checked first, so a select expression using the target of a later one
+ * is not reported as using an ungrouped variable.
+ */
+export function queryProjectionIsGood(
+  query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
+  options: ProjectionValidationOptions = {},
+): void {
+  selectExpressionAliasesNotInScope(query, namedAggregatorTest(options));
+  queryProjectionRespectsGrouping(query, options);
+}
+
+/**
+ * Verify that the variables of a grouped DESCRIBE query are grouped,
+ * as for the projection of {@link queryProjectionRespectsGrouping}.
+ * DESCRIBE * is not checked, since toAlgebra expands it to the variables in scope,
+ * which are the grouped ones in a grouped query (see {@link getGroupedVariables}).
+ */
+export function describeProjectionIsGood(query: QueryDescribe, options: ProjectionValidationOptions = {}): void {
+  queryProjectionRespectsGrouping({
+    variables: query.variables.filter((variable): variable is TermVariable => F.isTermVariable(variable)),
+    solutionModifiers: query.solutionModifiers,
+    values: query.values,
+  }, options);
 }
 
 /**
@@ -147,12 +307,8 @@ export function selectExpressionAliasesNotInScope(
     if (!isGroupedQuery(query, isAggregateFunction)) {
       findPatternBoundedVars(query.where, inScopeVars);
     }
-    for (const grouping of query.solutionModifiers.group?.groupings ?? []) {
-      if ('variable' in grouping) {
-        inScopeVars.add(grouping.variable.value);
-      } else if (F.isTermVariable(grouping)) {
-        inScopeVars.add(grouping.value);
-      }
+    for (const variable of getGroupKeyVariables(query.solutionModifiers.group)) {
+      inScopeVars.add(variable.value);
     }
     for (const { variable } of selectBinds) {
       if (inScopeVars.has(variable.value)) {
@@ -165,77 +321,39 @@ export function selectExpressionAliasesNotInScope(
 }
 
 /**
- * Decides whether a function call is a custom aggregate.
+ * A query is grouped when it has a GROUP BY clause or uses aggregates (18.2.4.1).
  * Custom aggregates are syntactically function calls:
  * > Aggregate functions can be one of the built-in keywords for aggregates or a custom aggregate,
  * > which is syntactically a function call.
- */
-export type AggregateFunctionTest = (functionCall: ExpressionFunctionCall) => boolean;
-
-/**
- * Creates the {@link AggregateFunctionTest} described by the `verifyWithNamedAggregators` of the parser context:
- * a function call is a custom aggregate when its IRI, resolved using the prefixes and base IRI in scope, is in the set.
- * A function call whose IRI cannot be resolved (a relative IRI without base IRI) is not in the set.
- * Returns undefined when the context has no `verifyWithNamedAggregators`,
- * meaning that any function call might be a custom aggregate.
- */
-export function namedAggregatorTest(
-  context: Pick<SparqlContext, 'prefixes' | 'baseIRI' | 'verifyWithNamedAggregators'>,
-): AggregateFunctionTest | undefined {
-  const { prefixes, baseIRI, verifyWithNamedAggregators: aggregators } = context;
-  if (aggregators === undefined) {
-    return undefined;
-  }
-  return (functionCall) => {
-    let iri: string;
-    try {
-      iri = resolveTermIri(functionCall.function, prefixes, baseIRI);
-    } catch {
-      return false;
-    }
-    return aggregators.has(iri);
-  };
-}
-
-/**
- * A query is grouped when it has a GROUP BY clause or uses aggregates (18.2.4.1).
- * Since custom aggregates are syntactically function calls,
- * any function call is considered a possible aggregate, unless `isAggregateFunction` decides otherwise.
- * This thus returns true for any query that may be grouped.
+ * Without knowing the custom aggregates, the parser cannot know whether a function is an aggregate,
+ * so by default it leniently assumes any function call might be,
+ * and this returns true for any query that may be grouped.
+ * Pass `() => false` to only let a GROUP BY clause or a built-in aggregate group the query,
+ * as they do in the algebra without custom aggregates.
  * @param query - The SELECT query.
  * @param isAggregateFunction - Whether a function call is a custom aggregate. Default: any function call might be.
  */
 export function isGroupedQuery(
   query: Pick<QuerySelect, 'variables' | 'solutionModifiers'>,
-  isAggregateFunction: AggregateFunctionTest = () => true,
+  isAggregateFunction: AggregateFunctionTest = anyFunctionCall,
 ): boolean {
-  const { group, having, order } = query.solutionModifiers;
-  if (group) {
+  if (query.solutionModifiers.group) {
     return true;
   }
-  const expressions: Expression[] = [
+  return getAggregationScopeExpressions(query)
+    .some(expression => findAggregates(expression, isAggregateFunction).length > 0);
+}
+
+/**
+ * The expressions of the SELECT, HAVING, and ORDER BY clauses, which are those that can contain aggregates.
+ */
+function getAggregationScopeExpressions(query: Pick<QuerySelect, 'variables' | 'solutionModifiers'>): Expression[] {
+  const { having, order } = query.solutionModifiers;
+  return [
     ...query.variables.flatMap(variable => 'expression' in variable ? [ variable.expression ] : []),
     ...having?.having ?? [],
     ...order?.orderDefs.map(ordering => ordering.expression) ?? [],
   ];
-  return expressions.some(expression => mayContainAggregate(expression, isAggregateFunction));
-}
-
-/**
- * Whether an expression may contain an aggregate, also when nested in a function call.
- */
-function mayContainAggregate(expression: Expression, isAggregateFunction: AggregateFunctionTest): boolean {
-  if (F.isExpressionAggregate(expression)) {
-    return true;
-  }
-  if (F.isExpressionFunctionCall(expression)) {
-    return isAggregateFunction(expression) ||
-      expression.args.some(arg => mayContainAggregate(arg, isAggregateFunction));
-  }
-  if (F.isExpressionOperator(expression)) {
-    return expression.args.some(arg => mayContainAggregate(arg, isAggregateFunction));
-  }
-  return false;
 }
 
 /**

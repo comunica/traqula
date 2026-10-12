@@ -1,6 +1,26 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.5.0-alpha.0"></a>
+## [v1.5.0-alpha.0](https://github.com/comunica/traqula/compare/v1.4.0...v1.5.0-alpha.0) - 2026-10-05
+
+* [Bracket nested prefix operators when generating (#219)](https://github.com/comunica/traqula/commit/4d85261b28e094b6db5622c2e0738d957793c379)
+* [Add cite section to repo README (#221)](https://github.com/comunica/traqula/commit/988167fa96d8e250d9299779f0e96d7c6256b535)
+* [Reject SELECT expressions and BINDs whose variable is already in scope (#210)](https://github.com/comunica/traqula/commit/3d1d966dd704f6c579a74a0bd5767f868af9fe99)
+* [Keep quad-mode extends from rebinding the graph variable (#201)](https://github.com/comunica/traqula/commit/a45cd4a7fdf10b3ee16f6646dc2fcc160a446a5a)
+* [Keep BINDs of DESCRIBE variables in the WHERE clause (#213)](https://github.com/comunica/traqula/commit/0c47de872879ab26af4db386e73c3448e9db0cc6)
+* [Replace placeholder assertions in SPARQL 1.1 notes tests (#208)](https://github.com/comunica/traqula/commit/4b60f2f8497c3ce110f9d6efc8d43bda67648d49)
+* [Keep literal direction when generating SPARQL 1.2 algebra fixtures (#207)](https://github.com/comunica/traqula/commit/efdb1f32828006b875e14081937259de6fca6196)
+* [Keep GROUP BY and HAVING when translating CONSTRUCT algebra to AST (#211)](https://github.com/comunica/traqula/commit/98174df7f7d10bbc03d0b76fbbee8d86bf938675)
+* [Fix unparseable HAVING and GROUP BY generation (#206)](https://github.com/comunica/traqula/commit/1a4929ffc1f5811de236ad361be8770ab5245f61)
+* [Substitute aggregates in ORDER BY when translating algebra to AST (#204)](https://github.com/comunica/traqula/commit/3e3340424de00c9ea27e5f6dd64be355aa5b3633)
+* [Lift extends into SELECT in nesting order (#203)](https://github.com/comunica/traqula/commit/2c477e45926f52028803eeaf93011b8c51b3b5cf)
+* [Translate group extends back to GROUP BY expressions in toAst (#202)](https://github.com/comunica/traqula/commit/a8f1e5b2fe10cee33f18bfb9c40e2f47c37c1088)
+* [Translate every filter on top of a group to HAVING in toAst (#205)](https://github.com/comunica/traqula/commit/c6fd17b03bcfe3014b883b5d932f5a7b039d3d5f)
+* [Fix algebra transformers on Object.prototype names and repair Canonicalizer output (#199)](https://github.com/comunica/traqula/commit/00dc1eea7ff1aa777924f9758f3676ced7b07c9c)
+* [Scope OPTIONAL and MINUS in non-first join operands when converting algebra to SPARQL  (#200)](https://github.com/comunica/traqula/commit/fd583929d2850ca68c113e78b4dd39d8dfc7a22e)
+* [Select aggregates that a projection selects directly (#198)](https://github.com/comunica/traqula/commit/d120a31be2b0e5c0cbf7c64eec4917958f8c5f4b)
+
 <a name="v1.4.0"></a>
 ## [v1.4.0](https://github.com/comunica/traqula/compare/v1.3.1...v1.4.0) - 2026-09-25
 

@@ -7,6 +7,7 @@ interface ParseContext {
   prefixes?: Record<string, string>;
   baseIRI?: string;
   skipValidation?: boolean;
+  rejectGroupedSelectAliasReuse?: boolean;
   verifyWithNamedAggregators?: Set<string>;
 }
 
@@ -91,6 +92,25 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
     for (const query of queries) {
       expect(parser.parse(query), query).toMatchObject({});
     }
+  });
+
+  describe('rejectGroupedSelectAliasReuse', () => {
+    const query = 'SELECT (COUNT(*) AS ?c) (?c + 1 AS ?d) WHERE { ?s ?p ?o }';
+    const reject = { rejectGroupedSelectAliasReuse: true };
+
+    it('accepts a variable bound by an earlier select expression in a grouped query by default', ({ expect }) => {
+      expect(parser.parse(query)).toMatchObject({});
+    });
+
+    it('rejects a variable bound by an earlier select expression in a grouped query', ({ expect }) => {
+      expect(() => parser.parse(query, reject)).toThrow(Error);
+      expect(() => parser.parse('SELECT ?s (MAX(?o) AS ?m) (?m * 2 AS ?d) WHERE { ?s ?p ?o } GROUP BY ?s', reject))
+        .toThrow(Error);
+    });
+
+    it('accepts a variable bound by an earlier select expression in an ungrouped query', ({ expect }) => {
+      expect(parser.parse('SELECT (1 AS ?a) (?a + 1 AS ?b) WHERE { ?s ?p ?o }', reject)).toMatchObject({});
+    });
   });
 
   describe('with verifyWithNamedAggregators', () => {

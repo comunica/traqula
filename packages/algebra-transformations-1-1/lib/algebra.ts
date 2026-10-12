@@ -137,11 +137,6 @@ export interface Double extends Multi {
  */
 export interface AggregateExpression extends BaseExpression {
   subType: ExpressionTypes.AGGREGATE;
-  /**
-   * The keyword of a built-in aggregate.
-   * When translated with the `verifyWithNamedAggregators` option, this can also be the IRI of a custom aggregate.
-   * TODO(major): include custom aggregate IRIs in the type.
-   */
   aggregator: 'avg' | 'count' | 'group_concat' | 'max' | 'min' | 'sample' | 'sum';
   distinct: boolean;
   expression: Expression;
@@ -169,6 +164,28 @@ export interface NamedExpression extends BaseExpression {
   subType: ExpressionTypes.NAMED;
   name: RDF.NamedNode;
   args: Expression[];
+  /**
+   * Whether this is a call of a custom aggregate, see {@link NamedAggregateExpression}.
+   */
+  aggregate?: boolean;
+  /**
+   * Whether the custom aggregate is called with DISTINCT. Only set on custom aggregates.
+   */
+  distinct?: boolean;
+}
+/**
+ * A call of a custom aggregate.
+ * Custom aggregates are syntactically function calls,
+ * so they are named expressions, marked as aggregates, with all arguments of the call.
+ * toAlgebra only translates a function call as a custom aggregate when `verifyWithNamedAggregators` accepts its IRI,
+ * and then binds it to a variable in the aggregates of a group, see {@link BoundNamedAggregate}.
+ */
+export interface NamedAggregateExpression extends NamedExpression {
+  aggregate: true;
+  distinct: boolean;
+}
+export interface BoundNamedAggregate extends NamedAggregateExpression {
+  variable: RDF.Variable;
 }
 
 export interface OperatorExpression extends BaseExpression {
@@ -270,6 +287,12 @@ export interface BoundAggregate extends AggregateExpression {
 export interface Group extends Single {
   type: Types.GROUP;
   variables: RDF.Variable[];
+  /**
+   * The aggregates of the group, each bound to a variable.
+   * When translated with the `verifyWithNamedAggregators` option,
+   * this can also contain custom aggregates, see {@link BoundNamedAggregate}.
+   * TODO(major): include BoundNamedAggregate in the type.
+   */
   aggregates: BoundAggregate[];
 }
 

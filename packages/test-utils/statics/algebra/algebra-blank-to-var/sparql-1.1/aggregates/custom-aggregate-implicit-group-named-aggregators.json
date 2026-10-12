@@ -35,16 +35,22 @@
         "aggregates": [
           {
             "type": "expression",
-            "subType": "aggregate",
-            "aggregator": "http://example.org/median",
-            "expression": {
-              "type": "expression",
-              "subType": "term",
-              "term": {
-                "termType": "Variable",
-                "value": "o"
-              }
+            "subType": "named",
+            "name": {
+              "termType": "NamedNode",
+              "value": "http://example.org/median"
             },
+            "args": [
+              {
+                "type": "expression",
+                "subType": "term",
+                "term": {
+                  "termType": "Variable",
+                  "value": "o"
+                }
+              }
+            ],
+            "aggregate": true,
             "distinct": false,
             "variable": {
               "termType": "Variable",

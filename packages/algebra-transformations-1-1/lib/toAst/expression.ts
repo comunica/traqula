@@ -18,10 +18,7 @@ export const translateAlgPureExpression: AstIndir<'translatePureExpression', Exp
   fun: ({ SUBRULE }) => (_, expr) => {
     switch (expr.subType) {
       case eTypes.AGGREGATE:
-        // Built-in aggregators are keywords, custom aggregators are IRIs
-        return expr.aggregator.includes(':') ?
-          SUBRULE(translateAlgCustomAggregateExpression, expr) :
-          SUBRULE(translateAlgAggregateExpression, expr);
+        return SUBRULE(translateAlgAggregateExpression, expr);
       case eTypes.EXISTENCE:
         return SUBRULE(translateAlgExistenceExpression, expr);
       case eTypes.NAMED:
@@ -74,22 +71,6 @@ AstIndir<'translateAggregateExpression', ExpressionAggregate, [Algebra.Aggregate
     ),
 };
 
-/**
- * Translates an aggregate with a custom aggregator, which is the IRI of the aggregate function,
- * to a function call, since custom aggregates are syntactically function calls.
- */
-export const translateAlgCustomAggregateExpression:
-AstIndir<'translateCustomAggregateExpression', ExpressionFunctionCall, [Algebra.AggregateExpression]> = {
-  name: 'translateCustomAggregateExpression',
-  fun: ({ SUBRULE }) => ({ astFactory: F }, expr) =>
-    F.expressionFunctionCall(
-      F.termNamed(F.gen(), expr.aggregator),
-      [ SUBRULE(translateAlgPureExpression, expr.expression) ],
-      expr.distinct,
-      F.gen(),
-    ),
-};
-
 export const translateAlgExistenceExpression:
 AstIndir<'translateExistenceExpression', ExpressionPatternOperation, [Algebra.ExistenceExpression]> = {
   name: 'translateExistenceExpression',
@@ -102,6 +83,11 @@ AstIndir<'translateExistenceExpression', ExpressionPatternOperation, [Algebra.Ex
     ),
 };
 
+/**
+ * Translates a named expression to a function call.
+ * Custom aggregates (see {@link Algebra.NamedAggregateExpression}) are syntactically function calls too,
+ * so they are translated the same way, keeping their DISTINCT.
+ */
 export const translateAlgNamedExpression:
 AstIndir<'translateNamedExpression', ExpressionFunctionCall, [Algebra.NamedExpression]> = {
   name: 'translateNamedExpression',
@@ -109,7 +95,7 @@ AstIndir<'translateNamedExpression', ExpressionFunctionCall, [Algebra.NamedExpre
     F.expressionFunctionCall(
       <RdfTermToAst<typeof expr.name>> SUBRULE(translateAlgTerm, expr.name),
       expr.args.map(x => SUBRULE(translateAlgPureExpression, x)),
-      false,
+      expr.aggregate === true && expr.distinct === true,
       F.gen(),
     ),
 };

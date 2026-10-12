@@ -2,7 +2,7 @@ import type * as RDF from '@rdfjs/types';
 import type {
   Expression,
   ExpressionAggregate,
-  ExpressionAggregateDefault,
+  ExpressionFunctionCall,
   Ordering,
   PatternBind,
   Query,
@@ -188,34 +188,18 @@ export type MapAggregateType = Wildcard | Expression | Ordering | PatternBind;
  * Rewrites some of the input sparql object to make use of aggregate variables
  * It thus replaces aggregates by their representative variable and registers the mapping.
  * Function calls for whose IRI `verifyWithNamedAggregators` returns true are custom aggregates,
- * they are registered as an aggregate with their full IRI as aggregation.
+ * they are registered as the function call itself, which {@link translateBoundAggregate} translates.
+ * TODO(major): include ExpressionFunctionCall in the type of the registered aggregates.
  */
 export const mapAggregate:
 AlgebraIndir<'mapAggregate', MapAggregateType, [MapAggregateType, Record<string, ExpressionAggregate>]> = {
   name: 'mapAggregate',
-  fun: ({ SUBRULE }) => ({ astFactory: F, verifyWithNamedAggregators }, input, aggregates): MapAggregateType => {
-    let thingy = input;
-    if (verifyWithNamedAggregators && F.isExpressionFunctionCall(thingy)) {
-      const aggregator = SUBRULE(translateNamed, thingy.function).value;
-      if (verifyWithNamedAggregators(aggregator)) {
-        // Algebra aggregates have a single expression, like the built-in aggregates.
-        if (thingy.args.length !== 1) {
-          throw new Error(`Custom aggregate <${aggregator}> must have exactly one argument to be translated to algebra`);
-        }
-        thingy = {
-          type: 'expression',
-          subType: 'aggregate',
-          aggregation: aggregator,
-          distinct: thingy.distinct,
-          expression: [ thingy.args[0] ],
-          loc: thingy.loc,
-        } satisfies ExpressionAggregateDefault;
-      }
-    }
-
-    if (F.isExpressionAggregate(thingy)) {
+  fun: ({ SUBRULE }) => ({ astFactory: F, verifyWithNamedAggregators }, thingy, aggregates): MapAggregateType => {
+    const isCustomAggregate = verifyWithNamedAggregators !== undefined && F.isExpressionFunctionCall(thingy) &&
+      verifyWithNamedAggregators(SUBRULE(translateNamed, thingy.function).value);
+    if (F.isExpressionAggregate(thingy) || isCustomAggregate) {
       // Needed to take away the difference in the various `loc` descriptions
-      const canonicalAggregate = F.forcedAutoGenTree<ExpressionAggregate>(thingy);
+      const canonicalAggregate = <ExpressionAggregate> F.forcedAutoGenTree(thingy);
       let val: TermVariable | undefined;
       // Look for the matching aggregate
       for (const [ key, aggregate ] of Object.entries(aggregates)) {
@@ -243,11 +227,26 @@ AlgebraIndir<'mapAggregate', MapAggregateType, [MapAggregateType, Record<string,
   },
 };
 
+/**
+ * Translates an aggregate registered by {@link mapAggregate}, bound to the given variable.
+ * A custom aggregate is registered as its function call,
+ * and translated to a named expression marked as aggregate, see {@link Algebra.BoundNamedAggregate}.
+ * TODO(major): include ExpressionFunctionCall in the input type and BoundNamedAggregate in the output type.
+ */
 export const translateBoundAggregate:
 AlgebraIndir<'translateBoundAggregate', Algebra.BoundAggregate, [ExpressionAggregate, RDF.Variable]> = {
   name: 'translateBoundAggregate',
-  fun: ({ SUBRULE }) => (_, thingy, variable) => {
-    const A = <Algebra.AggregateExpression> SUBRULE(translateExpression, thingy);
+  fun: ({ SUBRULE }) => ({ astFactory: F, algebraFactory: AF }, thingy, variable) => {
+    const aggregate = <ExpressionAggregate | ExpressionFunctionCall> thingy;
+    if (F.isExpressionFunctionCall(aggregate)) {
+      const named = <Algebra.NamedExpression> SUBRULE(translateExpression, aggregate);
+      const custom: Algebra.BoundNamedAggregate = {
+        ...AF.createNamedAggregateExpression(named.name, named.args, aggregate.distinct),
+        variable,
+      };
+      return <Algebra.BoundAggregate> <unknown> custom;
+    }
+    const A = <Algebra.AggregateExpression> SUBRULE(translateExpression, aggregate);
     return { ...A, variable };
   },
 };

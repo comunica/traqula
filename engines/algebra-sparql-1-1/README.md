@@ -72,15 +72,16 @@ Custom aggregates are syntactically function calls, so by default, `toAlgebra` t
 The `verifyWithNamedAggregators` option takes a callback `(iri: string) => boolean` that decides whether the function with the given full IRI is a custom aggregate.
 Function calls in the `SELECT`, `HAVING` and `ORDER BY` clauses for whose IRI it returns `true` are translated as aggregates,
 just like the built-in aggregates: they are grouped (implicitly when there is no `GROUP BY`) and bound to a variable.
-The resulting `AggregateExpression` has the IRI as its `aggregator`, keeps the `distinct` flag, and has the argument as its `expression`.
-Since such an aggregate has a single `expression`, translating a custom aggregate that does not have exactly one argument throws an error.
+They stay named expressions, with the IRI as `name` and all arguments as `args`, marked with `aggregate: true` and their `distinct` flag
+(a `NamedAggregateExpression`).
+Like the built-in aggregates, they are listed in the `aggregates` of the `Group`, bound to their variable (a `BoundNamedAggregate`).
 
 ```typescript
 const ast = parser.parse('PREFIX ex: <http://example.org/> SELECT (ex:median(DISTINCT ?o) AS ?m) { ?s ?p ?o }');
 const algebra = toAlgebra(ast, { verifyWithNamedAggregators: iri => iri === 'http://example.org/median' });
 ```
 
-`toAst` translates an aggregate whose `aggregator` is an IRI (contains a colon) back to a function call, including `DISTINCT`.
+`toAst` translates them back to function calls, including `DISTINCT`, which does not need the option.
 The [parser](../parser-sparql-1-1#configuration) has an option with the same name, so the same callback can validate the query.
 
 ## Algebra Types

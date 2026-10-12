@@ -114,18 +114,21 @@ GROUP BY ?s`);
       const ast = parser.parse('BASE <http://ex.org/> SELECT (<agg>(DISTINCT ?o) AS ?a) { ?s ?p ?o }');
       const project = <Algebra.Project> toAlgebra(ast, { verifyWithNamedAggregators });
       const group = <Algebra.Group> (<Algebra.Extend> project.input).input;
-      expect(group.aggregates).toMatchObject([{ aggregator: 'http://ex.org/agg', distinct: true }]);
+      expect(group.aggregates).toMatchObject([{
+        subType: 'named',
+        name: { value: 'http://ex.org/agg' },
+        aggregate: true,
+        distinct: true,
+      }]);
     });
 
-    it('throws on a custom aggregate that does not have exactly one argument', ({ expect }) => {
-      for (const query of [
-        'SELECT (<http://ex.org/agg>(?o, ?s) AS ?a) { ?s ?p ?o }',
-        'SELECT (<http://ex.org/agg>() AS ?a) { ?s ?p ?o }',
-      ]) {
-        expect(() => toAlgebra(parser.parse(query), { verifyWithNamedAggregators })).toThrowError(
-          'Custom aggregate <http://ex.org/agg> must have exactly one argument to be translated to algebra',
-        );
-      }
+    it('keeps function calls that are not custom aggregates as unmarked named expressions', ({ expect }) => {
+      const ast = parser.parse('SELECT (<http://ex.org/f>(?o) AS ?a) { ?s ?p ?o }');
+      const project = <Algebra.Project> toAlgebra(ast, { verifyWithNamedAggregators });
+      const expression = (<Algebra.Extend> project.input).expression;
+      expect(expression).toMatchObject({ subType: 'named', name: { value: 'http://ex.org/f' }});
+      expect(expression).not.toHaveProperty('aggregate');
+      expect(expression).not.toHaveProperty('distinct');
     });
   });
 

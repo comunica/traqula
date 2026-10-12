@@ -1,0 +1,150 @@
+{
+  "type": "project",
+  "input": {
+    "type": "extend",
+    "input": {
+      "type": "extend",
+      "input": {
+        "type": "group",
+        "input": {
+          "type": "bgp",
+          "patterns": [
+            {
+              "type": "pattern",
+              "termType": "Quad",
+              "subject": {
+                "termType": "Variable",
+                "value": "s"
+              },
+              "predicate": {
+                "termType": "NamedNode",
+                "value": "http://example.org/value"
+              },
+              "object": {
+                "termType": "Variable",
+                "value": "o"
+              },
+              "graph": {
+                "termType": "DefaultGraph",
+                "value": ""
+              }
+            },
+            {
+              "type": "pattern",
+              "termType": "Quad",
+              "subject": {
+                "termType": "Variable",
+                "value": "s"
+              },
+              "predicate": {
+                "termType": "NamedNode",
+                "value": "http://example.org/weight"
+              },
+              "object": {
+                "termType": "Variable",
+                "value": "w"
+              },
+              "graph": {
+                "termType": "DefaultGraph",
+                "value": ""
+              }
+            }
+          ]
+        },
+        "variables": [
+          {
+            "termType": "Variable",
+            "value": "s"
+          }
+        ],
+        "aggregates": [
+          {
+            "type": "expression",
+            "subType": "named",
+            "name": {
+              "termType": "NamedNode",
+              "value": "http://example.org/median"
+            },
+            "args": [
+              {
+                "type": "expression",
+                "subType": "term",
+                "term": {
+                  "termType": "Variable",
+                  "value": "o"
+                }
+              },
+              {
+                "type": "expression",
+                "subType": "term",
+                "term": {
+                  "termType": "Variable",
+                  "value": "w"
+                }
+              }
+            ],
+            "aggregate": true,
+            "distinct": true,
+            "variable": {
+              "termType": "Variable",
+              "value": "var0"
+            }
+          },
+          {
+            "type": "expression",
+            "subType": "named",
+            "name": {
+              "termType": "NamedNode",
+              "value": "http://example.org/median"
+            },
+            "args": [],
+            "aggregate": true,
+            "distinct": false,
+            "variable": {
+              "termType": "Variable",
+              "value": "var1"
+            }
+          }
+        ]
+      },
+      "variable": {
+        "termType": "Variable",
+        "value": "weighted"
+      },
+      "expression": {
+        "type": "expression",
+        "subType": "term",
+        "term": {
+          "termType": "Variable",
+          "value": "var0"
+        }
+      }
+    },
+    "variable": {
+      "termType": "Variable",
+      "value": "none"
+    },
+    "expression": {
+      "type": "expression",
+      "subType": "term",
+      "term": {
+        "termType": "Variable",
+        "value": "var1"
+      }
+    }
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "s"
+    },
+    {
+      "termType": "Variable",
+      "value": "weighted"
+    },
+    {
+      "termType": "Variable",
+      "value": "none"
+    }
+  ]
+}

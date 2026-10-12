@@ -254,6 +254,24 @@ export class AlgebraFactory {
     return { type: A.Types.EXPRESSION, subType: A.ExpressionTypes.NAMED, name, args: known(args) };
   }
 
+  /**
+   * Creates a call of a custom aggregate, see {@link A.NamedAggregateExpression}.
+   */
+  public createNamedAggregateExpression(
+    name: RDF.NamedNode,
+    args: A.BaseExpression[],
+    distinct: boolean,
+  ): A.NamedAggregateExpression {
+    return {
+      type: A.Types.EXPRESSION,
+      subType: A.ExpressionTypes.NAMED,
+      name,
+      args: known(args),
+      aggregate: true,
+      distinct,
+    };
+  }
+
   public createOperatorExpression(operator: string, args: A.BaseExpression[]): A.OperatorExpression {
     return { type: A.Types.EXPRESSION, subType: A.ExpressionTypes.OPERATOR, operator, args: known(args) };
   }

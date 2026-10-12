@@ -32,8 +32,8 @@ export interface ContextConfigs {
    * Decides whether the function with the given full IRI is a custom aggregate.
    * Custom aggregates are syntactically function calls.
    * Function calls in the SELECT, HAVING and ORDER BY clauses for whose IRI this returns true
-   * are translated as aggregates, with the IRI as aggregator.
-   * Other function calls are translated as named expressions.
+   * are translated as aggregates: named expressions marked as aggregate, see {@link Algebra.NamedAggregateExpression}.
+   * Other function calls are translated as unmarked named expressions.
    * Default `undefined`: no function call is translated as an aggregate.
    */
   verifyWithNamedAggregators?: (iri: string) => boolean;

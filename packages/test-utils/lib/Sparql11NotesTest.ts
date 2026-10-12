@@ -3,16 +3,12 @@ import type { DataFactory } from 'rdf-data-factory';
 import { describe, it } from 'vitest';
 import type { TestFunction } from 'vitest';
 
-interface ParseContext {
-  prefixes?: Record<string, string>;
-  baseIRI?: string;
-  skipValidation?: boolean;
-  rejectGroupedSelectAliasReuse?: boolean;
-  verifyWithNamedAggregators?: (iri: string) => boolean;
-}
-
 interface Parser {
-  parse: (query: string, context?: ParseContext) => unknown;
+  parse: (query: string, context?: {
+    prefixes?: Record<string, string>;
+    baseIRI?: string;
+    rejectGroupedSelectAliasReuse?: boolean;
+  }) => unknown;
 }
 
 /**
@@ -24,17 +20,11 @@ interface Parser {
 export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQuad>): void {
   // Only check that parsing fails: error messages are not part of the contract,
   // so engines extending the grammar are free to report a different message.
-  function testValidQuery(query: string, context?: ParseContext): TestFunction<object> {
-    return ({ expect }) => {
-      expect(parser.parse(query, context)).toMatchObject({});
-    };
-  }
-
-  function testErroneousQuery(query: string, context?: ParseContext): TestFunction<object> {
+  function testErroneousQuery(query: string): TestFunction<object> {
     return ({ expect }) => {
       let error: any;
       try {
-        parser.parse(query, context);
+        parser.parse(query);
       } catch (e) {
         error = e;
       }
@@ -117,164 +107,6 @@ export function importSparql11NoteTests(parser: Parser, _DF: DataFactory<BaseQua
     it('accepts a variable bound by an earlier select expression in an ungrouped query', ({ expect }) => {
       expect(parser.parse('SELECT (1 AS ?a) (?a + 1 AS ?b) WHERE { ?s ?p ?o }', reject)).toMatchObject({});
     });
-  });
-
-  describe('with verifyWithNamedAggregators', () => {
-    const aggregates = new Set([ 'http://ex.org/agg', 'http://ex.org/my-agg' ]);
-    const context = { verifyWithNamedAggregators: (iri: string): boolean => aggregates.has(iri) };
-
-    describe('should throw on a select expression binding a WHERE variable of a query without aggregates', () => {
-      const queries = [
-        'PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT (xsd:string(?z) AS ?z) { ?s ?p ?z }',
-        'SELECT (<http://ex.org/f>(?z) AS ?z) { ?s ?p ?z }',
-        'SELECT (1 AS ?z) { ?s ?p ?z } ORDER BY (<http://ex.org/f>(?z))',
-        'SELECT (1 AS ?z) { ?s ?p ?z } HAVING (<http://ex.org/f>(?z))',
-        'SELECT * { { SELECT (<http://ex.org/f>(?z) AS ?z) { ?s ?p ?z } } }',
-        // A relative IRI without base IRI cannot be resolved, so it is not a known aggregate
-        'SELECT (<agg>(?z) AS ?z) { ?s ?p ?z }',
-        'PREFIX ex: <> SELECT (ex:agg(?z) AS ?z) { ?s ?p ?z }',
-      ];
-      for (const query of queries) {
-        it(query, testErroneousQuery(query, context));
-      }
-    });
-
-    describe('should NOT throw on a select expression binding a WHERE variable of a query with aggregates', () => {
-      const queries = [
-        'SELECT (<http://ex.org/agg>(?z) AS ?z) { ?s ?p ?z }',
-        'SELECT (<http://ex.org/agg>(DISTINCT ?z) AS ?z) { ?s ?p ?z }',
-        'PREFIX ex: <http://ex.org/> SELECT (ex:agg(?z) AS ?z) { ?s ?p ?z }',
-        'PREFIX ex: <http://ex.org/> SELECT (ex:my\\-agg(?z) AS ?z) { ?s ?p ?z }',
-        'BASE <http://ex.org/> SELECT (<agg>(?z) AS ?z) { ?s ?p ?z }',
-        'BASE <http://ex.org/sub/> PREFIX ex: <../> SELECT (ex:agg(?z) AS ?z) { ?s ?p ?z }',
-        'BASE <http://ex.org/sub/> BASE <../> SELECT (<agg>(?z) AS ?z) { ?s ?p ?z }',
-        'PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT (xsd:integer(<http://ex.org/agg>(?z)) AS ?z) { ?s ?p ?z }',
-        'PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT (xsd:integer(COUNT(?z)) AS ?z) { ?s ?p ?z }',
-        'SELECT (1 AS ?z) { ?s ?p ?z } HAVING (<http://ex.org/agg>(?z) > 1)',
-        'SELECT (1 AS ?z) { ?s ?p ?z } ORDER BY (<http://ex.org/agg>(?z))',
-        'SELECT * { { SELECT (<http://ex.org/agg>(?z) AS ?z) { ?s ?p ?z } } }',
-      ];
-      for (const query of queries) {
-        it(query, testValidQuery(query, context));
-      }
-      it('with the base IRI of the context', testValidQuery(
-        'SELECT (<agg>(?z) AS ?z) { ?s ?p ?z }',
-        { ...context, baseIRI: 'http://ex.org/' },
-      ));
-    });
-
-    describe('should throw on DISTINCT in a function call that is not a known aggregate', () => {
-      const queries = [
-        'SELECT (<http://ex.org/f>(DISTINCT ?z) AS ?y) { ?s ?p ?z }',
-        'SELECT (<http://ex.org/agg>(<http://ex.org/f>(DISTINCT ?z)) AS ?y) { ?s ?p ?z }',
-        'SELECT ?o { ?s ?p ?o } GROUP BY ?o HAVING (<http://ex.org/f>(DISTINCT ?o))',
-        'SELECT (COUNT(*) AS ?c) { ?s ?p ?o } GROUP BY <http://ex.org/f>(DISTINCT ?o)',
-        'SELECT * { ?s ?p ?o FILTER <http://ex.org/f>(DISTINCT ?o) }',
-      ];
-      for (const query of queries) {
-        it(query, testErroneousQuery(query, context));
-      }
-    });
-
-    it('should NOT throw on DISTINCT in a function call when not validating', ({ expect }) => {
-      expect(parser.parse(
-        'SELECT (<http://ex.org/f>(DISTINCT ?z) AS ?y) { ?s ?p ?z }',
-        { ...context, skipValidation: true },
-      )).toMatchObject({});
-    });
-
-    describe('should throw on ungrouped variables in a query grouped by a known aggregate', () => {
-      const queries = [
-        'SELECT ?s (<http://ex.org/agg>(?o) AS ?a) { ?s ?p ?o }',
-        'SELECT (<http://ex.org/f>(?o) AS ?a) (COUNT(*) AS ?c) { ?s ?p ?o }',
-        'SELECT * { ?s ?p ?o } HAVING (<http://ex.org/agg>(?o) > 1)',
-        'DESCRIBE ?s { ?s ?p ?o } HAVING (<http://ex.org/agg>(?o) > 1)',
-      ];
-      for (const query of queries) {
-        it(query, testErroneousQuery(query, context));
-      }
-    });
-
-    describe('should NOT throw on grouped variables in a query grouped by a known aggregate', () => {
-      const queries = [
-        'SELECT ?s (<http://ex.org/agg>(?o) AS ?a) { ?s ?p ?o } GROUP BY ?s',
-        'SELECT (<http://ex.org/f>(?s) AS ?a) (COUNT(*) AS ?c) { ?s ?p ?o } GROUP BY ?s',
-        'DESCRIBE ?s { ?s ?p ?o } GROUP BY ?s HAVING (<http://ex.org/agg>(?o) > 1)',
-      ];
-      for (const query of queries) {
-        it(query, testValidQuery(query, context));
-      }
-    });
-
-    describe('should throw on a known aggregate within an aggregate', () => {
-      const queries = [
-        'SELECT (<http://ex.org/agg>(COUNT(?o)) AS ?a) { ?s ?p ?o }',
-        'SELECT (<http://ex.org/agg>(1 + MAX(?o)) AS ?a) { ?s ?p ?o }',
-        'SELECT (COUNT(<http://ex.org/agg>(?o)) AS ?a) { ?s ?p ?o }',
-        'PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> SELECT (SUM(xsd:integer(<http://ex.org/agg>(?o))) AS ?a) { ?s ?p ?o }',
-        'SELECT (<http://ex.org/agg>(<http://ex.org/my-agg>(?o)) AS ?a) { ?s ?p ?o }',
-        'SELECT ?s { ?s ?p ?o } GROUP BY ?s HAVING (<http://ex.org/agg>(<http://ex.org/agg>(?o)) > 1)',
-      ];
-      for (const query of queries) {
-        it(query, testErroneousQuery(query, context));
-      }
-    });
-
-    describe('should throw on a known aggregate outside the SELECT, HAVING, and ORDER BY clauses', () => {
-      const queries = [
-        'SELECT * { ?s ?p ?o FILTER(<http://ex.org/agg>(?o) > 1) }',
-        'SELECT * { ?s ?p ?o FILTER <http://ex.org/agg>(?o) }',
-        'SELECT * { ?s ?p ?o BIND(<http://ex.org/agg>(?o) AS ?a) }',
-        'SELECT (COUNT(*) AS ?c) { ?s ?p ?o } GROUP BY (<http://ex.org/agg>(?o))',
-      ];
-      for (const query of queries) {
-        it(query, testErroneousQuery(query, context));
-      }
-    });
-
-    describe('should NOT throw on a function call that is not a known aggregate within an aggregate', () => {
-      const queries = [
-        'SELECT (<http://ex.org/agg>(<http://ex.org/f>(?o)) AS ?a) { ?s ?p ?o }',
-        'SELECT (COUNT(<http://ex.org/f>(?o)) AS ?a) { ?s ?p ?o }',
-        'SELECT (<http://ex.org/agg>(?o) + COUNT(?o) AS ?a) { ?s ?p ?o }',
-      ];
-      for (const query of queries) {
-        it(query, testValidQuery(query, context));
-      }
-    });
-  });
-
-  describe('should NOT throw on possibly nested or misplaced aggregates without verifyWithNamedAggregators', () => {
-    const queries = [
-      'SELECT (<http://ex.org/agg>(COUNT(?o)) AS ?a) { ?s ?p ?o }',
-      'SELECT (COUNT(<http://ex.org/agg>(?o)) AS ?a) { ?s ?p ?o }',
-      'SELECT * { ?s ?p ?o FILTER(<http://ex.org/agg>(?o) > 1) }',
-    ];
-    for (const query of queries) {
-      it(query, testValidQuery(query));
-    }
-  });
-
-  describe('should NOT throw on queries that function calls might group without verifyWithNamedAggregators', () => {
-    const queries = [
-      'SELECT ?s (<http://ex.org/agg>(?o) AS ?a) { ?s ?p ?o }',
-      'SELECT (<http://ex.org/f>(?o) AS ?a) (COUNT(*) AS ?c) { ?s ?p ?o }',
-      'SELECT * { ?s ?p ?o } HAVING (<http://ex.org/agg>(?o) > 1)',
-      'DESCRIBE ?s { ?s ?p ?o } HAVING (<http://ex.org/agg>(?o) > 1)',
-    ];
-    for (const query of queries) {
-      it(query, testValidQuery(query));
-    }
-  });
-
-  describe('should NOT throw on DISTINCT in a function call without verifyWithNamedAggregators', () => {
-    const queries = [
-      'SELECT (<http://ex.org/f>(DISTINCT ?z) AS ?y) { ?s ?p ?z }',
-      'SELECT (COUNT(*) AS ?c) { ?s ?p ?o } GROUP BY <http://ex.org/f>(DISTINCT ?o)',
-    ];
-    for (const query of queries) {
-      it(query, testValidQuery(query));
-    }
   });
 
   it('should throw an error on bind to variable in scope', testErroneousQuery(

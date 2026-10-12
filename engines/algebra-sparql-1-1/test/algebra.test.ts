@@ -21,7 +21,7 @@ describe('algebra output', () => {
         for (const test of sparqlAlgebraTests(suite, blankToVariable, true)) {
           const { name, json, sparql: query, verifyWithNamedAggregators } = test;
           it(`${name}${blankToVariable ? ' (no blanks)' : ''}`, ({ expect }) => {
-            const ast = parser.parse(query);
+            const ast = parser.parse(query, { verifyWithNamedAggregators });
             const algebra = algebraUtils.objectify(
               toAlgebra(ast, {
                 quads: name.endsWith('-quads'),

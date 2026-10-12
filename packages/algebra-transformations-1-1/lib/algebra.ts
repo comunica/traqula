@@ -174,11 +174,7 @@ export interface NamedExpression extends BaseExpression {
   distinct?: boolean;
 }
 /**
- * A call of a custom aggregate.
- * Custom aggregates are syntactically function calls,
- * so they are named expressions, marked as aggregates, with all arguments of the call.
- * toAlgebra only translates a function call as a custom aggregate when `verifyWithNamedAggregators` accepts its IRI,
- * and then binds it to a variable in the aggregates of a group, see {@link BoundNamedAggregate}.
+ * A call of a custom aggregate, see the `verifyWithNamedAggregators` option of toAlgebra.
  */
 export interface NamedAggregateExpression extends NamedExpression {
   aggregate: true;
@@ -288,11 +284,7 @@ export interface Group extends Single {
   type: Types.GROUP;
   variables: RDF.Variable[];
   /**
-   * The aggregates of the group, each bound to a variable.
-   * When translated with the `verifyWithNamedAggregators` option,
-   * this can also contain custom aggregates, see {@link BoundNamedAggregate}.
-   * Their `subType` is {@link ExpressionTypes.NAMED} instead of {@link ExpressionTypes.AGGREGATE},
-   * so they have no `aggregator` or `expression`.
+   * Can also contain custom aggregates ({@link BoundNamedAggregate}, with `subType` {@link ExpressionTypes.NAMED}).
    * TODO(major): include BoundNamedAggregate in the type.
    */
   aggregates: BoundAggregate[];

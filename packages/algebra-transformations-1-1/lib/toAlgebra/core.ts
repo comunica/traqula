@@ -16,9 +16,6 @@ export interface AlgebraContext {
   dataFactory: RDF.DataFactory<RDF.BaseQuad> & { variable: Function };
   currentBase: string | undefined;
   currentPrefixes: Record<string, string>;
-  /**
-   * Decides whether a function is a custom aggregate, see {@link ContextConfigs.verifyWithNamedAggregators}.
-   */
   verifyWithNamedAggregators?: (iri: string) => boolean;
 }
 
@@ -29,12 +26,8 @@ export interface ContextConfigs {
   baseIRI?: string;
   blankToVariable?: boolean;
   /**
-   * Decides whether the function with the given full IRI is a custom aggregate.
-   * Custom aggregates are syntactically function calls.
-   * Function calls in the SELECT, HAVING and ORDER BY clauses for whose IRI this returns true
-   * are translated as aggregates: named expressions marked as aggregate, see {@link Algebra.NamedAggregateExpression}.
-   * Other function calls are translated as unmarked named expressions.
-   * Default `undefined`: no function call is translated as an aggregate.
+   * Decides whether the function with the given full IRI is a custom aggregate,
+   * translated as a {@link Algebra.NamedAggregateExpression}.
    */
   verifyWithNamedAggregators?: (iri: string) => boolean;
 }

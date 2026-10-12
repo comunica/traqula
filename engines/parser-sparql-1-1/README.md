@@ -62,16 +62,7 @@ Optionally, the following parameters can be set in the Parsers defaultContext:
 * `dataFactory`: A custom [RDFJS DataFactory](http://rdf.js.org/#datafactory-interface) to construct terms and triples. _(Default: `require('@rdfjs/data-model')`)_
 * `skipValidation`: Can be used to disable the validation that used variables in a select clause are in scope. _(Default: `false`)_
 * `rejectGroupedSelectAliasReuse`: Reject select expressions that use a variable bound by an earlier select expression in a grouped query, like `SELECT (COUNT(?o) AS ?c) (?c + 1 AS ?d) WHERE { ?s ?p ?o }`, as the SPARQL 1.1 text requires. SPARQL 1.2 allows this reuse. _(Default: `false`)_
-* `verifyWithNamedAggregators`: A callback `(iri: string) => boolean` that decides whether the function with the given full IRI is a custom aggregate of the engine the query will be evaluated with. _(Default: `undefined`)_
-  Custom aggregates are syntactically function calls, so by default, validation assumes any function call might be an aggregate.
-  For example, `SELECT (<http://ex.org/f>(?o) AS ?o) { ?s ?p ?o }` is accepted, since `?o` is not in scope when `<http://ex.org/f>` is an aggregate.
-  When this callback is given, only function calls for whose IRI (resolved using the prefixes and base IRI) it returns `true` are aggregates,
-  so that query is rejected unless it returns `true` for `http://ex.org/f`.
-  Other function calls cannot use `DISTINCT`, since only custom aggregates can.
-  Like the built-in aggregates, custom aggregates are then only allowed in the `SELECT`, `HAVING` and `ORDER BY` clauses,
-  and not within (the arguments of) another aggregate.
-  The callback can be called multiple times for the same function call, so it should be cheap and return the same result.
-  Give [`toAlgebra`](../algebra-sparql-1-1#custom-aggregates) the same callback, so it translates the same function calls as aggregates.
+* `verifyWithNamedAggregators`: A callback `(iri: string) => boolean` that decides whether the function with the given full IRI is a custom aggregate. Without it, any function call might be an aggregate, so validation is lenient. With it, only accepted function calls are aggregates: only they can use `DISTINCT`, and they are validated like built-in aggregates. Give [`toAlgebra`](../algebra-sparql-1-1#custom-aggregates) the same callback. _(Default: `undefined`)_
 
 These parameters can also be given per query, as the second argument of `parse`:
 

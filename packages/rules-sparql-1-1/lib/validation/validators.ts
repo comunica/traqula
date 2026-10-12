@@ -39,19 +39,10 @@ const skipPatternOperation = { patternOperation: stopVisit };
 
 /**
  * Decides whether a function call is a custom aggregate.
- * Custom aggregates are syntactically function calls:
- * > Aggregate functions can be one of the built-in keywords for aggregates or a custom aggregate,
- * > which is syntactically a function call.
  */
 export type AggregateFunctionTest = (functionCall: ExpressionFunctionCall) => boolean;
 
-/**
- * Any function call might be a custom aggregate: the lenient assumption when the custom aggregates are unknown.
- */
 const anyFunctionCall: AggregateFunctionTest = () => true;
-/**
- * No function call is a custom aggregate: what the algebra assumes when the custom aggregates are unknown.
- */
 const noFunctionCall: AggregateFunctionTest = () => false;
 
 /**
@@ -63,9 +54,8 @@ export function getAggregatesOfExpression(expression: Expression): ExpressionAgg
 }
 
 /**
- * Get the built-in aggregates of an expression, and the function calls that `isAggregateFunction` decides are
- * custom aggregates.
- * Does not look inside them, nor in EXISTS or NOT EXISTS patterns, but does look inside other function calls.
+ * Get the built-in and custom aggregates of an expression.
+ * Does not look inside them, nor in EXISTS or NOT EXISTS patterns.
  */
 function findAggregates(
   expression: Expression,
@@ -131,8 +121,7 @@ export function getGroupedVariables(query: {
 
 /**
  * Get all variables used in an expression, including those within (SPARQL 1.2) triple terms.
- * Does not look inside aggregates and function calls that may be custom aggregates,
- * nor in EXISTS or NOT EXISTS patterns.
+ * Does not look inside (custom) aggregates, nor in EXISTS or NOT EXISTS patterns.
  * @param expression - The expression to get the variables of.
  * @param variables - The set to add the variables to.
  * @param isAggregateFunction - Whether a function call is a custom aggregate. Default: any function call might be.
@@ -156,21 +145,15 @@ export function getVariablesFromExpression(
 
 /**
  * Options of {@link queryProjectionIsGood}, the equally named fields of the parse context.
- * The prefixes and base IRI are used to resolve the IRIs of function calls for `verifyWithNamedAggregators`,
- * see {@link namedAggregatorTest}.
  */
 export type ProjectionValidationOptions =
   Pick<SparqlContext, 'rejectGroupedSelectAliasReuse' | 'verifyWithNamedAggregators'> &
   Partial<Pick<SparqlContext, 'prefixes' | 'baseIRI'>>;
 
 /**
- * Creates the {@link AggregateFunctionTest} described by the `verifyWithNamedAggregators` of the parser context:
- * a function call is a custom aggregate when the callback returns true for its IRI,
- * resolved using the prefixes and base IRI in scope.
- * A function call whose IRI cannot be resolved (an unknown prefix, or a relative IRI without base IRI)
- * is not a custom aggregate, the callback is not called for it.
- * Returns undefined when the context has no `verifyWithNamedAggregators`,
- * meaning that any function call might be a custom aggregate.
+ * Creates the {@link AggregateFunctionTest} of the `verifyWithNamedAggregators` of the context,
+ * which gets the function IRI resolved against the prefixes and base IRI. An unresolvable IRI is not an aggregate.
+ * Returns undefined without `verifyWithNamedAggregators`.
  */
 export function namedAggregatorTest(
   context: Pick<ProjectionValidationOptions, 'prefixes' | 'baseIRI' | 'verifyWithNamedAggregators'>,
@@ -324,14 +307,6 @@ export function selectExpressionAliasesNotInScope(
 
 /**
  * A query is grouped when it has a GROUP BY clause or uses aggregates (18.2.4.1).
- * Custom aggregates are syntactically function calls:
- * > Aggregate functions can be one of the built-in keywords for aggregates or a custom aggregate,
- * > which is syntactically a function call.
- * Without knowing the custom aggregates, the parser cannot know whether a function is an aggregate,
- * so by default it leniently assumes any function call might be,
- * and this returns true for any query that may be grouped.
- * Pass `() => false` to only let a GROUP BY clause or a built-in aggregate group the query,
- * as they do in the algebra without custom aggregates.
  * @param query - The SELECT query.
  * @param isAggregateFunction - Whether a function call is a custom aggregate. Default: any function call might be.
  */
@@ -371,16 +346,13 @@ export function functionCallDistinctIsAggregate(functionCall: ExpressionFunction
 }
 
 /**
- * Validates that a call of a custom aggregate is only used where the parser allows the built-in aggregates:
- * - only in the SELECT, HAVING, and ORDER BY clauses.
- * - not within an aggregate function, nor containing one in its arguments,
- *   see https://www.w3.org/2013/sparql-errata#errata-query-5 and the grammar notes of SPARQL 1.2:
- *   > The expression argument of an aggregate function cannot contain an aggregate function.
- * @param functionCall - The call of a custom aggregate to validate.
- * @param isAggregateFunction - Whether a function call is a custom aggregate, to search the arguments.
- * @param position - Where the function call is.
- * @param position.canParseAggregate - Whether aggregates are allowed there.
- * @param position.inAggregate - Whether it is within the arguments of a built-in aggregate.
+ * Validates that a custom aggregate is used where built-in aggregates are allowed,
+ * and does not contain or is not within another aggregate (errata query-5).
+ * @param functionCall - The custom aggregate call.
+ * @param isAggregateFunction - Whether a function call is a custom aggregate.
+ * @param position - Whether aggregates are allowed here, and whether it is within a built-in aggregate.
+ * @param position.canParseAggregate - Whether aggregates are allowed here.
+ * @param position.inAggregate - Whether it is within a built-in aggregate.
  */
 export function customAggregateIsAllowed(
   functionCall: ExpressionFunctionCall,

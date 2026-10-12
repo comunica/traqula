@@ -65,7 +65,6 @@ The SPARQL grammars run their AST validators (e.g., the in-scope checks of `SELE
 through validation rules such as `validateSelectQuery`, `validateDescribeQuery`, `validateSubSelect`,
 `validateGroupGraphPatternSub` and `validateFunctionCall`.
 These rules consume no tokens and only validate when `skipValidation` is `false`.
-They receive the parser context, so they can use options such as `verifyWithNamedAggregators`.
 Patch them like any other rule to change or disable a specific validation:
 
 ```typescript

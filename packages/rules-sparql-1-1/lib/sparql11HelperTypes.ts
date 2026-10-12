@@ -36,17 +36,9 @@ export interface SparqlContext {
    */
   rejectGroupedSelectAliasReuse?: boolean;
   /**
-   * Decides whether the function with the given full IRI is a custom aggregate
-   * of the engine that will evaluate the query.
-   * The IRI of a function call is resolved using the prefixes and base IRI in scope before it is passed.
-   * Custom aggregates are syntactically function calls, so without this callback,
-   * validation leniently assumes that any function call might be an aggregate.
-   * With this callback, only function calls for which it returns true are aggregates,
-   * and only those can use the DISTINCT keyword.
-   * Like the built-in aggregates, they are then only allowed in the SELECT, HAVING, and ORDER BY clauses,
-   * and not within another aggregate.
-   * It can be called multiple times for the same function call, so it should be cheap and return the same result.
-   * Default `undefined`.
+   * Decides whether the function with the given full IRI is a custom aggregate.
+   * Without it, validation assumes any function call might be one.
+   * Can be called multiple times per function call.
    */
   verifyWithNamedAggregators?: (iri: string) => boolean;
   /**

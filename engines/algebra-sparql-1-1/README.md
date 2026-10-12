@@ -68,42 +68,18 @@ const generatedQuery = generator.generate(generatedAst);
 
 ### Custom aggregates
 
-Custom aggregates are syntactically function calls, so by default, `toAlgebra` translates every function call to a named expression.
-The `verifyWithNamedAggregators` option takes a callback `(iri: string) => boolean` that decides whether the function with the given full IRI is a custom aggregate.
-Function calls in the `SELECT`, `HAVING` and `ORDER BY` clauses for whose IRI it returns `true` are translated as aggregates,
-just like the built-in aggregates: they are grouped (implicitly when there is no `GROUP BY`) and bound to a variable.
-They stay named expressions, with the IRI as `name` and all arguments as `args`, marked with `aggregate: true` and their `distinct` flag
-(a `NamedAggregateExpression`).
-Like the built-in aggregates, they are listed in the `aggregates` of the `Group`, bound to their variable (a `BoundNamedAggregate`).
+Custom aggregates are syntactically function calls.
+Pass `verifyWithNamedAggregators: (iri: string) => boolean` to translate the function calls it accepts as aggregates:
+named expressions marked with `aggregate: true` and `distinct`, grouped and bound like built-in aggregates.
+Give the [parser](../parser-sparql-1-1#configuration) the same callback, since `toAlgebra` does not validate the query.
 
 ```typescript
-const ast = parser.parse('PREFIX ex: <http://example.org/> SELECT (ex:median(DISTINCT ?o) AS ?m) { ?s ?p ?o }');
-const algebra = toAlgebra(ast, { verifyWithNamedAggregators: iri => iri === 'http://example.org/median' });
+const isAggregate = (iri: string) => iri === 'http://example.org/median';
+const ast = parser.parse('PREFIX ex: <http://example.org/> SELECT (ex:median(?o) AS ?m) { ?s ?p ?o }', { verifyWithNamedAggregators: isAggregate });
+const algebra = toAlgebra(ast, { verifyWithNamedAggregators: isAggregate });
 ```
 
-`toAst` translates them back to function calls, including `DISTINCT`, which does not need the option.
-
-Give the [parser](../parser-sparql-1-1#configuration) the same callback, through its option with the same name.
-Without it, the parser cannot know which function calls are aggregates, so it does not reject queries that are invalid once they are,
-and `toAlgebra` does not validate the query itself.
-For example, the parser accepts `SELECT ?s (ex:median(?o) AS ?m) { ?s ?p ?o }` without the callback,
-and `toAlgebra` then translates it to a projection of `?s`, a variable that is not grouped.
-
-The type of `Group.aggregates` is still `BoundAggregate[]`, but with this option, it can also contain custom aggregates.
-Check the `subType` of each aggregate to tell them apart:
-
-```typescript
-import { Algebra } from '@traqula/algebra-transformations-1-1';
-
-for (const aggregate of group.aggregates) {
-  if (aggregate.subType === Algebra.ExpressionTypes.AGGREGATE) {
-    // A built-in aggregate (COUNT, SUM, ...): use aggregate.aggregator, aggregate.expression and aggregate.distinct
-  } else {
-    // A custom aggregate: a named expression, use its name, args and distinct
-    const custom = <Algebra.BoundNamedAggregate> <unknown> aggregate;
-  }
-}
-```
+`Group.aggregates` then also contains custom aggregates: their `subType` is `named` instead of `aggregate`.
 
 ## Algebra Types
 

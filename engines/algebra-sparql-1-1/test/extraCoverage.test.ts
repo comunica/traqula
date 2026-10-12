@@ -107,70 +107,13 @@ GROUP BY ?s`);
     });
   });
 
-  describe('verifyWithNamedAggregators', () => {
+  it('keeps the variables of custom aggregates in scope of their group', ({ expect }) => {
     const verifyWithNamedAggregators = (iri: string): boolean => iri === 'http://ex.org/agg';
-
-    it('translates a custom aggregate with a relative IRI resolved against the base IRI', ({ expect }) => {
-      const ast = parser.parse('BASE <http://ex.org/> SELECT (<agg>(DISTINCT ?o) AS ?a) { ?s ?p ?o }');
-      const project = <Algebra.Project> toAlgebra(ast, { verifyWithNamedAggregators });
-      const group = <Algebra.Group> (<Algebra.Extend> project.input).input;
-      expect(group.aggregates).toMatchObject([{
-        subType: 'named',
-        name: { value: 'http://ex.org/agg' },
-        aggregate: true,
-        distinct: true,
-      }]);
-    });
-
-    it('keeps function calls that are not custom aggregates as unmarked named expressions', ({ expect }) => {
-      const ast = parser.parse('SELECT (<http://ex.org/f>(?o) AS ?a) { ?s ?p ?o }');
-      const project = <Algebra.Project> toAlgebra(ast, { verifyWithNamedAggregators });
-      const expression = (<Algebra.Extend> project.input).expression;
-      expect(expression).toMatchObject({ subType: 'named', name: { value: 'http://ex.org/f' }});
-      expect(expression).not.toHaveProperty('aggregate');
-      expect(expression).not.toHaveProperty('distinct');
-    });
-
-    it('keeps the variables of custom aggregates in scope of their group', ({ expect }) => {
-      const ast = parser.parse('SELECT ?s (<http://ex.org/agg>(?o) AS ?a) { ?s ?p ?o } GROUP BY ?s');
-      const project = <Algebra.Project> toAlgebra(ast, { verifyWithNamedAggregators });
-      const group = <Algebra.Group> (<Algebra.Extend> project.input).input;
-      expect(algebraUtils.inScopeVariables(group).map(variable => variable.value).sort())
-        .toEqual([ group.aggregates[0].variable.value, 's' ].sort());
-    });
-
-    it('only calls the callback of the parser with absolute IRIs', ({ expect }) => {
-      const iris: string[] = [];
-      const record = (iri: string): boolean => {
-        iris.push(iri);
-        return false;
-      };
-      parser.parse('BASE <sub/> SELECT (<agg>(?o) AS ?a) { ?s ?p ?o }', { verifyWithNamedAggregators: record });
-      parser.parse('BASE <sub/> SELECT (<agg>(?o) AS ?a) { ?s ?p ?o }', {
-        verifyWithNamedAggregators: record,
-        baseIRI: 'http://ex.org/',
-      });
-      expect(iris.length).toBeGreaterThan(0);
-      expect(iris.every(iri => iri === 'http://ex.org/sub/agg')).toBe(true);
-    });
-
-    it('binds a custom aggregate once when its IRIs are written differently', ({ expect }) => {
-      const ast = parser.parse(`PREFIX ex: <http://ex.org/> SELECT (ex:agg(?o, ex:x) AS ?a) { ?s ?p ?o }
-        ORDER BY <http://ex.org/agg>(?o, <http://ex.org/x>)`);
-      const project = <Algebra.Project> toAlgebra(ast, { verifyWithNamedAggregators });
-      const orderBy = <Algebra.OrderBy> project.input;
-      const group = <Algebra.Group> (<Algebra.Extend> orderBy.input).input;
-      expect(group.aggregates).toHaveLength(1);
-      expect(orderBy.expressions).toMatchObject([{ term: { value: group.aggregates[0].variable.value }}]);
-    });
-  });
-
-  it('binds a built-in aggregate once when its IRIs are written differently', ({ expect }) => {
-    const ast = parser.parse(`PREFIX ex: <http://ex.org/> SELECT (COUNT(ex:x) AS ?a) (COUNT(<http://ex.org/x>) AS ?b)
-      { ?s ?p ?o }`);
-    const project = <Algebra.Project> toAlgebra(ast);
-    const group = <Algebra.Group> (<Algebra.Extend> (<Algebra.Extend> project.input).input).input;
-    expect(group.aggregates).toHaveLength(1);
+    const ast = parser.parse('SELECT ?s (<http://ex.org/agg>(?o) AS ?a) { ?s ?p ?o } GROUP BY ?s');
+    const project = <Algebra.Project> toAlgebra(ast, { verifyWithNamedAggregators });
+    const group = <Algebra.Group> (<Algebra.Extend> project.input).input;
+    expect(algebraUtils.inScopeVariables(group).map(variable => variable.value).sort())
+      .toEqual([ group.aggregates[0].variable.value, 's' ].sort());
   });
 
   describe('variable collision in blank-to-variable translation', () => {

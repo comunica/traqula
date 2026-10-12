@@ -27,7 +27,7 @@ describe('sparql algebra 1.1 output', () => {
             // Console.log(JSON.stringify(genAst, null, 2));
             const genQuery = generator.generate(genAst);
             // Console.log(genQuery);
-            const ast = parser.parse(genQuery);
+            const ast = parser.parse(genQuery, { verifyWithNamedAggregators });
             const algebra = algebraUtils.objectify(toAlgebra(ast, { quads, verifyWithNamedAggregators }));
             expect(canon.canonicalizeQuery(algebra, false)).toEqual(canon.canonicalizeQuery(expected, false));
           });
@@ -46,7 +46,7 @@ describe('sparql algebra 1.1 output', () => {
             it (name, ({ expect }) => {
               astFactory.resetBlankNodeCounter();
               const algebra = toAlgebra(
-                parser.parse(sparql, { astFactory }),
+                parser.parse(sparql, { astFactory, verifyWithNamedAggregators }),
                 { quads, blankToVariable, verifyWithNamedAggregators },
               );
               const canonical = generator.generate(toAst(algebra));

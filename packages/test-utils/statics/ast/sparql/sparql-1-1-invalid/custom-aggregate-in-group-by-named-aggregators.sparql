@@ -1,0 +1,7 @@
+PREFIX ex: <http://example.org/>
+
+SELECT ?median
+WHERE {
+  ?s ex:value ?o .
+}
+GROUP BY (ex:median(?o) AS ?median)

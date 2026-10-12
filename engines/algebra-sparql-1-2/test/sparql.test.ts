@@ -27,7 +27,7 @@ describe('sparql 1.2 algebra transformer', () => {
             // Console.log(JSON.stringify(genAst, null, 2));
             const genQuery = generator.generate(genAst);
             // Console.log(genQuery);
-            const ast = parser.parse(genQuery);
+            const ast = parser.parse(genQuery, { verifyWithNamedAggregators });
             const algebra = algebraUtils.objectify(toAlgebra(ast, { quads, verifyWithNamedAggregators }));
             expect(canon.canonicalizeQuery(algebra, false)).toEqual(canon.canonicalizeQuery(expected, false));
           });
@@ -45,7 +45,7 @@ describe('sparql 1.2 algebra transformer', () => {
             const { name, quads, canonicalSparql, sparql, verifyWithNamedAggregators } = test;
             it (name, ({ expect }) => {
               astFactory.resetBlankNodeCounter();
-              const parsedAst = parser.parse(sparql, { astFactory });
+              const parsedAst = parser.parse(sparql, { astFactory, verifyWithNamedAggregators });
               const algebra = toAlgebra(parsedAst, { quads, blankToVariable, verifyWithNamedAggregators });
               // Console.log(JSON.stringify(algebra, null, 2));
               const genAst = toAst(algebra);

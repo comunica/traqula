@@ -84,9 +84,7 @@ AstIndir<'translateExistenceExpression', ExpressionPatternOperation, [Algebra.Ex
 };
 
 /**
- * Translates a named expression to a function call.
- * Custom aggregates (see {@link Algebra.NamedAggregateExpression}) are syntactically function calls too,
- * so they are translated the same way, keeping their DISTINCT.
+ * Translates a named expression, including a custom aggregate, to a function call.
  */
 export const translateAlgNamedExpression:
 AstIndir<'translateNamedExpression', ExpressionFunctionCall, [Algebra.NamedExpression]> = {

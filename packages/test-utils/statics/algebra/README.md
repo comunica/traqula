@@ -32,9 +32,8 @@ algebra translation (see `sparqlAlgebraNegativeTests`). Those only need a
 `algebra/` and a `.sparql` file in `canonical-sparql/base/`, no counterparts
 elsewhere. Both the SPARQL 1.1 and the SPARQL 1.2 engine run them.
 
-Fixtures whose name ends in `-named-aggregators` are translated with
-a `verifyWithNamedAggregators` that only accepts `http://example.org/median` (see `algebraTestNamedAggregators`),
-so that function call is translated as a custom aggregate.
+Fixtures whose name ends in `-named-aggregators` are parsed and translated with
+a `verifyWithNamedAggregators` that only accepts `http://example.org/median` (see `testNamedAggregators`).
 
 ## What each folder is for
 

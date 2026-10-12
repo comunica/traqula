@@ -28,7 +28,6 @@ import {
 /**
  * Validates the projection of a SELECT query, including its trailing VALUES clause, see {@link queryProjectionIsGood}.
  * Invoked by {@link validateQuery} once the trailing VALUES clause is parsed.
- * Uses the `verifyWithNamedAggregators` of the context to decide which function calls are aggregates.
  */
 export const validateSelectQuery: SparqlGrammarRule<'validateSelectQuery', void, [
   Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
@@ -41,7 +40,6 @@ export const validateSelectQuery: SparqlGrammarRule<'validateSelectQuery', void,
 
 /**
  * Validates the projection of a sub-SELECT, including its VALUES clause, see {@link queryProjectionIsGood}.
- * Uses the `verifyWithNamedAggregators` of the context to decide which function calls are aggregates.
  */
 export const validateSubSelect: SparqlGrammarRule<'validateSubSelect', void, [SubSelect]> = {
   name: 'validateSubSelect',
@@ -54,7 +52,6 @@ export const validateSubSelect: SparqlGrammarRule<'validateSubSelect', void, [Su
  * Validates the variables of a DESCRIBE query, including its trailing VALUES clause,
  * see {@link describeProjectionIsGood}.
  * Invoked by {@link validateQuery} once the trailing VALUES clause is parsed.
- * Uses the `verifyWithNamedAggregators` of the context to decide which function calls are aggregates.
  */
 export const validateDescribeQuery: SparqlGrammarRule<'validateDescribeQuery', void, [QueryDescribe]> = {
   name: 'validateDescribeQuery',
@@ -116,11 +113,7 @@ export const validateGroupGraphPatternSub: SparqlGrammarRule<'validateGroupGraph
 };
 
 /**
- * Validates a function call, after its arguments are parsed:
- * only custom aggregates use DISTINCT (see {@link functionCallDistinctIsAggregate}),
- * and custom aggregates are only used where aggregates are allowed (see {@link customAggregateIsAllowed}).
- * Only validates when the context has `verifyWithNamedAggregators`,
- * otherwise any function call might be a custom aggregate.
+ * Validates a function call against the `verifyWithNamedAggregators` of the context, if any.
  */
 export const validateFunctionCall: SparqlGrammarRule<'validateFunctionCall', void, [ExpressionFunctionCall]> = {
   name: 'validateFunctionCall',

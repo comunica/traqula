@@ -39,19 +39,6 @@ export const prologue: SparqlRule<'prologue', ContextDefinition[]> = <const> {
 };
 
 /**
- * Resolves an IRI against the base IRI in scope.
- * Returns undefined when it is relative and no base IRI is in scope:
- * parsing does not require a base IRI, translating to algebra does.
- */
-function resolveIriIfPossible(iri: string, baseIRI: string | undefined): string | undefined {
-  try {
-    return resolveIRI(iri, baseIRI);
-  } catch {
-    return undefined;
-  }
-}
-
-/**
  * Registers base IRI in the context and returns it.
  * [[5]](https://www.w3.org/TR/sparql11-query/#rBaseDecl)
  */
@@ -61,8 +48,11 @@ export const baseDecl: SparqlRule<'baseDecl', ContextDefinitionBase> = <const> {
     const base = CONSUME(l.baseDecl);
     const val = SUBRULE(iriFull);
     return ACTION(() => {
-      // A relative base IRI without base IRI in scope cannot be resolved, so it does not set a base IRI.
-      C.baseIRI = resolveIriIfPossible(val.value, C.baseIRI) ?? C.baseIRI;
+      try {
+        C.baseIRI = resolveIRI(val.value, C.baseIRI);
+      } catch {
+        // A relative base IRI without a base IRI in scope cannot be resolved, so it is ignored.
+      }
       return C.astFactory.contextDefinitionBase(C.astFactory.sourceLocation(base, val), val);
     });
   },
@@ -85,7 +75,7 @@ export const prefixDecl: SparqlRule<'prefixDecl', ContextDefinitionPrefix> = <co
     const value = SUBRULE(iriFull);
 
     return ACTION(() => {
-      C.prefixes[name] = resolveIriIfPossible(value.value, C.baseIRI) ?? value.value;
+      C.prefixes[name] = value.value;
       return C.astFactory.contextDefinitionPrefix(C.astFactory.sourceLocation(prefix, value), name, value);
     });
   },

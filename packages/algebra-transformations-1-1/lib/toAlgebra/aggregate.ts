@@ -187,8 +187,7 @@ export type MapAggregateType = Wildcard | Expression | Ordering | PatternBind;
 /**
  * Rewrites some of the input sparql object to make use of aggregate variables
  * It thus replaces aggregates by their representative variable and registers the mapping.
- * Function calls for whose IRI `verifyWithNamedAggregators` returns true are custom aggregates,
- * they are registered as the function call itself, which {@link translateBoundAggregate} translates.
+ * Custom aggregates are registered as their function call.
  * TODO(major): include ExpressionFunctionCall in the type of the registered aggregates.
  */
 export const mapAggregate:
@@ -199,8 +198,7 @@ AlgebraIndir<'mapAggregate', MapAggregateType, [MapAggregateType, Record<string,
     const isCustomAggregate = verifyWithNamedAggregators !== undefined && F.isExpressionFunctionCall(thingy) &&
       verifyWithNamedAggregators(SUBRULE(translateNamed, thingy.function).value);
     if (F.isExpressionAggregate(thingy) || isCustomAggregate) {
-      // Needed to take away the difference in the various `loc` descriptions,
-      //  and in how IRIs are written (prefixed or relative), so `ex:f(?x)` and `<http://example.org/f>(?x)` match.
+      // Ignore the differences in `loc` and in how IRIs are written (prefixed, relative or full)
       const canonicalAggregate = <ExpressionAggregate> transformer.transformNodeSpecific<'unsafe', object>(
         F.forcedAutoGenTree(thingy),
         {},
@@ -236,8 +234,6 @@ AlgebraIndir<'mapAggregate', MapAggregateType, [MapAggregateType, Record<string,
 
 /**
  * Translates an aggregate registered by {@link mapAggregate}, bound to the given variable.
- * A custom aggregate is registered as its function call,
- * and translated to a named expression marked as aggregate, see {@link Algebra.BoundNamedAggregate}.
  * TODO(major): include ExpressionFunctionCall in the input type and BoundNamedAggregate in the output type.
  */
 export const translateBoundAggregate:

@@ -131,6 +131,13 @@ describe('extra parser coverage', () => {
       expect(result).toBeDefined();
       expect(result.type).toBe('update');
     });
+
+    it('skips function call validation when skipValidation is true', ({ expect }) => {
+      expect(parser.parse('SELECT (<http://ex.org/f>(DISTINCT ?o) AS ?a) { ?s ?p ?o }', {
+        skipValidation: true,
+        verifyWithNamedAggregators: () => false,
+      })).toBeDefined();
+    });
   });
 
   describe('updateUnit skipValidation', () => {

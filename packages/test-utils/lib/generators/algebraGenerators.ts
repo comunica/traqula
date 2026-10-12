@@ -29,11 +29,11 @@ function getRootCanonicalSparqlBlankToVar(): string {
 }
 
 /**
- * Returns the `verifyWithNamedAggregators` to translate an algebra test fixture with:
+ * Returns the `verifyWithNamedAggregators` to parse and translate a test fixture with:
  * fixtures whose name ends in `-named-aggregators` use the custom aggregate `http://example.org/median`.
  * @param name - The name of the test fixture.
  */
-export function algebraTestNamedAggregators(name: string): ((iri: string) => boolean) | undefined {
+export function testNamedAggregators(name: string): ((iri: string) => boolean) | undefined {
   return name.endsWith('-named-aggregators') ? iri => iri === 'http://example.org/median' : undefined;
 }
 
@@ -98,7 +98,7 @@ export function* sparqlAlgebraTests(
         sparql: getSPARQL ? readFileSync(sparqlPath, 'utf8') : undefined,
         canonicalSparql: getSPARQL ? readFileSync(canonicalSparqlPath, 'utf-8') : undefined,
         quads: name.endsWith('-quads'),
-        verifyWithNamedAggregators: algebraTestNamedAggregators(name),
+        verifyWithNamedAggregators: testNamedAggregators(name),
       };
     }
   }

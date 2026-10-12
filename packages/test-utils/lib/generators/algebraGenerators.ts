@@ -32,7 +32,7 @@ export interface algebraTestGen {
   name: string;
   json: unknown;
   quads: boolean;
-  verifyWithNamedAggregators: ((iri: string) => boolean) | undefined;
+  namedAggregatorCallback: ((iri: string) => boolean) | undefined;
   sparql: string | undefined;
   canonicalSparql: string | undefined;
 }
@@ -89,7 +89,7 @@ export function* sparqlAlgebraTests(
         sparql: getSPARQL ? readFileSync(sparqlPath, 'utf8') : undefined,
         canonicalSparql: getSPARQL ? readFileSync(canonicalSparqlPath, 'utf-8') : undefined,
         quads: name.endsWith('-quads'),
-        verifyWithNamedAggregators: testNamedAggregators(name),
+        namedAggregatorCallback: testNamedAggregators(name),
       };
     }
   }

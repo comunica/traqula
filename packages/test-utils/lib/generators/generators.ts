@@ -71,7 +71,7 @@ export function* positiveTest(
 
 export interface NegativeTest {
   name: string;
-  verifyWithNamedAggregators?: (iri: string) => boolean;
+  namedAggregatorCallback?: (iri: string) => boolean;
   statics: () => Promise<{
     query: string;
   }>;
@@ -97,7 +97,7 @@ export function* negativeTest(
     const name = file.replace(/\.sparql$/u, '');
     yield {
       name,
-      verifyWithNamedAggregators: testNamedAggregators(name),
+      namedAggregatorCallback: testNamedAggregators(name),
       statics: async() => {
         const query = await readFile(join(sparqlGeneratedDir, file));
         return {

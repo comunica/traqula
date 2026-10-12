@@ -19,14 +19,14 @@ describe('algebra output', () => {
     describe(suite, () => {
       for (const blankToVariable of [ true, false ]) {
         for (const test of sparqlAlgebraTests(suite, blankToVariable, true)) {
-          const { name, json, sparql: query, verifyWithNamedAggregators } = test;
+          const { name, json, sparql: query, namedAggregatorCallback } = test;
           it(`${name}${blankToVariable ? ' (no blanks)' : ''}`, ({ expect }) => {
-            const ast = parser.parse(query, { verifyWithNamedAggregators });
+            const ast = parser.parse(query, { namedAggregatorCallback });
             const algebra = algebraUtils.objectify(
               toAlgebra(ast, {
                 quads: name.endsWith('-quads'),
                 blankToVariable,
-                verifyWithNamedAggregators,
+                namedAggregatorCallback,
               }),
             );
             expect(canon.canonicalizeQuery(algebra, blankToVariable))

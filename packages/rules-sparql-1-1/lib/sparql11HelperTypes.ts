@@ -8,11 +8,11 @@ export interface SparqlContext {
   astFactory: AstFactory;
   /**
    * Current scoped prefixes. Used to validate parsed prefixes are known,
-   * and to resolve the IRIs of function calls for `verifyWithNamedAggregators`.
+   * and to resolve the IRIs of function calls for `namedAggregatorCallback`.
    */
   prefixes: Record<string, string>;
   /**
-   * Currently scoped base IRI. Only used to resolve the IRIs of function calls for `verifyWithNamedAggregators`.
+   * Currently scoped base IRI. Only used to resolve the IRIs of function calls for `namedAggregatorCallback`.
    */
   baseIRI: string | undefined;
   /**
@@ -40,7 +40,7 @@ export interface SparqlContext {
    * Without it, validation assumes any function call might be one.
    * Can be called multiple times per function call.
    */
-  verifyWithNamedAggregators?: (iri: string) => boolean;
+  namedAggregatorCallback?: (iri: string) => boolean;
   /**
    * Set of queryModes. Primarily used for note 8, 14.
    */

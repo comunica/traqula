@@ -62,13 +62,13 @@ Optionally, the following parameters can be set in the Parsers defaultContext:
 * `dataFactory`: A custom [RDFJS DataFactory](http://rdf.js.org/#datafactory-interface) to construct terms and triples. _(Default: `require('@rdfjs/data-model')`)_
 * `skipValidation`: Can be used to disable the validation that used variables in a select clause are in scope. _(Default: `false`)_
 * `rejectGroupedSelectAliasReuse`: Reject select expressions that use a variable bound by an earlier select expression in a grouped query, like `SELECT (COUNT(?o) AS ?c) (?c + 1 AS ?d) WHERE { ?s ?p ?o }`, as the SPARQL 1.1 text requires. SPARQL 1.2 allows this reuse. _(Default: `false`)_
-* `verifyWithNamedAggregators`: A callback `(iri: string) => boolean` that decides whether the function with the given full IRI is a custom aggregate. Without it, any function call might be an aggregate, so validation is lenient. With it, only accepted function calls are aggregates: only they can use `DISTINCT`, and they are validated like built-in aggregates. Give [`toAlgebra`](../algebra-sparql-1-1#custom-aggregates) the same callback. _(Default: `undefined`)_
+* `namedAggregatorCallback`: A callback `(iri: string) => boolean` that decides whether the function with the given full IRI is a custom aggregate. Without it, any function call might be an aggregate, so validation is lenient. With it, only accepted function calls are aggregates: only they can use `DISTINCT`, and they are validated like built-in aggregates. Give [`toAlgebra`](../algebra-sparql-1-1#custom-aggregates) the same callback. _(Default: `undefined`)_
 
 These parameters can also be given per query, as the second argument of `parse`:
 
 ```typescript
 const customAggregates = new Set([ 'http://example.org/median' ]);
-const ast = parser.parse(query, { verifyWithNamedAggregators: iri => customAggregates.has(iri) });
+const ast = parser.parse(query, { namedAggregatorCallback: iri => customAggregates.has(iri) });
 ```
 
 ## AstFactory and AstTransformer

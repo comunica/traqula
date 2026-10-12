@@ -22,18 +22,18 @@ describe('algebra output 1.2', () => {
     describe(suite, () => {
       for (const blankToVariable of [ true, false ]) {
         for (const test of sparqlAlgebraTests(suite, blankToVariable, true)) {
-          const { name, json, sparql: query, verifyWithNamedAggregators } = test;
+          const { name, json, sparql: query, namedAggregatorCallback } = test;
           // If (!name.includes('sparql-1-2-syntax-nested-anonreifier-01') ||
           //   blankToVariable || name.includes('-quads')) {
           //   continue;
           // }
           it(`${name}${blankToVariable ? ' (no blanks)' : ''}`, ({ expect }) => {
-            const ast = parser.parse(query, { verifyWithNamedAggregators });
+            const ast = parser.parse(query, { namedAggregatorCallback });
             const algebra = algebraUtils.objectify(
               toAlgebra(ast, {
                 quads: name.endsWith('-quads'),
                 blankToVariable,
-                verifyWithNamedAggregators,
+                namedAggregatorCallback,
               }),
             );
             expect(canon.canonicalizeQuery(algebra, blankToVariable))

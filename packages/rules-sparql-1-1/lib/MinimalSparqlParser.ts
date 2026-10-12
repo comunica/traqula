@@ -24,7 +24,7 @@ export function completeParseContext(
     parseMode: context.parseMode ? new Set(context.parseMode) : new Set([ 'canParseVars', 'canCreateBlankNodes' ]),
     skipValidation: context.skipValidation ?? false,
     rejectGroupedSelectAliasReuse: context.rejectGroupedSelectAliasReuse ?? false,
-    verifyWithNamedAggregators: context.verifyWithNamedAggregators,
+    namedAggregatorCallback: context.namedAggregatorCallback,
   };
 }
 

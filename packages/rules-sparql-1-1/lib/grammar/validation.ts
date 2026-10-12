@@ -112,7 +112,7 @@ export const validateGroupGraphPatternSub: SparqlGrammarRule<'validateGroupGraph
 };
 
 /**
- * Validates a function call against the `verifyWithNamedAggregators` of the context, if any.
+ * Validates a function call against the `namedAggregatorCallback` of the context, if any.
  */
 export const validateFunctionCall: SparqlGrammarRule<'validateFunctionCall', void, [ExpressionFunctionCall]> = {
   name: 'validateFunctionCall',

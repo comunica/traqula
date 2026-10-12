@@ -61,10 +61,10 @@ describe('a SPARQL 1.1 + adjust parser', () => {
   });
 
   describe('negative SPARQL 1.1', () => {
-    for (const { name, statics, verifyWithNamedAggregators } of negativeTest('sparql-1-1-invalid')) {
+    for (const { name, statics, namedAggregatorCallback } of negativeTest('sparql-1-1-invalid')) {
       it(`should NOT parse ${name}`, async({ expect }) => {
         const { query } = await statics();
-        const negativeContext = { ...context, verifyWithNamedAggregators };
+        const negativeContext = { ...context, namedAggregatorCallback };
         expect(() => sourceTrackingParser.parse(query, negativeContext), 'with source tracking parser').toThrow();
         expect(() => noSourceTrackingParser.parse(query, negativeContext), 'with noSourceTracking parser').toThrow();
       });

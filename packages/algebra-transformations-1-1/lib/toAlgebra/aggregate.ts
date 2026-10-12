@@ -193,10 +193,10 @@ export type MapAggregateType = Wildcard | Expression | Ordering | PatternBind;
 export const mapAggregate:
 AlgebraIndir<'mapAggregate', MapAggregateType, [MapAggregateType, Record<string, ExpressionAggregate>]> = {
   name: 'mapAggregate',
-  fun: ({ SUBRULE }) => ({ astFactory: F, transformer, verifyWithNamedAggregators }, thingy, aggregates):
+  fun: ({ SUBRULE }) => ({ astFactory: F, transformer, namedAggregatorCallback }, thingy, aggregates):
   MapAggregateType => {
-    const isCustomAggregate = verifyWithNamedAggregators !== undefined && F.isExpressionFunctionCall(thingy) &&
-      verifyWithNamedAggregators(SUBRULE(translateNamed, thingy.function).value);
+    const isCustomAggregate = namedAggregatorCallback !== undefined && F.isExpressionFunctionCall(thingy) &&
+      namedAggregatorCallback(SUBRULE(translateNamed, thingy.function).value);
     if (F.isExpressionAggregate(thingy) || isCustomAggregate) {
       // Ignore the differences in `loc` and in how IRIs are written (prefixed, relative or full)
       const canonicalAggregate = <ExpressionAggregate> transformer.transformNodeSpecific<'unsafe', object>(

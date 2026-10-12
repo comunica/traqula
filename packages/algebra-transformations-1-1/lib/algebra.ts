@@ -175,7 +175,7 @@ export interface NamedExpression extends BaseExpression {
 }
 /**
  * A call of a custom aggregate, bound to a variable in a group,
- * see the `verifyWithNamedAggregators` option of toAlgebra.
+ * see the `namedAggregatorCallback` option of toAlgebra.
  */
 export interface BoundNamedAggregate extends NamedExpression {
   aggregate: true;

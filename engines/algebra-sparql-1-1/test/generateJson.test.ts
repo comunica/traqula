@@ -29,12 +29,12 @@ describe.skip('algebra test generate', () => {
           it(`${name} - blankToVar: ${blankToVariable}`, ({ expect }) => {
             expect(() => {
               astFactory.resetBlankNodeCounter();
-              const verifyWithNamedAggregators = testNamedAggregators(name);
-              const ast = parser.parse(query, { astFactory, verifyWithNamedAggregators });
+              const namedAggregatorCallback = testNamedAggregators(name);
+              const ast = parser.parse(query, { astFactory, namedAggregatorCallback });
               const rawAlgebra = toAlgebra(ast, {
                 quads: name.endsWith('-quads'),
                 blankToVariable,
-                verifyWithNamedAggregators,
+                namedAggregatorCallback,
               });
               const algebra = algebraUtils.objectify(rawAlgebra);
               // Same as the canonical SPARQL tests: generate from the algebra itself, not its JSON form

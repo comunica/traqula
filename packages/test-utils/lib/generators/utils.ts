@@ -68,7 +68,7 @@ export function getStaticFilePath(...paths: string[]): string {
 }
 
 /**
- * Returns the `verifyWithNamedAggregators` to parse and translate a test fixture with:
+ * Returns the `namedAggregatorCallback` to parse and translate a test fixture with:
  * fixtures whose name ends in `-named-aggregators` use the custom aggregate `http://example.org/median`.
  * @param name - The name of the test fixture.
  */

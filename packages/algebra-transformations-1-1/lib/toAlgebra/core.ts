@@ -16,7 +16,7 @@ export interface AlgebraContext {
   dataFactory: RDF.DataFactory<RDF.BaseQuad> & { variable: Function };
   currentBase: string | undefined;
   currentPrefixes: Record<string, string>;
-  verifyWithNamedAggregators?: (iri: string) => boolean;
+  namedAggregatorCallback?: (iri: string) => boolean;
 }
 
 export interface ContextConfigs {
@@ -29,7 +29,7 @@ export interface ContextConfigs {
    * Decides whether the function with the given full IRI is a custom aggregate,
    * translated as a {@link Algebra.BoundNamedAggregate}.
    */
-  verifyWithNamedAggregators?: (iri: string) => boolean;
+  namedAggregatorCallback?: (iri: string) => boolean;
 }
 export function createAlgebraContext(config: ContextConfigs): AlgebraContext {
   const dataFactory = config.dataFactory ?? new DataFactory<RDF.BaseQuad>();
@@ -43,7 +43,7 @@ export function createAlgebraContext(config: ContextConfigs): AlgebraContext {
     algebraFactory: new AlgebraFactory(dataFactory),
     currentBase: config.baseIRI,
     currentPrefixes: Object.assign(Object.create(null), config.prefixes),
-    verifyWithNamedAggregators: config.verifyWithNamedAggregators,
+    namedAggregatorCallback: config.namedAggregatorCallback,
   };
 }
 

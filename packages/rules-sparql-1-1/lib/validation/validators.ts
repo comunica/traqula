@@ -147,18 +147,18 @@ export function getVariablesFromExpression(
  * Options of {@link queryProjectionIsGood}, the equally named fields of the parse context.
  */
 export type ProjectionValidationOptions =
-  Pick<SparqlContext, 'rejectGroupedSelectAliasReuse' | 'verifyWithNamedAggregators'> &
+  Pick<SparqlContext, 'rejectGroupedSelectAliasReuse' | 'namedAggregatorCallback'> &
   Partial<Pick<SparqlContext, 'prefixes' | 'baseIRI'>>;
 
 /**
- * Creates the {@link AggregateFunctionTest} of the `verifyWithNamedAggregators` of the context,
+ * Creates the {@link AggregateFunctionTest} of the `namedAggregatorCallback` of the context,
  * which gets the function IRI resolved against the prefixes and base IRI. An unresolvable IRI is not an aggregate.
- * Returns undefined without `verifyWithNamedAggregators`.
+ * Returns undefined without `namedAggregatorCallback`.
  */
 export function namedAggregatorTest(
-  context: Pick<ProjectionValidationOptions, 'prefixes' | 'baseIRI' | 'verifyWithNamedAggregators'>,
+  context: Pick<ProjectionValidationOptions, 'prefixes' | 'baseIRI' | 'namedAggregatorCallback'>,
 ): AggregateFunctionTest | undefined {
-  const { prefixes = Object.create(null), baseIRI, verifyWithNamedAggregators: isCustomAggregate } = context;
+  const { prefixes = Object.create(null), baseIRI, namedAggregatorCallback: isCustomAggregate } = context;
   if (isCustomAggregate === undefined) {
     return undefined;
   }
@@ -186,7 +186,7 @@ export function namedAggregatorTest(
  *   Ungrouped queries always allow them (https://www.w3.org/TR/sparql11-query/#selectExpressions),
  *   but the SPARQL 1.1 text for grouped queries (https://www.w3.org/TR/sparql11-query/#aggregateRestrictions)
  *   does not, so {@link ProjectionValidationOptions.rejectGroupedSelectAliasReuse} rejects them.
- * Function calls only group the query when {@link ProjectionValidationOptions.verifyWithNamedAggregators}
+ * Function calls only group the query when {@link ProjectionValidationOptions.namedAggregatorCallback}
  * decides they are custom aggregates, as they do in the algebra.
  */
 export function queryProjectionRespectsGrouping(

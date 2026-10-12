@@ -135,7 +135,7 @@ describe('extra parser coverage', () => {
     it('skips function call validation when skipValidation is true', ({ expect }) => {
       expect(parser.parse('SELECT (<http://ex.org/f>(DISTINCT ?o) AS ?a) { ?s ?p ?o }', {
         skipValidation: true,
-        verifyWithNamedAggregators: () => false,
+        namedAggregatorCallback: () => false,
       })).toBeDefined();
     });
   });

@@ -108,12 +108,13 @@ GROUP BY ?s`);
   });
 
   it('keeps the variables of custom aggregates in scope of their group', ({ expect }) => {
-    const verifyWithNamedAggregators = (iri: string): boolean => iri === 'http://ex.org/agg';
+    const namedAggregatorCallback = (iri: string): boolean => iri === 'http://ex.org/agg';
     const ast = parser.parse('SELECT ?s (<http://ex.org/agg>(?o) AS ?a) { ?s ?p ?o } GROUP BY ?s');
-    const project = <Algebra.Project> toAlgebra(ast, { verifyWithNamedAggregators });
+    const project = <Algebra.Project> toAlgebra(ast, { namedAggregatorCallback });
     const group = <Algebra.Group> (<Algebra.Extend> project.input).input;
-    expect(algebraUtils.inScopeVariables(group).map(variable => variable.value).sort())
-      .toEqual([ group.aggregates[0].variable.value, 's' ].sort());
+    // The group keeps its key ?s and binds the custom aggregate to the fresh variable ?var0
+    expect(group.aggregates.map(aggregate => aggregate.variable.value)).toEqual([ 'var0' ]);
+    expect(algebraUtils.inScopeVariables(group).map(variable => variable.value)).toEqual([ 'var0', 's' ]);
   });
 
   describe('variable collision in blank-to-variable translation', () => {

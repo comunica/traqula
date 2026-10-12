@@ -165,7 +165,7 @@ export interface NamedExpression extends BaseExpression {
   name: RDF.NamedNode;
   args: Expression[];
   /**
-   * Whether this is a call of a custom aggregate, see {@link NamedAggregateExpression}.
+   * Whether this is a call of a custom aggregate, see {@link BoundNamedAggregate}.
    */
   aggregate?: boolean;
   /**
@@ -174,13 +174,12 @@ export interface NamedExpression extends BaseExpression {
   distinct?: boolean;
 }
 /**
- * A call of a custom aggregate, see the `verifyWithNamedAggregators` option of toAlgebra.
+ * A call of a custom aggregate, bound to a variable in a group,
+ * see the `verifyWithNamedAggregators` option of toAlgebra.
  */
-export interface NamedAggregateExpression extends NamedExpression {
+export interface BoundNamedAggregate extends NamedExpression {
   aggregate: true;
   distinct: boolean;
-}
-export interface BoundNamedAggregate extends NamedAggregateExpression {
   variable: RDF.Variable;
 }
 

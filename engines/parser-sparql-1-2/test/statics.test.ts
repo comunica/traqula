@@ -7,7 +7,6 @@ import {
   importSparql11NoteTests,
   negativeTest,
   getStaticFilePath,
-  testNamedAggregators,
 } from '@traqula/test-utils';
 import { DataFactory } from 'rdf-data-factory';
 import { beforeEach, describe, it } from 'vitest';
@@ -77,10 +76,10 @@ describe('a SPARQL 1.2 parser', () => {
   });
 
   describe('negative SPARQL 1.1', () => {
-    for (const { name, statics } of negativeTest('sparql-1-1-invalid')) {
+    for (const { name, statics, verifyWithNamedAggregators } of negativeTest('sparql-1-1-invalid')) {
       it(`should NOT parse ${name}`, async({ expect }) => {
         const { query } = await statics();
-        const negativeContext = { ...context, verifyWithNamedAggregators: testNamedAggregators(name) };
+        const negativeContext = { ...context, verifyWithNamedAggregators };
         expect(() => sourceTrackingParser.parse(query, negativeContext), 'with source tracking parser').toThrow();
         expect(() => noSourceTrackingParser.parse(query, negativeContext), 'with noSourceTracking parser').toThrow();
       });
@@ -103,10 +102,10 @@ describe('a SPARQL 1.2 parser', () => {
   });
 
   describe('negative sparql 1.2', () => {
-    for (const { name, statics } of negativeTest('sparql-1-2-invalid')) {
+    for (const { name, statics, verifyWithNamedAggregators } of negativeTest('sparql-1-2-invalid')) {
       it(`should NOT parse ${name}`, async({ expect }) => {
         const { query } = await statics();
-        const negativeContext = { ...context, verifyWithNamedAggregators: testNamedAggregators(name) };
+        const negativeContext = { ...context, verifyWithNamedAggregators };
         expect(() => sourceTrackingParser.parse(query, negativeContext), 'source tracking').toThrow();
         expect(() => noSourceTrackingParser.parse(query, negativeContext), 'no source tracking').toThrow();
       });

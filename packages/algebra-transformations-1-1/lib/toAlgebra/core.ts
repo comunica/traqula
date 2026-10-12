@@ -27,7 +27,7 @@ export interface ContextConfigs {
   blankToVariable?: boolean;
   /**
    * Decides whether the function with the given full IRI is a custom aggregate,
-   * translated as a {@link Algebra.NamedAggregateExpression}.
+   * translated as a {@link Algebra.BoundNamedAggregate}.
    */
   verifyWithNamedAggregators?: (iri: string) => boolean;
 }

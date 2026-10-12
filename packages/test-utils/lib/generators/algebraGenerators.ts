@@ -3,7 +3,7 @@ import { lstatSync, readdirSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { readFile, readFileSync } from '../fileUtils.js';
 import type { NegativeTest } from './generators.js';
-import { getStaticFilePath } from './utils.js';
+import { getStaticFilePath, testNamedAggregators } from './utils.js';
 
 // Computed lazily inside each generator so that getStaticFilePath() is not
 // called at module-evaluation time.  This avoids an ESM initialisation-order
@@ -26,15 +26,6 @@ function getRootCanonicalSparql(): string {
 }
 function getRootCanonicalSparqlBlankToVar(): string {
   return join(getRootDir(), 'canonical-sparql', 'blank-to-var');
-}
-
-/**
- * Returns the `verifyWithNamedAggregators` to parse and translate a test fixture with:
- * fixtures whose name ends in `-named-aggregators` use the custom aggregate `http://example.org/median`.
- * @param name - The name of the test fixture.
- */
-export function testNamedAggregators(name: string): ((iri: string) => boolean) | undefined {
-  return name.endsWith('-named-aggregators') ? iri => iri === 'http://example.org/median' : undefined;
 }
 
 export interface algebraTestGen {

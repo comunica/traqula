@@ -11,9 +11,8 @@ import type {
 import {
   checkBlankNodeBGPScope,
   checkNote13,
-  customAggregateIsAllowed,
   describeProjectionIsGood,
-  functionCallDistinctIsAggregate,
+  functionCallIsGood,
   namedAggregatorTest,
   queryProjectionIsGood,
   updateNoReuseBlankNodeLabels,
@@ -120,16 +119,8 @@ export const validateFunctionCall: SparqlGrammarRule<'validateFunctionCall', voi
   impl: ({ ACTION }) => (C, functionCall) => {
     ACTION(() => {
       const isAggregateFunction = C.skipValidation ? undefined : namedAggregatorTest(C);
-      if (!isAggregateFunction) {
-        return;
-      }
-      const isAggregate = isAggregateFunction(functionCall);
-      functionCallDistinctIsAggregate(functionCall, isAggregate);
-      if (isAggregate) {
-        customAggregateIsAllowed(functionCall, isAggregateFunction, {
-          canParseAggregate: C.parseMode.has('canParseAggregate'),
-          inAggregate: C.parseMode.has('inAggregate'),
-        });
+      if (isAggregateFunction) {
+        functionCallIsGood(functionCall, isAggregateFunction, C.parseMode);
       }
     });
   },

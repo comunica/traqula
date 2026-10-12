@@ -193,8 +193,8 @@ export type MapAggregateType = Wildcard | Expression | Ordering | PatternBind;
 export const mapAggregate:
 AlgebraIndir<'mapAggregate', MapAggregateType, [MapAggregateType, Record<string, ExpressionAggregate>]> = {
   name: 'mapAggregate',
-  fun: ({ SUBRULE }) => (c, thingy, aggregates): MapAggregateType => {
-    const { astFactory: F, transformer, verifyWithNamedAggregators } = c;
+  fun: ({ SUBRULE }) => ({ astFactory: F, transformer, verifyWithNamedAggregators }, thingy, aggregates):
+  MapAggregateType => {
     const isCustomAggregate = verifyWithNamedAggregators !== undefined && F.isExpressionFunctionCall(thingy) &&
       verifyWithNamedAggregators(SUBRULE(translateNamed, thingy.function).value);
     if (F.isExpressionAggregate(thingy) || isCustomAggregate) {
@@ -239,14 +239,11 @@ AlgebraIndir<'mapAggregate', MapAggregateType, [MapAggregateType, Record<string,
 export const translateBoundAggregate:
 AlgebraIndir<'translateBoundAggregate', Algebra.BoundAggregate, [ExpressionAggregate, RDF.Variable]> = {
   name: 'translateBoundAggregate',
-  fun: ({ SUBRULE }) => ({ astFactory: F, algebraFactory: AF }, thingy, variable) => {
+  fun: ({ SUBRULE }) => ({ astFactory: F }, thingy, variable) => {
     const aggregate = <ExpressionAggregate | ExpressionFunctionCall> thingy;
     if (F.isExpressionFunctionCall(aggregate)) {
       const named = <Algebra.NamedExpression> SUBRULE(translateExpression, aggregate);
-      const custom: Algebra.BoundNamedAggregate = {
-        ...AF.createNamedAggregateExpression(named.name, named.args, aggregate.distinct),
-        variable,
-      };
+      const custom: Algebra.BoundNamedAggregate = { ...named, aggregate: true, distinct: aggregate.distinct, variable };
       return <Algebra.BoundAggregate> <unknown> custom;
     }
     const A = <Algebra.AggregateExpression> SUBRULE(translateExpression, aggregate);

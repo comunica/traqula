@@ -458,14 +458,6 @@ export function inScopeVariables(
         // this includes the pattern of an (NOT) EXISTS.
         preVisitor: (op: A.Expression) =>
           op.subType === ExpressionTypes.EXISTENCE ? { continue: false } : {},
-        visitor: (op: A.Expression & { variable?: RDF.Variable }) => {
-          // The aggregates of a group, including custom aggregates (named expressions marked as aggregate)
-          const isAggregate = op.subType === ExpressionTypes.AGGREGATE ||
-            (op.subType === ExpressionTypes.NAMED && op.aggregate === true);
-          if (isAggregate && op.variable) {
-            addVariable(op.variable);
-          }
-        },
       },
       [Types.EXTEND]: { visitor: op =>
         addVariable(op.variable),
@@ -478,8 +470,11 @@ export function inScopeVariables(
       [Types.GROUP]: {
         // A group only outputs its keys and the variables its aggregates are bound to,
         // the variables of its input are not visible above it.
-        preVisitor: () => ({ ignoreKeys: new Set([ 'variables', 'input' ]) }),
+        preVisitor: () => ({ ignoreKeys: new Set([ 'variables', 'input', 'aggregates' ]) }),
         visitor: (op) => {
+          for (const aggregate of op.aggregates) {
+            addVariable(aggregate.variable);
+          }
           for (const v of op.variables) {
             addVariable(v);
           }

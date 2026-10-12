@@ -466,14 +466,12 @@ export const iriOrFunction: SparqlRule<'iriOrFunction', TermIri | ExpressionFunc
         if (!C.parseMode.has('canParseAggregate') && distinct) {
           throw new Error(`DISTINCT implies that this function is an aggregated function, which is not allowed in this context.`);
         }
-        return <const> {
-          type: 'expression',
-          subType: 'functionCall',
-          function: iriVal,
-          args: args.val.args,
+        return C.astFactory.expressionFunctionCall(
+          iriVal,
+          args.val.args,
           distinct,
-          loc: C.astFactory.sourceLocation(iriVal, args),
-        };
+          C.astFactory.sourceLocation(iriVal, args),
+        );
       });
       SUBRULE(validateFunctionCall, call);
       return call;

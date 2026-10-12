@@ -2,7 +2,7 @@
 import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { readFile } from '../fileUtils.js';
-import { getStaticFilePath } from './utils.js';
+import { getStaticFilePath, testNamedAggregators } from './utils.js';
 
 interface PositiveTest {
   name: string;
@@ -71,6 +71,7 @@ export function* positiveTest(
 
 export interface NegativeTest {
   name: string;
+  verifyWithNamedAggregators?: (iri: string) => boolean;
   statics: () => Promise<{
     query: string;
   }>;
@@ -96,6 +97,7 @@ export function* negativeTest(
     const name = file.replace(/\.sparql$/u, '');
     yield {
       name,
+      verifyWithNamedAggregators: testNamedAggregators(name),
       statics: async() => {
         const query = await readFile(join(sparqlGeneratedDir, file));
         return {

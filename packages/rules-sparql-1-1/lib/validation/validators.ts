@@ -334,36 +334,35 @@ function getAggregationScopeExpressions(query: Pick<QuerySelect, 'variables' | '
 }
 
 /**
- * From the SPARQL specification:
- * > Only custom aggregate functions can use the DISTINCT keyword in a function call.
- * @param functionCall - The function call to validate.
- * @param isAggregate - Whether the function call is a custom aggregate.
+ * Validates that an aggregate is allowed at the current parse position:
+ * only in the SELECT, HAVING, and ORDER BY clauses, and not within another aggregate (errata query-5).
  */
-export function functionCallDistinctIsAggregate(functionCall: ExpressionFunctionCall, isAggregate: boolean): void {
-  if (functionCall.distinct && !isAggregate) {
-    throw new Error('DISTINCT is only allowed in a function call of a custom aggregate');
+export function aggregateIsAllowed(parseMode: ReadonlySet<string>): void {
+  if (!parseMode.has('canParseAggregate')) {
+    throw new Error('Aggregates are only allowed in SELECT, HAVING, and ORDER BY clauses.');
+  }
+  if (parseMode.has('inAggregate')) {
+    throw new Error('An aggregate function is not allowed within an aggregate function.');
   }
 }
 
 /**
- * Validates that a custom aggregate is used where built-in aggregates are allowed,
- * and does not contain or is not within another aggregate (errata query-5).
- * @param functionCall - The custom aggregate call.
- * @param isAggregateFunction - Whether a function call is a custom aggregate.
- * @param position - Whether aggregates are allowed here, and whether it is within a built-in aggregate.
- * @param position.canParseAggregate - Whether aggregates are allowed here.
- * @param position.inAggregate - Whether it is within a built-in aggregate.
+ * Validates a function call: only custom aggregates can use DISTINCT,
+ * and custom aggregates are validated like built-in aggregates, see {@link aggregateIsAllowed}.
  */
-export function customAggregateIsAllowed(
+export function functionCallIsGood(
   functionCall: ExpressionFunctionCall,
   isAggregateFunction: AggregateFunctionTest,
-  position: { canParseAggregate: boolean; inAggregate: boolean },
+  parseMode: ReadonlySet<string>,
 ): void {
-  if (!position.canParseAggregate) {
-    throw new Error('Aggregates are only allowed in SELECT, HAVING, and ORDER BY clauses.');
+  if (!isAggregateFunction(functionCall)) {
+    if (functionCall.distinct) {
+      throw new Error('DISTINCT is only allowed in a function call of a custom aggregate');
+    }
+    return;
   }
-  if (position.inAggregate ||
-    functionCall.args.some(arg => findAggregates(arg, isAggregateFunction).length > 0)) {
+  aggregateIsAllowed(parseMode);
+  if (functionCall.args.some(arg => findAggregates(arg, isAggregateFunction).length > 0)) {
     throw new Error('An aggregate function is not allowed within an aggregate function.');
   }
 }

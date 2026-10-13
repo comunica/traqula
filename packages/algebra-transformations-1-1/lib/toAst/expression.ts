@@ -83,6 +83,9 @@ AstIndir<'translateExistenceExpression', ExpressionPatternOperation, [Algebra.Ex
     ),
 };
 
+/**
+ * Translates a named expression, including a custom aggregate, to a function call.
+ */
 export const translateAlgNamedExpression:
 AstIndir<'translateNamedExpression', ExpressionFunctionCall, [Algebra.NamedExpression]> = {
   name: 'translateNamedExpression',
@@ -90,7 +93,7 @@ AstIndir<'translateNamedExpression', ExpressionFunctionCall, [Algebra.NamedExpre
     F.expressionFunctionCall(
       <RdfTermToAst<typeof expr.name>> SUBRULE(translateAlgTerm, expr.name),
       expr.args.map(x => SUBRULE(translateAlgPureExpression, x)),
-      false,
+      expr.distinct === true,
       F.gen(),
     ),
 };

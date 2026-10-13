@@ -1,0 +1,7 @@
+PREFIX ex: <http://example.org/>
+
+DESCRIBE ?s
+WHERE {
+  ?s ex:value ?o .
+}
+HAVING (ex:median(?o) > 1)

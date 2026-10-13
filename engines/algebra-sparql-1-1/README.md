@@ -66,6 +66,21 @@ const generatedAst = toAst(algebra);
 const generatedQuery = generator.generate(generatedAst);
 ```
 
+### Custom aggregates
+
+Custom aggregates are syntactically function calls.
+Pass `namedAggregatorCallback: (iri: string) => boolean` to translate the function calls it accepts as aggregates:
+named expressions marked with `aggregate: true` and `distinct`, grouped and bound like built-in aggregates.
+Give the [parser](../parser-sparql-1-1#configuration) the same callback, since `toAlgebra` does not validate the query itself.
+
+```typescript
+const isAggregate = (iri: string) => iri === 'http://example.org/median';
+const ast = parser.parse('PREFIX ex: <http://example.org/> SELECT (ex:median(?o) AS ?m) { ?s ?p ?o }', { namedAggregatorCallback: isAggregate });
+const algebra = toAlgebra(ast, { namedAggregatorCallback: isAggregate });
+```
+
+`Group.aggregates` then also contains custom aggregates: their `subType` is `named` instead of `aggregate`.
+
 ## Algebra Types
 
 The algebra object contains a `types` object,
@@ -261,3 +276,4 @@ and the project operation always gets used (even in the case of `SELECT *`).
 
 Every test consists of a sparql file and a corresponding json file containing the algebra result.
 Tests ending with `(quads)` in their name are tested/generated with `quads: true` in the options.
+Tests ending with `-named-aggregators` in their name are tested/generated with a `namedAggregatorCallback` that only accepts `http://example.org/median`.

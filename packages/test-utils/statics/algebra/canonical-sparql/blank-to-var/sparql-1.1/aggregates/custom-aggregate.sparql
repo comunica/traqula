@@ -1,0 +1,6 @@
+SELECT ?s ( <http://example.org/median> ( ?o ) AS ?median ) WHERE {
+  ?s <http://example.org/value> ?o .
+}
+GROUP BY ?s
+HAVING ( <http://example.org/median> ( ?o ) > "1"^^<http://www.w3.org/2001/XMLSchema#integer> )
+ORDER BY ASC ( <http://example.org/median> ( ?o ) )

@@ -16,6 +16,8 @@ export interface AlgebraContext {
   dataFactory: RDF.DataFactory<RDF.BaseQuad> & { variable: Function };
   currentBase: string | undefined;
   currentPrefixes: Record<string, string>;
+  // TODO(major): optional type can become mandatory here.
+  namedAggregatorCallback?: (iri: string) => boolean;
 }
 
 export interface ContextConfigs {
@@ -24,6 +26,11 @@ export interface ContextConfigs {
   prefixes?: Record<string, string>;
   baseIRI?: string;
   blankToVariable?: boolean;
+  /**
+   * Decides whether the function with the given full IRI is a custom aggregate,
+   * translated as a {@link Algebra.BoundNamedAggregate}.
+   */
+  namedAggregatorCallback?: (iri: string) => boolean;
 }
 export function createAlgebraContext(config: ContextConfigs): AlgebraContext {
   const dataFactory = config.dataFactory ?? new DataFactory<RDF.BaseQuad>();
@@ -37,6 +44,7 @@ export function createAlgebraContext(config: ContextConfigs): AlgebraContext {
     algebraFactory: new AlgebraFactory(dataFactory),
     currentBase: config.baseIRI,
     currentPrefixes: Object.assign(Object.create(null), config.prefixes),
+    namedAggregatorCallback: config.namedAggregatorCallback,
   };
 }
 

@@ -31,6 +31,8 @@ Besides that it also contains all the TypeScript interfaces of the possible outp
 The best way to see what output would be generated is to look in the [`test` folder](../../packages/test-utils/statics/algebra),
 where we have many SPARQL queries and their corresponding algebra output.
 
+A [custom aggregate](../../engines/algebra-sparql-1-1#custom-aggregates) is a `NamedExpression` marked with `aggregate: true`.
+
 ## Deviations from the spec
 This implementation tries to stay as close to the SPARQL 1.1
 [specification](https://www.w3.org/TR/sparql11-query/#sparqlDefinition),

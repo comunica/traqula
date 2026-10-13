@@ -26,6 +26,7 @@ import type {
   ExpressionAggregateSeparator,
   Wildcard,
 } from '../Sparql11types.js';
+import { aggregateIsAllowed } from '../validation/validators.js';
 import { expression } from './expression.js';
 import { string, stringEscapedLexical } from './literals.js';
 
@@ -275,14 +276,7 @@ export const aggregate: SparqlRule<'aggregate', ExpressionAggregate> = <const>{
     ]);
     ACTION(() => !wasInAggregate && C.parseMode.delete('inAggregate'));
 
-    ACTION(() => {
-      if (!C.parseMode.has('canParseAggregate')) {
-        throw new Error('Aggregates are only allowed in SELECT, HAVING, and ORDER BY clauses.');
-      }
-      if (C.parseMode.has('inAggregate')) {
-        throw new Error('An aggregate function is not allowed within an aggregate function.');
-      }
-    });
+    ACTION(() => aggregateIsAllowed(C.parseMode));
 
     return result;
   },

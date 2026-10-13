@@ -107,6 +107,16 @@ GROUP BY ?s`);
     });
   });
 
+  it('keeps the variables of custom aggregates in scope of their group', ({ expect }) => {
+    const namedAggregatorCallback = (iri: string): boolean => iri === 'http://ex.org/agg';
+    const ast = parser.parse('SELECT ?s (<http://ex.org/agg>(?o) AS ?a) { ?s ?p ?o } GROUP BY ?s');
+    const project = <Algebra.Project> toAlgebra(ast, { namedAggregatorCallback });
+    const group = <Algebra.Group> (<Algebra.Extend> project.input).input;
+    // The group keeps its key ?s and binds the custom aggregate to the fresh variable ?var0
+    expect(group.aggregates.map(aggregate => aggregate.variable.value)).toEqual([ 'var0' ]);
+    expect(algebraUtils.inScopeVariables(group).map(variable => variable.value)).toEqual([ 'var0', 's' ]);
+  });
+
   describe('variable collision in blank-to-variable translation', () => {
     it('generates unique vars when blank node name collides with existing variable', ({ expect }) => {
       const ast = parser.parse('SELECT ?e_b0 WHERE { _:b0 ?p ?e_b0 }');

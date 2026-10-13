@@ -1,9 +1,19 @@
 import type { SparqlGrammarRule } from '../sparql11HelperTypes.js';
-import type { Pattern, Query, QueryDescribe, QuerySelect, SubSelect, Update } from '../Sparql11types.js';
+import type {
+  ExpressionFunctionCall,
+  Pattern,
+  Query,
+  QueryDescribe,
+  QuerySelect,
+  SubSelect,
+  Update,
+} from '../Sparql11types.js';
 import {
   checkBlankNodeBGPScope,
   checkNote13,
   describeProjectionIsGood,
+  functionCallIsGood,
+  namedAggregatorTest,
   queryProjectionIsGood,
   updateNoReuseBlankNodeLabels,
 } from '../validation/validators.js';
@@ -45,7 +55,7 @@ export const validateSubSelect: SparqlGrammarRule<'validateSubSelect', void, [Su
 export const validateDescribeQuery: SparqlGrammarRule<'validateDescribeQuery', void, [QueryDescribe]> = {
   name: 'validateDescribeQuery',
   impl: ({ ACTION }) => (C, query) => {
-    ACTION(() => !C.skipValidation && describeProjectionIsGood(query));
+    ACTION(() => !C.skipValidation && describeProjectionIsGood(query, C));
   },
 };
 
@@ -98,5 +108,20 @@ export const validateGroupGraphPatternSub: SparqlGrammarRule<'validateGroupGraph
   name: 'validateGroupGraphPatternSub',
   impl: ({ ACTION }) => (C, patterns) => {
     ACTION(() => !C.skipValidation && checkNote13(patterns));
+  },
+};
+
+/**
+ * Validates a function call against the `namedAggregatorCallback` of the context, if any.
+ */
+export const validateFunctionCall: SparqlGrammarRule<'validateFunctionCall', void, [ExpressionFunctionCall]> = {
+  name: 'validateFunctionCall',
+  impl: ({ ACTION }) => (C, functionCall) => {
+    ACTION(() => {
+      const isAggregateFunction = C.skipValidation ? undefined : namedAggregatorTest(C);
+      if (isAggregateFunction) {
+        functionCallIsGood(functionCall, isAggregateFunction, C.parseMode);
+      }
+    });
   },
 };

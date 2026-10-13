@@ -47,8 +47,7 @@ export const whereClause: SparqlRule<'whereClause', Wrap<PatternGroup>> = <const
 };
 
 /**
- * Parse modes that decide whether an aggregate can be parsed:
- * `canParseAggregate` allows aggregates, `inAggregate` rejects nested ones.
+ * Parse modes that decide whether an aggregate is allowed.
  */
 const aggregateParseModes = <const> [ 'canParseAggregate', 'inAggregate' ];
 
@@ -59,10 +58,7 @@ export const groupGraphPattern: SparqlRule<'groupGraphPattern', PatternGroup> = 
   name: 'groupGraphPattern',
   impl: ({ ACTION, SUBRULE, CONSUME, OR }) => (C) => {
     const open = CONSUME(l.symbols.LCurly);
-    // Aggregates are only allowed in the SELECT, HAVING, and ORDER BY clauses of the (sub)query they belong to.
-    //  A group graph pattern nested in such a clause (e.g., the body of EXISTS) is not part of that clause,
-    //  so the aggregate parse modes are cleared while parsing it and restored afterward.
-    //  A sub-SELECT within the pattern sets them again for its own clauses.
+    // A nested pattern (e.g. in EXISTS) does not belong to the clause around it, so it cannot contain aggregates.
     const clearedModes = ACTION(() => aggregateParseModes.filter(mode => C.parseMode.delete(mode)));
     const patterns = OR<Pattern[]>([
       { ALT: () => [ SUBRULE(subSelect) ]},

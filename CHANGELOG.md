@@ -1,6 +1,24 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.5.0-alpha.1"></a>
+## [v1.5.0-alpha.1](https://github.com/comunica/traqula/compare/v1.5.0-alpha.0...v1.5.0-alpha.1) - 2026-10-13
+
+* [Reject aggregates in group graph patterns of SELECT, HAVING and ORDER BY expressions (#234)](https://github.com/comunica/traqula/commit/01ad7947feac14e354e80ae7dc5b36396de7585e)
+* [Add namedAggregatorCallback to the parser and toAlgebra (#220)](https://github.com/comunica/traqula/commit/96fd4a1efc124470d624ac97c33ce52ba3658659)
+* [Keep group keys unnamed when translating DESCRIBE * back to SPARQL (#231)](https://github.com/comunica/traqula/commit/386bd7e6d7855644444fa8235448722293b5fd15)
+* [Bind non-variable GROUP BY keys to fresh variables in toAlgebra (#230)](https://github.com/comunica/traqula/commit/5e31f7c8cac62a547ae982b7c06718be7946796f)
+* [Report forward references to select aliases in grouped queries as such (#229)](https://github.com/comunica/traqula/commit/fb36a0a0bf0c1b0df9c65762f8d45a7b765dd1ab)
+* [Tighten projection validation and wildcard expansion of grouped queries (#224)](https://github.com/comunica/traqula/commit/2bd9ff74c505bcf7d9f268b9e71fafac74f4ac7e)
+* [Mark empty modify templates for the next major (#228)](https://github.com/comunica/traqula/commit/3e79ce112a351611ad138fb288953f2ab97db03d)
+* [Translate empty DELETE templates back to SPARQL (#227)](https://github.com/comunica/traqula/commit/d5c5e16a6f340172f59fcf6bdfad09fc5b9bc098)
+* [Evaluate extends over a group in a subquery for every query form (#226)](https://github.com/comunica/traqula/commit/816e2cc48ae06fe7e7145ada95c63cb64061bbab)
+* [Update dependency handlebars to v4.7.10 (#225)](https://github.com/comunica/traqula/commit/e33f03ebfbfdaba9206877c629874464ff07cbc0)
+* [Allow trailing VALUES variables in grouped projections (#223)](https://github.com/comunica/traqula/commit/0d2e65863395c4f2c43d85fe01daaae26438a3bc)
+* [Keep a trailing VALUES clause after GROUP BY in toAst (#215)](https://github.com/comunica/traqula/commit/35fb2a082ace073316fdb61a9ea44c78d50ff674)
+* [Keep the GRAPH of quad-mode ASK/DESCRIBE/CONSTRUCT WHERE clauses (#214)](https://github.com/comunica/traqula/commit/9bc7f12086aeb844ad9f68380d2766e08dea287c)
+* [End SPARQL comments at a carriage return (#222)](https://github.com/comunica/traqula/commit/15a207ce69ebb3a172d263d7f5d75d12867338f8)
+
 <a name="v1.5.0-alpha.0"></a>
 ## [v1.5.0-alpha.0](https://github.com/comunica/traqula/compare/v1.4.0...v1.5.0-alpha.0) - 2026-10-05
 

@@ -201,12 +201,11 @@ AlgebraIndir<'mapAggregate', MapAggregateType, [MapAggregateType, Record<string,
       isCustomAggregate = namedAggregatorCallback(functionName.value);
     }
     if (F.isExpressionAggregate(thingy) || isCustomAggregate) {
-      // Ignore the differences in `loc` and in how IRIs are written (prefixed, relative or full)
+      // Ignore the differences in `loc` and in how IRIs are written (prefixed, relative or full),
+      //  so equal aggregates share one variable, also after a round trip through toAst, which writes full IRIs.
       const canonicalAggregate = <ExpressionAggregate> transformer.transformNodeSpecific<'unsafe', object>(
         F.forcedAutoGenTree(thingy),
         {},
-        // ToAst writes full IRIs, so canonicalize them to keep the algebra stable across a round trip,
-        //  and to coil only one aggregate binding var `?var0`
         { term: { namedNode: { transform: iri =>
           F.termNamed(F.gen(), SUBRULE(translateNamed, <TermIri> iri).value) }}},
       );

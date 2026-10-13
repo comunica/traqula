@@ -1,0 +1,1 @@
+SELECT ?s { ?s ?p ?o } ORDER BY (EXISTS { ?s ?p ?o FILTER(COUNT(?o) > 1) })

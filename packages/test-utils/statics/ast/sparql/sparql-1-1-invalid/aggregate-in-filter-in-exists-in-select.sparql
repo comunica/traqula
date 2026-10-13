@@ -1,0 +1,1 @@
+SELECT (EXISTS { ?s ?p ?o FILTER(COUNT(?o) > 1) } AS ?e) WHERE { ?s ?p ?o }

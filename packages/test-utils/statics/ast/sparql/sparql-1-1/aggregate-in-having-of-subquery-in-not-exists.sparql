@@ -1,0 +1,1 @@
+SELECT (NOT EXISTS { { SELECT ?s { ?s ?p ?o } GROUP BY ?s HAVING (SUM(?o) > 1) } } AS ?e) { ?s ?p ?o }

@@ -1,0 +1,1 @@
+SELECT (EXISTS { { SELECT (COUNT(*) AS ?c) { ?s ?p ?o } GROUP BY (COUNT(?o)) } } AS ?e) WHERE { ?s ?p ?o }

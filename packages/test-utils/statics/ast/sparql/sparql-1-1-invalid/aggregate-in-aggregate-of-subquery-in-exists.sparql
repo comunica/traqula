@@ -1,0 +1,1 @@
+SELECT (EXISTS { { SELECT (SUM(COUNT(?o)) AS ?c) { ?s ?p ?o } } } AS ?e) WHERE { ?s ?p ?o }

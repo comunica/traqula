@@ -1,0 +1,1 @@
+SELECT ?s {} GROUP BY ?s HAVING (EXISTS { { SELECT ?s { ?s ?p ?o } GROUP BY ?s ORDER BY (MAX(?o)) } })

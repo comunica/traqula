@@ -1,0 +1,6 @@
+PREFIX ex: <http://example.org/>
+
+SELECT (<median>(?o) AS ?o)
+WHERE {
+  ?s ex:value ?o .
+}

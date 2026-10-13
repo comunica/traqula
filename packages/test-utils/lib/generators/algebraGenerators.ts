@@ -3,7 +3,7 @@ import { lstatSync, readdirSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { readFile, readFileSync } from '../fileUtils.js';
 import type { NegativeTest } from './generators.js';
-import { getStaticFilePath } from './utils.js';
+import { getStaticFilePath, testNamedAggregators } from './utils.js';
 
 // Computed lazily inside each generator so that getStaticFilePath() is not
 // called at module-evaluation time.  This avoids an ESM initialisation-order
@@ -32,6 +32,7 @@ export interface algebraTestGen {
   name: string;
   json: unknown;
   quads: boolean;
+  namedAggregatorCallback: ((iri: string) => boolean) | undefined;
   sparql: string | undefined;
   canonicalSparql: string | undefined;
 }
@@ -88,6 +89,7 @@ export function* sparqlAlgebraTests(
         sparql: getSPARQL ? readFileSync(sparqlPath, 'utf8') : undefined,
         canonicalSparql: getSPARQL ? readFileSync(canonicalSparqlPath, 'utf-8') : undefined,
         quads: name.endsWith('-quads'),
+        namedAggregatorCallback: testNamedAggregators(name),
       };
     }
   }

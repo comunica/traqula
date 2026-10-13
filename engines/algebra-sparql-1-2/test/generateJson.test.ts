@@ -4,7 +4,7 @@ import { algebraUtils } from '@traqula/algebra-transformations-1-2';
 import { Generator } from '@traqula/generator-sparql-1-2';
 import { Parser } from '@traqula/parser-sparql-1-2';
 import { AstFactory } from '@traqula/rules-sparql-1-2';
-import { type AlgebraTestSuite, sparqlQueries } from '@traqula/test-utils';
+import { type AlgebraTestSuite, testNamedAggregators, sparqlQueries } from '@traqula/test-utils';
 import { getStaticFilePath } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
 import { toAlgebra, toAst } from '../lib/index.js';
@@ -31,10 +31,12 @@ describe.skip('algebra 1.2 test generate', () => {
           it(`${name} - blankToVar: ${blankToVariable}`, ({ expect }) => {
             expect(() => {
               astFactory.resetBlankNodeCounter();
-              const ast = parser.parse(query, { astFactory });
+              const namedAggregatorCallback = testNamedAggregators(name);
+              const ast = parser.parse(query, { astFactory, namedAggregatorCallback });
               const rawAlgebra = toAlgebra(ast, {
                 quads: name.endsWith('-quads'),
                 blankToVariable,
+                namedAggregatorCallback,
               });
               const algebra = algebraUtils.objectify(rawAlgebra);
               // Same as the canonical SPARQL tests: generate from the algebra itself, not its JSON form

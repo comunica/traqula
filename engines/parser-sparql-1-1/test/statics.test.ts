@@ -2,7 +2,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { BaseQuad } from '@rdfjs/types';
 import { AstFactory, lex } from '@traqula/rules-sparql-1-1';
-import { getStaticFilePath, importSparql11NoteTests, negativeTest, positiveTest } from '@traqula/test-utils';
+import {
+  getStaticFilePath,
+  importSparql11NoteTests,
+  negativeTest,
+  positiveTest,
+} from '@traqula/test-utils';
 import { DataFactory } from 'rdf-data-factory';
 import { beforeEach, describe, it } from 'vitest';
 import {
@@ -77,11 +82,12 @@ describe('a SPARQL 1.1 parser', () => {
   });
 
   describe('negative SPARQL 1.1', () => {
-    for (const { name, statics } of negativeTest('sparql-1-1-invalid')) {
+    for (const { name, statics, namedAggregatorCallback } of negativeTest('sparql-1-1-invalid')) {
       it(`should NOT parse ${name}`, async({ expect }) => {
         const { query } = await statics();
-        expect(() => sourceTrackingParser.parse(query, context), 'with source tracking parser').toThrow();
-        expect(() => noSourceTrackingParser.parse(query, context), 'with noSourceTracking parser').toThrow();
+        const negativeContext = { ...context, namedAggregatorCallback };
+        expect(() => sourceTrackingParser.parse(query, negativeContext), 'with source tracking parser').toThrow();
+        expect(() => noSourceTrackingParser.parse(query, negativeContext), 'with noSourceTracking parser').toThrow();
       });
     }
   });

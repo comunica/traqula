@@ -2,6 +2,7 @@ import type * as RDF from '@rdfjs/types';
 import type {
   Expression,
   ExpressionAggregate,
+  ExpressionFunctionCall,
   Ordering,
   PatternBind,
   Query,
@@ -19,6 +20,7 @@ import {
   inScopeVariables,
   translateDatasetClause,
   translateInlineData,
+  translateNamed,
   translateTerm,
 } from './general.js';
 import { simplifiedJoin, translateExpression } from './patterns.js';
@@ -185,14 +187,28 @@ export type MapAggregateType = Wildcard | Expression | Ordering | PatternBind;
 /**
  * Rewrites some of the input sparql object to make use of aggregate variables
  * It thus replaces aggregates by their representative variable and registers the mapping.
+ * Custom aggregates are registered as their function call.
+ * TODO(major): include ExpressionFunctionCall in the type of the registered aggregates.
  */
 export const mapAggregate:
 AlgebraIndir<'mapAggregate', MapAggregateType, [MapAggregateType, Record<string, ExpressionAggregate>]> = {
   name: 'mapAggregate',
-  fun: ({ SUBRULE }) => ({ astFactory: F }, thingy, aggregates): MapAggregateType => {
-    if (F.isExpressionAggregate(thingy)) {
-      // Needed to take away the difference in the various `loc` descriptions
-      const canonicalAggregate = F.forcedAutoGenTree<ExpressionAggregate>(thingy);
+  fun: ({ SUBRULE }) => ({ astFactory: F, transformer, namedAggregatorCallback }, thingy, aggregates):
+  MapAggregateType => {
+    let isCustomAggregate = false;
+    if (namedAggregatorCallback !== undefined && F.isExpressionFunctionCall(thingy)) {
+      const functionName = SUBRULE(translateNamed, thingy.function);
+      isCustomAggregate = namedAggregatorCallback(functionName.value);
+    }
+    if (F.isExpressionAggregate(thingy) || isCustomAggregate) {
+      // Ignore the differences in `loc` and in how IRIs are written (prefixed, relative or full),
+      //  so equal aggregates share one variable, also after a round trip through toAst, which writes full IRIs.
+      const canonicalAggregate = <ExpressionAggregate> transformer.transformNodeSpecific<'unsafe', object>(
+        F.forcedAutoGenTree(thingy),
+        {},
+        { term: { namedNode: { transform: iri =>
+          F.termNamed(F.gen(), SUBRULE(translateNamed, <TermIri> iri).value) }}},
+      );
       let val: TermVariable | undefined;
       // Look for the matching aggregate
       for (const [ key, aggregate ] of Object.entries(aggregates)) {
@@ -220,11 +236,21 @@ AlgebraIndir<'mapAggregate', MapAggregateType, [MapAggregateType, Record<string,
   },
 };
 
+/**
+ * Translates an aggregate registered by {@link mapAggregate}, bound to the given variable.
+ * TODO(major): include ExpressionFunctionCall in the input type and BoundNamedAggregate in the output type.
+ */
 export const translateBoundAggregate:
 AlgebraIndir<'translateBoundAggregate', Algebra.BoundAggregate, [ExpressionAggregate, RDF.Variable]> = {
   name: 'translateBoundAggregate',
-  fun: ({ SUBRULE }) => (_, thingy, variable) => {
-    const A = <Algebra.AggregateExpression> SUBRULE(translateExpression, thingy);
+  fun: ({ SUBRULE }) => ({ astFactory: F }, thingy, variable) => {
+    const aggregate = <ExpressionAggregate | ExpressionFunctionCall> thingy;
+    if (F.isExpressionFunctionCall(aggregate)) {
+      const named = <Algebra.NamedExpression> SUBRULE(translateExpression, aggregate);
+      const custom: Algebra.BoundNamedAggregate = { ...named, aggregate: true, distinct: aggregate.distinct, variable };
+      return <Algebra.BoundAggregate> <unknown> custom;
+    }
+    const A = <Algebra.AggregateExpression> SUBRULE(translateExpression, aggregate);
     return { ...A, variable };
   },
 };

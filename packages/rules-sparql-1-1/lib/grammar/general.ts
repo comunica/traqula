@@ -9,7 +9,7 @@ import type {
   TermIri,
   TermVariable,
 } from '../Sparql11types.js';
-import { CommonIRIs } from '../utils.js';
+import { CommonIRIs, resolveIRI } from '../utils.js';
 import { blankNode, booleanLiteral, iri, iriFull, numericLiteral, rdfLiteral, verbA } from './literals.js';
 
 /**
@@ -47,7 +47,14 @@ export const baseDecl: SparqlRule<'baseDecl', ContextDefinitionBase> = <const> {
   impl: ({ ACTION, CONSUME, SUBRULE }) => (C) => {
     const base = CONSUME(l.baseDecl);
     const val = SUBRULE(iriFull);
-    return ACTION(() => C.astFactory.contextDefinitionBase(C.astFactory.sourceLocation(base, val), val));
+    return ACTION(() => {
+      try {
+        C.baseIRI = resolveIRI(val.value, C.baseIRI);
+      } catch {
+        // A relative base IRI without a base IRI in scope cannot be resolved, so it is ignored.
+      }
+      return C.astFactory.contextDefinitionBase(C.astFactory.sourceLocation(base, val), val);
+    });
   },
   gImpl: ({ SUBRULE, PRINT_ON_EMPTY, NEW_LINE }) => (ast, { astFactory: F }) => {
     F.printFilter(ast, () => PRINT_ON_EMPTY('BASE '));

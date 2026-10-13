@@ -6,6 +6,7 @@
 import {
   getGroupKeyVariables,
   isGroupedQuery,
+  namedAggregatorTest,
   queryProjectionRespectsGrouping,
   selectExpressionAliasesNotInValues,
   selectExpressionAliasesNotUsedEarlier,
@@ -133,7 +134,7 @@ export function queryProjectionIsGood(
   query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
   options: T11.ProjectionValidationOptions = {},
 ): void {
-  selectExpressionAliasesNotInScope(query);
+  selectExpressionAliasesNotInScope(query, options);
   queryProjectionRespectsGrouping(<T11.QuerySelect> <unknown> query, options);
 }
 
@@ -145,16 +146,21 @@ export function queryProjectionIsGood(
  * In-scope are the variables bound by the WHERE clause (including subquery projections), or, in a grouped query,
  * the GROUP BY keys (v and (expr AS v)), and the trailing VALUES clause (joined before the projection, 18.2.4.3).
  * The variable may also not be used in an earlier SELECT expression.
+ * @param query - The SELECT query to validate.
+ * @param options - Decide which function calls are custom aggregates, see {@link T11.namedAggregatorTest}.
  */
 export function selectExpressionAliasesNotInScope(
   query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
+  options: T11.ProjectionValidationOptions,
 ): void {
   const selectBinds = query.variables.filter((variable): variable is PatternBind =>
     !F.isTerm(variable) && !F.isWildcard(variable));
   if (selectBinds.length > 0) {
     const inScopeVars = new Set<string>();
-    // Grouping only keeps the variables of the group keys in scope
-    if (!isGroupedQuery(<T11.QuerySelect> <unknown> query)) {
+    // Grouping only keeps the variables of the group keys in scope.
+    // Without a callback, any function call might be an aggregate, so fewer variables are in scope.
+    const isAggregateFunction = namedAggregatorTest(options) ?? (() => true);
+    if (!isGroupedQuery(<T11.QuerySelect> <unknown> query, isAggregateFunction)) {
       findPatternBoundedVars(query.where, inScopeVars);
     }
     for (const variable of getGroupKeyVariables(query.solutionModifiers.group)) {

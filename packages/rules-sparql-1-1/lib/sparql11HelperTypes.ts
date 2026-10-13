@@ -7,11 +7,12 @@ export interface SparqlContext {
    */
   astFactory: AstFactory;
   /**
-   * Current scoped prefixes. Only used to validate parsed prefixes are known.
+   * Current scoped prefixes. Used to validate parsed prefixes are known,
+   * and to resolve the IRIs of function calls for `namedAggregatorCallback`.
    */
   prefixes: Record<string, string>;
   /**
-   * Currently scoped base IRI. Only used to validate a base is set when parsing.
+   * Currently scoped base IRI. Only used to resolve the IRIs of function calls for `namedAggregatorCallback`.
    */
   baseIRI: string | undefined;
   /**
@@ -34,6 +35,12 @@ export interface SparqlContext {
    * Defaults to false, following SPARQL 1.2 and since the algebra does not really care.
    */
   rejectGroupedSelectAliasReuse?: boolean;
+  /**
+   * Decides whether the function with the given full IRI is a custom aggregate.
+   * Without it, validation assumes any function call might be one.
+   * Can be called multiple times per function call.
+   */
+  namedAggregatorCallback?: (iri: string) => boolean;
   /**
    * Set of queryModes. Primarily used for note 8, 14.
    */

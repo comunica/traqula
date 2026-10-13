@@ -1,0 +1,8 @@
+PREFIX ex: <http://example.org/>
+
+SELECT ?s (ex:median(DISTINCT ?o, ?w) AS ?weighted) (ex:median() AS ?none)
+WHERE {
+  ?s ex:value ?o ;
+    ex:weight ?w .
+}
+GROUP BY ?s

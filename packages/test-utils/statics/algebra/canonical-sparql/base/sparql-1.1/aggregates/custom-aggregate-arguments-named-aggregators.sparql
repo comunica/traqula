@@ -1,0 +1,5 @@
+SELECT ?s ( <http://example.org/median> ( DISTINCT ?o , ?w ) AS ?weighted ) ( <http://example.org/median> ( ) AS ?none ) WHERE {
+  ?s <http://example.org/value> ?o .
+  ?s <http://example.org/weight> ?w .
+}
+GROUP BY ?s

@@ -1,0 +1,6 @@
+PREFIX ex: <http://example.org/>
+
+SELECT (ex:mean(?o) AS ?o)
+WHERE {
+  ?s ex:value ?o .
+}

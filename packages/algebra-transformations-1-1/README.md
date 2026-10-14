@@ -32,6 +32,7 @@ The best way to see what output would be generated is to look in the [`test` fol
 where we have many SPARQL queries and their corresponding algebra output.
 
 A [custom aggregate](../../engines/algebra-sparql-1-1#custom-aggregates) is a `NamedExpression` marked with `aggregate: true`.
+Create one bound to a variable with `AlgebraFactory.createBoundNamedAggregate`, and recognize it with `AlgebraFactory.isBoundNamedAggregate`.
 
 ## Deviations from the spec
 This implementation tries to stay as close to the SPARQL 1.1

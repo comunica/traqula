@@ -243,12 +243,12 @@ AlgebraIndir<'mapAggregate', MapAggregateType, [MapAggregateType, Record<string,
 export const translateBoundAggregate:
 AlgebraIndir<'translateBoundAggregate', Algebra.BoundAggregate, [ExpressionAggregate, RDF.Variable]> = {
   name: 'translateBoundAggregate',
-  fun: ({ SUBRULE }) => ({ astFactory: F }, thingy, variable) => {
+  fun: ({ SUBRULE }) => ({ astFactory: F, algebraFactory: AF }, thingy, variable) => {
     const aggregate = <ExpressionAggregate | ExpressionFunctionCall> thingy;
     if (F.isExpressionFunctionCall(aggregate)) {
       const named = <Algebra.NamedExpression> SUBRULE(translateExpression, aggregate);
-      const custom: Algebra.BoundNamedAggregate = { ...named, aggregate: true, distinct: aggregate.distinct, variable };
-      return <Algebra.BoundAggregate> <unknown> custom;
+      return <Algebra.BoundAggregate> <unknown>
+        AF.createBoundNamedAggregate(variable, named.name, named.args, aggregate.distinct);
     }
     const A = <Algebra.AggregateExpression> SUBRULE(translateExpression, aggregate);
     return { ...A, variable };

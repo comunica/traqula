@@ -1,4 +1,5 @@
 import { describe, it } from 'vitest';
+import type { Algebra } from '../lib/index.js';
 import { isTriple, AlgebraFactory, algebraUtils } from '../lib/index.js';
 
 describe('algebraFactory edge cases', () => {
@@ -32,6 +33,44 @@ describe('algebraFactory edge cases', () => {
     const expression = AF.createWildcardExpression();
     const bound = AF.createBoundAggregate(variable, 'count', expression, false);
     expect(bound).toMatchObject({ variable, type: 'expression' });
+  });
+
+  it('createBoundNamedAggregate creates a custom aggregate bound to a variable', ({ expect }) => {
+    const variable = AF.dataFactory.variable!('myVar');
+    const name = AF.dataFactory.namedNode('http://example.org/median');
+    const args = [ AF.createTermExpression(AF.dataFactory.variable!('o')) ];
+    expect(AF.createBoundNamedAggregate(variable, name, args, true)).toEqual({
+      type: 'expression',
+      subType: 'named',
+      name,
+      args,
+      aggregate: true,
+      distinct: true,
+      variable,
+    });
+  });
+
+  it('isBoundNamedAggregate only matches custom aggregates bound to a variable', ({ expect }) => {
+    const variable = AF.dataFactory.variable!('myVar');
+    const name = AF.dataFactory.namedNode('http://example.org/median');
+    const named = AF.createNamedExpression(name, []);
+    const unbound: Algebra.NamedExpression = { ...named, aggregate: true, distinct: false };
+    expect(AF.isBoundNamedAggregate(AF.createBoundNamedAggregate(variable, name, [], false))).toBe(true);
+    expect(AF.isBoundNamedAggregate(named)).toBe(false);
+    expect(AF.isBoundNamedAggregate(unbound)).toBe(false);
+    expect(AF.isBoundNamedAggregate(AF.createBoundAggregate(variable, 'count', AF.createWildcardExpression(), false)))
+      .toBe(false);
+    expect(AF.isBoundNamedAggregate(AF.createBgp([]))).toBe(false);
+  });
+
+  it('isBoundNamedAggregate narrows the aggregates of a group', ({ expect }) => {
+    const name = AF.dataFactory.namedNode('http://example.org/median');
+    const group = AF.createGroup(AF.createBgp([]), [], [
+      AF.createBoundAggregate(AF.dataFactory.variable!('count'), 'count', AF.createWildcardExpression(), false),
+      AF.createBoundNamedAggregate(AF.dataFactory.variable!('median'), name, [], false),
+    ]);
+    const aggregates: Algebra.Expression[] = group.aggregates;
+    expect(aggregates.filter(x => AF.isBoundNamedAggregate(x)).map(x => x.name)).toEqual([ name ]);
   });
 
   describe('algebraFactory flattenMulti with matching subType', () => {

@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.5.0-alpha.2"></a>
+## [v1.5.0-alpha.2](https://github.com/comunica/traqula/compare/v1.5.0-alpha.1...v1.5.0-alpha.2) - 2026-10-14
+
+* [Add createBoundNamedAggregate and isBoundNamedAggregate to AlgebraFactory (#235)](https://github.com/comunica/traqula/commit/ccc3e74e42bbc6345566afa58bcb058eaa62da8f)
+
 <a name="v1.5.0-alpha.1"></a>
 ## [v1.5.0-alpha.1](https://github.com/comunica/traqula/compare/v1.5.0-alpha.0...v1.5.0-alpha.1) - 2026-10-13
 

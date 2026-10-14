@@ -80,6 +80,19 @@ const algebra = toAlgebra(ast, { namedAggregatorCallback: isAggregate });
 ```
 
 `Group.aggregates` then also contains custom aggregates: their `subType` is `named` instead of `aggregate`.
+`AlgebraFactory.isBoundNamedAggregate` recognizes them.
+Until the next major, `Group.aggregates` is typed as `BoundAggregate[]`, which the guard narrows to `never`,
+so type the aggregates as `Algebra.Expression[]` before narrowing:
+
+```typescript
+const AF = new AlgebraFactory();
+const aggregates: Algebra.Expression[] = group.aggregates;
+for (const aggregate of aggregates) {
+  if (AF.isBoundNamedAggregate(aggregate)) {
+    // aggregate.name, aggregate.args, aggregate.distinct and aggregate.variable are typed here
+  }
+}
+```
 
 ## Algebra Types
 

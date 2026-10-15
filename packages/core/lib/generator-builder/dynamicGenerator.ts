@@ -166,7 +166,8 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
     let remaining = subsStr.length;
     for (let index = this.stringBuilder.length - 1; index >= 0 && remaining > 0; index--) {
       const entry = this.stringBuilder[index];
-      const part = subsStr.slice(Math.max(0, remaining - entry.length), remaining);
+      const startIdx = remaining - entry.length;
+      const part = subsStr.slice(startIdx > 0 ? startIdx : 0, remaining);
       if (!entry.endsWith(part)) {
         return false;
       }

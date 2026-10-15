@@ -158,14 +158,21 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
     this.stringBuilder.push(joined);
   };
 
+  /**
+   * Whether the generated output ends with the given string.
+   * Compares against the tail entries of the stringBuilder without concatenating them.
+   */
   private doesEndWith(subsStr: string): boolean {
-    const len = subsStr.length;
-    let temp = '';
-    while (temp.length < len && this.stringBuilder.length > 0) {
-      temp = this.stringBuilder.pop() + temp;
+    let remaining = subsStr.length;
+    for (let index = this.stringBuilder.length - 1; index >= 0 && remaining > 0; index--) {
+      const entry = this.stringBuilder[index];
+      const part = subsStr.slice(Math.max(0, remaining - entry.length), remaining);
+      if (!entry.endsWith(part)) {
+        return false;
+      }
+      remaining -= part.length;
     }
-    this.stringBuilder.push(temp);
-    return temp.endsWith(subsStr);
+    return remaining === 0;
   }
 
   protected readonly ensure: RuleDefArg['ENSURE'] = (...args) => {
@@ -209,7 +216,7 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
       const newlineAlternative = this.getSafeContext()[traqulaNewlineAlternative];
       if (newlineAlternative !== undefined &&
         // If we force, it means we would print \n no matter. - otherwise check whether we have printed the char
-        (force || (this.stringBuilder.at(-1) !== newlineAlternative))) {
+        (force || !this.doesEndWith(newlineAlternative))) {
         this.print(newlineAlternative);
       }
       return;

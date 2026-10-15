@@ -201,12 +201,44 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
     }
   };
 
+  private static isBlank(char: string | undefined): boolean {
+    return char === ' ' || char === '\t';
+  }
+
+  /**
+   * Remove trailing spaces and tabs from the generated output.
+   * Only looks at the tail of the stringBuilder, so the cost does not depend on the size of the output.
+   */
   private pruneEndingBlanks(): void {
-    let temp = '';
-    while (/^[ \t]*$/u.test(temp) && this.stringBuilder.length > 0) {
-      temp = this.stringBuilder.pop() + temp;
+    const builder = this.stringBuilder;
+    let index = builder.length - 1;
+    let end = 0;
+    for (; index >= 0; index--) {
+      const entry = builder[index];
+      end = entry.length;
+      while (end > 0 && DynamicGenerator.isBlank(entry[end - 1])) {
+        end--;
+      }
+      if (end > 0) {
+        break;
+      }
     }
-    this.print(temp.replace(/[\t ]*$/u, ''));
+    const trimmed = index >= 0 ? builder[index].slice(0, end) : '';
+    builder.length = index > 0 ? index : 0;
+    this.print(trimmed);
+  }
+
+  /**
+   * Whether the generated output ends with a newline. Empty entries are skipped.
+   */
+  private endsWithNewline(): boolean {
+    for (let index = this.stringBuilder.length - 1; index >= 0; index--) {
+      const entry = this.stringBuilder[index];
+      if (entry.length > 0) {
+        return entry.endsWith('\n');
+      }
+    }
+    return false;
   }
 
   protected readonly newLine: RuleDefArg['NEW_LINE'] = (arg) => {
@@ -224,19 +256,12 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
     this.pruneEndingBlanks();
     if (force) {
       this.print('\n', ' '.repeat(indentation));
+    } else if (this.endsWithNewline()) {
+      // Pointer is on empty newline (trailing blanks were pruned above) -> set correct indentation
+      this.print(' '.repeat(indentation));
     } else {
-      let temp = '';
-      while (!temp.includes('\n') && this.stringBuilder.length > 0) {
-        temp = this.stringBuilder.pop() + temp;
-      }
-      if (/\n[ \t]*$/u.test(temp)) {
-        // Pointer is on empty newline -> set correct indentation
-        temp = temp.replace(/\n[ \t]*$/u, `\n${' '.repeat(indentation)}`);
-        this.print(temp);
-      } else {
-        // Pointer not on empty newline, print newline.
-        this.print(temp, '\n', ' '.repeat(indentation));
-      }
+      // Pointer not on empty newline, print newline.
+      this.print('\n', ' '.repeat(indentation));
     }
   };
 

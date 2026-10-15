@@ -217,7 +217,7 @@ export class DynamicGenerator<Context, Names extends string, RuleDefs extends Ge
       }
     }
     const trimmed = index >= 0 ? builder[index].slice(0, end) : '';
-    builder.length = Math.max(index, 0);
+    builder.length = index > 0 ? index : 0;
     this.print(trimmed);
   }
 

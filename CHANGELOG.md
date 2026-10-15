@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.5.0-alpha.3"></a>
+## [v1.5.0-alpha.3](https://github.com/comunica/traqula/compare/v1.5.0-alpha.2...v1.5.0-alpha.3) - 2026-10-15
+
+* [Make doesEndWith linear and fix compact newline spacing (#238)](https://github.com/comunica/traqula/commit/12dd7f8ab3b747d3757c4837b464b2a256c3eea3)
+* [Make generator newline handling linear in output size (#237)](https://github.com/comunica/traqula/commit/5bb4552d33748ba4ad880a9ef3922d6d049087fd)
+
 <a name="v1.5.0-alpha.2"></a>
 ## [v1.5.0-alpha.2](https://github.com/comunica/traqula/compare/v1.5.0-alpha.1...v1.5.0-alpha.2) - 2026-10-14
 

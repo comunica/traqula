@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": ".",
+    "declaration": true,
+    "outDir": "dist/esm"
+  },
+  "references": [
+    { "path": "../../packages/core" },
+    { "path": "../../packages/rules-sparql-1-1" },
+    { "path": "../../packages/sparqljs-traqula-transformations" },
+    { "path": "../../packages/test-utils" },
+    { "path": "../generator-sparql-1-1" }
+  ],
+  "include": ["lib/**/*.ts", "test/**/*.ts", "spec/**/*.ts"],
+  "exclude": ["dist/**"]
+}

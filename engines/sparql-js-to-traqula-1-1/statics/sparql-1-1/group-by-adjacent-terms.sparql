@@ -1,0 +1,7 @@
+PREFIX ex: <http://example.org/>
+SELECT ?a ?b ?c ( COUNT( * ) AS ?n ) WHERE {
+  ?a <http://example.org/p> ?b .
+  ?a <http://example.org/q> ?c .
+  ?a <http://example.org/r> ?d .
+}
+GROUP BY ?a ?b <http://example.org/f> ( ?d ) ?c STR( ?d ) ( ?d AS ?e )

@@ -1,0 +1,7 @@
+SELECT ?s WHERE {
+  ?s ?p ?o .
+}
+HAVING ( COUNT( * ) > "0"^^<http://www.w3.org/2001/XMLSchema#integer> )
+VALUES ?s {
+  <http://example.org/a>
+}

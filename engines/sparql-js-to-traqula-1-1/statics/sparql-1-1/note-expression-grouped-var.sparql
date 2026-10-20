@@ -1,0 +1,4 @@
+SELECT ( ( ?x + "1"^^<http://www.w3.org/2001/XMLSchema#integer> ) AS ?result ) WHERE {
+  ?s ?p ?x .
+}
+GROUP BY ?x

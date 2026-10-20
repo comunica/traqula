@@ -1,0 +1,6 @@
+SELECT ?x WHERE {
+  VALUES ?x {
+    <http://ex>
+  }
+}
+GROUP BY ?x

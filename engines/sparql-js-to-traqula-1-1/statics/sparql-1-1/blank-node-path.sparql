@@ -1,0 +1,4 @@
+SELECT * WHERE {
+  _:0 <http://p2> ?o2 .
+  _:0 <http://p> ?o .
+}

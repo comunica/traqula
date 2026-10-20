@@ -1,0 +1,11 @@
+SELECT ?g ?x WHERE {
+  SELECT ?x ?g WHERE {
+    GRAPH ?g {
+      VALUES( ?var0 ?y ){
+        ( <http://example.org/o1> <http://example.org/y1> )
+      }
+      ?x ?p ?var0 .
+      ?x ?q ?y .
+    }
+  }
+}

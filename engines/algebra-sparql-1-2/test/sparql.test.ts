@@ -3,7 +3,7 @@ import type { Algebra } from '@traqula/algebra-transformations-1-2';
 import { Generator as Generator12 } from '@traqula/generator-sparql-1-2';
 import { Parser as Parser12 } from '@traqula/parser-sparql-1-2';
 import { AstFactory } from '@traqula/rules-sparql-1-2';
-import { positiveTest, sparqlAlgebraTests } from '@traqula/test-utils';
+import { positiveTest, sparqlAlgebraOnlyTests, sparqlAlgebraTests } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
 import { toAst, toAlgebra } from '../lib/index.js';
 import { suites } from './algebra.test.js';
@@ -20,15 +20,15 @@ describe('sparql 1.2 algebra transformer', () => {
     for (const suite of suites) {
       describe(suite, () => {
         for (const test of sparqlAlgebraTests(suite, false, false)) {
-          const { name, json, quads } = test;
+          const { name, json, quads, namedAggregatorCallback } = test;
           const expected = <Algebra.Operation> json;
           it (name, ({ expect }) => {
             const genAst = toAst(expected);
             // Console.log(JSON.stringify(genAst, null, 2));
             const genQuery = generator.generate(genAst);
             // Console.log(genQuery);
-            const ast = parser.parse(genQuery);
-            const algebra = algebraUtils.objectify(toAlgebra(ast, { quads }));
+            const ast = parser.parse(genQuery, { namedAggregatorCallback });
+            const algebra = algebraUtils.objectify(toAlgebra(ast, { quads, namedAggregatorCallback }));
             expect(canon.canonicalizeQuery(algebra, false)).toEqual(canon.canonicalizeQuery(expected, false));
           });
         }
@@ -42,11 +42,11 @@ describe('sparql 1.2 algebra transformer', () => {
       for (const blankToVariable of [ true, false ]) {
         describe(`${suite}${blankToVariable ? ' with blank to var' : ''}`, () => {
           for (const test of sparqlAlgebraTests(suite, blankToVariable, true)) {
-            const { name, quads, canonicalSparql, sparql } = test;
+            const { name, quads, canonicalSparql, sparql, namedAggregatorCallback } = test;
             it (name, ({ expect }) => {
               astFactory.resetBlankNodeCounter();
-              const parsedAst = parser.parse(sparql, { astFactory });
-              const algebra = toAlgebra(parsedAst, { quads, blankToVariable });
+              const parsedAst = parser.parse(sparql, { astFactory, namedAggregatorCallback });
+              const algebra = toAlgebra(parsedAst, { quads, blankToVariable, namedAggregatorCallback });
               // Console.log(JSON.stringify(algebra, null, 2));
               const genAst = toAst(algebra);
               const canonical = generator.generate(genAst);
@@ -55,6 +55,15 @@ describe('sparql 1.2 algebra transformer', () => {
           }
         });
       }
+    }
+  });
+
+  describe('sparqlAlgebraOnlyTests Canonical SPARQL', () => {
+    for (const { name, json, canonicalSparql } of sparqlAlgebraOnlyTests('sparql-1.1-algebra-only')) {
+      it (name, ({ expect }) => {
+        const canonical = generator.generate(toAst(<Algebra.Operation> json));
+        expect(canonical.trim()).toEqual(canonicalSparql.trim());
+      });
     }
   });
 

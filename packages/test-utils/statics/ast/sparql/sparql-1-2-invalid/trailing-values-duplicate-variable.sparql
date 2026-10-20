@@ -1,0 +1,4 @@
+SELECT * WHERE {
+  ?s ?p ?o
+}
+VALUES (?s ?o ?s) { (<http://ex.org/a> 1 <http://ex.org/b>) }

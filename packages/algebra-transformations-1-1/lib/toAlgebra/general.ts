@@ -1,7 +1,7 @@
 import type * as RDF from '@rdfjs/types';
 import {
   findPatternBoundedVars,
-  lex,
+  resolveTermIri,
 } from '@traqula/rules-sparql-1-1';
 import type {
   ContextDefinition,
@@ -21,26 +21,10 @@ import * as Algebra from '../algebra.js';
 import * as util from '../util.js';
 import type { AlgebraIndir } from './core.js';
 
-const pnLocalEscGlobal = new RegExp(lex.patterns.pnLocalEscPattern.source, 'gu');
-
 export const translateNamed: AlgebraIndir<'translateNamed', RDF.NamedNode, [TermIri]> = {
   name: 'translateNamed',
-  fun: () => ({ astFactory: F, currentPrefixes, currentBase, dataFactory }, term) => {
-    let fullIri: string = term.value;
-    if (F.isTermNamedPrefixed(term)) {
-      const expanded = currentPrefixes[term.prefix];
-      if (!expanded) {
-        throw new Error(`Unknown prefix: ${term.prefix}`);
-      }
-      // Remove the backslash of PN_LOCAL_ESC escapes, percent-encodings (PLX) are kept as is.
-      // "The RDF string of the IRI is formed by unescaping the reserved characters in the second argument, PN_LOCAL,
-      // and concatenating this onto the namespace." - https://www.w3.org/TR/rdf12-turtle/#sec-parsing-terms
-      // Percent-encodings: "These sequences are not decoded during processing."
-      // - https://www.w3.org/TR/sparql12-query/#sec-escapes
-      fullIri = expanded + term.value.replaceAll(pnLocalEscGlobal, escaped => escaped.slice(1));
-    }
-    return dataFactory.namedNode(util.resolveIRI(fullIri, currentBase));
-  },
+  fun: () => ({ currentPrefixes, currentBase, dataFactory }, term) =>
+    dataFactory.namedNode(resolveTermIri(term, currentPrefixes, currentBase)),
 };
 
 export type AstToRdfTerm<T extends Term> = T extends TermVariable ? RDF.Variable :
@@ -90,7 +74,7 @@ export const translateInlineData: AlgebraIndir<'translateInlineData', Algebra.Va
   fun: ({ SUBRULE }) => ({ algebraFactory: AF }, values) => {
     const variables = values.variables.map(x => <AstToRdfTerm<typeof x>> SUBRULE(translateTerm, x));
     const bindings = values.values.map((binding) => {
-      const map: Record<string, RDF.NamedNode | RDF.Literal> = {};
+      const map: Record<string, RDF.NamedNode | RDF.Literal> = Object.create(null);
       for (const [ key, value ] of Object.entries(binding)) {
         if (value !== undefined) {
           map[key] = <RDF.NamedNode | RDF.Literal> SUBRULE(translateTerm, value);
@@ -117,7 +101,7 @@ export const translateBlankNodesToVariables:
 AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Operation]> = {
   name: 'translateBlankNodesToVariables',
   fun: ({ SUBRULE }) => ({ algebraFactory: AF, variables }, res) => {
-    const blankToVariableMapping: Record<string, RDF.Variable> = {};
+    const blankToVariableMapping: Record<string, RDF.Variable> = Object.create(null);
     const variablesRaw: Set<string> = new Set(variables);
 
     function uniqueVar(label: string): RDF.Variable {

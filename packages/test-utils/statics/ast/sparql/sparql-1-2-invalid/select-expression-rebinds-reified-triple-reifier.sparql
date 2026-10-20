@@ -1,0 +1,3 @@
+SELECT (1 AS ?r) WHERE {
+  << ?s ?p ?o ~ ?r >> .
+}

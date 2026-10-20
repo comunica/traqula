@@ -1,0 +1,4 @@
+SELECT (COUNT(?o) AS ?g) WHERE {
+  ?s ?p ?o
+}
+GROUP BY (STR(?s) AS ?g)

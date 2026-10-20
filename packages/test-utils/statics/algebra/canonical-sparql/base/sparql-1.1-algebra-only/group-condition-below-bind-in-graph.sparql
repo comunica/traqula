@@ -1,0 +1,10 @@
+SELECT ?a ?b WHERE {
+  GRAPH <http://example/g> {
+    {
+      ?s ?p ?o .
+      BIND( STR( ?o ) AS ?a )
+      BIND( STR( ?s ) AS ?c )
+    }
+  }
+}
+GROUP BY ?a ?b

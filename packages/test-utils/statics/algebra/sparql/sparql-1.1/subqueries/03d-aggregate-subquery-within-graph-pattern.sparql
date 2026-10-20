@@ -1,0 +1,5 @@
+select * where {
+graph ?g {
+{select (count(*) as ?c) where {?s ?p ?o}}
+}
+}

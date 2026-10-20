@@ -14,6 +14,9 @@ const rules = <const> [
   gram.valuesClause,
   gram.baseDecl,
   gram.prefixDecl,
+  gram.validateQuery,
+  gram.validateSelectQuery,
+  gram.validateDescribeQuery,
 ];
 
 export const queryUnitParserBuilder = ParserBuilder.create(rules)

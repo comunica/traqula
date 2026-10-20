@@ -1,5 +1,6 @@
 import type * as RDF from '@rdfjs/types';
 import type { IndirDef } from '@traqula/core';
+import type { Expression, PatternValues } from '@traqula/rules-sparql-1-1';
 import { AstFactory, AstTransformer } from '@traqula/rules-sparql-1-1';
 import * as Algebra from '../algebra.js';
 import { AlgebraFactory } from '../algebraFactory.js';
@@ -24,6 +25,14 @@ export interface AstContext {
    */
   aggregates: Algebra.BoundAggregate[];
   /**
+   * All HAVING conditions (filters directly on top of a group) found in our suboperations
+   */
+  having: Expression[];
+  /**
+   * The VALUES joined on top of a group found in our suboperations, the query's trailing VALUES clause
+   */
+  values?: PatternValues;
+  /**
    * All orderings found in our suboperations
    */
   order: Algebra.Expression[];
@@ -38,6 +47,7 @@ export function createAstContext(): AstContext {
     extend: [],
     group: [],
     aggregates: [],
+    having: [],
     order: [],
     algebraFactory: new AlgebraFactory(),
     astFactory: new AstFactory(),
@@ -55,7 +65,41 @@ export const resetContext: AstIndir<'resetContext', void, []> = {
     c.extend = [];
     c.group = [];
     c.aggregates = [];
+    c.having = [];
+    c.values = undefined;
     c.order = [];
+  },
+};
+
+/**
+ * Finds the group of a query below the given operation.
+ * From the top, a group can be wrapped by the extends and orderings of the projection, then the trailing VALUES clause,
+ * and then the HAVING conditions. `from` tells which of these the given operation can still be.
+ */
+export const findAlgGroupBelow: AstIndir<
+  'findGroupBelow',
+Algebra.Group | undefined,
+[Algebra.Operation, 'projection' | 'values' | 'having']
+> = {
+  name: 'findGroupBelow',
+  fun: () => (_, op, from) => {
+    let input = op;
+    if (from === 'projection') {
+      while (input.type === types.EXTEND || input.type === types.ORDER_BY) {
+        input = input.input;
+      }
+    }
+    if (from !== 'having' && input.type === types.JOIN && input.input.length === 2) {
+      // Join is commutative, so the VALUES can be either operand
+      const valuesIndex = input.input.findIndex(operand => operand.type === types.VALUES);
+      if (valuesIndex >= 0) {
+        input = input.input[1 - valuesIndex];
+      }
+    }
+    while (input.type === types.FILTER) {
+      input = input.input;
+    }
+    return input.type === types.GROUP ? input : undefined;
   },
 };
 

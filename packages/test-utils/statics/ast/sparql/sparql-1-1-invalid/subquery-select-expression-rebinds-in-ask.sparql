@@ -1,0 +1,3 @@
+ASK {
+  { SELECT (1 AS ?x) WHERE { ?s ?p ?x } }
+}

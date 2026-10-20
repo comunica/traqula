@@ -1,0 +1,4 @@
+CONSTRUCT { ?s ?p ?s }
+WHERE { ?s ?p ?o }
+GROUP BY ?s ?p
+HAVING (COUNT(*) > 1)

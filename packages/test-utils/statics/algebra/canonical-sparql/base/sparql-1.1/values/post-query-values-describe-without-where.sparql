@@ -1,0 +1,5 @@
+DESCRIBE ?v WHERE {
+  VALUES ?v {
+    <http://example.org/a>
+  }
+}

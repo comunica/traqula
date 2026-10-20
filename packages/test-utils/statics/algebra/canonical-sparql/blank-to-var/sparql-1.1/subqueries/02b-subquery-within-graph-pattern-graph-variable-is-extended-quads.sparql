@@ -1,7 +1,8 @@
 SELECT ?x ?p WHERE {
-  SELECT ( ?x AS ?g ) WHERE {
+  SELECT ?g WHERE {
     GRAPH ?g {
-      ?x ?p ?var0 .
+      ?x ?p ?o .
     }
+    FILTER ( ( COALESCE( ?x , ?g ) = ?g ) )
   }
 }

@@ -1,0 +1,3 @@
+SELECT ?x ?y (COUNT(*) AS ?c)
+WHERE { ?s ?p ?o BIND(STR(?o) AS ?x) }
+GROUP BY (CONCAT(?x, "a") AS ?y) ?x

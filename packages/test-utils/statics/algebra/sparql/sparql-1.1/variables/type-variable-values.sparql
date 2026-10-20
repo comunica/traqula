@@ -1,0 +1,4 @@
+SELECT * WHERE {
+  ?s ?p ?o .
+  VALUES (?type ?__proto__) { (<http://example.org/a> <http://example.org/b>) }
+}

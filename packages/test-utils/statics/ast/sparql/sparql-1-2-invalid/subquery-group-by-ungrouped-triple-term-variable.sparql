@@ -1,0 +1,8 @@
+SELECT * WHERE {
+  {
+    SELECT (<<( ?s ?p ?o )>> AS ?t) WHERE {
+      ?s ?p ?o
+    }
+    GROUP BY ?s
+  }
+}

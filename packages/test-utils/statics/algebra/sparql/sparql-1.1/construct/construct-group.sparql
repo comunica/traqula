@@ -1,0 +1,3 @@
+CONSTRUCT { ?s <http://example.org/p> ?s }
+WHERE { ?s ?p ?o }
+GROUP BY ?s

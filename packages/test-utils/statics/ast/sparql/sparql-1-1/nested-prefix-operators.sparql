@@ -1,0 +1,9 @@
+SELECT * WHERE {
+  BIND(-(-?x) AS ?a)
+  BIND(+(-?x) AS ?b)
+  BIND(-(+?x) AS ?c)
+  BIND(!(!?x) AS ?d)
+  BIND(!(-?x) AS ?e)
+  BIND(-(-(-?x)) AS ?f)
+  BIND(-(?x + 1) AS ?g)
+}

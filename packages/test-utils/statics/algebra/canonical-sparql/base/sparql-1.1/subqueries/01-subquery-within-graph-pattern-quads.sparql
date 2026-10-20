@@ -1,5 +1,5 @@
 SELECT ?x ?p WHERE {
-  SELECT ?p ?x ?y WHERE {
+  SELECT ?p ?x ?y ?g WHERE {
     GRAPH ?g {
       ?x ?p ?y .
     }

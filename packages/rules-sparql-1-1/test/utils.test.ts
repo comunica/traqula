@@ -17,6 +17,11 @@ describe('sparqlCodepointEscape', () => {
     expect(sparqlCodepointEscape('\\U0001F600')).toBe('😀');
   });
 
+  it('combines escaped surrogate pairs into a single code point', ({ expect }) => {
+    // Unlike SPARQL 1.2, SPARQL 1.1 allows a surrogate pair to be written as two \u escapes
+    expect(sparqlCodepointEscape('\\uD800\\uDFFF')).toBe('\u{103FF}');
+  });
+
   it('throws on invalid unicode surrogate pairs', ({ expect }) => {
     // A high surrogate (D800-DBFF) not followed by a low surrogate
     expect(() => sparqlCodepointEscape('\uD800')).toThrowError(/Invalid unicode codepoint/u);

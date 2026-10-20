@@ -1,9 +1,9 @@
 /* eslint-disable import/no-nodejs-modules */
 import { lstatSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { readFile, readFileSync } from '../fileUtils.js';
 import type { NegativeTest } from './generators.js';
-import { getStaticFilePath } from './utils.js';
+import { getStaticFilePath, testNamedAggregators } from './utils.js';
 
 // Computed lazily inside each generator so that getStaticFilePath() is not
 // called at module-evaluation time.  This avoids an ESM initialisation-order
@@ -32,6 +32,7 @@ export interface algebraTestGen {
   name: string;
   json: unknown;
   quads: boolean;
+  namedAggregatorCallback: ((iri: string) => boolean) | undefined;
   sparql: string | undefined;
   canonicalSparql: string | undefined;
 }
@@ -44,13 +45,26 @@ export type AlgebraTestSuite = 'dawg-syntax' | 'sparql-1.1' | 'sparql11-query' |
  * @param suite - The test suite to iterate.
  * @param blankToVariable - Whether to use the blank-to-variable fixture variant.
  * @param getSPARQL - Whether to load the SPARQL and canonical SPARQL strings.
+ * @param filter - Optional filter predicate applied to the test file name (without extension).
  */
-export function sparqlAlgebraTests(suite: AlgebraTestSuite, blankToVariable: boolean, getSPARQL: true):
-Generator<algebraTestGen & { sparql: string; canonicalSparql: string }>;
-export function sparqlAlgebraTests(suite: AlgebraTestSuite, blankToVariable: boolean, getSPARQL: boolean):
-Generator<algebraTestGen>;
-export function* sparqlAlgebraTests(suite: AlgebraTestSuite, blankToVariable: boolean, getSPARQL: boolean):
-Generator<algebraTestGen> {
+export function sparqlAlgebraTests(
+  suite: AlgebraTestSuite,
+  blankToVariable: boolean,
+  getSPARQL: true,
+  filter?: (name: string) => boolean,
+): Generator<algebraTestGen & { sparql: string; canonicalSparql: string }>;
+export function sparqlAlgebraTests(
+  suite: AlgebraTestSuite,
+  blankToVariable: boolean,
+  getSPARQL: boolean,
+  filter?: (name: string) => boolean,
+): Generator<algebraTestGen>;
+export function* sparqlAlgebraTests(
+  suite: AlgebraTestSuite,
+  blankToVariable: boolean,
+  getSPARQL: boolean,
+  filter?: (name: string) => boolean,
+): Generator<algebraTestGen> {
   // Relative path starting from roots declared above.
   function* subGen(relativePath: string): Generator<algebraTestGen> {
     const absolutePath = join(blankToVariable ? getRootJsonBlankToVariable() : getRootJson(), relativePath);
@@ -61,6 +75,9 @@ Generator<algebraTestGen> {
       }
     } else {
       const name = relativePath.replace(/\.json$/u, '');
+      if (filter && !filter(basename(name))) {
+        return;
+      }
       const sparqlPath = join(getRootSparql(), relativePath.replace(/\.json/u, '.sparql'));
       const canonicalSparqlPath = join(
         blankToVariable ? getRootCanonicalSparqlBlankToVar() : getRootCanonicalSparql(),
@@ -72,6 +89,7 @@ Generator<algebraTestGen> {
         sparql: getSPARQL ? readFileSync(sparqlPath, 'utf8') : undefined,
         canonicalSparql: getSPARQL ? readFileSync(canonicalSparqlPath, 'utf-8') : undefined,
         quads: name.endsWith('-quads'),
+        namedAggregatorCallback: testNamedAggregators(name),
       };
     }
   }
@@ -86,8 +104,9 @@ type GenQuery = { query: string; name: string };
 /**
  * Yields raw SPARQL query strings from the static test fixtures for a given suite.
  * @param suite - The test suite to iterate.
+ * @param filter - Optional filter predicate applied to the test file name (without extension).
  */
-export function* sparqlQueries(suite: AlgebraTestSuite): Generator<GenQuery> {
+export function* sparqlQueries(suite: AlgebraTestSuite, filter?: (name: string) => boolean): Generator<GenQuery> {
   function* subGen(relativePath: string): Generator<GenQuery> {
     const absolutePath = join(getRootSparql(), relativePath);
     if (lstatSync(absolutePath).isDirectory()) {
@@ -97,6 +116,9 @@ export function* sparqlQueries(suite: AlgebraTestSuite): Generator<GenQuery> {
       }
     } else {
       const name = relativePath.replace(/\.sparql$/u, '');
+      if (filter && !filter(basename(name))) {
+        return;
+      }
       const content = readFileSync(absolutePath, 'utf-8');
       yield {
         name,
@@ -111,13 +133,49 @@ export function* sparqlQueries(suite: AlgebraTestSuite): Generator<GenQuery> {
   }
 }
 
+export type AlgebraOnlySuite = 'sparql-1.1-algebra-only';
+
+type AlgebraOnlyTest = { name: string; json: unknown; canonicalSparql: string };
+/**
+ * Yields test cases of algebra in a different form than toAlgebra produces, from the static test fixtures.
+ * Each test provides the algebra JSON and the canonical SPARQL string that it must translate to.
+ * @param suite - The algebra-only test suite to iterate.
+ * @param filter - Optional filter predicate applied to the test file name (without extension).
+ */
+export function* sparqlAlgebraOnlyTests(
+  suite: AlgebraOnlySuite,
+  filter?: (name: string) => boolean,
+): Generator<AlgebraOnlyTest> {
+  function* subGen(relativePath: string): Generator<AlgebraOnlyTest> {
+    const absolutePath = join(getRootJson(), relativePath);
+    if (lstatSync(absolutePath).isDirectory()) {
+      // Recursion
+      for (const sub of readdirSync(absolutePath)) {
+        yield* subGen(join(relativePath, sub));
+      }
+    } else {
+      const name = relativePath.replace(/\.json$/u, '');
+      if (filter && !filter(basename(name))) {
+        return;
+      }
+      yield {
+        name,
+        json: JSON.parse(readFileSync(absolutePath)),
+        canonicalSparql: readFileSync(join(getRootCanonicalSparql(), `${name}.sparql`)),
+      };
+    }
+  }
+
+  yield* subGen(suite);
+}
+
 export type NegativeAlgebraSuite = 'sparql-1.1-negative' | 'sparql-1.2-negative';
 
 /**
  * Yields test cases for negative (invalid) algebra-level tests.
  * Each test provides a SPARQL query that should fail during algebra transformation.
  * @param suite - The negative test suite to iterate.
- * @param filter - Optional filter predicate applied to the test file name.
+ * @param filter - Optional filter predicate applied to the test file name (without extension).
  */
 export function* sparqlAlgebraNegativeTests(
   suite: NegativeAlgebraSuite,

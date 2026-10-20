@@ -1,0 +1,11 @@
+CONSTRUCT {
+  ?s <http://example.org/v> ?v .
+}
+WHERE {
+  ?s ?p ?o .
+  VALUES ?s {
+    <http://example.org/s1>
+    <http://example.org/s2>
+  }
+}
+GROUP BY ?s

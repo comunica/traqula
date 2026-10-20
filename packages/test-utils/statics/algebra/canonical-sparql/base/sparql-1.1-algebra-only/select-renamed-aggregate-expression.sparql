@@ -1,0 +1,6 @@
+SELECT ( ?s AS ?s2 ) ( ?c AS ?c2 ) WHERE {
+  SELECT ?s ( ( SUM( ?o ) * "2"^^<http://www.w3.org/2001/XMLSchema#integer> ) AS ?c ) WHERE {
+    ?s ?p ?o .
+  }
+  GROUP BY ?s
+}

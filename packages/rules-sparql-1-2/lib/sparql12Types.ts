@@ -70,6 +70,8 @@ export type UpdateOperationDeleteWhere = UpdateOperationInsertDeleteDelWhere & {
 export type UpdateOperationModify = UpdateOperationBase & {
   subType: 'modify';
   graph: TermIri | undefined;
+  // TODO(major): make insert and delete `Quads[] | undefined`: undefined when the clause is absent,
+  //  [] when it is written but empty. Now `DELETE {}`, `INSERT {}`, and `DELETE {} INSERT {}` share one AST.
   insert: Quads[];
   delete: Quads[];
   from: DatasetClauses;
@@ -237,6 +239,7 @@ export type PatternService = PatternBase & {
 export type ValuePatternRow = Record<string, TermIri | TermLiteral | undefined>;
 export type PatternValues = PatternBase & {
   subType: 'values';
+  variables: TermVariable[];
   values: ValuePatternRow[];
 };
 export type SubSelect = QuerySelect;

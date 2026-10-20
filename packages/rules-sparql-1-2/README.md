@@ -16,6 +16,12 @@ or
 yarn add @traqula/rules-sparql-1-2
 ```
 
+> [!note]
+> Minor versions keep the name, signature and behavior of this package's rules,
+> but can add rules or change how existing rules are implemented, such as which rules they call.
+> This only affects projects that patch, delete or individually register rules.
+> See [versioning](https://github.com/comunica/traqula#versioning).
+
 ## What's added over SPARQL 1.1
 
 This package adds grammar, lexer, and AST type definitions for SPARQL 1.2 features including:

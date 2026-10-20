@@ -1,0 +1,1 @@
+DESCRIBE ?s WHERE { ?s ?p ?o } ORDER BY COUNT(?o)

@@ -1,0 +1,10 @@
+SELECT ( COUNT( EXISTS {
+  {
+    SELECT ( COUNT( ?o ) AS ?c ) WHERE {
+      ?s ?p ?o .
+    }
+  }
+}
+) AS ?n ) WHERE {
+  ?s ?p ?o .
+}

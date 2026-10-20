@@ -1,0 +1,6 @@
+DESCRIBE ?t WHERE {
+  GRAPH ?g {
+    ?s ?p ?o .
+  }
+  BIND( STR( ?o ) AS ?t )
+}

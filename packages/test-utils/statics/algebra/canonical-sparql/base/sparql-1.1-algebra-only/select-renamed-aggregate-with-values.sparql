@@ -1,0 +1,9 @@
+SELECT ( ?s AS ?s2 ) ( ?c AS ?c2 ) WHERE {
+  SELECT ?s ( COUNT( ?o ) AS ?c ) WHERE {
+    ?s ?p ?o .
+  }
+  GROUP BY ?s
+  VALUES ?s {
+    <ex:a>
+  }
+}

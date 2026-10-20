@@ -22,13 +22,13 @@ import type {
   TermVariable,
   ValuePatternRow,
 } from '../Sparql11types.js';
-import { checkBlankNodeBGPScope, checkNote13 } from '../validation/validators.js';
 import { builtInCall } from './builtIn.js';
 import { argList, brackettedExpression, expression } from './expression.js';
 import { var_, varOrIri, varOrTerm } from './general.js';
 import { booleanLiteral, iri, numericLiteral, rdfLiteral } from './literals.js';
 import { query, subSelect } from './queryUnit.js';
 import { graphNodePath, triplesBlock } from './tripleBlock.js';
+import { validateFunctionCall, validateGroupGraphPattern, validateGroupGraphPatternSub } from './validation.js';
 
 /**
  * [[17]](https://www.w3.org/TR/sparql11-query/#rWhereClause)
@@ -47,19 +47,31 @@ export const whereClause: SparqlRule<'whereClause', Wrap<PatternGroup>> = <const
 };
 
 /**
+ * Parse modes that decide whether an aggregate is allowed.
+ */
+const aggregateParseModes = <const> [ 'canParseAggregate', 'inAggregate' ];
+
+/**
  * [[53]](https://www.w3.org/TR/sparql11-query/#rGroupGraphPattern)
  */
 export const groupGraphPattern: SparqlRule<'groupGraphPattern', PatternGroup> = <const> {
   name: 'groupGraphPattern',
   impl: ({ ACTION, SUBRULE, CONSUME, OR }) => (C) => {
     const open = CONSUME(l.symbols.LCurly);
+    // A nested pattern (e.g. in EXISTS) does not belong to the clause around it, so it cannot contain aggregates.
+    const clearedModes = ACTION(() => aggregateParseModes.filter(mode => C.parseMode.delete(mode)));
     const patterns = OR<Pattern[]>([
       { ALT: () => [ SUBRULE(subSelect) ]},
       { ALT: () => SUBRULE(groupGraphPatternSub) },
     ]);
     const close = CONSUME(l.symbols.RCurly);
+    ACTION(() => {
+      for (const mode of clearedModes) {
+        C.parseMode.add(mode);
+      }
+    });
 
-    ACTION(() => !C.skipValidation && checkBlankNodeBGPScope(patterns));
+    SUBRULE(validateGroupGraphPattern, patterns);
 
     return ACTION(() => C.astFactory.patternGroup(patterns, C.astFactory.sourceLocation(open, close)));
   },
@@ -112,7 +124,7 @@ export const generatePattern: SparqlGeneratorRule<'generatePattern', Pattern> = 
 export const groupGraphPatternSub:
 SparqlGrammarRule<'groupGraphPatternSub', Pattern[]> = <const> {
   name: 'groupGraphPatternSub',
-  impl: ({ ACTION, SUBRULE, CONSUME, MANY, SUBRULE1, SUBRULE2, OPTION1, OPTION2, OPTION3 }) => (C) => {
+  impl: ({ SUBRULE, CONSUME, MANY, SUBRULE1, SUBRULE2, OPTION1, OPTION2, OPTION3 }) => () => {
     const patterns: Pattern[] = [];
 
     const bgpPattern = OPTION1(() => SUBRULE1(triplesBlock));
@@ -131,7 +143,7 @@ SparqlGrammarRule<'groupGraphPatternSub', Pattern[]> = <const> {
       }
     });
 
-    ACTION(() => !C.skipValidation && checkNote13(patterns));
+    SUBRULE(validateGroupGraphPatternSub, patterns);
 
     return patterns;
   },
@@ -545,11 +557,13 @@ export const functionCall: SparqlGrammarRule<'functionCall', ExpressionFunctionC
   impl: ({ ACTION, SUBRULE }) => (C) => {
     const func = SUBRULE(iri);
     const args = SUBRULE(argList);
-    return ACTION(() => C.astFactory.expressionFunctionCall(
+    const result = ACTION(() => C.astFactory.expressionFunctionCall(
       func,
       args.val.args,
       args.val.distinct,
       C.astFactory.sourceLocation(func, args),
     ));
+    SUBRULE(validateFunctionCall, result);
+    return result;
   },
 };

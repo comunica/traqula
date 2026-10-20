@@ -1,6 +1,55 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.5.0-alpha.3"></a>
+## [v1.5.0-alpha.3](https://github.com/comunica/traqula/compare/v1.5.0-alpha.2...v1.5.0-alpha.3) - 2026-10-15
+
+* [Make doesEndWith linear and fix compact newline spacing (#238)](https://github.com/comunica/traqula/commit/12dd7f8ab3b747d3757c4837b464b2a256c3eea3)
+* [Make generator newline handling linear in output size (#237)](https://github.com/comunica/traqula/commit/5bb4552d33748ba4ad880a9ef3922d6d049087fd)
+
+<a name="v1.5.0-alpha.2"></a>
+## [v1.5.0-alpha.2](https://github.com/comunica/traqula/compare/v1.5.0-alpha.1...v1.5.0-alpha.2) - 2026-10-14
+
+* [Add createBoundNamedAggregate and isBoundNamedAggregate to AlgebraFactory (#235)](https://github.com/comunica/traqula/commit/ccc3e74e42bbc6345566afa58bcb058eaa62da8f)
+
+<a name="v1.5.0-alpha.1"></a>
+## [v1.5.0-alpha.1](https://github.com/comunica/traqula/compare/v1.5.0-alpha.0...v1.5.0-alpha.1) - 2026-10-13
+
+* [Reject aggregates in group graph patterns of SELECT, HAVING and ORDER BY expressions (#234)](https://github.com/comunica/traqula/commit/01ad7947feac14e354e80ae7dc5b36396de7585e)
+* [Add namedAggregatorCallback to the parser and toAlgebra (#220)](https://github.com/comunica/traqula/commit/96fd4a1efc124470d624ac97c33ce52ba3658659)
+* [Keep group keys unnamed when translating DESCRIBE * back to SPARQL (#231)](https://github.com/comunica/traqula/commit/386bd7e6d7855644444fa8235448722293b5fd15)
+* [Bind non-variable GROUP BY keys to fresh variables in toAlgebra (#230)](https://github.com/comunica/traqula/commit/5e31f7c8cac62a547ae982b7c06718be7946796f)
+* [Report forward references to select aliases in grouped queries as such (#229)](https://github.com/comunica/traqula/commit/fb36a0a0bf0c1b0df9c65762f8d45a7b765dd1ab)
+* [Tighten projection validation and wildcard expansion of grouped queries (#224)](https://github.com/comunica/traqula/commit/2bd9ff74c505bcf7d9f268b9e71fafac74f4ac7e)
+* [Mark empty modify templates for the next major (#228)](https://github.com/comunica/traqula/commit/3e79ce112a351611ad138fb288953f2ab97db03d)
+* [Translate empty DELETE templates back to SPARQL (#227)](https://github.com/comunica/traqula/commit/d5c5e16a6f340172f59fcf6bdfad09fc5b9bc098)
+* [Evaluate extends over a group in a subquery for every query form (#226)](https://github.com/comunica/traqula/commit/816e2cc48ae06fe7e7145ada95c63cb64061bbab)
+* [Update dependency handlebars to v4.7.10 (#225)](https://github.com/comunica/traqula/commit/e33f03ebfbfdaba9206877c629874464ff07cbc0)
+* [Allow trailing VALUES variables in grouped projections (#223)](https://github.com/comunica/traqula/commit/0d2e65863395c4f2c43d85fe01daaae26438a3bc)
+* [Keep a trailing VALUES clause after GROUP BY in toAst (#215)](https://github.com/comunica/traqula/commit/35fb2a082ace073316fdb61a9ea44c78d50ff674)
+* [Keep the GRAPH of quad-mode ASK/DESCRIBE/CONSTRUCT WHERE clauses (#214)](https://github.com/comunica/traqula/commit/9bc7f12086aeb844ad9f68380d2766e08dea287c)
+* [End SPARQL comments at a carriage return (#222)](https://github.com/comunica/traqula/commit/15a207ce69ebb3a172d263d7f5d75d12867338f8)
+
+<a name="v1.5.0-alpha.0"></a>
+## [v1.5.0-alpha.0](https://github.com/comunica/traqula/compare/v1.4.0...v1.5.0-alpha.0) - 2026-10-05
+
+* [Bracket nested prefix operators when generating (#219)](https://github.com/comunica/traqula/commit/4d85261b28e094b6db5622c2e0738d957793c379)
+* [Add cite section to repo README (#221)](https://github.com/comunica/traqula/commit/988167fa96d8e250d9299779f0e96d7c6256b535)
+* [Reject SELECT expressions and BINDs whose variable is already in scope (#210)](https://github.com/comunica/traqula/commit/3d1d966dd704f6c579a74a0bd5767f868af9fe99)
+* [Keep quad-mode extends from rebinding the graph variable (#201)](https://github.com/comunica/traqula/commit/a45cd4a7fdf10b3ee16f6646dc2fcc160a446a5a)
+* [Keep BINDs of DESCRIBE variables in the WHERE clause (#213)](https://github.com/comunica/traqula/commit/0c47de872879ab26af4db386e73c3448e9db0cc6)
+* [Replace placeholder assertions in SPARQL 1.1 notes tests (#208)](https://github.com/comunica/traqula/commit/4b60f2f8497c3ce110f9d6efc8d43bda67648d49)
+* [Keep literal direction when generating SPARQL 1.2 algebra fixtures (#207)](https://github.com/comunica/traqula/commit/efdb1f32828006b875e14081937259de6fca6196)
+* [Keep GROUP BY and HAVING when translating CONSTRUCT algebra to AST (#211)](https://github.com/comunica/traqula/commit/98174df7f7d10bbc03d0b76fbbee8d86bf938675)
+* [Fix unparseable HAVING and GROUP BY generation (#206)](https://github.com/comunica/traqula/commit/1a4929ffc1f5811de236ad361be8770ab5245f61)
+* [Substitute aggregates in ORDER BY when translating algebra to AST (#204)](https://github.com/comunica/traqula/commit/3e3340424de00c9ea27e5f6dd64be355aa5b3633)
+* [Lift extends into SELECT in nesting order (#203)](https://github.com/comunica/traqula/commit/2c477e45926f52028803eeaf93011b8c51b3b5cf)
+* [Translate group extends back to GROUP BY expressions in toAst (#202)](https://github.com/comunica/traqula/commit/a8f1e5b2fe10cee33f18bfb9c40e2f47c37c1088)
+* [Translate every filter on top of a group to HAVING in toAst (#205)](https://github.com/comunica/traqula/commit/c6fd17b03bcfe3014b883b5d932f5a7b039d3d5f)
+* [Fix algebra transformers on Object.prototype names and repair Canonicalizer output (#199)](https://github.com/comunica/traqula/commit/00dc1eea7ff1aa777924f9758f3676ced7b07c9c)
+* [Scope OPTIONAL and MINUS in non-first join operands when converting algebra to SPARQL  (#200)](https://github.com/comunica/traqula/commit/fd583929d2850ca68c113e78b4dd39d8dfc7a22e)
+* [Select aggregates that a projection selects directly (#198)](https://github.com/comunica/traqula/commit/d120a31be2b0e5c0cbf7c64eec4917958f8c5f4b)
+
 <a name="v1.4.0"></a>
 ## [v1.4.0](https://github.com/comunica/traqula/compare/v1.3.1...v1.4.0) - 2026-09-25
 

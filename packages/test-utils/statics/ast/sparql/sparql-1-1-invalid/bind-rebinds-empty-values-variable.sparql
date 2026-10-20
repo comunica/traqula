@@ -1,0 +1,4 @@
+SELECT * WHERE {
+  VALUES ?x { }
+  BIND(1 AS ?x)
+}

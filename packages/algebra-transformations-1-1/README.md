@@ -17,6 +17,12 @@ or
 yarn add @traqula/algebra-transformations-1-1
 ```
 
+> [!note]
+> Minor versions keep the name, signature and behavior of this package's rules,
+> but can add rules or change how existing rules are implemented, such as which rules they call.
+> This only affects projects that patch, delete or individually register rules.
+> See [versioning](https://github.com/comunica/traqula#versioning).
+
 ## Algebra object
 The algebra object contains a `types` object,
 which contains all possible values for the `type` field in the output results.
@@ -24,6 +30,9 @@ Besides that it also contains all the TypeScript interfaces of the possible outp
 
 The best way to see what output would be generated is to look in the [`test` folder](../../packages/test-utils/statics/algebra),
 where we have many SPARQL queries and their corresponding algebra output.
+
+A [custom aggregate](../../engines/algebra-sparql-1-1#custom-aggregates) is a `NamedExpression` marked with `aggregate: true`.
+Create one bound to a variable with `AlgebraFactory.createBoundNamedAggregate`, and recognize it with `AlgebraFactory.isBoundNamedAggregate`.
 
 ## Deviations from the spec
 This implementation tries to stay as close to the SPARQL 1.1

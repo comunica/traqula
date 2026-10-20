@@ -1,7 +1,7 @@
 {
   "name": "@traqula/sparql-js-to-traqula-1-1",
   "type": "module",
-  "version": "1.4.0",
+  "version": "1.5.0-alpha.3",
   "description": "Convert sparqljs SPARQL 1.1 AST fragments to Traqula's SPARQL 1.1 AST",
   "author": "Jitse De Smet",
   "lsd:module": true,
@@ -48,14 +48,14 @@
     "spec:earl": "yarn spec:earl:base-1-0 && yarn spec:earl:query && yarn spec:earl:update"
   },
   "dependencies": {
-    "@traqula/core": "^1.3.0",
-    "@traqula/rules-sparql-1-1": "^1.4.0",
-    "@traqula/sparqljs-traqula-transformations": "^1.4.0",
+    "@traqula/core": "^1.5.0-alpha.3",
+    "@traqula/rules-sparql-1-1": "^1.5.0-alpha.3",
+    "@traqula/sparqljs-traqula-transformations": "^1.5.0-alpha.3",
     "@types/sparqljs": "^3.1.12"
   },
   "devDependencies": {
-    "@traqula/generator-sparql-1-1": "^1.4.0",
-    "@traqula/test-utils": "^1.4.0",
+    "@traqula/generator-sparql-1-1": "^1.5.0-alpha.3",
+    "@traqula/test-utils": "^1.5.0-alpha.3",
     "rdf-test-suite": "^2.1.4",
     "sparqljs": "^3.7.4"
   }

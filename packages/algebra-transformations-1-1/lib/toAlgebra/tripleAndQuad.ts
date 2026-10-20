@@ -69,6 +69,16 @@ AlgebraIndir<'translateTripleNesting', void, [TripleNesting, FlattenedTriple[]]>
 };
 
 /**
+ * GRAPH joins the result of a subquery with the graph name (18.5),
+ * so the subquery has to project, and group by, the graph variable.
+ */
+function addGraphVariable(algOp: Algebra.Project | Algebra.Group, graph: RDF.Term): void {
+  if (graph.termType === 'Variable' && !algOp.variables.some(v => v.equals(graph))) {
+    algOp.variables = [ ...algOp.variables, graph ];
+  }
+}
+
+/**
  * Translate terms to be of some graph
  * @param c algebraContext
  * @param algOp algebra operation to translate
@@ -78,7 +88,7 @@ AlgebraIndir<'translateTripleNesting', void, [TripleNesting, FlattenedTriple[]]>
 export const recurseGraph:
 AlgebraIndir<'recurseGraph', Algebra.Operation, [Algebra.Operation, RDF.Term, RDF.Variable | undefined]> = {
   name: 'recurseGraph',
-  fun: ({ SUBRULE }) => (_, algOp, graph, replacement) => {
+  fun: ({ SUBRULE }) => ({ algebraFactory: AF }, algOp, graph, replacement) => {
     if (algOp.type === types.GRAPH) {
       if (replacement) {
         // At this point we would lose track of the replacement which would result in incorrect results
@@ -127,12 +137,23 @@ AlgebraIndir<'recurseGraph', Algebra.Operation, [Algebra.Operation, RDF.Term, RD
         replacement = SUBRULE(generateFreshVar);
       }
       algOp.input = SUBRULE(recurseGraph, algOp.input, graph, replacement);
+      addGraphVariable(algOp, graph);
     } else if (algOp.type === types.EXTEND && !replacement) {
       // This can happen if the query extends an expression to the name of the graph
       // since the extend happens here there should be no further occurrences of this name
       // if there are it's the same situation as above
       if (algOp.variable.equals(graph)) {
         replacement = SUBRULE(generateFreshVar);
+        // The quads already bind the graph variable, so filter instead of extending it (18.5).
+        // COALESCE keeps solutions where the expression errors, as those left the variable unbound.
+        const graphExpression = AF.createTermExpression(algOp.variable);
+        return AF.createFilter(
+          SUBRULE(recurseGraph, algOp.input, graph, replacement),
+          AF.createOperatorExpression('=', [
+            AF.createOperatorExpression('coalesce', [ algOp.expression, graphExpression ]),
+            graphExpression,
+          ]),
+        );
       }
       algOp.input = SUBRULE(recurseGraph, algOp.input, graph, replacement);
     } else if (algOp.type === types.MINUS && graph.termType === 'Variable') {
@@ -145,13 +166,22 @@ AlgebraIndir<'recurseGraph', Algebra.Operation, [Algebra.Operation, RDF.Term, RD
       for (const [ key, value ] of Object.entries(algOp)) {
         const castedKey = <keyof typeof algOp> key;
         if (Array.isArray(value)) {
-          algOp[castedKey] = <any> value.map((x: any) => SUBRULE(recurseGraph, x, graph, replacement));
+          algOp[castedKey] = <any> value.map((x: any) => replacement && isVariable(x) && x.equals(graph) ?
+            replacement :
+            SUBRULE(recurseGraph, x, graph, replacement));
         } else if (typeVals.includes(value.type)) {
           // Can't do instanceof on an interface
           algOp[castedKey] = <any> SUBRULE(recurseGraph, value, graph, replacement);
         } else if (replacement && isVariable(value) && value.equals(graph)) {
           algOp[castedKey] = <any> replacement;
         }
+      }
+      if (algOp.type === types.PROJECT || algOp.type === types.GROUP) {
+        addGraphVariable(algOp, graph);
+      }
+      if (algOp.type === types.VALUES && replacement) {
+        algOp.bindings = algOp.bindings.map(binding => Object.fromEntries(Object.entries(binding)
+          .map(([ name, term ]) => [ name === graph.value ? replacement!.value : name, term ])));
       }
     }
 

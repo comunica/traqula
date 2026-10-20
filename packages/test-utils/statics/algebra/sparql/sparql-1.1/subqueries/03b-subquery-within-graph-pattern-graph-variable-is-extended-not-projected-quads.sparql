@@ -1,0 +1,5 @@
+select * where {
+graph ?g {
+{select ?x where {?x ?p ?o bind(?o as ?g)}}
+}
+}

@@ -95,12 +95,17 @@ jobs:
           cache: yarn
       - run: yarn install --immutable
       - run: yarn build
+      # Refresh the cached W3C test suites weekly, so new upstream tests are picked up
+      - name: Determine RDF test suite cache week
+        id: rdf-test-suite-week
+        shell: bash
+        run: echo "week=$(date -u +%G-%V)" >> "$GITHUB_OUTPUT"
       - name: Load RDF test suite cache
         uses: actions/cache@v6
         with:
           path: |
             .rdf-test-suite-cache
-          key: rdftestsuite-${{ hashFiles('yarn.lock') }}
+          key: rdftestsuite-${{ hashFiles('yarn.lock') }}-${{ steps.rdf-test-suite-week.outputs.week }}
       - run: yarn spec:all
       - name: Generate earl
         if: matrix.node-version == '22.x' && matrix.os == 'ubuntu-latest'

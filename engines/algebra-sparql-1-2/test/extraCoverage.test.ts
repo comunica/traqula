@@ -1,3 +1,4 @@
+import { algebraUtils } from '@traqula/algebra-transformations-1-2';
 import { Parser } from '@traqula/parser-sparql-1-2';
 
 import type {
@@ -35,6 +36,22 @@ describe('algebra output 1.2', () => {
       expect(result).toMatchObject({
         input: { patterns: [{ predicate: { value: 'http://ex.org/foo' }}]},
       });
+    });
+  });
+
+  describe('algebraUtils.objectify', () => {
+    it('keeps the direction of directional literals nested in triple terms', ({ expect }) => {
+      const ast = parser.parse('SELECT * WHERE { ?s ?p <<( ?s ?p "hello"@en--ltr )>> }');
+      const algebra = algebraUtils.objectify(toAlgebra(ast));
+      expect(algebra).toMatchObject({
+        input: { patterns: [{ object: { object: { value: 'hello', language: 'en', direction: 'ltr' }}}]},
+      });
+    });
+
+    it('returns null and undefined as-is', ({ expect }) => {
+      expect(algebraUtils.objectify(null)).toBeNull();
+      expect(algebraUtils.objectify(undefined)).toBeUndefined();
+      expect(algebraUtils.objectify({ a: null, b: [ undefined ]})).toEqual({ a: null, b: [ undefined ]});
     });
   });
 });

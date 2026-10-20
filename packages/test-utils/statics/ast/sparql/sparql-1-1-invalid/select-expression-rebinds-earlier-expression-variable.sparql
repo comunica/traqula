@@ -1,0 +1,3 @@
+SELECT (?x + 1 AS ?y) (2 AS ?x) WHERE {
+  ?s ?p ?o
+}

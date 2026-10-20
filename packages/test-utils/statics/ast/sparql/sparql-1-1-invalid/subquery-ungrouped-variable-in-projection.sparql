@@ -1,0 +1,8 @@
+SELECT * WHERE {
+  {
+    SELECT ?o WHERE {
+      ?s ?p ?o
+    }
+    GROUP BY ?s
+  }
+}

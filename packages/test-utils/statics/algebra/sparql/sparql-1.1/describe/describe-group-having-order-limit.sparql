@@ -1,0 +1,7 @@
+DESCRIBE ?s
+WHERE { ?s ?p ?o }
+GROUP BY ?s
+HAVING (COUNT(?o) > 1)
+ORDER BY DESC(?s)
+LIMIT 5
+OFFSET 1

@@ -66,6 +66,34 @@ const generatedAst = toAst(algebra);
 const generatedQuery = generator.generate(generatedAst);
 ```
 
+### Custom aggregates
+
+Custom aggregates are syntactically function calls.
+Pass `namedAggregatorCallback: (iri: string) => boolean` to translate the function calls it accepts as aggregates:
+named expressions marked with `aggregate: true` and `distinct`, grouped and bound like built-in aggregates.
+Give the [parser](../parser-sparql-1-1#configuration) the same callback, since `toAlgebra` does not validate the query itself.
+
+```typescript
+const isAggregate = (iri: string) => iri === 'http://example.org/median';
+const ast = parser.parse('PREFIX ex: <http://example.org/> SELECT (ex:median(?o) AS ?m) { ?s ?p ?o }', { namedAggregatorCallback: isAggregate });
+const algebra = toAlgebra(ast, { namedAggregatorCallback: isAggregate });
+```
+
+`Group.aggregates` then also contains custom aggregates: their `subType` is `named` instead of `aggregate`.
+`AlgebraFactory.isBoundNamedAggregate` recognizes them.
+Until the next major, `Group.aggregates` is typed as `BoundAggregate[]`, which the guard narrows to `never`,
+so type the aggregates as `Algebra.Expression[]` before narrowing:
+
+```typescript
+const AF = new AlgebraFactory();
+const aggregates: Algebra.Expression[] = group.aggregates;
+for (const aggregate of aggregates) {
+  if (AF.isBoundNamedAggregate(aggregate)) {
+    // aggregate.name, aggregate.args, aggregate.distinct and aggregate.variable are typed here
+  }
+}
+```
+
 ## Algebra Types
 
 The algebra object contains a `types` object,
@@ -249,7 +277,16 @@ Some differences from Jena (again, non-exhaustive):
 no prefixes are used (all uris get expanded)
 and the project operation always gets used (even in the case of `SELECT *`).
 
+## Modifying the built algebra transformer
+
+> [!note]
+> Minor versions keep this engine's API and behavior, and the name, signature and behavior of the rules in its builders,
+> but can add rules or change how existing rules are implemented, such as which rules they call.
+> This only affects projects that patch, delete or individually register rules.
+> See [versioning](https://github.com/comunica/traqula#versioning).
+
 ## A note on tests
 
 Every test consists of a sparql file and a corresponding json file containing the algebra result.
 Tests ending with `(quads)` in their name are tested/generated with `quads: true` in the options.
+Tests ending with `-named-aggregators` in their name are tested/generated with a `namedAggregatorCallback` that only accepts `http://example.org/median`.

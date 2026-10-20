@@ -1,15 +1,27 @@
-import { getAggregatesOfExpression, getExpressionId, getVariablesFromExpression } from '@traqula/rules-sparql-1-1';
+// TODO(major): consider defining the validation functions with the IndirBuilder pattern,
+//  so they call each other by name and SPARQL 1.2 can patch only the functions that differ
+//  (findPatternBoundedVars).
+//  The SPARQL 1.2 queryProjectionIsGood, selectExpressionAliasesNotInScope and checkNote13
+//  only exist (and partially copy the SPARQL 1.1 logic) to call the SPARQL 1.2 findPatternBoundedVars.
+import {
+  getGroupKeyVariables,
+  isGroupedQuery,
+  namedAggregatorTest,
+  queryProjectionRespectsGrouping,
+  selectExpressionAliasesNotInValues,
+  selectExpressionAliasesNotUsedEarlier,
+} from '@traqula/rules-sparql-1-1';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import { AstFactory } from './AstFactory.js';
 import type {
   Path,
   Pattern,
   PatternBind,
+  PatternValues,
   QuerySelect,
   SparqlQuery,
   Term,
   TermLiteral,
-  TermVariable,
   TripleCollection,
   TripleNesting,
   Wildcard,
@@ -39,12 +51,15 @@ export function findPatternBoundedVars(
 ): void {
   if (F.isQuery(iter) || F.isUpdate(iter)) {
     if (F.isQuerySelect(iter) || F.isQueryDescribe(iter)) {
-      if (iter.where && iter.variables.some(x => F.isWildcard(x))) {
-        findPatternBoundedVars(iter.where, boundedVars);
-      } else {
+      // A projection only exposes the projected variables (18.2.1), wildcards expose everything.
+      if (!iter.variables.some(x => F.isWildcard(x))) {
         for (const v of iter.variables) {
           findPatternBoundedVars(v, boundedVars);
         }
+        return;
+      }
+      if (iter.where) {
+        findPatternBoundedVars(iter.where, boundedVars);
       }
       if (iter.solutionModifiers.group) {
         const grouping = iter.solutionModifiers.group;
@@ -54,11 +69,8 @@ export function findPatternBoundedVars(
           }
         }
       }
-      if (iter.values?.values && iter.values.values.length > 0) {
-        const values = iter.values.values;
-        for (const v of Object.keys(values[0])) {
-          boundedVars.add(v);
-        }
+      if (iter.values) {
+        findPatternBoundedVars(iter.values, boundedVars);
       }
     }
   } else if (F.isTerm(iter)) {
@@ -85,6 +97,10 @@ export function findPatternBoundedVars(
       findPatternBoundedVars(item, boundedVars);
     }
   } else if (F.isTripleCollection(iter) || F.isPatternBgp(iter)) {
+    if (F.isTripleCollection(iter)) {
+      // The reifier of a reified triple is only stored as its identifier
+      findPatternBoundedVars(iter.identifier, boundedVars);
+    }
     for (const triple of iter.triples) {
       findPatternBoundedVars(triple, boundedVars);
     }
@@ -99,8 +115,8 @@ export function findPatternBoundedVars(
   } else if (F.isPatternBind(iter)) {
     findPatternBoundedVars(iter.variable, boundedVars);
   } else if (F.isPatternValues(iter)) {
-    for (const variable of Object.keys(iter.values.at(0) ?? {})) {
-      boundedVars.add(variable);
+    for (const variable of iter.variables) {
+      boundedVars.add(variable.value);
     }
   } else if (F.isPatternGraph(iter)) {
     findPatternBoundedVars(iter.name, boundedVars);
@@ -111,81 +127,90 @@ export function findPatternBoundedVars(
 }
 
 /**
- * Verify that the projected variables (select head) are allowed:
- * - no group-by on select *
- * - if group-by, selected variables need to be collected by the group-by
- * - 'select ?var as ?other', ?other cannot be in scope
+ * SPARQL 1.2 version of {@link T11.queryProjectionIsGood}, see that function for the checks.
+ * It differs in the in-scope variables of {@link selectExpressionAliasesNotInScope}.
  */
-export function queryProjectionIsGood(query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where'>): void {
-  // NoGroupByOnWildcardSelect
-  if (query.variables.length === 1 && F.isWildcard(query.variables[0])) {
-    if (query.solutionModifiers.group !== undefined) {
-      throw new Error('GROUP BY not allowed with wildcard');
+export function queryProjectionIsGood(
+  query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
+  options: T11.ProjectionValidationOptions = {},
+): void {
+  selectExpressionAliasesNotInScope(query, options);
+  queryProjectionRespectsGrouping(<T11.QuerySelect> <unknown> query, options);
+}
+
+/**
+ * Grammar note 11 of https://www.w3.org/TR/sparql12-query/#sparqlGrammar (note 12 in SPARQL 1.1)
+ * > Variables introduced by AS in a SELECT clause must not already be in-scope.
+ * See also https://www.w3.org/TR/sparql12-query/#variableScope
+ * > The variable v must not be in-scope at the point of the (expr AS v) form.
+ * In-scope are the variables bound by the WHERE clause (including subquery projections), or, in a grouped query,
+ * the GROUP BY keys (v and (expr AS v)), and the trailing VALUES clause (joined before the projection, 18.2.4.3).
+ * The variable may also not be used in an earlier SELECT expression.
+ * @param query - The SELECT query to validate.
+ * @param options - Decide which function calls are custom aggregates, see {@link T11.namedAggregatorTest}.
+ */
+export function selectExpressionAliasesNotInScope(
+  query: Pick<QuerySelect, 'variables' | 'solutionModifiers' | 'where' | 'values'>,
+  options: T11.ProjectionValidationOptions,
+): void {
+  const selectBinds = query.variables.filter((variable): variable is PatternBind =>
+    !F.isTerm(variable) && !F.isWildcard(variable));
+  if (selectBinds.length > 0) {
+    const inScopeVars = new Set<string>();
+    // Grouping only keeps the variables of the group keys in scope.
+    // Without a callback, any function call might be an aggregate, so fewer variables are in scope.
+    const isAggregateFunction = namedAggregatorTest(options) ?? (() => true);
+    if (!isGroupedQuery(<T11.QuerySelect> <unknown> query, isAggregateFunction)) {
+      findPatternBoundedVars(query.where, inScopeVars);
     }
+    for (const variable of getGroupKeyVariables(query.solutionModifiers.group)) {
+      inScopeVars.add(variable.value);
+    }
+    for (const { variable } of selectBinds) {
+      if (inScopeVars.has(variable.value)) {
+        throw new Error(`Target id of 'AS' (?${variable.value}) is already in scope`);
+      }
+    }
+  }
+  selectExpressionAliasesNotUsedEarlier(query);
+  selectExpressionAliasesNotInValues(query);
+}
+
+/**
+ * SPARQL 1.2 version of the SPARQL 1.1 checkNote13, named after it so it overrides it in the `validation` export.
+ * Grammar note 12 of https://www.w3.org/TR/sparql12-query/#sparqlGrammar (note 13 in SPARQL 1.1)
+ * > The variable assigned in a BIND clause must not already be in-use within the immediately preceding TriplesBlock
+ *   within a GroupGraphPattern.
+ * See also https://www.w3.org/TR/sparql12-query/#variableScope
+ * > In BIND (expr AS v) requires that the variable v is not in-scope from the preceeding elements in the
+ *    group graph pattern in which it is used.
+ * The in-scope variables include those of the preceding TriplesBlock,
+ * also those within triple terms, reifiers, and annotations.
+ */
+export function checkNote13(patterns: Pattern[]): void {
+  // Only a BIND can violate this note, so there is no need to collect the bounded variables without one.
+  if (!patterns.some(pattern => F.isPatternBind(pattern))) {
     return;
   }
-
-  // CannotProjectUngroupedVars - can be skipped if `SELECT *`
-  // Check for projection of ungrouped variable
-  // Check can be skipped in case of wildcard select.
-  const variables = <Exclude<typeof query.variables, [Wildcard]>> query.variables;
-  const hasCountAggregate = variables.flatMap(
-    varVal => F.isTerm(varVal) ? [] : getAggregatesOfExpression(<T11.Expression> varVal.expression),
-  ).some(agg => agg.aggregation === 'count' && !agg.expression.some(arg => F.isWildcard(arg)));
-  const groupBy = query.solutionModifiers.group;
-  if (hasCountAggregate || groupBy) {
-    // We have to check whether
-    //  1. Variables used in projection are usable given the group by clause
-    //  2. A selectCount will create an implicit group by clause.
-    // Variables bound by preceding (expr AS ?var) expressions are in scope for later expressions.
-    const asBoundVars = new Set<string>();
-    for (const selectVar of variables) {
-      if (F.isTerm(selectVar)) {
-        if (!groupBy || !groupBy.groupings.map(groupvar =>
-          getExpressionId(<T11.Expression | T11.SolutionModifierGroupBind> groupvar))
-          .includes((getExpressionId(selectVar)))) {
-          throw new Error('Variable not allowed in projection');
-        }
-      } else if (getAggregatesOfExpression(<T11.Expression> selectVar.expression).length === 0) {
-        // Current value binding does not use aggregates
-        const usedvars = new Set<string>();
-        getVariablesFromExpression(<T11.Expression> selectVar.expression, usedvars);
-        for (const usedvar of usedvars) {
-          // If the var is created within the select, it is fine.
-          if (asBoundVars.has(usedvar)) {
-            continue;
-          }
-          if (!groupBy || !groupBy.groupings.map(groupVar =>
-            getExpressionId(<T11.Expression | T11.SolutionModifierGroupBind>groupVar)).includes(usedvar)) {
-            throw new Error(`Use of ungrouped variable in projection of operation (?${usedvar})`);
-          }
-        }
-      }
-      if (!F.isTerm(selectVar)) {
-        // Register a var is created by a bind
-        asBoundVars.add(selectVar.variable.value);
-      }
+  const boundedVars = new Set<string>();
+  for (const pattern of patterns) {
+    if (F.isPatternBind(pattern) && boundedVars.has(pattern.variable.value)) {
+      throw new Error(`Variable used to bind is already bound (?${pattern.variable.value})`);
     }
+    findPatternBoundedVars(pattern, boundedVars);
   }
+}
 
-  // NOTE 12: Check if id of each AS-selected column is not yet bound by subquery
-  const subqueries = query.where.patterns.filter(pattern => pattern.type === 'query');
-  if (subqueries.length > 0) {
-    const selectBoundedVars = new Set<string>();
-    for (const variable of variables) {
-      if ('variable' in variable) {
-        selectBoundedVars.add(variable.variable.value);
-      }
+/**
+ * Grammar note 10 of https://www.w3.org/TR/sparql12-query/#sparqlGrammar
+ * > Variables in the variable list of a VALUES clause must be unique within that list.
+ */
+export function valuesVariablesAreUnique(values: PatternValues): void {
+  const seen = new Set<string>();
+  for (const variable of values.variables) {
+    if (seen.has(variable.value)) {
+      throw new Error(`Variable used more than once in VALUES (?${variable.value})`);
     }
-
-    // Look at in scope variables
-    const vars = subqueries.flatMap<TermVariable | PatternBind | Wildcard>(sub => sub.variables)
-      .map(v => F.isTerm(v) ? v.value : (F.isWildcard(v) ? '*' : v.variable.value));
-    const subqueryIds = new Set(vars);
-    for (const selectedVarId of selectBoundedVars) {
-      if (subqueryIds.has(selectedVarId)) {
-        throw new Error(`Target id of 'AS' (?${selectedVarId}) already used in subquery`);
-      }
-    }
+    seen.add(variable.value);
   }
 }

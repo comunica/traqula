@@ -8,6 +8,12 @@ This kind of extension is similar to how Object-Oriented programming languages a
 Traqula takes the modularity to the level of grammar rules, allowing you to create a parser by starting from an existing one, then adding, removing or patching existing rules, even allowing you to merge parsers (more information can be found on [modifying a parser](./modify-parser.md)).
 
 > [!note]
+> Minor versions of Traqula keep the name, signature and behavior of existing rules,
+> but can add rules or change how existing rules are implemented, such as which rules they call.
+> This only affects projects that patch, delete or individually register rules.
+> See [versioning](../../README.md#versioning).
+
+> [!note]
 > Traqula heavily relies on [Chevrotain](https://chevrotain.io/) to perform efficient parsing.
 > Traqula's core itself merely provides a modular system to create a Chevrotain parser using [builder](https://refactoring.guru/design-patterns/builder)-based [dependency injection](https://martinfowler.com/articles/injection.html).
 

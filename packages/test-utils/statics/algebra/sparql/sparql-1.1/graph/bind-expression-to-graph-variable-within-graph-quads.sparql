@@ -1,0 +1,3 @@
+select * where {
+    graph ?g { ?x ?p ?o bind(iri(concat(str(?x), "#graph")) as ?g) }
+}

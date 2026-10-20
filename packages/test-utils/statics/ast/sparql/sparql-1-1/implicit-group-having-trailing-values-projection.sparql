@@ -1,0 +1,1 @@
+SELECT ?s WHERE { ?s ?p ?o } HAVING (COUNT(*) > 0) VALUES ?s { <http://example.org/a> }

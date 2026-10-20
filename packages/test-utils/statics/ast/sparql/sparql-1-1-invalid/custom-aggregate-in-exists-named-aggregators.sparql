@@ -1,0 +1,6 @@
+PREFIX ex: <http://example.org/>
+
+SELECT (EXISTS { ?s ex:value ?o FILTER (ex:median(?o) > 1) } AS ?exists)
+WHERE {
+  ?s ex:value ?o .
+}

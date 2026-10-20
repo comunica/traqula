@@ -1,0 +1,7 @@
+DESCRIBE ?s ?type ?v WHERE {
+  ?s ?p ?o .
+}
+GROUP BY ?s ( STR( ?p ) AS ?type ) ( STRLEN( ?o ) AS ?var0 )
+VALUES ?v {
+  "1"^^<http://www.w3.org/2001/XMLSchema#integer>
+}

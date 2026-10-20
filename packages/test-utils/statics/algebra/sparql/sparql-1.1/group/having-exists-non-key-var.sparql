@@ -1,0 +1,7 @@
+PREFIX : <http://example/>
+SELECT ?s
+{
+    ?s ?p ?o .
+}
+GROUP BY ?s
+HAVING EXISTS { ?s :q ?o }

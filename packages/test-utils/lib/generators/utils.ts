@@ -66,3 +66,12 @@ export function getStaticFilePath(...paths: string[]): string {
   }
   return path.join(_staticsPath, ...paths);
 }
+
+/**
+ * Returns the `namedAggregatorCallback` to parse and translate a test fixture with:
+ * fixtures whose name ends in `-named-aggregators` use the custom aggregate `http://example.org/median`.
+ * @param name - The name of the test fixture.
+ */
+export function testNamedAggregators(name: string): ((iri: string) => boolean) | undefined {
+  return name.endsWith('-named-aggregators') ? iri => iri === 'http://example.org/median' : undefined;
+}

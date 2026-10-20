@@ -1,0 +1,5 @@
+prefix ex: <http://www.example.org/>
+
+construct {} where {
+    graph ex:g { ?s ?p ?o }
+}

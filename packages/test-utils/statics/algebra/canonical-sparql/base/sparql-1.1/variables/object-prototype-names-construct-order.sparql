@@ -1,0 +1,7 @@
+CONSTRUCT {
+  ?constructor <http://example.org/p> ?toString .
+}
+WHERE {
+  ?constructor <http://example.org/p> ?toString .
+}
+ORDER BY ASC ( ?constructor ) DESC ( ?toString )

@@ -1,0 +1,88 @@
+{
+  "type": "project",
+  "input": {
+    "type": "filter",
+    "input": {
+      "type": "group",
+      "input": {
+        "type": "bgp",
+        "patterns": [
+          {
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": {
+              "termType": "Variable",
+              "value": "s"
+            },
+            "predicate": {
+              "termType": "Variable",
+              "value": "p"
+            },
+            "object": {
+              "termType": "Variable",
+              "value": "o"
+            },
+            "graph": {
+              "termType": "DefaultGraph",
+              "value": ""
+            }
+          }
+        ]
+      },
+      "variables": [
+        {
+          "termType": "Variable",
+          "value": "s"
+        }
+      ],
+      "aggregates": []
+    },
+    "expression": {
+      "type": "expression",
+      "subType": "operator",
+      "operator": ">",
+      "args": [
+        {
+          "type": "expression",
+          "subType": "operator",
+          "operator": "strlen",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "operator",
+              "operator": "str",
+              "args": [
+                {
+                  "type": "expression",
+                  "subType": "term",
+                  "term": {
+                    "termType": "Variable",
+                    "value": "s"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "expression",
+          "subType": "term",
+          "term": {
+            "termType": "Literal",
+            "value": "2",
+            "datatype": {
+              "termType": "NamedNode",
+              "value": "http://www.w3.org/2001/XMLSchema#integer"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "s"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+CONSTRUCT { ?s <http://example.org/v> ?v }
+WHERE {
+  { ?s ?p ?o FILTER(!BOUND(?v)) }
+  BIND(1 AS ?v)
+}
+ORDER BY ?v

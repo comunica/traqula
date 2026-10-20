@@ -1,0 +1,120 @@
+{
+  "type": "project",
+  "input": {
+    "type": "filter",
+    "input": {
+      "type": "bgp",
+      "patterns": [
+        {
+          "type": "pattern",
+          "termType": "Quad",
+          "subject": {
+            "termType": "Variable",
+            "value": "x"
+          },
+          "predicate": {
+            "termType": "Variable",
+            "value": "p"
+          },
+          "object": {
+            "termType": "Variable",
+            "value": "o"
+          },
+          "graph": {
+            "termType": "Variable",
+            "value": "g"
+          }
+        }
+      ]
+    },
+    "expression": {
+      "type": "expression",
+      "subType": "operator",
+      "operator": "=",
+      "args": [
+        {
+          "type": "expression",
+          "subType": "operator",
+          "operator": "coalesce",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "operator",
+              "operator": "iri",
+              "args": [
+                {
+                  "type": "expression",
+                  "subType": "operator",
+                  "operator": "concat",
+                  "args": [
+                    {
+                      "type": "expression",
+                      "subType": "operator",
+                      "operator": "str",
+                      "args": [
+                        {
+                          "type": "expression",
+                          "subType": "term",
+                          "term": {
+                            "termType": "Variable",
+                            "value": "x"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "expression",
+                      "subType": "term",
+                      "term": {
+                        "termType": "Literal",
+                        "value": "#graph",
+                        "datatype": {
+                          "termType": "NamedNode",
+                          "value": "http://www.w3.org/2001/XMLSchema#string"
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "expression",
+              "subType": "term",
+              "term": {
+                "termType": "Variable",
+                "value": "g"
+              }
+            }
+          ]
+        },
+        {
+          "type": "expression",
+          "subType": "term",
+          "term": {
+            "termType": "Variable",
+            "value": "g"
+          }
+        }
+      ]
+    }
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "g"
+    },
+    {
+      "termType": "Variable",
+      "value": "o"
+    },
+    {
+      "termType": "Variable",
+      "value": "p"
+    },
+    {
+      "termType": "Variable",
+      "value": "x"
+    }
+  ]
+}

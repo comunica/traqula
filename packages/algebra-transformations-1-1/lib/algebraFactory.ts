@@ -54,6 +54,33 @@ export class AlgebraFactory {
     return result;
   }
 
+  /**
+   * Creates a call of a custom aggregate, bound to the given variable,
+   * see the `namedAggregatorCallback` option of toAlgebra.
+   */
+  public createBoundNamedAggregate(
+    variable: RDF.Variable,
+    name: RDF.NamedNode,
+    args: A.BaseExpression[],
+    distinct: boolean,
+  ): A.BoundNamedAggregate {
+    return { ...this.createNamedExpression(name, args), aggregate: true, distinct, variable };
+  }
+
+  /**
+   * Whether the operation is a call of a custom aggregate, bound to a variable,
+   * as found in {@link A.Group.aggregates}.
+   * Since `Group.aggregates` is typed as {@link A.BoundAggregate} until the next major,
+   * TypeScript narrows its elements to `never` with this guard:
+   * type them as {@link A.Expression} first, e.g. `const aggregates: Algebra.Expression[] = group.aggregates;`.
+   */
+  public isBoundNamedAggregate(op: A.BaseOperation): op is A.BoundNamedAggregate {
+    return op.type === A.Types.EXPRESSION &&
+      op.subType === A.ExpressionTypes.NAMED &&
+      (<Partial<A.BoundNamedAggregate>> op).aggregate === true &&
+      (<Partial<A.BoundNamedAggregate>> op).variable !== undefined;
+  }
+
   public createBgp(patterns: A.Pattern[]): A.Bgp {
     return { type: A.Types.BGP, patterns };
   }

@@ -1,0 +1,1 @@
+SELECT (EXISTS { ?s ?p ?o BIND(SUM(?o) AS ?x) } AS ?e) WHERE { ?s ?p ?o }

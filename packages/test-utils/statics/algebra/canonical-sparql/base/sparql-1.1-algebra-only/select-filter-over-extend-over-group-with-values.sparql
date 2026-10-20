@@ -1,0 +1,13 @@
+SELECT ?s ?e WHERE {
+  {
+    SELECT ( COUNT( ?o ) AS ?var0 ) ?s ( ?s AS ?e ) WHERE {
+      ?s ?p ?o .
+    }
+    GROUP BY ?s
+    HAVING ( COUNT( ?o ) > "1"^^<http://www.w3.org/2001/XMLSchema#integer> )
+    VALUES ?s {
+      <ex:a>
+    }
+  }
+  FILTER ( BOUND( ?e ) )
+}

@@ -18,6 +18,12 @@ or
 yarn add @traqula/rules-sparql-1-1
 ```
 
+> [!note]
+> Minor versions keep the name, signature and behavior of this package's rules,
+> but can add rules or change how existing rules are implemented, such as which rules they call.
+> This only affects projects that patch, delete or individually register rules.
+> See [versioning](https://github.com/comunica/traqula#versioning).
+
 ## Exports
 
 This package provides the following main exports:

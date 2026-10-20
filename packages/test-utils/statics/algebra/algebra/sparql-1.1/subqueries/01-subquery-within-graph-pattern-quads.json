@@ -39,6 +39,10 @@
       {
         "termType": "Variable",
         "value": "y"
+      },
+      {
+        "termType": "Variable",
+        "value": "g"
       }
     ]
   },

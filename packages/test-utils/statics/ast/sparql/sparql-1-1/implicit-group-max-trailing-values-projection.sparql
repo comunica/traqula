@@ -1,0 +1,1 @@
+SELECT ?s (MAX(?o) AS ?m) WHERE { ?s ?p ?o } VALUES ?s { <http://example.org/a> }

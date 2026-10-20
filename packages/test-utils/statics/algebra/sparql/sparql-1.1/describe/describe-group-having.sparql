@@ -1,0 +1,4 @@
+DESCRIBE ?s ?p
+WHERE { ?s ?p ?o }
+GROUP BY ?s ?p
+HAVING (COUNT(*) > 1)

@@ -3,9 +3,7 @@ CONSTRUCT {
 }
 WHERE {
   GRAPH ?g {
-    {
-      ?s ?p ?o .
-      BIND( <<( ?s ?p ?o )>> AS ?t )
-    }
+    ?s ?p ?o .
   }
+  BIND( <<( ?s ?p ?o )>> AS ?t )
 }

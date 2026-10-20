@@ -1,0 +1,8 @@
+SELECT ?s ?p ?o WHERE {
+  GRAPH <constructor> {
+    ?s ?p ?o .
+  }
+  GRAPH <__proto__> {
+    ?s ?p ?o .
+  }
+}

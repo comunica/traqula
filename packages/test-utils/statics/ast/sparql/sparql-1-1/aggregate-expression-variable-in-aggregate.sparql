@@ -1,0 +1,1 @@
+SELECT (COUNT(?o) + 1 AS ?x) WHERE { ?s ?p ?o }

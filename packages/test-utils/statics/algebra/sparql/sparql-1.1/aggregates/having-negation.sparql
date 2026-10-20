@@ -1,0 +1,4 @@
+SELECT ?s (COUNT(?o) AS ?count)
+WHERE { ?s ?p ?o }
+GROUP BY ?s
+HAVING (!(COUNT(?o) > 1))

@@ -1,0 +1,90 @@
+{
+  "type": "ask",
+  "input": {
+    "type": "filter",
+    "input": {
+      "type": "group",
+      "input": {
+        "type": "bgp",
+        "patterns": [
+          {
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": {
+              "termType": "Variable",
+              "value": "s"
+            },
+            "predicate": {
+              "termType": "Variable",
+              "value": "p"
+            },
+            "object": {
+              "termType": "Variable",
+              "value": "o"
+            },
+            "graph": {
+              "termType": "DefaultGraph",
+              "value": ""
+            }
+          }
+        ]
+      },
+      "variables": [
+        {
+          "termType": "Variable",
+          "value": "s"
+        },
+        {
+          "termType": "Variable",
+          "value": "p"
+        }
+      ],
+      "aggregates": [
+        {
+          "type": "expression",
+          "subType": "aggregate",
+          "aggregator": "count",
+          "expression": {
+            "type": "expression",
+            "subType": "wildcard",
+            "wildcard": {
+              "type": "wildcard"
+            }
+          },
+          "distinct": false,
+          "variable": {
+            "termType": "Variable",
+            "value": "var0"
+          }
+        }
+      ]
+    },
+    "expression": {
+      "type": "expression",
+      "subType": "operator",
+      "operator": ">",
+      "args": [
+        {
+          "type": "expression",
+          "subType": "term",
+          "term": {
+            "termType": "Variable",
+            "value": "var0"
+          }
+        },
+        {
+          "type": "expression",
+          "subType": "term",
+          "term": {
+            "termType": "Literal",
+            "value": "1",
+            "datatype": {
+              "termType": "NamedNode",
+              "value": "http://www.w3.org/2001/XMLSchema#integer"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

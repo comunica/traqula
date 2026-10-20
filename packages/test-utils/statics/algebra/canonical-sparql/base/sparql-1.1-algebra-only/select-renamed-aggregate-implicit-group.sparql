@@ -1,0 +1,5 @@
+SELECT ( ?c AS ?c2 ) WHERE {
+  SELECT ( COUNT( ?o ) AS ?c ) WHERE {
+    ?s ?p ?o .
+  }
+}

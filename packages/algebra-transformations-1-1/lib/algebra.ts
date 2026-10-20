@@ -164,6 +164,23 @@ export interface NamedExpression extends BaseExpression {
   subType: ExpressionTypes.NAMED;
   name: RDF.NamedNode;
   args: Expression[];
+  /**
+   * Whether this is a call of a custom aggregate, see {@link BoundNamedAggregate}.
+   */
+  aggregate?: boolean;
+  /**
+   * Whether the custom aggregate is called with DISTINCT. Only set on custom aggregates.
+   */
+  distinct?: boolean;
+}
+/**
+ * A call of a custom aggregate, bound to a variable in a group,
+ * see the `namedAggregatorCallback` option of toAlgebra.
+ */
+export interface BoundNamedAggregate extends NamedExpression {
+  aggregate: true;
+  distinct: boolean;
+  variable: RDF.Variable;
 }
 
 export interface OperatorExpression extends BaseExpression {
@@ -265,6 +282,10 @@ export interface BoundAggregate extends AggregateExpression {
 export interface Group extends Single {
   type: Types.GROUP;
   variables: RDF.Variable[];
+  /**
+   * Can also contain custom aggregates ({@link BoundNamedAggregate}, with `subType` {@link ExpressionTypes.NAMED}).
+   * TODO(major): include BoundNamedAggregate in the type.
+   */
   aggregates: BoundAggregate[];
 }
 
@@ -456,6 +477,8 @@ export interface CompositeUpdate extends BaseOperation {
 
 export interface DeleteInsert extends BaseOperation {
   type: Types.DELETE_INSERT;
+  // TODO(major): keep [] for a template that is written but empty, leaving undefined for an absent clause.
+  //  Now toAlgebra translates both to undefined, so `DELETE {}` and `INSERT {}` share one algebra.
   delete?: Pattern[];
   insert?: Pattern[];
   where?: Operation;

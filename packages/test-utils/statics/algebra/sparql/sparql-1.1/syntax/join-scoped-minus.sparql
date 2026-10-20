@@ -1,0 +1,9 @@
+PREFIX : <http://example.org/>
+
+SELECT ?a WHERE {
+  ?a :p ?b .
+  {
+    ?c :p ?d .
+    MINUS { ?a :p ?e }
+  }
+}

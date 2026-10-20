@@ -1,0 +1,7 @@
+PREFIX EX: <http://example.org/>
+
+SELECT (EX:median(?o DISTINCT ?w) AS ?median)
+WHERE {
+  ?s EX:value ?o ;
+    EX:weight ?w .
+}

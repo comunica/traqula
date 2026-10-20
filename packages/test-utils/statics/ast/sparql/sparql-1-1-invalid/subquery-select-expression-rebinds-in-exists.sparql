@@ -1,0 +1,4 @@
+SELECT * WHERE {
+  ?s ?p ?o
+  FILTER EXISTS { { SELECT (1 AS ?x) WHERE { ?s ?p ?x } } }
+}

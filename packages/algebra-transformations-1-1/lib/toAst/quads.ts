@@ -1,4 +1,5 @@
 import type * as RDF from '@rdfjs/types';
+import type { IndirDefArg } from '@traqula/core';
 import type { AlgebraFactory } from '../algebraFactory.js';
 import type { Algebra } from '../index.js';
 import { types } from '../toAlgebra/index.js';
@@ -28,28 +29,29 @@ function wrapInGraph(AF: AlgebraFactory, op: Algebra.Operation, graph: RDF.Named
 }
 
 /**
- * Whether the term is the variable, or a triple term containing it.
+ * Whether the term mentions the variable. A SPARQL 1.1 term only does so by being the variable.
  * @param term the term to search.
  * @param variable the variable to find.
  * @return whether the variable occurs in the term.
  */
-function termMentionsVariable(term: RDF.Term, variable: RDF.Variable): boolean {
-  if (term.termType === 'Quad') {
-    return [ term.subject, term.predicate, term.object, term.graph ]
-      .some(component => termMentionsVariable(component, variable));
-  }
-  return term.termType === 'Variable' && term.value === variable.value;
-}
+export const algTermMentionsVariable: AstIndir<'termMentionsVariable', boolean, [RDF.Term, RDF.Variable]> = {
+  name: 'termMentionsVariable',
+  fun: () => (_, term, variable) => term.termType === 'Variable' && term.value === variable.value,
+};
 
 /**
  * Whether the expression mentions the variable, ignoring EXISTS patterns.
  */
-function mentionsVariable(expression: Algebra.Expression, variable: RDF.Variable): boolean {
+function mentionsVariable(
+  SUBRULE: IndirDefArg['SUBRULE'],
+  expression: Algebra.Expression,
+  variable: RDF.Variable,
+): boolean {
   let found = false;
   visitOperationSub(expression, {}, { [types.EXPRESSION]: {
     [eTypes.EXISTENCE]: { preVisitor: () => ({ continue: false }) },
     [eTypes.TERM]: { preVisitor: (term) => {
-      found = termMentionsVariable(term.term, variable);
+      found = SUBRULE(algTermMentionsVariable, term.term, variable);
       return { shortcut: found };
     } },
   }});
@@ -200,7 +202,7 @@ unknown,
       ].includes(knownOp.type) ||
         (knownOp.type === types.EXTEND && projectionScope) ||
         (knownOp.type === types.FILTER && onlyGraph?.termType === 'Variable' &&
-          mentionsVariable(knownOp.expression, onlyGraph));
+          mentionsVariable(SUBRULE, knownOp.expression, onlyGraph));
       if (graphNameSet.length === 1 && !isBoundary) {
         graphs.push(operationGraphNames[graphNameSet[0]]);
       } else if (knownOp.type === types.BGP) {

@@ -75,5 +75,18 @@ describe('algebra output 1.2', () => {
 }`);
       });
     }
+
+    it('moves a FILTER with a triple term not mentioning the graph variable inside the GRAPH', ({ expect }) => {
+      const ast = parser.parse('SELECT * WHERE { GRAPH ?g { ?s ?p ?o } FILTER(?o = <<( ?s <http://p> ?o )>>) }');
+      const query = generator.generate(toAst(toAlgebra(ast, { quads: true })));
+      expect(query).toBe(`SELECT ?g ?o ?p ?s WHERE {
+  GRAPH ?g {
+    {
+      ?s ?p ?o .
+      FILTER ( ( ?o = <<( ?s <http://p> ?o )>> ) )
+    }
+  }
+}`);
+    });
   });
 });

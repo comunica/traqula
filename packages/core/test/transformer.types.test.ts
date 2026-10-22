@@ -7,12 +7,12 @@ import type {
   TransformerTyped,
   VisitContext,
 } from '../lib/index.js';
-import type { CanHoldObject } from '../lib/transformers/TransformerTyped.js';
+import type { CanHoldNode } from '../lib/transformers/TransformerTyped.js';
 
 interface Pattern {
   type: 'pattern';
-  subject: object;
-  predicate: object;
+  subject: Literal;
+  predicate: Literal;
 }
 
 interface Literal {
@@ -65,14 +65,26 @@ describe('transformer', () => {
       expectTypeOf<HintedKeys<DefaultNodeContexts['pattern']>>().toEqualTypeOf<ObjectKeyHint<Pattern>>();
     });
 
-    it('requires known node keys to list exactly the keys that can hold objects', () => {
+    it('requires known node keys to list exactly the keys that can hold nodes', () => {
       expectTypeOf<KnownNodeKeys<Nodes>['pattern']>().toEqualTypeOf<{ subject: true; predicate: true }>();
       expectTypeOf<KnownNodeKeys<Nodes>['term']>().toEqualTypeOf<Record<string, never>>();
       expectTypeOf<{ pattern: { subject: true }}>().not.toExtend<KnownNodeKeys<Pattern>>();
-      expectTypeOf<CanHoldObject<string | undefined>>().toEqualTypeOf<false>();
-      expectTypeOf<CanHoldObject<() => boolean>>().toEqualTypeOf<false>();
-      expectTypeOf<CanHoldObject<string | string[]>>().toEqualTypeOf<true>();
-      expectTypeOf<CanHoldObject<unknown>>().toEqualTypeOf<true>();
+    });
+
+    it('finds nodes within arrays and objects without a type, but not within skipped values', () => {
+      interface Location {
+        start: number;
+        within?: Location;
+      }
+      expectTypeOf<CanHoldNode<string | undefined>>().toEqualTypeOf<false>();
+      expectTypeOf<CanHoldNode<() => Literal>>().toEqualTypeOf<false>();
+      expectTypeOf<CanHoldNode<{ untyped: { value: string }}>>().toEqualTypeOf<false>();
+      expectTypeOf<CanHoldNode<{ untyped: object }>>().toEqualTypeOf<true>();
+      expectTypeOf<CanHoldNode<{ termType: 'Quad'; subject: Literal }>>().toEqualTypeOf<false>();
+      expectTypeOf<CanHoldNode<string | Record<string, Literal>[]>>().toEqualTypeOf<true>();
+      expectTypeOf<CanHoldNode<unknown>>().toEqualTypeOf<true>();
+      expectTypeOf<CanHoldNode<Location | { location: Location }, Location>>().toEqualTypeOf<false>();
+      expectTypeOf<CanHoldNode<Literal, Literal>>().toEqualTypeOf<true>();
     });
   });
 });

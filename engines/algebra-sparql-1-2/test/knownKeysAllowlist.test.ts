@@ -13,15 +13,14 @@ import { toAlgebra, toAst } from '../lib/index.js';
 const suites: AlgebraTestSuite[] = [ 'dawg-syntax', 'sparql11-query', 'sparql-1.1', 'sparql12' ];
 
 describe('algebraUtils.knownKeysAllowlist', () => {
-  const unrestricted = new TransformerSubTyped<Algebra.Operation>();
   const allowlisted = new TransformerSubTyped<Algebra.Operation>({}, algebraUtils.knownKeysAllowlist);
 
-  function visitedOperations(transformer: TransformerSubTyped<Algebra.Operation>, operation: object): object[] {
+  function visitedOperations(visitOperation: typeof algebraUtils.visitOperation, operation: object): object[] {
     const visited: object[] = [];
     const visitor = (node: object): void => {
       visited.push(node);
     };
-    transformer.visitNode(
+    visitOperation(
       operation,
       Object.fromEntries(Object.keys(algebraUtils.knownKeysAllowlist).map(type => [ type, { visitor }])),
     );
@@ -29,12 +28,12 @@ describe('algebraUtils.knownKeysAllowlist', () => {
   }
 
   for (const suite of suites) {
-    it(`visits all operations of the ${suite} algebra`, ({ expect }) => {
+    it(`visits the operations of the ${suite} algebra the algebra utilities visit`, ({ expect }) => {
       for (const { name, json } of sparqlAlgebraTests(suite, false, false)) {
-        const allOperations = visitedOperations(unrestricted, <object> json);
-        const allowedOperations = visitedOperations(allowlisted, <object> json);
-        expect(allowedOperations.length, name).toBe(allOperations.length);
-        expect(allowedOperations.every((operation, index) => operation === allOperations[index]), name).toBe(true);
+        const expectedOperations = visitedOperations(algebraUtils.visitOperation, <object> json);
+        const allowedOperations = visitedOperations(allowlisted.visitNode.bind(allowlisted), <object> json);
+        expect(allowedOperations.length, name).toBe(expectedOperations.length);
+        expect(allowedOperations.every((operation, index) => operation === expectedOperations[index]), name).toBe(true);
       }
     });
   }
@@ -42,8 +41,8 @@ describe('algebraUtils.knownKeysAllowlist', () => {
   it('does not visit unknown keys of known operations', ({ expect }) => {
     const extension = { type: 'bgp', patterns: []};
     const operation = { type: 'join', input: [{ type: 'bgp', patterns: []}], extension };
-    expect(visitedOperations(unrestricted, operation)).toContain(extension);
-    expect(visitedOperations(allowlisted, operation)).not.toContain(extension);
+    expect(visitedOperations(algebraUtils.visitOperation, operation)).toContain(extension);
+    expect(visitedOperations(allowlisted.visitNode.bind(allowlisted), operation)).not.toContain(extension);
   });
 
   it('lets toAst skip cyclic unknown keys, like the metadata Comunica adds to operations', ({ expect }) => {
@@ -61,6 +60,16 @@ describe('algebraUtils.knownKeysAllowlist', () => {
         const operation = <Algebra.Operation> json;
         const withMetadata = algebraUtils.mapOperation<'unsafe', Algebra.Operation>(operation, addMetadata);
         expect(toAst(withMetadata, transformers), name).toEqual(toAst(operation));
+      }
+    }
+  });
+
+  it('lets toAst give the same AST with an unrestricted algebra transformer', ({ expect }) => {
+    const algebraTransformer = new TransformerSubTyped<Algebra.Operation>();
+    for (const suite of suites) {
+      for (const { name, json } of sparqlAlgebraTests(suite, false, false)) {
+        const operation = <Algebra.Operation> json;
+        expect(toAst(operation, { algebraTransformer }), name).toEqual(toAst(operation));
       }
     }
   });

@@ -1,6 +1,6 @@
-import type { Typed } from '../types.js';
+import type { SourceLocation, Typed } from '../types.js';
 import type { Awaitable, PreOrderMappingReturn, TransformContext, VisitContext } from './TransformerObject.js';
-import { isPromise, TransformerObject } from './TransformerObject.js';
+import { isKeyIgnored, isPromise, TransformerObject } from './TransformerObject.js';
 
 /**
  * Controls whether transform callbacks receive fully typed nodes (`'unsafe'`) or
@@ -34,33 +34,50 @@ export type AllObjectValues<Obj, Key extends string> =
   Obj extends unknown ? (Key extends keyof Obj ? Obj[Key] : never) : never;
 
 /**
- * Whether a value can be an object or array, the only values a transformer traverses into.
+ * Values that hold no nodes, and are thus not looked into by default: source locations and RDF terms.
  */
-export type CanHoldObject<Value> = unknown extends Value ? true :
-    [Exclude<Extract<Value, object>, (...args: any[]) => unknown>] extends [never] ? false : true;
+export type NodeFreeValue = SourceLocation | { termType: string };
 
 /**
- * The keys of an object that can hold an object, also when the object is a union of objects.
+ * Whether a value can hold a node, directly or within arrays and objects without a type.
+ * Values of type `Skipped` that are not nodes themselves are not looked into.
  */
-export type ObjectHoldingKeys<Obj> = {[Key in AllObjectKeys<Obj>]:
-  CanHoldObject<AllObjectValues<Obj, Key>> extends true ? Key : never }[AllObjectKeys<Obj>];
+export type CanHoldNode<Value, Skipped = NodeFreeValue> = unknown extends Value ? true :
+  true extends MemberCanHoldNode<Value, Skipped> ? true : false;
 
 /**
- * Per node type, exactly the keys that can hold an object, mapped to `true`.
+ * {@link CanHoldNode} of each member of a union.
+ */
+type MemberCanHoldNode<Value, Skipped> = Value extends Typed ? true :
+  Value extends Skipped | ((...args: any[]) => unknown) ? false :
+    Value extends readonly (infer Element)[] ? CanHoldNode<Element, Skipped> :
+      Value extends object ? ([keyof Value] extends [never] ? true : CanHoldNode<Value[keyof Value], Skipped>) : false;
+
+/**
+ * The keys of an object that can hold a node, also when the object is a union of objects.
+ */
+export type NodeHoldingKeys<Obj, Skipped = NodeFreeValue> = {[Key in AllObjectKeys<Obj>]:
+  CanHoldNode<AllObjectValues<Obj, Key>, Skipped> extends true ? Key : never }[AllObjectKeys<Obj>];
+
+/**
+ * Per node type, exactly the keys that can hold a node, mapped to `true`.
  * The compiler rejects missing and other keys, also for a type without such keys.
+ * @typeParam Skipped - Values that are not looked into, by default source locations and RDF terms.
  */
-export type KnownNodeKeys<Nodes extends Typed> = {[T in Nodes['type']]:
-  [ObjectHoldingKeys<Extract<Nodes, Typed<T>>>] extends [never] ?
+export type KnownNodeKeys<Nodes extends Typed, Skipped = NodeFreeValue> = {[T in Nodes['type']]:
+  [NodeHoldingKeys<Extract<Nodes, Typed<T>>, Skipped>] extends [never] ?
     Record<string, never> :
-    Record<ObjectHoldingKeys<Extract<Nodes, Typed<T>>>, true> };
+    Record<NodeHoldingKeys<Extract<Nodes, Typed<T>>, Skipped>, true> };
 
 /**
- * Creates a {@link DefaultNodePreVisitor} that per node type only visits the known keys that can hold objects,
+ * Creates a {@link DefaultNodePreVisitor} that per node type only visits the known keys that can hold nodes,
  * skipping unknown keys like those of an extension.
- * @param knownKeys per node type, the keys that can hold an object.
+ * @param knownKeys per node type, the keys that can hold a node.
  * @return the contexts per node type, to give to a {@link TransformerTyped} or {@link TransformerSubTyped}.
  */
-export function visitOnlyKnownKeys<Nodes extends Typed>(knownKeys: KnownNodeKeys<Nodes>): DefaultNodePreVisitor<Nodes> {
+export function visitOnlyKnownKeys<Nodes extends Typed, Skipped = NodeFreeValue>(
+  knownKeys: KnownNodeKeys<Nodes, Skipped>,
+): DefaultNodePreVisitor<Nodes> {
   const contexts: Record<string, TransformContext> = {};
   for (const [ type, keys ] of Object.entries(knownKeys)) {
     contexts[type] = { visitOnlyKeys: new Set(Object.keys(<object> keys)) };
@@ -100,14 +117,20 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
   }
 
   /**
-   * The keys a traversal may visit in the given object, from the default of its node type or else the default context.
-   * Lets traversals that do not use this transformer, like hand-written ones, respect its allowlists too.
-   * @param object the object to visit the keys of.
-   * @return the keys that may be visited, or undefined when all keys may be visited.
+   * Whether a traversal visits the given key of an object, by the default of its node type or the default context.
+   * Lets hand-written traversals respect the defaults of this transformer, like its allowlists.
+   * @param object the object holding the key.
+   * @param key the key to visit.
+   * @return whether the key is visited.
    */
-  public visitOnlyKeysOf(object: object): VisitContext['visitOnlyKeys'] {
+  public visitsKey(object: object, key: string): boolean {
     const type = (<Partial<Typed<Nodes['type']>>> object).type;
-    return (type ? this.defaultNodePreVisitor[type]?.visitOnlyKeys : undefined) ?? this.defaultContext.visitOnlyKeys;
+    const nodeDefault = type ? this.defaultNodePreVisitor[type] : undefined;
+    return !isKeyIgnored(
+      key,
+      nodeDefault?.ignoreKeys ?? this.defaultContext.ignoreKeys,
+      nodeDefault?.visitOnlyKeys ?? this.defaultContext.visitOnlyKeys,
+    );
   }
 
   /**

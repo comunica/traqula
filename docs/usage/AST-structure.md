@@ -146,9 +146,9 @@ To only skip the keys Traqula does not know, like keys added by an extension or 
 use a known keys allowlist as the default per node type instead:
 `astKnownKeysAllowlist` of `@traqula/rules-sparql-1-1` and `@traqula/rules-sparql-1-2`,
 or `algebraUtils.knownKeysAllowlist` for the algebra.
-Nodes of a known type then only visit their known keys that can hold objects, so they are traversed as without it,
+Nodes of a known type then only visit their known keys that can hold nodes, skipping RDF terms and source locations,
 while other objects are still fully visited.
-The compiler checks that an allowlist lists exactly the keys of each node type that can hold objects.
+The compiler checks that an allowlist lists exactly the keys of each node type that can hold nodes.
 
 The rules of the parser, `toAlgebra`, and `toAst` that call a transformer use the ones you give them.
 The generator calls none, so it takes none.

@@ -201,12 +201,11 @@ export function resolveTermIri(term: TermIri, prefixes: Record<string, string>, 
 }
 
 /**
- * Contexts per node type that only visit the known keys that can hold objects, see {@link visitOnlyKnownKeys}.
+ * Contexts per node type that only visit the known keys that can hold nodes, skipping source locations.
  */
 export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql11Nodes>({
-  path: { loc: true, items: true },
+  path: { items: true },
   pattern: {
-    loc: true,
     values: true,
     name: true,
     variable: true,
@@ -215,9 +214,8 @@ export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql11Nodes>({
     patterns: true,
     triples: true,
   },
-  update: { loc: true, updates: true },
+  update: { updates: true },
   query: {
-    loc: true,
     values: true,
     template: true,
     context: true,
@@ -226,10 +224,9 @@ export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql11Nodes>({
     where: true,
     variables: true,
   },
-  graph: { loc: true, graph: true, triples: true },
-  graphRef: { loc: true, graph: true },
+  graph: { graph: true, triples: true },
+  graphRef: { graph: true },
   updateOperation: {
-    loc: true,
     data: true,
     source: true,
     destination: true,
@@ -239,12 +236,12 @@ export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql11Nodes>({
     delete: true,
     insert: true,
   },
-  datasetClauses: { loc: true, clauses: true },
-  tripleCollection: { loc: true, triples: true, identifier: true },
-  triple: { loc: true, object: true, subject: true, predicate: true },
-  solutionModifier: { loc: true, having: true, orderDefs: true, groupings: true },
-  expression: { loc: true, function: true, args: true, expression: true },
-  contextDef: { loc: true, value: true },
-  wildcard: { loc: true },
-  term: { loc: true, langOrIri: true },
+  datasetClauses: { clauses: true },
+  tripleCollection: { triples: true, identifier: true },
+  triple: { object: true, subject: true, predicate: true },
+  solutionModifier: { having: true, orderDefs: true, groupings: true },
+  expression: { function: true, args: true, expression: true },
+  contextDef: { value: true },
+  wildcard: {},
+  term: { langOrIri: true },
 });

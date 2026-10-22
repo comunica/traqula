@@ -16,7 +16,7 @@ export type ObjectKeyHint<Obj> = (keyof Obj & string) | (string & NonNullable<un
 /**
  * Whether a key should not be visited according to the given ignoreKeys and visitOnlyKeys.
  */
-function isKeyIgnored(key: string, ignoreKeys?: Set<string>, visitOnlyKeys?: Set<string>): boolean {
+export function isKeyIgnored(key: string, ignoreKeys?: Set<string>, visitOnlyKeys?: Set<string>): boolean {
   return (ignoreKeys?.has(key) ?? false) || !(visitOnlyKeys?.has(key) ?? true);
 }
 

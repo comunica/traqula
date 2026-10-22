@@ -15,8 +15,8 @@ import type {
   TermVariable,
 } from '@traqula/rules-sparql-1-1';
 import type { Algebra } from '../index.js';
-import { isVariable, types } from '../toAlgebra/index.js';
-import { inScopeVariables } from '../util.js';
+import { isTerm, types } from '../toAlgebra/index.js';
+import { forEachTermVariable, inScopeVariables } from '../util.js';
 import type { AstIndir } from './core.js';
 import { findAlgGroupBelow, resetContext } from './core.js';
 import { translateAlgExpressionOrOrdering, translateAlgPureExpression } from './expression.js';
@@ -74,20 +74,26 @@ export const collectAlgVariables:
 AstIndir<'collectVariables', Set<string>, [object, Set<string>, string[]?]> = {
   name: 'collectVariables',
   fun: () => ({ algebraTransformer }, value, names, ignoreKeysList = []) => {
-    const ignoreKeys = new Set(ignoreKeysList);
+    const isIgnoredKey = (object: object, key: string): boolean => object === value && ignoreKeysList.includes(key);
+    const addVariables = (term: RDF.Term): void => forEachTermVariable(term, variable => names.add(variable.value));
+    const isTermWithoutType = (term: unknown): term is RDF.Term => isTerm(term) && !('type' in term);
     algebraTransformer.visitObject(
       value,
       (object) => {
-        const term = <RDF.Term> object;
-        if (isVariable(term)) {
-          names.add(term.value);
+        if (isTermWithoutType(object)) {
+          addVariables(object);
+        }
+        // Terms at keys the transformer skips, like the algebra utilities and allowlists do, are read here
+        for (const [ key, child ] of Object.entries(object)) {
+          if (!isIgnoredKey(object, key) && !algebraTransformer.visitsKey(object, key)) {
+            for (const term of [ child ].flat().filter(isTermWithoutType)) {
+              addVariables(term);
+            }
+          }
         }
       },
-      // Only the allowlists apply: other ignored keys, like the term keys of the algebra utilities, hold variables
-      object => ({
-        visitOnlyKeys: algebraTransformer.visitOnlyKeysOf(object),
-        ignoreKeys: object === value ? ignoreKeys : undefined,
-      }),
+      object => ({ visitOnlyKeys: new Set(Object.keys(object)
+        .filter(key => !isIgnoredKey(object, key) && algebraTransformer.visitsKey(object, key))) }),
     );
     return names;
   },

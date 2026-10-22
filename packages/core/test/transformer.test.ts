@@ -1586,7 +1586,7 @@ describe('visitOnlyKnownKeys', () => {
   interface Apple {
     type: 'apple';
     name: string;
-    core: object;
+    core: { type: 'seed' };
   }
   interface Crate {
     type: 'crate';
@@ -1609,11 +1609,11 @@ describe('visitOnlyKnownKeys', () => {
     const transformer = new TransformerTyped<Apple | Crate>({}, knownKeys);
     const crate = {
       type: 'crate',
-      content: [{ type: 'apple', name: 'inCrate', core: {}}],
-      extension: { type: 'apple', name: 'inExtension', core: {}},
+      content: [{ type: 'apple', name: 'inCrate', core: { type: 'seed' }}],
+      extension: { type: 'apple', name: 'inExtension', core: { type: 'seed' }},
     };
     const visited: string[] = [];
-    transformer.visitNode({ wrapper: [ crate, { type: 'apple', name: 'inWrapper', core: {}}]}, {
+    transformer.visitNode({ wrapper: [ crate, { type: 'apple', name: 'inWrapper', core: { type: 'seed' }}]}, {
       apple: { visitor: (apple) => {
         visited.push(apple.name);
       } },
@@ -1621,11 +1621,13 @@ describe('visitOnlyKnownKeys', () => {
     expect(visited).toEqual([ 'inCrate', 'inWrapper' ]);
   });
 
-  it('tells which keys of an object may be visited', ({ expect }) => {
+  it('tells whether a key of an object is visited', ({ expect }) => {
     const strict = new TransformerTyped<Apple | Crate>({ visitOnlyKeys: new Set() }, knownKeys);
-    expect(strict.visitOnlyKeysOf({ type: 'apple' })).toEqual(new Set([ 'core' ]));
-    expect(strict.visitOnlyKeysOf({ type: 'pear' })).toEqual(new Set());
-    expect(strict.visitOnlyKeysOf({ untyped: true })).toEqual(new Set());
-    expect(new TransformerTyped<Apple | Crate>().visitOnlyKeysOf({ type: 'apple' })).toBeUndefined();
+    expect(strict.visitsKey({ type: 'apple' }, 'core')).toBe(true);
+    expect(strict.visitsKey({ type: 'apple' }, 'name')).toBe(false);
+    expect(strict.visitsKey({ untyped: true }, 'untyped')).toBe(false);
+    const ignoring = new TransformerTyped<Apple | Crate>({}, { crate: { ignoreKeys: new Set([ 'content' ]) }});
+    expect(ignoring.visitsKey({ type: 'crate' }, 'content')).toBe(false);
+    expect(ignoring.visitsKey({ type: 'apple' }, 'name')).toBe(true);
   });
 });

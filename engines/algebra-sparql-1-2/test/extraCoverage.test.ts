@@ -1,11 +1,12 @@
 import { algebraUtils } from '@traqula/algebra-transformations-1-2';
+import { Generator } from '@traqula/generator-sparql-1-2';
 import { Parser } from '@traqula/parser-sparql-1-2';
 
 import type {
   AlgebraTestSuite,
 } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
-import { toAlgebra } from '../lib/index.js';
+import { toAlgebra, toAst } from '../lib/index.js';
 
 export const suites: AlgebraTestSuite[] = [ 'dawg-syntax', 'sparql11-query', 'sparql-1.1', 'sparql12' ];
 
@@ -53,5 +54,26 @@ describe('algebra output 1.2', () => {
       expect(algebraUtils.objectify(undefined)).toBeUndefined();
       expect(algebraUtils.objectify({ a: null, b: [ undefined ]})).toEqual({ a: null, b: [ undefined ]});
     });
+  });
+
+  describe('toAst with quads', () => {
+    const generator = new Generator();
+
+    for (const tripleTerm of [
+      '<<( ?g <http://p> <http://o> )>>',
+      '<<( ?s <http://p> <<( <http://s> <http://p> ?g )>> )>>',
+    ]) {
+      it(`keeps a FILTER mentioning the graph variable in ${tripleTerm} outside of the GRAPH`, ({ expect }) => {
+        // ?g is not bound within GRAPH ?g (18.5), so moving the FILTER inside would change the results.
+        const ast = parser.parse(`SELECT * WHERE { GRAPH ?g { ?s ?p ?o } FILTER(?o = ${tripleTerm}) }`);
+        const query = generator.generate(toAst(toAlgebra(ast, { quads: true })));
+        expect(query).toBe(`SELECT ?g ?o ?p ?s WHERE {
+  GRAPH ?g {
+    ?s ?p ?o .
+  }
+  FILTER ( ( ?o = ${tripleTerm} ) )
+}`);
+      });
+    }
   });
 });

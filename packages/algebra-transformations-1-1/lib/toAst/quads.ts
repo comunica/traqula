@@ -28,6 +28,20 @@ function wrapInGraph(AF: AlgebraFactory, op: Algebra.Operation, graph: RDF.Named
 }
 
 /**
+ * Whether the term is the variable, or a triple term containing it.
+ * @param term the term to search.
+ * @param variable the variable to find.
+ * @return whether the variable occurs in the term.
+ */
+function termMentionsVariable(term: RDF.Term, variable: RDF.Variable): boolean {
+  if (term.termType === 'Quad') {
+    return [ term.subject, term.predicate, term.object, term.graph ]
+      .some(component => termMentionsVariable(component, variable));
+  }
+  return term.termType === 'Variable' && term.value === variable.value;
+}
+
+/**
  * Whether the expression mentions the variable, ignoring EXISTS patterns.
  */
 function mentionsVariable(expression: Algebra.Expression, variable: RDF.Variable): boolean {
@@ -35,7 +49,7 @@ function mentionsVariable(expression: Algebra.Expression, variable: RDF.Variable
   visitOperationSub(expression, {}, { [types.EXPRESSION]: {
     [eTypes.EXISTENCE]: { preVisitor: () => ({ continue: false }) },
     [eTypes.TERM]: { preVisitor: (term) => {
-      found = term.term.termType === 'Variable' && term.term.value === variable.value;
+      found = termMentionsVariable(term.term, variable);
       return { shortcut: found };
     } },
   }});

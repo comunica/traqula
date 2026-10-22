@@ -46,7 +46,8 @@ describe('algebraUtils.knownKeysAllowlist', () => {
   });
 
   it('lets toAst skip cyclic unknown keys, like the metadata Comunica adds to operations', ({ expect }) => {
-    const metadata: Record<string, unknown> = {};
+    // Typed, so traversals that only step into typed objects would follow it too
+    const metadata: Record<string, unknown> = { type: 'metadata' };
     metadata.self = metadata;
     const addMetadata = Object.fromEntries(Object.keys(algebraUtils.knownKeysAllowlist)
       .map(type => [ type, { transform: (copy: object) => ({ ...copy, metadata }) }]));

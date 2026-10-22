@@ -101,6 +101,17 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
   }
 
   /**
+   * The keys a traversal may visit in the given object, from the default of its node type or else the default context.
+   * Lets traversals that do not use this transformer, like hand-written ones, respect its allowlists too.
+   * @param object the object to visit the keys of.
+   * @return the keys that may be visited, or undefined when all keys may be visited.
+   */
+  public visitOnlyKeysOf(object: object): VisitContext['visitOnlyKeys'] {
+    const type = (<Partial<Typed<Nodes['type']>>> object).type;
+    return (type ? this.defaultNodePreVisitor[type]?.visitOnlyKeys : undefined) ?? this.defaultContext.visitOnlyKeys;
+  }
+
+  /**
    * Transform a single node ({@link Typed}).
    * @param startObject the object from which we will start the transformation,
    *   potentially visiting and transforming its descendants along the way.

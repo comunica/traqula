@@ -1560,4 +1560,12 @@ describe('visitOnlyKnownKeys', () => {
     });
     expect(visited).toEqual([ 'inCrate', 'inWrapper' ]);
   });
+
+  it('tells which keys of an object may be visited', ({ expect }) => {
+    const strict = new TransformerTyped<Apple | Crate>({ visitOnlyKeys: new Set() }, knownKeys);
+    expect(strict.visitOnlyKeysOf({ type: 'apple' })).toEqual(new Set([ 'core' ]));
+    expect(strict.visitOnlyKeysOf({ type: 'pear' })).toEqual(new Set());
+    expect(strict.visitOnlyKeysOf({ untyped: true })).toEqual(new Set());
+    expect(new TransformerTyped<Apple | Crate>().visitOnlyKeysOf({ type: 'apple' })).toBeUndefined();
+  });
 });

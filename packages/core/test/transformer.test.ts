@@ -475,6 +475,49 @@ describe('transformerObject stack overflow', () => {
     const nested = { a: { b: 'deep' }};
     expect(() => tiny.visitObject(nested, () => {})).toThrow(/Transform object stack overflowed/u);
   });
+
+  // A cycle keeps the frontier at one node, so only the ancestor chain can overflow.
+  class SmallStackTransformer extends TransformerObject {
+    protected override readonly maxStackSize = 100;
+  }
+  const cyclic: Record<string, unknown> = {};
+  cyclic.self = cyclic;
+
+  it('transformObject throws on a cyclic object', ({ expect }) => {
+    const small = new SmallStackTransformer();
+    expect(() => small.transformObject(cyclic, x => x)).toThrow(/Transform object stack overflowed/u);
+  });
+
+  it('transformObjectAsync rejects on a cyclic object', async({ expect }) => {
+    const small = new SmallStackTransformer();
+    await expect(small.transformObjectAsync(cyclic, async x => x, async() => ({})))
+      .rejects.toThrow(/Transform object stack overflowed/u);
+  });
+
+  it('visitObject throws on a cyclic object', ({ expect }) => {
+    const small = new SmallStackTransformer();
+    expect(() => small.visitObject(cyclic, () => {})).toThrow(/Transform object stack overflowed/u);
+  });
+
+  it('visitObjectAsync rejects on a cyclic object', async({ expect }) => {
+    const small = new SmallStackTransformer();
+    await expect(small.visitObjectAsync(cyclic, async() => {}, async() => ({})))
+      .rejects.toThrow(/Transform object stack overflowed/u);
+  });
+
+  it('handles an acyclic chain as deep as maxStackSize', ({ expect }) => {
+    const small = new SmallStackTransformer();
+    let chain: Record<string, unknown> = {};
+    for (let depth = 1; depth < 100; depth++) {
+      chain = { child: chain };
+    }
+    let visitedCount = 0;
+    small.visitObject(chain, () => {
+      visitedCount++;
+    });
+    expect(visitedCount).toBe(100);
+    expect(small.transformObject(chain, x => x)).toEqual(chain);
+  });
 });
 
 describe('transformerObject array with null/primitive elements', () => {

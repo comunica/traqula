@@ -1,7 +1,5 @@
 import { describe, it, expectTypeOf } from 'vitest';
 import type {
-  AllObjectKeys,
-  CanHoldObject,
   KnownNodeKeys,
   ObjectKeyHint,
   TransformContext,
@@ -9,6 +7,7 @@ import type {
   TransformerTyped,
   VisitContext,
 } from '../lib/index.js';
+import type { CanHoldObject } from '../lib/transformers/TransformerTyped.js';
 
 interface Pattern {
   type: 'pattern';
@@ -66,14 +65,10 @@ describe('transformer', () => {
       expectTypeOf<HintedKeys<DefaultNodeContexts['pattern']>>().toEqualTypeOf<ObjectKeyHint<Pattern>>();
     });
 
-    it('requires known node keys to list exactly all keys', () => {
-      expectTypeOf<AllObjectKeys<Nodes>>().toEqualTypeOf<'type' | 'subject' | 'predicate' | 'subType' | 'value'>();
-      expectTypeOf<{ pattern: { type: false; subject: true }}>().not.toExtend<KnownNodeKeys<Pattern>>();
-    });
-
-    it('requires known node keys to map exactly the keys that can hold objects to true', () => {
-      expectTypeOf<KnownNodeKeys<Nodes>['pattern']>().toEqualTypeOf<{ type: false; subject: true; predicate: true }>();
-      expectTypeOf<KnownNodeKeys<Nodes>['term']>().toEqualTypeOf<{ type: false; subType: false; value: false }>();
+    it('requires known node keys to list exactly the keys that can hold objects', () => {
+      expectTypeOf<KnownNodeKeys<Nodes>['pattern']>().toEqualTypeOf<{ subject: true; predicate: true }>();
+      expectTypeOf<KnownNodeKeys<Nodes>['term']>().toEqualTypeOf<Record<string, never>>();
+      expectTypeOf<{ pattern: { subject: true }}>().not.toExtend<KnownNodeKeys<Pattern>>();
       expectTypeOf<CanHoldObject<string | undefined>>().toEqualTypeOf<false>();
       expectTypeOf<CanHoldObject<() => boolean>>().toEqualTypeOf<false>();
       expectTypeOf<CanHoldObject<string | string[]>>().toEqualTypeOf<true>();

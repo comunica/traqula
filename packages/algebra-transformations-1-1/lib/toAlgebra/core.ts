@@ -26,8 +26,7 @@ export interface AlgebraContext {
 }
 
 /**
- * The transformers the rules traverse with,
- * e.g. ones using `astKnownKeysAllowlist` and `algebraUtils.knownKeysAllowlist` to skip unknown keys.
+ * The transformers the rules traverse with, e.g. ones using known keys allowlists to skip unknown keys.
  */
 export interface TransformerConfigs {
   /**
@@ -39,6 +38,11 @@ export interface TransformerConfigs {
    */
   algebraTransformer?: TransformerSubTyped<Algebra.Operation>;
 }
+
+/**
+ * The algebra transformer of the contexts that are given none, shared since transformers are stateless.
+ */
+export const defaultAlgebraTransformer = algebraTransformer({});
 
 export interface ContextConfigs extends TransformerConfigs {
   dataFactory?: RDF.DataFactory<RDF.BaseQuad> & { variable: Function };
@@ -59,7 +63,7 @@ export function createAlgebraContext(config: ContextConfigs): AlgebraContext {
     varCount: 0,
     useQuads: false,
     transformer: config.astTransformer ?? new AstTransformer(),
-    algebraTransformer: config.algebraTransformer ?? algebraTransformer({}),
+    algebraTransformer: config.algebraTransformer ?? defaultAlgebraTransformer,
     astFactory: new AstFactory(),
     dataFactory,
     algebraFactory: new AlgebraFactory(dataFactory),

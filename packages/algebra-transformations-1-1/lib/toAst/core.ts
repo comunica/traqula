@@ -5,8 +5,7 @@ import { AstFactory, AstTransformer } from '@traqula/rules-sparql-1-1';
 import * as Algebra from '../algebra.js';
 import { AlgebraFactory } from '../algebraFactory.js';
 import type { TransformerConfigs } from '../toAlgebra/index.js';
-import { types } from '../toAlgebra/index.js';
-import { algebraTransformer } from '../util.js';
+import { defaultAlgebraTransformer, types } from '../toAlgebra/index.js';
 
 export interface AstContext {
   /**
@@ -63,7 +62,7 @@ export function createAstContext(config: TransformerConfigs = {}): AstContext {
     algebraFactory: new AlgebraFactory(),
     astFactory: new AstFactory(),
     transformer: config.astTransformer ?? new AstTransformer(),
-    algebraTransformer: config.algebraTransformer ?? algebraTransformer({}),
+    algebraTransformer: config.algebraTransformer ?? defaultAlgebraTransformer,
   };
 }
 

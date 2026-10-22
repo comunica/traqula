@@ -15,8 +15,8 @@ import type {
   TermVariable,
 } from '@traqula/rules-sparql-1-1';
 import type { Algebra } from '../index.js';
-import { isTerm, isVariable, types, typeVals } from '../toAlgebra/index.js';
-import { inScopeVariables } from '../util.js';
+import { isTerm, types, typeVals } from '../toAlgebra/index.js';
+import { forEachTermVariable, inScopeVariables } from '../util.js';
 import type { AstIndir } from './core.js';
 import { findAlgGroupBelow, resetContext } from './core.js';
 import { translateAlgExpressionOrOrdering, translateAlgPureExpression } from './expression.js';
@@ -68,19 +68,6 @@ AstIndir<'replaceAggregatorVariables', unknown, [unknown, Record<string, Express
 };
 
 /**
- * Adds the names of the variables in the given term to the given set, also those within quoted triples.
- */
-function addTermVariables(term: RDF.Term, names: Set<string>): void {
-  if (isVariable(term)) {
-    names.add(term.value);
-  } else if (term.termType === 'Quad') {
-    for (const component of [ term.subject, term.predicate, term.object, term.graph ]) {
-      addTermVariables(component, names);
-    }
-  }
-}
-
-/**
  * Collects the names of all variables in the given value, not descending into the given keys of the value itself.
  * The variables are those of the terms the visited operations hold, directly or in an array.
  */
@@ -93,12 +80,11 @@ AstIndir<'collectVariables', Set<string>, [object, Set<string>, string[]?]> = {
       preVisitor: (operation: object) => (operation === value ? { ignoreKeys } : {}),
       visitor: (operation: object) => {
         for (const [ key, child ] of Object.entries(operation)) {
-          if (operation !== value || !ignoreKeys.has(key)) {
-            for (const term of Array.isArray(child) ? child : [ child ]) {
-              if (isTerm(term)) {
-                addTermVariables(term, names);
-              }
-            }
+          if (operation === value && ignoreKeys.has(key)) {
+            continue;
+          }
+          for (const term of [ child ].flat().filter(isTerm)) {
+            forEachTermVariable(term, variable => names.add(variable.value));
           }
         }
       },

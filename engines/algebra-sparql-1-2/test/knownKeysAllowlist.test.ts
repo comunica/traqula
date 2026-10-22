@@ -3,10 +3,13 @@ import { algebraUtils } from '@traqula/algebra-transformations-1-2';
 import { TransformerSubTyped } from '@traqula/core';
 import { Parser } from '@traqula/parser-sparql-1-2';
 import { AstTransformer, astKnownKeysAllowlist } from '@traqula/rules-sparql-1-2';
+import type { AlgebraTestSuite } from '@traqula/test-utils';
 import { sparqlAlgebraTests } from '@traqula/test-utils';
 import { describe, it, vi } from 'vitest';
 import { toAlgebra, toAst } from '../lib/index.js';
-import { suites } from './extraCoverage.test.js';
+
+// Not imported from a test file, which would register its tests here too
+const suites: AlgebraTestSuite[] = [ 'dawg-syntax', 'sparql11-query', 'sparql-1.1', 'sparql12' ];
 
 describe('algebraUtils.knownKeysAllowlist', () => {
   const unrestricted = new TransformerSubTyped<Algebra.Operation>();

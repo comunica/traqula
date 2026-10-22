@@ -36,13 +36,15 @@ function mentionsVariable(
   variable: RDF.Variable,
 ): boolean {
   let found = false;
-  algebraTransformer.visitNodeSpecific(expression, {}, { [types.EXPRESSION]: {
-    [eTypes.EXISTENCE]: { preVisitor: () => ({ continue: false }) },
-    [eTypes.TERM]: { preVisitor: (term) => {
-      found = term.term.termType === 'Variable' && term.term.value === variable.value;
-      return { shortcut: found };
-    } },
-  }});
+  algebraTransformer.visitNode(expression, { [types.EXPRESSION]: { preVisitor: (operation) => {
+    if (operation.subType === eTypes.EXISTENCE) {
+      return { continue: false };
+    }
+    if (operation.subType === eTypes.TERM) {
+      found = operation.term.termType === 'Variable' && operation.term.value === variable.value;
+    }
+    return { shortcut: found };
+  } }});
   return found;
 }
 

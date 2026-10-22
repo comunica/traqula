@@ -263,16 +263,10 @@ export class TransformerObject {
           const val = (<Record<string, unknown>> copy)[key];
 
           // If shallow copy required, do
-          const onlyShallow = shallowKeys && shallowKeys?.has(key);
-          if (onlyShallow) {
+          if (shallowKeys && shallowKeys?.has(key)) {
             // Do not add stack entry - assign straight away
             (<Record<string, unknown>> copy)[key] = this.cloneObj(val);
-          }
-          if (isKeyIgnored(key, ignoreKeys, visitOnlyKeys)) {
-            // Do not add stack entry
-            continue;
-          }
-          if (!onlyShallow && val !== null && typeof val === 'object') {
+          } else if (val !== null && typeof val === 'object' && !isKeyIgnored(key, ignoreKeys, visitOnlyKeys)) {
             // Do add stack entry.
             stack.push(val);
             stackParentKey.push(key);
@@ -620,11 +614,8 @@ export class TransformerObject {
           if (!Object.hasOwn(curObject, key)) {
             continue;
           }
-          if (isKeyIgnored(key, ignoreKeys, visitOnlyKeys)) {
-            continue;
-          }
           const val = (<Record<string, unknown>> curObject)[key];
-          if (val && typeof val === 'object') {
+          if (val && typeof val === 'object' && !isKeyIgnored(key, ignoreKeys, visitOnlyKeys)) {
             stack.push(val);
           }
         }

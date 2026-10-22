@@ -47,20 +47,12 @@ export function algebraTransformer(defaultContext: TransformContext): Transforme
  * Contexts per operation type that only visit the known keys that can hold objects, see {@link visitOnlyKnownKeys}.
  */
 export const knownKeysAllowlist = visitOnlyKnownKeys<A.Operation>({
-  [Types.ASK]: { type: false, subType: false, input: true },
-  [Types.BGP]: { type: false, subType: false, patterns: true },
-  [Types.CONSTRUCT]: { type: false, subType: false, input: true, template: true },
-  [Types.DESCRIBE]: { type: false, subType: false, input: true, terms: true },
-  [Types.DISTINCT]: { type: false, subType: false, input: true },
+  [Types.ASK]: { input: true },
+  [Types.BGP]: { patterns: true },
+  [Types.CONSTRUCT]: { input: true, template: true },
+  [Types.DESCRIBE]: { input: true, terms: true },
+  [Types.DISTINCT]: { input: true },
   [Types.EXPRESSION]: {
-    type: false,
-    subType: false,
-    distinct: false,
-    operator: false,
-    aggregator: false,
-    separator: false,
-    not: false,
-    aggregate: false,
     input: true,
     name: true,
     variable: true,
@@ -69,51 +61,41 @@ export const knownKeysAllowlist = visitOnlyKnownKeys<A.Operation>({
     wildcard: true,
     term: true,
   },
-  [Types.EXTEND]: { type: false, subType: false, input: true, variable: true, expression: true },
-  [Types.FILTER]: { type: false, subType: false, input: true, expression: true },
-  [Types.FROM]: { type: false, subType: false, input: true, default: true, named: true },
-  [Types.GRAPH]: { type: false, subType: false, input: true, name: true },
-  [Types.GROUP]: { type: false, subType: false, input: true, variables: true, aggregates: true },
-  [Types.JOIN]: { type: false, subType: false, input: true },
-  [Types.LEFT_JOIN]: { type: false, subType: false, input: true, expression: true },
-  [Types.MINUS]: { type: false, subType: false, input: true, graphScopeVar: true },
-  [Types.NOP]: { type: false, subType: false },
-  [Types.ORDER_BY]: { type: false, subType: false, input: true, expressions: true },
-  [Types.PATTERN]: {
-    type: false,
-    subType: false,
-    value: false,
-    equals: false,
-    termType: false,
-    object: true,
-    subject: true,
-    predicate: true,
-    graph: true,
-  },
-  [Types.PROJECT]: { type: false, subType: false, input: true, variables: true },
-  [Types.REDUCED]: { type: false, subType: false, input: true },
-  [Types.SERVICE]: { type: false, subType: false, silent: false, input: true, name: true },
-  [Types.SLICE]: { type: false, subType: false, length: false, start: false, input: true },
-  [Types.UNION]: { type: false, subType: false, input: true },
-  [Types.VALUES]: { type: false, subType: false, bindings: true, variables: true },
-  [Types.COMPOSITE_UPDATE]: { type: false, subType: false, updates: true },
-  [Types.DELETE_INSERT]: { type: false, subType: false, where: true, delete: true, insert: true },
-  [Types.LOAD]: { type: false, subType: false, silent: false, source: true, destination: true },
-  [Types.CLEAR]: { type: false, subType: false, silent: false, source: true },
-  [Types.CREATE]: { type: false, subType: false, silent: false, source: true },
-  [Types.DROP]: { type: false, subType: false, silent: false, source: true },
-  [Types.ADD]: { type: false, subType: false, silent: false, source: true, destination: true },
-  [Types.MOVE]: { type: false, subType: false, silent: false, source: true, destination: true },
-  [Types.COPY]: { type: false, subType: false, silent: false, source: true, destination: true },
-  [Types.PATH]: { type: false, subType: false, object: true, subject: true, predicate: true, graph: true },
-  [Types.ALT]: { type: false, subType: false, input: true },
-  [Types.INV]: { type: false, subType: false, path: true },
-  [Types.LINK]: { type: false, subType: false, iri: true },
-  [Types.ONE_OR_MORE_PATH]: { type: false, subType: false, path: true },
-  [Types.SEQ]: { type: false, subType: false, input: true },
-  [Types.NPS]: { type: false, subType: false, iris: true },
-  [Types.ZERO_OR_MORE_PATH]: { type: false, subType: false, path: true },
-  [Types.ZERO_OR_ONE_PATH]: { type: false, subType: false, path: true },
+  [Types.EXTEND]: { input: true, variable: true, expression: true },
+  [Types.FILTER]: { input: true, expression: true },
+  [Types.FROM]: { input: true, default: true, named: true },
+  [Types.GRAPH]: { input: true, name: true },
+  [Types.GROUP]: { input: true, variables: true, aggregates: true },
+  [Types.JOIN]: { input: true },
+  [Types.LEFT_JOIN]: { input: true, expression: true },
+  [Types.MINUS]: { input: true, graphScopeVar: true },
+  [Types.NOP]: {},
+  [Types.ORDER_BY]: { input: true, expressions: true },
+  [Types.PATTERN]: { object: true, subject: true, predicate: true, graph: true },
+  [Types.PROJECT]: { input: true, variables: true },
+  [Types.REDUCED]: { input: true },
+  [Types.SERVICE]: { input: true, name: true },
+  [Types.SLICE]: { input: true },
+  [Types.UNION]: { input: true },
+  [Types.VALUES]: { bindings: true, variables: true },
+  [Types.COMPOSITE_UPDATE]: { updates: true },
+  [Types.DELETE_INSERT]: { where: true, delete: true, insert: true },
+  [Types.LOAD]: { source: true, destination: true },
+  [Types.CLEAR]: { source: true },
+  [Types.CREATE]: { source: true },
+  [Types.DROP]: { source: true },
+  [Types.ADD]: { source: true, destination: true },
+  [Types.MOVE]: { source: true, destination: true },
+  [Types.COPY]: { source: true, destination: true },
+  [Types.PATH]: { object: true, subject: true, predicate: true, graph: true },
+  [Types.ALT]: { input: true },
+  [Types.INV]: { path: true },
+  [Types.LINK]: { iri: true },
+  [Types.ONE_OR_MORE_PATH]: { path: true },
+  [Types.SEQ]: { input: true },
+  [Types.NPS]: { iris: true },
+  [Types.ZERO_OR_MORE_PATH]: { path: true },
+  [Types.ZERO_OR_ONE_PATH]: { path: true },
 });
 
 /**
@@ -461,6 +443,21 @@ export function objectify(algebra: any): any {
 }
 
 /**
+ * Calls the callback on every variable of a term, also on those within quoted triples.
+ * @param term the term to find the variables of.
+ * @param callback called on every variable found.
+ */
+export function forEachTermVariable(term: RDF.Term, callback: (variable: RDF.Variable) => void): void {
+  if (term.termType === 'Variable') {
+    callback(term);
+  } else if (term.termType === 'Quad') {
+    for (const component of [ term.subject, term.predicate, term.object, term.graph ]) {
+      forEachTermVariable(component, callback);
+    }
+  }
+}
+
+/**
  * Detects all [in-scope variables](https://www.w3.org/TR/sparql12-query/#variableScope).
  * In practice this means iterating through the entire algebra tree, finding all variables,
  * and stopping at every operation that hides the variables of its input:
@@ -485,35 +482,6 @@ export function inScopeVariables(
 
   function addVariable(v: RDF.Variable): void {
     variables[v.value] = v;
-  }
-
-  function recurseTerm(quad: RDF.BaseQuad): void {
-    // Subject
-    if (quad.subject.termType === 'Variable') {
-      addVariable(quad.subject);
-    } else if (quad.subject.termType === 'Quad') {
-      recurseTerm(quad.subject);
-    }
-    // Predicate
-    if (quad.predicate.termType === 'Variable') {
-      addVariable(quad.predicate);
-    } else if (quad.predicate.termType === 'Quad') {
-      recurseTerm(quad.predicate);
-    }
-    // Object
-    if (quad.object.termType === 'Variable') {
-      addVariable(quad.object);
-    } else if (quad.object.termType === 'Quad') {
-      recurseTerm(quad.object);
-    }
-
-    // Graph
-    if (quad.graph.termType === 'Variable') {
-      addVariable(quad.graph);
-    }
-    if (quad.graph.termType === 'Quad') {
-      recurseTerm(quad.graph);
-    }
   }
 
   function visitingRecursion(curOp: A.BaseOperation): void {
@@ -555,26 +523,12 @@ export function inScopeVariables(
         },
       },
       [Types.PATH]: { visitor: (op) => {
-        // Subject
-        if (op.subject.termType === 'Variable') {
-          addVariable(op.subject);
-        } else if (op.subject.termType === 'Quad') {
-          recurseTerm(op.subject);
-        }
-        // Predicate
-        if (op.object.termType === 'Variable') {
-          addVariable(op.object);
-        } else if (op.object.termType === 'Quad') {
-          recurseTerm(op.object);
-        }
-        // Object
-        if (op.graph.termType === 'Variable') {
-          addVariable(op.graph);
-        } else if (op.graph.termType === 'Quad') {
-          recurseTerm(op.graph);
+        // The predicate of a path is a path operation, not a term
+        for (const term of [ op.subject, op.object, op.graph ]) {
+          forEachTermVariable(term, addVariable);
         }
       } },
-      [Types.PATTERN]: { visitor: op => recurseTerm(op) },
+      [Types.PATTERN]: { visitor: op => forEachTermVariable(op, addVariable) },
       [Types.PROJECT]: {
         preVisitor: () => ({ continue: false }),
         visitor: (op) => {

@@ -43,8 +43,7 @@ export interface SparqlContext {
    */
   namedAggregatorCallback?: (iri: string) => boolean;
   /**
-   * Transformer the validations traverse the AST with, e.g. one using {@link astKnownKeysAllowlist}.
-   * Defaults to an {@link AstTransformer} that visits all keys.
+   * Transformer the validations traverse the AST with. Defaults to an {@link AstTransformer} that visits all keys.
    */
   astTransformer?: AstTransformer;
   /**

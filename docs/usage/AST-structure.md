@@ -148,11 +148,11 @@ use a known keys allowlist as the default per node type instead:
 or `algebraUtils.knownKeysAllowlist` for the algebra.
 Nodes of a known type then only visit their known keys that can hold objects, so they are traversed as without it,
 while other objects are still fully visited.
-The compiler checks that an allowlist lists every key of every node type,
-and maps exactly the keys that can hold objects to `true`.
+The compiler checks that an allowlist lists exactly the keys of each node type that can hold objects.
+The `*Specific` methods of a transformer do not use these per type defaults yet.
 
-The parser, `toAlgebra`, and `toAst` traverse with the transformers you give them.
-The generator does not traverse, so it takes none.
+The rules of the parser, `toAlgebra`, and `toAst` that call a transformer use the ones you give them.
+The generator calls none, so it takes none.
 
 ```typescript
 import { toAlgebra, toAst } from '@traqula/algebra-sparql-1-1';

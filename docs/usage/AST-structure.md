@@ -142,18 +142,30 @@ Keep in mind that:
 - objects without a `type`, like the rows of a `VALUES` clause, also get the default context,
   so the nodes within them are not visited unless you allow them.
 
-To only skip the keys Traqula does not know, like keys added by an extension,
+To only skip the keys Traqula does not know, like keys added by an extension or the metadata of an engine,
 use a known keys allowlist as the default per node type instead:
 `astKnownKeysAllowlist` of `@traqula/rules-sparql-1-1` and `@traqula/rules-sparql-1-2`,
 or `algebraUtils.knownKeysAllowlist` for the algebra.
-Nodes of a known type then only visit their known keys that can hold objects, skipping `loc`,
+Nodes of a known type then only visit their known keys that can hold objects, so they are traversed as without it,
 while other objects are still fully visited.
-The `*Specific` methods of a transformer do not use these per type defaults yet.
+The compiler checks that an allowlist lists every key of every node type,
+and maps exactly the keys that can hold objects to `true`.
+
+The parser, `toAlgebra`, and `toAst` traverse with the transformers you give them.
+The generator does not traverse, so it takes none.
 
 ```typescript
-import { AstTransformer, astKnownKeysAllowlist } from "@traqula/rules-sparql-1-1";
+import { toAlgebra, toAst } from '@traqula/algebra-sparql-1-1';
+import { algebraUtils, Algebra } from '@traqula/algebra-transformations-1-1';
+import { TransformerSubTyped } from '@traqula/core';
+import { Parser } from '@traqula/parser-sparql-1-1';
+import { AstTransformer, astKnownKeysAllowlist } from '@traqula/rules-sparql-1-1';
 
-const transformer = new AstTransformer({}, astKnownKeysAllowlist);
+const astTransformer = new AstTransformer({}, astKnownKeysAllowlist);
+const algebraTransformer = new TransformerSubTyped<Algebra.Operation>({}, algebraUtils.knownKeysAllowlist);
+const ast = new Parser({ defaultContext: { astTransformer }}).parse('SELECT * WHERE { ?s ?p ?o }');
+const algebra = toAlgebra(ast, { astTransformer, algebraTransformer });
+const roundTripped = toAst(algebra, { astTransformer, algebraTransformer });
 ```
 
 ## See Also

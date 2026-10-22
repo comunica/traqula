@@ -1,6 +1,6 @@
 import { AstTransformer, astKnownKeysAllowlist } from '@traqula/rules-sparql-1-1';
 import { positiveTest } from '@traqula/test-utils';
-import { describe, it } from 'vitest';
+import { describe, it, vi } from 'vitest';
 import { Parser } from '../lib/index.js';
 
 describe('astKnownKeysAllowlist', () => {
@@ -36,5 +36,12 @@ describe('astKnownKeysAllowlist', () => {
     const ast = { ...new Parser().parse('SELECT * WHERE { ?s ?p ?o }'), extension };
     expect(visitedNodes(unrestricted, ast)).toContain(extension);
     expect(visitedNodes(allowlisted, ast)).not.toContain(extension);
+  });
+
+  it('validates with the astTransformer of the context', ({ expect }) => {
+    const astTransformer = new AstTransformer({}, astKnownKeysAllowlist);
+    const visitNodeSpecific = vi.spyOn(astTransformer, 'visitNodeSpecific');
+    new Parser({ defaultContext: { astTransformer }}).parse('SELECT * WHERE { ?s ?p _:o }');
+    expect(visitNodeSpecific).toHaveBeenCalled();
   });
 });

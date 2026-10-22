@@ -25,6 +25,7 @@ export function completeParseContext(
     skipValidation: context.skipValidation ?? false,
     rejectGroupedSelectAliasReuse: context.rejectGroupedSelectAliasReuse ?? false,
     namedAggregatorCallback: context.namedAggregatorCallback,
+    astTransformer: context.astTransformer,
   };
 }
 

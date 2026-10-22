@@ -1,8 +1,8 @@
 import type * as RDF from '@rdfjs/types';
+import type { TransformerSubTyped } from '@traqula/core';
 import type { AlgebraFactory } from '../algebraFactory.js';
 import type { Algebra } from '../index.js';
 import { types } from '../toAlgebra/index.js';
-import { visitOperationSub } from '../util.js';
 import type { AstIndir } from './core.js';
 import { eTypes } from './core.js';
 
@@ -30,9 +30,13 @@ function wrapInGraph(AF: AlgebraFactory, op: Algebra.Operation, graph: RDF.Named
 /**
  * Whether the expression mentions the variable, ignoring EXISTS patterns.
  */
-function mentionsVariable(expression: Algebra.Expression, variable: RDF.Variable): boolean {
+function mentionsVariable(
+  algebraTransformer: TransformerSubTyped<Algebra.Operation>,
+  expression: Algebra.Expression,
+  variable: RDF.Variable,
+): boolean {
   let found = false;
-  visitOperationSub(expression, {}, { [types.EXPRESSION]: {
+  algebraTransformer.visitNodeSpecific(expression, {}, { [types.EXPRESSION]: {
     [eTypes.EXISTENCE]: { preVisitor: () => ({ continue: false }) },
     [eTypes.TERM]: { preVisitor: (term) => {
       found = term.term.termType === 'Variable' && term.term.value === variable.value;
@@ -85,7 +89,7 @@ unknown,
 [unknown, (RDF.NamedNode | RDF.DefaultGraph)[], boolean]
 > = {
   name: 'removeQuadsRecursive',
-  fun: ({ SUBRULE }) => ({ algebraFactory: AF }, unknownVal, graphs, projectionScope) => {
+  fun: ({ SUBRULE }) => ({ algebraFactory: AF, algebraTransformer }, unknownVal, graphs, projectionScope) => {
     if (Array.isArray(unknownVal)) {
       return unknownVal.map(sub => SUBRULE(removeAlgQuadsRecursive, sub, graphs, projectionScope));
     }
@@ -186,7 +190,7 @@ unknown,
       ].includes(knownOp.type) ||
         (knownOp.type === types.EXTEND && projectionScope) ||
         (knownOp.type === types.FILTER && onlyGraph?.termType === 'Variable' &&
-          mentionsVariable(knownOp.expression, onlyGraph));
+          mentionsVariable(algebraTransformer, knownOp.expression, onlyGraph));
       if (graphNameSet.length === 1 && !isBoundary) {
         graphs.push(operationGraphNames[graphNameSet[0]]);
       } else if (knownOp.type === types.BGP) {

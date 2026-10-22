@@ -1,8 +1,11 @@
 import type { Algebra } from '@traqula/algebra-transformations-1-2';
 import { algebraUtils } from '@traqula/algebra-transformations-1-2';
 import { TransformerSubTyped } from '@traqula/core';
+import { Parser } from '@traqula/parser-sparql-1-2';
+import { AstTransformer, astKnownKeysAllowlist } from '@traqula/rules-sparql-1-2';
 import { sparqlAlgebraTests } from '@traqula/test-utils';
-import { describe, it } from 'vitest';
+import { describe, it, vi } from 'vitest';
+import { toAlgebra, toAst } from '../lib/index.js';
 import { suites } from './extraCoverage.test.js';
 
 describe('algebraUtils.knownKeysAllowlist', () => {
@@ -37,5 +40,37 @@ describe('algebraUtils.knownKeysAllowlist', () => {
     const operation = { type: 'join', input: [{ type: 'bgp', patterns: []}], extension };
     expect(visitedOperations(unrestricted, operation)).toContain(extension);
     expect(visitedOperations(allowlisted, operation)).not.toContain(extension);
+  });
+
+  it('lets toAst skip cyclic unknown keys, like the metadata Comunica adds to operations', ({ expect }) => {
+    const metadata: Record<string, unknown> = {};
+    metadata.self = metadata;
+    const addMetadata = Object.fromEntries(Object.keys(algebraUtils.knownKeysAllowlist)
+      .map(type => [ type, { transform: (copy: object) => ({ ...copy, metadata }) }]));
+    const transformers = {
+      algebraTransformer: allowlisted,
+      astTransformer: new AstTransformer({}, astKnownKeysAllowlist),
+    };
+    for (const suite of suites) {
+      for (const { name, json } of sparqlAlgebraTests(suite, false, false)) {
+        const operation = <Algebra.Operation> json;
+        const withMetadata = algebraUtils.mapOperation<'unsafe', Algebra.Operation>(operation, addMetadata);
+        expect(toAst(withMetadata, transformers), name).toEqual(toAst(operation));
+      }
+    }
+  });
+
+  it('lets toAlgebra traverse with the given transformers', ({ expect }) => {
+    const astTransformer = new AstTransformer({}, astKnownKeysAllowlist);
+    const algebraTransformer = new TransformerSubTyped<Algebra.Operation>({}, algebraUtils.knownKeysAllowlist);
+    const visitNodeSpecific = vi.spyOn(astTransformer, 'visitNodeSpecific');
+    const transformNode = vi.spyOn(algebraTransformer, 'transformNode');
+    toAlgebra(new Parser().parse('SELECT * WHERE { ?s ?p _:o }'), {
+      blankToVariable: true,
+      astTransformer,
+      algebraTransformer,
+    });
+    expect(visitNodeSpecific).toHaveBeenCalled();
+    expect(transformNode).toHaveBeenCalled();
   });
 });

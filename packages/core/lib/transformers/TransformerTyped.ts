@@ -28,17 +28,31 @@ export type DefaultNodePreVisitor<Nodes extends Typed> =
 export type AllObjectKeys<Obj> = Obj extends unknown ? keyof Obj & string : never;
 
 /**
- * Per node type, all keys its nodes can have, mapped to whether they should be visited.
- * Listing every key lets the compiler check that no key is missing or unknown.
+ * All values a key can have, also when the object is a union of objects.
  */
-export type KnownNodeKeys<Nodes extends Typed> =
-  {[T in Nodes['type']]: Record<AllObjectKeys<Extract<Nodes, Typed<T>>>, boolean> };
+export type AllObjectValues<Obj, Key extends string> =
+  Obj extends unknown ? (Key extends keyof Obj ? Obj[Key] : never) : never;
 
 /**
- * Creates a {@link DefaultNodePreVisitor} that per node type only visits the known keys mapped to `true`.
+ * Whether a value can be an object or array, the only values a transformer traverses into.
+ */
+export type CanHoldObject<Value> = unknown extends Value ? true :
+    [Exclude<Extract<Value, object>, (...args: any[]) => unknown>] extends [never] ? false : true;
+
+/**
+ * Per node type, all keys its nodes can have, mapped to whether they can hold an object.
+ * The compiler checks that no key is missing, unknown, or mapped wrongly.
+ */
+export type KnownNodeKeys<Nodes extends Typed> = {[T in Nodes['type']]: {
+  [Key in AllObjectKeys<Extract<Nodes, Typed<T>>>]: CanHoldObject<AllObjectValues<Extract<Nodes, Typed<T>>, Key>>
+}};
+
+/**
+ * Creates a {@link DefaultNodePreVisitor} that per node type only visits the known keys that can hold objects.
+ * Known keys are thus traversed as without it, while unknown keys, like those added by an extension, are skipped.
  * Objects of other types, and objects without type, are still fully visited.
- * Combining it with an empty default {@link VisitContext.visitOnlyKeys} skips typed nodes within such objects.
- * The `*Specific` methods of {@link TransformerSubTyped} do not use a {@link DefaultNodePreVisitor} yet.
+ * @param knownKeys all keys per node type, mapped to whether they can hold an object.
+ * @return the contexts per node type, to give to a {@link TransformerTyped} or {@link TransformerSubTyped}.
  */
 export function visitOnlyKnownKeys<Nodes extends Typed>(knownKeys: KnownNodeKeys<Nodes>): DefaultNodePreVisitor<Nodes> {
   const contexts: Record<string, TransformContext> = {};

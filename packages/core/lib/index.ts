@@ -30,6 +30,8 @@ export {
   SafeWrap,
   DefaultNodePreVisitor,
   AllObjectKeys,
+  AllObjectValues,
+  CanHoldObject,
   KnownNodeKeys,
   visitOnlyKnownKeys,
 } from './transformers/TransformerTyped.js';

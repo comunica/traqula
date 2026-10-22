@@ -60,6 +60,7 @@ export const knownKeysAllowlist = visitOnlyKnownKeys<A.Operation>({
     aggregator: false,
     separator: false,
     not: false,
+    aggregate: false,
     input: true,
     name: true,
     variable: true,

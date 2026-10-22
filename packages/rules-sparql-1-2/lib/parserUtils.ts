@@ -43,6 +43,7 @@ export function completeParseContext(
     skipValidation: context.skipValidation ?? false,
     rejectGroupedSelectAliasReuse: context.rejectGroupedSelectAliasReuse ?? false,
     namedAggregatorCallback: context.namedAggregatorCallback,
+    astTransformer: context.astTransformer,
     /**
      * @deprecated since it cannot be used for string decoding.
      */
@@ -80,11 +81,11 @@ export class AstTransformer extends TransformerSubTyped<Sparql12Nodes> {}
  * Contexts per node type that only visit the known keys that can hold objects, see {@link visitOnlyKnownKeys}.
  */
 export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql12Nodes>({
-  path: { type: false, subType: false, loc: false, items: true },
+  path: { type: false, subType: false, loc: true, items: true },
   pattern: {
     type: false,
     subType: false,
-    loc: false,
+    loc: true,
     silent: false,
     values: true,
     name: true,
@@ -94,11 +95,11 @@ export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql12Nodes>({
     patterns: true,
     triples: true,
   },
-  update: { type: false, subType: false, loc: false, updates: true },
+  update: { type: false, subType: false, loc: true, updates: true },
   query: {
     type: false,
     subType: false,
-    loc: false,
+    loc: true,
     distinct: false,
     reduced: false,
     values: true,
@@ -109,11 +110,11 @@ export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql12Nodes>({
     where: true,
     variables: true,
   },
-  graphRef: { type: false, subType: false, loc: false, graph: true },
+  graphRef: { type: false, subType: false, loc: true, graph: true },
   updateOperation: {
     type: false,
     subType: false,
-    loc: false,
+    loc: true,
     silent: false,
     data: true,
     source: true,
@@ -124,13 +125,13 @@ export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql12Nodes>({
     delete: true,
     insert: true,
   },
-  datasetClauses: { type: false, subType: false, loc: false, clauses: true },
-  tripleCollection: { type: false, subType: false, loc: false, triples: true, identifier: true },
-  triple: { type: false, subType: false, loc: false, object: true, subject: true, predicate: true, annotations: true },
+  datasetClauses: { type: false, subType: false, loc: true, clauses: true },
+  tripleCollection: { type: false, subType: false, loc: true, triples: true, identifier: true },
+  triple: { type: false, subType: false, loc: true, object: true, subject: true, predicate: true, annotations: true },
   solutionModifier: {
     type: false,
     subType: false,
-    loc: false,
+    loc: true,
     offset: false,
     limit: false,
     having: true,
@@ -140,7 +141,7 @@ export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql12Nodes>({
   expression: {
     type: false,
     subType: false,
-    loc: false,
+    loc: true,
     distinct: false,
     operator: false,
     separator: false,
@@ -149,12 +150,12 @@ export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql12Nodes>({
     args: true,
     expression: true,
   },
-  contextDef: { type: false, subType: false, loc: false, key: false, version: false, value: true },
-  wildcard: { type: false, subType: false, loc: false },
+  contextDef: { type: false, subType: false, loc: true, key: false, version: false, value: true },
+  wildcard: { type: false, subType: false, loc: true },
   term: {
     type: false,
     subType: false,
-    loc: false,
+    loc: true,
     value: false,
     label: false,
     prefix: false,

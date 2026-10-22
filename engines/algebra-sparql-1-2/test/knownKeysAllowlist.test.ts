@@ -2,6 +2,7 @@ import type { Algebra } from '@traqula/algebra-transformations-1-2';
 import { algebraUtils } from '@traqula/algebra-transformations-1-2';
 import { TransformerSubTyped } from '@traqula/core';
 import { Parser } from '@traqula/parser-sparql-1-2';
+import type { QuerySelect } from '@traqula/rules-sparql-1-2';
 import { AstTransformer, astKnownKeysAllowlist } from '@traqula/rules-sparql-1-2';
 import type { AlgebraTestSuite } from '@traqula/test-utils';
 import { sparqlAlgebraTests } from '@traqula/test-utils';
@@ -76,5 +77,15 @@ describe('algebraUtils.knownKeysAllowlist', () => {
     });
     expect(visitNodeSpecific).toHaveBeenCalled();
     expect(transformNode).toHaveBeenCalled();
+  });
+
+  it('lets toAlgebra skip cyclic unknown keys of the AST', ({ expect }) => {
+    const metadata: Record<string, unknown> = { type: 'metadata' };
+    metadata.self = metadata;
+    const ast = <QuerySelect> new Parser().parse('SELECT * WHERE { ?s ?p _:o }');
+    const withMetadata = { ...ast, where: { ...ast.where, metadata }};
+    const astTransformer = new AstTransformer({}, astKnownKeysAllowlist);
+    expect(toAlgebra(withMetadata, { blankToVariable: true, astTransformer }))
+      .toEqual(toAlgebra(ast, { blankToVariable: true }));
   });
 });

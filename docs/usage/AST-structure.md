@@ -149,7 +149,6 @@ or `algebraUtils.knownKeysAllowlist` for the algebra.
 Nodes of a known type then only visit their known keys that can hold objects, so they are traversed as without it,
 while other objects are still fully visited.
 The compiler checks that an allowlist lists exactly the keys of each node type that can hold objects.
-The `*Specific` methods of a transformer do not use these per type defaults yet.
 
 The rules of the parser, `toAlgebra`, and `toAst` that call a transformer use the ones you give them.
 The generator calls none, so it takes none.

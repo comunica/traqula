@@ -22,7 +22,6 @@ import { TransformerTyped } from './TransformerTyped.js';
  * @typeParam Nodes - Union type of all node types this transformer handles.
  */
 export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<Nodes> {
-  // TODO(major): these functions here should care about the default pre visitor provided to the constructor!
   public constructor(
     defaultContext: TransformContext = {},
     defaultNodePreVisitor: DefaultNodePreVisitor<Nodes> = {},
@@ -99,7 +98,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
           ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
         }
       }
-      return ogPreVisit ? ogPreVisit(casted) : {};
+      return this.withNodeDefault(casted, ogPreVisit?.(casted));
     };
     return <any> this.transformObject(startObject, transformWrapper, preVisitWrapper);
   }
@@ -154,7 +153,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
           ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
         }
       }
-      return ogPreVisit ? ogPreVisit(casted) : {};
+      return ogPreVisit ? this.withNodeDefaultAsync(casted, ogPreVisit(casted)) : this.withNodeDefault(casted);
     };
     return <any> this.transformObjectAsync(startObject, transformWrapper, preVisitWrapper);
   }
@@ -206,7 +205,9 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
           ogPreTransform = nodeCallBacks[casted.type];
         }
       }
-      return ogPreTransform ? ogPreTransform(copy, orig) : { newValue: copy };
+      return this.withNodeDefault(copy, ogPreTransform ?
+        ogPreTransform(copy, orig) :
+          { newValue: copy, reTransform: false });
     };
     return <any> this.transformObjectPreOrder(startObject, preTransformWrapper);
   }
@@ -242,7 +243,9 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
           ogPreTransform = nodeCallBacks[casted.type];
         }
       }
-      return ogPreTransform ? ogPreTransform(copy, orig) : { newValue: copy };
+      return ogPreTransform ?
+        this.withNodeDefaultAsync(copy, ogPreTransform(copy, orig)) :
+        this.withNodeDefault(copy, { newValue: copy, reTransform: false });
     };
     return <any> this.transformObjectPreOrderAsync(startObject, preTransformWrapper);
   }
@@ -307,7 +310,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
           ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
         }
       }
-      return ogPreVisit ? ogPreVisit(casted) : {};
+      return this.withNodeDefault(casted, ogPreVisit?.(casted));
     };
     this.visitObject(startObject, visitWrapper, preVisitWrapper);
   }
@@ -358,7 +361,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
           ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
         }
       }
-      return ogPreVisit ? ogPreVisit(casted) : {};
+      return ogPreVisit ? this.withNodeDefaultAsync(casted, ogPreVisit(casted)) : this.withNodeDefault(casted);
     };
     return this.visitObjectAsync(startObject, visitWrapper, preVisitWrapper);
   }

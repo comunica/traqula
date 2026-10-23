@@ -182,7 +182,8 @@ export class TransformerObject {
     //     The frontier returning to this value means i's subtree is done.
     //   mapperParent/Key[i]  - where postMapper's return value goes (may differ from the copy, hence a separate write)
     // M is the current ancestor chain, so M <= nesting depth and is usually far
-    // below S. Watermarks are non-decreasing bottom-to-top; a match at the top
+    // below S. maxStackSize bounds M too, capping depth so a cycle overflows instead of growing without bound.
+    // Watermarks are non-decreasing bottom-to-top; a match at the top
     // flushes and cascades to the parent.
     const handleMapperOnLen: number[] = [];
     const mapperCopyStack: object[] = [];
@@ -257,7 +258,7 @@ export class TransformerObject {
 
     // The loop is wrapped so it can return at a suspension point and be called again to resume.
     const wrappedExecutionLoop = (): unknown => {
-      while (stack.length > 0 && stack.length < this.maxStackSize) {
+      while (stack.length > 0 && stack.length < this.maxStackSize && handleMapperOnLen.length < this.maxStackSize) {
         const curObject = stack.pop()!;
         const curParent = stackParent.pop()!;
         const curKey = stackParentKey.pop()!;
@@ -303,7 +304,7 @@ export class TransformerObject {
           return pending.then(wrappedExecutionLoop);
         }
       }
-      if (stack.length >= this.maxStackSize) {
+      if (stack.length >= this.maxStackSize || handleMapperOnLen.length >= this.maxStackSize) {
         throw new Error('Transform object stack overflowed');
       }
       return resultWrap.res;
@@ -557,6 +558,7 @@ export class TransformerObject {
     //     The frontier returning to this value means i's subtree is done, so i can be visited.
     //   visitorStack[i]       - the node to hand to the visitor
     // M is the current ancestor chain, so M <= nesting depth and is usually far below S.
+    // maxStackSize bounds M too, capping depth so a cycle overflows instead of growing without bound.
     const handleVisitorOnLen: number[] = [];
     const visitorStack: object[] = [];
 
@@ -602,7 +604,7 @@ export class TransformerObject {
 
     // The loop is wrapped so it can return at a suspension point and be called again to resume.
     const wrappedExecutionLoop = (): unknown => {
-      while (stack.length > 0 && stack.length < this.maxStackSize) {
+      while (stack.length > 0 && stack.length < this.maxStackSize && handleVisitorOnLen.length < this.maxStackSize) {
         const curObject = stack.pop()!;
 
         if (!didShortCut) {
@@ -636,7 +638,7 @@ export class TransformerObject {
           return pending.then(wrappedExecutionLoop);
         }
       }
-      if (stack.length >= this.maxStackSize) {
+      if (stack.length >= this.maxStackSize || handleVisitorOnLen.length >= this.maxStackSize) {
         throw new Error('Transform object stack overflowed');
       }
       return undefined;

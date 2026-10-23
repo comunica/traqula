@@ -476,34 +476,48 @@ describe('transformerObject stack overflow', () => {
     expect(() => tiny.visitObject(nested, () => {})).toThrow(/Transform object stack overflowed/u);
   });
 
-  // A cycle keeps the frontier at one node, so only the ancestor chain can overflow.
+  // When the back-edge is the last child popped, no sibling is left pending,
+  // so the frontier stays bounded and only the ancestor chain can overflow.
   class SmallStackTransformer extends TransformerObject {
     protected override readonly maxStackSize = 100;
   }
-  const cyclic: Record<string, unknown> = {};
-  cyclic.self = cyclic;
+  const selfCycle: Record<string, unknown> = {};
+  selfCycle.self = selfCycle;
+  // `leaf` is pushed last, so it is popped and drained before the back-edge is followed.
+  const selfCycleWithLeaf: Record<string, unknown> = {};
+  selfCycleWithLeaf.self = selfCycleWithLeaf;
+  selfCycleWithLeaf.leaf = {};
+  const twoObjectCycle: Record<string, unknown> = {};
+  twoObjectCycle.other = { back: twoObjectCycle };
+  const cycles: [string, object][] = [
+    [ 'a self-referencing object', selfCycle ],
+    [ 'a self-reference with an acyclic sibling', selfCycleWithLeaf ],
+    [ 'a cycle through two objects', twoObjectCycle ],
+  ];
 
-  it('transformObject throws on a cyclic object', ({ expect }) => {
-    const small = new SmallStackTransformer();
-    expect(() => small.transformObject(cyclic, x => x)).toThrow(/Transform object stack overflowed/u);
-  });
+  for (const [ name, cyclic ] of cycles) {
+    it(`transformObject throws on ${name}`, ({ expect }) => {
+      const small = new SmallStackTransformer();
+      expect(() => small.transformObject(cyclic, x => x)).toThrow(/Transform object stack overflowed/u);
+    });
 
-  it('transformObjectAsync rejects on a cyclic object', async({ expect }) => {
-    const small = new SmallStackTransformer();
-    await expect(small.transformObjectAsync(cyclic, async x => x, async() => ({})))
-      .rejects.toThrow(/Transform object stack overflowed/u);
-  });
+    it(`transformObjectAsync rejects on ${name}`, async({ expect }) => {
+      const small = new SmallStackTransformer();
+      await expect(small.transformObjectAsync(cyclic, async x => x, async() => ({})))
+        .rejects.toThrow(/Transform object stack overflowed/u);
+    });
 
-  it('visitObject throws on a cyclic object', ({ expect }) => {
-    const small = new SmallStackTransformer();
-    expect(() => small.visitObject(cyclic, () => {})).toThrow(/Transform object stack overflowed/u);
-  });
+    it(`visitObject throws on ${name}`, ({ expect }) => {
+      const small = new SmallStackTransformer();
+      expect(() => small.visitObject(cyclic, () => {})).toThrow(/Transform object stack overflowed/u);
+    });
 
-  it('visitObjectAsync rejects on a cyclic object', async({ expect }) => {
-    const small = new SmallStackTransformer();
-    await expect(small.visitObjectAsync(cyclic, async() => {}, async() => ({})))
-      .rejects.toThrow(/Transform object stack overflowed/u);
-  });
+    it(`visitObjectAsync rejects on ${name}`, async({ expect }) => {
+      const small = new SmallStackTransformer();
+      await expect(small.visitObjectAsync(cyclic, async() => {}, async() => ({})))
+        .rejects.toThrow(/Transform object stack overflowed/u);
+    });
+  }
 
   it('handles an acyclic chain as deep as maxStackSize', ({ expect }) => {
     const small = new SmallStackTransformer();

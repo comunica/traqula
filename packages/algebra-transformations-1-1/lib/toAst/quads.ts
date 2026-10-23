@@ -1,5 +1,5 @@
 import type * as RDF from '@rdfjs/types';
-import type { TransformerSubTyped } from '@traqula/core';
+import type { IndirDefArg, TransformerSubTyped } from '@traqula/core';
 import type { AlgebraFactory } from '../algebraFactory.js';
 import type { Algebra } from '../index.js';
 import { types } from '../toAlgebra/index.js';
@@ -28,9 +28,21 @@ function wrapInGraph(AF: AlgebraFactory, op: Algebra.Operation, graph: RDF.Named
 }
 
 /**
+ * Whether the term mentions the variable. A SPARQL 1.1 term only does so by being the variable.
+ * @param term the term to search.
+ * @param variable the variable to find.
+ * @return whether the variable occurs in the term.
+ */
+export const algTermMentionsVariable: AstIndir<'termMentionsVariable', boolean, [RDF.Term, RDF.Variable]> = {
+  name: 'termMentionsVariable',
+  fun: () => (_, term, variable) => term.termType === 'Variable' && term.value === variable.value,
+};
+
+/**
  * Whether the expression mentions the variable, ignoring EXISTS patterns.
  */
 function mentionsVariable(
+  SUBRULE: IndirDefArg['SUBRULE'],
   algebraTransformer: TransformerSubTyped<Algebra.Operation>,
   expression: Algebra.Expression,
   variable: RDF.Variable,
@@ -41,7 +53,7 @@ function mentionsVariable(
       return { continue: false };
     }
     if (operation.subType === eTypes.TERM) {
-      found = operation.term.termType === 'Variable' && operation.term.value === variable.value;
+      found = SUBRULE(algTermMentionsVariable, operation.term, variable);
     }
     return { shortcut: found };
   } }});
@@ -193,7 +205,7 @@ unknown,
       ].includes(knownOp.type) ||
         (knownOp.type === types.EXTEND && projectionScope) ||
         (knownOp.type === types.FILTER && onlyGraph?.termType === 'Variable' &&
-          mentionsVariable(algebraTransformer, knownOp.expression, onlyGraph));
+          mentionsVariable(SUBRULE, algebraTransformer, knownOp.expression, onlyGraph));
       if (graphNameSet.length === 1 && !isBoundary) {
         graphs.push(operationGraphNames[graphNameSet[0]]);
       } else if (knownOp.type === types.BGP) {

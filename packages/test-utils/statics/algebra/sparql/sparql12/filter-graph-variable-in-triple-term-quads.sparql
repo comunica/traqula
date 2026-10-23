@@ -1,0 +1,4 @@
+SELECT * WHERE {
+  GRAPH ?g { ?s ?p ?o }
+  FILTER(?o = <<( ?g <http://p> <http://o> )>>)
+}

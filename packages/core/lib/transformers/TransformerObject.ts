@@ -167,12 +167,12 @@ export class TransformerObject {
    * @param postMapper postMapper to transform the various objects - argument is a copy of the original
    * @param preVisitor callback that is evaluated before iterating deeper.
    */
-  public transformObjectAsync(
+  public async transformObjectAsync(
     startObject: object,
     postMapper: (copy: object, orig: object) => Awaitable<unknown>,
     preVisitor: (orig: object) => Awaitable<TransformContext> = () => ({}),
   ): Promise<unknown> {
-    return Promise.resolve(this.runTransformObject(startObject, postMapper, preVisitor, true));
+    return this.runTransformObject(startObject, postMapper, preVisitor, true);
   }
 
   protected runTransformObject(
@@ -208,7 +208,8 @@ export class TransformerObject {
     //     The frontier returning to this value means i's subtree is done.
     //   mapperParent/Key[i]  - where postMapper's return value goes (may differ from the copy, hence a separate write)
     // M is the current ancestor chain, so M <= nesting depth and is usually far
-    // below S. Watermarks are non-decreasing bottom-to-top; a match at the top
+    // below S. maxStackSize bounds M too, capping depth so a cycle overflows instead of growing without bound.
+    // Watermarks are non-decreasing bottom-to-top; a match at the top
     // flushes and cascades to the parent.
     const handleMapperOnLen: number[] = [];
     const mapperCopyStack: object[] = [];
@@ -278,7 +279,7 @@ export class TransformerObject {
 
     // The loop is wrapped so it can return at a suspension point and be called again to resume.
     const wrappedExecutionLoop = (): unknown => {
-      while (stack.length > 0 && stack.length < this.maxStackSize) {
+      while (stack.length > 0 && stack.length < this.maxStackSize && handleMapperOnLen.length < this.maxStackSize) {
         const curObject = stack.pop()!;
         const curParent = stackParent.pop()!;
         const curKey = stackParentKey.pop()!;
@@ -324,7 +325,7 @@ export class TransformerObject {
           return pending.then(wrappedExecutionLoop);
         }
       }
-      if (stack.length >= this.maxStackSize) {
+      if (stack.length >= this.maxStackSize || handleMapperOnLen.length >= this.maxStackSize) {
         throw new Error('Transform object stack overflowed');
       }
       return resultWrap.res;
@@ -374,11 +375,11 @@ export class TransformerObject {
    * @param startObject object to start iterating from
    * @param preMapper mapper to transform the various objects.
    */
-  public transformObjectPreOrderAsync(
+  public async transformObjectPreOrderAsync(
     startObject: object,
     preMapper: (copy: object, orig: object) => Awaitable<PreOrderMappingReturn>,
   ): Promise<unknown> {
-    return Promise.resolve(this.runTransformObjectPreOrder(startObject, preMapper, true));
+    return this.runTransformObjectPreOrder(startObject, preMapper, true);
   }
 
   protected runTransformObjectPreOrder(
@@ -406,6 +407,8 @@ export class TransformerObject {
     //   stackParent[i]       - object to write the mapped value into, under stackParentKey[i]
     //   stackRewriteCount[i] - how many times this position was already handed back (remap/array-wrap),
     //     bounded by maxNodeRewrites so non-converging rules throw instead of looping forever.
+    //   stackDepth[i]        - nesting depth of the position. With no ancestor stack to bound, maxStackSize
+    //     bounds this too, so a cycle overflows instead of growing without bound.
     // Seeded with the root under resultWrap.res. S is the DFS frontier (all unvisited siblings on all
     // levels), not the depth — this is what maxStackSize bounds.
     const stack = [ startObject ];
@@ -413,8 +416,9 @@ export class TransformerObject {
     const stackParentKey: string[] = [ 'res' ];
     // Counts for ech object how many times it has been rewritten
     const stackRewriteCount: number[] = [ 0 ];
+    const stackDepth: number[] = [ 0 ];
 
-    function pushArrayOnStack(array: unknown[], rewriteCount: number): void {
+    function pushArrayOnStack(array: unknown[], rewriteCount: number, depth: number): void {
       // Register all containing objects in the stack to be handled.
       // The elements inherit the count of the array: an array is not mapped as a whole, so it does not
       // settle the position it takes, a rule wrapping its argument in one has to keep climbing.
@@ -425,6 +429,7 @@ export class TransformerObject {
           stackParent.push(array);
           stackParentKey.push(index.toString());
           stackRewriteCount.push(rewriteCount);
+          stackDepth.push(depth + 1);
         }
       }
     }
@@ -434,6 +439,7 @@ export class TransformerObject {
       curParent: Record<string, unknown>,
       curKey: string,
       rewriteCount: number,
+      depth: number,
     ): void => {
       const newValue = mapperResult.newValue;
 
@@ -455,7 +461,7 @@ export class TransformerObject {
       // We cannot retransform an array since the API never gives array to the callback.
       // Its elements are handed back to the traversal instead, and are mapped in turn.
       if (Array.isArray(newValue)) {
-        pushArrayOnStack(newValue, rewriteCount + 1);
+        pushArrayOnStack(newValue, rewriteCount + 1, depth);
         return;
       }
       // If we need to re transform, register the object instead of its children.
@@ -464,6 +470,7 @@ export class TransformerObject {
         stackParent.push(curParent);
         stackParentKey.push(curKey);
         stackRewriteCount.push(rewriteCount + 1);
+        stackDepth.push(depth);
         return;
       }
       // In any other case, push the children, ignoring ignoreKeys, keys not in visitOnlyKeys, and shallowKeys.
@@ -482,6 +489,7 @@ export class TransformerObject {
             stackParent.push(newAsRecord);
             stackParentKey.push(key);
             stackRewriteCount.push(0);
+            stackDepth.push(depth + 1);
           }
         }
       }
@@ -499,15 +507,19 @@ export class TransformerObject {
         const curParent = <Record<string, unknown>> stackParent.pop()!;
         const curKey = stackParentKey.pop()!;
         const rewriteCount = stackRewriteCount.pop()!;
+        const depth = stackDepth.pop()!;
 
         if (rewriteCount >= this.maxNodeRewrites) {
           throw new Error(`Pre order transform did not converge: rewrote the same position ${this.maxNodeRewrites} times.`, { cause: curObject });
+        }
+        if (depth >= this.maxStackSize) {
+          throw new Error('Transform object stack overflowed');
         }
 
         if (Array.isArray(curObject)) {
           const newArr = [ ...curObject ];
           curParent[curKey] = newArr;
-          pushArrayOnStack(newArr, rewriteCount);
+          pushArrayOnStack(newArr, rewriteCount, depth);
           continue;
         }
 
@@ -516,11 +528,11 @@ export class TransformerObject {
         const mapperResult = preMapper(copy, curObject);
         if (allowAsync && isPromise(mapperResult)) {
           return mapperResult.then((result): unknown => {
-            applyResult(result, curParent, curKey, rewriteCount);
+            applyResult(result, curParent, curKey, rewriteCount, depth);
             return wrappedExecutionLoop();
           });
         }
-        applyResult(<PreOrderMappingReturn>mapperResult, curParent, curKey, rewriteCount);
+        applyResult(<PreOrderMappingReturn>mapperResult, curParent, curKey, rewriteCount, depth);
       }
       if (stack.length >= this.maxStackSize) {
         throw new Error('Transform object stack overflowed');
@@ -548,12 +560,12 @@ export class TransformerObject {
    * Async variant of {@link visitObject}, supporting promise-returning callbacks.
    * The traversal is strictly sequential (depth-first, one suspension point) - it does not parallelise siblings.
    */
-  public visitObjectAsync(
+  public async visitObjectAsync(
     startObject: object,
     visitor: (orig: object) => Awaitable<void>,
     preVisitor: (orig: object) => Awaitable<VisitContext> = () => ({}),
   ): Promise<void> {
-    return <Promise<void>> Promise.resolve(this.runVisitObject(startObject, visitor, preVisitor, true));
+    await this.runVisitObject(startObject, visitor, preVisitor, true);
   }
 
   protected runVisitObject(
@@ -579,16 +591,20 @@ export class TransformerObject {
     // Visit stack: preVisited, awaiting the actual visitor. Parallel arrays, length M.
     //   handleVisitorOnLen[i] - stack.length snapshotted after popping node i, before pushing its children.
     //     The frontier returning to this value means i's subtree is done, so i can be visited.
-    //   visitorStack[i]       - the node to hand to the visitor
+    //   visitorStack[i]       - the node to hand to the visitor, undefined for an array since those are not visited
     // M is the current ancestor chain, so M <= nesting depth and is usually far below S.
+    // maxStackSize bounds M too, capping depth so a cycle overflows instead of growing without bound.
     const handleVisitorOnLen: number[] = [];
-    const visitorStack: object[] = [];
+    const visitorStack: (object | undefined)[] = [];
 
     // Returns a promise only when a visitor suspended - it keeps unwinding itself once that resolves.
     function handleVisitor(): PromiseLike<void> | undefined {
       while (stack.length === handleVisitorOnLen.at(-1)) {
         handleVisitorOnLen.pop();
-        const toVisit = visitorStack.pop()!;
+        const toVisit = visitorStack.pop();
+        if (toVisit === undefined) {
+          continue;
+        }
         const visited = visitor(toVisit);
         if (allowAsync && isPromise(visited)) {
           return visited.then((): PromiseLike<void> | undefined => handleVisitor());
@@ -624,11 +640,14 @@ export class TransformerObject {
 
     // The loop is wrapped so it can return at a suspension point and be called again to resume.
     const wrappedExecutionLoop = (): unknown => {
-      while (stack.length > 0 && stack.length < this.maxStackSize) {
+      while (stack.length > 0 && stack.length < this.maxStackSize && handleVisitorOnLen.length < this.maxStackSize) {
         const curObject = stack.pop()!;
 
         if (!didShortCut) {
           if (Array.isArray(curObject)) {
+            // Arrays join the ancestor chain, so a cycle of arrays overflows it too.
+            handleVisitorOnLen.push(stack.length);
+            visitorStack.push(undefined);
             for (let i = curObject.length - 1; i >= 0; i--) {
               const val = <unknown> curObject[i];
               if (val !== null && typeof val === 'object') {
@@ -658,7 +677,7 @@ export class TransformerObject {
           return pending.then(wrappedExecutionLoop);
         }
       }
-      if (stack.length >= this.maxStackSize) {
+      if (stack.length >= this.maxStackSize || handleVisitorOnLen.length >= this.maxStackSize) {
         throw new Error('Transform object stack overflowed');
       }
       return undefined;

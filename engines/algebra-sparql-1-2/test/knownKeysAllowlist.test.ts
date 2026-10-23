@@ -66,9 +66,13 @@ describe('algebraUtils.knownKeysAllowlist', () => {
 
   it('lets toAst give the same AST with an unrestricted algebra transformer', ({ expect }) => {
     const algebraTransformer = new TransformerSubTyped<Algebra.Operation>();
+    const parser = new Parser();
     for (const suite of suites) {
-      for (const { name, json } of sparqlAlgebraTests(suite, false, false)) {
-        const operation = <Algebra.Operation> json;
+      for (const { name, sparql, quads, namedAggregatorCallback } of sparqlAlgebraTests(suite, false, true)) {
+        // Built by toAlgebra, since the triple terms of the JSON algebra have a type, making them look like patterns
+        // to a transformer that steps into RDF terms.
+        const ast = parser.parse(sparql, { namedAggregatorCallback });
+        const operation = toAlgebra(ast, { quads, namedAggregatorCallback });
         expect(toAst(operation, { algebraTransformer }), name).toEqual(toAst(operation));
       }
     }

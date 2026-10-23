@@ -1,7 +1,7 @@
 import { toAst11Builder } from '@traqula/algebra-sparql-1-1';
 import type { Algebra, algToSparql } from '@traqula/algebra-transformations-1-1';
 import type { AstContext, TransformerConfigs } from '@traqula/algebra-transformations-1-2';
-import { createAstContext, translateAlgTerm12 } from '@traqula/algebra-transformations-1-2';
+import { algTermMentionsVariable12, createAstContext, translateAlgTerm12 } from '@traqula/algebra-transformations-1-2';
 import { IndirBuilder } from '@traqula/core';
 import type { SparqlQuery } from '@traqula/rules-sparql-1-2';
 
@@ -14,6 +14,7 @@ export const toAst12Builder = IndirBuilder
   .create(toAst11Builder)
   .widenContext<AstContext>()
   .patchRule(translateAlgTerm12)
+  .patchRule(algTermMentionsVariable12)
   .typePatch<{
     [algToSparql.name]: [SparqlQuery, [Algebra.Operation]];
   }>();

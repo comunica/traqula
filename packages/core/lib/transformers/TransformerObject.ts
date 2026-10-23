@@ -142,12 +142,12 @@ export class TransformerObject {
    * @param postMapper postMapper to transform the various objects - argument is a copy of the original
    * @param preVisitor callback that is evaluated before iterating deeper.
    */
-  public transformObjectAsync(
+  public async transformObjectAsync(
     startObject: object,
     postMapper: (copy: object, orig: object) => Awaitable<unknown>,
     preVisitor: (orig: object) => Awaitable<TransformContext> = () => ({}),
   ): Promise<unknown> {
-    return Promise.resolve(this.runTransformObject(startObject, postMapper, preVisitor, true));
+    return this.runTransformObject(startObject, postMapper, preVisitor, true);
   }
 
   protected runTransformObject(
@@ -354,11 +354,11 @@ export class TransformerObject {
    * @param startObject object to start iterating from
    * @param preMapper mapper to transform the various objects.
    */
-  public transformObjectPreOrderAsync(
+  public async transformObjectPreOrderAsync(
     startObject: object,
     preMapper: (copy: object, orig: object) => Awaitable<PreOrderMappingReturn>,
   ): Promise<unknown> {
-    return Promise.resolve(this.runTransformObjectPreOrder(startObject, preMapper, true));
+    return this.runTransformObjectPreOrder(startObject, preMapper, true);
   }
 
   protected runTransformObjectPreOrder(
@@ -537,12 +537,12 @@ export class TransformerObject {
    * Async variant of {@link visitObject}, supporting promise-returning callbacks.
    * The traversal is strictly sequential (depth-first, one suspension point) - it does not parallelise siblings.
    */
-  public visitObjectAsync(
+  public async visitObjectAsync(
     startObject: object,
     visitor: (orig: object) => Awaitable<void>,
     preVisitor: (orig: object) => Awaitable<VisitContext> = () => ({}),
   ): Promise<void> {
-    return <Promise<void>> Promise.resolve(this.runVisitObject(startObject, visitor, preVisitor, true));
+    await this.runVisitObject(startObject, visitor, preVisitor, true);
   }
 
   protected runVisitObject(

@@ -1,0 +1,6 @@
+SELECT ?g ?o ?p ?s WHERE {
+  GRAPH ?g {
+    ?s ?p ?o .
+  }
+  FILTER ( ( ?o = <<( ?g <http://p> <http://o> )>> ) )
+}

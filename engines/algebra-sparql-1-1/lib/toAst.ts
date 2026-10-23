@@ -58,6 +58,7 @@ import {
   removeAlgQuads,
   removeAlgQuadsRecursive,
   splitAlgBgpToGraphs,
+  algTermMentionsVariable,
   translateAlgConstruct,
   translateAlgProject,
   registerOrderBy,
@@ -154,6 +155,7 @@ export const toAst11Builder = IndirBuilder
     removeAlgQuads,
     removeAlgQuadsRecursive,
     splitAlgBgpToGraphs,
+    algTermMentionsVariable,
   )
   .addMany(
     // QueryUnit

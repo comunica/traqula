@@ -1504,3 +1504,71 @@ describe('transformer async branch coverage', () => {
     expect(visited).toEqual([ 'type:b', 'specific:a' ]);
   });
 });
+
+describe('transformer async methods reject instead of throwing', () => {
+  // An error raised before the first suspension must reject the returned promise.
+  // Thrown synchronously instead, it would escape `expect` and fail the test.
+  const throwBoom = (): never => {
+    throw new Error('boom');
+  };
+  const transformer = new TransformerObject();
+  const typed = new TransformerTyped<Fruit | Vegetable>();
+  const sub = new TransformerSubTyped<SubTypedNode>();
+  const fruit: Fruit = { type: 'fruit' };
+  const category: SubTypedNode = { type: 'category', subType: 'a', value: 'root' };
+
+  it('transformObjectAsync rejects when a sync callback throws', async({ expect }) => {
+    await expect(transformer.transformObjectAsync({ name: 'root' }, throwBoom)).rejects.toThrow(/boom/u);
+    await expect(transformer.transformObjectAsync({ name: 'root' }, copy => copy, throwBoom))
+      .rejects.toThrow(/boom/u);
+  });
+
+  it('transformObjectPreOrderAsync rejects when a sync mapper throws', async({ expect }) => {
+    await expect(transformer.transformObjectPreOrderAsync({ name: 'root' }, throwBoom)).rejects.toThrow(/boom/u);
+  });
+
+  it('visitObjectAsync rejects when a sync callback throws', async({ expect }) => {
+    await expect(transformer.visitObjectAsync({ name: 'root' }, throwBoom)).rejects.toThrow(/boom/u);
+    await expect(transformer.visitObjectAsync({ name: 'root' }, () => {}, throwBoom)).rejects.toThrow(/boom/u);
+  });
+
+  it('async methods reject when the stack overflows', async({ expect }) => {
+    // The children of the root fill the stack, so it overflows after the root's callbacks ran.
+    class TwoSlotTransformer extends TransformerObject {
+      protected override readonly maxStackSize = 2;
+    }
+    const twoSlot = new TwoSlotTransformer();
+    const wide = { a: { name: 'a' }, b: { name: 'b' }};
+    await expect(twoSlot.transformObjectAsync(wide, copy => copy)).rejects.toThrow(/stack overflowed/u);
+    await expect(twoSlot.transformObjectPreOrderAsync(wide, copy => ({ newValue: copy })))
+      .rejects.toThrow(/stack overflowed/u);
+    await expect(twoSlot.visitObjectAsync(wide, () => {})).rejects.toThrow(/stack overflowed/u);
+  });
+
+  it('transformNodeAsync rejects when a sync callback throws', async({ expect }) => {
+    await expect(typed.transformNodeAsync(fruit, { fruit: { transform: throwBoom }})).rejects.toThrow(/boom/u);
+  });
+
+  it('transformNodePreOrderAsync rejects when a sync callback throws', async({ expect }) => {
+    await expect(typed.transformNodePreOrderAsync(fruit, { fruit: throwBoom })).rejects.toThrow(/boom/u);
+  });
+
+  it('visitNodeAsync rejects when a sync callback throws', async({ expect }) => {
+    await expect(typed.visitNodeAsync(fruit, { fruit: { visitor: throwBoom }})).rejects.toThrow(/boom/u);
+  });
+
+  it('transformNodeSpecificAsync rejects when a sync callback throws', async({ expect }) => {
+    await expect(sub.transformNodeSpecificAsync(category, {}, { category: { a: { transform: throwBoom }}}))
+      .rejects.toThrow(/boom/u);
+  });
+
+  it('transformNodeSpecificPreOrderAsync rejects when a sync callback throws', async({ expect }) => {
+    await expect(sub.transformNodeSpecificPreOrderAsync(category, {}, { category: { a: throwBoom }}))
+      .rejects.toThrow(/boom/u);
+  });
+
+  it('visitNodeSpecificAsync rejects when a sync callback throws', async({ expect }) => {
+    await expect(sub.visitNodeSpecificAsync(category, {}, { category: { a: { visitor: throwBoom }}}))
+      .rejects.toThrow(/boom/u);
+  });
+});

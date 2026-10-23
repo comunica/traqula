@@ -453,7 +453,9 @@ describe('transformerObject null/primitive array elements', () => {
 });
 
 describe('transformerObject stack overflow', () => {
-  describe('tiny', () => {
+  const SMALL_SIZE = 100;
+
+  describe('maxStackSize 1', () => {
     class TinyTransformer extends TransformerObject {
       protected override readonly maxStackSize = 1;
     }
@@ -478,14 +480,13 @@ describe('transformerObject stack overflow', () => {
     });
   });
 
-  describe('small', () => {
-    const SMALL_SIZE = 100;
-
-    // When the back-edge is the last child popped, no sibling is left pending,
-    // so the frontier stays bounded and only the ancestor chain can overflow.
+  describe(`maxStackSize ${SMALL_SIZE}`, () => {
     class SmallStackTransformer extends TransformerObject {
       protected override readonly maxStackSize = SMALL_SIZE;
     }
+
+    // When the back-edge is the last child popped, no sibling is left pending,
+    // so the frontier stays bounded and only the ancestor chain can overflow.
     const selfCycle: Record<string, unknown> = {};
     selfCycle.self = selfCycle;
     // `leaf` is pushed last, so it is popped and drained before the back-edge is followed.
@@ -524,18 +525,30 @@ describe('transformerObject stack overflow', () => {
       });
     }
 
-    it('handles an acyclic chain as deep as maxStackSize', ({ expect }) => {
-      const small = new SmallStackTransformer();
+    function chainOfDepth(depth: number): Record<string, unknown> {
       let chain: Record<string, unknown> = {};
-      for (let depth = 1; depth < SMALL_SIZE; depth++) {
+      for (let level = 1; level < depth; level++) {
         chain = { child: chain };
       }
+      return chain;
+    }
+
+    it('handles an acyclic chain as deep as maxStackSize', ({ expect }) => {
+      const small = new SmallStackTransformer();
+      const chain = chainOfDepth(SMALL_SIZE);
       let visitedCount = 0;
       small.visitObject(chain, () => {
         visitedCount++;
       });
       expect(visitedCount).toBe(SMALL_SIZE);
       expect(small.transformObject(chain, x => x)).toEqual(chain);
+    });
+
+    it('throws on an acyclic chain deeper than maxStackSize', ({ expect }) => {
+      const small = new SmallStackTransformer();
+      const chain = chainOfDepth(SMALL_SIZE + 1);
+      expect(() => small.visitObject(chain, () => {})).toThrow(/Transform object stack overflowed/u);
+      expect(() => small.transformObject(chain, x => x)).toThrow(/Transform object stack overflowed/u);
     });
   });
 });

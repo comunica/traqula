@@ -24,7 +24,7 @@ yarn add @traqula/algebra-transformations-1-2
 
 ## What's added over SPARQL 1.1 transformations
 
-- Handling of **reified triple** and **triple term** nodes in AST-to-algebra conversion
+- Handling of **reified triple** and **triple term** nodes in AST-to-algebra and algebra-to-AST conversion
 - Updated `inScopeVariables` to account for SPARQL 1.2 constructs
 - Updated `createAlgebraContext` for SPARQL 1.2
 

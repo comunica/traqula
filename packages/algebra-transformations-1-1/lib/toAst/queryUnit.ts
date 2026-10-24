@@ -195,8 +195,10 @@ export const wrapAlgInSubquery: AstIndir<'wrapInSubquery', AlgQueryForm, [AlgQue
           return { newValue: ordering.input, continue: true, reTransform: true };
         },
       });
-      const projection = inScopeVariables(subqueryInput, algebraTransformer.visitNode.bind(algebraTransformer))
-        .filter(variable => !aggregateVariables.has(variable.value) || outerVariables.has(variable.value));
+      const projection = inScopeVariables(
+        subqueryInput,
+        (operation, callbacks) => algebraTransformer.visitNode(operation, callbacks),
+      ).filter(variable => !aggregateVariables.has(variable.value) || outerVariables.has(variable.value));
       return orderings.reduceRight<Algebra.Operation>(
         (result, ordering) => ({ ...ordering, input: result }),
         AF.createProject(subqueryInput, projection),

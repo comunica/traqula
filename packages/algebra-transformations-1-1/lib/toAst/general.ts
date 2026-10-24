@@ -71,7 +71,7 @@ export const translateAlgExtend: AstIndir<'translateExtend', Pattern | Pattern[]
     if (SUBRULE(findAlgGroupBelow, op, 'projection')) {
       return SUBRULE(translateAlgPatternIntoGroup, algebraFactory.createProject(
         op,
-        inScopeVariables(op, algebraTransformer.visitNode.bind(algebraTransformer)),
+        inScopeVariables(op, (operation, callbacks) => algebraTransformer.visitNode(operation, callbacks)),
       ));
     }
     // Many extends can be put in a single group

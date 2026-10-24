@@ -14,9 +14,10 @@ export interface AlgebraContext {
   algebraFactory: AlgebraFactory;
   transformer: AstTransformer;
   /**
-   * Transformer the rules traverse the algebra with.
+   * Transformer the rules traverse the algebra with, the default when undefined.
    */
-  algebraTransformer: TransformerSubTyped<Algebra.Operation>;
+  // TODO(major): optional type can become mandatory here.
+  algebraTransformer?: TransformerSubTyped<Algebra.Operation>;
   astFactory: AstFactory;
   dataFactory: RDF.DataFactory<RDF.BaseQuad> & { variable: Function };
   currentBase: string | undefined;

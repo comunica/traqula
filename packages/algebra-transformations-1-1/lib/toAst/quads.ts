@@ -2,7 +2,7 @@ import type * as RDF from '@rdfjs/types';
 import type { IndirDefArg, TransformerSubTyped } from '@traqula/core';
 import type { AlgebraFactory } from '../algebraFactory.js';
 import type { Algebra } from '../index.js';
-import { types } from '../toAlgebra/index.js';
+import { defaultAlgebraTransformer, types } from '../toAlgebra/index.js';
 import type { AstIndir } from './core.js';
 import { eTypes } from './core.js';
 
@@ -48,15 +48,13 @@ function mentionsVariable(
   variable: RDF.Variable,
 ): boolean {
   let found = false;
-  algebraTransformer.visitNode(expression, { [types.EXPRESSION]: { preVisitor: (operation) => {
-    if (operation.subType === eTypes.EXISTENCE) {
-      return { continue: false };
-    }
-    if (operation.subType === eTypes.TERM) {
-      found = SUBRULE(algTermMentionsVariable, operation.term, variable);
-    }
-    return { shortcut: found };
-  } }});
+  algebraTransformer.visitNodeSpecific(expression, {}, { [types.EXPRESSION]: {
+    [eTypes.EXISTENCE]: { preVisitor: () => ({ continue: false }) },
+    [eTypes.TERM]: { preVisitor: (term) => {
+      found = SUBRULE(algTermMentionsVariable, term.term, variable);
+      return { shortcut: found };
+    } },
+  }});
   return found;
 }
 
@@ -103,7 +101,10 @@ unknown,
 [unknown, (RDF.NamedNode | RDF.DefaultGraph)[], boolean]
 > = {
   name: 'removeQuadsRecursive',
-  fun: ({ SUBRULE }) => ({ algebraFactory: AF, algebraTransformer }, unknownVal, graphs, projectionScope) => {
+  fun: ({ SUBRULE }) => ({
+    algebraFactory: AF,
+    algebraTransformer = defaultAlgebraTransformer,
+  }, unknownVal, graphs, projectionScope) => {
     if (Array.isArray(unknownVal)) {
       return unknownVal.map(sub => SUBRULE(removeAlgQuadsRecursive, sub, graphs, projectionScope));
     }

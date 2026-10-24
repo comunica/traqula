@@ -15,7 +15,7 @@ import type {
   TermVariable,
 } from '@traqula/rules-sparql-1-1';
 import type { Algebra } from '../index.js';
-import { isTerm, types } from '../toAlgebra/index.js';
+import { defaultAlgebraTransformer, isTerm, types } from '../toAlgebra/index.js';
 import { forEachTermVariable, inScopeVariables } from '../util.js';
 import type { AstIndir } from './core.js';
 import { findAlgGroupBelow, resetContext } from './core.js';
@@ -73,7 +73,7 @@ AstIndir<'replaceAggregatorVariables', unknown, [unknown, Record<string, Express
 export const collectAlgVariables:
 AstIndir<'collectVariables', Set<string>, [object, Set<string>, string[]?]> = {
   name: 'collectVariables',
-  fun: () => ({ algebraTransformer }, value, names, ignoreKeysList = []) => {
+  fun: () => ({ algebraTransformer = defaultAlgebraTransformer }, value, names, ignoreKeysList = []) => {
     const isIgnoredKey = (object: object, key: string): boolean => object === value && ignoreKeysList.includes(key);
     const addVariables = (term: RDF.Term): void => forEachTermVariable(term, variable => names.add(variable.value));
     const isTermWithoutType = (term: unknown): term is RDF.Term => isTerm(term) && !('type' in term);
@@ -177,7 +177,10 @@ export const findAlgSubqueryCut: AstIndir<'findSubqueryCut', AlgSubqueryCut | un
  */
 export const wrapAlgInSubquery: AstIndir<'wrapInSubquery', AlgQueryForm, [AlgQueryForm, AlgSubqueryCut]> = {
   name: 'wrapInSubquery',
-  fun: ({ SUBRULE }) => ({ algebraFactory: AF, algebraTransformer }, op, { start, aggregateVariables }) => {
+  fun: ({ SUBRULE }) => ({
+    algebraFactory: AF,
+    algebraTransformer = defaultAlgebraTransformer,
+  }, op, { start, aggregateVariables }) => {
     // Only steps into the operations a callback asks to continue into
     const chainTransformer = algebraTransformer.clone({ continue: false });
     const outerVariables = new Set<string>();

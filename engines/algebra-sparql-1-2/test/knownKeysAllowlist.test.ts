@@ -1,13 +1,13 @@
 import type { Algebra } from '@traqula/algebra-transformations-1-2';
-import { algebraUtils } from '@traqula/algebra-transformations-1-2';
+import { algebraUtils, createAlgebraContext, createAstContext } from '@traqula/algebra-transformations-1-2';
 import { TransformerSubTyped } from '@traqula/core';
 import { Parser } from '@traqula/parser-sparql-1-2';
 import type { QuerySelect } from '@traqula/rules-sparql-1-2';
 import { AstTransformer, astKnownKeysAllowlist } from '@traqula/rules-sparql-1-2';
 import type { AlgebraTestSuite } from '@traqula/test-utils';
-import { sparqlAlgebraTests } from '@traqula/test-utils';
+import { sparqlAlgebraOnlyTests, sparqlAlgebraTests } from '@traqula/test-utils';
 import { describe, it, vi } from 'vitest';
-import { toAlgebra, toAst } from '../lib/index.js';
+import { toAlgebra, toAlgebra12Builder, toAst, toAst12Builder } from '../lib/index.js';
 
 // Not imported from a test file, which would register its tests here too
 const suites: AlgebraTestSuite[] = [ 'dawg-syntax', 'sparql11-query', 'sparql-1.1', 'sparql12' ];
@@ -75,6 +75,29 @@ describe('algebraUtils.knownKeysAllowlist', () => {
         const operation = toAlgebra(ast, { quads, namedAggregatorCallback });
         expect(toAst(operation, { algebraTransformer }), name).toEqual(toAst(operation));
       }
+    }
+  });
+
+  it('lets contexts without an algebra transformer traverse with the default one', ({ expect }) => {
+    const parser = new Parser();
+    const algebraTransformer = undefined;
+    const expectSameAst = (operation: Algebra.Operation, name: string): void => {
+      expect(toAst12Builder.build().algToSparql({ ...createAstContext(), algebraTransformer }, operation), name)
+        .toEqual(toAst(operation));
+    };
+    for (const suite of suites) {
+      for (const { name, sparql, quads, namedAggregatorCallback } of sparqlAlgebraTests(suite, true, true)) {
+        const ast = parser.parse(sparql, { namedAggregatorCallback });
+        const options = { quads, namedAggregatorCallback, blankToVariable: true };
+        const operation = toAlgebra12Builder.build()
+          .translateQuery({ ...createAlgebraContext(options), algebraTransformer }, ast, quads, true);
+        expect(operation, name).toEqual(toAlgebra(ast, options));
+        expectSameAst(operation, name);
+      }
+    }
+    // Algebra no query translates to, like an EXTEND over a GROUP, reaches rules of toAst no query reaches
+    for (const { name, json } of sparqlAlgebraOnlyTests('sparql-1.1-algebra-only')) {
+      expectSameAst(<Algebra.Operation> json, name);
     }
   });
 

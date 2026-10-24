@@ -41,9 +41,10 @@ export interface AstContext {
   astFactory: AstFactory;
   transformer: AstTransformer;
   /**
-   * Transformer the rules traverse the algebra with.
+   * Transformer the rules traverse the algebra with, the default when undefined.
    */
-  algebraTransformer: TransformerSubTyped<Algebra.Operation>;
+  // TODO(major): optional type can become mandatory here.
+  algebraTransformer?: TransformerSubTyped<Algebra.Operation>;
 }
 
 /**

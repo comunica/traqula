@@ -19,6 +19,7 @@ import type {
 } from '@traqula/rules-sparql-1-1';
 import * as Algebra from '../algebra.js';
 import type { AlgebraIndir } from './core.js';
+import { defaultAlgebraTransformer } from './core.js';
 
 export const translateNamed: AlgebraIndir<'translateNamed', RDF.NamedNode, [TermIri]> = {
   name: 'translateNamed',
@@ -99,7 +100,7 @@ AlgebraIndir<'translateDatasetClause', { default: RDF.NamedNode[]; named: RDF.Na
 export const translateBlankNodesToVariables:
 AlgebraIndir<'translateBlankNodesToVariables', Algebra.Operation, [Algebra.Operation]> = {
   name: 'translateBlankNodesToVariables',
-  fun: ({ SUBRULE }) => ({ algebraFactory: AF, algebraTransformer, variables }, res) => {
+  fun: ({ SUBRULE }) => ({ algebraFactory: AF, algebraTransformer = defaultAlgebraTransformer, variables }, res) => {
     const blankToVariableMapping: Record<string, RDF.Variable> = Object.create(null);
     const variablesRaw: Set<string> = new Set(variables);
 

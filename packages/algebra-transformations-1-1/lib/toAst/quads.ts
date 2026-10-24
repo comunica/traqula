@@ -1,9 +1,8 @@
 import type * as RDF from '@rdfjs/types';
-import type { IndirDefArg } from '@traqula/core';
+import type { IndirDefArg, TransformerSubTyped } from '@traqula/core';
 import type { AlgebraFactory } from '../algebraFactory.js';
 import type { Algebra } from '../index.js';
-import { types } from '../toAlgebra/index.js';
-import { visitOperationSub } from '../util.js';
+import { defaultAlgebraTransformer, types } from '../toAlgebra/index.js';
 import type { AstIndir } from './core.js';
 import { eTypes } from './core.js';
 
@@ -44,11 +43,12 @@ export const algTermMentionsVariable: AstIndir<'termMentionsVariable', boolean, 
  */
 function mentionsVariable(
   SUBRULE: IndirDefArg['SUBRULE'],
+  algebraTransformer: TransformerSubTyped<Algebra.Operation>,
   expression: Algebra.Expression,
   variable: RDF.Variable,
 ): boolean {
   let found = false;
-  visitOperationSub(expression, {}, { [types.EXPRESSION]: {
+  algebraTransformer.visitNodeSpecific(expression, {}, { [types.EXPRESSION]: {
     [eTypes.EXISTENCE]: { preVisitor: () => ({ continue: false }) },
     [eTypes.TERM]: { preVisitor: (term) => {
       found = SUBRULE(algTermMentionsVariable, term.term, variable);
@@ -101,7 +101,10 @@ unknown,
 [unknown, (RDF.NamedNode | RDF.DefaultGraph)[], boolean]
 > = {
   name: 'removeQuadsRecursive',
-  fun: ({ SUBRULE }) => ({ algebraFactory: AF }, unknownVal, graphs, projectionScope) => {
+  fun: ({ SUBRULE }) => ({
+    algebraFactory: AF,
+    algebraTransformer = defaultAlgebraTransformer,
+  }, unknownVal, graphs, projectionScope) => {
     if (Array.isArray(unknownVal)) {
       return unknownVal.map(sub => SUBRULE(removeAlgQuadsRecursive, sub, graphs, projectionScope));
     }
@@ -147,7 +150,8 @@ unknown,
     for (const [ key, value ] of Object.entries(knownOp)) {
       // A CONSTRUCT template holds the triples to produce, not patterns of the WHERE clause:
       // it is never wrapped in a GRAPH, and does not change how the WHERE clause is wrapped.
-      if (knownOp.type === types.CONSTRUCT && key === 'template') {
+      // Keys the algebra transformer does not visit, like unknown keys of an allowlist, are kept as they are.
+      if ((knownOp.type === types.CONSTRUCT && key === 'template') || !algebraTransformer.visitsKey(knownOp, key)) {
         result[key] = value;
         continue;
       }
@@ -202,7 +206,7 @@ unknown,
       ].includes(knownOp.type) ||
         (knownOp.type === types.EXTEND && projectionScope) ||
         (knownOp.type === types.FILTER && onlyGraph?.termType === 'Variable' &&
-          mentionsVariable(SUBRULE, knownOp.expression, onlyGraph));
+          mentionsVariable(SUBRULE, algebraTransformer, knownOp.expression, onlyGraph));
       if (graphNameSet.length === 1 && !isBoundary) {
         graphs.push(operationGraphNames[graphNameSet[0]]);
       } else if (knownOp.type === types.BGP) {

@@ -1,6 +1,7 @@
 import type { GeneratorRule, ParserRule } from '@traqula/core';
 import type * as T11 from '@traqula/rules-sparql-1-1';
 import type { AstFactory } from './AstFactory.js';
+import type { AstTransformer } from './parserUtils.js';
 
 export type SparqlRule<
   /**
@@ -54,6 +55,10 @@ export type SparqlGrammarRule<
 
 export type SparqlContext = T11.SparqlContext & {
   astFactory: AstFactory;
+  /**
+   * Transformer the validations traverse the AST with. Defaults to an {@link AstTransformer} that visits all keys.
+   */
+  astTransformer?: AstTransformer;
   /**
    * Function that decodes UCHAR codepoint escapes (\\uXXXX / \\UXXXXXXXX) within a string.
    * In SPARQL 1.2 this is applied per-rule rather than as a query pre-processor.

@@ -1,4 +1,9 @@
-import { TransformerSubTyped, traqulaIndentation, traqulaNewlineAlternative } from '@traqula/core';
+import {
+  TransformerSubTyped,
+  traqulaIndentation,
+  traqulaNewlineAlternative,
+  visitOnlyKnownKeys,
+} from '@traqula/core';
 import { AstFactory } from './AstFactory.js';
 import type { SparqlContext, SparqlGeneratorContext } from './sparql12HelperTypes.js';
 import type { Sparql12Nodes } from './sparql12Types.js';
@@ -38,6 +43,7 @@ export function completeParseContext(
     skipValidation: context.skipValidation ?? false,
     rejectGroupedSelectAliasReuse: context.rejectGroupedSelectAliasReuse ?? false,
     namedAggregatorCallback: context.namedAggregatorCallback,
+    astTransformer: context.astTransformer,
     /**
      * @deprecated since it cannot be used for string decoding.
      */
@@ -70,3 +76,48 @@ Partial<SparqlContext & SparqlGeneratorContext & { origSource: string; offset?: 
 }
 
 export class AstTransformer extends TransformerSubTyped<Sparql12Nodes> {}
+
+/**
+ * Contexts per node type that only visit the known keys that can hold nodes, skipping source locations.
+ */
+export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql12Nodes>({
+  path: { items: true },
+  pattern: {
+    values: true,
+    name: true,
+    variable: true,
+    expression: true,
+    variables: true,
+    patterns: true,
+    triples: true,
+  },
+  update: { updates: true },
+  query: {
+    values: true,
+    template: true,
+    context: true,
+    solutionModifiers: true,
+    datasets: true,
+    where: true,
+    variables: true,
+  },
+  graphRef: { graph: true },
+  updateOperation: {
+    data: true,
+    source: true,
+    destination: true,
+    from: true,
+    graph: true,
+    where: true,
+    delete: true,
+    insert: true,
+  },
+  datasetClauses: { clauses: true },
+  tripleCollection: { triples: true, identifier: true },
+  triple: { object: true, subject: true, predicate: true, annotations: true },
+  solutionModifier: { having: true, orderDefs: true, groupings: true },
+  expression: { function: true, args: true, expression: true },
+  contextDef: { value: true },
+  wildcard: {},
+  term: { object: true, subject: true, predicate: true, langOrIri: true },
+});

@@ -1,5 +1,6 @@
 import { describe, it } from 'vitest';
-import { TransformerTyped, TransformerSubTyped, TransformerObject } from '../lib/index.js';
+import type { Awaitable, TransformContext, VisitContext } from '../lib/index.js';
+import { TransformerTyped, TransformerSubTyped, TransformerObject, visitOnlyKnownKeys } from '../lib/index.js';
 
 interface Fruit {
   type: 'fruit';
@@ -134,6 +135,28 @@ describe('transformer', () => {
     expect(ignoreKeysAreIgnored.in.in).toBe(in2);
     expect(ignoreKeysAreIgnored.side).not.toBe(side1);
   });
+
+  it('knows visitOnlyKeys', ({ expect }) => {
+    const in2 = { type: 'fruit', val: 'depth3' };
+    const in1 = { type: 'vegetable', in: in2, val: 'depth2' };
+    const side1 = { type: 'fruit', val: 'side1' };
+    const fruit: Fruit = { type: 'fruit', in: in1, val: 'depth1', side: side1 };
+
+    const onlyVisitOnlyKeysAreVisited = <any> transformer.transformNode(fruit, {
+      fruit: { preVisitor: () => ({ visitOnlyKeys: new Set([ 'in' ]) }) },
+    });
+    expect(onlyVisitOnlyKeysAreVisited).not.toBe(fruit);
+    expect(onlyVisitOnlyKeysAreVisited.in).not.toBe(in1);
+    expect(onlyVisitOnlyKeysAreVisited.in.in).not.toBe(in2);
+    expect(onlyVisitOnlyKeysAreVisited.side).toBe(side1);
+
+    const ignoreKeysOverruleVisitOnlyKeys = <any> transformer.transformNode(fruit, {
+      fruit: { preVisitor: () => ({ visitOnlyKeys: new Set([ 'in' ]), ignoreKeys: new Set([ 'in' ]) }) },
+    });
+    expect(ignoreKeysOverruleVisitOnlyKeys).not.toBe(fruit);
+    expect(ignoreKeysOverruleVisitOnlyKeys.in).toBe(in1);
+    expect(ignoreKeysOverruleVisitOnlyKeys.side).toBe(side1);
+  });
 });
 
 describe('transformerObject', () => {
@@ -200,6 +223,22 @@ describe('transformerObject', () => {
       },
       () => ({ ignoreKeys: new Set([ 'ignored' ]) }),
     );
+
+    expect(visited).toEqual([ 'kept-child', 'root' ]);
+  });
+
+  it('visitObject respects visitOnlyKeys', ({ expect }) => {
+    const transformer = new TransformerObject({ visitOnlyKeys: new Set([ 'kept' ]) });
+    const visited: string[] = [];
+    const tree = {
+      name: 'root',
+      ignored: { name: 'ignored-child' },
+      kept: { name: 'kept-child' },
+    };
+
+    transformer.visitObject(tree, (obj) => {
+      visited.push((<any>obj).name);
+    });
 
     expect(visited).toEqual([ 'kept-child', 'root' ]);
   });
@@ -795,6 +834,61 @@ describe('transformerObject preOrder', () => {
     expect(result.shallow.child).toBe(shallow.child);
   });
 
+  it('knows visitOnlyKeys', ({ expect }) => {
+    const ignored = { name: 'ignored' };
+    const mapped: string[] = [];
+
+    const result = <any> transformer.transformObjectPreOrder(
+      { name: 'root', ignored, kept: { name: 'kept' }},
+      (copy) => {
+        mapped.push((<any>copy).name);
+        return { newValue: copy, visitOnlyKeys: new Set([ 'kept' ]) };
+      },
+    );
+
+    expect(mapped).toEqual([ 'root', 'kept' ]);
+    expect(result.ignored).toBe(ignored);
+  });
+
+  it('shallowly copies shallowKeys that are ignored', ({ expect }) => {
+    const ignored = { name: 'ignored', child: { name: 'ignoredChild' }};
+    const notVisited = { name: 'notVisited', child: { name: 'notVisitedChild' }};
+    const mapped: string[] = [];
+
+    const result = <any> transformer.transformObjectPreOrder(
+      { name: 'root', ignored, notVisited, kept: { name: 'kept' }},
+      (copy) => {
+        mapped.push((<any>copy).name);
+        return {
+          newValue: copy,
+          ignoreKeys: new Set([ 'ignored' ]),
+          visitOnlyKeys: new Set([ 'ignored', 'kept' ]),
+          shallowKeys: new Set([ 'ignored', 'notVisited' ]),
+        };
+      },
+    );
+
+    expect(mapped).toEqual([ 'root', 'kept' ]);
+    expect(result.ignored).not.toBe(ignored);
+    expect(result.ignored.child).toBe(ignored.child);
+    expect(result.notVisited).not.toBe(notVisited);
+    expect(result.notVisited.child).toBe(notVisited.child);
+  });
+
+  it('skips non-own inherited properties', ({ expect }) => {
+    const mapped: string[] = [];
+    const proto = { inherited: { name: 'inherited' }};
+    const obj = Object.create(proto);
+    obj.name = 'root';
+    obj.child = { name: 'child' };
+    // TransformObjectPreOrder iterates with for...in; non-own properties should be skipped
+    transformer.transformObjectPreOrder(obj, (copy) => {
+      mapped.push((<any>copy).name);
+      return { newValue: copy };
+    });
+    expect(mapped).toEqual([ 'root', 'child' ]);
+  });
+
   it('does not copy when the default context says not to', ({ expect }) => {
     const noCopy = new TransformerObject({ copy: false });
     const tree = { name: 'root', child: { name: 'child' }};
@@ -980,30 +1074,89 @@ describe('transformerSubTyped preOrder', () => {
     expect(result.mapped).toBeUndefined();
     expect(result.child.mapped).toBe('yes');
   });
+});
 
-  it('transformNodeSpecificPreOrder does not apply the per type defaults', ({ expect }) => {
-    const defaulting = new TransformerSubTyped<Nodes>({}, {
-      category: { ignoreKeys: new Set([ 'child' ]) },
+describe('transformerSubTyped per type defaults', () => {
+  type Nodes = SubTypedNode | Fruit | Vegetable;
+  const defaulting = new TransformerSubTyped<Nodes>({}, { category: { ignoreKeys: new Set([ 'skipped' ]) }});
+  const skipped = { type: 'category', subType: 'b', value: 'skipped' };
+  // The fruit has no default, the object within it has no type
+  const tree = { type: 'category', subType: 'a', value: 'root', skipped, kept: { type: 'fruit', untyped: {}}};
+  // Overrides the default of the root, so its skipped key is visited after all
+  const visitAll = { ignoreKeys: new Set<string>() };
+
+  it('transformNodeSpecific applies them, unless the preVisitor overrides them', ({ expect }) => {
+    const transform = (preVisitor?: () => TransformContext): any =>
+      defaulting.transformNodeSpecific(tree, {}, { category: { a: { preVisitor }}});
+    expect(transform().skipped).toBe(skipped);
+    expect(transform().kept.untyped).not.toBe(tree.kept.untyped);
+    expect(transform(() => visitAll).skipped).not.toBe(skipped);
+  });
+
+  it('transformNodeSpecificAsync applies them, unless the preVisitor overrides them', async({ expect }) => {
+    const transform = (preVisitor?: () => Awaitable<TransformContext>): Promise<any> =>
+      defaulting.transformNodeSpecificAsync(tree, {}, { category: { a: { preVisitor }}});
+    expect((await transform()).skipped).toBe(skipped);
+    expect((await transform(() => visitAll)).skipped).not.toBe(skipped);
+    expect((await transform(async() => visitAll)).skipped).not.toBe(skipped);
+  });
+
+  it('transformNodeSpecificPreOrder applies them, unless the callback overrides them', ({ expect }) => {
+    const transform = (context: TransformContext): any => defaulting.transformNodeSpecificPreOrder(tree, {}, {
+      category: { a: copy => ({ ...context, newValue: copy }) },
     });
-    const tree = {
-      type: 'category',
-      subType: 'a',
-      value: 'root',
-      child: { type: 'category', subType: 'b', value: 'child' },
+    expect((<any> defaulting.transformNodeSpecificPreOrder(tree, {}, {})).skipped).toBe(skipped);
+    expect(transform({}).skipped).toBe(skipped);
+    expect(transform(visitAll).skipped).not.toBe(skipped);
+  });
+
+  it('transformNodeSpecificPreOrderAsync applies them, unless the callback overrides them', async({ expect }) => {
+    const transform = (context: TransformContext, wait: boolean): Promise<any> =>
+      defaulting.transformNodeSpecificPreOrderAsync(tree, {}, {
+        category: { a: copy => wait ?
+          Promise.resolve({ ...context, newValue: copy }) :
+            { ...context, newValue: copy }},
+      });
+    expect((<any> await defaulting.transformNodeSpecificPreOrderAsync(tree, {}, {})).skipped).toBe(skipped);
+    expect((await transform({}, false)).skipped).toBe(skipped);
+    expect((await transform(visitAll, true)).skipped).not.toBe(skipped);
+  });
+
+  it('visitNodeSpecific applies them, unless the preVisitor overrides them', ({ expect }) => {
+    const visit = (preVisitor?: () => VisitContext): string[] => {
+      const visited: string[] = [];
+      defaulting.visitNodeSpecific(tree, {}, { category: {
+        a: { preVisitor },
+        b: { visitor: (node: any) => {
+          visited.push(node.value);
+        } },
+      }});
+      return visited;
     };
+    expect(visit()).toEqual([]);
+    expect(visit(() => visitAll)).toEqual([ 'skipped' ]);
+  });
 
-    const mapped: string[] = [];
-    defaulting.transformNodeSpecificPreOrder(
-      tree,
-      { category: (copy: any) => {
-        mapped.push(copy.value);
-        return { newValue: copy };
-      } },
-      {},
-    );
+  it('visitNodeSpecificAsync applies them, unless the preVisitor overrides them', async({ expect }) => {
+    const visit = async(preVisitor?: () => Awaitable<VisitContext>): Promise<string[]> => {
+      const visited: string[] = [];
+      await defaulting.visitNodeSpecificAsync(tree, {}, { category: {
+        a: { preVisitor },
+        b: { visitor: (node: any) => {
+          visited.push(node.value);
+        } },
+      }});
+      return visited;
+    };
+    expect(await visit()).toEqual([]);
+    expect(await visit(() => visitAll)).toEqual([ 'skipped' ]);
+    expect(await visit(async() => visitAll)).toEqual([ 'skipped' ]);
+  });
 
-    // Contrary to transformNodePreOrder, the ignoreKeys of the category are not picked up
-    expect(mapped).toEqual([ 'root', 'child' ]);
+  it('never re-transforms a node without a callback', ({ expect }) => {
+    const reTransforming = new TransformerSubTyped<Nodes>({ reTransform: true });
+    const node = { type: 'category', subType: 'a', value: 'root' };
+    expect(reTransforming.transformNodeSpecificPreOrder(node, {}, {})).toEqual(node);
   });
 });
 
@@ -1546,6 +1699,56 @@ describe('transformer async branch coverage', () => {
     });
     // Deepest first: child (b via type) before root (a via specific)
     expect(visited).toEqual([ 'type:b', 'specific:a' ]);
+  });
+});
+
+describe('visitOnlyKnownKeys', () => {
+  interface Apple {
+    type: 'apple';
+    name: string;
+    core: { type: 'seed' };
+  }
+  interface Crate {
+    type: 'crate';
+    content: Apple[];
+  }
+
+  const knownKeys = visitOnlyKnownKeys<Apple | Crate>({
+    apple: { core: true },
+    crate: { content: true },
+  });
+
+  it('creates contexts that only visit the known keys', ({ expect }) => {
+    expect(knownKeys).toEqual({
+      apple: { visitOnlyKeys: new Set([ 'core' ]) },
+      crate: { visitOnlyKeys: new Set([ 'content' ]) },
+    });
+  });
+
+  it('skips unknown keys of known nodes, but fully visits other objects', ({ expect }) => {
+    const transformer = new TransformerTyped<Apple | Crate>({}, knownKeys);
+    const crate = {
+      type: 'crate',
+      content: [{ type: 'apple', name: 'inCrate', core: { type: 'seed' }}],
+      extension: { type: 'apple', name: 'inExtension', core: { type: 'seed' }},
+    };
+    const visited: string[] = [];
+    transformer.visitNode({ wrapper: [ crate, { type: 'apple', name: 'inWrapper', core: { type: 'seed' }}]}, {
+      apple: { visitor: (apple) => {
+        visited.push(apple.name);
+      } },
+    });
+    expect(visited).toEqual([ 'inCrate', 'inWrapper' ]);
+  });
+
+  it('tells whether a key of an object is visited', ({ expect }) => {
+    const strict = new TransformerTyped<Apple | Crate>({ visitOnlyKeys: new Set() }, knownKeys);
+    expect(strict.visitsKey({ type: 'apple' }, 'core')).toBe(true);
+    expect(strict.visitsKey({ type: 'apple' }, 'name')).toBe(false);
+    expect(strict.visitsKey({ untyped: true }, 'untyped')).toBe(false);
+    const ignoring = new TransformerTyped<Apple | Crate>({}, { crate: { ignoreKeys: new Set([ 'content' ]) }});
+    expect(ignoring.visitsKey({ type: 'crate' }, 'content')).toBe(false);
+    expect(ignoring.visitsKey({ type: 'apple' }, 'name')).toBe(true);
   });
 });
 

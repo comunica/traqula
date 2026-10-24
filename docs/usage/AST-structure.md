@@ -113,6 +113,58 @@ SELECT * {
 `
 ```
 
+### Allowlist-Based Traversal
+
+By default, a transformer visits every key of a node, unless the node's context excludes it through `ignoreKeys`.
+Setting `visitOnlyKeys` to an empty set in the default context flips this around:
+the transformer only visits the keys a node explicitly allows.
+
+```typescript
+import { AstTransformer } from "@traqula/rules-sparql-1-1";
+import { Parser } from '@traqula/parser-sparql-1-1'
+
+const ast = new Parser().parse('SELECT ?s (?p AS ?q) WHERE { ?s ?p ?o }');
+const transformer = new AstTransformer({ visitOnlyKeys: new Set() });
+const projected: string[] = [];
+transformer.visitNodeSpecific(ast, {}, {
+  'query': { 'select': { preVisitor: () => ({ visitOnlyKeys: new Set([ 'variables' ]) }) }},
+  'term': { 'variable': { visitor: (variable) => { projected.push(variable.value); } }},
+});
+// Only ?s: the bind '(?p AS ?q)' is visited, but it allows none of its keys.
+const truety = projected.join() === 's';
+```
+
+Keep in mind that:
+- the `visitOnlyKeys` of a node replaces the default, it is not merged with it;
+- all elements of an allowed array are visited, arrays are not filtered;
+- `ignoreKeys` still applies, and `shallowKeys` are still shallowly copied;
+- the object you start from is always visited;
+- objects without a `type`, like the rows of a `VALUES` clause, also get the default context,
+  so the nodes within them are not visited unless you allow them.
+
+To only skip the keys Traqula does not know, like keys added by an extension or the metadata of an engine,
+use a known keys allowlist as the default context per node type instead, the second argument of a transformer's constructor:
+`astKnownKeysAllowlist` of `@traqula/rules-sparql-1-1` and `@traqula/rules-sparql-1-2`,
+or `algebraUtils.knownKeysAllowlist` for the algebra.
+Nodes of a known type then only visit their known keys that can hold nodes, skipping RDF terms and source locations,
+while other objects are still fully visited.
+
+The rules of the parser, `toAlgebra`, and `toAst` that call a transformer use the ones you give them.
+
+```typescript
+import { toAlgebra, toAst } from '@traqula/algebra-sparql-1-1';
+import { algebraUtils, Algebra } from '@traqula/algebra-transformations-1-1';
+import { TransformerSubTyped } from '@traqula/core';
+import { Parser } from '@traqula/parser-sparql-1-1';
+import { AstTransformer, astKnownKeysAllowlist } from '@traqula/rules-sparql-1-1';
+
+const astTransformer = new AstTransformer({}, astKnownKeysAllowlist);
+const algebraTransformer = new TransformerSubTyped<Algebra.Operation>({}, algebraUtils.knownKeysAllowlist);
+const ast = new Parser({ defaultContext: { astTransformer }}).parse('SELECT * WHERE { ?s ?p ?o }');
+const algebra = toAlgebra(ast, { astTransformer, algebraTransformer });
+const roundTripped = toAst(algebra, { astTransformer, algebraTransformer });
+```
+
 ## See Also
 
 - [Design decisions — Round Tripping](../design.md#round-tripping) — rationale behind the source location approach

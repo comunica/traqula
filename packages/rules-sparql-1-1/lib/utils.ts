@@ -1,4 +1,4 @@
-import { TransformerSubTyped } from '@traqula/core';
+import { TransformerSubTyped, visitOnlyKnownKeys } from '@traqula/core';
 import { AstFactory } from './astFactory.js';
 import { pnLocalEscPattern } from './lexer/lexerPatterns.js';
 import type { Sparql11Nodes, TermIri } from './Sparql11types.js';
@@ -199,3 +199,49 @@ export function resolveTermIri(term: TermIri, prefixes: Record<string, string>, 
   }
   return resolveIRI(fullIri, baseIRI);
 }
+
+/**
+ * Contexts per node type that only visit the known keys that can hold nodes, skipping source locations.
+ */
+export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql11Nodes>({
+  path: { items: true },
+  pattern: {
+    values: true,
+    name: true,
+    variable: true,
+    expression: true,
+    variables: true,
+    patterns: true,
+    triples: true,
+  },
+  update: { updates: true },
+  query: {
+    values: true,
+    template: true,
+    context: true,
+    solutionModifiers: true,
+    datasets: true,
+    where: true,
+    variables: true,
+  },
+  graph: { graph: true, triples: true },
+  graphRef: { graph: true },
+  updateOperation: {
+    data: true,
+    source: true,
+    destination: true,
+    from: true,
+    graph: true,
+    where: true,
+    delete: true,
+    insert: true,
+  },
+  datasetClauses: { clauses: true },
+  tripleCollection: { triples: true, identifier: true },
+  triple: { object: true, subject: true, predicate: true },
+  solutionModifier: { having: true, orderDefs: true, groupings: true },
+  expression: { function: true, args: true, expression: true },
+  contextDef: { value: true },
+  wildcard: {},
+  term: { langOrIri: true },
+});

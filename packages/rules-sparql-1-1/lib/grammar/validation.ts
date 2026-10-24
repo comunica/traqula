@@ -87,7 +87,7 @@ export const validateQuery: SparqlGrammarRule<'validateQuery', void, [Query]> = 
 export const validateUpdate: SparqlGrammarRule<'validateUpdate', void, [Update]> = {
   name: 'validateUpdate',
   impl: ({ ACTION }) => (C, update) => {
-    ACTION(() => !C.skipValidation && updateNoReuseBlankNodeLabels(update));
+    ACTION(() => !C.skipValidation && updateNoReuseBlankNodeLabels(update, C.astTransformer));
   },
 };
 
@@ -97,7 +97,7 @@ export const validateUpdate: SparqlGrammarRule<'validateUpdate', void, [Update]>
 export const validateGroupGraphPattern: SparqlGrammarRule<'validateGroupGraphPattern', void, [Pattern[]]> = {
   name: 'validateGroupGraphPattern',
   impl: ({ ACTION }) => (C, patterns) => {
-    ACTION(() => !C.skipValidation && checkBlankNodeBGPScope(patterns));
+    ACTION(() => !C.skipValidation && checkBlankNodeBGPScope(patterns, C.astTransformer));
   },
 };
 
@@ -120,7 +120,7 @@ export const validateFunctionCall: SparqlGrammarRule<'validateFunctionCall', voi
     ACTION(() => {
       const isAggregateFunction = C.skipValidation ? undefined : namedAggregatorTest(C);
       if (isAggregateFunction) {
-        functionCallIsGood(functionCall, isAggregateFunction, C.parseMode);
+        functionCallIsGood(functionCall, isAggregateFunction, C.parseMode, C.astTransformer);
       }
     });
   },

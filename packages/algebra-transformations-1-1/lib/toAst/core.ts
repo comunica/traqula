@@ -1,10 +1,11 @@
 import type * as RDF from '@rdfjs/types';
-import type { IndirDef } from '@traqula/core';
+import type { IndirDef, TransformerSubTyped } from '@traqula/core';
 import type { Expression, PatternValues } from '@traqula/rules-sparql-1-1';
 import { AstFactory, AstTransformer } from '@traqula/rules-sparql-1-1';
 import * as Algebra from '../algebra.js';
 import { AlgebraFactory } from '../algebraFactory.js';
-import { types } from '../toAlgebra/index.js';
+import type { TransformerConfigs } from '../toAlgebra/index.js';
+import { defaultAlgebraTransformer, types } from '../toAlgebra/index.js';
 
 export interface AstContext {
   /**
@@ -39,9 +40,19 @@ export interface AstContext {
   algebraFactory: AlgebraFactory;
   astFactory: AstFactory;
   transformer: AstTransformer;
+  /**
+   * Transformer the rules traverse the algebra with, the default when undefined.
+   */
+  // TODO(major): optional type can become mandatory here.
+  algebraTransformer?: TransformerSubTyped<Algebra.Operation>;
 }
 
-export function createAstContext(): AstContext {
+/**
+ * Creates the context of a translation from algebra to AST.
+ * @param config the transformers the rules traverse with, defaulting to ones that visit all keys.
+ * @return the context to start the translation with.
+ */
+export function createAstContext(config: TransformerConfigs = {}): AstContext {
   return {
     project: false,
     extend: [],
@@ -51,7 +62,8 @@ export function createAstContext(): AstContext {
     order: [],
     algebraFactory: new AlgebraFactory(),
     astFactory: new AstFactory(),
-    transformer: new AstTransformer(),
+    transformer: config.astTransformer ?? new AstTransformer(),
+    algebraTransformer: config.algebraTransformer ?? defaultAlgebraTransformer,
   };
 }
 

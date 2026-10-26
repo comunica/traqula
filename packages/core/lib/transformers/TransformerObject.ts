@@ -1,3 +1,5 @@
+import type { Typed } from '../types.js';
+
 /**
  * A value that is either available synchronously, or as a native promise.
  */
@@ -21,6 +23,48 @@ export function isKeyIgnored(key: string, ignoreKeys?: Set<string>, visitOnlyKey
 }
 
 /**
+ * A step of a {@link VisitPath}: a key of an object, an index of an array, or `'*'` for each of them.
+ */
+export type PathKey = string | number;
+
+/**
+ * The remaining depth of a {@link ContainerPaths}, bounding the recursion on recursive types.
+ */
+type PathDepths = [never, 0, 1, 2, 3, 4];
+
+/**
+ * The values a path can step through: objects that are no node, since a node is visited itself, nor a function.
+ */
+export type PathContainer<Value> = Exclude<Extract<Value, object>, Typed | ((...args: any[]) => unknown)>;
+
+/**
+ * The paths that step to a value through the given key: the key alone when the value can be an object,
+ * and the key followed by a path within the value when it can be a {@link PathContainer}.
+ */
+type PathStep<Key extends PathKey, Value, Depth extends number> = unknown extends Value ?
+  readonly [Key, ...PathKey[]] :
+    ([Extract<Value, object>] extends [never] ? never : readonly [Key]) |
+    ([Depth] extends [never] ? never : readonly [Key, ...ContainerPaths<PathContainer<Value>, Depth>]);
+
+/**
+ * The paths within a container to the objects it holds, also when the container is a union.
+ * A path only steps through objects that are no node: arrays, and objects without a type.
+ * @typeParam Depth - The number of containers a path can step through, besides the one it starts in.
+ */
+export type ContainerPaths<Container, Depth extends number = 4> = Container extends readonly (infer Element)[] ?
+  PathStep<number | '*', Element, PathDepths[Depth]> :
+    {[Key in keyof Container & string]-?: PathStep<Key, Exclude<Container[Key], undefined>, PathDepths[Depth]> }[
+      keyof Container & string] | PathStep<'*', Container[keyof Container & string], PathDepths[Depth]>;
+
+/**
+ * A path from an object to an object it holds, see {@link VisitContext.visitPaths}.
+ * Like {@link ObjectKeyHint}, the IDE suggests the keys of the object for its first step, but any path is accepted,
+ * so contexts of different objects stay assignable to each other.
+ * Use {@link ContainerPaths} to have the compiler check the steps of a path.
+ */
+export type VisitPath<Obj> = readonly [ObjectKeyHint<Obj>, ...PathKey[]];
+
+/**
  * @typeParam Obj - The object this context applies to, its keys are suggested by the IDE.
  */
 export interface VisitContext<Obj = object> {
@@ -40,8 +84,17 @@ export interface VisitContext<Obj = object> {
    * Object keys that can be visited, all other keys are ignored. By default, all keys can be visited.
    * A key included here and in {@link ignoreKeys} is ignored.
    * An empty set in the default context makes a transformer only visit keys that a node explicitly allows.
+   * Not used when {@link visitPaths} is given.
    */
   visitOnlyKeys?: Set<ObjectKeyHint<Obj>>;
+  /**
+   * Paths to the objects to visit, instead of the values of the keys of this object.
+   * A `'*'` steps into every element of an array, or every value of an object.
+   * The objects a path steps through are not visited themselves, but are shallowly copied when this object is.
+   * A path whose first key is in {@link ignoreKeys} is not followed, {@link visitOnlyKeys} is not used.
+   * Paths should not overlap: an object at the end of a path should not be stepped through by another one.
+   */
+  visitPaths?: readonly VisitPath<Obj>[];
 }
 
 /**
@@ -138,6 +191,51 @@ export class TransformerObject {
   }
 
   /**
+   * Finds the objects at the given paths, in the order of the paths, see {@link VisitContext.visitPaths}.
+   * @param root the object the paths start from.
+   * @param paths the paths to follow.
+   * @param ignoreKeys the first keys of paths that are not followed.
+   * @param copy whether to shallowly copy the objects a path steps through, once, into the object holding them.
+   * @return per object found, the object, the object holding it, and its key in that holder.
+   */
+  protected objectsAtPaths(
+    root: object,
+    paths: readonly VisitPath<object>[],
+    ignoreKeys: Set<string> | undefined,
+    copy: boolean,
+  ): [object, Record<string, unknown>, string][] {
+    const found: [object, Record<string, unknown>, string][] = [];
+    const copies = new Set<unknown>();
+    for (const path of paths) {
+      let holders = [ <Record<string, unknown>> root ];
+      for (const [ depth, step ] of path.entries()) {
+        const nextHolders: Record<string, unknown>[] = [];
+        for (const holder of holders) {
+          for (const key of step === '*' ? Object.keys(holder) : [ String(step) ]) {
+            let value = holder[key];
+            if (!Object.hasOwn(holder, key) || value === null || typeof value !== 'object' ||
+              (depth === 0 && ignoreKeys?.has(key))) {
+              continue;
+            }
+            if (depth === path.length - 1) {
+              found.push([ value, holder, key ]);
+              continue;
+            }
+            if (copy && !copies.has(value)) {
+              value = this.cloneObj(value);
+              holder[key] = value;
+              copies.add(value);
+            }
+            nextHolders.push(<Record<string, unknown>> value);
+          }
+        }
+        holders = nextHolders;
+      }
+    }
+    return found;
+  }
+
+  /**
    * Recursively transforms all objects that are not arrays. Mapper is called on deeper objects first.
    *
    * `transformObject` never inspects the values a mapper returns; a returned promise is stored as-is.
@@ -186,6 +284,7 @@ export class TransformerObject {
     const defaultContinues = defaults.continue ?? true;
     const defaultIgnoreKeys = defaults.ignoreKeys;
     const defaultVisitOnlyKeys = defaults.visitOnlyKeys;
+    const defaultVisitPaths = defaults.visitPaths;
     const defaultShallowKeys = defaults.shallowKeys;
     const defaultDidShortCut = defaults.shortcut ?? false;
 
@@ -243,6 +342,7 @@ export class TransformerObject {
       const continues = context.continue ?? defaultContinues;
       const ignoreKeys = context.ignoreKeys ?? defaultIgnoreKeys;
       const visitOnlyKeys = context.visitOnlyKeys ?? defaultVisitOnlyKeys;
+      const visitPaths = context.visitPaths ?? defaultVisitPaths;
       const shallowKeys = context.shallowKeys ?? defaultShallowKeys;
       didShortCut = context.shortcut ?? defaultDidShortCut;
 
@@ -267,11 +367,20 @@ export class TransformerObject {
           if (shallowKeys && shallowKeys?.has(key)) {
             // Do not add stack entry - assign straight away
             (<Record<string, unknown>> copy)[key] = this.cloneObj(val);
-          } else if (val !== null && typeof val === 'object' && !isKeyIgnored(key, ignoreKeys, visitOnlyKeys)) {
+          } else if (!visitPaths && val !== null && typeof val === 'object' &&
+            !isKeyIgnored(key, ignoreKeys, visitOnlyKeys)) {
             // Do add stack entry.
             stack.push(val);
             stackParentKey.push(key);
             stackParent.push(copy);
+          }
+        }
+        if (visitPaths) {
+          // Reversed, so the objects are mapped in the order of the paths
+          for (const [ val, holder, key ] of this.objectsAtPaths(copy, visitPaths, ignoreKeys, copyFlag).reverse()) {
+            stack.push(val);
+            stackParentKey.push(key);
+            stackParent.push(holder);
           }
         }
       }
@@ -392,6 +501,7 @@ export class TransformerObject {
     const defaultContinues = defaults.continue ?? true;
     const defaultIgnoreKeys = defaults.ignoreKeys;
     const defaultVisitOnlyKeys = defaults.visitOnlyKeys;
+    const defaultVisitPaths = defaults.visitPaths;
     const defaultShallowKeys = defaults.shallowKeys;
     const defaultDidShortCut = defaults.shortcut ?? false;
     const defaultReTransform = defaults.reTransform ?? false;
@@ -449,6 +559,7 @@ export class TransformerObject {
       const continues = mapperResult.continue ?? defaultContinues;
       const ignoreKeys = mapperResult.ignoreKeys ?? defaultIgnoreKeys;
       const visitOnlyKeys = mapperResult.visitOnlyKeys ?? defaultVisitOnlyKeys;
+      const visitPaths = mapperResult.visitPaths ?? defaultVisitPaths;
       const shallowKeys = mapperResult.shallowKeys ?? defaultShallowKeys;
       const reTransform = mapperResult.reTransform ?? defaultReTransform;
       didShortCut = mapperResult.shortcut ?? defaultDidShortCut;
@@ -473,8 +584,8 @@ export class TransformerObject {
         stackDepth.push(depth);
         return;
       }
-      // In any other case, push the children, ignoring ignoreKeys, keys not in visitOnlyKeys, and shallowKeys.
-      // Creating shallow copies of shallowKeys, even when they are ignored.
+      // In any other case, push the children, ignoring ignoreKeys, keys not in visitOnlyKeys, and shallowKeys,
+      // or the objects at the visitPaths instead. Creating shallow copies of shallowKeys, even when they are ignored.
       const newAsRecord = <Record<string, unknown>> newValue;
       for (const key in newAsRecord) {
         if (!Object.hasOwn(newAsRecord, key)) {
@@ -484,13 +595,24 @@ export class TransformerObject {
         if (val !== null && typeof val === 'object') {
           if (shallowKeys?.has(key)) {
             newAsRecord[key] = this.cloneObj(val);
-          } else if (!isKeyIgnored(key, ignoreKeys, visitOnlyKeys)) {
+          } else if (!visitPaths && !isKeyIgnored(key, ignoreKeys, visitOnlyKeys)) {
             stack.push(val);
             stackParent.push(newAsRecord);
             stackParentKey.push(key);
             stackRewriteCount.push(0);
             stackDepth.push(depth + 1);
           }
+        }
+      }
+      if (visitPaths) {
+        // Reversed, so the objects are mapped in the order of the paths
+        for (const [ val, holder, key ] of
+          this.objectsAtPaths(newAsRecord, visitPaths, ignoreKeys, defaultCopyFlag).reverse()) {
+          stack.push(val);
+          stackParent.push(holder);
+          stackParentKey.push(key);
+          stackRewriteCount.push(0);
+          stackDepth.push(depth + 1);
         }
       }
     };
@@ -578,6 +700,7 @@ export class TransformerObject {
     const defaultContinues = defaults.continue ?? true;
     const defaultIgnoreKeys = defaults.ignoreKeys;
     const defaultVisitOnlyKeys = defaults.visitOnlyKeys;
+    const defaultVisitPaths = defaults.visitPaths;
     const defaultShortcut = defaults.shortcut ?? false;
 
     let didShortCut = false;
@@ -619,13 +742,19 @@ export class TransformerObject {
       const continues = context.continue ?? defaultContinues;
       const ignoreKeys = context.ignoreKeys ?? defaultIgnoreKeys;
       const visitOnlyKeys = context.visitOnlyKeys ?? defaultVisitOnlyKeys;
+      const visitPaths = context.visitPaths ?? defaultVisitPaths;
 
       // Register that you want to be visited
       handleVisitorOnLen.push(stack.length);
       visitorStack.push(curObject);
 
       // Extend stack if needed. When shortcutted, should still unwind the stack, but no longer add to it.
-      if (continues && !didShortCut) {
+      if (continues && !didShortCut && visitPaths) {
+        // Reversed, so the objects are visited in the order of the paths
+        for (const [ val ] of this.objectsAtPaths(curObject, visitPaths, ignoreKeys, false).reverse()) {
+          stack.push(val);
+        }
+      } else if (continues && !didShortCut) {
         for (const key in curObject) {
           if (!Object.hasOwn(curObject, key)) {
             continue;

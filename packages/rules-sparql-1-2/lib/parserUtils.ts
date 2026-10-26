@@ -79,11 +79,13 @@ export class AstTransformer extends TransformerSubTyped<Sparql12Nodes> {}
 
 /**
  * Contexts per node type that only visit the known keys that can hold nodes, skipping source locations.
+ * The objects without a type that hold nodes are stepped through by paths, so their unknown keys are skipped too,
+ * except for the binds of a GROUP BY and the wrapped annotations of a triple, which share their array with nodes.
  */
 export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql12Nodes>({
   path: { items: true },
   pattern: {
-    values: true,
+    values: [[ '*', '*' ]],
     name: true,
     variable: true,
     expression: true,
@@ -91,12 +93,12 @@ export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql12Nodes>({
     patterns: true,
     triples: true,
   },
-  update: { updates: true },
+  update: { updates: [[ '*', 'operation' ], [ '*', 'context' ]]},
   query: {
     values: true,
     template: true,
     context: true,
-    solutionModifiers: true,
+    solutionModifiers: [[ 'group' ], [ 'having' ], [ 'order' ], [ 'limitOffset' ]],
     datasets: true,
     where: true,
     variables: true,
@@ -112,10 +114,10 @@ export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql12Nodes>({
     delete: true,
     insert: true,
   },
-  datasetClauses: { clauses: true },
+  datasetClauses: { clauses: [[ '*', 'value' ]]},
   tripleCollection: { triples: true, identifier: true },
   triple: { object: true, subject: true, predicate: true, annotations: true },
-  solutionModifier: { having: true, orderDefs: true, groupings: true },
+  solutionModifier: { having: true, orderDefs: [[ '*', 'expression' ]], groupings: true },
   expression: { function: true, args: true, expression: true },
   contextDef: { value: true },
   wildcard: {},

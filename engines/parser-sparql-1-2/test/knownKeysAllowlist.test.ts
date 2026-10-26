@@ -6,6 +6,8 @@ import { Parser } from '../lib/index.js';
 describe('astKnownKeysAllowlist', () => {
   const unrestricted = new AstTransformer();
   const allowlisted = new AstTransformer({}, astKnownKeysAllowlist);
+  // Only visits the keys the allowlist allows, so the objects without a type are only reached through paths
+  const strict = new AstTransformer({ visitOnlyKeys: new Set() }, astKnownKeysAllowlist);
 
   function visitedNodes(transformer: AstTransformer, ast: object): object[] {
     const visited: object[] = [];
@@ -20,13 +22,15 @@ describe('astKnownKeysAllowlist', () => {
   }
 
   for (const suite of <const> [ 'sparql-1-1', 'sparql-1-2', 'paths' ]) {
-    it(`visits all nodes of the ${suite} ASTs`, async({ expect }) => {
+    it(`visits all nodes of the ${suite} ASTs, also when only visiting allowed keys`, async({ expect }) => {
       for (const { name, statics } of positiveTest(suite)) {
         const { astWithSource } = await statics();
         const allNodes = visitedNodes(unrestricted, <object> astWithSource);
-        const allowedNodes = visitedNodes(allowlisted, <object> astWithSource);
-        expect(allowedNodes.length, name).toBe(allNodes.length);
-        expect(allowedNodes.every((node, index) => node === allNodes[index]), name).toBe(true);
+        for (const transformer of [ allowlisted, strict ]) {
+          const allowedNodes = visitedNodes(transformer, <object> astWithSource);
+          expect(allowedNodes.length, name).toBe(allNodes.length);
+          expect(allowedNodes.every((node, index) => node === allNodes[index]), name).toBe(true);
+        }
       }
     });
   }

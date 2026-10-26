@@ -139,8 +139,9 @@ Keep in mind that:
 - all elements of an allowed array are visited, arrays are not filtered;
 - `ignoreKeys` still applies, and `shallowKeys` are still shallowly copied;
 - the object you start from is always visited;
-- objects without a `type`, like the rows of a `VALUES` clause, also get the default context,
-  so the nodes within them are not visited unless you allow them, or step through them with `visitPaths`.
+- an object without a `type`, like an element of the `updates` of an update, has no context of its own:
+  reached through a key, it gets the default context, so with an empty `visitOnlyKeys` default
+  the nodes within it are not visited. Step through such objects with `visitPaths` instead, described next.
 
 ### Path-Based Traversal
 
@@ -177,12 +178,15 @@ Keep in mind that:
   To have the compiler check every step, type the paths as `ContainerPaths` of `@traqula/core`,
   or list them in a known keys allowlist, described next.
 
+### Known Keys Allowlists
+
 To only skip the keys Traqula does not know, like keys added by an extension or the metadata of an engine,
 use a known keys allowlist as the default context per node type instead, the second argument of a transformer's constructor:
 `astKnownKeysAllowlist` of `@traqula/rules-sparql-1-1` and `@traqula/rules-sparql-1-2`,
 or `algebraUtils.knownKeysAllowlist` for the algebra.
-Nodes of a known type then only visit their known keys that can hold nodes, skipping RDF terms and source locations,
-while other objects are still fully visited.
+Nodes of a known type then only visit their known keys that can hold nodes, skipping RDF terms and source locations.
+Nodes of an unknown type, and objects without a `type` reached through a key, get the default context instead,
+so with the default context `{}` they are still fully visited.
 `visitOnlyKnownKeys` of `@traqula/core` creates such an allowlist, and the compiler checks that it lists exactly
 the keys that can hold a node. A key maps to `true`, or to the paths within its value to visit instead:
 
@@ -200,7 +204,7 @@ const allowlist = visitOnlyKnownKeys<Sparql11Nodes>({
 The AST allowlists step through the objects without a `type` like this, so they also work with
 a `visitOnlyKeys` of an empty set in the default context.
 The binds of a `GROUP BY`, and the wrapped annotations of a SPARQL 1.2 triple, share their array with nodes,
-so the allowlists visit them as a whole: the default context applies to them.
+so the allowlists cannot step through them: they are reached through a key, and get the default context.
 
 The rules of the parser, `toAlgebra`, and `toAst` that call a transformer use the ones you give them.
 

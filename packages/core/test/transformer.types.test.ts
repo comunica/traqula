@@ -9,6 +9,7 @@ import type {
   TransformerTyped,
   VisitContext,
   VisitPath,
+  anyKey,
 } from '../lib/index.js';
 import type { CanHoldNode } from '../lib/transformers/TransformerTyped.js';
 import type { SourceLocation } from '../lib/types.js';
@@ -87,31 +88,35 @@ describe('transformer', () => {
     });
 
     it('accepts paths within the value of a known node key, and rejects other paths', () => {
-      expectTypeOf<{ rows: [[ '*', 'literal' ], [ 0, 'within', 'literal' ]]}>()
+      expectTypeOf<{ rows: [[ typeof anyKey, 'literal' ], [ 0, 'within', 'literal' ]]}>()
         .toExtend<KnownNodeKeys<Shelf>['shelf']>();
       expectTypeOf<{ rows: true }>().toExtend<KnownNodeKeys<Shelf>['shelf']>();
-      expectTypeOf<{ rows: [[ '*', 'label' ]]}>().not.toExtend<KnownNodeKeys<Shelf>['shelf']>();
+      expectTypeOf<{ rows: [[ typeof anyKey, 'label' ]]}>().not.toExtend<KnownNodeKeys<Shelf>['shelf']>();
       expectTypeOf<{ rows: []}>().not.toExtend<KnownNodeKeys<Shelf>['shelf']>();
-      expectTypeOf<{ rows: [[ '*', 'literal', 'value' ]]}>().not.toExtend<KnownNodeKeys<Shelf>['shelf']>();
+      expectTypeOf<{ rows: [[ typeof anyKey, 'literal', 'value' ]]}>().not.toExtend<KnownNodeKeys<Shelf>['shelf']>();
       // Neither source locations nor RDF terms hold nodes
-      expectTypeOf<{ rows: [[ '*', 'loc' ]]}>().not.toExtend<KnownNodeKeys<Shelf>['shelf']>();
-      expectTypeOf<{ rows: [[ '*', 'term' ]]}>().not.toExtend<KnownNodeKeys<Shelf>['shelf']>();
+      expectTypeOf<{ rows: [[ typeof anyKey, 'loc' ]]}>().not.toExtend<KnownNodeKeys<Shelf>['shelf']>();
+      expectTypeOf<{ rows: [[ typeof anyKey, 'term' ]]}>().not.toExtend<KnownNodeKeys<Shelf>['shelf']>();
     });
 
     it('only steps through objects without a type, and ends at objects', () => {
       type RowPaths = ContainerPaths<Shelf['rows']>;
-      expectTypeOf<[ '*' ] | [ 0, 'literal' ] | [ '*', 'within' ] | [ 1, '*', 'literal' ]>().toExtend<RowPaths>();
-      expectTypeOf<[ '*', 'label' ]>().not.toExtend<RowPaths>();
-      expectTypeOf<[ '*', 'literal', 'value' ]>().not.toExtend<RowPaths>();
+      type Any = typeof anyKey;
+      expectTypeOf<[ Any ] | [ 0, 'literal' ] | [ Any, 'within' ] | [ 1, Any, 'literal' ]>().toExtend<RowPaths>();
+      expectTypeOf<[ Any, 'label' ]>().not.toExtend<RowPaths>();
+      expectTypeOf<[ Any, 'literal', 'value' ]>().not.toExtend<RowPaths>();
+      // A key named '*' is no wildcard
+      expectTypeOf<[ '*', 'literal' ]>().not.toExtend<RowPaths>();
       expectTypeOf<[ 'rows' ]>().not.toExtend<RowPaths>();
       expectTypeOf<ContainerPaths<{ unknown: unknown }>>().toEqualTypeOf<
-        readonly ['unknown', ...PathKey[]] | readonly ['*', ...PathKey[]]
+        readonly ['unknown', ...PathKey[]] | readonly [typeof anyKey, ...PathKey[]]
       >();
       expectTypeOf<ContainerPaths<Literal>>().toEqualTypeOf<never>();
     });
 
     it('hints the first key of a path to visit, but accepts any path', () => {
-      expectTypeOf<VisitPath<Pattern>>().toEqualTypeOf<readonly [ObjectKeyHint<Pattern>, ...PathKey[]]>();
+      expectTypeOf<VisitPath<Pattern>>()
+        .toEqualTypeOf<readonly [ObjectKeyHint<Pattern> | typeof anyKey, ...PathKey[]]>();
       expectTypeOf<NonNullable<VisitContext<Pattern>['visitPaths']>>().toEqualTypeOf<readonly VisitPath<Pattern>[]>();
       expectTypeOf<TransformContext<Pattern>>().toExtend<TransformContext<Shelf>>();
     });

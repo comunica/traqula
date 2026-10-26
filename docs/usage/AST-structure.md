@@ -147,9 +147,11 @@ Keep in mind that:
 A context can also list `visitPaths`: paths to the objects to visit, instead of the keys of the node.
 A path steps through objects without a `type` to the nodes within them, so those objects are not visited themselves
 and their other keys are skipped.
-A `'*'` steps into every element of an array, or every value of an object.
+The `anyKey` symbol of `@traqula/core` steps into every element of an array, or every value of an object.
+Being a symbol, it never collides with a key of an object, also not with a key named `'*'`.
 
 ```typescript
+import { anyKey } from '@traqula/core';
 import { AstTransformer } from "@traqula/rules-sparql-1-1";
 import { Parser } from '@traqula/parser-sparql-1-1'
 
@@ -158,7 +160,7 @@ const transformer = new AstTransformer({ visitOnlyKeys: new Set() });
 const operations: string[] = [];
 transformer.visitNode(ast, {
   // Each element of 'updates' has no type, and holds an operation and its prefixes and base IRI.
-  'update': { preVisitor: () => ({ visitPaths: [[ 'updates', '*', 'operation' ]] }) },
+  'update': { preVisitor: () => ({ visitPaths: [[ 'updates', anyKey, 'operation' ]] }) },
   'updateOperation': { visitor: (operation) => { operations.push(operation.subType); } },
 });
 const truety = operations.join() === 'insertdata,clear';
@@ -185,12 +187,12 @@ while other objects are still fully visited.
 the keys that can hold a node. A key maps to `true`, or to the paths within its value to visit instead:
 
 ```typescript
-import { visitOnlyKnownKeys } from '@traqula/core';
+import { anyKey, visitOnlyKnownKeys } from '@traqula/core';
 import type { Sparql11Nodes } from '@traqula/rules-sparql-1-1';
 
 const allowlist = visitOnlyKnownKeys<Sparql11Nodes>({
   // ...
-  update: { updates: [[ '*', 'operation' ], [ '*', 'context' ]] },
+  update: { updates: [[ anyKey, 'operation' ], [ anyKey, 'context' ]] },
   // ...
 });
 ```

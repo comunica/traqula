@@ -1,4 +1,5 @@
 import {
+  anyKey,
   TransformerSubTyped,
   traqulaIndentation,
   traqulaNewlineAlternative,
@@ -85,7 +86,7 @@ export class AstTransformer extends TransformerSubTyped<Sparql12Nodes> {}
 export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql12Nodes>({
   path: { items: true },
   pattern: {
-    values: [[ '*', '*' ]],
+    values: [[ anyKey, anyKey ]],
     name: true,
     variable: true,
     expression: true,
@@ -93,7 +94,7 @@ export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql12Nodes>({
     patterns: true,
     triples: true,
   },
-  update: { updates: [[ '*', 'operation' ], [ '*', 'context' ]]},
+  update: { updates: [[ anyKey, 'operation' ], [ anyKey, 'context' ]]},
   query: {
     values: true,
     template: true,
@@ -114,10 +115,10 @@ export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql12Nodes>({
     delete: true,
     insert: true,
   },
-  datasetClauses: { clauses: [[ '*', 'value' ]]},
+  datasetClauses: { clauses: [[ anyKey, 'value' ]]},
   tripleCollection: { triples: true, identifier: true },
   triple: { object: true, subject: true, predicate: true, annotations: true },
-  solutionModifier: { having: true, orderDefs: [[ '*', 'expression' ]], groupings: true },
+  solutionModifier: { having: true, orderDefs: [[ anyKey, 'expression' ]], groupings: true },
   expression: { function: true, args: true, expression: true },
   contextDef: { value: true },
   wildcard: {},

@@ -1,4 +1,4 @@
-import { TransformerSubTyped, visitOnlyKnownKeys } from '@traqula/core';
+import { anyKey, TransformerSubTyped, visitOnlyKnownKeys } from '@traqula/core';
 import { AstFactory } from './astFactory.js';
 import { pnLocalEscPattern } from './lexer/lexerPatterns.js';
 import type { Sparql11Nodes, TermIri } from './Sparql11types.js';
@@ -208,7 +208,7 @@ export function resolveTermIri(term: TermIri, prefixes: Record<string, string>, 
 export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql11Nodes>({
   path: { items: true },
   pattern: {
-    values: [[ '*', '*' ]],
+    values: [[ anyKey, anyKey ]],
     name: true,
     variable: true,
     expression: true,
@@ -216,7 +216,7 @@ export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql11Nodes>({
     patterns: true,
     triples: true,
   },
-  update: { updates: [[ '*', 'operation' ], [ '*', 'context' ]]},
+  update: { updates: [[ anyKey, 'operation' ], [ anyKey, 'context' ]]},
   query: {
     values: true,
     template: true,
@@ -238,10 +238,10 @@ export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql11Nodes>({
     delete: true,
     insert: true,
   },
-  datasetClauses: { clauses: [[ '*', 'value' ]]},
+  datasetClauses: { clauses: [[ anyKey, 'value' ]]},
   tripleCollection: { triples: true, identifier: true },
   triple: { object: true, subject: true, predicate: true },
-  solutionModifier: { having: true, orderDefs: [[ '*', 'expression' ]], groupings: true },
+  solutionModifier: { having: true, orderDefs: [[ anyKey, 'expression' ]], groupings: true },
   expression: { function: true, args: true, expression: true },
   contextDef: { value: true },
   wildcard: {},

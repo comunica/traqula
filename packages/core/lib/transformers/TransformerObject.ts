@@ -23,15 +23,21 @@ export function isKeyIgnored(key: string, ignoreKeys?: Set<string>, visitOnlyKey
 }
 
 /**
- * A step of a {@link VisitPath}: a key of an object, an index of an array, or `'*'` for each of them.
+ * A step of a {@link VisitPath} into every element of an array, or every value of an object.
+ * Registered globally, so it is shared by every copy of this package, like its CommonJS and ES module builds.
  */
-export type PathKey = string | number;
+export const anyKey: unique symbol = Symbol.for('@traqula/core/anyKey');
+
+/**
+ * A step of a {@link VisitPath}: a key of an object, an index of an array, or {@link anyKey} for each of them.
+ */
+export type PathKey = string | number | typeof anyKey;
 
 /**
  * Whether a step of a {@link VisitPath} steps into the given key.
  */
 export function pathStepMatches(step: PathKey, key: string): boolean {
-  return step === '*' || String(step) === key;
+  return step === anyKey || String(step) === key;
 }
 
 /**
@@ -44,7 +50,7 @@ export function resolveVisitPaths(context: VisitContext, fallback: VisitContext)
 
 /**
  * The paths from an object, as a tree of their steps.
- * The steps of a key also hold the paths stepping into it through a `'*'`, so a key is looked up at most twice.
+ * The steps of a key also hold the paths stepping into it through {@link anyKey}, so a key is looked up at most twice.
  */
 interface PathTrie {
   /**
@@ -56,23 +62,24 @@ interface PathTrie {
    */
   steps: Map<string, PathTrie>;
   /**
-   * The remaining paths of the keys not in {@link steps}, stepped into through a `'*'`.
+   * The remaining paths of the keys not in {@link steps}, stepped into through {@link anyKey}.
    */
   any?: PathTrie;
 }
 
 function buildPathTrie(paths: readonly (readonly PathKey[])[]): PathTrie {
   const trie: PathTrie = { end: paths.some(path => path.length === 0), steps: new Map() };
-  const remaining = (key: PathKey): PathKey[][] => paths
-    .filter(path => path.length > 0 && pathStepMatches(path[0], String(key)))
+  const remaining = (matches: (step: PathKey) => boolean): PathKey[][] => paths
+    .filter(path => path.length > 0 && matches(path[0]))
     .map(path => path.slice(1));
   for (const [ step ] of paths) {
-    if (step !== undefined && step !== '*' && !trie.steps.has(String(step))) {
-      trie.steps.set(String(step), buildPathTrie(remaining(step)));
+    if (step !== undefined && step !== anyKey && !trie.steps.has(String(step))) {
+      const key = String(step);
+      trie.steps.set(key, buildPathTrie(remaining(other => pathStepMatches(other, key))));
     }
   }
-  if (paths.some(([ step ]) => step === '*')) {
-    trie.any = buildPathTrie(remaining('*'));
+  if (paths.some(([ step ]) => step === anyKey)) {
+    trie.any = buildPathTrie(remaining(step => step === anyKey));
   }
   return trie;
 }
@@ -118,11 +125,11 @@ type PathStep<Key extends PathKey, Value, Depth extends number, Skipped> = unkno
  */
 export type ContainerPaths<Container, Skipped = never, Depth extends number = 4> =
   Container extends readonly (infer Element)[] ?
-    PathStep<number | '*', Exclude<Element, Skipped>, PathDepths[Depth], Skipped> :
+    PathStep<number | typeof anyKey, Exclude<Element, Skipped>, PathDepths[Depth], Skipped> :
       {[Key in keyof Container & string]-?:
         PathStep<Key, Exclude<Container[Key], undefined | Skipped>, PathDepths[Depth], Skipped> }[
         keyof Container & string] |
-      PathStep<'*', Exclude<Container[keyof Container & string], Skipped>, PathDepths[Depth], Skipped>;
+      PathStep<typeof anyKey, Exclude<Container[keyof Container & string], Skipped>, PathDepths[Depth], Skipped>;
 
 /**
  * A path from an object to an object it holds, see {@link VisitContext.visitPaths}.
@@ -130,7 +137,7 @@ export type ContainerPaths<Container, Skipped = never, Depth extends number = 4>
  * so contexts of different objects stay assignable to each other.
  * Use {@link ContainerPaths} to have the compiler check the steps of a path.
  */
-export type VisitPath<Obj> = readonly [ObjectKeyHint<Obj>, ...PathKey[]];
+export type VisitPath<Obj> = readonly [ObjectKeyHint<Obj> | typeof anyKey, ...PathKey[]];
 
 /**
  * @typeParam Obj - The object this context applies to, its keys are suggested by the IDE.
@@ -157,7 +164,7 @@ export interface VisitContext<Obj = object> {
   visitOnlyKeys?: Set<ObjectKeyHint<Obj>>;
   /**
    * Paths to the objects to visit, instead of the values of the keys of this object.
-   * A `'*'` steps into every element of an array, or every value of an object.
+   * An {@link anyKey} steps into every element of an array, or every value of an object.
    * The objects a path steps through are not visited themselves, but are shallowly copied when this object is.
    * The {@link ignoreKeys} and shallowKeys apply to their keys too, {@link visitOnlyKeys} is not used.
    * The objects are handled in the order a traversal of the keys handles them. A path ending at an object

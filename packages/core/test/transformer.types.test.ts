@@ -11,6 +11,7 @@ import type {
   VisitPath,
 } from '../lib/index.js';
 import type { CanHoldNode } from '../lib/transformers/TransformerTyped.js';
+import type { SourceLocation } from '../lib/types.js';
 
 interface Pattern {
   type: 'pattern';
@@ -26,7 +27,13 @@ interface Literal {
 
 interface Shelf {
   type: 'shelf';
-  rows: { literal?: Literal; label: string; within: { literal: Literal }}[];
+  rows: {
+    literal?: Literal;
+    label: string;
+    within: { literal: Literal };
+    loc: SourceLocation;
+    term: { termType: 'Quad'; subject: Literal };
+  }[];
 }
 
 type Nodes = Pattern | Literal;
@@ -84,7 +91,11 @@ describe('transformer', () => {
         .toExtend<KnownNodeKeys<Shelf>['shelf']>();
       expectTypeOf<{ rows: true }>().toExtend<KnownNodeKeys<Shelf>['shelf']>();
       expectTypeOf<{ rows: [[ '*', 'label' ]]}>().not.toExtend<KnownNodeKeys<Shelf>['shelf']>();
+      expectTypeOf<{ rows: []}>().not.toExtend<KnownNodeKeys<Shelf>['shelf']>();
       expectTypeOf<{ rows: [[ '*', 'literal', 'value' ]]}>().not.toExtend<KnownNodeKeys<Shelf>['shelf']>();
+      // Neither source locations nor RDF terms hold nodes
+      expectTypeOf<{ rows: [[ '*', 'loc' ]]}>().not.toExtend<KnownNodeKeys<Shelf>['shelf']>();
+      expectTypeOf<{ rows: [[ '*', 'term' ]]}>().not.toExtend<KnownNodeKeys<Shelf>['shelf']>();
     });
 
     it('only steps through objects without a type, and ends at objects', () => {

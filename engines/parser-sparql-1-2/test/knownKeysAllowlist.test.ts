@@ -25,9 +25,8 @@ describe('astKnownKeysAllowlist', () => {
         const { astWithSource } = await statics();
         const allNodes = visitedNodes(unrestricted, <object> astWithSource);
         const allowedNodes = visitedNodes(allowlisted, <object> astWithSource);
-        // Paths are followed in their order, so the same nodes can be visited in another order than their keys
-        expect(new Set(allowedNodes).size, name).toBe(allNodes.length);
-        expect(allowedNodes.every(node => allNodes.includes(node)), name).toBe(true);
+        expect(allowedNodes.length, name).toBe(allNodes.length);
+        expect(allowedNodes.every((node, index) => node === allNodes[index]), name).toBe(true);
       }
     });
   }

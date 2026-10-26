@@ -20,7 +20,6 @@ export {
   TransformContext,
   ObjectKeyHint,
   PathKey,
-  PathContainer,
   ContainerPaths,
   VisitPath,
   PreOrderMappingReturn,

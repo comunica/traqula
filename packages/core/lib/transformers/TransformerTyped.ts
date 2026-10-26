@@ -8,7 +8,13 @@ import type {
   VisitContext,
   VisitPath,
 } from './TransformerObject.js';
-import { isKeyIgnored, isPromise, TransformerObject } from './TransformerObject.js';
+import {
+  isKeyIgnored,
+  isPromise,
+  pathStepMatches,
+  resolveVisitPaths,
+  TransformerObject,
+} from './TransformerObject.js';
 
 /**
  * Controls whether transform callbacks receive fully typed nodes (`'unsafe'`) or
@@ -73,21 +79,21 @@ export type NodeHoldingKeys<Obj, Skipped = NodeFreeValue> = {[Key in AllObjectKe
  * The compiler rejects missing and other keys, also for a type without such keys.
  * @typeParam Skipped - Values that are not looked into, by default source locations and RDF terms.
  */
-export type KnownNodeKeys<Nodes extends Typed, Skipped = NodeFreeValue> = {[T in Nodes['type']]:
-  [NodeHoldingKeys<Extract<Nodes, Typed<T>>, Skipped>] extends [never] ?
-    Record<string, never> :
-    KnownKeysOf<Extract<Nodes, Typed<T>>, NodeHoldingKeys<Extract<Nodes, Typed<T>>, Skipped>> };
+export type KnownNodeKeys<Nodes extends Typed, Skipped = NodeFreeValue> =
+  {[T in Nodes['type']]: KnownKeysOf<Extract<Nodes, Typed<T>>, Skipped> };
 
 /**
- * Maps each of the given keys of a node to `true`, or to the paths within the value of the key when it has any.
+ * The {@link KnownNodeKeys} of a single node type.
  */
-type KnownKeysOf<Node, Keys extends string> =
-  {[Key in Keys]: KnownKeyPaths<ContainerPaths<PathContainer<AllObjectValues<Node, Key>>>> };
+type KnownKeysOf<Node, Skipped, Keys extends string = NodeHoldingKeys<Node, Skipped>> = [Keys] extends [never] ?
+  Record<string, never> :
+    {[Key in Keys]: KnownKeyPaths<AllObjectValues<Node, Key>, Skipped> };
 
 /**
- * `true`, or the given paths when there are any.
+ * `true`, or the paths within the value of a key when there are any.
  */
-type KnownKeyPaths<Paths> = [Paths] extends [never] ? true : true | readonly Paths[];
+type KnownKeyPaths<Value, Skipped, Paths = ContainerPaths<PathContainer<Exclude<Value, Skipped>>, Skipped>> =
+  [Paths] extends [never] ? true : true | readonly [Paths, ...Paths[]];
 
 /**
  * Creates a {@link DefaultNodePreVisitor} that per node type only visits the known keys that can hold nodes,
@@ -143,7 +149,8 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
 
   /**
    * Whether a traversal visits the given key of an object, by the default of its node type or the default context.
-   * With {@link VisitContext.visitPaths}, whether a path starts with the key.
+   * With {@link VisitContext.visitPaths}, whether a path starts with the key,
+   * the keys of the objects the paths step through are not answered for.
    * Lets hand-written traversals respect the defaults of this transformer, like its allowlists.
    * @param object the object holding the key.
    * @param key the key to visit.
@@ -153,11 +160,10 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     const type = (<Partial<Typed<Nodes['type']>>> object).type;
     const nodeDefault = type ? this.defaultNodePreVisitor[type] : undefined;
     const ignoreKeys = nodeDefault?.ignoreKeys ?? this.defaultContext.ignoreKeys;
-    const visitPaths = nodeDefault?.visitPaths ?? this.defaultContext.visitPaths;
-    if (visitPaths) {
-      return !isKeyIgnored(key, ignoreKeys) && visitPaths.some(([ first ]) => first === '*' || first === key);
-    }
-    return !isKeyIgnored(key, ignoreKeys, nodeDefault?.visitOnlyKeys ?? this.defaultContext.visitOnlyKeys);
+    const visitOnlyKeys = nodeDefault?.visitOnlyKeys ?? this.defaultContext.visitOnlyKeys;
+    const visitPaths = resolveVisitPaths(nodeDefault ?? {}, this.defaultContext);
+    return !isKeyIgnored(key, ignoreKeys, visitPaths ? undefined : visitOnlyKeys) &&
+      (!visitPaths || visitPaths.some(([ first ]) => pathStepMatches(first, key)));
   }
 
   /**
@@ -172,7 +178,10 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     if (!nodeDefault) {
       return context ?? <Context> {};
     }
-    return context ? { ...nodeDefault, ...context } : <Context> nodeDefault;
+    if (!context) {
+      return <Context> nodeDefault;
+    }
+    return { ...nodeDefault, ...context, visitPaths: resolveVisitPaths(<VisitContext> context, nodeDefault) };
   }
 
   /**

@@ -165,10 +165,12 @@ const truety = operations.join() === 'insertdata,clear';
 ```
 
 Keep in mind that:
-- the objects at the paths are visited in the order of the paths;
+- the objects at the paths are visited in the order a traversal of the keys visits them;
 - when the node is copied, so are the objects a path steps through, the node's original stays untouched;
-- `ignoreKeys` skips the paths starting with an ignored key, `visitOnlyKeys` is not used;
-- paths should not overlap: an object at the end of a path should not be stepped through by another path;
+- `ignoreKeys` and `shallowKeys` also apply to the keys of the objects a path steps through,
+  `visitOnlyKeys` is not used;
+- an object at the end of a path is visited like any other, so a longer path through it is not followed;
+- a context with `visitOnlyKeys` replaces the `visitPaths` of the default it falls back to;
 - the IDE suggests the first key of a path, but the compiler accepts any path.
   To have the compiler check every step, type the paths as `ContainerPaths` of `@traqula/core`,
   or list them in a known keys allowlist, described next.

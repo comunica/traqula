@@ -1,5 +1,5 @@
 import {
-  anyKey,
+  pathWildcard,
   TransformerSubTyped,
   traqulaIndentation,
   traqulaNewlineAlternative,
@@ -85,6 +85,6 @@ export class AstTransformer extends TransformerSubTyped<Sparql12Nodes> {}
  */
 export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql12Nodes>({
   ...astKnownKeys11,
-  triple: { ...astKnownKeys11.triple, annotations: [[ anyKey, 'val' ]]},
+  triple: { ...astKnownKeys11.triple, annotations: [[ pathWildcard, 'val' ]]},
   term: { ...astKnownKeys11.term, object: true, subject: true, predicate: true },
 });

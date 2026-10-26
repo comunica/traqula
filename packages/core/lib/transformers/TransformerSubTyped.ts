@@ -5,7 +5,7 @@ import type {
   TransformContext,
   VisitContext,
 } from './TransformerObject.js';
-import { withFallback } from './TransformerObject.js';
+import { mergeContextWithFallback } from './TransformerObject.js';
 import type { DefaultNodePreVisitor, Safeness, SafeWrap } from './TransformerTyped.js';
 import { TransformerTyped } from './TransformerTyped.js';
 
@@ -35,7 +35,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
     newDefaultNodePreVisitor: DefaultNodePreVisitor<Nodes> = {},
   ): TransformerSubTyped<Nodes> {
     return new TransformerSubTyped(
-      withFallback(this.defaultContext, newDefaultContext),
+      mergeContextWithFallback(this.defaultContext, newDefaultContext),
       { ...this.defaultNodePreVisitor, ...newDefaultNodePreVisitor },
     );
   }
@@ -170,6 +170,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
    * Contrary to {@link this.transformNodeSpecific}, a callback does not just return the value taking the
    * place of the node, it returns a {@link PreOrderMappingReturn}: that value, plus the
    * {@link TransformContext} of that value, so there is no separate preVisitor.
+   * That context completes the per type defaults of this transformer, looked up using the type of that value.
    * Also contrary to {@link this.transformNodeSpecific}, the descendants of the node given to the callback
    * are not transformed yet: they are the nodes of the input tree itself.
    * @param startObject the object from which we will start the transformation,
@@ -206,9 +207,9 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
           ogPreTransform = nodeCallBacks[casted.type];
         }
       }
-      return this.withNodeDefault(copy, ogPreTransform ?
-        ogPreTransform(copy, orig) :
-          { newValue: copy, reTransform: false });
+      return ogPreTransform ?
+        this.withNewValueDefault(ogPreTransform(copy, orig)) :
+        this.withNodeDefault(copy, { newValue: copy, reTransform: false });
     };
     return <any> this.transformObjectPreOrder(startObject, preTransformWrapper);
   }
@@ -245,7 +246,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
         }
       }
       return ogPreTransform ?
-        this.withNodeDefaultAsync(copy, ogPreTransform(copy, orig)) :
+        this.withNewValueDefaultAsync(ogPreTransform(copy, orig)) :
         this.withNodeDefault(copy, { newValue: copy, reTransform: false });
     };
     return <any> this.transformObjectPreOrderAsync(startObject, preTransformWrapper);

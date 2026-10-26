@@ -139,28 +139,24 @@ Keep in mind that:
 - all elements of an allowed array are visited, arrays are not filtered;
 - `ignoreKeys` still applies, and `shallowKeys` are still shallowly copied;
 - the object you start from is always visited;
-- an object without a `type`, like an element of the `updates` of an update, has no context of its own:
-  reached through a key, it gets the default context, so with an empty `visitOnlyKeys` default
-  the nodes within it are not visited. Step through such objects with `visitPaths` instead, described next.
+- an object without a `type`, like an element of the `updates` of an update, gets the default context,
+  so with an empty `visitOnlyKeys` default the nodes within it are not visited: step through it with `visitPaths`.
 
 ### Path-Based Traversal
 
-A context can also list `visitPaths`: paths to the objects to visit, instead of the keys of the node.
-A path steps through objects without a `type` to the nodes within them, so those objects are not visited themselves
-and their other keys are skipped.
-The `anyKey` symbol of `@traqula/core` steps into every element of an array, or every value of an object.
-Being a symbol, it never collides with a key of an object, also not with a key named `'*'`.
+A context can list `visitPaths` instead: paths through objects without a `type` to the objects to visit.
+The objects stepped through are not visited, so their other keys are skipped.
+The `pathWildcard` symbol of `@traqula/core` steps into every element of an array or value of an object.
 
 ```typescript
-import { anyKey } from '@traqula/core';
+import { pathWildcard } from '@traqula/core';
 import { AstTransformer } from "@traqula/rules-sparql-1-1";
 import { Parser } from '@traqula/parser-sparql-1-1'
 
 const ast = new Parser().parse('INSERT DATA { <a> <b> <c> } ; CLEAR ALL');
 const transformer = new AstTransformer({ visitOnlyKeys: new Set() });
-// Each element of 'updates' has no type, and holds an operation and its prefixes and base IRI.
-// Declared once, since the paths are prepared once per array.
-const operationPaths = [[ 'updates', anyKey, 'operation' ]] as const;
+// Declared once, since paths are prepared once per array
+const operationPaths = [[ 'updates', pathWildcard, 'operation' ]] as const;
 const operations: string[] = [];
 transformer.visitNode(ast, {
   'update': { preVisitor: () => ({ visitPaths: operationPaths }) },
@@ -170,46 +166,36 @@ const truety = operations.join() === 'insertdata,clear';
 ```
 
 Keep in mind that:
-- the objects at the paths are visited in the order a traversal of the keys visits them;
-- when the node is copied, so are the objects a path steps through, the node's original stays untouched;
-- the `ignoreKeys` and `shallowKeys` of the node apply to its own keys, `visitOnlyKeys` is not used.
-  The objects a path steps through use those of the default context, as they would when reached through a key;
-- an object at the end of a path is visited like any other, so a longer path through it is not followed.
-  A typed transformer, like `AstTransformer`, also ends a path at the first object with a `type`,
-  so a path can step through the objects without a type in an array that also holds nodes;
-- the paths are prepared once per array, so declare an array of paths once instead of creating it per node,
-  and do not change it once used;
-- a context with `visitOnlyKeys` replaces the `visitPaths` of the default it falls back to;
-- the IDE suggests the first key of a path, but the compiler accepts any path.
-  To have the compiler check every step, type the paths as `ContainerPaths` of `@traqula/core`,
-  or list them in a known keys allowlist, described next.
+- objects are visited in the order a traversal of the keys visits them;
+- copying the node also copies the objects its paths step through;
+- the node's `ignoreKeys` and `shallowKeys` apply to its own keys, those of the default context to the objects stepped through;
+- a path ends at its last step or, for a typed transformer like `AstTransformer`, at the first object with a `type`;
+- a context's `visitOnlyKeys` replaces the `visitPaths` of its default;
+- paths are prepared once per array, so do not change an array once used;
+- only the first step is suggested by the IDE: type paths as `ContainerPaths` of `@traqula/core` to check every step.
 
 ### Known Keys Allowlists
 
-To only skip the keys Traqula does not know, like keys added by an extension or the metadata of an engine,
-use a known keys allowlist as the default context per node type instead, the second argument of a transformer's constructor:
-`astKnownKeysAllowlist` of `@traqula/rules-sparql-1-1` and `@traqula/rules-sparql-1-2`,
-or `algebraUtils.knownKeysAllowlist` for the algebra.
-Nodes of a known type then only visit their known keys that can hold nodes, skipping RDF terms and source locations.
-Nodes of an unknown type, and objects without a `type` reached through a key, get the default context instead,
-so with the default context `{}` they are still fully visited.
-`visitOnlyKnownKeys` of `@traqula/core` creates such an allowlist, and the compiler checks that it lists exactly
-the keys that can hold a node. A key maps to `true`, or to the paths within its value to visit instead:
+To skip only the keys Traqula does not know, like those of an extension or engine metadata, pass a known keys allowlist
+as the per type defaults, the second argument of a transformer's constructor:
+`astKnownKeysAllowlist` of `@traqula/rules-sparql-1-1` and `@traqula/rules-sparql-1-2`, or `algebraUtils.knownKeysAllowlist`.
+Known node types then only visit their keys that can hold nodes; other objects get the default context.
+`visitOnlyKnownKeys` of `@traqula/core` creates such an allowlist, the compiler checking that it lists exactly
+the keys that can hold a node. A key maps to `true`, or to the paths within its value:
 
 ```typescript
-import { anyKey, visitOnlyKnownKeys } from '@traqula/core';
+import { pathWildcard, visitOnlyKnownKeys } from '@traqula/core';
 import type { Sparql11Nodes } from '@traqula/rules-sparql-1-1';
 
 const allowlist = visitOnlyKnownKeys<Sparql11Nodes>({
   // ...
-  update: { updates: [[ anyKey, 'operation' ], [ anyKey, 'context' ]] },
+  update: { updates: [[ pathWildcard, 'operation' ], [ pathWildcard, 'context' ]] },
   // ...
 });
 ```
 
-The AST allowlists step through all objects without a `type` like this, so they also work with
-a `visitOnlyKeys` of an empty set in the default context.
-Their known keys are exported as `astKnownKeys` of `@traqula/rules-sparql-1-1`, to spread into those of an extension.
+The AST allowlists step through every object without a `type`, so they also work with an empty default `visitOnlyKeys`.
+Spread `astKnownKeys` of `@traqula/rules-sparql-1-1` to extend them.
 
 The rules of the parser, `toAlgebra`, and `toAst` that call a transformer use the ones you give them.
 

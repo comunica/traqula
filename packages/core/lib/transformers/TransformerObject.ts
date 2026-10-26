@@ -21,98 +21,111 @@ export function isKeyIgnored(key: string, ignoreKeys?: Set<string>, visitOnlyKey
 }
 
 /**
- * A step of a {@link VisitPath} into every element of an array, or every value of an object.
- * Registered globally, so it is shared by every copy of this package, like its CommonJS and ES module builds.
+ * A step of a {@link VisitPath} into every element of an array or every value of an object.
+ * Created with `Symbol.for`, so the CommonJS and ES module builds of this package share it.
  */
-export const anyKey: unique symbol = Symbol.for('@traqula/core/anyKey');
+export const pathWildcard: unique symbol = Symbol.for('@traqula/core/pathWildcard');
 
 /**
- * A step of a {@link VisitPath}: a key of an object, an index of an array, or {@link anyKey} for each of them.
+ * A step of a {@link VisitPath}: an object key, an array index, or the {@link pathWildcard}.
  */
-export type PathKey = string | number | typeof anyKey;
+export type PathKey = string | number | typeof pathWildcard;
 
 /**
- * Whether a step of a {@link VisitPath} steps into the given key.
+ * Whether a step of a path steps into the given key of an object.
+ * @param pathKey the step of the path.
+ * @param objectKey the key of the object.
+ * @return whether the step matches the key.
  */
-export function pathStepMatches(step: PathKey, key: string): boolean {
-  return step === anyKey || String(step) === key;
+export function pathKeyMatches(pathKey: PathKey, objectKey: string): boolean {
+  return pathKey === pathWildcard || String(pathKey) === objectKey;
 }
 
 /**
- * The visitPaths of a context, or those of the context it falls back to, unless it gives visitOnlyKeys:
- * a context selecting the keys to visit replaces how its fallback selects them.
+ * The visitPaths of a context, or those of its fallback when the context gives no visitOnlyKeys.
+ * @param context the more specific context.
+ * @param fallback the context it falls back to.
+ * @return the visitPaths to follow, if any.
  */
 export function resolveVisitPaths(context: VisitContext, fallback: VisitContext): VisitContext['visitPaths'] {
   return context.visitPaths ?? (context.visitOnlyKeys ? undefined : fallback.visitPaths);
 }
 
 /**
- * Completes a context with the context it falls back to, see {@link resolveVisitPaths}.
+ * Merges a context over its fallback, its visitOnlyKeys replacing the visitPaths of the fallback.
  * @param fallback the less specific context.
- * @param context the more specific context, overwriting the fallback.
- * @return the completed context.
+ * @param context the more specific context.
+ * @return the merged context.
  */
-export function withFallback<Context extends VisitContext>(fallback: Context, context: Context): Context {
+export function mergeContextWithFallback<Context extends VisitContext>(fallback: Context, context: Context): Context {
   return { ...fallback, ...context, visitPaths: resolveVisitPaths(context, fallback) };
 }
 
 /**
- * The paths from an object, as a tree of their steps.
- * The steps of a key also hold the paths stepping into it through {@link anyKey}, so a key is looked up at most twice.
+ * The visitPaths from an object as a tree of their steps, the steps of each key including those of the wildcard.
  */
-interface PathTrie {
+interface VisitPathTrie {
   /**
    * Whether a path ends at this object.
    */
-  end: boolean;
+  pathEnds: boolean;
   /**
    * The remaining paths per key stepped into.
    */
-  steps: Map<string, PathTrie>;
+  stepsByKey: Map<string, VisitPathTrie>;
   /**
-   * The remaining paths of the keys not in {@link steps}, stepped into through {@link anyKey}.
+   * The remaining paths of the keys not in {@link stepsByKey}.
    */
-  any?: PathTrie;
+  wildcardSteps?: VisitPathTrie;
 }
 
-function buildPathTrie(paths: readonly (readonly PathKey[])[]): PathTrie {
-  const trie: PathTrie = { end: paths.some(path => path.length === 0), steps: new Map() };
-  const remaining = (matches: (step: PathKey) => boolean): PathKey[][] => paths
+/**
+ * Builds the trie of the given paths.
+ * @param paths the paths to build the trie of.
+ * @return the trie.
+ */
+function buildVisitPathTrie(paths: readonly (readonly PathKey[])[]): VisitPathTrie {
+  const trie: VisitPathTrie = { pathEnds: paths.some(path => path.length === 0), stepsByKey: new Map() };
+  const remainingPaths = (matches: (pathKey: PathKey) => boolean): PathKey[][] => paths
     .filter(path => path.length > 0 && matches(path[0]))
     .map(path => path.slice(1));
-  for (const [ step ] of paths) {
-    const key = String(step);
-    if (step !== undefined && step !== anyKey && !trie.steps.has(key)) {
-      trie.steps.set(key, buildPathTrie(remaining(other => pathStepMatches(other, key))));
+  for (const [ pathKey ] of paths) {
+    const objectKey = String(pathKey);
+    if (pathKey !== undefined && pathKey !== pathWildcard && !trie.stepsByKey.has(objectKey)) {
+      trie.stepsByKey.set(objectKey, buildVisitPathTrie(remainingPaths(other => pathKeyMatches(other, objectKey))));
     }
   }
-  if (paths.some(([ step ]) => step === anyKey)) {
-    trie.any = buildPathTrie(remaining(step => step === anyKey));
+  if (paths.some(([ pathKey ]) => pathKey === pathWildcard)) {
+    trie.wildcardSteps = buildVisitPathTrie(remainingPaths(pathKey => pathKey === pathWildcard));
   }
   return trie;
 }
 
 /**
- * The tries of the visitPaths, built once per array of paths, like those of a default context.
- * An array is therefore expected not to change once it is used, and to be reused rather than created per object.
+ * The trie per array of visitPaths, so an array is prepared once and should not change once used.
  */
-const pathTries = new WeakMap<readonly (readonly PathKey[])[], PathTrie>();
+const visitPathTrieCache = new WeakMap<readonly (readonly PathKey[])[], VisitPathTrie>();
 
-function pathTrieOf(paths: readonly (readonly PathKey[])[]): PathTrie {
-  let trie = pathTries.get(paths);
+/**
+ * The trie of the given paths, built once per array.
+ * @param paths the paths to get the trie of.
+ * @return the trie.
+ */
+function visitPathTrieOf(paths: readonly (readonly PathKey[])[]): VisitPathTrie {
+  let trie = visitPathTrieCache.get(paths);
   if (!trie) {
-    trie = buildPathTrie(paths);
-    pathTries.set(paths, trie);
+    trie = buildVisitPathTrie(paths);
+    visitPathTrieCache.set(paths, trie);
   }
   return trie;
 }
 
 /**
- * How a traversal follows paths, the same for each object of the traversal.
+ * How a traversal follows visitPaths, the same for every object it visits.
  */
-interface PathWalk {
+interface PathTraversalSettings {
   /**
-   * Whether to shallowly copy the objects a path steps through, into the object holding them.
+   * Whether to shallowly copy the objects a path steps through.
    */
   copy: boolean;
   /**
@@ -124,18 +137,16 @@ interface PathWalk {
    */
   shallowKeys: Set<string> | undefined;
   /**
-   * Called on each object found, with the object holding it and its key.
+   * Called on each object at the end of a path, with the object holding it and its key.
    */
-  onFound: (value: object, holder: Record<string, unknown>, key: string) => void;
+  onObjectFound: (value: object, holder: Record<string, unknown>, key: string) => void;
 }
 
 /**
  * A path from an object to an object it holds, see {@link VisitContext.visitPaths}.
- * Like {@link ObjectKeyHint}, the IDE suggests the keys of the object for its first step, but any path is accepted,
- * so contexts of different objects stay assignable to each other.
- * Use `ContainerPaths` of a typed transformer to have the compiler check the steps of a path.
+ * The IDE suggests the first key but any path is accepted; type paths as `ContainerPaths` to check every step.
  */
-export type VisitPath<Obj> = readonly [ObjectKeyHint<Obj> | typeof anyKey, ...PathKey[]];
+export type VisitPath<Obj> = readonly [ObjectKeyHint<Obj> | typeof pathWildcard, ...PathKey[]];
 
 /**
  * @typeParam Obj - The object this context applies to, its keys are suggested by the IDE.
@@ -161,16 +172,8 @@ export interface VisitContext<Obj = object> {
    */
   visitOnlyKeys?: Set<ObjectKeyHint<Obj>>;
   /**
-   * Paths to the objects to visit, instead of the values of the keys of this object.
-   * An {@link anyKey} steps into every element of an array, or every value of an object.
-   * - The objects a path steps through are not visited themselves, but are shallowly copied when this object is.
-   * - The {@link ignoreKeys} and shallowKeys of this context apply to its own keys, {@link visitOnlyKeys} is not used.
-   *   The objects stepped through use those of the default context, as they would when reached through a key.
-   * - The objects are handled in the order a traversal of the keys handles them.
-   * - A path ends at an object at its end, and, for a typed transformer, at the first object with a type,
-   *   since that object is visited itself.
-   * - A context with {@link visitOnlyKeys} replaces the visitPaths of the default it falls back to.
-   * - The paths are prepared once per array: reuse an array, for example by declaring it once, and do not change it.
+   * Paths to the objects to visit instead of the keys of this object, stepping through objects without a type.
+   * See the AST structure docs for how they combine with the other keys of a context.
    */
   visitPaths?: readonly VisitPath<Obj>[];
 }
@@ -243,7 +246,7 @@ export class TransformerObject {
   public constructor(protected readonly defaultContext: TransformContext = {}) {}
 
   public clone(newDefaultContext: TransformContext = {}): TransformerObject {
-    return new TransformerObject(withFallback(this.defaultContext, newDefaultContext));
+    return new TransformerObject(mergeContextWithFallback(this.defaultContext, newDefaultContext));
   }
 
   /**
@@ -272,50 +275,58 @@ export class TransformerObject {
   }
 
   /**
-   * Whether a path ends at the given object, even when it has steps left. False by default.
-   * @param _value an object a path steps into.
+   * Whether visitPaths end at the given object, even with steps left. Never by default.
+   * @param _object the object a path steps into.
+   * @return whether the paths end there.
    */
-  protected endsPath(_value: object): boolean {
+  protected endsPathsAt(_object: object): boolean {
     return false;
   }
 
   /**
-   * Finds the objects at the given paths, see {@link VisitContext.visitPaths}, in the order a traversal of the keys
-   * of the objects stepped through pushes them on its stack: the values of an object from its first key to its last,
-   * and the elements of an array from its last.
+   * Calls the traversal back on the objects at the given paths, in the order a traversal of the keys pushes them.
    * @param holder the object the paths start from.
-   * @param trie the paths to follow from the holder.
-   * @param ignoreKeys the keys of the holder that are not stepped into.
-   * @param shallowKeys the keys of the holder whose value is shallowly copied instead of stepped into.
-   * @param walk how to follow the paths, also giving the keys of the objects stepped through.
+   * @param trie the paths to follow.
+   * @param ignoreKeys the keys of the holder not to step into.
+   * @param shallowKeys the keys of the holder to shallowly copy instead of stepping into.
+   * @param traversal how to follow the paths past the holder.
    */
-  private findAtPaths(
+  private findObjectsAtPaths(
     holder: Record<string, unknown>,
-    trie: PathTrie,
+    trie: VisitPathTrie,
     ignoreKeys: Set<string> | undefined,
     shallowKeys: Set<string> | undefined,
-    walk: PathWalk,
+    traversal: PathTraversalSettings,
   ): void {
     if (Array.isArray(holder)) {
       for (let index = holder.length - 1; index >= 0; index--) {
-        this.findAtPathKey(holder, index.toString(), trie, ignoreKeys, shallowKeys, walk);
+        this.findObjectsAtPathKey(holder, index.toString(), trie, ignoreKeys, shallowKeys, traversal);
       }
       return;
     }
     for (const key in holder) {
       if (Object.hasOwn(holder, key)) {
-        this.findAtPathKey(holder, key, trie, ignoreKeys, shallowKeys, walk);
+        this.findObjectsAtPathKey(holder, key, trie, ignoreKeys, shallowKeys, traversal);
       }
     }
   }
 
-  private findAtPathKey(
+  /**
+   * Follows the given paths into one key of the holder, see {@link findObjectsAtPaths}.
+   * @param holder the object holding the key.
+   * @param key the key to step into.
+   * @param trie the paths to follow from the holder.
+   * @param ignoreKeys the keys of the holder not to step into.
+   * @param shallowKeys the keys of the holder to shallowly copy instead of stepping into.
+   * @param traversal how to follow the paths past the holder.
+   */
+  private findObjectsAtPathKey(
     holder: Record<string, unknown>,
     key: string,
-    trie: PathTrie,
+    trie: VisitPathTrie,
     ignoreKeys: Set<string> | undefined,
     shallowKeys: Set<string> | undefined,
-    walk: PathWalk,
+    traversal: PathTraversalSettings,
   ): void {
     let value = holder[key];
     if (value === null || typeof value !== 'object') {
@@ -325,19 +336,20 @@ export class TransformerObject {
       holder[key] = this.cloneObj(value);
       return;
     }
-    const next = trie.steps.get(key) ?? trie.any;
+    const next = trie.stepsByKey.get(key) ?? trie.wildcardSteps;
     if (!next || isKeyIgnored(key, ignoreKeys)) {
       return;
     }
-    if (next.end || this.endsPath(value)) {
-      walk.onFound(value, holder, key);
+    if (next.pathEnds || this.endsPathsAt(value)) {
+      traversal.onObjectFound(value, holder, key);
       return;
     }
-    if (walk.copy) {
+    if (traversal.copy) {
       value = this.cloneObj(value);
       holder[key] = value;
     }
-    this.findAtPaths(<Record<string, unknown>> value, next, walk.ignoreKeys, walk.shallowKeys, walk);
+    const container = <Record<string, unknown>> value;
+    this.findObjectsAtPaths(container, next, traversal.ignoreKeys, traversal.shallowKeys, traversal);
   }
 
   /**
@@ -445,13 +457,13 @@ export class TransformerObject {
       stackParentKey.push(key);
       stackParent.push(parent);
     };
-    const copyingWalk: PathWalk = {
+    const copyingPathTraversal: PathTraversalSettings = {
       copy: true,
       ignoreKeys: defaultIgnoreKeys,
       shallowKeys: defaultShallowKeys,
-      onFound: pushChild,
+      onObjectFound: pushChild,
     };
-    const inPlaceWalk: PathWalk = { ...copyingWalk, copy: false };
+    const inPlacePathTraversal: PathTraversalSettings = { ...copyingPathTraversal, copy: false };
 
     // Everything after the preVisitor call - split out so it can also run from inside a resolved promise.
     const expand = (curObject: object, curParent: object, curKey: string, context: TransformContext): void => {
@@ -475,8 +487,9 @@ export class TransformerObject {
       // Extend stack if needed. When shortcutted, should still unwind the stack, but no longer add to it.
       if (continues && !didShortCut) {
         if (visitPaths) {
-          const walk = copyFlag ? copyingWalk : inPlaceWalk;
-          this.findAtPaths(<Record<string, unknown>> copy, pathTrieOf(visitPaths), ignoreKeys, shallowKeys, walk);
+          const holder = <Record<string, unknown>> copy;
+          const traversal = copyFlag ? copyingPathTraversal : inPlacePathTraversal;
+          this.findObjectsAtPaths(holder, visitPathTrieOf(visitPaths), ignoreKeys, shallowKeys, traversal);
           return;
         }
         for (const key in copy) {
@@ -662,11 +675,11 @@ export class TransformerObject {
       stackRewriteCount.push(0);
       stackDepth.push(childDepth);
     };
-    const pathWalk: PathWalk = {
+    const pathTraversal: PathTraversalSettings = {
       copy: defaultCopyFlag,
       ignoreKeys: defaultIgnoreKeys,
       shallowKeys: defaultShallowKeys,
-      onFound: pushChild,
+      onObjectFound: pushChild,
     };
 
     const applyResult = (
@@ -712,7 +725,7 @@ export class TransformerObject {
       const newAsRecord = <Record<string, unknown>> newValue;
       childDepth = depth + 1;
       if (visitPaths) {
-        this.findAtPaths(newAsRecord, pathTrieOf(visitPaths), ignoreKeys, shallowKeys, pathWalk);
+        this.findObjectsAtPaths(newAsRecord, visitPathTrieOf(visitPaths), ignoreKeys, shallowKeys, pathTraversal);
         return;
       }
       // In any other case, push the children, ignoring ignoreKeys, keys not in visitOnlyKeys, and shallowKeys.
@@ -854,11 +867,11 @@ export class TransformerObject {
       stack.push(val);
     };
     // A visit copies nothing, also not the shallowKeys
-    const pathWalk: PathWalk = {
+    const pathTraversal: PathTraversalSettings = {
       copy: false,
       ignoreKeys: defaultIgnoreKeys,
       shallowKeys: undefined,
-      onFound: pushChild,
+      onObjectFound: pushChild,
     };
 
     // Everything after the preVisitor call - split out so it can also run from inside a resolved promise.
@@ -877,7 +890,7 @@ export class TransformerObject {
       if (continues && !didShortCut) {
         if (visitPaths) {
           const holder = <Record<string, unknown>> curObject;
-          this.findAtPaths(holder, pathTrieOf(visitPaths), ignoreKeys, undefined, pathWalk);
+          this.findObjectsAtPaths(holder, visitPathTrieOf(visitPaths), ignoreKeys, undefined, pathTraversal);
           return;
         }
         for (const key in curObject) {

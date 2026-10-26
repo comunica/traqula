@@ -1,6 +1,6 @@
 import type { SourceLocation, Typed } from '../types.js';
 import type {
-  anyKey,
+  pathWildcard,
   Awaitable,
   PathKey,
   PreOrderMappingReturn,
@@ -8,7 +8,13 @@ import type {
   VisitContext,
   VisitPath,
 } from './TransformerObject.js';
-import { isKeyIgnored, isPromise, pathStepMatches, TransformerObject, withFallback } from './TransformerObject.js';
+import {
+  isKeyIgnored,
+  isPromise,
+  mergeContextWithFallback,
+  pathKeyMatches,
+  TransformerObject,
+} from './TransformerObject.js';
 
 /**
  * Controls whether transform callbacks receive fully typed nodes (`'unsafe'`) or
@@ -54,7 +60,7 @@ export type CanHoldNode<Value, Skipped = NodeFreeValue> = unknown extends Value 
   true extends MemberCanHoldNode<Value, Skipped> ? true : false;
 
 /**
- * A function, which holds no nodes.
+ * Any function, which holds no nodes.
  */
 type AnyFunction = (...args: any[]) => unknown;
 
@@ -73,9 +79,14 @@ export type NodeHoldingKeys<Obj, Skipped = NodeFreeValue> = {[Key in AllObjectKe
   CanHoldNode<AllObjectValues<Obj, Key>, Skipped> extends true ? Key : never }[AllObjectKeys<Obj>];
 
 /**
- * The remaining depth of a {@link ContainerPaths}, bounding the recursion on recursive types.
+ * The depth left per depth of a {@link ContainerPaths}, bounding the recursion on recursive types.
  */
-type PathDepths = [never, 0, 1, 2, 3, 4];
+type RemainingPathDepths = [never, 0, 1, 2, 3, 4];
+
+/**
+ * The value types a {@link pathWildcard} steps into: those of all keys of an object.
+ */
+type ValuesOfAllKeys<Container> = Container[keyof Container & string];
 
 /**
  * The values a path can step through: objects that are no node, since a typed transformer ends a path at a node.
@@ -83,28 +94,33 @@ type PathDepths = [never, 0, 1, 2, 3, 4];
 type PathContainer<Value> = Exclude<Extract<Value, object>, Typed | AnyFunction>;
 
 /**
- * The paths that step to a value through the given key: the key alone when the value can be an object,
- * and the key followed by a path within the value when it can be a {@link PathContainer}.
+ * The paths through the given key: the key alone when its value can be an object, and the key followed by the
+ * paths within the value when it can be a {@link PathContainer}.
  */
-type PathStep<Key extends PathKey, Value, Depth extends number, Skipped> = unknown extends Value ?
+type PathsThroughKey<
+  Key extends PathKey,
+  KeyValue,
+  Depth extends number,
+  Skipped,
+  Value = Exclude<KeyValue, Skipped | undefined>,
+  NextDepth extends number = RemainingPathDepths[Depth],
+> = unknown extends Value ?
   readonly [Key, ...PathKey[]] :
     ([Extract<Value, object>] extends [never] ? never : readonly [Key]) |
-    ([Depth] extends [never] ? never : readonly [Key, ...ContainerPaths<PathContainer<Value>, Skipped, Depth>]);
+    ([NextDepth] extends [never] ? never : readonly [Key, ...ContainerPaths<PathContainer<Value>, Skipped, NextDepth>]);
 
 /**
- * The paths within a container to the objects it holds, also when the container is a union,
- * as followed by a typed transformer, see {@link VisitContext.visitPaths}.
- * A path only steps through objects that are no node: arrays, and objects without a type.
+ * The visitPaths within a container to the objects it holds, as followed by a typed transformer.
+ * A path steps through arrays and objects without a type, and ends at an object with one.
  * @typeParam Skipped - Values a path does not step to, nor through.
- * @typeParam Depth - The number of containers a path can step through, besides the one it starts in.
+ * @typeParam Depth - The number of containers a path can step through, besides the first.
  */
 export type ContainerPaths<Container, Skipped = never, Depth extends number = 4> =
   Container extends readonly (infer Element)[] ?
-    PathStep<number | typeof anyKey, Exclude<Element, Skipped>, PathDepths[Depth], Skipped> :
-      {[Key in keyof Container & string]-?:
-        PathStep<Key, Exclude<Container[Key], undefined | Skipped>, PathDepths[Depth], Skipped> }[
+    PathsThroughKey<number | typeof pathWildcard, Element, Depth, Skipped> :
+      {[Key in keyof Container & string]-?: PathsThroughKey<Key, Container[Key], Depth, Skipped> }[
         keyof Container & string] |
-      PathStep<typeof anyKey, Exclude<Container[keyof Container & string], Skipped>, PathDepths[Depth], Skipped>;
+      PathsThroughKey<typeof pathWildcard, ValuesOfAllKeys<Container>, Depth, Skipped>;
 
 /**
  * Per node type, exactly the keys that can hold a node, mapped to `true` to visit the value of the key,
@@ -113,19 +129,19 @@ export type ContainerPaths<Container, Skipped = never, Depth extends number = 4>
  * @typeParam Skipped - Values that are not looked into, by default source locations and RDF terms.
  */
 export type KnownNodeKeys<Nodes extends Typed, Skipped = NodeFreeValue> =
-  {[T in Nodes['type']]: KnownKeysOf<Extract<Nodes, Typed<T>>, Skipped> };
+  {[T in Nodes['type']]: KnownNodeKeysOfType<Extract<Nodes, Typed<T>>, Skipped> };
 
 /**
  * The {@link KnownNodeKeys} of a single node type.
  */
-type KnownKeysOf<Node, Skipped, Keys extends string = NodeHoldingKeys<Node, Skipped>> = [Keys] extends [never] ?
+type KnownNodeKeysOfType<Node, Skipped, Keys extends string = NodeHoldingKeys<Node, Skipped>> = [Keys] extends [never] ?
   Record<string, never> :
-    {[Key in Keys]: KnownKeyPaths<AllObjectValues<Node, Key>, Skipped> };
+    {[Key in Keys]: KnownNodeKeyEntry<AllObjectValues<Node, Key>, Skipped> };
 
 /**
- * `true`, or the paths within the value of a key when there are any.
+ * `true`, or else the paths within the value of a key when there are any.
  */
-type KnownKeyPaths<Value, Skipped, Paths = ContainerPaths<PathContainer<Exclude<Value, Skipped>>, Skipped>> =
+type KnownNodeKeyEntry<Value, Skipped, Paths = ContainerPaths<PathContainer<Exclude<Value, Skipped>>, Skipped>> =
   [Paths] extends [never] ? true : true | readonly [Paths, ...Paths[]];
 
 /**
@@ -175,43 +191,44 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     newDefaultNodePreVisitor: DefaultNodePreVisitor<Nodes> = {},
   ): TransformerTyped<Nodes> {
     return new TransformerTyped(
-      withFallback(this.defaultContext, newDefaultContext),
+      mergeContextWithFallback(this.defaultContext, newDefaultContext),
       { ...this.defaultNodePreVisitor, ...newDefaultNodePreVisitor },
     );
   }
 
   /**
    * Whether a traversal visits the given key of an object, by the default of its node type or the default context.
-   * With {@link VisitContext.visitPaths}, whether a path starts with the key,
-   * the keys of the objects the paths step through are not answered for.
+   * With {@link VisitContext.visitPaths}, whether a path starts with the key.
    * Lets hand-written traversals respect the defaults of this transformer, like its allowlists.
    * @param object the object holding the key.
    * @param key the key to visit.
    * @return whether the key is visited.
    */
   public visitsKey(object: object, key: string): boolean {
-    const { ignoreKeys, visitOnlyKeys, visitPaths } = withFallback(this.defaultContext, this.withNodeDefault(object));
+    const context = mergeContextWithFallback(this.defaultContext, this.withNodeDefault(object));
+    const { ignoreKeys, visitOnlyKeys, visitPaths } = context;
     return visitPaths ?
-        !isKeyIgnored(key, ignoreKeys) && visitPaths.some(([ first ]) => pathStepMatches(first, key)) :
+        !isKeyIgnored(key, ignoreKeys) && visitPaths.some(([ first ]) => pathKeyMatches(first, key)) :
         !isKeyIgnored(key, ignoreKeys, visitOnlyKeys);
   }
 
   /**
-   * A path ends at a node, since a node is visited itself.
-   * @param value an object a path steps into.
+   * Ends visitPaths at a node, since a node is visited itself.
+   * @param object the object a path steps into.
+   * @return whether the object is a node.
    */
-  protected override endsPath(value: object): boolean {
-    return Boolean((<Partial<Typed>> value).type);
+  protected override endsPathsAt(object: object): boolean {
+    return Boolean((<Partial<Typed>> object).type);
   }
 
   /**
    * Completes the context a callback gave for a node with the per type default of that node.
-   * @param node the node the context is for.
+   * @param node the node the context is for, which need not be an object.
    * @param context the context of the callback, or undefined when the node has no callback.
    * @return the per type default, overwritten by the given context.
    */
-  protected withNodeDefault<Context extends object = TransformContext>(node: object, context?: Context): Context {
-    const type = (<Partial<Typed<Nodes['type']>>> node).type;
+  protected withNodeDefault<Context extends object = TransformContext>(node: unknown, context?: Context): Context {
+    const type = node !== null && typeof node === 'object' ? (<Partial<Typed<Nodes['type']>>> node).type : undefined;
     const nodeDefault = type ? this.defaultNodePreVisitor[type] : undefined;
     if (!nodeDefault) {
       return context ?? <Context> {};
@@ -219,7 +236,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     if (!context) {
       return <Context> nodeDefault;
     }
-    return <Context> withFallback(<VisitContext> nodeDefault, <VisitContext> context);
+    return <Context> mergeContextWithFallback(<VisitContext> nodeDefault, <VisitContext> context);
   }
 
   /**
@@ -235,6 +252,26 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     return isPromise(context) ?
       context.then(resolved => this.withNodeDefault(node, resolved)) :
       this.withNodeDefault(node, context);
+  }
+
+  /**
+   * Completes the result of a pre-order mapper with the per type default of the value it returns.
+   * @param result the result of the mapper.
+   * @return the per type default of the new value, overwritten by the result.
+   */
+  protected withNewValueDefault(result: PreOrderMappingReturn): PreOrderMappingReturn {
+    return this.withNodeDefault(result.newValue, result);
+  }
+
+  /**
+   * Async variant of {@link withNewValueDefault}, awaiting the result when it is a promise.
+   * @param result the result of the mapper.
+   * @return the per type default of the new value, overwritten by the result.
+   */
+  protected withNewValueDefaultAsync(result: Awaitable<PreOrderMappingReturn>): Awaitable<PreOrderMappingReturn> {
+    return isPromise(result) ?
+      result.then(resolved => this.withNewValueDefault(resolved)) :
+      this.withNewValueDefault(result);
   }
 
   /**
@@ -321,7 +358,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
    * the node, it returns a {@link PreOrderMappingReturn}: that value, plus the {@link TransformContext} of
    * that value. Since the callback decides what we iterate into, it is the one telling us how to iterate
    * into it, so there is no separate preVisitor - it only completes the per type defaults of this
-   * transformer, which are looked up using the type of the node it was called on.
+   * transformer, which are looked up using the type of the value it returns.
    * A node without a callback is left alone: it keeps those defaults, but is never re-transformed.
    *
    * Also contrary to {@link this.transformNode}, the descendants of the node given to the callback are not
@@ -346,9 +383,9 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
       if (casted.type) {
         ogPreTransform = nodeCallBacks[casted.type];
       }
-      return this.withNodeDefault(copy, ogPreTransform ?
-        ogPreTransform(copy, orig) :
-          { newValue: copy, reTransform: false });
+      return ogPreTransform ?
+        this.withNewValueDefault(ogPreTransform(copy, orig)) :
+        this.withNodeDefault(copy, { newValue: copy, reTransform: false });
     };
 
     return <any> this.transformObjectPreOrder(startObject, preTransformWrapper);
@@ -374,7 +411,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
         ogPreTransform = nodeCallBacks[casted.type];
       }
       return ogPreTransform ?
-        this.withNodeDefaultAsync(copy, ogPreTransform(copy, orig)) :
+        this.withNewValueDefaultAsync(ogPreTransform(copy, orig)) :
         this.withNodeDefault(copy, { newValue: copy, reTransform: false });
     };
 

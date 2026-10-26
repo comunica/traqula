@@ -1,5 +1,5 @@
 import type { KnownNodeKeys } from '@traqula/core';
-import { anyKey, TransformerSubTyped, visitOnlyKnownKeys } from '@traqula/core';
+import { pathWildcard, TransformerSubTyped, visitOnlyKnownKeys } from '@traqula/core';
 import { AstFactory } from './astFactory.js';
 import { pnLocalEscPattern } from './lexer/lexerPatterns.js';
 import type { Sparql11Nodes, TermIri } from './Sparql11types.js';
@@ -208,7 +208,7 @@ export function resolveTermIri(term: TermIri, prefixes: Record<string, string>, 
 export const astKnownKeys = {
   path: { items: true },
   pattern: {
-    values: [[ anyKey, anyKey ]],
+    values: [[ pathWildcard, pathWildcard ]],
     name: true,
     variable: true,
     expression: true,
@@ -216,7 +216,7 @@ export const astKnownKeys = {
     patterns: true,
     triples: true,
   },
-  update: { updates: [[ anyKey, 'operation' ], [ anyKey, 'context' ]]},
+  update: { updates: [[ pathWildcard, 'operation' ], [ pathWildcard, 'context' ]]},
   query: {
     values: true,
     template: true,
@@ -238,14 +238,14 @@ export const astKnownKeys = {
     delete: true,
     insert: true,
   },
-  datasetClauses: { clauses: [[ anyKey, 'value' ]]},
+  datasetClauses: { clauses: [[ pathWildcard, 'value' ]]},
   tripleCollection: { triples: true, identifier: true },
   triple: { object: true, subject: true, predicate: true },
   solutionModifier: {
     having: true,
-    orderDefs: [[ anyKey, 'expression' ]],
+    orderDefs: [[ pathWildcard, 'expression' ]],
     // The binds without a type are stepped through, the expressions with a type end the paths
-    groupings: [[ anyKey, 'variable' ], [ anyKey, 'value' ]],
+    groupings: [[ pathWildcard, 'variable' ], [ pathWildcard, 'value' ]],
   },
   expression: { function: true, args: true, expression: true },
   contextDef: { value: true },

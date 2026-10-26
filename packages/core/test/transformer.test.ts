@@ -1,7 +1,7 @@
 import { describe, it } from 'vitest';
-import type { Awaitable, TransformContext, VisitContext } from '../lib/index.js';
+import type { Awaitable, PreOrderMappingReturn, TransformContext, VisitContext } from '../lib/index.js';
 import {
-  anyKey,
+  pathWildcard,
   TransformerTyped,
   TransformerSubTyped,
   TransformerObject,
@@ -1091,6 +1091,58 @@ describe('transformerSubTyped preOrder', () => {
   });
 });
 
+describe('pre-order per type defaults', () => {
+  interface Wrap {
+    type: 'wrap';
+    [key: string]: any;
+  }
+  interface Join {
+    type: 'join';
+    [key: string]: any;
+  }
+  interface Leaf {
+    type: 'leaf';
+    [key: string]: any;
+  }
+  type Nodes = Wrap | Join | Leaf;
+  const defaults = { wrap: { visitOnlyKeys: new Set<string>() }, join: { visitOnlyKeys: new Set([ 'input' ]) }};
+  const typed = new TransformerTyped<Nodes>({}, defaults);
+  const subTyped = new TransformerSubTyped<Nodes>({}, defaults);
+  // SubTyped transformers only dispatch nodes with a subType
+  const leafNode = (name: string): Leaf => ({ type: 'leaf', subType: 'node', name });
+  const tree = { type: 'wrap', subType: 'node', inner: leafNode('skipped') };
+  // The wrap is replaced by a join, whose input is iterated into by the default of a join, not of a wrap
+  const toJoin = (): PreOrderMappingReturn => ({ newValue: { type: 'join', input: [ leafNode('a'), leafNode('b') ]}});
+
+  function recordLeaves(): { leaves: string[]; leaf: (copy: any) => PreOrderMappingReturn } {
+    const leaves: string[] = [];
+    return { leaves, leaf: (copy) => {
+      leaves.push(copy.name);
+      return { newValue: copy };
+    } };
+  }
+
+  it('apply the default of the type of the value a mapper returns', async({ expect }) => {
+    for (const run of [
+      (leaf: any) => typed.transformNodePreOrder(tree, { wrap: toJoin, leaf }),
+      (leaf: any) => typed.transformNodePreOrderAsync(tree, { wrap: async() => toJoin(), leaf }),
+      (leaf: any) => subTyped.transformNodeSpecificPreOrder(tree, { wrap: toJoin, leaf }, {}),
+      (leaf: any) => subTyped.transformNodeSpecificPreOrderAsync(tree, { wrap: toJoin, leaf }, {}),
+    ]) {
+      const { leaves, leaf } = recordLeaves();
+      await run(leaf);
+      expect(leaves).toEqual([ 'a', 'b' ]);
+    }
+  });
+
+  it('apply no default when the mapper returns a value without a type', ({ expect }) => {
+    const { leaves, leaf } = recordLeaves();
+    typed.transformNodePreOrder(tree, { wrap: copy => ({ newValue: { untyped: copy.inner }}), leaf });
+    expect(leaves).toEqual([ 'skipped' ]);
+    expect(typed.transformNodePreOrder(tree, { wrap: () => ({ newValue: 'primitive' }) })).toBe('primitive');
+  });
+});
+
 describe('transformerSubTyped per type defaults', () => {
   type Nodes = SubTypedNode | Fruit | Vegetable;
   const defaulting = new TransformerSubTyped<Nodes>({}, { category: { ignoreKeys: new Set([ 'skipped' ]) }});
@@ -1749,9 +1801,9 @@ describe('visitOnlyKnownKeys', () => {
     const withPaths = visitOnlyKnownKeys<Apple | Crate | Shelf>({
       apple: { core: true },
       crate: { content: true },
-      shelf: { crate: true, rows: [[ anyKey, 'apple' ]]},
+      shelf: { crate: true, rows: [[ pathWildcard, 'apple' ]]},
     });
-    expect(withPaths.shelf).toEqual({ visitPaths: [[ 'crate' ], [ 'rows', anyKey, 'apple' ]]});
+    expect(withPaths.shelf).toEqual({ visitPaths: [[ 'crate' ], [ 'rows', pathWildcard, 'apple' ]]});
     expect(withPaths.apple).toEqual({ visitOnlyKeys: new Set([ 'core' ]) });
 
     const strict = new TransformerTyped<Apple | Crate | Shelf>({ visitOnlyKeys: new Set() }, withPaths);
@@ -1796,15 +1848,18 @@ describe('visitOnlyKnownKeys', () => {
   });
 
   it('tells whether a key of an object is the first step of a path', ({ expect }) => {
-    const pathing = new TransformerTyped<Apple | Crate>({ visitPaths: [[ anyKey ]]}, {
+    const pathing = new TransformerTyped<Apple | Crate>({ visitPaths: [[ pathWildcard ]]}, {
       crate: { visitPaths: [[ 'content', 0 ]], ignoreKeys: new Set([ 'ignored' ]) },
     });
     expect(pathing.visitsKey({ type: 'crate' }, 'content')).toBe(true);
     expect(pathing.visitsKey({ type: 'crate' }, 'other')).toBe(false);
     expect(pathing.visitsKey({ type: 'apple' }, 'any')).toBe(true);
-    const ignoring = new TransformerTyped<Apple | Crate>({ ignoreKeys: new Set([ 'name' ]), visitPaths: [[ anyKey ]]});
+    const ignoring = new TransformerTyped<Apple | Crate>({
+      ignoreKeys: new Set([ 'name' ]),
+      visitPaths: [[ pathWildcard ]],
+    });
     expect(ignoring.visitsKey({ type: 'apple' }, 'name')).toBe(false);
-    const replacing = new TransformerTyped<Apple | Crate>({ visitPaths: [[ anyKey ]]}, knownKeys);
+    const replacing = new TransformerTyped<Apple | Crate>({ visitPaths: [[ pathWildcard ]]}, knownKeys);
     expect(replacing.visitsKey({ type: 'apple' }, 'name')).toBe(false);
   });
 
@@ -1812,7 +1867,7 @@ describe('visitOnlyKnownKeys', () => {
     expect,
   }) => {
     const pathing = new TransformerTyped<Apple | Crate>({ visitOnlyKeys: new Set() }, {
-      crate: { visitPaths: [[ 'content', anyKey, 'apple' ]]},
+      crate: { visitPaths: [[ 'content', pathWildcard, 'apple' ]]},
     });
     const visited: string[] = [];
     pathing.visitNode({
@@ -1829,7 +1884,7 @@ describe('visitOnlyKnownKeys', () => {
 
   it('replaces the visitPaths of the default of a type by the visitOnlyKeys of a callback', ({ expect }) => {
     const pathing = new TransformerTyped<Apple | Crate | Shelf>({}, {
-      shelf: { visitPaths: [[ 'rows', anyKey, 'apple' ]]},
+      shelf: { visitPaths: [[ 'rows', pathWildcard, 'apple' ]]},
     });
     const shelf: Shelf = {
       type: 'shelf',
@@ -1863,7 +1918,12 @@ describe('transformerObject visitPaths', () => {
     direct: leaf('direct'),
     skipped: leaf('skipped'),
   });
-  const paths = <const> [[ 'rows', anyKey, 'item' ], [ 'record', anyKey ], [ 'direct' ], [ 'missing', 'item' ]];
+  const paths = <const> [
+    [ 'rows', pathWildcard, 'item' ],
+    [ 'record', pathWildcard ],
+    [ 'direct' ],
+    [ 'missing', 'item' ],
+  ];
   const named = (obj: object): string | undefined => (<{ name?: string }> obj).name;
 
   it('transformObject only maps the objects at the paths, like a key traversal, copying what they step through', ({
@@ -1949,7 +2009,7 @@ describe('transformerObject visitPaths', () => {
         mapped.push(named(copy)!);
         return copy;
       }, obj => named(obj) === 'root' ?
-          { visitPaths: [[ 'rows', anyKey, 'item' ]], shallowKeys: new Set([ 'skipped', 'item' ]) } :
+          { visitPaths: [[ 'rows', pathWildcard, 'item' ]], shallowKeys: new Set([ 'skipped', 'item' ]) } :
           {});
       return { mapped, result };
     };
@@ -1979,7 +2039,7 @@ describe('transformerObject visitPaths', () => {
     transformer.transformObject(tree, (copy) => {
       mapped.push(named(copy) ?? 'unnamed');
       return copy;
-    }, obj => named(obj) === 'root' ? { visitPaths: [[ 'rows', anyKey, 'item' ], [ 'rows' ]]} : {});
+    }, obj => named(obj) === 'root' ? { visitPaths: [[ 'rows', pathWildcard, 'item' ], [ 'rows' ]]} : {});
     // The rows are mapped like any other array, so their objects are not mapped twice
     expect(mapped).toEqual([ 'skipped', 'first', 'unnamed', 'second', 'unnamed', 'unnamed', 'root' ]);
   });
@@ -2070,7 +2130,7 @@ describe('transformerObject visitPaths', () => {
       own: { item: leaf('own'), other: leaf('other') },
     });
     const visited: string[] = [];
-    const visitPaths: VisitContext['visitPaths'] = [[ anyKey, 'item' ], [ 'own', 'other' ], [ 'own', 'item' ]];
+    const visitPaths: VisitContext['visitPaths'] = [[ pathWildcard, 'item' ], [ 'own', 'other' ], [ 'own', 'item' ]];
     for (let run = 0; run < 2; run++) {
       transformer.visitObject(tree, (obj) => {
         visited.push(named(obj)!);
@@ -2089,7 +2149,7 @@ describe('transformerObject visitPaths', () => {
       return visited;
     };
     expect(visit([[ '*' ]])).toEqual([ 'star', 'root' ]);
-    expect(visit([[ anyKey ]])).toEqual([ 'other', 'star', 'root' ]);
+    expect(visit([[ pathWildcard ]])).toEqual([ 'other', 'star', 'root' ]);
   });
 
   it('visitObject does not copy into the objects it steps through, also not their shallowKeys', ({ expect }) => {
@@ -2099,7 +2159,7 @@ describe('transformerObject visitPaths', () => {
     new TransformerObject({ shallowKeys: new Set([ 'other' ]) }).visitObject(
       tree,
       () => {},
-      obj => obj === tree ? { visitPaths: [[ 'rows', anyKey, 'item' ]]} : {},
+      obj => obj === tree ? { visitPaths: [[ 'rows', pathWildcard, 'item' ]]} : {},
     );
     expect(tree.rows[0]).toBe(row);
     expect(row.other).toBe(other);

@@ -1808,6 +1808,25 @@ describe('visitOnlyKnownKeys', () => {
     expect(replacing.visitsKey({ type: 'apple' }, 'name')).toBe(false);
   });
 
+  it('ends a path at the first node, so arrays mixing nodes and objects without a type are stepped through', ({
+    expect,
+  }) => {
+    const pathing = new TransformerTyped<Apple | Crate>({ visitOnlyKeys: new Set() }, {
+      crate: { visitPaths: [[ 'content', anyKey, 'apple' ]]},
+    });
+    const visited: string[] = [];
+    pathing.visitNode({
+      type: 'crate',
+      content: [
+        { type: 'apple', name: 'direct', core: { type: 'seed' }},
+        { apple: { type: 'apple', name: 'wrapped', core: { type: 'seed' }}, label: 'wrapper' },
+      ],
+    }, { apple: { visitor: (apple) => {
+      visited.push(apple.name);
+    } }});
+    expect(visited).toEqual([ 'direct', 'wrapped' ]);
+  });
+
   it('replaces the visitPaths of the default of a type by the visitOnlyKeys of a callback', ({ expect }) => {
     const pathing = new TransformerTyped<Apple | Crate | Shelf>({}, {
       shelf: { visitPaths: [[ 'rows', anyKey, 'apple' ]]},
@@ -1897,36 +1916,61 @@ describe('transformerObject visitPaths', () => {
     expect(tree.rows[0].item).toEqual({ name: 'first!' });
   });
 
-  it('transformObject does not step into ignoreKeys, also within the objects stepped through', ({ expect }) => {
+  it('transformObject does not step into the ignoreKeys of the object, nor those of the default within', ({
+    expect,
+  }) => {
     const tree = makeTree();
-    const result = <any> transformer.transformObject(
+    const map = (pathing: TransformerObject): any => pathing.transformObject(
       tree,
       copy => named(copy) && named(copy) !== 'root' ? { name: `${named(copy)}!` } : copy,
       obj => named(obj) === 'root' ?
           { visitPaths: paths, ignoreKeys: new Set([ 'record', 'item' ]), visitOnlyKeys: new Set([ 'skipped' ]) } :
           {},
     );
+    const result = map(transformer);
     expect(result.record).toBe(tree.record);
-    expect(result.rows[0].item).toBe(tree.rows[0].item);
+    // The ignoreKeys of the object only apply to its own keys
+    expect(result.rows[0].item).toEqual({ name: 'first!' });
     expect(result.direct).toEqual({ name: 'direct!' });
     // The visitOnlyKeys are not used
     expect(result.skipped).toBe(tree.skipped);
+    // Within, those of the default context apply, as when reached through a key
+    const withinIgnored = map(new TransformerObject({ ignoreKeys: new Set([ 'item' ]) }));
+    expect(withinIgnored.rows[0].item).toBe(tree.rows[0].item);
   });
 
-  it('transformObject shallowly copies the shallowKeys, also within the objects stepped through', ({ expect }) => {
+  it('transformObject shallowly copies the shallowKeys of the object, and those of the default within', ({
+    expect,
+  }) => {
     const tree = makeTree();
-    const mapped: string[] = [];
-    const result = <any> transformer.transformObject(tree, (copy) => {
-      mapped.push(named(copy)!);
-      return copy;
-    }, obj => named(obj) === 'root' ?
-        { visitPaths: [[ 'rows', anyKey, 'item' ]], shallowKeys: new Set([ 'skipped', 'item' ]) } :
-        {});
-    expect(mapped).toEqual([ 'root' ]);
+    const map = (pathing: TransformerObject): { mapped: string[]; result: any } => {
+      const mapped: string[] = [];
+      const result = pathing.transformObject(tree, (copy) => {
+        mapped.push(named(copy)!);
+        return copy;
+      }, obj => named(obj) === 'root' ?
+          { visitPaths: [[ 'rows', anyKey, 'item' ]], shallowKeys: new Set([ 'skipped', 'item' ]) } :
+          {});
+      return { mapped, result };
+    };
+    const { mapped, result } = map(transformer);
+    expect(mapped).toEqual([ 'first', 'second', 'root' ]);
     expect(result.skipped).not.toBe(tree.skipped);
     expect(result.skipped).toEqual(tree.skipped);
-    expect(result.rows[0].item).not.toBe(tree.rows[0].item);
-    expect(result.rows[0].item).toEqual(tree.rows[0].item);
+    const within = map(new TransformerObject({ shallowKeys: new Set([ 'item' ]) }));
+    expect(within.mapped).toEqual([ 'root' ]);
+    expect(within.result.rows[0].item).not.toBe(tree.rows[0].item);
+    expect(within.result.rows[0].item).toEqual(tree.rows[0].item);
+  });
+
+  it('clone keeps the visitOnlyKeys of the new default context over the visitPaths of the old one', ({ expect }) => {
+    const tree = { name: 'root', direct: leaf('direct'), skipped: leaf('skipped') };
+    const visited: string[] = [];
+    new TransformerObject({ visitPaths: [[ 'direct' ]]}).clone({ visitOnlyKeys: new Set([ 'skipped' ]) })
+      .visitObject(tree, (obj) => {
+        visited.push(named(obj)!);
+      });
+    expect(visited).toEqual([ 'skipped', 'root' ]);
   });
 
   it('transformObject does not continue a path through an object at the end of another path', ({ expect }) => {

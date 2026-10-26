@@ -21,6 +21,8 @@ export {
   ObjectKeyHint,
   PathKey,
   anyKey,
+  withFallback,
+  resolveVisitPaths,
   ContainerPaths,
   VisitPath,
   PreOrderMappingReturn,

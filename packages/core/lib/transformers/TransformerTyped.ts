@@ -14,6 +14,7 @@ import {
   pathStepMatches,
   resolveVisitPaths,
   TransformerObject,
+  withFallback,
 } from './TransformerObject.js';
 
 /**
@@ -142,7 +143,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     newDefaultNodePreVisitor: DefaultNodePreVisitor<Nodes> = {},
   ): TransformerTyped<Nodes> {
     return new TransformerTyped(
-      { ...this.defaultContext, ...newDefaultContext },
+      withFallback(this.defaultContext, newDefaultContext),
       { ...this.defaultNodePreVisitor, ...newDefaultNodePreVisitor },
     );
   }
@@ -167,6 +168,14 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
   }
 
   /**
+   * A path ends at a node, since a node is visited itself.
+   * @param value an object a path steps into.
+   */
+  protected override endsPath(value: object): boolean {
+    return typeof (<Partial<Typed>> value).type === 'string';
+  }
+
+  /**
    * Completes the context a callback gave for a node with the per type default of that node.
    * @param node the node the context is for.
    * @param context the context of the callback, or undefined when the node has no callback.
@@ -181,7 +190,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     if (!context) {
       return <Context> nodeDefault;
     }
-    return { ...nodeDefault, ...context, visitPaths: resolveVisitPaths(<VisitContext> context, nodeDefault) };
+    return <Context> withFallback(<VisitContext> nodeDefault, <VisitContext> context);
   }
 
   /**

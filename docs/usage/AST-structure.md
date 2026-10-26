@@ -170,9 +170,13 @@ const truety = operations.join() === 'insertdata,clear';
 Keep in mind that:
 - the objects at the paths are visited in the order a traversal of the keys visits them;
 - when the node is copied, so are the objects a path steps through, the node's original stays untouched;
-- `ignoreKeys` and `shallowKeys` also apply to the keys of the objects a path steps through,
-  `visitOnlyKeys` is not used;
-- an object at the end of a path is visited like any other, so a longer path through it is not followed;
+- the `ignoreKeys` and `shallowKeys` of the node apply to its own keys, `visitOnlyKeys` is not used.
+  The objects a path steps through use those of the default context, as they would when reached through a key;
+- an object at the end of a path is visited like any other, so a longer path through it is not followed.
+  A typed transformer, like `AstTransformer`, also ends a path at the first object with a `type`,
+  so a path can step through the objects without a type in an array that also holds nodes;
+- the paths are prepared once per array, so declare an array of paths once instead of creating it per node,
+  and do not change it once used;
 - a context with `visitOnlyKeys` replaces the `visitPaths` of the default it falls back to;
 - the IDE suggests the first key of a path, but the compiler accepts any path.
   To have the compiler check every step, type the paths as `ContainerPaths` of `@traqula/core`,
@@ -201,10 +205,8 @@ const allowlist = visitOnlyKnownKeys<Sparql11Nodes>({
 });
 ```
 
-The AST allowlists step through the objects without a `type` like this, so they also work with
+The AST allowlists step through all objects without a `type` like this, so they also work with
 a `visitOnlyKeys` of an empty set in the default context.
-The binds of a `GROUP BY`, and the wrapped annotations of a SPARQL 1.2 triple, share their array with nodes,
-so the allowlists cannot step through them: they are reached through a key, and get the default context.
 
 The rules of the parser, `toAlgebra`, and `toAst` that call a transformer use the ones you give them.
 

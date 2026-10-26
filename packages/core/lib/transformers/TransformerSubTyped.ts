@@ -5,6 +5,7 @@ import type {
   TransformContext,
   VisitContext,
 } from './TransformerObject.js';
+import { withFallback } from './TransformerObject.js';
 import type { DefaultNodePreVisitor, Safeness, SafeWrap } from './TransformerTyped.js';
 import { TransformerTyped } from './TransformerTyped.js';
 
@@ -34,7 +35,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
     newDefaultNodePreVisitor: DefaultNodePreVisitor<Nodes> = {},
   ): TransformerSubTyped<Nodes> {
     return new TransformerSubTyped(
-      { ...this.defaultContext, ...newDefaultContext },
+      withFallback(this.defaultContext, newDefaultContext),
       { ...this.defaultNodePreVisitor, ...newDefaultNodePreVisitor },
     );
   }

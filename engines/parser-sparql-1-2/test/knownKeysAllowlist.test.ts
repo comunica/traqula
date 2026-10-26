@@ -76,6 +76,12 @@ describe('astKnownKeysAllowlist', () => {
     expect(count(allowlisted)).toBe(count(unrestricted));
   });
 
+  it('steps through VALUES rows with a variable named type', ({ expect }) => {
+    // A row holding a key named 'type' is no node, so a path does not end at it
+    const ast = new Parser().parse('SELECT * WHERE { VALUES (?type ?b) { (<a> <c>) } }');
+    expect(visitedNodes(strict, ast)).toEqual(visitedNodes(unrestricted, ast));
+  });
+
   it('validates with the astTransformer of the context', ({ expect }) => {
     const astTransformer = new AstTransformer({}, astKnownKeysAllowlist);
     const visitNodeSpecific = vi.spyOn(astTransformer, 'visitNodeSpecific');

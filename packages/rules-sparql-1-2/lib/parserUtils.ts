@@ -1,3 +1,4 @@
+import type { KnownNodeKeys } from '@traqula/core';
 import {
   pathWildcard,
   TransformerSubTyped,
@@ -80,11 +81,15 @@ Partial<SparqlContext & SparqlGeneratorContext & { origSource: string; offset?: 
 export class AstTransformer extends TransformerSubTyped<Sparql12Nodes> {}
 
 /**
- * Contexts per node type that only visit the known keys that can hold nodes, skipping source locations,
- * those of SPARQL 1.1, with the annotations and triple terms of SPARQL 1.2.
+ * Per node type, the known keys that can hold nodes: those of SPARQL 1.1, plus annotations and triple terms.
  */
-export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql12Nodes>({
+export const astKnownKeys = {
   ...astKnownKeys11,
   triple: { ...astKnownKeys11.triple, annotations: [[ pathWildcard, 'val' ]]},
   term: { ...astKnownKeys11.term, object: true, subject: true, predicate: true },
-});
+} satisfies KnownNodeKeys<Sparql12Nodes>;
+
+/**
+ * Contexts per node type that only visit the {@link astKnownKeys}.
+ */
+export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql12Nodes>(astKnownKeys);

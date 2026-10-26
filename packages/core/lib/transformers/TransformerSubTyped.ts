@@ -170,7 +170,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
    * Contrary to {@link this.transformNodeSpecific}, a callback does not just return the value taking the
    * place of the node, it returns a {@link PreOrderMappingReturn}: that value, plus the
    * {@link TransformContext} of that value, so there is no separate preVisitor.
-   * That context completes the per type defaults of this transformer, looked up using the type of that value.
+   * That context completes the per type defaults of the node it returns, or else of the node it was called on.
    * Also contrary to {@link this.transformNodeSpecific}, the descendants of the node given to the callback
    * are not transformed yet: they are the nodes of the input tree itself.
    * @param startObject the object from which we will start the transformation,
@@ -208,7 +208,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
         }
       }
       return ogPreTransform ?
-        this.withNewValueDefault(ogPreTransform(copy, orig)) :
+        this.withNewValueDefault(copy, ogPreTransform(copy, orig)) :
         this.withNodeDefault(copy, { newValue: copy, reTransform: false });
     };
     return <any> this.transformObjectPreOrder(startObject, preTransformWrapper);
@@ -246,7 +246,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
         }
       }
       return ogPreTransform ?
-        this.withNewValueDefaultAsync(ogPreTransform(copy, orig)) :
+        this.withNewValueDefaultAsync(copy, ogPreTransform(copy, orig)) :
         this.withNodeDefault(copy, { newValue: copy, reTransform: false });
     };
     return <any> this.transformObjectPreOrderAsync(startObject, preTransformWrapper);

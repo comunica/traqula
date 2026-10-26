@@ -1135,10 +1135,10 @@ describe('pre-order per type defaults', () => {
     }
   });
 
-  it('apply no default when the mapper returns a value without a type', ({ expect }) => {
+  it('apply the default of the mapped node when the mapper returns a value without a type', ({ expect }) => {
     const { leaves, leaf } = recordLeaves();
     typed.transformNodePreOrder(tree, { wrap: copy => ({ newValue: { untyped: copy.inner }}), leaf });
-    expect(leaves).toEqual([ 'skipped' ]);
+    expect(leaves).toEqual([]);
     expect(typed.transformNodePreOrder(tree, { wrap: () => ({ newValue: 'primitive' }) })).toBe('primitive');
   });
 });
@@ -1817,7 +1817,8 @@ describe('visitOnlyKnownKeys', () => {
       visited.push(apple.name);
     } }});
     expect(visited).toEqual([ 'inRow', 'inCrate' ]);
-    expect(strict.visitsKey(shelf, 'rows')).toBe(true);
+    expect(strict.visitsKey(shelf, 'crate')).toBe(true);
+    expect(strict.visitsKey(shelf, 'rows')).toBe(false);
     expect(strict.visitsKey(shelf, 'label')).toBe(false);
   });
 
@@ -1847,11 +1848,13 @@ describe('visitOnlyKnownKeys', () => {
     expect(ignoring.visitsKey({ type: 'apple' }, 'name')).toBe(true);
   });
 
-  it('tells whether a key of an object is the first step of a path', ({ expect }) => {
+  it('tells whether a key of an object is visited as a whole by a path', ({ expect }) => {
     const pathing = new TransformerTyped<Apple | Crate>({ visitPaths: [[ pathWildcard ]]}, {
-      crate: { visitPaths: [[ 'content', 0 ]], ignoreKeys: new Set([ 'ignored' ]) },
+      crate: { visitPaths: [[ 'content', 0 ], [ 'whole' ]], ignoreKeys: new Set([ 'ignored' ]) },
     });
-    expect(pathing.visitsKey({ type: 'crate' }, 'content')).toBe(true);
+    // Only partly visited
+    expect(pathing.visitsKey({ type: 'crate' }, 'content')).toBe(false);
+    expect(pathing.visitsKey({ type: 'crate' }, 'whole')).toBe(true);
     expect(pathing.visitsKey({ type: 'crate' }, 'other')).toBe(false);
     expect(pathing.visitsKey({ type: 'apple' }, 'any')).toBe(true);
     const ignoring = new TransformerTyped<Apple | Crate>({

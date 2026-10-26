@@ -195,7 +195,7 @@ const allowlist = visitOnlyKnownKeys<Sparql11Nodes>({
 ```
 
 The AST allowlists step through every object without a `type`, so they also work with an empty default `visitOnlyKeys`.
-Spread `astKnownKeys` of `@traqula/rules-sparql-1-1` to extend them.
+Spread their `astKnownKeys` to extend them.
 
 The rules of the parser, `toAlgebra`, and `toAst` that call a transformer use the ones you give them.
 

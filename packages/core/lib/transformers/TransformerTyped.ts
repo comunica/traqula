@@ -13,8 +13,18 @@ import {
   isPromise,
   mergeContextWithFallback,
   pathKeyMatches,
+  resolveVisitPaths,
   TransformerObject,
 } from './TransformerObject.js';
+
+/**
+ * Whether a value is a node: an object with a string type.
+ * @param value the value to check.
+ * @return whether the value is a node.
+ */
+function isNode(value: unknown): value is Typed {
+  return value !== null && typeof value === 'object' && typeof (<Partial<Typed>> value).type === 'string';
+}
 
 /**
  * Controls whether transform callbacks receive fully typed nodes (`'unsafe'`) or
@@ -159,8 +169,9 @@ export function visitOnlyKnownKeys<Nodes extends Typed, Skipped = NodeFreeValue>
     const entries = Object.entries(<Record<string, true | readonly VisitPath<object>[]>> keys);
     contexts[type] = entries.every(([ , paths ]) => paths === true) ?
         { visitOnlyKeys: new Set(entries.map(([ key ]) => key)) } :
-        { visitPaths: entries.flatMap(([ key, paths ]): VisitPath<object>[] =>
-          paths === true ? [[ key ]] : paths.map(path => [ key, ...path ])) };
+        // Frozen, since the traversal prepares an array of paths once
+        { visitPaths: Object.freeze(entries.flatMap(([ key, paths ]): VisitPath<object>[] =>
+          paths === true ? [ Object.freeze([ key ]) ] : paths.map(path => Object.freeze([ key, ...path ])))) };
   }
   return <DefaultNodePreVisitor<Nodes>> contexts;
 }
@@ -198,18 +209,30 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
 
   /**
    * Whether a traversal visits the given key of an object, by the default of its node type or the default context.
-   * With {@link VisitContext.visitPaths}, whether a path starts with the key.
+   * With {@link VisitContext.visitPaths}, only a path of that single key visits it as a whole.
    * Lets hand-written traversals respect the defaults of this transformer, like its allowlists.
    * @param object the object holding the key.
    * @param key the key to visit.
    * @return whether the key is visited.
    */
   public visitsKey(object: object, key: string): boolean {
-    const context = mergeContextWithFallback(this.defaultContext, this.withNodeDefault(object));
-    const { ignoreKeys, visitOnlyKeys, visitPaths } = context;
-    return visitPaths ?
-        !isKeyIgnored(key, ignoreKeys) && visitPaths.some(([ first ]) => pathKeyMatches(first, key)) :
-        !isKeyIgnored(key, ignoreKeys, visitOnlyKeys);
+    const nodeDefault = this.nodeDefaultOf(object) ?? {};
+    const ignoreKeys = nodeDefault.ignoreKeys ?? this.defaultContext.ignoreKeys;
+    const visitPaths = resolveVisitPaths(nodeDefault, this.defaultContext);
+    if (visitPaths) {
+      return !isKeyIgnored(key, ignoreKeys) &&
+        visitPaths.some(path => path.length === 1 && pathKeyMatches(path[0], key));
+    }
+    return !isKeyIgnored(key, ignoreKeys, nodeDefault.visitOnlyKeys ?? this.defaultContext.visitOnlyKeys);
+  }
+
+  /**
+   * The per type default of a node.
+   * @param node the node, which need not be an object.
+   * @return the default of its type, if any.
+   */
+  protected nodeDefaultOf(node: unknown): TransformContext | undefined {
+    return isNode(node) ? this.defaultNodePreVisitor[<Nodes['type']> node.type] : undefined;
   }
 
   /**
@@ -218,7 +241,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
    * @return whether the object is a node.
    */
   protected override endsPathsAt(object: object): boolean {
-    return Boolean((<Partial<Typed>> object).type);
+    return isNode(object);
   }
 
   /**
@@ -228,8 +251,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
    * @return the per type default, overwritten by the given context.
    */
   protected withNodeDefault<Context extends object = TransformContext>(node: unknown, context?: Context): Context {
-    const type = node !== null && typeof node === 'object' ? (<Partial<Typed<Nodes['type']>>> node).type : undefined;
-    const nodeDefault = type ? this.defaultNodePreVisitor[type] : undefined;
+    const nodeDefault = this.nodeDefaultOf(node);
     if (!nodeDefault) {
       return context ?? <Context> {};
     }
@@ -255,23 +277,29 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
   }
 
   /**
-   * Completes the result of a pre-order mapper with the per type default of the value it returns.
+   * Completes the result of a pre-order mapper with the per type default of the node it returns, or else of the
+   * node it mapped.
+   * @param mapped the node that was mapped.
    * @param result the result of the mapper.
-   * @return the per type default of the new value, overwritten by the result.
+   * @return the per type default, overwritten by the result.
    */
-  protected withNewValueDefault(result: PreOrderMappingReturn): PreOrderMappingReturn {
-    return this.withNodeDefault(result.newValue, result);
+  protected withNewValueDefault(mapped: object, result: PreOrderMappingReturn): PreOrderMappingReturn {
+    return this.withNodeDefault(isNode(result.newValue) ? result.newValue : mapped, result);
   }
 
   /**
    * Async variant of {@link withNewValueDefault}, awaiting the result when it is a promise.
+   * @param mapped the node that was mapped.
    * @param result the result of the mapper.
-   * @return the per type default of the new value, overwritten by the result.
+   * @return the per type default, overwritten by the result.
    */
-  protected withNewValueDefaultAsync(result: Awaitable<PreOrderMappingReturn>): Awaitable<PreOrderMappingReturn> {
+  protected withNewValueDefaultAsync(
+    mapped: object,
+    result: Awaitable<PreOrderMappingReturn>,
+  ): Awaitable<PreOrderMappingReturn> {
     return isPromise(result) ?
-      result.then(resolved => this.withNewValueDefault(resolved)) :
-      this.withNewValueDefault(result);
+      result.then(resolved => this.withNewValueDefault(mapped, resolved)) :
+      this.withNewValueDefault(mapped, result);
   }
 
   /**
@@ -358,7 +386,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
    * the node, it returns a {@link PreOrderMappingReturn}: that value, plus the {@link TransformContext} of
    * that value. Since the callback decides what we iterate into, it is the one telling us how to iterate
    * into it, so there is no separate preVisitor - it only completes the per type defaults of this
-   * transformer, which are looked up using the type of the value it returns.
+   * transformer, which are looked up using the type of the node it returns, or else of the node it was called on.
    * A node without a callback is left alone: it keeps those defaults, but is never re-transformed.
    *
    * Also contrary to {@link this.transformNode}, the descendants of the node given to the callback are not
@@ -384,7 +412,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
         ogPreTransform = nodeCallBacks[casted.type];
       }
       return ogPreTransform ?
-        this.withNewValueDefault(ogPreTransform(copy, orig)) :
+        this.withNewValueDefault(copy, ogPreTransform(copy, orig)) :
         this.withNodeDefault(copy, { newValue: copy, reTransform: false });
     };
 
@@ -411,7 +439,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
         ogPreTransform = nodeCallBacks[casted.type];
       }
       return ogPreTransform ?
-        this.withNewValueDefaultAsync(ogPreTransform(copy, orig)) :
+        this.withNewValueDefaultAsync(copy, ogPreTransform(copy, orig)) :
         this.withNodeDefault(copy, { newValue: copy, reTransform: false });
     };
 

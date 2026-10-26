@@ -8,6 +8,19 @@ export function isPromise(value: unknown): value is Promise<unknown> {
 }
 
 /**
+ * Applies a function to a value, once it resolved when it is a promise.
+ * @param value the value, or a promise of it.
+ * @param apply the function to apply.
+ * @return the result, or a promise of it.
+ */
+export function mapAwaitable<Value, Result>(
+  value: Awaitable<Value>,
+  apply: (value: Value) => Result,
+): Awaitable<Result> {
+  return isPromise(value) ? value.then(apply) : apply(value);
+}
+
+/**
  * A key of the given object, or any other string.
  * Unlike `keyof Obj | string`, the IDE keeps suggesting the keys of the object.
  */
@@ -53,12 +66,17 @@ export function resolveVisitPaths(context: VisitContext, fallback: VisitContext)
 
 /**
  * Merges a context over its fallback, its visitOnlyKeys replacing the visitPaths of the fallback.
- * @param fallback the less specific context.
  * @param context the more specific context.
+ * @param fallback the context it falls back to.
  * @return the merged context.
  */
-export function mergeContextWithFallback<Context extends VisitContext>(fallback: Context, context: Context): Context {
-  return { ...fallback, ...context, visitPaths: resolveVisitPaths(context, fallback) };
+export function mergeContextWithFallback<Context extends VisitContext>(context: Context, fallback: Context): Context {
+  const merged = { ...fallback, ...context };
+  // Only overwritten when it changes, keeping the plain spread fast
+  if (fallback.visitPaths && !context.visitPaths && context.visitOnlyKeys) {
+    merged.visitPaths = undefined;
+  }
+  return merged;
 }
 
 /**
@@ -90,8 +108,11 @@ function buildVisitPathTrie(paths: readonly (readonly PathKey[])[]): VisitPathTr
     .filter(path => path.length > 0 && matches(path[0]))
     .map(path => path.slice(1));
   for (const [ pathKey ] of paths) {
+    if (pathKey === undefined || pathKey === pathWildcard) {
+      continue;
+    }
     const objectKey = String(pathKey);
-    if (pathKey !== undefined && pathKey !== pathWildcard && !trie.stepsByKey.has(objectKey)) {
+    if (!trie.stepsByKey.has(objectKey)) {
       trie.stepsByKey.set(objectKey, buildVisitPathTrie(remainingPaths(other => pathKeyMatches(other, objectKey))));
     }
   }
@@ -167,8 +188,7 @@ export interface VisitContext<Obj = object> {
   /**
    * Object keys that can be visited, all other keys are ignored. By default, all keys can be visited.
    * A key included here and in {@link ignoreKeys} is ignored.
-   * An empty set in the default context makes a transformer only visit keys that a node explicitly allows.
-   * Not used when {@link visitPaths} is given.
+   * An empty set in the default context makes a transformer only visit keys a node allows, unless it has visitPaths.
    */
   visitOnlyKeys?: Set<ObjectKeyHint<Obj>>;
   /**
@@ -246,7 +266,7 @@ export class TransformerObject {
   public constructor(protected readonly defaultContext: TransformContext = {}) {}
 
   public clone(newDefaultContext: TransformContext = {}): TransformerObject {
-    return new TransformerObject(mergeContextWithFallback(this.defaultContext, newDefaultContext));
+    return new TransformerObject(mergeContextWithFallback(newDefaultContext, this.defaultContext));
   }
 
   /**
@@ -284,6 +304,21 @@ export class TransformerObject {
   }
 
   /**
+   * Whether the given paths visit the value of a key as a whole: a path ends at it, or it ends paths itself.
+   * @param paths the paths from the holder.
+   * @param holder the object holding the key.
+   * @param key the key of the holder.
+   * @return whether the value is visited as a whole.
+   */
+  protected pathsVisitWholeKey(paths: readonly (readonly PathKey[])[], holder: object, key: string): boolean {
+    const trie = visitPathTrieOf(paths);
+    const next = trie.stepsByKey.get(key) ?? trie.wildcardSteps;
+    const value = (<Record<string, unknown>> holder)[key];
+    return next !== undefined &&
+      (next.pathEnds || (value !== null && typeof value === 'object' && this.endsPathsAt(value)));
+  }
+
+  /**
    * Calls the traversal back on the objects at the given paths, in the order a traversal of the keys pushes them.
    * @param holder the object the paths start from.
    * @param trie the paths to follow.
@@ -300,7 +335,10 @@ export class TransformerObject {
   ): void {
     if (Array.isArray(holder)) {
       for (let index = holder.length - 1; index >= 0; index--) {
-        this.findObjectsAtPathKey(holder, index.toString(), trie, ignoreKeys, shallowKeys, traversal);
+        const element: unknown = holder[index];
+        if (element !== null && typeof element === 'object') {
+          this.findObjectsAtPathKey(holder, index.toString(), trie, ignoreKeys, shallowKeys, traversal);
+        }
       }
       return;
     }
@@ -529,9 +567,7 @@ export class TransformerObject {
             for (let index = curObject.length - 1; index >= 0; index--) {
               const val = <unknown> curObject[index];
               if (val !== null && typeof val === 'object') {
-                stack.push(val);
-                stackParent.push(newArr);
-                stackParentKey.push(index.toString());
+                pushChild(val, newArr, index.toString());
               }
             }
             const pending = handleMapper();
@@ -918,7 +954,7 @@ export class TransformerObject {
             for (let i = curObject.length - 1; i >= 0; i--) {
               const val = <unknown> curObject[i];
               if (val !== null && typeof val === 'object') {
-                stack.push(val);
+                pushChild(val);
               }
             }
             const pending = handleVisitor();

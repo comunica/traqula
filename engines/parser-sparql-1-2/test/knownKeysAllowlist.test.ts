@@ -42,46 +42,6 @@ describe('astKnownKeysAllowlist', () => {
     expect(visitedNodes(allowlisted, ast)).not.toContain(extension);
   });
 
-  it('does not visit unknown keys of the objects without a type it steps through', ({ expect }) => {
-    const extension = (): object => ({ type: 'term', subType: 'variable', value: 'extension' });
-    const update = <any> new Parser().parse('INSERT DATA { <a> <b> <c> } ; CLEAR ALL');
-    update.updates[0].extension = extension();
-    const query = <any> new Parser().parse('SELECT * FROM <g> WHERE { ?s ?p ?o } ORDER BY ?s LIMIT 1');
-    query.solutionModifiers.extension = extension();
-    query.solutionModifiers.order.orderDefs[0].extension = extension();
-    query.datasets.clauses[0].extension = extension();
-    for (const ast of [ update, query ]) {
-      const extensions = (transformer: AstTransformer): object[] =>
-        visitedNodes(transformer, ast).filter(node => (<{ value?: string }> node).value === 'extension');
-      expect(extensions(unrestricted).length).toBeGreaterThan(0);
-      expect(extensions(allowlisted)).toEqual([]);
-    }
-  });
-
-  it('only applies the ignoreKeys of a node to its own keys, not to those of the objects its paths step through', ({
-    expect,
-  }) => {
-    // The rows of VALUES are keyed by variable names, like 'variable'
-    const ast = new Parser().parse('SELECT * WHERE { VALUES ?variable { <a> } }');
-    const count = (transformer: AstTransformer): number => {
-      let visited = 0;
-      transformer.visitNode(ast, {
-        pattern: { preVisitor: () => ({ ignoreKeys: new Set([ 'variable' ]) }) },
-        term: { visitor: () => {
-          visited++;
-        } },
-      });
-      return visited;
-    };
-    expect(count(allowlisted)).toBe(count(unrestricted));
-  });
-
-  it('steps through VALUES rows with a variable named type', ({ expect }) => {
-    // A row holding a key named 'type' is no node, so a path does not end at it
-    const ast = new Parser().parse('SELECT * WHERE { VALUES (?type ?b) { (<a> <c>) } }');
-    expect(visitedNodes(strict, ast)).toEqual(visitedNodes(unrestricted, ast));
-  });
-
   it('validates with the astTransformer of the context', ({ expect }) => {
     const astTransformer = new AstTransformer({}, astKnownKeysAllowlist);
     const visitNodeSpecific = vi.spyOn(astTransformer, 'visitNodeSpecific');

@@ -1820,6 +1820,12 @@ describe('visitOnlyKnownKeys', () => {
     expect(strict.visitsKey(shelf, 'crate')).toBe(true);
     expect(strict.visitsKey(shelf, 'rows')).toBe(false);
     expect(strict.visitsKey(shelf, 'label')).toBe(false);
+    // A path through a node ends at it, so the node is visited as a whole
+    const throughNode = new TransformerTyped<Apple | Crate | Shelf>({}, {
+      shelf: { visitPaths: [[ 'crate', 'content' ]]},
+    });
+    expect(throughNode.visitsKey(shelf, 'crate')).toBe(true);
+    expect(throughNode.visitsKey({ type: 'shelf', crate: 'none' }, 'crate')).toBe(false);
   });
 
   it('skips unknown keys of known nodes, but fully visits other objects', ({ expect }) => {
@@ -2166,6 +2172,14 @@ describe('transformerObject visitPaths', () => {
     );
     expect(tree.rows[0]).toBe(row);
     expect(row.other).toBe(other);
+  });
+
+  it('visitObject steps over array elements that are no object', ({ expect }) => {
+    const visited: string[] = [];
+    transformer.visitObject({ rows: [ null, 'primitive', { item: leaf('item') }]}, (obj) => {
+      visited.push(named(obj) ?? 'unnamed');
+    }, obj => 'rows' in obj ? { visitPaths: [[ 'rows', pathWildcard, 'item' ]]} : {});
+    expect(visited).toEqual([ 'item', 'unnamed' ]);
   });
 
   it('visitObject does not follow paths when it does not continue', ({ expect }) => {

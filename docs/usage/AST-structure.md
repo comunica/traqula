@@ -155,7 +155,6 @@ import { Parser } from '@traqula/parser-sparql-1-1'
 
 const ast = new Parser().parse('INSERT DATA { <a> <b> <c> } ; CLEAR ALL');
 const transformer = new AstTransformer({ visitOnlyKeys: new Set() });
-// Declared once, since paths are prepared once per array
 const operationPaths = [[ 'updates', pathWildcard, 'operation' ]] as const;
 const operations: string[] = [];
 transformer.visitNode(ast, {

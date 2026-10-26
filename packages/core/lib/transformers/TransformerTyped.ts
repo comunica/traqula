@@ -1,21 +1,14 @@
 import type { SourceLocation, Typed } from '../types.js';
 import type {
+  anyKey,
   Awaitable,
-  ContainerPaths,
-  PathContainer,
+  PathKey,
   PreOrderMappingReturn,
   TransformContext,
   VisitContext,
   VisitPath,
 } from './TransformerObject.js';
-import {
-  isKeyIgnored,
-  isPromise,
-  pathStepMatches,
-  resolveVisitPaths,
-  TransformerObject,
-  withFallback,
-} from './TransformerObject.js';
+import { isKeyIgnored, isPromise, pathStepMatches, TransformerObject, withFallback } from './TransformerObject.js';
 
 /**
  * Controls whether transform callbacks receive fully typed nodes (`'unsafe'`) or
@@ -61,10 +54,15 @@ export type CanHoldNode<Value, Skipped = NodeFreeValue> = unknown extends Value 
   true extends MemberCanHoldNode<Value, Skipped> ? true : false;
 
 /**
+ * A function, which holds no nodes.
+ */
+type AnyFunction = (...args: any[]) => unknown;
+
+/**
  * {@link CanHoldNode} of each member of a union.
  */
 type MemberCanHoldNode<Value, Skipped> = Value extends Typed ? true :
-  Value extends Skipped | ((...args: any[]) => unknown) ? false :
+  Value extends Skipped | AnyFunction ? false :
     Value extends readonly (infer Element)[] ? CanHoldNode<Element, Skipped> :
       Value extends object ? ([keyof Value] extends [never] ? true : CanHoldNode<Value[keyof Value], Skipped>) : false;
 
@@ -73,6 +71,40 @@ type MemberCanHoldNode<Value, Skipped> = Value extends Typed ? true :
  */
 export type NodeHoldingKeys<Obj, Skipped = NodeFreeValue> = {[Key in AllObjectKeys<Obj>]:
   CanHoldNode<AllObjectValues<Obj, Key>, Skipped> extends true ? Key : never }[AllObjectKeys<Obj>];
+
+/**
+ * The remaining depth of a {@link ContainerPaths}, bounding the recursion on recursive types.
+ */
+type PathDepths = [never, 0, 1, 2, 3, 4];
+
+/**
+ * The values a path can step through: objects that are no node, since a typed transformer ends a path at a node.
+ */
+type PathContainer<Value> = Exclude<Extract<Value, object>, Typed | AnyFunction>;
+
+/**
+ * The paths that step to a value through the given key: the key alone when the value can be an object,
+ * and the key followed by a path within the value when it can be a {@link PathContainer}.
+ */
+type PathStep<Key extends PathKey, Value, Depth extends number, Skipped> = unknown extends Value ?
+  readonly [Key, ...PathKey[]] :
+    ([Extract<Value, object>] extends [never] ? never : readonly [Key]) |
+    ([Depth] extends [never] ? never : readonly [Key, ...ContainerPaths<PathContainer<Value>, Skipped, Depth>]);
+
+/**
+ * The paths within a container to the objects it holds, also when the container is a union,
+ * as followed by a typed transformer, see {@link VisitContext.visitPaths}.
+ * A path only steps through objects that are no node: arrays, and objects without a type.
+ * @typeParam Skipped - Values a path does not step to, nor through.
+ * @typeParam Depth - The number of containers a path can step through, besides the one it starts in.
+ */
+export type ContainerPaths<Container, Skipped = never, Depth extends number = 4> =
+  Container extends readonly (infer Element)[] ?
+    PathStep<number | typeof anyKey, Exclude<Element, Skipped>, PathDepths[Depth], Skipped> :
+      {[Key in keyof Container & string]-?:
+        PathStep<Key, Exclude<Container[Key], undefined | Skipped>, PathDepths[Depth], Skipped> }[
+        keyof Container & string] |
+      PathStep<typeof anyKey, Exclude<Container[keyof Container & string], Skipped>, PathDepths[Depth], Skipped>;
 
 /**
  * Per node type, exactly the keys that can hold a node, mapped to `true` to visit the value of the key,
@@ -110,7 +142,7 @@ export function visitOnlyKnownKeys<Nodes extends Typed, Skipped = NodeFreeValue>
   for (const [ type, keys ] of Object.entries(knownKeys)) {
     const entries = Object.entries(<Record<string, true | readonly VisitPath<object>[]>> keys);
     contexts[type] = entries.every(([ , paths ]) => paths === true) ?
-        { visitOnlyKeys: new Set(Object.keys(<object> keys)) } :
+        { visitOnlyKeys: new Set(entries.map(([ key ]) => key)) } :
         { visitPaths: entries.flatMap(([ key, paths ]): VisitPath<object>[] =>
           paths === true ? [[ key ]] : paths.map(path => [ key, ...path ])) };
   }
@@ -158,13 +190,10 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
    * @return whether the key is visited.
    */
   public visitsKey(object: object, key: string): boolean {
-    const type = (<Partial<Typed<Nodes['type']>>> object).type;
-    const nodeDefault = type ? this.defaultNodePreVisitor[type] : undefined;
-    const ignoreKeys = nodeDefault?.ignoreKeys ?? this.defaultContext.ignoreKeys;
-    const visitOnlyKeys = nodeDefault?.visitOnlyKeys ?? this.defaultContext.visitOnlyKeys;
-    const visitPaths = resolveVisitPaths(nodeDefault ?? {}, this.defaultContext);
-    return !isKeyIgnored(key, ignoreKeys, visitPaths ? undefined : visitOnlyKeys) &&
-      (!visitPaths || visitPaths.some(([ first ]) => pathStepMatches(first, key)));
+    const { ignoreKeys, visitOnlyKeys, visitPaths } = withFallback(this.defaultContext, this.withNodeDefault(object));
+    return visitPaths ?
+        !isKeyIgnored(key, ignoreKeys) && visitPaths.some(([ first ]) => pathStepMatches(first, key)) :
+        !isKeyIgnored(key, ignoreKeys, visitOnlyKeys);
   }
 
   /**
@@ -172,7 +201,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
    * @param value an object a path steps into.
    */
   protected override endsPath(value: object): boolean {
-    return typeof (<Partial<Typed>> value).type === 'string';
+    return Boolean((<Partial<Typed>> value).type);
   }
 
   /**

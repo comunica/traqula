@@ -21,9 +21,6 @@ export {
   ObjectKeyHint,
   PathKey,
   anyKey,
-  withFallback,
-  resolveVisitPaths,
-  ContainerPaths,
   VisitPath,
   PreOrderMappingReturn,
   TransformerObject,
@@ -36,6 +33,7 @@ export {
   SafeWrap,
   DefaultNodePreVisitor,
   KnownNodeKeys,
+  ContainerPaths,
   visitOnlyKnownKeys,
 } from './transformers/TransformerTyped.js';
 export { TransformerSubTyped } from './transformers/TransformerSubTyped.js';

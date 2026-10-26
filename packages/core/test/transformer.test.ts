@@ -2092,6 +2092,19 @@ describe('transformerObject visitPaths', () => {
     expect(visit([[ anyKey ]])).toEqual([ 'other', 'star', 'root' ]);
   });
 
+  it('visitObject does not copy into the objects it steps through, also not their shallowKeys', ({ expect }) => {
+    const tree = makeTree();
+    const row = tree.rows[0];
+    const other = row.other;
+    new TransformerObject({ shallowKeys: new Set([ 'other' ]) }).visitObject(
+      tree,
+      () => {},
+      obj => obj === tree ? { visitPaths: [[ 'rows', anyKey, 'item' ]]} : {},
+    );
+    expect(tree.rows[0]).toBe(row);
+    expect(row.other).toBe(other);
+  });
+
   it('visitObject does not follow paths when it does not continue', ({ expect }) => {
     const visited: string[] = [];
     new TransformerObject({ visitPaths: [[ 'direct' ]], continue: false }).visitObject(makeTree(), (obj) => {

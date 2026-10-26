@@ -5,6 +5,7 @@ import {
   traqulaNewlineAlternative,
   visitOnlyKnownKeys,
 } from '@traqula/core';
+import { astKnownKeys as astKnownKeys11 } from '@traqula/rules-sparql-1-1';
 import { AstFactory } from './AstFactory.js';
 import type { SparqlContext, SparqlGeneratorContext } from './sparql12HelperTypes.js';
 import type { Sparql12Nodes } from './sparql12Types.js';
@@ -79,53 +80,11 @@ Partial<SparqlContext & SparqlGeneratorContext & { origSource: string; offset?: 
 export class AstTransformer extends TransformerSubTyped<Sparql12Nodes> {}
 
 /**
- * Contexts per node type that only visit the known keys that can hold nodes, skipping source locations.
- * The objects without a type that hold nodes are stepped through by paths, so their unknown keys are skipped too.
+ * Contexts per node type that only visit the known keys that can hold nodes, skipping source locations,
+ * those of SPARQL 1.1, with the annotations and triple terms of SPARQL 1.2.
  */
 export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql12Nodes>({
-  path: { items: true },
-  pattern: {
-    values: [[ anyKey, anyKey ]],
-    name: true,
-    variable: true,
-    expression: true,
-    variables: true,
-    patterns: true,
-    triples: true,
-  },
-  update: { updates: [[ anyKey, 'operation' ], [ anyKey, 'context' ]]},
-  query: {
-    values: true,
-    template: true,
-    context: true,
-    solutionModifiers: [[ 'group' ], [ 'having' ], [ 'order' ], [ 'limitOffset' ]],
-    datasets: true,
-    where: true,
-    variables: true,
-  },
-  graph: { graph: true, triples: true },
-  graphRef: { graph: true },
-  updateOperation: {
-    data: true,
-    source: true,
-    destination: true,
-    from: true,
-    graph: true,
-    where: true,
-    delete: true,
-    insert: true,
-  },
-  datasetClauses: { clauses: [[ anyKey, 'value' ]]},
-  tripleCollection: { triples: true, identifier: true },
-  triple: { object: true, subject: true, predicate: true, annotations: [[ anyKey, 'val' ]]},
-  solutionModifier: {
-    having: true,
-    orderDefs: [[ anyKey, 'expression' ]],
-    // The binds without a type are stepped through, the expressions with a type end the paths
-    groupings: [[ anyKey, 'variable' ], [ anyKey, 'value' ]],
-  },
-  expression: { function: true, args: true, expression: true },
-  contextDef: { value: true },
-  wildcard: {},
-  term: { object: true, subject: true, predicate: true, langOrIri: true },
+  ...astKnownKeys11,
+  triple: { ...astKnownKeys11.triple, annotations: [[ anyKey, 'val' ]]},
+  term: { ...astKnownKeys11.term, object: true, subject: true, predicate: true },
 });

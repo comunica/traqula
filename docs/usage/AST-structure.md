@@ -158,10 +158,12 @@ import { Parser } from '@traqula/parser-sparql-1-1'
 
 const ast = new Parser().parse('INSERT DATA { <a> <b> <c> } ; CLEAR ALL');
 const transformer = new AstTransformer({ visitOnlyKeys: new Set() });
+// Each element of 'updates' has no type, and holds an operation and its prefixes and base IRI.
+// Declared once, since the paths are prepared once per array.
+const operationPaths = [[ 'updates', anyKey, 'operation' ]] as const;
 const operations: string[] = [];
 transformer.visitNode(ast, {
-  // Each element of 'updates' has no type, and holds an operation and its prefixes and base IRI.
-  'update': { preVisitor: () => ({ visitPaths: [[ 'updates', anyKey, 'operation' ]] }) },
+  'update': { preVisitor: () => ({ visitPaths: operationPaths }) },
   'updateOperation': { visitor: (operation) => { operations.push(operation.subType); } },
 });
 const truety = operations.join() === 'insertdata,clear';
@@ -207,6 +209,7 @@ const allowlist = visitOnlyKnownKeys<Sparql11Nodes>({
 
 The AST allowlists step through all objects without a `type` like this, so they also work with
 a `visitOnlyKeys` of an empty set in the default context.
+Their known keys are exported as `astKnownKeys` of `@traqula/rules-sparql-1-1`, to spread into those of an extension.
 
 The rules of the parser, `toAlgebra`, and `toAst` that call a transformer use the ones you give them.
 

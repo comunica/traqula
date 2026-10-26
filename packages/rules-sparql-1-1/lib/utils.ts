@@ -1,3 +1,4 @@
+import type { KnownNodeKeys } from '@traqula/core';
 import { anyKey, TransformerSubTyped, visitOnlyKnownKeys } from '@traqula/core';
 import { AstFactory } from './astFactory.js';
 import { pnLocalEscPattern } from './lexer/lexerPatterns.js';
@@ -201,10 +202,10 @@ export function resolveTermIri(term: TermIri, prefixes: Record<string, string>, 
 }
 
 /**
- * Contexts per node type that only visit the known keys that can hold nodes, skipping source locations.
+ * Per node type, the known keys that can hold nodes, skipping source locations, see {@link visitOnlyKnownKeys}.
  * The objects without a type that hold nodes are stepped through by paths, so their unknown keys are skipped too.
  */
-export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql11Nodes>({
+export const astKnownKeys = {
   path: { items: true },
   pattern: {
     values: [[ anyKey, anyKey ]],
@@ -250,4 +251,9 @@ export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql11Nodes>({
   contextDef: { value: true },
   wildcard: {},
   term: { langOrIri: true },
-});
+} satisfies KnownNodeKeys<Sparql11Nodes>;
+
+/**
+ * Contexts per node type that only visit the {@link astKnownKeys}.
+ */
+export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql11Nodes>(astKnownKeys);

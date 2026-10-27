@@ -1,4 +1,4 @@
-import type { KnownNodeKeys } from '@traqula/core';
+import type { DefaultNodePreVisitor, KnownNodeKeys, TransformContext } from '@traqula/core';
 import { TransformerSubTyped, visitOnlyKnownKeys } from '@traqula/core';
 import { AstFactory } from './astFactory.js';
 import { pnLocalEscPattern } from './lexer/lexerPatterns.js';
@@ -53,6 +53,7 @@ export enum CommonIRIs {
 /**
  * A {@link TransformerSubTyped} specialized for the SPARQL 1.1 AST node types.
  * Provides a type-safe visitor/transformer that dispatches based on node `type` and `subType` fields.
+ * Source locations hold no nodes, so it skips the `loc` keys, unless the default context gives other ignoreKeys.
  *
  * @example
  * ```typescript
@@ -62,7 +63,14 @@ export enum CommonIRIs {
  * });
  * ```
  */
-export class AstTransformer extends TransformerSubTyped<Sparql11Nodes> {}
+export class AstTransformer extends TransformerSubTyped<Sparql11Nodes> {
+  public constructor(
+    defaultContext: TransformContext = {},
+    defaultNodePreVisitor: DefaultNodePreVisitor<Sparql11Nodes> = {},
+  ) {
+    super({ ignoreKeys: new Set([ 'loc' ]), ...defaultContext }, defaultNodePreVisitor);
+  }
+}
 
 /**
  * Absolute IRIs start with a scheme - [RFC 3986, section 3.1](https://www.rfc-editor.org/rfc/rfc3986#section-3.1)

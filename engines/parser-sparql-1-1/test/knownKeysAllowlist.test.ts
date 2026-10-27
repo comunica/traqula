@@ -38,6 +38,19 @@ describe('astKnownKeysAllowlist', () => {
     expect(visitedNodes(allowlisted, ast)).not.toContain(extension);
   });
 
+  it('skips source locations, unless given other ignoreKeys', ({ expect }) => {
+    const ast = new Parser().parse('SELECT * WHERE { ?s ?p ?o }');
+    const visitedLocs = (transformer: AstTransformer): number => {
+      let locs = 0;
+      transformer.visitObject(ast, (object) => {
+        locs += 'sourceLocationType' in object ? 1 : 0;
+      });
+      return locs;
+    };
+    expect(visitedLocs(new AstTransformer())).toBe(0);
+    expect(visitedLocs(new AstTransformer({ ignoreKeys: new Set() }))).toBeGreaterThan(0);
+  });
+
   it('validates with the astTransformer of the context', ({ expect }) => {
     const astTransformer = new AstTransformer({}, astKnownKeysAllowlist);
     const visitNodeSpecific = vi.spyOn(astTransformer, 'visitNodeSpecific');

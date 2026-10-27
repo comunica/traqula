@@ -1,29 +1,11 @@
 import type { SourceLocation, Typed } from '../types.js';
-import type {
-  pathWildcard,
-  Awaitable,
-  PathKey,
-  PreOrderMappingReturn,
-  TransformContext,
-  VisitContext,
-  VisitPath,
-} from './TransformerObject.js';
-import {
-  isKeyIgnored,
-  mapAwaitable,
-  mergeContextWithFallback,
-  resolveVisitPaths,
-  TransformerObject,
-} from './TransformerObject.js';
+import type { Awaitable, PreOrderMappingReturn, TransformContext, VisitContext } from './TransformerObject.js';
+import { isKeyIgnored, isPromise, TransformerObject } from './TransformerObject.js';
 
 /**
- * Whether a value is a node: an object with a string type.
- * @param value the value to check.
- * @return whether the value is a node.
+ * The context of a node without a callback or per type default, shared to not allocate one per node.
  */
-export function isNode(value: unknown): value is Typed {
-  return value !== null && typeof value === 'object' && typeof (<Partial<Typed>> value).type === 'string';
-}
+const emptyContext: TransformContext = Object.freeze({});
 
 /**
  * Controls whether transform callbacks receive fully typed nodes (`'unsafe'`) or
@@ -69,15 +51,10 @@ export type CanHoldNode<Value, Skipped = NodeFreeValue> = unknown extends Value 
   true extends MemberCanHoldNode<Value, Skipped> ? true : false;
 
 /**
- * Any function, which holds no nodes.
- */
-type AnyFunction = (...args: any[]) => unknown;
-
-/**
  * {@link CanHoldNode} of each member of a union.
  */
 type MemberCanHoldNode<Value, Skipped> = Value extends Typed ? true :
-  Value extends Skipped | AnyFunction ? false :
+  Value extends Skipped | ((...args: any[]) => unknown) ? false :
     Value extends readonly (infer Element)[] ? CanHoldNode<Element, Skipped> :
       Value extends object ? ([keyof Value] extends [never] ? true : CanHoldNode<Value[keyof Value], Skipped>) : false;
 
@@ -88,68 +65,18 @@ export type NodeHoldingKeys<Obj, Skipped = NodeFreeValue> = {[Key in AllObjectKe
   CanHoldNode<AllObjectValues<Obj, Key>, Skipped> extends true ? Key : never }[AllObjectKeys<Obj>];
 
 /**
- * The depth left per depth of a {@link ContainerPaths}, bounding the recursion on recursive types.
- */
-type RemainingPathDepths = [never, 0, 1, 2, 3, 4];
-
-/**
- * The values a path can step through: objects that are no node, since a typed transformer ends a path at a node.
- */
-type PathContainer<Value> = Exclude<Extract<Value, object>, Typed | AnyFunction>;
-
-/**
- * The paths through the given key: the key alone when its value can be an object, and the key followed by the
- * paths within the value when it can be a {@link PathContainer}.
- */
-type PathsThroughKey<
-  Key extends PathKey,
-  KeyValue,
-  Depth extends number,
-  Skipped,
-  Value = Exclude<KeyValue, Skipped | undefined>,
-  NextDepth extends number = RemainingPathDepths[Depth],
-> = unknown extends Value ?
-  readonly [Key, ...PathKey[]] :
-    ([Extract<Value, object>] extends [never] ? never : readonly [Key]) |
-    ([NextDepth] extends [never] ? never : readonly [Key, ...ContainerPaths<PathContainer<Value>, Skipped, NextDepth>]);
-
-/**
- * The visitPaths within a container to the objects it holds, as followed by a typed transformer.
- * A path steps through arrays and objects without a type, and ends at an object with one.
- * @typeParam Skipped - Values a path does not step to, nor through.
- * @typeParam Depth - The number of containers a path can step through, besides the first.
- */
-export type ContainerPaths<Container, Skipped = never, Depth extends number = 4> =
-  Container extends readonly (infer Element)[] ?
-    PathsThroughKey<number | typeof pathWildcard, Element, Depth, Skipped> :
-      {[Key in keyof Container & string]-?: PathsThroughKey<Key, Container[Key], Depth, Skipped> }[
-        keyof Container & string] |
-      PathsThroughKey<typeof pathWildcard, AllObjectValues<Container, AllObjectKeys<Container>>, Depth, Skipped>;
-
-/**
- * Per node type, exactly the keys that can hold a node, mapped to `true` or to the paths within their value to visit.
+ * Per node type, exactly the keys that can hold a node, mapped to `true`.
  * The compiler rejects missing and other keys, also for a type without such keys.
  * @typeParam Skipped - Values that are not looked into, by default source locations and RDF terms.
  */
-export type KnownNodeKeys<Nodes extends Typed, Skipped = NodeFreeValue> =
-  {[T in Nodes['type']]: KnownNodeKeysOfType<Extract<Nodes, Typed<T>>, Skipped> };
-
-/**
- * The {@link KnownNodeKeys} of a single node type.
- */
-type KnownNodeKeysOfType<Node, Skipped, Keys extends string = NodeHoldingKeys<Node, Skipped>> = [Keys] extends [never] ?
-  Record<string, never> :
-    {[Key in Keys]: KnownNodeKeyEntry<AllObjectValues<Node, Key>, Skipped> };
-
-/**
- * `true`, or else the paths within the value of a key when there are any.
- */
-type KnownNodeKeyEntry<Value, Skipped, Paths = ContainerPaths<PathContainer<Exclude<Value, Skipped>>, Skipped>> =
-  [Paths] extends [never] ? true : true | readonly [Paths, ...Paths[]];
+export type KnownNodeKeys<Nodes extends Typed, Skipped = NodeFreeValue> = {[T in Nodes['type']]:
+  [NodeHoldingKeys<Extract<Nodes, Typed<T>>, Skipped>] extends [never] ?
+    Record<string, never> :
+    Record<NodeHoldingKeys<Extract<Nodes, Typed<T>>, Skipped>, true> };
 
 /**
  * Creates a {@link DefaultNodePreVisitor} that per node type only visits the known keys that can hold nodes,
- * skipping unknown keys like those of an extension, through visitPaths when a key lists paths.
+ * skipping unknown keys like those of an extension.
  * @param knownKeys per node type, the keys that can hold a node.
  * @return the contexts per node type, to give to a {@link TransformerTyped} or {@link TransformerSubTyped}.
  */
@@ -158,12 +85,7 @@ export function visitOnlyKnownKeys<Nodes extends Typed, Skipped = NodeFreeValue>
 ): DefaultNodePreVisitor<Nodes> {
   const contexts: Record<string, TransformContext> = {};
   for (const [ type, keys ] of Object.entries(knownKeys)) {
-    const entries = Object.entries(<Record<string, true | readonly VisitPath<object>[]>> keys);
-    contexts[type] = entries.every(([ , paths ]) => paths === true) ?
-        { visitOnlyKeys: new Set(entries.map(([ key ]) => key)) } :
-        // Frozen, since the traversal prepares an array of paths once
-        { visitPaths: Object.freeze(entries.flatMap(([ key, paths ]): VisitPath<object>[] =>
-          paths === true ? [ Object.freeze([ key ]) ] : paths.map(path => Object.freeze([ key, ...path ])))) };
+    contexts[type] = { visitOnlyKeys: new Set(Object.keys(<object> keys)) };
   }
   return <DefaultNodePreVisitor<Nodes>> contexts;
 }
@@ -194,67 +116,41 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     newDefaultNodePreVisitor: DefaultNodePreVisitor<Nodes> = {},
   ): TransformerTyped<Nodes> {
     return new TransformerTyped(
-      mergeContextWithFallback(newDefaultContext, this.defaultContext),
+      { ...this.defaultContext, ...newDefaultContext },
       { ...this.defaultNodePreVisitor, ...newDefaultNodePreVisitor },
     );
   }
 
   /**
    * Whether a traversal visits the given key of an object, by the default of its node type or the default context.
-   * With {@link VisitContext.visitPaths}, whether they visit the value of the key as a whole.
    * Lets hand-written traversals respect the defaults of this transformer, like its allowlists.
    * @param object the object holding the key.
    * @param key the key to visit.
    * @return whether the key is visited.
    */
   public visitsKey(object: object, key: string): boolean {
-    const nodeDefault = this.nodeDefaultOf(object);
-    const ignoreKeys = nodeDefault?.ignoreKeys ?? this.defaultContext.ignoreKeys;
-    const visitPaths = nodeDefault ?
-      resolveVisitPaths(nodeDefault, this.defaultContext) :
-      this.defaultContext.visitPaths;
-    if (visitPaths) {
-      return !isKeyIgnored(key, ignoreKeys) && this.pathsVisitWholeKey(visitPaths, object, key);
-    }
-    return !isKeyIgnored(key, ignoreKeys, nodeDefault?.visitOnlyKeys ?? this.defaultContext.visitOnlyKeys);
-  }
-
-  /**
-   * The per type default of a node.
-   * @param node the node, which need not be an object.
-   * @return the default of its type, if any.
-   */
-  private nodeDefaultOf(node: unknown): TransformContext | undefined {
-    return isNode(node) ? this.defaultNodePreVisitor[<Nodes['type']> node.type] : undefined;
-  }
-
-  /**
-   * Ends visitPaths at a node, since a node is visited itself.
-   * @param object the object a path steps into.
-   * @return whether the object is a node.
-   */
-  protected override endsPathsAt(object: object): boolean {
-    return isNode(object);
+    const type = (<Partial<Typed<Nodes['type']>>> object).type;
+    const nodeDefault = type ? this.defaultNodePreVisitor[type] : undefined;
+    return !isKeyIgnored(
+      key,
+      nodeDefault?.ignoreKeys ?? this.defaultContext.ignoreKeys,
+      nodeDefault?.visitOnlyKeys ?? this.defaultContext.visitOnlyKeys,
+    );
   }
 
   /**
    * Completes the context a callback gave for a node with the per type default of that node.
-   * @param node the node the context is for, which need not be an object.
+   * @param node the node the context is for.
    * @param context the context of the callback, or undefined when the node has no callback.
    * @return the per type default, overwritten by the given context.
    */
-  protected withNodeDefault<Context extends VisitContext = TransformContext>(
-    node: unknown,
-    context?: Context,
-  ): Context {
-    const nodeDefault = this.nodeDefaultOf(node);
+  protected withNodeDefault<Context extends object = TransformContext>(node: object, context?: Context): Context {
+    const type = (<Partial<Typed<Nodes['type']>>> node).type;
+    const nodeDefault = type ? this.defaultNodePreVisitor[type] : undefined;
     if (!nodeDefault) {
-      return context ?? <Context> {};
+      return context ?? <Context> emptyContext;
     }
-    if (!context) {
-      return <Context> nodeDefault;
-    }
-    return mergeContextWithFallback(context, <Context> nodeDefault);
+    return context ? { ...nodeDefault, ...context } : <Context> nodeDefault;
   }
 
   /**
@@ -263,11 +159,13 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
    * @param context the context of the callback.
    * @return the per type default, overwritten by the given context.
    */
-  protected withNodeDefaultAsync<Context extends VisitContext>(
+  protected withNodeDefaultAsync<Context extends object>(
     node: object,
     context: Awaitable<Context>,
   ): Awaitable<Context> {
-    return mapAwaitable(context, resolved => this.withNodeDefault(node, resolved));
+    return isPromise(context) ?
+      context.then(resolved => this.withNodeDefault(node, resolved)) :
+      this.withNodeDefault(node, context);
   }
 
   /**
@@ -278,7 +176,8 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
    * @return the per type default, overwritten by the result.
    */
   protected withNewValueDefault(mapped: object, result: PreOrderMappingReturn): PreOrderMappingReturn {
-    return this.withNodeDefault(isNode(result.newValue) ? result.newValue : mapped, result);
+    const newValue = <Partial<Typed>> result.newValue;
+    return this.withNodeDefault(newValue !== null && typeof newValue?.type === 'string' ? newValue : mapped, result);
   }
 
   /**
@@ -291,7 +190,9 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     mapped: object,
     result: Awaitable<PreOrderMappingReturn>,
   ): Awaitable<PreOrderMappingReturn> {
-    return mapAwaitable(result, resolved => this.withNewValueDefault(mapped, resolved));
+    return isPromise(result) ?
+      result.then(resolved => this.withNewValueDefault(mapped, resolved)) :
+      this.withNewValueDefault(mapped, result);
   }
 
   /**
@@ -317,7 +218,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     const transformWrapper = (copy: object, orig: object): unknown => {
       let ogTransform: ((copy: any, orig: any) => unknown) | undefined;
       const casted = <Typed<Nodes['type']>>copy;
-      if (isNode(casted)) {
+      if (casted.type) {
         ogTransform = nodeCallBacks[casted.type]?.transform;
       }
       return ogTransform ? ogTransform(casted, orig) : copy;
@@ -325,7 +226,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     const preVisitWrapper = (curObject: object): VisitContext => {
       let ogPreVisit: ((node: any) => TransformContext) | undefined;
       const casted = <Typed<Nodes['type']>>curObject;
-      if (isNode(casted)) {
+      if (casted.type) {
         ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
       }
       return this.withNodeDefault(casted, ogPreVisit?.(casted));
@@ -350,7 +251,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     const transformWrapper = (copy: object, orig: object): Awaitable<unknown> => {
       let ogTransform: ((copy: any, orig: any) => Awaitable<unknown>) | undefined;
       const casted = <Typed<Nodes['type']>>copy;
-      if (isNode(casted)) {
+      if (casted.type) {
         ogTransform = nodeCallBacks[casted.type]?.transform;
       }
       return ogTransform ? ogTransform(casted, orig) : copy;
@@ -358,7 +259,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     const preVisitWrapper = (curObject: object): Awaitable<TransformContext> => {
       let ogPreVisit: ((node: any) => Awaitable<TransformContext>) | undefined;
       const casted = <Typed<Nodes['type']>>curObject;
-      if (isNode(casted)) {
+      if (casted.type) {
         ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
       }
       return ogPreVisit ? this.withNodeDefaultAsync(casted, ogPreVisit(casted)) : this.withNodeDefault(casted);
@@ -400,7 +301,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     const preTransformWrapper = (copy: object, orig: object): PreOrderMappingReturn => {
       let ogPreTransform: ((copy: any, orig: any) => PreOrderMappingReturn) | undefined;
       const casted = <Typed<Nodes['type']>>copy;
-      if (isNode(casted)) {
+      if (casted.type) {
         ogPreTransform = nodeCallBacks[casted.type];
       }
       return this.withNewValueDefault(copy, ogPreTransform ?
@@ -427,7 +328,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     const preTransformWrapper = (copy: object, orig: object): Awaitable<PreOrderMappingReturn> => {
       let ogPreTransform: ((copy: any, orig: any) => Awaitable<PreOrderMappingReturn>) | undefined;
       const casted = <Typed<Nodes['type']>>copy;
-      if (isNode(casted)) {
+      if (casted.type) {
         ogPreTransform = nodeCallBacks[casted.type];
       }
       return this.withNewValueDefaultAsync(copy, ogPreTransform ?
@@ -462,7 +363,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
   ): void {
     const visitorWrapper = (curObject: object): void => {
       const casted = <Typed<Nodes['type']>>curObject;
-      if (isNode(casted)) {
+      if (casted.type) {
         const ogTransform = nodeCallBacks[casted.type]?.visitor;
         if (ogTransform) {
           ogTransform(<any> casted);
@@ -472,7 +373,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     const preVisitWrapper = (curObject: object): VisitContext => {
       let ogPreVisit: ((node: any) => VisitContext) | undefined;
       const casted = <Typed<Nodes['type']>>curObject;
-      if (isNode(casted)) {
+      if (casted.type) {
         ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
       }
       return this.withNodeDefault(casted, ogPreVisit?.(casted));
@@ -493,7 +394,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
   ): Promise<void> {
     const visitorWrapper = (curObject: object): Awaitable<void> => {
       const casted = <Typed<Nodes['type']>>curObject;
-      if (isNode(casted)) {
+      if (casted.type) {
         const ogTransform = nodeCallBacks[casted.type]?.visitor;
         if (ogTransform) {
           return ogTransform(<any> casted);
@@ -503,7 +404,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     const preVisitWrapper = (curObject: object): Awaitable<VisitContext> => {
       let ogPreVisit: ((node: any) => Awaitable<VisitContext>) | undefined;
       const casted = <Typed<Nodes['type']>>curObject;
-      if (isNode(casted)) {
+      if (casted.type) {
         ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
       }
       return ogPreVisit ? this.withNodeDefaultAsync(casted, ogPreVisit(casted)) : this.withNodeDefault(casted);

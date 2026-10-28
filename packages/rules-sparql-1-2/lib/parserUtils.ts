@@ -96,8 +96,7 @@ export class AstTransformer extends TransformerSubTyped<Sparql12Nodes> {
 export const astKnownKeys = {
   ...astKnownKeys11,
   // An annotation is a node, or a wrapped term without a type
-  triple: { ...astKnownKeys11.triple, annotations: (triple, visitKey, stepIntoKey) => {
-    const annotations = stepIntoKey(triple, 'annotations') ?? [];
+  triple: { ...astKnownKeys11.triple, annotations: (annotations, visitKey, stepIntoKey) => {
     for (let index = 0; index < annotations.length; index++) {
       if ('type' in annotations[index]) {
         visitKey(annotations, index);

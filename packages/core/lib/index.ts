@@ -22,8 +22,6 @@ export {
   VisitKey,
   StepIntoKey,
   VisitChildren,
-  ChildKey,
-  ChildValue,
   PreOrderMappingReturn,
   TransformerObject,
   SelectiveTraversalContext,
@@ -35,7 +33,6 @@ export {
   SafeWrap,
   DefaultNodePreVisitor,
   KnownNodeKeys,
-  KnownKeyVisitor,
   visitOnlyKnownKeys,
 } from './transformers/TransformerTyped.js';
 export { TransformerSubTyped } from './transformers/TransformerSubTyped.js';

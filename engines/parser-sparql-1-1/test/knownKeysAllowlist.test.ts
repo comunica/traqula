@@ -61,7 +61,7 @@ describe('astKnownKeysAllowlist', () => {
     expect(visitedLocs(new AstTransformer({ ignoreKeys: new Set() }))).toBeGreaterThan(0);
   });
 
-  it('does not visit unknown keys of the objects without a type it steps through', ({ expect }) => {
+  it('does not visit unknown keys of the objects without a type it steps into', ({ expect }) => {
     const extension = (): object => ({ type: 'term', subType: 'variable', value: 'extension' });
     const update = <any> new Parser().parse('INSERT DATA { <a> <b> <c> } ; CLEAR ALL');
     update.updates[0].extension = extension();
@@ -95,7 +95,7 @@ describe('astKnownKeysAllowlist', () => {
     expect(count(allowlisted)).toBe(count(unrestricted));
   });
 
-  it('steps through VALUES rows with a variable named type', ({ expect }) => {
+  it('steps into VALUES rows with a variable named type', ({ expect }) => {
     // A row holding a key named 'type' is still stepped into
     const ast = new Parser().parse('SELECT * WHERE { VALUES (?type ?b) { (<a> <c>) } }');
     expect(sameNodes(visitedNodes(strict, ast), visitedNodes(unrestricted, ast))).toBe(true);

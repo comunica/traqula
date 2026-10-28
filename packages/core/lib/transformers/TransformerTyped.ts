@@ -93,16 +93,8 @@ export type NodeHoldingKeys<Obj, Skipped = NodeFreeValue> = {[Key in AllObjectKe
   CanHoldNode<AllObjectValues<Obj, Key>, Skipped> extends true ? Key : never }[AllObjectKeys<Obj>];
 
 /**
- * Visits the children within the value of a known key of a node, see {@link VisitContext.visitChildren}.
- * Checked as a method, so the visitors of a node type also serve the nodes that extend it.
- */
-export type KnownKeyVisitor<Node> = {
-  // eslint-disable-next-line ts/method-signature-style
-  visit(this: void, node: Node, visitKey: VisitKey, stepIntoKey: StepIntoKey): void;
-}['visit'];
-
-/**
- * Per node type, exactly the keys that can hold a node, mapped to `true` or to a {@link KnownKeyVisitor}.
+ * Per node type, exactly the keys that can hold a node, mapped to `true` or to the {@link VisitChildren} of the
+ * value of the key, which is stepped into first.
  * The compiler rejects missing and other keys, also for a type without such keys.
  * @typeParam Skipped - Values that are not looked into, by default source locations and RDF terms.
  */
@@ -114,7 +106,7 @@ export type KnownNodeKeys<Nodes extends Typed, Skipped = NodeFreeValue> =
  */
 type KnownNodeKeysOfType<Node, Skipped, Keys extends string = NodeHoldingKeys<Node, Skipped>> = [Keys] extends [never] ?
   Record<string, never> :
-    {[Key in Keys]: true | KnownKeyVisitor<Node> };
+    {[Key in Keys]: true | VisitChildren<Extract<AllObjectValues<Node, Key>, object>> };
 
 /**
  * Creates a {@link DefaultNodePreVisitor} that per node type only visits the known keys that can hold nodes,
@@ -127,18 +119,22 @@ export function visitOnlyKnownKeys<Nodes extends Typed, Skipped = NodeFreeValue>
 ): DefaultNodePreVisitor<Nodes> {
   const contexts: Record<string, TransformContext> = {};
   for (const [ type, keys ] of Object.entries(knownKeys)) {
-    const entries = Object.entries(<Record<string, true | KnownKeyVisitor<object>>> keys);
+    const entries = Object.entries(<Record<string, true | VisitChildren>> keys);
     const visitedKeys = entries.filter(([ , visitor ]) => visitor === true).map(([ key ]) => key);
-    const keyVisitors = entries.flatMap(([ , visitor ]) => visitor === true ? [] : [ visitor ]);
-    const visitChildren: VisitChildren = (node, visitKey, stepIntoKey) => {
+    const valueVisitors = entries.flatMap(([ key, visitor ]) => visitor === true ? [] : [{ key, visitor }]);
+    // A callback, not visitOnlyKeys, since it reads the known keys only instead of checking every key
+    const visitChildren: VisitChildren<Record<string, unknown>> = (node, visitKey, stepIntoKey) => {
       for (const key of visitedKeys) {
-        visitKey(node, <never> key);
+        visitKey(node, key);
       }
-      for (const keyVisitor of keyVisitors) {
-        keyVisitor(node, visitKey, stepIntoKey);
+      for (const { key, visitor } of valueVisitors) {
+        const value = stepIntoKey(node, key);
+        if (value !== null && typeof value === 'object') {
+          visitor(value, visitKey, stepIntoKey);
+        }
       }
     };
-    contexts[type] = { visitChildren };
+    contexts[type] = { visitChildren: <VisitChildren> visitChildren };
   }
   return <DefaultNodePreVisitor<Nodes>> contexts;
 }
@@ -186,12 +182,14 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
    */
   public visitsKey(object: object, key: string): boolean {
     const nodeDefault = this.nodeDefaultOf(object);
-    const ignoreKeys = nodeDefault?.ignoreKeys ?? this.defaultContext.ignoreKeys;
+    if (isKeyIgnored(key, nodeDefault?.ignoreKeys ?? this.defaultContext.ignoreKeys)) {
+      return false;
+    }
     const visitOnlyKeys = nodeDefault?.visitOnlyKeys ?? this.defaultContext.visitOnlyKeys;
     const visitChildren = nodeDefault?.visitChildren ??
       (nodeDefault?.visitOnlyKeys ? undefined : this.defaultContext.visitChildren);
     if (!visitChildren) {
-      return !isKeyIgnored(key, ignoreKeys, visitOnlyKeys);
+      return !isKeyIgnored(key, undefined, visitOnlyKeys);
     }
     let visited = false;
     const recordVisit = <VisitKey> ((holder: object, visitedKey: string): void => {
@@ -199,7 +197,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     });
     const stepIntoKey = <StepIntoKey> ((holder: Record<string, unknown>, steppedKey: string) => holder[steppedKey]);
     visitChildren(object, recordVisit, stepIntoKey);
-    return visited && !isKeyIgnored(key, ignoreKeys);
+    return visited;
   }
 
   /**

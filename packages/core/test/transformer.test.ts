@@ -1794,8 +1794,7 @@ describe('visitOnlyKnownKeys', () => {
     crate: { content: true },
     shelf: {
       crate: true,
-      rows: (shelf, visitKey, stepIntoKey) => {
-        const rows = stepIntoKey(shelf, 'rows');
+      rows: (rows, visitKey, stepIntoKey) => {
         for (let index = 0; index < rows.length; index++) {
           visitKey(stepIntoKey(rows, index), 'apple');
         }
@@ -1821,7 +1820,7 @@ describe('visitOnlyKnownKeys', () => {
     return visited;
   };
 
-  it('creates contexts that only visit the known keys, stepping into the objects without a type', ({ expect }) => {
+  it('creates contexts that step into the objects without a type, for the types with visitors', ({ expect }) => {
     const strict = new TransformerTyped<Apple | Crate | Shelf>({ visitOnlyKeys: new Set() }, shelfKnownKeys);
     expect(visitApples(strict)).toEqual([ 'inRow', 'inCrate' ]);
   });

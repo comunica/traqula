@@ -59,12 +59,22 @@ ChildValue<Holder, Key>;
 
 /**
  * Visits the children of an object through {@link VisitKey}, stepping into objects without a type through
- * {@link StepIntoKey}.
+ * {@link StepIntoKey}. Checked as a method, so the callback of a type also serves the types that extend it.
  */
-export type VisitChildren<Obj = object> = (object: Obj, visitKey: VisitKey, stepIntoKey: StepIntoKey) => void;
+export type VisitChildren<Obj = object> = {
+  // eslint-disable-next-line ts/method-signature-style
+  visitChildren(this: void, object: Obj, visitKey: VisitKey, stepIntoKey: StepIntoKey): void;
+}['visitChildren'];
 
 /**
- * Calls the {@link VisitChildren} of a node, skipping its keys in ignoreKeys and shallowKeys.
+ * Empty containers that stepping into a skipped key gives, so the children within it are skipped too.
+ */
+const emptyArray: readonly unknown[] = Object.freeze([]);
+const emptyObject: object = Object.freeze({});
+
+/**
+ * Calls the {@link VisitChildren} of a node, after shallowly copying its shallowKeys, and skipping those and its
+ * ignoreKeys.
  */
 type VisitChildrenOf = (
   node: object,
@@ -76,7 +86,6 @@ type VisitChildrenOf = (
 
 /**
  * Creates the {@link VisitKey} and {@link StepIntoKey} of a traversal, and calls visitChildren callbacks with them.
- * Stepping into a skipped key gives an empty container, so the children within it are skipped too.
  * Stepping into a key twice for the same node gives the same copy.
  * @param pushChild adds a child to the traversal, with the object holding it and its key.
  * @param transformer the transformer that copies the objects stepped into.
@@ -106,7 +115,7 @@ function createVisitChildrenOf(
       return value;
     }
     if (isSkipped(holder, key)) {
-      return Array.isArray(value) ? [] : {};
+      return Array.isArray(value) ? emptyArray : emptyObject;
     }
     if (!currentCopiesSteps || currentCopies.has(value)) {
       return value;
@@ -117,6 +126,15 @@ function createVisitChildrenOf(
     return copy;
   });
   return (node, visitChildren, ignoreKeys, shallowKeys, copiesSteps) => {
+    if (shallowKeys !== undefined) {
+      const holder = <Record<string, unknown>> node;
+      for (const key of shallowKeys) {
+        const value = holder[key];
+        if (value !== null && typeof value === 'object' && Object.hasOwn(holder, key)) {
+          holder[key] = transformer.cloneObj(value);
+        }
+      }
+    }
     currentNode = node;
     currentIgnoreKeys = ignoreKeys;
     currentShallowKeys = shallowKeys;
@@ -192,9 +210,7 @@ export interface VisitContext<Obj = object> {
    * See the AST structure docs for how it combines with the other keys of a context.
    */
   // A method, not a property, so a context of a node type stays a context of any object
-  // A method is checked bivariantly, so the context of a node type is also a context of any object
-  // eslint-disable-next-line ts/method-signature-style
-  visitChildren?(this: void, object: Obj, visitKey: VisitKey, stepIntoKey: StepIntoKey): void;
+  visitChildren?: VisitChildren<Obj>;
 }
 
 /**
@@ -295,20 +311,6 @@ export class TransformerObject {
 
     // Otherwise, preserve prototype for custom objects
     return Object.assign(Object.create(proto), obj);
-  }
-
-  /**
-   * Shallowly copies the values of the given keys, as a traversal does for its shallowKeys.
-   * @param object the object holding the keys.
-   * @param shallowKeys the keys to copy the values of.
-   */
-  private copyShallowKeys(object: Record<string, unknown>, shallowKeys: Set<string> | undefined): void {
-    for (const key of shallowKeys ?? []) {
-      const value = object[key];
-      if (value !== null && typeof value === 'object' && Object.hasOwn(object, key)) {
-        object[key] = this.cloneObj(value);
-      }
-    }
   }
 
   /**
@@ -441,7 +443,6 @@ export class TransformerObject {
       // Extend stack if needed. When shortcutted, should still unwind the stack, but no longer add to it.
       if (continues && !didShortCut) {
         if (visitChildren) {
-          this.copyShallowKeys(<Record<string, unknown>> copy, shallowKeys);
           visitChildrenOf(copy, visitChildren, ignoreKeys, shallowKeys, copyFlag);
           return;
         }
@@ -676,7 +677,6 @@ export class TransformerObject {
       const newAsRecord = <Record<string, unknown>> newValue;
       childDepth = depth + 1;
       if (visitChildren) {
-        this.copyShallowKeys(newAsRecord, shallowKeys);
         visitChildrenOf(newAsRecord, visitChildren, ignoreKeys, shallowKeys, defaultCopyFlag);
         return;
       }

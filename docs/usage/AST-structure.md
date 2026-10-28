@@ -181,7 +181,7 @@ as the per type defaults, the second argument of a transformer's constructor:
 `astKnownKeysAllowlist` of `@traqula/rules-sparql-1-1` and `@traqula/rules-sparql-1-2`, or `algebraUtils.knownKeysAllowlist`.
 Known node types then only visit their keys that can hold nodes; other objects get the default context.
 `visitOnlyKnownKeys` of `@traqula/core` creates such an allowlist, the compiler checking that it lists exactly
-the keys that can hold a node. A key maps to `true`, or to a callback visiting the children within its value:
+the keys that can hold a node. A key maps to `true`, or to the `visitChildren` of its value, stepped into first:
 
 ```typescript
 import { visitOnlyKnownKeys } from '@traqula/core';
@@ -189,8 +189,7 @@ import type { Sparql11Nodes } from '@traqula/rules-sparql-1-1';
 
 const allowlist = visitOnlyKnownKeys<Sparql11Nodes>({
   // ...
-  update: { updates: (update, visitKey, stepIntoKey) => {
-    const updates = stepIntoKey(update, 'updates');
+  update: { updates: (updates, visitKey, stepIntoKey) => {
     for (let index = 0; index < updates.length; index++) {
       const updateWithContext = stepIntoKey(updates, index);
       visitKey(updateWithContext, 'operation');

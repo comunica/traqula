@@ -1,8 +1,5 @@
 import { describe, it, expectTypeOf } from 'vitest';
 import type {
-  ChildKey,
-  ChildValue,
-  KnownKeyVisitor,
   KnownNodeKeys,
   ObjectKeyHint,
   TransformContext,
@@ -11,6 +8,7 @@ import type {
   VisitChildren,
   VisitContext,
 } from '../lib/index.js';
+import type { ChildKey, ChildValue } from '../lib/transformers/TransformerObject.js';
 import type { CanHoldNode } from '../lib/transformers/TransformerTyped.js';
 import type { SourceLocation } from '../lib/types.js';
 
@@ -83,21 +81,19 @@ describe('transformer', () => {
 
     it('requires known node keys to list exactly the keys that can hold nodes', () => {
       expectTypeOf<KnownNodeKeys<Nodes>['pattern']>().toEqualTypeOf<{
-        subject: true | KnownKeyVisitor<Pattern>;
-        predicate: true | KnownKeyVisitor<Pattern>;
+        subject: true | VisitChildren<Literal>;
+        predicate: true | VisitChildren<Literal>;
       }>();
       expectTypeOf<KnownNodeKeys<Nodes>['term']>().toEqualTypeOf<Record<string, never>>();
       expectTypeOf<{ pattern: { subject: true }}>().not.toExtend<KnownNodeKeys<Pattern>>();
     });
 
-    it('accepts a visitor for a known node key', ({ expect }) => {
-      expectTypeOf<{ rows: KnownKeyVisitor<Shelf> }>().toExtend<KnownNodeKeys<Shelf>['shelf']>();
+    it('accepts a visitor of the value of a known node key', () => {
+      expectTypeOf<{ rows: VisitChildren<Shelf['rows']> }>().toExtend<KnownNodeKeys<Shelf>['shelf']>();
+      expectTypeOf<{ rows: VisitChildren<Shelf> }>().not.toExtend<KnownNodeKeys<Shelf>['shelf']>();
       expectTypeOf<{ rows: true }>().toExtend<KnownNodeKeys<Shelf>['shelf']>();
       expectTypeOf<{ rows: []}>().not.toExtend<KnownNodeKeys<Shelf>['shelf']>();
-      const visitRows: KnownKeyVisitor<Shelf> = (shelf, visitKey, stepIntoKey) => {
-        visitKey(stepIntoKey(stepIntoKey(shelf, 'rows'), 0), 'literal');
-      };
-      expect(visitRows).toBeTypeOf('function');
+      expectTypeOf<VisitChildren<Shelf['rows']>>().toExtend<KnownNodeKeys<Shelf>['shelf']['rows']>();
     });
 
     it('names the keys and values of objects, also of unions, and the indexes of arrays', () => {

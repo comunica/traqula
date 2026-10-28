@@ -211,17 +211,16 @@ export function resolveTermIri(term: TermIri, prefixes: Record<string, string>, 
 
 /**
  * Per node type, the known keys that can hold nodes, skipping source locations, see {@link visitOnlyKnownKeys}.
- * The objects without a type that hold nodes are stepped through by paths, so their unknown keys are skipped too.
+ * The objects without a type that hold nodes are stepped into, so their unknown keys are skipped too.
  */
 export const astKnownKeys = {
   path: { items: true },
   pattern: {
     // The rows of VALUES map variable names to terms
-    values: (pattern, visitKey, stepIntoKey) => {
-      const rows = stepIntoKey(pattern, 'values') ?? [];
+    values: (rows, visitKey, stepIntoKey) => {
       for (let index = 0; index < rows.length; index++) {
         const row = stepIntoKey(rows, index);
-        for (const variable of Object.keys(row)) {
+        for (const variable in row) {
           visitKey(row, variable);
         }
       }
@@ -233,8 +232,7 @@ export const astKnownKeys = {
     patterns: true,
     triples: true,
   },
-  update: { updates: (update, visitKey, stepIntoKey) => {
-    const updates = stepIntoKey(update, 'updates');
+  update: { updates: (updates, visitKey, stepIntoKey) => {
     for (let index = 0; index < updates.length; index++) {
       const updateWithContext = stepIntoKey(updates, index);
       visitKey(updateWithContext, 'operation');
@@ -245,8 +243,7 @@ export const astKnownKeys = {
     values: true,
     template: true,
     context: true,
-    solutionModifiers: (query, visitKey, stepIntoKey) => {
-      const solutionModifiers = stepIntoKey(query, 'solutionModifiers');
+    solutionModifiers: (solutionModifiers, visitKey) => {
       visitKey(solutionModifiers, 'group');
       visitKey(solutionModifiers, 'having');
       visitKey(solutionModifiers, 'order');
@@ -268,8 +265,7 @@ export const astKnownKeys = {
     delete: true,
     insert: true,
   },
-  datasetClauses: { clauses: (datasetClauses, visitKey, stepIntoKey) => {
-    const clauses = stepIntoKey(datasetClauses, 'clauses');
+  datasetClauses: { clauses: (clauses, visitKey, stepIntoKey) => {
     for (let index = 0; index < clauses.length; index++) {
       visitKey(stepIntoKey(clauses, index), 'value');
     }
@@ -278,15 +274,13 @@ export const astKnownKeys = {
   triple: { object: true, subject: true, predicate: true },
   solutionModifier: {
     having: true,
-    orderDefs: (solutionModifier, visitKey, stepIntoKey) => {
-      const orderDefs = stepIntoKey(solutionModifier, 'orderDefs') ?? [];
+    orderDefs: (orderDefs, visitKey, stepIntoKey) => {
       for (let index = 0; index < orderDefs.length; index++) {
         visitKey(stepIntoKey(orderDefs, index), 'expression');
       }
     },
     // A grouping is an expression, or a bind without a type
-    groupings: (solutionModifier, visitKey, stepIntoKey) => {
-      const groupings = stepIntoKey(solutionModifier, 'groupings') ?? [];
+    groupings: (groupings, visitKey, stepIntoKey) => {
       for (let index = 0; index < groupings.length; index++) {
         if ('type' in groupings[index]) {
           visitKey(groupings, index);

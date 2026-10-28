@@ -113,38 +113,11 @@ SELECT * {
 `
 ```
 
-### Allowlist-Based Traversal
+### Selective Traversal
 
-By default, a transformer visits every key of a node, unless the node's context excludes it through `ignoreKeys`.
+By default, a transformer visits every key of an object, except its `ignoreKeys`.
 An `AstTransformer` ignores the `loc` keys by default, since source locations hold no nodes; giving your own `ignoreKeys`
 replaces that. It steps into the rows of VALUES, so it still visits a variable named `loc`.
-Setting `visitOnlyKeys` to an empty set in the default context flips this around:
-the transformer only visits the keys a node explicitly allows.
-
-```typescript
-import { AstTransformer } from "@traqula/rules-sparql-1-1";
-import { Parser } from '@traqula/parser-sparql-1-1'
-
-const ast = new Parser().parse('SELECT ?s (?p AS ?q) WHERE { ?s ?p ?o }');
-const transformer = new AstTransformer({ visitOnlyKeys: new Set() });
-const projected: string[] = [];
-transformer.visitNodeSpecific(ast, {}, {
-  'query': { 'select': { preVisitor: () => ({ visitOnlyKeys: new Set([ 'variables' ]) }) }},
-  'term': { 'variable': { visitor: (variable) => { projected.push(variable.value); } }},
-});
-// Only ?s: the bind '(?p AS ?q)' is visited, but it allows none of its keys.
-const truety = projected.join() === 's';
-```
-
-Keep in mind that:
-- the `visitOnlyKeys` of a node replaces the default, it is not merged with it;
-- all elements of an allowed array are visited, arrays are not filtered;
-- `ignoreKeys` still applies, and `shallowKeys` are still shallowly copied;
-- the object you start from is always visited;
-- an object without a `type`, like an element of the `updates` of an update, gets the default context,
-  so with an empty `visitOnlyKeys` default the nodes within it are not visited: step into it with `visitChildren`.
-
-### Callback-Based Traversal
 
 A context can give `visitChildren` instead: a callback that visits the children of the object itself.
 It calls `visitKey(holder, key)` for each child to traverse, and `stepIntoKey(holder, key)` to reach the objects
@@ -155,7 +128,8 @@ import { AstTransformer } from "@traqula/rules-sparql-1-1";
 import { Parser } from '@traqula/parser-sparql-1-1'
 
 const ast = new Parser().parse('INSERT DATA { <a> <b> <c> } ; CLEAR ALL');
-const transformer = new AstTransformer({ visitOnlyKeys: new Set() });
+// Visits no children by default, only those the callbacks visit
+const transformer = new AstTransformer({ visitChildren: () => {} });
 const operations: string[] = [];
 transformer.visitNode(ast, {
   'update': { preVisitor: () => ({ visitChildren: (update, visitKey, stepIntoKey) => {
@@ -170,10 +144,12 @@ const truety = operations.join() === 'clear,insertdata';
 ```
 
 Keep in mind that:
+- a context's `visitChildren` replaces that of its default, it is not merged with it;
 - the children passed to `visitKey` last are traversed first, like the last keys of an object;
+- all elements of a visited array are visited, arrays are not filtered;
 - when transforming, `stepIntoKey` returns a copy put in place of the original, so write through it, not around it;
 - the node's `ignoreKeys` and `shallowKeys` still apply to its own keys, also when stepping into them;
-- a context's `visitOnlyKeys` replaces the `visitChildren` of its default.
+- the object you start from is always visited.
 
 ### Known Keys Allowlists
 
@@ -201,7 +177,8 @@ const allowlist = visitOnlyKnownKeys<Sparql11Nodes>({
 });
 ```
 
-The AST allowlists step into every object without a `type`, so they also work with an empty default `visitOnlyKeys`.
+The AST allowlists step into every object without a `type`, so they also work with a default `visitChildren` that
+visits nothing.
 Spread their `astKnownKeys` to extend them.
 
 The rules of the parser, `toAlgebra`, and `toAst` that call a transformer use the ones you give them.

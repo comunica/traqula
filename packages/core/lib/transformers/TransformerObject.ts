@@ -27,13 +27,6 @@ export function mapAwaitable<Value, Result>(
 export type ObjectKeyHint<Obj> = (keyof Obj & string) | (string & NonNullable<unknown>);
 
 /**
- * Whether a key should not be visited according to the given ignoreKeys and visitOnlyKeys.
- */
-export function isKeyIgnored(key: string, ignoreKeys?: Set<string>, visitOnlyKeys?: Set<string>): boolean {
-  return (ignoreKeys?.has(key) ?? false) || !(visitOnlyKeys?.has(key) ?? true);
-}
-
-/**
  * The keys of an object, also when it is a union of objects, or the indexes of an array.
  */
 export type ChildKey<Holder> = Holder extends readonly unknown[] ? number :
@@ -153,28 +146,12 @@ export function canonicalContext<Context extends TransformContext>(context: Cont
     shortcut: undefined,
     continue: undefined,
     ignoreKeys: undefined,
-    visitOnlyKeys: undefined,
     visitChildren: undefined,
     shallowKeys: undefined,
     copy: undefined,
     reTransform: undefined,
     ...context,
   };
-}
-
-/**
- * Merges a context over its fallback, its visitOnlyKeys replacing the visitChildren of the fallback.
- * @param context the more specific context.
- * @param fallback the context it falls back to.
- * @return the merged context.
- */
-export function mergeContextWithFallback<Context extends VisitContext>(context: Context, fallback: Context): Context {
-  const merged = { ...fallback, ...context };
-  // Only overwritten when it changes, keeping the plain spread fast
-  if (fallback.visitChildren && !context.visitChildren && context.visitOnlyKeys) {
-    merged.visitChildren = undefined;
-  }
-  return merged;
 }
 
 /**
@@ -194,17 +171,9 @@ export interface VisitContext<Obj = object> {
    */
   ignoreKeys?: Set<ObjectKeyHint<Obj>>;
   /**
-   * Object keys that can be visited, all other keys are ignored. By default, all keys can be visited.
-   * A key included here and in {@link ignoreKeys} is ignored.
-   * An empty set in the default context makes a transformer only visit keys a node allows, unless it has
-   * visitChildren.
+   * Visits the children of this object instead of its keys, replacing the visitChildren of a default.
+   * A callback visiting no children in the default context makes a transformer only visit what nodes allow.
    */
-  visitOnlyKeys?: Set<ObjectKeyHint<Obj>>;
-  /**
-   * Visits the children of this object instead of its keys.
-   * See the AST structure docs for how it combines with the other keys of a context.
-   */
-  // A method, not a property, so a context of a node type stays a context of any object
   visitChildren?: VisitChildren<Obj>;
 }
 
@@ -214,7 +183,7 @@ export interface VisitContext<Obj = object> {
 export interface TransformContext<Obj = object> extends VisitContext<Obj> {
   /**
    * Object keys that will be shallowly copied but not traversed.
-   * When the same key is ignored through {@link ignoreKeys} or {@link visitOnlyKeys}, the copy will still be made.
+   * When the same key is ignored through {@link ignoreKeys}, the copy will still be made.
    */
   shallowKeys?: Set<ObjectKeyHint<Obj>>;
   /**
@@ -280,7 +249,7 @@ export class TransformerObject {
   }
 
   public clone(newDefaultContext: TransformContext = {}): TransformerObject {
-    return new TransformerObject(mergeContextWithFallback(newDefaultContext, this.defaultContext));
+    return new TransformerObject({ ...this.defaultContext, ...newDefaultContext });
   }
 
   /**
@@ -356,7 +325,6 @@ export class TransformerObject {
     const defaultCopyFlag = defaults.copy ?? true;
     const defaultContinues = defaults.continue ?? true;
     const defaultIgnoreKeys = defaults.ignoreKeys;
-    const defaultVisitOnlyKeys = defaults.visitOnlyKeys;
     const defaultVisitChildren = defaults.visitChildren;
     const defaultShallowKeys = defaults.shallowKeys;
     const defaultDidShortCut = defaults.shortcut ?? false;
@@ -421,8 +389,7 @@ export class TransformerObject {
       const copyFlag = context.copy ?? defaultCopyFlag;
       const continues = context.continue ?? defaultContinues;
       const ignoreKeys = context.ignoreKeys ?? defaultIgnoreKeys;
-      const visitOnlyKeys = context.visitOnlyKeys ?? defaultVisitOnlyKeys;
-      const visitChildren = context.visitChildren ?? (context.visitOnlyKeys ? undefined : defaultVisitChildren);
+      const visitChildren = context.visitChildren ?? defaultVisitChildren;
       const shallowKeys = context.shallowKeys ?? defaultShallowKeys;
       didShortCut = context.shortcut ?? defaultDidShortCut;
 
@@ -451,10 +418,7 @@ export class TransformerObject {
           if (shallowKeys && shallowKeys?.has(key)) {
             // Do not add stack entry - assign straight away
             (<Record<string, unknown>> copy)[key] = this.cloneObj(val);
-          } else if (val !== null && typeof val === 'object' &&
-            // Inlines isKeyIgnored, since this runs for every key
-            (ignoreKeys === undefined || !ignoreKeys.has(key)) &&
-            (visitOnlyKeys === undefined || visitOnlyKeys.has(key))) {
+          } else if (val !== null && typeof val === 'object' && (ignoreKeys === undefined || !ignoreKeys.has(key))) {
             pushChild(val, copy, key);
           }
         }
@@ -573,7 +537,6 @@ export class TransformerObject {
     const defaultCopyFlag = defaults.copy ?? true;
     const defaultContinues = defaults.continue ?? true;
     const defaultIgnoreKeys = defaults.ignoreKeys;
-    const defaultVisitOnlyKeys = defaults.visitOnlyKeys;
     const defaultVisitChildren = defaults.visitChildren;
     const defaultShallowKeys = defaults.shallowKeys;
     const defaultDidShortCut = defaults.shortcut ?? false;
@@ -642,9 +605,7 @@ export class TransformerObject {
 
       const continues = mapperResult.continue ?? defaultContinues;
       const ignoreKeys = mapperResult.ignoreKeys ?? defaultIgnoreKeys;
-      const visitOnlyKeys = mapperResult.visitOnlyKeys ?? defaultVisitOnlyKeys;
-      const visitChildren = mapperResult.visitChildren ??
-        (mapperResult.visitOnlyKeys ? undefined : defaultVisitChildren);
+      const visitChildren = mapperResult.visitChildren ?? defaultVisitChildren;
       const shallowKeys = mapperResult.shallowKeys ?? defaultShallowKeys;
       const reTransform = mapperResult.reTransform ?? defaultReTransform;
       didShortCut = mapperResult.shortcut ?? defaultDidShortCut;
@@ -675,7 +636,7 @@ export class TransformerObject {
         visitChildrenOf(newAsRecord, visitChildren, ignoreKeys, shallowKeys, defaultCopyFlag);
         return;
       }
-      // In any other case, push the children, ignoring ignoreKeys, keys not in visitOnlyKeys, and shallowKeys.
+      // In any other case, push the children, ignoring ignoreKeys and shallowKeys.
       // Creating shallow copies of shallowKeys, even when they are ignored.
       for (const key in newAsRecord) {
         if (!Object.hasOwn(newAsRecord, key)) {
@@ -685,8 +646,7 @@ export class TransformerObject {
         if (val !== null && typeof val === 'object') {
           if (shallowKeys?.has(key)) {
             newAsRecord[key] = this.cloneObj(val);
-          } else if ((ignoreKeys === undefined || !ignoreKeys.has(key)) &&
-            (visitOnlyKeys === undefined || visitOnlyKeys.has(key))) {
+          } else if (ignoreKeys === undefined || !ignoreKeys.has(key)) {
             pushChild(val, newAsRecord, key);
           }
         }
@@ -775,7 +735,6 @@ export class TransformerObject {
     const defaults = this.defaultContext;
     const defaultContinues = defaults.continue ?? true;
     const defaultIgnoreKeys = defaults.ignoreKeys;
-    const defaultVisitOnlyKeys = defaults.visitOnlyKeys;
     const defaultVisitChildren = defaults.visitChildren;
     const defaultShortcut = defaults.shortcut ?? false;
 
@@ -823,8 +782,7 @@ export class TransformerObject {
       didShortCut = context.shortcut ?? defaultShortcut;
       const continues = context.continue ?? defaultContinues;
       const ignoreKeys = context.ignoreKeys ?? defaultIgnoreKeys;
-      const visitOnlyKeys = context.visitOnlyKeys ?? defaultVisitOnlyKeys;
-      const visitChildren = context.visitChildren ?? (context.visitOnlyKeys ? undefined : defaultVisitChildren);
+      const visitChildren = context.visitChildren ?? defaultVisitChildren;
 
       // Register that you want to be visited
       handleVisitorOnLen.push(stack.length);
@@ -841,8 +799,7 @@ export class TransformerObject {
             continue;
           }
           const val = (<Record<string, unknown>> curObject)[key];
-          if (val && typeof val === 'object' && (ignoreKeys === undefined || !ignoreKeys.has(key)) &&
-            (visitOnlyKeys === undefined || visitOnlyKeys.has(key))) {
+          if (val && typeof val === 'object' && (ignoreKeys === undefined || !ignoreKeys.has(key))) {
             stack.push(val);
           }
         }

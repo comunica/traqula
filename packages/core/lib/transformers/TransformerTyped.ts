@@ -10,9 +10,7 @@ import type {
 } from './TransformerObject.js';
 import {
   canonicalContext,
-  isKeyIgnored,
   mapAwaitable,
-  mergeContextWithFallback,
   TransformerObject,
 } from './TransformerObject.js';
 
@@ -122,7 +120,7 @@ export function visitOnlyKnownKeys<Nodes extends Typed, Skipped = NodeFreeValue>
     const entries = Object.entries(<Record<string, true | VisitChildren>> keys);
     const visitedKeys = entries.filter(([ , visitor ]) => visitor === true).map(([ key ]) => key);
     const valueVisitors = entries.flatMap(([ key, visitor ]) => visitor === true ? [] : [{ key, visitor }]);
-    // A callback, not visitOnlyKeys, since it reads the known keys only instead of checking every key
+    // A callback reads the known keys only, instead of checking every key of the node
     const visitChildren: VisitChildren<Record<string, unknown>> = (node, visitKey, stepIntoKey) => {
       for (const key of visitedKeys) {
         visitKey(node, key);
@@ -167,7 +165,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     newDefaultNodePreVisitor: DefaultNodePreVisitor<Nodes> = {},
   ): TransformerTyped<Nodes> {
     return new TransformerTyped(
-      mergeContextWithFallback(newDefaultContext, this.defaultContext),
+      { ...this.defaultContext, ...newDefaultContext },
       { ...this.defaultNodePreVisitor, ...newDefaultNodePreVisitor },
     );
   }
@@ -182,14 +180,12 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
    */
   public visitsKey(object: object, key: string): boolean {
     const nodeDefault = this.nodeDefaultOf(object);
-    if (isKeyIgnored(key, nodeDefault?.ignoreKeys ?? this.defaultContext.ignoreKeys)) {
+    if ((nodeDefault?.ignoreKeys ?? this.defaultContext.ignoreKeys)?.has(key)) {
       return false;
     }
-    const visitOnlyKeys = nodeDefault?.visitOnlyKeys ?? this.defaultContext.visitOnlyKeys;
-    const visitChildren = nodeDefault?.visitChildren ??
-      (nodeDefault?.visitOnlyKeys ? undefined : this.defaultContext.visitChildren);
+    const visitChildren = nodeDefault?.visitChildren ?? this.defaultContext.visitChildren;
     if (!visitChildren) {
-      return !isKeyIgnored(key, undefined, visitOnlyKeys);
+      return true;
     }
     let visited = false;
     const recordVisit = <VisitKey> ((holder: object, visitedKey: string): void => {
@@ -226,7 +222,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     if (nodeDefault === undefined) {
       return context ?? <Context> emptyContext;
     }
-    return context ? mergeContextWithFallback(context, <Context> nodeDefault) : <Context> nodeDefault;
+    return context ? { ...<Context> nodeDefault, ...context } : <Context> nodeDefault;
   }
 
   /**

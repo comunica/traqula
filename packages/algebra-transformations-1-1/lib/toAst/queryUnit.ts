@@ -92,8 +92,8 @@ AstIndir<'collectVariables', Set<string>, [object, Set<string>, string[]?]> = {
           }
         }
       },
-      object => ({ visitOnlyKeys: new Set(Object.keys(object)
-        .filter(key => !isIgnoredKey(object, key) && algebraTransformer.visitsKey(object, key))) }),
+      object => ({ ignoreKeys: new Set(Object.keys(object)
+        .filter(key => isIgnoredKey(object, key) || !algebraTransformer.visitsKey(object, key))) }),
     );
     return names;
   },

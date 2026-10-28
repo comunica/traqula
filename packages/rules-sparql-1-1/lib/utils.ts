@@ -101,7 +101,7 @@ const visitPatternWithValuesRows: VisitChildren<Record<string, unknown>> = (patt
 
 /**
  * Adds the stepping into the rows of VALUES to the per type defaults of an AST transformer, unless its default context
- * gives visitOnlyKeys.
+ * gives visitChildren.
  * @param defaultContext the default context of the transformer.
  * @param defaultNodePreVisitor the per type defaults of the transformer, which can replace those of patterns.
  * @return the completed per type defaults.
@@ -110,7 +110,7 @@ export function withValuesRows<Nodes extends Typed>(
   defaultContext: TransformContext,
   defaultNodePreVisitor: DefaultNodePreVisitor<Nodes>,
 ): DefaultNodePreVisitor<Nodes> {
-  return defaultContext.visitOnlyKeys ?
+  return defaultContext.visitChildren ?
     defaultNodePreVisitor :
       { pattern: { visitChildren: <VisitChildren> visitPatternWithValuesRows }, ...defaultNodePreVisitor };
 }

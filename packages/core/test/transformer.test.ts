@@ -54,6 +54,17 @@ interface CategoryTree {
   deep?: { untyped: boolean };
 }
 
+/**
+ * Visits the given keys of an object, like the keys a node allows.
+ */
+function visitKeys(...keys: string[]): VisitChildren {
+  return (object, visitKey) => {
+    for (const key of keys) {
+      visitKey(object, <never> key);
+    }
+  };
+}
+
 describe('transformer', () => {
   const transformer = new TransformerTyped<Fruit | Vegetable>();
   it('makes copies when needed', ({ expect }) => {
@@ -142,26 +153,26 @@ describe('transformer', () => {
     expect(ignoreKeysAreIgnored.side).not.toBe(side1);
   });
 
-  it('knows visitOnlyKeys', ({ expect }) => {
+  it('knows visitChildren', ({ expect }) => {
     const in2 = { type: 'fruit', val: 'depth3' };
     const in1 = { type: 'vegetable', in: in2, val: 'depth2' };
     const side1 = { type: 'fruit', val: 'side1' };
     const fruit: Fruit = { type: 'fruit', in: in1, val: 'depth1', side: side1 };
 
-    const onlyVisitOnlyKeysAreVisited = <any> transformer.transformNode(fruit, {
-      fruit: { preVisitor: () => ({ visitOnlyKeys: new Set([ 'in' ]) }) },
+    const onlyVisitedChildrenAreVisited = <any> transformer.transformNode(fruit, {
+      fruit: { preVisitor: () => ({ visitChildren: visitKeys('in') }) },
     });
-    expect(onlyVisitOnlyKeysAreVisited).not.toBe(fruit);
-    expect(onlyVisitOnlyKeysAreVisited.in).not.toBe(in1);
-    expect(onlyVisitOnlyKeysAreVisited.in.in).not.toBe(in2);
-    expect(onlyVisitOnlyKeysAreVisited.side).toBe(side1);
+    expect(onlyVisitedChildrenAreVisited).not.toBe(fruit);
+    expect(onlyVisitedChildrenAreVisited.in).not.toBe(in1);
+    expect(onlyVisitedChildrenAreVisited.in.in).not.toBe(in2);
+    expect(onlyVisitedChildrenAreVisited.side).toBe(side1);
 
-    const ignoreKeysOverruleVisitOnlyKeys = <any> transformer.transformNode(fruit, {
-      fruit: { preVisitor: () => ({ visitOnlyKeys: new Set([ 'in' ]), ignoreKeys: new Set([ 'in' ]) }) },
+    const ignoreKeysOverruleVisitChildren = <any> transformer.transformNode(fruit, {
+      fruit: { preVisitor: () => ({ visitChildren: visitKeys('in'), ignoreKeys: new Set([ 'in' ]) }) },
     });
-    expect(ignoreKeysOverruleVisitOnlyKeys).not.toBe(fruit);
-    expect(ignoreKeysOverruleVisitOnlyKeys.in).toBe(in1);
-    expect(ignoreKeysOverruleVisitOnlyKeys.side).toBe(side1);
+    expect(ignoreKeysOverruleVisitChildren).not.toBe(fruit);
+    expect(ignoreKeysOverruleVisitChildren.in).toBe(in1);
+    expect(ignoreKeysOverruleVisitChildren.side).toBe(side1);
   });
 });
 
@@ -238,22 +249,6 @@ describe('transformerObject', () => {
       },
       () => ({ ignoreKeys: new Set([ 'ignored' ]) }),
     );
-
-    expect(visited).toEqual([ 'kept-child', 'root' ]);
-  });
-
-  it('visitObject respects visitOnlyKeys', ({ expect }) => {
-    const transformer = new TransformerObject({ visitOnlyKeys: new Set([ 'kept' ]) });
-    const visited: string[] = [];
-    const tree = {
-      name: 'root',
-      ignored: { name: 'ignored-child' },
-      kept: { name: 'kept-child' },
-    };
-
-    transformer.visitObject(tree, (obj) => {
-      visited.push((<any>obj).name);
-    });
 
     expect(visited).toEqual([ 'kept-child', 'root' ]);
   });
@@ -849,22 +844,6 @@ describe('transformerObject preOrder', () => {
     expect(result.shallow.child).toBe(shallow.child);
   });
 
-  it('knows visitOnlyKeys', ({ expect }) => {
-    const ignored = { name: 'ignored' };
-    const mapped: string[] = [];
-
-    const result = <any> transformer.transformObjectPreOrder(
-      { name: 'root', ignored, kept: { name: 'kept' }},
-      (copy) => {
-        mapped.push((<any>copy).name);
-        return { newValue: copy, visitOnlyKeys: new Set([ 'kept' ]) };
-      },
-    );
-
-    expect(mapped).toEqual([ 'root', 'kept' ]);
-    expect(result.ignored).toBe(ignored);
-  });
-
   it('shallowly copies shallowKeys that are ignored', ({ expect }) => {
     const ignored = { name: 'ignored', child: { name: 'ignoredChild' }};
     const notVisited = { name: 'notVisited', child: { name: 'notVisitedChild' }};
@@ -877,7 +856,7 @@ describe('transformerObject preOrder', () => {
         return {
           newValue: copy,
           ignoreKeys: new Set([ 'ignored' ]),
-          visitOnlyKeys: new Set([ 'ignored', 'kept' ]),
+          visitChildren: visitKeys('ignored', 'kept'),
           shallowKeys: new Set([ 'ignored', 'notVisited' ]),
         };
       },
@@ -1105,7 +1084,7 @@ describe('pre-order per type defaults', () => {
     [key: string]: any;
   }
   type Nodes = Wrap | Join | Leaf;
-  const defaults = { wrap: { visitOnlyKeys: new Set<string>() }, join: { visitOnlyKeys: new Set([ 'input' ]) }};
+  const defaults = { wrap: { visitChildren: visitKeys() }, join: { visitChildren: visitKeys('input') }};
   const typed = new TransformerTyped<Nodes>({}, defaults);
   const subTyped = new TransformerSubTyped<Nodes>({}, defaults);
   // SubTyped transformers only dispatch nodes with a subType
@@ -1821,7 +1800,7 @@ describe('visitOnlyKnownKeys', () => {
   };
 
   it('creates contexts that step into the objects without a type, for the types with visitors', ({ expect }) => {
-    const strict = new TransformerTyped<Apple | Crate | Shelf>({ visitOnlyKeys: new Set() }, shelfKnownKeys);
+    const strict = new TransformerTyped<Apple | Crate | Shelf>({ visitChildren: visitKeys() }, shelfKnownKeys);
     expect(visitApples(strict)).toEqual([ 'inRow', 'inCrate' ]);
   });
 
@@ -1842,7 +1821,7 @@ describe('visitOnlyKnownKeys', () => {
   });
 
   it('tells whether a key of an object is visited', ({ expect }) => {
-    const strict = new TransformerTyped<Apple | Crate>({ visitOnlyKeys: new Set() }, knownKeys);
+    const strict = new TransformerTyped<Apple | Crate>({ visitChildren: visitKeys() }, knownKeys);
     expect(strict.visitsKey({ type: 'apple' }, 'core')).toBe(true);
     expect(strict.visitsKey({ type: 'apple' }, 'name')).toBe(false);
     expect(strict.visitsKey({ untyped: true }, 'untyped')).toBe(false);
@@ -1852,7 +1831,7 @@ describe('visitOnlyKnownKeys', () => {
   });
 
   it('tells whether visitChildren visits the value of a key as a whole', ({ expect }) => {
-    const strict = new TransformerTyped<Apple | Crate | Shelf>({ visitOnlyKeys: new Set() }, shelfKnownKeys);
+    const strict = new TransformerTyped<Apple | Crate | Shelf>({ visitChildren: visitKeys() }, shelfKnownKeys);
     expect(strict.visitsKey(makeShelf(), 'crate')).toBe(true);
     // Only partly visited
     expect(strict.visitsKey(makeShelf(), 'rows')).toBe(false);
@@ -1861,16 +1840,15 @@ describe('visitOnlyKnownKeys', () => {
     expect(ignoring.visitsKey(makeShelf(), 'crate')).toBe(false);
     const visitingAny: VisitContext = { visitChildren: (object, visitKey) => visitKey(object, <never> 'any') };
     expect(new TransformerTyped<Apple>(visitingAny).visitsKey({ type: 'apple' }, 'any')).toBe(true);
-    const replacing = new TransformerTyped<Apple>(visitingAny, { apple: { visitOnlyKeys: new Set([ 'core' ]) }});
+    const replacing = new TransformerTyped<Apple>(visitingAny, { apple: { visitChildren: visitKeys('core') }});
     expect(replacing.visitsKey({ type: 'apple' }, 'any')).toBe(false);
     expect(replacing.visitsKey({ type: 'apple' }, 'core')).toBe(true);
   });
 
-  it('replaces the visitChildren of the default of a type by the visitOnlyKeys of a callback', ({ expect }) => {
+  it('replaces the visitChildren of the default of a type by that of a callback', ({ expect }) => {
     const transformer = new TransformerTyped<Apple | Crate | Shelf>({}, shelfKnownKeys);
-    expect(visitApples(transformer, { visitOnlyKeys: new Set([ 'crate' ]) })).toEqual([ 'inCrate' ]);
+    expect(visitApples(transformer, { visitChildren: visitKeys('crate') })).toEqual([ 'inCrate' ]);
     expect(visitApples(transformer, {
-      visitOnlyKeys: new Set([ 'crate' ]),
       visitChildren: (shelf, visitKey, stepIntoKey) => visitKey(stepIntoKey(stepIntoKey(shelf, 'rows'), 0), 'apple'),
     })).toEqual([ 'inRow' ]);
   });
@@ -2008,32 +1986,32 @@ describe('transformerObject visitChildren', () => {
     expect(tree.rows[0]).toBe(row);
   });
 
-  it('uses the visitChildren of the default context, unless the context has visitOnlyKeys', ({ expect }) => {
+  it('uses the visitChildren of the default context, unless the context has its own', ({ expect }) => {
     const tree = { name: 'root', direct: leaf('direct'), skipped: leaf('skipped') };
     const visitDirect: VisitChildren = (object, visitKey) => visitKey(object, <never> 'direct');
     const defaulting = new TransformerObject({ visitChildren: visitDirect });
-    const traverse = (visitOnlyKeys?: Set<string>): string[][] => {
+    const traverse = (visitChildren?: VisitChildren): string[][] => {
       const visited: string[] = [];
       defaulting.visitObject(tree, (obj) => {
         visited.push(named(obj)!);
-      }, obj => obj === tree ? { visitOnlyKeys } : {});
+      }, obj => obj === tree ? { visitChildren } : {});
       const mapped: string[] = [];
       defaulting.transformObject(tree, (copy) => {
         mapped.push(named(copy)!);
         return copy;
-      }, obj => obj === tree ? { visitOnlyKeys } : {});
+      }, obj => obj === tree ? { visitChildren } : {});
       const preMapped: string[] = [];
       defaulting.transformObjectPreOrder(tree, (copy) => {
         preMapped.push(named(copy)!);
-        return { newValue: copy, visitOnlyKeys: named(copy) === 'root' ? visitOnlyKeys : undefined };
+        return { newValue: copy, visitChildren: named(copy) === 'root' ? visitChildren : undefined };
       });
       return [ visited, mapped, preMapped ];
     };
     expect(traverse()).toEqual([[ 'direct', 'root' ], [ 'direct', 'root' ], [ 'root', 'direct' ]]);
-    expect(traverse(new Set([ 'skipped' ])))
+    expect(traverse(visitKeys('skipped')))
       .toEqual([[ 'skipped', 'root' ], [ 'skipped', 'root' ], [ 'root', 'skipped' ]]);
     const cloned: string[] = [];
-    defaulting.clone({ visitOnlyKeys: new Set([ 'skipped' ]) }).visitObject(tree, (obj) => {
+    defaulting.clone({ visitChildren: visitKeys('skipped') }).visitObject(tree, (obj) => {
       cloned.push(named(obj)!);
     });
     expect(cloned).toEqual([ 'skipped', 'root' ]);

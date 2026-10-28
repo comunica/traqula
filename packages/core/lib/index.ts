@@ -19,6 +19,9 @@ export {
   VisitContext,
   TransformContext,
   ObjectKeyHint,
+  PathKey,
+  pathWildcard,
+  VisitPath,
   PreOrderMappingReturn,
   TransformerObject,
   SelectiveTraversalContext,
@@ -30,6 +33,7 @@ export {
   SafeWrap,
   DefaultNodePreVisitor,
   KnownNodeKeys,
+  ContainerPaths,
   visitOnlyKnownKeys,
 } from './transformers/TransformerTyped.js';
 export { TransformerSubTyped } from './transformers/TransformerSubTyped.js';

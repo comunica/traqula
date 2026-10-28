@@ -140,15 +140,62 @@ Keep in mind that:
 - all elements of an allowed array are visited, arrays are not filtered;
 - `ignoreKeys` still applies, and `shallowKeys` are still shallowly copied;
 - the object you start from is always visited;
-- objects without a `type`, like the rows of a `VALUES` clause, also get the default context,
-  so the nodes within them are not visited unless you allow them.
+- an object without a `type`, like an element of the `updates` of an update, gets the default context,
+  so with an empty `visitOnlyKeys` default the nodes within it are not visited: step through it with `visitPaths`.
 
-To only skip the keys Traqula does not know, like keys added by an extension or the metadata of an engine,
-use a known keys allowlist as the default context per node type instead, the second argument of a transformer's constructor:
-`astKnownKeysAllowlist` of `@traqula/rules-sparql-1-1` and `@traqula/rules-sparql-1-2`,
-or `algebraUtils.knownKeysAllowlist` for the algebra.
-Nodes of a known type then only visit their known keys that can hold nodes, skipping RDF terms and source locations,
-while other objects are still fully visited.
+### Path-Based Traversal
+
+A context can list `visitPaths` instead: paths through objects without a `type` to the objects to visit.
+The objects stepped through are not visited, so their other keys are skipped.
+The `pathWildcard` symbol of `@traqula/core` steps into every element of an array or value of an object.
+
+```typescript
+import { pathWildcard } from '@traqula/core';
+import { AstTransformer } from "@traqula/rules-sparql-1-1";
+import { Parser } from '@traqula/parser-sparql-1-1'
+
+const ast = new Parser().parse('INSERT DATA { <a> <b> <c> } ; CLEAR ALL');
+const transformer = new AstTransformer({ visitOnlyKeys: new Set() });
+const operationPaths = [[ 'updates', pathWildcard, 'operation' ]] as const;
+const operations: string[] = [];
+transformer.visitNode(ast, {
+  'update': { preVisitor: () => ({ visitPaths: operationPaths }) },
+  'updateOperation': { visitor: (operation) => { operations.push(operation.subType); } },
+});
+const truety = operations.join() === 'insertdata,clear';
+```
+
+Keep in mind that:
+- objects are visited in the order a traversal of the keys visits them;
+- copying the node also copies the objects its paths step through;
+- the node's `ignoreKeys` and `shallowKeys` apply to its own keys, those of the default context to the objects stepped through;
+- a path ends at its last step or, for a typed transformer like `AstTransformer`, at the first object with a `type`;
+- a context's `visitOnlyKeys` replaces the `visitPaths` of its default;
+- paths are prepared once per array, so do not change an array once used;
+- only the first step is suggested by the IDE: type paths as `ContainerPaths` of `@traqula/core` to check every step.
+
+### Known Keys Allowlists
+
+To skip only the keys Traqula does not know, like those of an extension or engine metadata, pass a known keys allowlist
+as the per type defaults, the second argument of a transformer's constructor:
+`astKnownKeysAllowlist` of `@traqula/rules-sparql-1-1` and `@traqula/rules-sparql-1-2`, or `algebraUtils.knownKeysAllowlist`.
+Known node types then only visit their keys that can hold nodes; other objects get the default context.
+`visitOnlyKnownKeys` of `@traqula/core` creates such an allowlist, the compiler checking that it lists exactly
+the keys that can hold a node. A key maps to `true`, or to the paths within its value:
+
+```typescript
+import { pathWildcard, visitOnlyKnownKeys } from '@traqula/core';
+import type { Sparql11Nodes } from '@traqula/rules-sparql-1-1';
+
+const allowlist = visitOnlyKnownKeys<Sparql11Nodes>({
+  // ...
+  update: { updates: [[ pathWildcard, 'operation' ], [ pathWildcard, 'context' ]] },
+  // ...
+});
+```
+
+The AST allowlists step through every object without a `type`, so they also work with an empty default `visitOnlyKeys`.
+Spread their `astKnownKeys` to extend them.
 
 The rules of the parser, `toAlgebra`, and `toAst` that call a transformer use the ones you give them.
 

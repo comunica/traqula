@@ -1,5 +1,5 @@
 import type { DefaultNodePreVisitor, KnownNodeKeys, TransformContext } from '@traqula/core';
-import { TransformerSubTyped, visitOnlyKnownKeys } from '@traqula/core';
+import { pathWildcard, TransformerSubTyped, visitOnlyKnownKeys } from '@traqula/core';
 import { AstFactory } from './astFactory.js';
 import { pnLocalEscPattern } from './lexer/lexerPatterns.js';
 import type { Sparql11Nodes, TermIri } from './Sparql11types.js';
@@ -211,11 +211,12 @@ export function resolveTermIri(term: TermIri, prefixes: Record<string, string>, 
 
 /**
  * Per node type, the known keys that can hold nodes, skipping source locations, see {@link visitOnlyKnownKeys}.
+ * The objects without a type that hold nodes are stepped through by paths, so their unknown keys are skipped too.
  */
 export const astKnownKeys = {
   path: { items: true },
   pattern: {
-    values: true,
+    values: [[ pathWildcard, pathWildcard ]],
     name: true,
     variable: true,
     expression: true,
@@ -223,12 +224,12 @@ export const astKnownKeys = {
     patterns: true,
     triples: true,
   },
-  update: { updates: true },
+  update: { updates: [[ pathWildcard, 'operation' ], [ pathWildcard, 'context' ]]},
   query: {
     values: true,
     template: true,
     context: true,
-    solutionModifiers: true,
+    solutionModifiers: [[ 'group' ], [ 'having' ], [ 'order' ], [ 'limitOffset' ]],
     datasets: true,
     where: true,
     variables: true,
@@ -245,10 +246,15 @@ export const astKnownKeys = {
     delete: true,
     insert: true,
   },
-  datasetClauses: { clauses: true },
+  datasetClauses: { clauses: [[ pathWildcard, 'value' ]]},
   tripleCollection: { triples: true, identifier: true },
   triple: { object: true, subject: true, predicate: true },
-  solutionModifier: { having: true, orderDefs: true, groupings: true },
+  solutionModifier: {
+    having: true,
+    orderDefs: [[ pathWildcard, 'expression' ]],
+    // The binds without a type are stepped through, the expressions with a type end the paths
+    groupings: [[ pathWildcard, 'variable' ], [ pathWildcard, 'value' ]],
+  },
   expression: { function: true, args: true, expression: true },
   contextDef: { value: true },
   wildcard: {},

@@ -415,11 +415,20 @@ export class TransformerObject {
           const val = (<Record<string, unknown>> copy)[key];
 
           // If shallow copy required, do
-          if (shallowKeys?.has(key)) {
+          const onlyShallow = shallowKeys && shallowKeys?.has(key);
+          if (onlyShallow) {
             // Do not add stack entry - assign straight away
             (<Record<string, unknown>> copy)[key] = this.cloneObj(val);
-          } else if (val !== null && typeof val === 'object' && (ignoreKeys === undefined || !ignoreKeys.has(key))) {
-            pushChild(val, copy, key);
+          }
+          if (ignoreKeys && ignoreKeys.has(key)) {
+            // Do not add stack entry
+            continue;
+          }
+          if (!onlyShallow && val !== null && typeof val === 'object') {
+            // Do add stack entry.
+            stack.push(val);
+            stackParentKey.push(key);
+            stackParent.push(copy);
           }
         }
       }
@@ -445,7 +454,9 @@ export class TransformerObject {
             for (let index = curObject.length - 1; index >= 0; index--) {
               const val = <unknown> curObject[index];
               if (val !== null && typeof val === 'object') {
-                pushChild(val, newArr, index.toString());
+                stack.push(val);
+                stackParent.push(newArr);
+                stackParentKey.push(index.toString());
               }
             }
             const pending = handleMapper();
@@ -798,8 +809,11 @@ export class TransformerObject {
           if (!Object.hasOwn(curObject, key)) {
             continue;
           }
+          if (ignoreKeys && ignoreKeys.has(key)) {
+            continue;
+          }
           const val = (<Record<string, unknown>> curObject)[key];
-          if (val && typeof val === 'object' && (ignoreKeys === undefined || !ignoreKeys.has(key))) {
+          if (val && typeof val === 'object') {
             stack.push(val);
           }
         }

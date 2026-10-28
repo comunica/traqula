@@ -290,7 +290,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     const transformWrapper = (copy: object, orig: object): unknown => {
       let ogTransform: ((copy: any, orig: any) => unknown) | undefined;
       const casted = <Typed<Nodes['type']>>copy;
-      if (typeof casted.type === 'string') {
+      if (casted.type) {
         ogTransform = nodeCallBacks[casted.type]?.transform;
       }
       return ogTransform ? ogTransform(casted, orig) : copy;
@@ -298,7 +298,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     const preVisitWrapper = (curObject: object): VisitContext => {
       let ogPreVisit: ((node: any) => TransformContext) | undefined;
       const casted = <Typed<Nodes['type']>>curObject;
-      if (typeof casted.type === 'string') {
+      if (casted.type) {
         ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
       }
       return this.withNodeDefault(casted, ogPreVisit?.(casted));
@@ -323,7 +323,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     const transformWrapper = (copy: object, orig: object): Awaitable<unknown> => {
       let ogTransform: ((copy: any, orig: any) => Awaitable<unknown>) | undefined;
       const casted = <Typed<Nodes['type']>>copy;
-      if (typeof casted.type === 'string') {
+      if (casted.type) {
         ogTransform = nodeCallBacks[casted.type]?.transform;
       }
       return ogTransform ? ogTransform(casted, orig) : copy;
@@ -331,7 +331,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     const preVisitWrapper = (curObject: object): Awaitable<TransformContext> => {
       let ogPreVisit: ((node: any) => Awaitable<TransformContext>) | undefined;
       const casted = <Typed<Nodes['type']>>curObject;
-      if (typeof casted.type === 'string') {
+      if (casted.type) {
         ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
       }
       return ogPreVisit ? this.withNodeDefaultAsync(casted, ogPreVisit(casted)) : this.withNodeDefault(casted);
@@ -373,7 +373,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     const preTransformWrapper = (copy: object, orig: object): PreOrderMappingReturn => {
       let ogPreTransform: ((copy: any, orig: any) => PreOrderMappingReturn) | undefined;
       const casted = <Typed<Nodes['type']>>copy;
-      if (typeof casted.type === 'string') {
+      if (casted.type) {
         ogPreTransform = nodeCallBacks[casted.type];
       }
       return this.withNewValueDefault(copy, ogPreTransform ?
@@ -400,7 +400,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     const preTransformWrapper = (copy: object, orig: object): Awaitable<PreOrderMappingReturn> => {
       let ogPreTransform: ((copy: any, orig: any) => Awaitable<PreOrderMappingReturn>) | undefined;
       const casted = <Typed<Nodes['type']>>copy;
-      if (typeof casted.type === 'string') {
+      if (casted.type) {
         ogPreTransform = nodeCallBacks[casted.type];
       }
       return this.withNewValueDefaultAsync(copy, ogPreTransform ?
@@ -435,7 +435,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
   ): void {
     const visitorWrapper = (curObject: object): void => {
       const casted = <Typed<Nodes['type']>>curObject;
-      if (typeof casted.type === 'string') {
+      if (casted.type) {
         const ogTransform = nodeCallBacks[casted.type]?.visitor;
         if (ogTransform) {
           ogTransform(<any> casted);
@@ -445,7 +445,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     const preVisitWrapper = (curObject: object): VisitContext => {
       let ogPreVisit: ((node: any) => VisitContext) | undefined;
       const casted = <Typed<Nodes['type']>>curObject;
-      if (typeof casted.type === 'string') {
+      if (casted.type) {
         ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
       }
       return this.withNodeDefault(casted, ogPreVisit?.(casted));
@@ -466,7 +466,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
   ): Promise<void> {
     const visitorWrapper = (curObject: object): Awaitable<void> => {
       const casted = <Typed<Nodes['type']>>curObject;
-      if (typeof casted.type === 'string') {
+      if (casted.type) {
         const ogTransform = nodeCallBacks[casted.type]?.visitor;
         if (ogTransform) {
           return ogTransform(<any> casted);
@@ -476,7 +476,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     const preVisitWrapper = (curObject: object): Awaitable<VisitContext> => {
       let ogPreVisit: ((node: any) => Awaitable<VisitContext>) | undefined;
       const casted = <Typed<Nodes['type']>>curObject;
-      if (typeof casted.type === 'string') {
+      if (casted.type) {
         ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
       }
       return ogPreVisit ? this.withNodeDefaultAsync(casted, ogPreVisit(casted)) : this.withNodeDefault(casted);

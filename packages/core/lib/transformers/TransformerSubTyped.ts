@@ -75,7 +75,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
     const transformWrapper = (copy: object, orig: object): unknown => {
       let ogTransform: ((copy: any, orig: any) => unknown) | undefined;
       const casted = <SubTyped<Nodes['type']>>copy;
-      if (typeof casted.type === 'string' && casted.subType) {
+      if (casted.type && casted.subType) {
         const specific = nodeSpecificCallBacks[casted.type];
         if (specific) {
           ogTransform = specific[<keyof typeof specific> casted.subType]?.transform;
@@ -89,7 +89,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
     const preVisitWrapper = (curObject: object): TransformContext => {
       let ogPreVisit: ((node: any) => TransformContext) | undefined;
       const casted = <SubTyped<Nodes['type']>>curObject;
-      if (typeof casted.type === 'string' && casted.subType) {
+      if (casted.type && casted.subType) {
         const specific = nodeSpecificCallBacks[casted.type];
         if (specific) {
           ogPreVisit = specific[<keyof typeof specific> casted.subType]?.preVisitor;
@@ -130,7 +130,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
     const transformWrapper = (copy: object, orig: object): Awaitable<unknown> => {
       let ogTransform: ((copy: any, orig: any) => Awaitable<unknown>) | undefined;
       const casted = <SubTyped<Nodes['type']>>copy;
-      if (typeof casted.type === 'string' && casted.subType) {
+      if (casted.type && casted.subType) {
         const specific = nodeSpecificCallBacks[casted.type];
         if (specific) {
           ogTransform = specific[<keyof typeof specific> casted.subType]?.transform;
@@ -144,7 +144,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
     const preVisitWrapper = (curObject: object): Awaitable<TransformContext> => {
       let ogPreVisit: ((node: any) => Awaitable<TransformContext>) | undefined;
       const casted = <SubTyped<Nodes['type']>>curObject;
-      if (typeof casted.type === 'string' && casted.subType) {
+      if (casted.type && casted.subType) {
         const specific = nodeSpecificCallBacks[casted.type];
         if (specific) {
           ogPreVisit = specific[<keyof typeof specific> casted.subType]?.preVisitor;
@@ -197,7 +197,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
     const preTransformWrapper = (copy: object, orig: object): PreOrderMappingReturn => {
       let ogPreTransform: ((copy: any, orig: any) => PreOrderMappingReturn) | undefined;
       const casted = <SubTyped<Nodes['type']>> copy;
-      if (typeof casted.type === 'string' && casted.subType) {
+      if (casted.type && casted.subType) {
         const specific = nodeSpecificCallBacks[casted.type];
         if (specific) {
           ogPreTransform = specific[<keyof typeof specific> casted.subType];
@@ -235,7 +235,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
     const preTransformWrapper = (copy: object, orig: object): Awaitable<PreOrderMappingReturn> => {
       let ogPreTransform: ((copy: any, orig: any) => Awaitable<PreOrderMappingReturn>) | undefined;
       const casted = <SubTyped<Nodes['type']>> copy;
-      if (typeof casted.type === 'string' && casted.subType) {
+      if (casted.type && casted.subType) {
         const specific = nodeSpecificCallBacks[casted.type];
         if (specific) {
           ogPreTransform = specific[<keyof typeof specific> casted.subType];
@@ -286,7 +286,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
     const visitWrapper = (curObject: object): void => {
       let ogTransform: ((node: any) => void) | undefined;
       const casted = <SubTyped<Nodes['type']>>curObject;
-      if (typeof casted.type === 'string' && casted.subType) {
+      if (casted.type && casted.subType) {
         const specific = nodeSpecificCallBacks[casted.type];
         if (specific) {
           ogTransform = specific[<keyof typeof specific> casted.subType]?.visitor;
@@ -302,7 +302,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
     const preVisitWrapper = (curObject: object): VisitContext => {
       let ogPreVisit: ((node: any) => VisitContext) | undefined;
       const casted = <SubTyped<Nodes['type']>>curObject;
-      if (typeof casted.type === 'string' && casted.subType) {
+      if (casted.type && casted.subType) {
         const specific = nodeSpecificCallBacks[casted.type];
         if (specific) {
           ogPreVisit = specific[<keyof typeof specific> casted.subType]?.preVisitor;
@@ -337,7 +337,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
     const visitWrapper = (curObject: object): Awaitable<void> => {
       let ogTransform: ((node: any) => Awaitable<void>) | undefined;
       const casted = <SubTyped<Nodes['type']>>curObject;
-      if (typeof casted.type === 'string' && casted.subType) {
+      if (casted.type && casted.subType) {
         const specific = nodeSpecificCallBacks[casted.type];
         if (specific) {
           ogTransform = specific[<keyof typeof specific> casted.subType]?.visitor;
@@ -353,7 +353,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
     const preVisitWrapper = (curObject: object): Awaitable<VisitContext> => {
       let ogPreVisit: ((node: any) => Awaitable<VisitContext>) | undefined;
       const casted = <SubTyped<Nodes['type']>>curObject;
-      if (typeof casted.type === 'string' && casted.subType) {
+      if (casted.type && casted.subType) {
         const specific = nodeSpecificCallBacks[casted.type];
         if (specific) {
           ogPreVisit = specific[<keyof typeof specific> casted.subType]?.preVisitor;

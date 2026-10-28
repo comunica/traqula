@@ -28,7 +28,7 @@ const transformer = new AstTransformer();
  * Walks expressions, skipping the keys that hold no expressions or variables:
  * the source locations, the datatype IRI of a literal, and the IRI of a function call.
  */
-const expressionTransformer = new AstTransformer({ ignoreKeys: new Set([ 'langOrIri', 'function' ]) });
+const expressionTransformer = new AstTransformer({ ignoreKeys: new Set([ 'loc', 'langOrIri', 'function' ]) });
 
 const stopVisit = { preVisitor: () => ({ continue: false }) };
 /**

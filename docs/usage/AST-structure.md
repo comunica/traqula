@@ -116,8 +116,8 @@ SELECT * {
 ### Allowlist-Based Traversal
 
 By default, a transformer visits every key of a node, unless the node's context excludes it through `ignoreKeys`.
-An `AstTransformer` skips source locations by default, since they hold no nodes;
-giving your own `visitChildren` or `visitOnlyKeys` in the default context replaces that.
+An `AstTransformer` ignores the `loc` keys by default, since source locations hold no nodes; giving your own `ignoreKeys`
+replaces that. It steps into the rows of VALUES, so it still visits a variable named `loc`.
 Setting `visitOnlyKeys` to an empty set in the default context flips this around:
 the transformer only visits the keys a node explicitly allows.
 

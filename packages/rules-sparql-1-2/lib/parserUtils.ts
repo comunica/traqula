@@ -6,7 +6,7 @@ import {
   traqulaNewlineAlternative,
   visitOnlyKnownKeys,
 } from '@traqula/core';
-import { astKnownKeys as astKnownKeys11, withoutSourceLocations } from '@traqula/rules-sparql-1-1';
+import { astKnownKeys as astKnownKeys11, withValuesRows } from '@traqula/rules-sparql-1-1';
 import { AstFactory } from './AstFactory.js';
 import type { SparqlContext, SparqlGeneratorContext } from './sparql12HelperTypes.js';
 import type { Sparql12Nodes } from './sparql12Types.js';
@@ -80,14 +80,15 @@ Partial<SparqlContext & SparqlGeneratorContext & { origSource: string; offset?: 
 
 /**
  * A {@link TransformerSubTyped} specialized for the SPARQL 1.2 AST node types.
- * Source locations hold no nodes, so it skips them, unless the default context gives visitChildren or visitOnlyKeys.
+ * Source locations hold no nodes, so it ignores the `loc` keys, unless the default context gives other ignoreKeys.
+ * It steps into the rows of VALUES, so it still visits a variable named `loc`.
  */
 export class AstTransformer extends TransformerSubTyped<Sparql12Nodes> {
   public constructor(
     defaultContext: TransformContext = {},
     defaultNodePreVisitor: DefaultNodePreVisitor<Sparql12Nodes> = {},
   ) {
-    super(withoutSourceLocations(defaultContext), defaultNodePreVisitor);
+    super({ ignoreKeys: new Set([ 'loc' ]), ...defaultContext }, withValuesRows(defaultContext, defaultNodePreVisitor));
   }
 }
 

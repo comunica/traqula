@@ -1,4 +1,4 @@
-import type { DefaultNodePreVisitor, KnownNodeKeys, TransformContext, VisitChildren } from '@traqula/core';
+import type { DefaultNodePreVisitor, KnownNodeKeys, TransformContext, Typed, VisitChildren } from '@traqula/core';
 import { isNode, TransformerSubTyped, visitOnlyKnownKeys } from '@traqula/core';
 import { AstFactory } from './astFactory.js';
 import { pnLocalEscPattern } from './lexer/lexerPatterns.js';
@@ -53,7 +53,8 @@ export enum CommonIRIs {
 /**
  * A {@link TransformerSubTyped} specialized for the SPARQL 1.1 AST node types.
  * Provides a type-safe visitor/transformer that dispatches based on node `type` and `subType` fields.
- * Source locations hold no nodes, so it skips them, unless the default context gives visitChildren or visitOnlyKeys.
+ * Source locations hold no nodes, so it ignores the `loc` keys, unless the default context gives other ignoreKeys.
+ * It steps into the rows of VALUES, so it still visits a variable named `loc`.
  *
  * @example
  * ```typescript
@@ -68,33 +69,50 @@ export class AstTransformer extends TransformerSubTyped<Sparql11Nodes> {
     defaultContext: TransformContext = {},
     defaultNodePreVisitor: DefaultNodePreVisitor<Sparql11Nodes> = {},
   ) {
-    super(withoutSourceLocations(defaultContext), defaultNodePreVisitor);
+    super({ ignoreKeys: new Set([ 'loc' ]), ...defaultContext }, withValuesRows(defaultContext, defaultNodePreVisitor));
   }
 }
 
 /**
- * Visits every key of an object, except a `loc` holding a source location, since those hold no nodes.
- * Unlike ignoring `loc`, this still visits the term a VALUES row binds to a variable named `loc`.
- * @param object the object to visit the keys of.
+ * Visits every key of a pattern, stepping into the rows of VALUES, so the default ignoreKeys do not apply to the
+ * variables of a row.
+ * @param pattern the pattern to visit the keys of.
  * @param visitKey visits the value of a key.
+ * @param stepIntoKey steps into the rows of VALUES.
  */
-export const visitAllButSourceLocation: VisitChildren<Record<string, unknown>> = (object, visitKey) => {
-  for (const key in object) {
-    if (Object.hasOwn(object, key) && (key !== 'loc' || isNode(object.loc))) {
-      visitKey(object, key);
+const visitPatternWithValuesRows: VisitChildren<Record<string, unknown>> = (pattern, visitKey, stepIntoKey) => {
+  for (const key in pattern) {
+    if (!Object.hasOwn(pattern, key)) {
+      continue;
+    }
+    if (key !== 'values') {
+      visitKey(pattern, key);
+      continue;
+    }
+    const rows = <Record<string, unknown>[]> stepIntoKey(pattern, key);
+    for (let index = 0; index < rows.length; index++) {
+      const row = stepIntoKey(rows, index);
+      for (const variable in row) {
+        visitKey(row, variable);
+      }
     }
   }
 };
 
 /**
- * Completes a default context to skip source locations, unless it gives visitChildren or visitOnlyKeys.
- * @param defaultContext the default context of an AST transformer.
- * @return the completed default context.
+ * Adds the stepping into the rows of VALUES to the per type defaults of an AST transformer, unless its default context
+ * gives visitOnlyKeys.
+ * @param defaultContext the default context of the transformer.
+ * @param defaultNodePreVisitor the per type defaults of the transformer, which can replace those of patterns.
+ * @return the completed per type defaults.
  */
-export function withoutSourceLocations(defaultContext: TransformContext): TransformContext {
+export function withValuesRows<Nodes extends Typed>(
+  defaultContext: TransformContext,
+  defaultNodePreVisitor: DefaultNodePreVisitor<Nodes>,
+): DefaultNodePreVisitor<Nodes> {
   return defaultContext.visitOnlyKeys ?
-    defaultContext :
-      { visitChildren: <VisitChildren> visitAllButSourceLocation, ...defaultContext };
+    defaultNodePreVisitor :
+      { pattern: { visitChildren: <VisitChildren> visitPatternWithValuesRows }, ...defaultNodePreVisitor };
 }
 
 /**

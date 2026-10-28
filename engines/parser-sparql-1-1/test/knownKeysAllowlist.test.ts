@@ -48,7 +48,7 @@ describe('astKnownKeysAllowlist', () => {
     expect(visitedNodes(allowlisted, ast)).not.toContain(extension);
   });
 
-  it('does not visit source locations, unless given its own visitChildren', ({ expect }) => {
+  it('does not visit source locations, unless given other ignoreKeys', ({ expect }) => {
     // The orderings and binds without a type have source locations too
     const ast = new Parser().parse('SELECT ?g WHERE { ?s ?p ?o } GROUP BY (?s AS ?g) ORDER BY ?g');
     const visitedLocs = (transformer: AstTransformer): number => {
@@ -59,14 +59,19 @@ describe('astKnownKeysAllowlist', () => {
       return locs;
     };
     expect(visitedLocs(new AstTransformer())).toBe(0);
-    expect(visitedLocs(new AstTransformer({ ignoreKeys: new Set([ 'other' ]) }))).toBe(0);
-    expect(visitedLocs(new AstTransformer({ visitChildren: undefined }))).toBeGreaterThan(0);
+    expect(visitedLocs(new AstTransformer({ ignoreKeys: new Set() }))).toBeGreaterThan(0);
   });
 
   it('visits the VALUES of a variable named loc', ({ expect }) => {
     const ast = new Parser().parse('SELECT * WHERE { VALUES ?loc { <a> } }');
     expect(sameNodes(visitedNodes(unrestricted, ast), visitedNodes(allowlisted, ast))).toBe(true);
     expect(visitedNodes(unrestricted, ast)).toContainEqual(expect.objectContaining({ value: 'a' }));
+  });
+
+  it('does not visit the inherited keys of a pattern', ({ expect }) => {
+    const inherited = { type: 'term', subType: 'variable', value: 'inherited' };
+    const pattern = Object.assign(Object.create({ inherited }), { type: 'pattern', subType: 'bgp', triples: []});
+    expect(visitedNodes(unrestricted, pattern)).toEqual([ pattern ]);
   });
 
   it('shallowly copies the source locations it does not visit, when given shallowKeys', ({ expect }) => {

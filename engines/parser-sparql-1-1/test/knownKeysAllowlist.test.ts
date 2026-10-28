@@ -38,7 +38,7 @@ describe('astKnownKeysAllowlist', () => {
     expect(visitedNodes(allowlisted, ast)).not.toContain(extension);
   });
 
-  it('skips source locations, unless given other ignoreKeys', ({ expect }) => {
+  it('does not visit source locations, unless given other ignoreKeys', ({ expect }) => {
     const ast = new Parser().parse('SELECT * WHERE { ?s ?p ?o }');
     const visitedLocs = (transformer: AstTransformer): number => {
       let locs = 0;
@@ -49,6 +49,13 @@ describe('astKnownKeysAllowlist', () => {
     };
     expect(visitedLocs(new AstTransformer())).toBe(0);
     expect(visitedLocs(new AstTransformer({ ignoreKeys: new Set() }))).toBeGreaterThan(0);
+  });
+
+  it('shallowly copies source locations', ({ expect }) => {
+    const ast = new Parser().parse('SELECT * WHERE { ?s ?p ?o }');
+    const copy = <typeof ast> new AstTransformer().transformNode(ast, {});
+    expect(copy.loc).not.toBe(ast.loc);
+    expect(copy.loc).toEqual(ast.loc);
   });
 
   it('validates with the astTransformer of the context', ({ expect }) => {

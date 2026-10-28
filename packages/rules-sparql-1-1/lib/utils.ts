@@ -53,7 +53,8 @@ export enum CommonIRIs {
 /**
  * A {@link TransformerSubTyped} specialized for the SPARQL 1.1 AST node types.
  * Provides a type-safe visitor/transformer that dispatches based on node `type` and `subType` fields.
- * Source locations hold no nodes, so it skips the `loc` keys, unless the default context gives other ignoreKeys.
+ * Source locations hold no nodes, so it does not traverse the `loc` keys, but only shallowly copies them,
+ * unless the default context gives other ignoreKeys and shallowKeys.
  *
  * @example
  * ```typescript
@@ -68,7 +69,8 @@ export class AstTransformer extends TransformerSubTyped<Sparql11Nodes> {
     defaultContext: TransformContext = {},
     defaultNodePreVisitor: DefaultNodePreVisitor<Sparql11Nodes> = {},
   ) {
-    super({ ignoreKeys: new Set([ 'loc' ]), ...defaultContext }, defaultNodePreVisitor);
+    const locKeys = new Set([ 'loc' ]);
+    super({ ignoreKeys: locKeys, shallowKeys: locKeys, ...defaultContext }, defaultNodePreVisitor);
   }
 }
 

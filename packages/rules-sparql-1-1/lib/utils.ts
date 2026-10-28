@@ -1,5 +1,5 @@
-import type { DefaultNodePreVisitor, KnownNodeKeys, TransformContext } from '@traqula/core';
-import { TransformerSubTyped, visitOnlyKnownKeys } from '@traqula/core';
+import type { DefaultNodePreVisitor, KnownNodeKeys, TransformContext, VisitChildren } from '@traqula/core';
+import { isNode, TransformerSubTyped, visitOnlyKnownKeys } from '@traqula/core';
 import { AstFactory } from './astFactory.js';
 import { pnLocalEscPattern } from './lexer/lexerPatterns.js';
 import type { Sparql11Nodes, TermIri } from './Sparql11types.js';
@@ -53,7 +53,8 @@ export enum CommonIRIs {
 /**
  * A {@link TransformerSubTyped} specialized for the SPARQL 1.1 AST node types.
  * Provides a type-safe visitor/transformer that dispatches based on node `type` and `subType` fields.
- * Source locations hold no nodes, so it skips the `loc` keys, unless the default context gives other ignoreKeys.
+ * Source locations hold no nodes, so it skips the `loc` key of nodes, unless the default context gives its own
+ * visitChildren or visitOnlyKeys.
  *
  * @example
  * ```typescript
@@ -68,8 +69,34 @@ export class AstTransformer extends TransformerSubTyped<Sparql11Nodes> {
     defaultContext: TransformContext = {},
     defaultNodePreVisitor: DefaultNodePreVisitor<Sparql11Nodes> = {},
   ) {
-    super({ ignoreKeys: new Set([ 'loc' ]), ...defaultContext }, defaultNodePreVisitor);
+    super(withoutNodeLocations(defaultContext), defaultNodePreVisitor);
   }
+}
+
+/**
+ * Visits every key of an object, except the source location of a node, which holds no nodes.
+ * Unlike ignoring `loc`, this still visits a VALUES row binding a variable named `loc`.
+ * @param object the object to visit the keys of.
+ * @param visitKey visits the value of a key.
+ */
+export const visitAllButNodeLocation: VisitChildren<Record<string, unknown>> = (object, visitKey) => {
+  const isNodeObject = isNode(object);
+  for (const key in object) {
+    if (Object.hasOwn(object, key) && !(isNodeObject && key === 'loc')) {
+      visitKey(object, key);
+    }
+  }
+};
+
+/**
+ * Completes a default context to skip the source locations of nodes, unless it gives visitChildren or visitOnlyKeys.
+ * @param defaultContext the default context of an AST transformer.
+ * @return the completed default context.
+ */
+export function withoutNodeLocations(defaultContext: TransformContext): TransformContext {
+  return defaultContext.visitOnlyKeys ?
+    defaultContext :
+      { visitChildren: <VisitChildren> visitAllButNodeLocation, ...defaultContext };
 }
 
 /**
@@ -282,7 +309,7 @@ export const astKnownKeys = {
     // A grouping is an expression, or a bind without a type
     groupings: (groupings, visitKey, stepIntoKey) => {
       for (let index = 0; index < groupings.length; index++) {
-        if ('type' in groupings[index]) {
+        if (isNode(groupings[index])) {
           visitKey(groupings, index);
         } else {
           const bind = stepIntoKey(groupings, index);

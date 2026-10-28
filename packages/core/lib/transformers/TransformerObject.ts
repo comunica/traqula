@@ -67,12 +67,6 @@ export type VisitChildren<Obj = object> = {
 }['visitChildren'];
 
 /**
- * Empty containers that stepping into a skipped key gives, so the children within it are skipped too.
- */
-const emptyArray: readonly unknown[] = Object.freeze([]);
-const emptyObject: object = Object.freeze({});
-
-/**
  * Calls the {@link VisitChildren} of a node, after shallowly copying its shallowKeys, and skipping those and its
  * ignoreKeys.
  */
@@ -100,29 +94,30 @@ function createVisitChildrenOf(
   let currentShallowKeys: Set<string> | undefined;
   let currentCopiesSteps = false;
   const currentCopies = new Set<object>();
-  const isSkipped = (holder: object, key: string): boolean => holder === currentNode &&
+  const isSkipped = (holder: unknown, key: string): boolean => holder === currentNode &&
     ((currentIgnoreKeys !== undefined && currentIgnoreKeys.has(key)) ||
       (currentShallowKeys !== undefined && currentShallowKeys.has(key)));
-  const visitKey = <VisitKey> ((holder: Record<string, unknown>, key: string): void => {
-    const value = holder[key];
+  const visitKey = <VisitKey> ((holder: Record<string, unknown> | undefined, key: string): void => {
+    const value = holder?.[key];
     if (value !== null && typeof value === 'object' && !isSkipped(holder, key)) {
-      pushChild(value, holder, String(key));
+      pushChild(value, <object> holder, String(key));
     }
   });
-  const stepIntoKey = <StepIntoKey> ((holder: Record<string, unknown>, key: string): unknown => {
-    const value = holder[key];
+  const stepIntoKey = <StepIntoKey> ((holder: Record<string, unknown> | undefined, key: string): unknown => {
+    const value = holder?.[key];
     if (value === null || typeof value !== 'object') {
       return value;
     }
+    // An empty container, so the children within a skipped key are skipped too
     if (isSkipped(holder, key)) {
-      return Array.isArray(value) ? emptyArray : emptyObject;
+      return Array.isArray(value) ? [] : {};
     }
     if (!currentCopiesSteps || currentCopies.has(value)) {
       return value;
     }
     const copy = transformer.cloneObj(value);
     currentCopies.add(copy);
-    holder[key] = copy;
+    (<Record<string, unknown>> holder)[key] = copy;
     return copy;
   });
   return (node, visitChildren, ignoreKeys, shallowKeys, copiesSteps) => {

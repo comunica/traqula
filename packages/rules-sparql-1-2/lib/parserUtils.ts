@@ -1,11 +1,12 @@
 import type { DefaultNodePreVisitor, KnownNodeKeys, TransformContext } from '@traqula/core';
 import {
+  isNode,
   TransformerSubTyped,
   traqulaIndentation,
   traqulaNewlineAlternative,
   visitOnlyKnownKeys,
 } from '@traqula/core';
-import { astKnownKeys as astKnownKeys11 } from '@traqula/rules-sparql-1-1';
+import { astKnownKeys as astKnownKeys11, withoutNodeLocations } from '@traqula/rules-sparql-1-1';
 import { AstFactory } from './AstFactory.js';
 import type { SparqlContext, SparqlGeneratorContext } from './sparql12HelperTypes.js';
 import type { Sparql12Nodes } from './sparql12Types.js';
@@ -79,14 +80,15 @@ Partial<SparqlContext & SparqlGeneratorContext & { origSource: string; offset?: 
 
 /**
  * A {@link TransformerSubTyped} specialized for the SPARQL 1.2 AST node types.
- * Source locations hold no nodes, so it skips the `loc` keys, unless the default context gives other ignoreKeys.
+ * Source locations hold no nodes, so it skips the `loc` key of nodes, unless the default context gives its own
+ * visitChildren or visitOnlyKeys.
  */
 export class AstTransformer extends TransformerSubTyped<Sparql12Nodes> {
   public constructor(
     defaultContext: TransformContext = {},
     defaultNodePreVisitor: DefaultNodePreVisitor<Sparql12Nodes> = {},
   ) {
-    super({ ignoreKeys: new Set([ 'loc' ]), ...defaultContext }, defaultNodePreVisitor);
+    super(withoutNodeLocations(defaultContext), defaultNodePreVisitor);
   }
 }
 
@@ -98,7 +100,7 @@ export const astKnownKeys = {
   // An annotation is a node, or a wrapped term without a type
   triple: { ...astKnownKeys11.triple, annotations: (annotations, visitKey, stepIntoKey) => {
     for (let index = 0; index < annotations.length; index++) {
-      if ('type' in annotations[index]) {
+      if (isNode(annotations[index])) {
         visitKey(annotations, index);
       } else {
         visitKey(stepIntoKey(annotations, index), 'val');

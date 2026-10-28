@@ -28,6 +28,7 @@ export {
   Awaitable,
 } from './transformers/TransformerObject.js';
 export {
+  isNode,
   TransformerTyped,
   Safeness,
   SafeWrap,

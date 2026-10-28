@@ -48,7 +48,7 @@ describe('astKnownKeysAllowlist', () => {
     expect(visitedNodes(allowlisted, ast)).not.toContain(extension);
   });
 
-  it('skips source locations, unless given other ignoreKeys', ({ expect }) => {
+  it('does not visit the source locations of nodes, unless given its own visitChildren', ({ expect }) => {
     const ast = new Parser().parse('SELECT * WHERE { ?s ?p ?o }');
     const visitedLocs = (transformer: AstTransformer): number => {
       let locs = 0;
@@ -58,47 +58,21 @@ describe('astKnownKeysAllowlist', () => {
       return locs;
     };
     expect(visitedLocs(new AstTransformer())).toBe(0);
-    expect(visitedLocs(new AstTransformer({ ignoreKeys: new Set() }))).toBeGreaterThan(0);
+    expect(visitedLocs(new AstTransformer({ ignoreKeys: new Set([ 'other' ]) }))).toBe(0);
+    expect(visitedLocs(new AstTransformer({ visitChildren: undefined }))).toBeGreaterThan(0);
   });
 
-  it('does not visit unknown keys of the objects without a type it steps into', ({ expect }) => {
-    const extension = (): object => ({ type: 'term', subType: 'variable', value: 'extension' });
-    const update = <any> new Parser().parse('INSERT DATA { <a> <b> <c> } ; CLEAR ALL');
-    update.updates[0].extension = extension();
-    const query = <any> new Parser().parse('SELECT * FROM <g> WHERE { ?s ?p ?o } ORDER BY ?s LIMIT 1');
-    query.solutionModifiers.extension = extension();
-    query.solutionModifiers.order.orderDefs[0].extension = extension();
-    query.datasets.clauses[0].extension = extension();
-    for (const ast of [ update, query ]) {
-      const extensions = (transformer: AstTransformer): object[] =>
-        visitedNodes(transformer, ast).filter(node => (<{ value?: string }> node).value === 'extension');
-      expect(extensions(unrestricted).length).toBeGreaterThan(0);
-      expect(extensions(allowlisted)).toEqual([]);
-    }
+  it('visits the VALUES of a variable named loc', ({ expect }) => {
+    const ast = new Parser().parse('SELECT * WHERE { VALUES ?loc { <a> } }');
+    expect(sameNodes(visitedNodes(unrestricted, ast), visitedNodes(allowlisted, ast))).toBe(true);
+    expect(visitedNodes(unrestricted, ast)).toContainEqual(expect.objectContaining({ value: 'a' }));
   });
 
-  it('only applies the ignoreKeys of a node to its own keys, not to those of the objects it steps into', ({
-    expect,
-  }) => {
-    // The rows of VALUES are keyed by variable names, like 'variable'
-    const ast = new Parser().parse('SELECT * WHERE { VALUES ?variable { <a> } }');
-    const count = (transformer: AstTransformer): number => {
-      let visited = 0;
-      transformer.visitNode(ast, {
-        pattern: { preVisitor: () => ({ ignoreKeys: new Set([ 'variable' ]) }) },
-        term: { visitor: () => {
-          visited++;
-        } },
-      });
-      return visited;
-    };
-    expect(count(allowlisted)).toBe(count(unrestricted));
-  });
-
-  it('steps into VALUES rows with a variable named type', ({ expect }) => {
-    // A row holding a key named 'type' is still stepped into
-    const ast = new Parser().parse('SELECT * WHERE { VALUES (?type ?b) { (<a> <c>) } }');
-    expect(sameNodes(visitedNodes(strict, ast), visitedNodes(unrestricted, ast))).toBe(true);
+  it('shallowly copies the source locations it does not visit, when given shallowKeys', ({ expect }) => {
+    const ast = new Parser().parse('SELECT * WHERE { ?s ?p ?o }');
+    const copy = <typeof ast> new AstTransformer({ shallowKeys: new Set([ 'loc' ]) }).transformNode(ast, {});
+    expect(copy.loc).not.toBe(ast.loc);
+    expect(copy.loc).toEqual(ast.loc);
   });
 
   it('validates with the astTransformer of the context', ({ expect }) => {

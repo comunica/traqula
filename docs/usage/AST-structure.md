@@ -116,7 +116,8 @@ SELECT * {
 ### Allowlist-Based Traversal
 
 By default, a transformer visits every key of a node, unless the node's context excludes it through `ignoreKeys`.
-An `AstTransformer` ignores the `loc` keys by default, since source locations hold no nodes; giving your own `ignoreKeys` replaces that.
+An `AstTransformer` skips the `loc` key of nodes by default, since source locations hold no nodes;
+giving your own `visitChildren` or `visitOnlyKeys` in the default context replaces that.
 Setting `visitOnlyKeys` to an empty set in the default context flips this around:
 the transformer only visits the keys a node explicitly allows.
 
@@ -169,7 +170,7 @@ const truety = operations.join() === 'clear,insertdata';
 ```
 
 Keep in mind that:
-- the children visited last are visited first, like the keys of an object;
+- the children passed to `visitKey` last are traversed first, like the last keys of an object;
 - when transforming, `stepIntoKey` returns a copy put in place of the original, so write through it, not around it;
 - the node's `ignoreKeys` and `shallowKeys` still apply to its own keys, also when stepping into them;
 - a context's `visitOnlyKeys` replaces the `visitChildren` of its default.

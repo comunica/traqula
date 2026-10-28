@@ -1,19 +1,18 @@
 import type { SourceLocation, Typed } from '../types.js';
 import type {
-  pathWildcard,
   Awaitable,
-  PathKey,
   PreOrderMappingReturn,
+  StepIntoKey,
   TransformContext,
+  VisitChildren,
   VisitContext,
-  VisitPath,
+  VisitKey,
 } from './TransformerObject.js';
 import {
   canonicalContext,
   isKeyIgnored,
   mapAwaitable,
   mergeContextWithFallback,
-  resolveVisitPaths,
   TransformerObject,
 } from './TransformerObject.js';
 
@@ -94,46 +93,16 @@ export type NodeHoldingKeys<Obj, Skipped = NodeFreeValue> = {[Key in AllObjectKe
   CanHoldNode<AllObjectValues<Obj, Key>, Skipped> extends true ? Key : never }[AllObjectKeys<Obj>];
 
 /**
- * The depth left per depth of a {@link ContainerPaths}, bounding the recursion on recursive types.
+ * Visits the children within the value of a known key of a node, see {@link VisitContext.visitChildren}.
+ * Checked as a method, so the visitors of a node type also serve the nodes that extend it.
  */
-type RemainingPathDepths = [never, 0, 1, 2, 3, 4];
+export type KnownKeyVisitor<Node> = {
+  // eslint-disable-next-line ts/method-signature-style
+  visit(this: void, node: Node, visitKey: VisitKey, stepIntoKey: StepIntoKey): void;
+}['visit'];
 
 /**
- * The values a path can step through: objects that are no node, since a typed transformer ends a path at a node.
- */
-type PathContainer<Value> = Exclude<Extract<Value, object>, Typed | AnyFunction>;
-
-/**
- * The paths through the given key: the key alone when its value can be an object, and the key followed by the
- * paths within the value when it can be a {@link PathContainer}.
- */
-type PathsThroughKey<
-  Key extends PathKey,
-  KeyValue,
-  Depth extends number,
-  Skipped,
-  Value = Exclude<KeyValue, Skipped | undefined>,
-  NextDepth extends number = RemainingPathDepths[Depth],
-> = unknown extends Value ?
-  readonly [Key, ...PathKey[]] :
-    ([Extract<Value, object>] extends [never] ? never : readonly [Key]) |
-    ([NextDepth] extends [never] ? never : readonly [Key, ...ContainerPaths<PathContainer<Value>, Skipped, NextDepth>]);
-
-/**
- * The visitPaths within a container to the objects it holds, as followed by a typed transformer.
- * A path steps through arrays and objects without a type, and ends at an object with one.
- * @typeParam Skipped - Values a path does not step to, nor through.
- * @typeParam Depth - The number of containers a path can step through, besides the first.
- */
-export type ContainerPaths<Container, Skipped = never, Depth extends number = 4> =
-  Container extends readonly (infer Element)[] ?
-    PathsThroughKey<number | typeof pathWildcard, Element, Depth, Skipped> :
-      {[Key in keyof Container & string]-?: PathsThroughKey<Key, Container[Key], Depth, Skipped> }[
-        keyof Container & string] |
-      PathsThroughKey<typeof pathWildcard, AllObjectValues<Container, AllObjectKeys<Container>>, Depth, Skipped>;
-
-/**
- * Per node type, exactly the keys that can hold a node, mapped to `true` or to the paths within their value to visit.
+ * Per node type, exactly the keys that can hold a node, mapped to `true` or to a {@link KnownKeyVisitor}.
  * The compiler rejects missing and other keys, also for a type without such keys.
  * @typeParam Skipped - Values that are not looked into, by default source locations and RDF terms.
  */
@@ -145,17 +114,11 @@ export type KnownNodeKeys<Nodes extends Typed, Skipped = NodeFreeValue> =
  */
 type KnownNodeKeysOfType<Node, Skipped, Keys extends string = NodeHoldingKeys<Node, Skipped>> = [Keys] extends [never] ?
   Record<string, never> :
-    {[Key in Keys]: KnownNodeKeyEntry<AllObjectValues<Node, Key>, Skipped> };
-
-/**
- * `true`, or else the paths within the value of a key when there are any.
- */
-type KnownNodeKeyEntry<Value, Skipped, Paths = ContainerPaths<PathContainer<Exclude<Value, Skipped>>, Skipped>> =
-  [Paths] extends [never] ? true : true | readonly [Paths, ...Paths[]];
+    {[Key in Keys]: true | KnownKeyVisitor<Node> };
 
 /**
  * Creates a {@link DefaultNodePreVisitor} that per node type only visits the known keys that can hold nodes,
- * skipping unknown keys like those of an extension, through visitPaths when a key lists paths.
+ * skipping unknown keys like those of an extension.
  * @param knownKeys per node type, the keys that can hold a node.
  * @return the contexts per node type, to give to a {@link TransformerTyped} or {@link TransformerSubTyped}.
  */
@@ -164,12 +127,18 @@ export function visitOnlyKnownKeys<Nodes extends Typed, Skipped = NodeFreeValue>
 ): DefaultNodePreVisitor<Nodes> {
   const contexts: Record<string, TransformContext> = {};
   for (const [ type, keys ] of Object.entries(knownKeys)) {
-    const entries = Object.entries(<Record<string, true | readonly VisitPath<object>[]>> keys);
-    contexts[type] = entries.every(([ , paths ]) => paths === true) ?
-        { visitOnlyKeys: new Set(entries.map(([ key ]) => key)) } :
-        // Frozen, since the traversal prepares an array of paths once
-        { visitPaths: Object.freeze(entries.flatMap(([ key, paths ]): VisitPath<object>[] =>
-          paths === true ? [ Object.freeze([ key ]) ] : paths.map(path => Object.freeze([ key, ...path ])))) };
+    const entries = Object.entries(<Record<string, true | KnownKeyVisitor<object>>> keys);
+    const visitedKeys = entries.filter(([ , visitor ]) => visitor === true).map(([ key ]) => key);
+    const keyVisitors = entries.flatMap(([ , visitor ]) => visitor === true ? [] : [ visitor ]);
+    const visitChildren: VisitChildren = (node, visitKey, stepIntoKey) => {
+      for (const key of visitedKeys) {
+        visitKey(node, <never> key);
+      }
+      for (const keyVisitor of keyVisitors) {
+        keyVisitor(node, visitKey, stepIntoKey);
+      }
+    };
+    contexts[type] = { visitChildren };
   }
   return <DefaultNodePreVisitor<Nodes>> contexts;
 }
@@ -209,7 +178,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
 
   /**
    * Whether a traversal visits the given key of an object, by the default of its node type or the default context.
-   * With {@link VisitContext.visitPaths}, whether they visit the value of the key as a whole.
+   * With {@link VisitContext.visitChildren}, whether it visits the value of the key as a whole.
    * Lets hand-written traversals respect the defaults of this transformer, like its allowlists.
    * @param object the object holding the key.
    * @param key the key to visit.
@@ -218,13 +187,19 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
   public visitsKey(object: object, key: string): boolean {
     const nodeDefault = this.nodeDefaultOf(object);
     const ignoreKeys = nodeDefault?.ignoreKeys ?? this.defaultContext.ignoreKeys;
-    const visitPaths = nodeDefault ?
-      resolveVisitPaths(nodeDefault, this.defaultContext) :
-      this.defaultContext.visitPaths;
-    if (visitPaths) {
-      return !isKeyIgnored(key, ignoreKeys) && this.pathsVisitWholeKey(visitPaths, object, key);
+    const visitOnlyKeys = nodeDefault?.visitOnlyKeys ?? this.defaultContext.visitOnlyKeys;
+    const visitChildren = nodeDefault?.visitChildren ??
+      (nodeDefault?.visitOnlyKeys ? undefined : this.defaultContext.visitChildren);
+    if (!visitChildren) {
+      return !isKeyIgnored(key, ignoreKeys, visitOnlyKeys);
     }
-    return !isKeyIgnored(key, ignoreKeys, nodeDefault?.visitOnlyKeys ?? this.defaultContext.visitOnlyKeys);
+    let visited = false;
+    const recordVisit = <VisitKey> ((holder: object, visitedKey: string): void => {
+      visited ||= holder === object && visitedKey === key;
+    });
+    const stepIntoKey = <StepIntoKey> ((holder: Record<string, unknown>, steppedKey: string) => holder[steppedKey]);
+    visitChildren(object, recordVisit, stepIntoKey);
+    return visited && !isKeyIgnored(key, ignoreKeys);
   }
 
   /**
@@ -234,15 +209,6 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
    */
   private nodeDefaultOf(node: unknown): TransformContext | undefined {
     return isNode(node) ? this.defaultNodePreVisitor[<Nodes['type']> node.type] : undefined;
-  }
-
-  /**
-   * Ends visitPaths at a node, since a node is visited itself.
-   * @param object the object a path steps into.
-   * @return whether the object is a node.
-   */
-  protected override endsPathsAt(object: object): boolean {
-    return isNode(object);
   }
 
   /**

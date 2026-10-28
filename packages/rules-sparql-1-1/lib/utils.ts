@@ -1,5 +1,5 @@
 import type { DefaultNodePreVisitor, KnownNodeKeys, TransformContext } from '@traqula/core';
-import { pathWildcard, TransformerSubTyped, visitOnlyKnownKeys } from '@traqula/core';
+import { TransformerSubTyped, visitOnlyKnownKeys } from '@traqula/core';
 import { AstFactory } from './astFactory.js';
 import { pnLocalEscPattern } from './lexer/lexerPatterns.js';
 import type { Sparql11Nodes, TermIri } from './Sparql11types.js';
@@ -216,7 +216,16 @@ export function resolveTermIri(term: TermIri, prefixes: Record<string, string>, 
 export const astKnownKeys = {
   path: { items: true },
   pattern: {
-    values: [[ pathWildcard, pathWildcard ]],
+    // The rows of VALUES map variable names to terms
+    values: (pattern, visitKey, stepIntoKey) => {
+      const rows = stepIntoKey(pattern, 'values') ?? [];
+      for (let index = 0; index < rows.length; index++) {
+        const row = stepIntoKey(rows, index);
+        for (const variable of Object.keys(row)) {
+          visitKey(row, variable);
+        }
+      }
+    },
     name: true,
     variable: true,
     expression: true,
@@ -224,12 +233,25 @@ export const astKnownKeys = {
     patterns: true,
     triples: true,
   },
-  update: { updates: [[ pathWildcard, 'operation' ], [ pathWildcard, 'context' ]]},
+  update: { updates: (update, visitKey, stepIntoKey) => {
+    const updates = stepIntoKey(update, 'updates');
+    for (let index = 0; index < updates.length; index++) {
+      const updateWithContext = stepIntoKey(updates, index);
+      visitKey(updateWithContext, 'operation');
+      visitKey(updateWithContext, 'context');
+    }
+  } },
   query: {
     values: true,
     template: true,
     context: true,
-    solutionModifiers: [[ 'group' ], [ 'having' ], [ 'order' ], [ 'limitOffset' ]],
+    solutionModifiers: (query, visitKey, stepIntoKey) => {
+      const solutionModifiers = stepIntoKey(query, 'solutionModifiers');
+      visitKey(solutionModifiers, 'group');
+      visitKey(solutionModifiers, 'having');
+      visitKey(solutionModifiers, 'order');
+      visitKey(solutionModifiers, 'limitOffset');
+    },
     datasets: true,
     where: true,
     variables: true,
@@ -246,14 +268,35 @@ export const astKnownKeys = {
     delete: true,
     insert: true,
   },
-  datasetClauses: { clauses: [[ pathWildcard, 'value' ]]},
+  datasetClauses: { clauses: (datasetClauses, visitKey, stepIntoKey) => {
+    const clauses = stepIntoKey(datasetClauses, 'clauses');
+    for (let index = 0; index < clauses.length; index++) {
+      visitKey(stepIntoKey(clauses, index), 'value');
+    }
+  } },
   tripleCollection: { triples: true, identifier: true },
   triple: { object: true, subject: true, predicate: true },
   solutionModifier: {
     having: true,
-    orderDefs: [[ pathWildcard, 'expression' ]],
-    // The binds without a type are stepped through, the expressions with a type end the paths
-    groupings: [[ pathWildcard, 'variable' ], [ pathWildcard, 'value' ]],
+    orderDefs: (solutionModifier, visitKey, stepIntoKey) => {
+      const orderDefs = stepIntoKey(solutionModifier, 'orderDefs') ?? [];
+      for (let index = 0; index < orderDefs.length; index++) {
+        visitKey(stepIntoKey(orderDefs, index), 'expression');
+      }
+    },
+    // A grouping is an expression, or a bind without a type
+    groupings: (solutionModifier, visitKey, stepIntoKey) => {
+      const groupings = stepIntoKey(solutionModifier, 'groupings') ?? [];
+      for (let index = 0; index < groupings.length; index++) {
+        if ('type' in groupings[index]) {
+          visitKey(groupings, index);
+        } else {
+          const bind = stepIntoKey(groupings, index);
+          visitKey(bind, 'variable');
+          visitKey(bind, 'value');
+        }
+      }
+    },
   },
   expression: { function: true, args: true, expression: true },
   contextDef: { value: true },

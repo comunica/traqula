@@ -141,38 +141,38 @@ Keep in mind that:
 - `ignoreKeys` still applies, and `shallowKeys` are still shallowly copied;
 - the object you start from is always visited;
 - an object without a `type`, like an element of the `updates` of an update, gets the default context,
-  so with an empty `visitOnlyKeys` default the nodes within it are not visited: step through it with `visitPaths`.
+  so with an empty `visitOnlyKeys` default the nodes within it are not visited: step into it with `visitChildren`.
 
-### Path-Based Traversal
+### Callback-Based Traversal
 
-A context can list `visitPaths` instead: paths through objects without a `type` to the objects to visit.
-The objects stepped through are not visited, so their other keys are skipped.
-The `pathWildcard` symbol of `@traqula/core` steps into every element of an array or value of an object.
+A context can give `visitChildren` instead: a callback that visits the children of the object itself.
+It calls `visitKey(holder, key)` for each child to traverse, and `stepIntoKey(holder, key)` to reach the objects
+without a `type` that hold them; the compiler checks both keys.
 
 ```typescript
-import { pathWildcard } from '@traqula/core';
 import { AstTransformer } from "@traqula/rules-sparql-1-1";
 import { Parser } from '@traqula/parser-sparql-1-1'
 
 const ast = new Parser().parse('INSERT DATA { <a> <b> <c> } ; CLEAR ALL');
 const transformer = new AstTransformer({ visitOnlyKeys: new Set() });
-const operationPaths = [[ 'updates', pathWildcard, 'operation' ]] as const;
 const operations: string[] = [];
 transformer.visitNode(ast, {
-  'update': { preVisitor: () => ({ visitPaths: operationPaths }) },
+  'update': { preVisitor: () => ({ visitChildren: (update, visitKey, stepIntoKey) => {
+    const updates = stepIntoKey(update, 'updates');
+    for (let index = 0; index < updates.length; index++) {
+      visitKey(stepIntoKey(updates, index), 'operation');
+    }
+  } }) },
   'updateOperation': { visitor: (operation) => { operations.push(operation.subType); } },
 });
-const truety = operations.join() === 'insertdata,clear';
+const truety = operations.join() === 'clear,insertdata';
 ```
 
 Keep in mind that:
-- objects are visited in the order a traversal of the keys visits them;
-- copying the node also copies the objects its paths step through;
-- the node's `ignoreKeys` and `shallowKeys` apply to its own keys, those of the default context to the objects stepped through;
-- a path ends at its last step or, for a typed transformer like `AstTransformer`, at the first object with a `type`;
-- a context's `visitOnlyKeys` replaces the `visitPaths` of its default;
-- paths are prepared once per array, so do not change an array once used;
-- only the first step is suggested by the IDE: type paths as `ContainerPaths` of `@traqula/core` to check every step.
+- the children visited last are visited first, like the keys of an object;
+- when transforming, `stepIntoKey` returns a copy put in place of the original, so write through it, not around it;
+- the node's `ignoreKeys` and `shallowKeys` still apply to its own keys, also when stepping into them;
+- a context's `visitOnlyKeys` replaces the `visitChildren` of its default.
 
 ### Known Keys Allowlists
 
@@ -181,20 +181,27 @@ as the per type defaults, the second argument of a transformer's constructor:
 `astKnownKeysAllowlist` of `@traqula/rules-sparql-1-1` and `@traqula/rules-sparql-1-2`, or `algebraUtils.knownKeysAllowlist`.
 Known node types then only visit their keys that can hold nodes; other objects get the default context.
 `visitOnlyKnownKeys` of `@traqula/core` creates such an allowlist, the compiler checking that it lists exactly
-the keys that can hold a node. A key maps to `true`, or to the paths within its value:
+the keys that can hold a node. A key maps to `true`, or to a callback visiting the children within its value:
 
 ```typescript
-import { pathWildcard, visitOnlyKnownKeys } from '@traqula/core';
+import { visitOnlyKnownKeys } from '@traqula/core';
 import type { Sparql11Nodes } from '@traqula/rules-sparql-1-1';
 
 const allowlist = visitOnlyKnownKeys<Sparql11Nodes>({
   // ...
-  update: { updates: [[ pathWildcard, 'operation' ], [ pathWildcard, 'context' ]] },
+  update: { updates: (update, visitKey, stepIntoKey) => {
+    const updates = stepIntoKey(update, 'updates');
+    for (let index = 0; index < updates.length; index++) {
+      const updateWithContext = stepIntoKey(updates, index);
+      visitKey(updateWithContext, 'operation');
+      visitKey(updateWithContext, 'context');
+    }
+  } },
   // ...
 });
 ```
 
-The AST allowlists step through every object without a `type`, so they also work with an empty default `visitOnlyKeys`.
+The AST allowlists step into every object without a `type`, so they also work with an empty default `visitOnlyKeys`.
 Spread their `astKnownKeys` to extend them.
 
 The rules of the parser, `toAlgebra`, and `toAst` that call a transformer use the ones you give them.

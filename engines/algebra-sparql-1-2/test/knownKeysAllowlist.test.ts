@@ -32,8 +32,11 @@ describe('algebraUtils.knownKeysAllowlist', () => {
       for (const { name, json } of sparqlAlgebraTests(suite, false, false)) {
         const expectedOperations = visitedOperations(algebraUtils.visitOperation, <object> json);
         const allowedOperations = visitedOperations(allowlisted.visitNode.bind(allowlisted), <object> json);
+        // The allowlist visits the operations in its own order
+        const expected = new Set(expectedOperations);
         expect(allowedOperations.length, name).toBe(expectedOperations.length);
-        expect(allowedOperations.every((operation, index) => operation === expectedOperations[index]), name).toBe(true);
+        expect(new Set(allowedOperations).size, name).toBe(allowedOperations.length);
+        expect(allowedOperations.every(operation => expected.has(operation)), name).toBe(true);
       }
     });
   }

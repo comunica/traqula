@@ -1,12 +1,12 @@
 import { describe, it } from 'vitest';
-import type { Awaitable, PreOrderMappingReturn, TransformContext, VisitContext } from '../lib/index.js';
-import {
-  pathWildcard,
-  TransformerTyped,
-  TransformerSubTyped,
-  TransformerObject,
-  visitOnlyKnownKeys,
+import type {
+  Awaitable,
+  PreOrderMappingReturn,
+  TransformContext,
+  VisitChildren,
+  VisitContext,
 } from '../lib/index.js';
+import { TransformerTyped, TransformerSubTyped, TransformerObject, visitOnlyKnownKeys } from '../lib/index.js';
 
 interface Fruit {
   type: 'fruit';
@@ -1789,43 +1789,41 @@ describe('visitOnlyKnownKeys', () => {
     apple: { core: true },
     crate: { content: true },
   });
-
-  it('creates contexts that only visit the known keys', ({ expect }) => {
-    expect(knownKeys).toEqual({
-      apple: { visitOnlyKeys: new Set([ 'core' ]) },
-      crate: { visitOnlyKeys: new Set([ 'content' ]) },
-    });
+  const shelfKnownKeys = visitOnlyKnownKeys<Apple | Crate | Shelf>({
+    apple: { core: true },
+    crate: { content: true },
+    shelf: {
+      crate: true,
+      rows: (shelf, visitKey, stepIntoKey) => {
+        const rows = stepIntoKey(shelf, 'rows');
+        for (let index = 0; index < rows.length; index++) {
+          visitKey(stepIntoKey(rows, index), 'apple');
+        }
+      },
+    },
   });
-
-  it('creates contexts that visit paths for the node types with paths', ({ expect }) => {
-    const withPaths = visitOnlyKnownKeys<Apple | Crate | Shelf>({
-      apple: { core: true },
-      crate: { content: true },
-      shelf: { crate: true, rows: [[ pathWildcard, 'apple' ]]},
-    });
-    expect(withPaths.shelf).toEqual({ visitPaths: [[ 'crate' ], [ 'rows', pathWildcard, 'apple' ]]});
-    expect(withPaths.apple).toEqual({ visitOnlyKeys: new Set([ 'core' ]) });
-
-    const strict = new TransformerTyped<Apple | Crate | Shelf>({ visitOnlyKeys: new Set() }, withPaths);
-    const shelf: Shelf = {
-      type: 'shelf',
-      crate: { type: 'crate', content: [{ type: 'apple', name: 'inCrate', core: { type: 'seed' }}]},
-      rows: [{ apple: { type: 'apple', name: 'inRow', core: { type: 'seed' }}, label: 'row' }, { label: 'empty' }],
-    };
+  const makeShelf = (): Shelf => ({
+    type: 'shelf',
+    crate: { type: 'crate', content: [{ type: 'apple', name: 'inCrate', core: { type: 'seed' }}]},
+    rows: [{ apple: { type: 'apple', name: 'inRow', core: { type: 'seed' }}, label: 'row' }, { label: 'empty' }],
+  });
+  const visitApples = (
+    transformer: TransformerTyped<Apple | Crate | Shelf>,
+    preVisitor?: VisitContext<Shelf>,
+  ): string[] => {
     const visited: string[] = [];
-    strict.visitNode(shelf, { apple: { visitor: (apple) => {
-      visited.push(apple.name);
-    } }});
-    expect(visited).toEqual([ 'inRow', 'inCrate' ]);
-    expect(strict.visitsKey(shelf, 'crate')).toBe(true);
-    expect(strict.visitsKey(shelf, 'rows')).toBe(false);
-    expect(strict.visitsKey(shelf, 'label')).toBe(false);
-    // A path through a node ends at it, so the node is visited as a whole
-    const throughNode = new TransformerTyped<Apple | Crate | Shelf>({}, {
-      shelf: { visitPaths: [[ 'crate', 'content' ]]},
+    transformer.visitNode(makeShelf(), {
+      shelf: { preVisitor: () => preVisitor ?? {}},
+      apple: { visitor: (apple) => {
+        visited.push(apple.name);
+      } },
     });
-    expect(throughNode.visitsKey(shelf, 'crate')).toBe(true);
-    expect(throughNode.visitsKey({ type: 'shelf', crate: 'none' }, 'crate')).toBe(false);
+    return visited;
+  };
+
+  it('creates contexts that only visit the known keys, stepping into the objects without a type', ({ expect }) => {
+    const strict = new TransformerTyped<Apple | Crate | Shelf>({ visitOnlyKeys: new Set() }, shelfKnownKeys);
+    expect(visitApples(strict)).toEqual([ 'inRow', 'inCrate' ]);
   });
 
   it('skips unknown keys of known nodes, but fully visits other objects', ({ expect }) => {
@@ -1854,69 +1852,32 @@ describe('visitOnlyKnownKeys', () => {
     expect(ignoring.visitsKey({ type: 'apple' }, 'name')).toBe(true);
   });
 
-  it('tells whether a key of an object is visited as a whole by a path', ({ expect }) => {
-    const pathing = new TransformerTyped<Apple | Crate>({ visitPaths: [[ pathWildcard ]]}, {
-      crate: { visitPaths: [[ 'content', 0 ], [ 'whole' ]], ignoreKeys: new Set([ 'ignored' ]) },
-    });
+  it('tells whether visitChildren visits the value of a key as a whole', ({ expect }) => {
+    const strict = new TransformerTyped<Apple | Crate | Shelf>({ visitOnlyKeys: new Set() }, shelfKnownKeys);
+    expect(strict.visitsKey(makeShelf(), 'crate')).toBe(true);
     // Only partly visited
-    expect(pathing.visitsKey({ type: 'crate' }, 'content')).toBe(false);
-    expect(pathing.visitsKey({ type: 'crate' }, 'whole')).toBe(true);
-    expect(pathing.visitsKey({ type: 'crate' }, 'other')).toBe(false);
-    expect(pathing.visitsKey({ type: 'apple' }, 'any')).toBe(true);
-    const ignoring = new TransformerTyped<Apple | Crate>({
-      ignoreKeys: new Set([ 'name' ]),
-      visitPaths: [[ pathWildcard ]],
-    });
-    expect(ignoring.visitsKey({ type: 'apple' }, 'name')).toBe(false);
-    const replacing = new TransformerTyped<Apple | Crate>({ visitPaths: [[ pathWildcard ]]}, knownKeys);
-    expect(replacing.visitsKey({ type: 'apple' }, 'name')).toBe(false);
+    expect(strict.visitsKey(makeShelf(), 'rows')).toBe(false);
+    expect(strict.visitsKey(makeShelf(), 'label')).toBe(false);
+    const ignoring = new TransformerTyped<Apple | Crate | Shelf>({ ignoreKeys: new Set([ 'crate' ]) }, shelfKnownKeys);
+    expect(ignoring.visitsKey(makeShelf(), 'crate')).toBe(false);
+    const visitingAny: VisitContext = { visitChildren: (object, visitKey) => visitKey(object, <never> 'any') };
+    expect(new TransformerTyped<Apple>(visitingAny).visitsKey({ type: 'apple' }, 'any')).toBe(true);
+    const replacing = new TransformerTyped<Apple>(visitingAny, { apple: { visitOnlyKeys: new Set([ 'core' ]) }});
+    expect(replacing.visitsKey({ type: 'apple' }, 'any')).toBe(false);
+    expect(replacing.visitsKey({ type: 'apple' }, 'core')).toBe(true);
   });
 
-  it('ends a path at the first node, so arrays mixing nodes and objects without a type are stepped through', ({
-    expect,
-  }) => {
-    const pathing = new TransformerTyped<Apple | Crate>({ visitOnlyKeys: new Set() }, {
-      crate: { visitPaths: [[ 'content', pathWildcard, 'apple' ]]},
-    });
-    const visited: string[] = [];
-    pathing.visitNode({
-      type: 'crate',
-      content: [
-        { type: 'apple', name: 'direct', core: { type: 'seed' }},
-        { apple: { type: 'apple', name: 'wrapped', core: { type: 'seed' }}, label: 'wrapper' },
-      ],
-    }, { apple: { visitor: (apple) => {
-      visited.push(apple.name);
-    } }});
-    expect(visited).toEqual([ 'direct', 'wrapped' ]);
-  });
-
-  it('replaces the visitPaths of the default of a type by the visitOnlyKeys of a callback', ({ expect }) => {
-    const pathing = new TransformerTyped<Apple | Crate | Shelf>({}, {
-      shelf: { visitPaths: [[ 'rows', pathWildcard, 'apple' ]]},
-    });
-    const shelf: Shelf = {
-      type: 'shelf',
-      crate: { type: 'crate', content: [{ type: 'apple', name: 'inCrate', core: { type: 'seed' }}]},
-      rows: [{ apple: { type: 'apple', name: 'inRow', core: { type: 'seed' }}, label: 'row' }],
-    };
-    const visit = (context?: VisitContext): string[] => {
-      const visited: string[] = [];
-      pathing.visitNode(shelf, {
-        shelf: { preVisitor: () => context ?? {}},
-        apple: { visitor: (apple) => {
-          visited.push(apple.name);
-        } },
-      });
-      return visited;
-    };
-    expect(visit()).toEqual([ 'inRow' ]);
-    expect(visit({ visitOnlyKeys: new Set([ 'crate' ]) })).toEqual([ 'inCrate' ]);
-    expect(visit({ visitOnlyKeys: new Set([ 'crate' ]), visitPaths: [[ 'rows', 0, 'apple' ]]})).toEqual([ 'inRow' ]);
+  it('replaces the visitChildren of the default of a type by the visitOnlyKeys of a callback', ({ expect }) => {
+    const transformer = new TransformerTyped<Apple | Crate | Shelf>({}, shelfKnownKeys);
+    expect(visitApples(transformer, { visitOnlyKeys: new Set([ 'crate' ]) })).toEqual([ 'inCrate' ]);
+    expect(visitApples(transformer, {
+      visitOnlyKeys: new Set([ 'crate' ]),
+      visitChildren: (shelf, visitKey, stepIntoKey) => visitKey(stepIntoKey(stepIntoKey(shelf, 'rows'), 0), 'apple'),
+    })).toEqual([ 'inRow' ]);
   });
 });
 
-describe('transformerObject visitPaths', () => {
+describe('transformerObject visitChildren', () => {
   const transformer = new TransformerObject();
   const leaf = (name: string): { name: string } => ({ name });
   // The holder objects have no name, so they are told apart from the leaves
@@ -1927,34 +1888,39 @@ describe('transformerObject visitPaths', () => {
     direct: leaf('direct'),
     skipped: leaf('skipped'),
   });
-  const paths = <const> [
-    [ 'rows', pathWildcard, 'item' ],
-    [ 'record', pathWildcard ],
-    [ 'direct' ],
-    [ 'missing', 'item' ],
-  ];
   const named = (obj: object): string | undefined => (<{ name?: string }> obj).name;
+  // Visits the item of each row, the values of the record, and the direct leaf
+  const visitTreeChildren: VisitChildren<any> = (tree, visitKey, stepIntoKey) => {
+    const rows = stepIntoKey(tree, 'rows');
+    for (let index = 0; index < rows.length; index++) {
+      visitKey(stepIntoKey(rows, index), 'item');
+    }
+    const record = stepIntoKey(tree, 'record');
+    for (const key of Object.keys(record)) {
+      visitKey(record, key);
+    }
+    visitKey(tree, 'direct');
+    for (const missing of stepIntoKey(tree, 'missing') ?? []) {
+      visitKey(missing, 'item');
+    }
+  };
+  const rootChildren = (context: TransformContext = {}) =>
+    (obj: object): TransformContext => named(obj) === 'root' ? { ...context, visitChildren: visitTreeChildren } : {};
+  const markLeaves = (copy: object): object => named(copy) && named(copy) !== 'root' ? { name: `${named(copy)}!` } : copy;
 
-  it('transformObject only maps the objects at the paths, like a key traversal, copying what they step through', ({
-    expect,
-  }) => {
+  it('transformObject only maps the children visitChildren visits, copying what it steps into', ({ expect }) => {
     const tree = makeTree();
     const mapped: string[] = [];
     const result = <any> transformer.transformObject(tree, (copy) => {
-      const name = named(copy);
-      if (name) {
-        mapped.push(name);
-      }
-      return name && name !== 'root' ? { name: `${name}!` } : copy;
-    }, obj => named(obj) === 'root' ? { visitPaths: paths } : {});
-
-    // The values of an object from its last key to its first, the elements of an array from its first
-    expect(mapped).toEqual([ 'direct', 'b', 'a', 'first', 'second', 'root' ]);
+      mapped.push(named(copy)!);
+      return markLeaves(copy);
+    }, rootChildren());
+    // The children visited last are mapped first
+    expect(mapped).toEqual([ 'direct', 'b', 'a', 'second', 'first', 'root' ]);
     expect(result.rows[0].item).toEqual({ name: 'first!' });
-    expect(result.rows[1].item).toEqual({ name: 'second!' });
     expect(result.record).toEqual({ a: { name: 'a!' }, b: { name: 'b!' }, none: null });
     expect(result.direct).toEqual({ name: 'direct!' });
-    // The objects stepped through are copies, the objects not on a path are kept as they are
+    // The objects stepped into are copies, the objects not visited are kept as they are
     expect(Array.isArray(result.rows)).toBe(true);
     expect(result.rows).not.toBe(tree.rows);
     expect(result.rows[0]).not.toBe(tree.rows[0]);
@@ -1963,245 +1929,136 @@ describe('transformerObject visitPaths', () => {
     expect(tree).toEqual(makeTree());
   });
 
-  it('transformObject copies an object stepped through by multiple paths once', ({ expect }) => {
+  it('transformObject copies an object stepped into twice once', ({ expect }) => {
     const tree = { holder: { a: leaf('a'), b: leaf('b') }};
-    const result = <any> transformer.transformObject(
-      tree,
-      copy => named(copy) ? { name: `${named(copy)}!` } : copy,
-      obj => obj === tree ? { visitPaths: [[ 'holder', 'a' ], [ 'holder', 'b' ]]} : {},
-    );
+    const visitHolder: VisitChildren<typeof tree> = (object, visitKey, stepIntoKey) => {
+      visitKey(stepIntoKey(object, 'holder'), 'a');
+      visitKey(stepIntoKey(object, 'holder'), 'b');
+    };
+    const result = <any> transformer.transformObject(tree, markLeaves, obj => obj === tree ?
+        { visitChildren: <VisitChildren> visitHolder } :
+        {});
     expect(result.holder).toEqual({ a: { name: 'a!' }, b: { name: 'b!' }});
     expect(tree.holder).toEqual({ a: leaf('a'), b: leaf('b') });
   });
 
-  it('transformObject changes the objects stepped through when it does not copy', ({ expect }) => {
+  it('transformObject changes the objects it steps into when it does not copy', ({ expect }) => {
     const tree = makeTree();
-    const result = <any> new TransformerObject({ copy: false }).transformObject(
-      tree,
-      copy => named(copy) && named(copy) !== 'root' ? { name: `${named(copy)}!` } : copy,
-      obj => named(obj) === 'root' ? { visitPaths: paths } : {},
-    );
+    const result = new TransformerObject({ copy: false }).transformObject(tree, markLeaves, rootChildren());
     expect(result).toBe(tree);
     expect(tree.rows[0].item).toEqual({ name: 'first!' });
   });
 
-  it('transformObject does not step into the ignoreKeys of the object, nor those of the default within', ({
+  it('transformObject skips the ignoreKeys and shallowKeys of the object, also when stepping into them', ({
     expect,
   }) => {
-    const tree = makeTree();
-    const map = (pathing: TransformerObject): any => pathing.transformObject(
-      tree,
-      copy => named(copy) && named(copy) !== 'root' ? { name: `${named(copy)}!` } : copy,
-      obj => named(obj) === 'root' ?
-          { visitPaths: paths, ignoreKeys: new Set([ 'record', 'item' ]), visitOnlyKeys: new Set([ 'skipped' ]) } :
-          {},
-    );
-    const result = map(transformer);
-    expect(result.record).toBe(tree.record);
-    // The ignoreKeys of the object only apply to its own keys
-    expect(result.rows[0].item).toEqual({ name: 'first!' });
-    expect(result.direct).toEqual({ name: 'direct!' });
-    // The visitOnlyKeys are not used
-    expect(result.skipped).toBe(tree.skipped);
-    // Within, those of the default context apply, as when reached through a key
-    const withinIgnored = map(new TransformerObject({ ignoreKeys: new Set([ 'item' ]) }));
-    expect(withinIgnored.rows[0].item).toBe(tree.rows[0].item);
-  });
-
-  it('transformObject shallowly copies the shallowKeys of the object, and those of the default within', ({
-    expect,
-  }) => {
-    const tree = makeTree();
-    const map = (pathing: TransformerObject): { mapped: string[]; result: any } => {
-      const mapped: string[] = [];
-      const result = pathing.transformObject(tree, (copy) => {
-        mapped.push(named(copy)!);
-        return copy;
-      }, obj => named(obj) === 'root' ?
-          { visitPaths: [[ 'rows', pathWildcard, 'item' ]], shallowKeys: new Set([ 'skipped', 'item' ]) } :
-          {});
-      return { mapped, result };
-    };
-    const { mapped, result } = map(transformer);
-    expect(mapped).toEqual([ 'first', 'second', 'root' ]);
-    expect(result.skipped).not.toBe(tree.skipped);
-    expect(result.skipped).toEqual(tree.skipped);
-    const within = map(new TransformerObject({ shallowKeys: new Set([ 'item' ]) }));
-    expect(within.mapped).toEqual([ 'root' ]);
-    expect(within.result.rows[0].item).not.toBe(tree.rows[0].item);
-    expect(within.result.rows[0].item).toEqual(tree.rows[0].item);
-  });
-
-  it('clone keeps the visitOnlyKeys of the new default context over the visitPaths of the old one', ({ expect }) => {
-    const tree = { name: 'root', direct: leaf('direct'), skipped: leaf('skipped') };
-    const visited: string[] = [];
-    new TransformerObject({ visitPaths: [[ 'direct' ]]}).clone({ visitOnlyKeys: new Set([ 'skipped' ]) })
-      .visitObject(tree, (obj) => {
-        visited.push(named(obj)!);
-      });
-    expect(visited).toEqual([ 'skipped', 'root' ]);
-  });
-
-  it('transformObject does not continue a path through an object at the end of another path', ({ expect }) => {
-    const tree = makeTree();
+    const inherited = leaf('inherited');
+    const tree = Object.assign(Object.create({ inherited }), makeTree());
     const mapped: string[] = [];
-    transformer.transformObject(tree, (copy) => {
-      mapped.push(named(copy) ?? 'unnamed');
-      return copy;
-    }, obj => named(obj) === 'root' ? { visitPaths: [[ 'rows', pathWildcard, 'item' ], [ 'rows' ]]} : {});
-    // The rows are mapped like any other array, so their objects are not mapped twice
-    expect(mapped).toEqual([ 'skipped', 'first', 'unnamed', 'second', 'unnamed', 'unnamed', 'root' ]);
+    const result = <any> transformer.transformObject(tree, (copy) => {
+      mapped.push(named(copy)!);
+      return markLeaves(copy);
+    }, rootChildren({
+      ignoreKeys: new Set([ 'record', 'rows' ]),
+      shallowKeys: new Set([ 'direct', 'skipped', 'name', 'absent', 'inherited' ]),
+    }));
+    expect(mapped).toEqual([ 'root' ]);
+    expect(result.record).toBe(tree.record);
+    expect(result.rows).toBe(tree.rows);
+    for (const key of [ 'direct', 'skipped' ]) {
+      expect(result[key]).not.toBe(tree[key]);
+      expect(result[key]).toEqual(tree[key]);
+    }
+    expect(result.inherited).toBe(inherited);
   });
 
-  it('transformObject uses the visitPaths of the default context, unless the context has visitOnlyKeys', ({
+  it('transformObjectPreOrder only maps the children visitChildren visits, copying what it steps into', ({
     expect,
   }) => {
-    const tree = { name: 'root', direct: leaf('direct'), skipped: leaf('skipped') };
-    const map = (context: TransformContext): string[] => {
-      const mapped: string[] = [];
-      new TransformerObject({ visitPaths: [[ 'direct' ]]}).transformObject(tree, (copy) => {
-        mapped.push(named(copy)!);
-        return copy;
-      }, obj => obj === tree ? context : {});
-      return mapped;
-    };
-    expect(map({})).toEqual([ 'direct', 'root' ]);
-    expect(map({ visitOnlyKeys: new Set([ 'skipped' ]) })).toEqual([ 'skipped', 'root' ]);
-  });
-
-  it('transformObjectPreOrder only maps the objects at the paths, like a traversal of the keys', ({ expect }) => {
     const tree = makeTree();
     const mapped: string[] = [];
     const result = <any> transformer.transformObjectPreOrder(tree, (copy) => {
-      const name = named(copy)!;
-      mapped.push(name);
-      return name === 'root' ?
-          { newValue: copy, visitPaths: paths, ignoreKeys: new Set([ 'direct' ]) } :
-          { newValue: { name: `${name}!` }};
+      mapped.push(named(copy)!);
+      return named(copy) === 'root' ?
+          { newValue: copy, visitChildren: visitTreeChildren, ignoreKeys: new Set([ 'direct' ]) } :
+          { newValue: markLeaves(copy) };
     });
-    expect(mapped).toEqual([ 'root', 'b', 'a', 'first', 'second' ]);
+    expect(mapped).toEqual([ 'root', 'b', 'a', 'second', 'first' ]);
     expect(result.rows[1].item).toEqual({ name: 'second!' });
     expect(result.rows[0].other).toBe(tree.rows[0].other);
     expect(result.direct).toBe(tree.direct);
     expect(tree).toEqual(makeTree());
   });
 
-  it('transformObjectPreOrder changes the objects stepped through when it does not copy', ({ expect }) => {
+  it('transformObjectPreOrder changes the objects it steps into when it does not copy', ({ expect }) => {
     const tree = makeTree();
-    new TransformerObject({ copy: false, visitPaths: [[ 'rows', 0, 'item' ]]}).transformObjectPreOrder(
-      tree,
-      copy => ({ newValue: named(copy) === 'first' ? { name: 'first!' } : copy }),
-    );
+    new TransformerObject({ copy: false }).transformObjectPreOrder(tree, copy => named(copy) === 'root' ?
+        { newValue: copy, visitChildren: visitTreeChildren } :
+        { newValue: markLeaves(copy) });
     expect(tree.rows[0].item).toEqual({ name: 'first!' });
   });
 
-  it('transformObjectPreOrder uses the visitPaths of the default context, unless the result has visitOnlyKeys', ({
-    expect,
-  }) => {
-    const tree = { name: 'root', direct: leaf('direct'), skipped: leaf('skipped') };
-    const map = (visitOnlyKeys?: Set<string>): string[] => {
-      const mapped: string[] = [];
-      new TransformerObject({ visitPaths: [[ 'direct' ]]}).transformObjectPreOrder(tree, (copy) => {
-        mapped.push(named(copy)!);
-        return { newValue: copy, visitOnlyKeys: named(copy) === 'root' ? visitOnlyKeys : undefined };
-      });
-      return mapped;
-    };
-    expect(map()).toEqual([ 'root', 'direct' ]);
-    expect(map(new Set([ 'skipped' ]))).toEqual([ 'root', 'skipped' ]);
-  });
-
-  it('visitObject only visits the objects at the paths, in their order', ({ expect }) => {
-    const tree = makeTree();
-    const visited: string[] = [];
-    transformer.visitObject(tree, (obj) => {
-      visited.push(named(obj)!);
-    }, obj => named(obj) === 'root' ? { visitPaths: paths, ignoreKeys: new Set([ 'direct' ]) } : {});
-    expect(visited).toEqual([ 'b', 'a', 'first', 'second', 'root' ]);
-  });
-
-  it('visitObject uses the visitPaths of the default context, unless the context has visitOnlyKeys', ({ expect }) => {
-    const tree = { name: 'root', direct: leaf('direct'), skipped: leaf('skipped') };
-    const visit = (context: VisitContext): string[] => {
-      const visited: string[] = [];
-      new TransformerObject({ visitPaths: [[ 'direct' ]]}).visitObject(tree, (obj) => {
-        visited.push(named(obj)!);
-      }, obj => obj === tree ? context : {});
-      return visited;
-    };
-    expect(visit({})).toEqual([ 'direct', 'root' ]);
-    expect(visit({ visitOnlyKeys: new Set([ 'skipped' ]) })).toEqual([ 'skipped', 'root' ]);
-  });
-
-  it('visitObject steps over inherited keys, and shares the paths of a repeated step', ({ expect }) => {
-    const tree = Object.assign(Object.create({ inherited: { item: leaf('inherited') }}), {
-      name: 'root',
-      own: { item: leaf('own'), other: leaf('other') },
-    });
-    const visited: string[] = [];
-    const visitPaths: VisitContext['visitPaths'] = [[ pathWildcard, 'item' ], [ 'own', 'other' ], [ 'own', 'item' ]];
-    for (let run = 0; run < 2; run++) {
-      transformer.visitObject(tree, (obj) => {
-        visited.push(named(obj)!);
-      }, obj => obj === tree ? { visitPaths } : {});
-    }
-    expect(visited).toEqual([ 'other', 'own', 'root', 'other', 'own', 'root' ]);
-  });
-
-  it('visitObject steps into a key named \'*\' like any other key', ({ expect }) => {
-    const tree = { name: 'root', '*': leaf('star'), other: leaf('other') };
-    const visit = (visitPaths: VisitContext['visitPaths']): string[] => {
-      const visited: string[] = [];
-      transformer.visitObject(tree, (obj) => {
-        visited.push(named(obj)!);
-      }, obj => obj === tree ? { visitPaths } : {});
-      return visited;
-    };
-    expect(visit([[ '*' ]])).toEqual([ 'star', 'root' ]);
-    expect(visit([[ pathWildcard ]])).toEqual([ 'other', 'star', 'root' ]);
-  });
-
-  it('visitObject does not copy into the objects it steps through, also not their shallowKeys', ({ expect }) => {
+  it('visitObject only visits the children visitChildren visits, without copying', ({ expect }) => {
     const tree = makeTree();
     const row = tree.rows[0];
-    const other = row.other;
-    new TransformerObject({ shallowKeys: new Set([ 'other' ]) }).visitObject(
-      tree,
-      () => {},
-      obj => obj === tree ? { visitPaths: [[ 'rows', pathWildcard, 'item' ]]} : {},
-    );
+    const visited: string[] = [];
+    new TransformerObject({ shallowKeys: new Set([ 'item' ]) }).visitObject(tree, (obj) => {
+      visited.push(named(obj)!);
+    }, rootChildren());
+    expect(visited).toEqual([ 'direct', 'b', 'a', 'second', 'first', 'root' ]);
     expect(tree.rows[0]).toBe(row);
-    expect(row.other).toBe(other);
   });
 
-  it('visitObject steps over array elements that are no object', ({ expect }) => {
-    const visited: string[] = [];
-    transformer.visitObject({ rows: [ null, 'primitive', { item: leaf('item') }]}, (obj) => {
-      visited.push(named(obj) ?? 'unnamed');
-    }, obj => 'rows' in obj ? { visitPaths: [[ 'rows', pathWildcard, 'item' ]]} : {});
-    expect(visited).toEqual([ 'item', 'unnamed' ]);
+  it('uses the visitChildren of the default context, unless the context has visitOnlyKeys', ({ expect }) => {
+    const tree = { name: 'root', direct: leaf('direct'), skipped: leaf('skipped') };
+    const visitDirect: VisitChildren = (object, visitKey) => visitKey(object, <never> 'direct');
+    const defaulting = new TransformerObject({ visitChildren: visitDirect });
+    const traverse = (visitOnlyKeys?: Set<string>): string[][] => {
+      const visited: string[] = [];
+      defaulting.visitObject(tree, (obj) => {
+        visited.push(named(obj)!);
+      }, obj => obj === tree ? { visitOnlyKeys } : {});
+      const mapped: string[] = [];
+      defaulting.transformObject(tree, (copy) => {
+        mapped.push(named(copy)!);
+        return copy;
+      }, obj => obj === tree ? { visitOnlyKeys } : {});
+      const preMapped: string[] = [];
+      defaulting.transformObjectPreOrder(tree, (copy) => {
+        preMapped.push(named(copy)!);
+        return { newValue: copy, visitOnlyKeys: named(copy) === 'root' ? visitOnlyKeys : undefined };
+      });
+      return [ visited, mapped, preMapped ];
+    };
+    expect(traverse()).toEqual([[ 'direct', 'root' ], [ 'direct', 'root' ], [ 'root', 'direct' ]]);
+    expect(traverse(new Set([ 'skipped' ])))
+      .toEqual([[ 'skipped', 'root' ], [ 'skipped', 'root' ], [ 'root', 'skipped' ]]);
+    const cloned: string[] = [];
+    defaulting.clone({ visitOnlyKeys: new Set([ 'skipped' ]) }).visitObject(tree, (obj) => {
+      cloned.push(named(obj)!);
+    });
+    expect(cloned).toEqual([ 'skipped', 'root' ]);
   });
 
-  it('visitObject does not follow paths when it does not continue', ({ expect }) => {
+  it('visitObject does not visit the children when it does not continue', ({ expect }) => {
     const visited: string[] = [];
-    new TransformerObject({ visitPaths: [[ 'direct' ]], continue: false }).visitObject(makeTree(), (obj) => {
+    new TransformerObject({ visitChildren: visitTreeChildren, continue: false }).visitObject(makeTree(), (obj) => {
       visited.push(named(obj)!);
     });
     expect(visited).toEqual([ 'root' ]);
   });
 
-  it('async variants follow the paths too', async({ expect }) => {
-    const pathing = new TransformerObject({ visitPaths: [[ 'direct' ]]});
+  it('async variants visit the children too', async({ expect }) => {
+    const visiting = new TransformerObject({ visitChildren: (object, visitKey) => visitKey(object, <never> 'direct') });
     const visited: string[] = [];
-    await pathing.visitObjectAsync(makeTree(), async(obj) => {
+    await visiting.visitObjectAsync(makeTree(), async(obj) => {
       visited.push(named(obj)!);
     });
     expect(visited).toEqual([ 'direct', 'root' ]);
-    const transformed = <any> await pathing.transformObjectAsync(makeTree(), async copy =>
-      named(copy) === 'direct' ? { name: 'direct!' } : copy);
+    const transformed = <any> await visiting.transformObjectAsync(makeTree(), async copy => markLeaves(copy));
     expect(transformed.direct).toEqual({ name: 'direct!' });
-    const preTransformed = <any> await pathing.transformObjectPreOrderAsync(makeTree(), async copy =>
-      ({ newValue: named(copy) === 'direct' ? { name: 'direct!' } : copy }));
+    const preTransformed = <any> await visiting.transformObjectPreOrderAsync(makeTree(), async copy =>
+      ({ newValue: markLeaves(copy) }));
     expect(preTransformed.direct).toEqual({ name: 'direct!' });
   });
 });

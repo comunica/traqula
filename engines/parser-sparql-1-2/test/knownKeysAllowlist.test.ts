@@ -6,8 +6,15 @@ import { Parser } from '../lib/index.js';
 describe('astKnownKeysAllowlist', () => {
   const unrestricted = new AstTransformer();
   const allowlisted = new AstTransformer({}, astKnownKeysAllowlist);
-  // Only visits the keys the allowlist allows, so the objects without a type are only reached through paths
+  // Only visits the keys the allowlist allows, so the objects without a type are only reached by stepping into them
   const strict = new AstTransformer({ visitOnlyKeys: new Set() }, astKnownKeysAllowlist);
+
+  // The allowlist visits the children in its own order
+  function sameNodes(nodes: object[], expectedNodes: object[]): boolean {
+    const expected = new Set(expectedNodes);
+    return nodes.length === expectedNodes.length && new Set(nodes).size === nodes.length &&
+      nodes.every(node => expected.has(node));
+  }
 
   function visitedNodes(transformer: AstTransformer, ast: object): object[] {
     const visited: object[] = [];
@@ -28,8 +35,7 @@ describe('astKnownKeysAllowlist', () => {
         const allNodes = visitedNodes(unrestricted, <object> astWithSource);
         for (const transformer of [ allowlisted, strict ]) {
           const allowedNodes = visitedNodes(transformer, <object> astWithSource);
-          expect(allowedNodes.length, name).toBe(allNodes.length);
-          expect(allowedNodes.every((node, index) => node === allNodes[index]), name).toBe(true);
+          expect(sameNodes(allowedNodes, allNodes), name).toBe(true);
         }
       }
     });

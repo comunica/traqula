@@ -6,7 +6,7 @@ import {
   traqulaNewlineAlternative,
   visitOnlyKnownKeys,
 } from '@traqula/core';
-import { astKnownKeys as astKnownKeys11, withValuesRows } from '@traqula/rules-sparql-1-1';
+import { astKnownKeys as astKnownKeys11, astTransformerDefaults } from '@traqula/rules-sparql-1-1';
 import { AstFactory } from './AstFactory.js';
 import type { SparqlContext, SparqlGeneratorContext } from './sparql12HelperTypes.js';
 import type { Sparql12Nodes } from './sparql12Types.js';
@@ -88,7 +88,7 @@ export class AstTransformer extends TransformerSubTyped<Sparql12Nodes> {
     defaultContext: TransformContext = {},
     defaultNodePreVisitor: DefaultNodePreVisitor<Sparql12Nodes> = {},
   ) {
-    super({ ignoreKeys: new Set([ 'loc' ]), ...defaultContext }, withValuesRows(defaultContext, defaultNodePreVisitor));
+    super(...astTransformerDefaults(defaultContext, defaultNodePreVisitor));
   }
 }
 

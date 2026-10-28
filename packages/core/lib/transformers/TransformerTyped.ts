@@ -171,29 +171,31 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
   }
 
   /**
-   * Whether a traversal visits the given key of an object, by the default of its node type or the default context.
-   * With {@link VisitContext.visitChildren}, whether it visits the value of the key as a whole.
-   * Lets hand-written traversals respect the defaults of this transformer, like its allowlists.
-   * @param object the object holding the key.
-   * @param key the key to visit.
-   * @return whether the key is visited.
+   * The keys of an object whose values a traversal visits as a whole, by the default of its node type or the default
+   * context. Lets hand-written traversals respect the defaults of this transformer, like its allowlists.
+   * @param object the object holding the keys.
+   * @return the keys visited, without those only stepped into by {@link VisitContext.visitChildren}.
    */
-  public visitsKey(object: object, key: string): boolean {
+  public visitedKeys(object: object): Set<string> {
     const nodeDefault = this.nodeDefaultOf(object);
-    if ((nodeDefault?.ignoreKeys ?? this.defaultContext.ignoreKeys)?.has(key)) {
-      return false;
-    }
     const visitChildren = nodeDefault?.visitChildren ?? this.defaultContext.visitChildren;
-    if (!visitChildren) {
-      return true;
+    const visited = new Set<string>();
+    if (visitChildren) {
+      const recordVisit = <VisitKey> ((holder: object, key: string): void => {
+        if (holder === object) {
+          visited.add(key);
+        }
+      });
+      const stepIntoKey = <StepIntoKey> ((holder: Record<string, unknown> | undefined, key: string) => holder?.[key]);
+      visitChildren(object, recordVisit, stepIntoKey);
+    } else {
+      for (const key of Object.keys(object)) {
+        visited.add(key);
+      }
     }
-    let visited = false;
-    const recordVisit = <VisitKey> ((holder: object, visitedKey: string): void => {
-      visited ||= holder === object && visitedKey === key;
-    });
-    const stepIntoKey = <StepIntoKey> ((holder: Record<string, unknown> | undefined, steppedKey: string) =>
-      holder?.[steppedKey]);
-    visitChildren(object, recordVisit, stepIntoKey);
+    for (const key of nodeDefault?.ignoreKeys ?? this.defaultContext.ignoreKeys ?? []) {
+      visited.delete(key);
+    }
     return visited;
   }
 

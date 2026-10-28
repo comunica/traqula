@@ -147,11 +147,12 @@ unknown,
     const elementGraphs: Record<string, (RDF.NamedNode | RDF.DefaultGraph | undefined)[]> = Object.create(null);
     // Track all the unique graph names for the entire Operation
     const operationGraphNames: Record<string, RDF.NamedNode | RDF.DefaultGraph> = Object.create(null);
+    const visitedKeys = algebraTransformer.visitedKeys(knownOp);
     for (const [ key, value ] of Object.entries(knownOp)) {
       // A CONSTRUCT template holds the triples to produce, not patterns of the WHERE clause:
       // it is never wrapped in a GRAPH, and does not change how the WHERE clause is wrapped.
       // Keys the algebra transformer does not visit, like unknown keys of an allowlist, are kept as they are.
-      if ((knownOp.type === types.CONSTRUCT && key === 'template') || !algebraTransformer.visitsKey(knownOp, key)) {
+      if ((knownOp.type === types.CONSTRUCT && key === 'template') || !visitedKeys.has(key)) {
         result[key] = value;
         continue;
       }

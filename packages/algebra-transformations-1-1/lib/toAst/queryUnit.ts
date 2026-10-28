@@ -83,17 +83,20 @@ AstIndir<'collectVariables', Set<string>, [object, Set<string>, string[]?]> = {
         if (isTermWithoutType(object)) {
           addVariables(object);
         }
+      },
+      (object) => {
+        const visitedKeys = algebraTransformer.visitedKeys(object);
+        const skippedKeys = Object.keys(object).filter(key => isIgnoredKey(object, key) || !visitedKeys.has(key));
         // Terms at keys the transformer skips, like the algebra utilities and allowlists do, are read here
-        for (const [ key, child ] of Object.entries(object)) {
-          if (!isIgnoredKey(object, key) && !algebraTransformer.visitsKey(object, key)) {
-            for (const term of [ child ].flat().filter(isTermWithoutType)) {
+        for (const key of skippedKeys) {
+          if (!isIgnoredKey(object, key)) {
+            for (const term of [ (<Record<string, unknown>> object)[key] ].flat().filter(isTermWithoutType)) {
               addVariables(term);
             }
           }
         }
+        return { ignoreKeys: new Set(skippedKeys) };
       },
-      object => ({ ignoreKeys: new Set(Object.keys(object)
-        .filter(key => isIgnoredKey(object, key) || !algebraTransformer.visitsKey(object, key))) }),
     );
     return names;
   },

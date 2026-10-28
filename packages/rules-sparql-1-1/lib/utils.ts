@@ -2,7 +2,7 @@ import type { DefaultNodePreVisitor, KnownNodeKeys, TransformContext, Typed, Vis
 import { isNode, TransformerSubTyped, visitOnlyKnownKeys } from '@traqula/core';
 import { AstFactory } from './astFactory.js';
 import { pnLocalEscPattern } from './lexer/lexerPatterns.js';
-import type { Sparql11Nodes, TermIri } from './Sparql11types.js';
+import type { Sparql11Nodes, TermIri, ValuePatternRow } from './Sparql11types.js';
 
 /**
  * Transform input in accordance to [19.2](https://www.w3.org/TR/sparql11-query/#codepointEscape)
@@ -69,9 +69,24 @@ export class AstTransformer extends TransformerSubTyped<Sparql11Nodes> {
     defaultContext: TransformContext = {},
     defaultNodePreVisitor: DefaultNodePreVisitor<Sparql11Nodes> = {},
   ) {
-    super({ ignoreKeys: new Set([ 'loc' ]), ...defaultContext }, withValuesRows(defaultContext, defaultNodePreVisitor));
+    super(...astTransformerDefaults(defaultContext, defaultNodePreVisitor));
   }
 }
+
+/**
+ * Visits the terms of the rows of VALUES, which map variable names to terms.
+ * @param rows the rows to visit the terms of.
+ * @param visitKey visits a term of a row.
+ * @param stepIntoKey steps into a row.
+ */
+const visitValuesRows: VisitChildren<ValuePatternRow[]> = (rows, visitKey, stepIntoKey) => {
+  for (let index = 0; index < rows.length; index++) {
+    const row = stepIntoKey(rows, index);
+    for (const variable in row) {
+      visitKey(row, variable);
+    }
+  }
+};
 
 /**
  * Visits every key of a pattern, stepping into the rows of VALUES, so the default ignoreKeys do not apply to the
@@ -89,30 +104,27 @@ const visitPatternWithValuesRows: VisitChildren<Record<string, unknown>> = (patt
       visitKey(pattern, key);
       continue;
     }
-    const rows = <Record<string, unknown>[]> stepIntoKey(pattern, key);
-    for (let index = 0; index < rows.length; index++) {
-      const row = stepIntoKey(rows, index);
-      for (const variable in row) {
-        visitKey(row, variable);
-      }
-    }
+    visitValuesRows(<ValuePatternRow[]> stepIntoKey(pattern, key), visitKey, stepIntoKey);
   }
 };
 
 /**
- * Adds the stepping into the rows of VALUES to the per type defaults of an AST transformer, unless its default context
- * gives visitChildren.
- * @param defaultContext the default context of the transformer.
+ * Completes the defaults of an AST transformer: it ignores the `loc` keys, and steps into the rows of VALUES so a
+ * variable named `loc` is still visited, unless the default context gives visitChildren.
+ * @param defaultContext the default context of the transformer, whose ignoreKeys replace the ignored `loc`.
  * @param defaultNodePreVisitor the per type defaults of the transformer, which can replace those of patterns.
- * @return the completed per type defaults.
+ * @return the completed default context and per type defaults.
  */
-export function withValuesRows<Nodes extends Typed>(
+export function astTransformerDefaults<Nodes extends Typed>(
   defaultContext: TransformContext,
   defaultNodePreVisitor: DefaultNodePreVisitor<Nodes>,
-): DefaultNodePreVisitor<Nodes> {
-  return defaultContext.visitChildren ?
-    defaultNodePreVisitor :
-      { pattern: { visitChildren: <VisitChildren> visitPatternWithValuesRows }, ...defaultNodePreVisitor };
+): [TransformContext, DefaultNodePreVisitor<Nodes>] {
+  return [
+    { ignoreKeys: new Set([ 'loc' ]), ...defaultContext },
+    defaultContext.visitChildren ?
+      defaultNodePreVisitor :
+        { pattern: { visitChildren: <VisitChildren> visitPatternWithValuesRows }, ...defaultNodePreVisitor },
+  ];
 }
 
 /**
@@ -259,15 +271,7 @@ export function resolveTermIri(term: TermIri, prefixes: Record<string, string>, 
 export const astKnownKeys = {
   path: { items: true },
   pattern: {
-    // The rows of VALUES map variable names to terms
-    values: (rows, visitKey, stepIntoKey) => {
-      for (let index = 0; index < rows.length; index++) {
-        const row = stepIntoKey(rows, index);
-        for (const variable in row) {
-          visitKey(row, variable);
-        }
-      }
-    },
+    values: visitValuesRows,
     name: true,
     variable: true,
     expression: true,

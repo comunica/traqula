@@ -1820,29 +1820,25 @@ describe('visitOnlyKnownKeys', () => {
     expect(visited).toEqual([ 'inCrate', 'inWrapper' ]);
   });
 
-  it('tells whether a key of an object is visited', ({ expect }) => {
+  it('tells which keys of an object are visited', ({ expect }) => {
     const strict = new TransformerTyped<Apple | Crate>({ visitChildren: visitKeys() }, knownKeys);
-    expect(strict.visitsKey({ type: 'apple' }, 'core')).toBe(true);
-    expect(strict.visitsKey({ type: 'apple' }, 'name')).toBe(false);
-    expect(strict.visitsKey({ untyped: true }, 'untyped')).toBe(false);
+    expect(strict.visitedKeys({ type: 'apple', name: 'a', core: {}})).toEqual(new Set([ 'core' ]));
+    expect(strict.visitedKeys({ untyped: true })).toEqual(new Set());
     const ignoring = new TransformerTyped<Apple | Crate>({}, { crate: { ignoreKeys: new Set([ 'content' ]) }});
-    expect(ignoring.visitsKey({ type: 'crate' }, 'content')).toBe(false);
-    expect(ignoring.visitsKey({ type: 'apple' }, 'name')).toBe(true);
+    expect(ignoring.visitedKeys({ type: 'crate', content: []})).toEqual(new Set([ 'type' ]));
+    expect(ignoring.visitedKeys({ type: 'apple', name: 'a' })).toEqual(new Set([ 'type', 'name' ]));
   });
 
-  it('tells whether visitChildren visits the value of a key as a whole', ({ expect }) => {
+  it('tells which keys visitChildren visits as a whole', ({ expect }) => {
     const strict = new TransformerTyped<Apple | Crate | Shelf>({ visitChildren: visitKeys() }, shelfKnownKeys);
-    expect(strict.visitsKey(makeShelf(), 'crate')).toBe(true);
-    // Only partly visited
-    expect(strict.visitsKey(makeShelf(), 'rows')).toBe(false);
-    expect(strict.visitsKey(makeShelf(), 'label')).toBe(false);
+    // The rows are only stepped into
+    expect(strict.visitedKeys(makeShelf())).toEqual(new Set([ 'crate' ]));
     const ignoring = new TransformerTyped<Apple | Crate | Shelf>({ ignoreKeys: new Set([ 'crate' ]) }, shelfKnownKeys);
-    expect(ignoring.visitsKey(makeShelf(), 'crate')).toBe(false);
-    const visitingAny: VisitContext = { visitChildren: (object, visitKey) => visitKey(object, <never> 'any') };
-    expect(new TransformerTyped<Apple>(visitingAny).visitsKey({ type: 'apple' }, 'any')).toBe(true);
+    expect(ignoring.visitedKeys(makeShelf())).toEqual(new Set());
+    const visitingAny: VisitContext = { visitChildren: visitKeys('any') };
+    expect(new TransformerTyped<Apple>(visitingAny).visitedKeys({ type: 'apple' })).toEqual(new Set([ 'any' ]));
     const replacing = new TransformerTyped<Apple>(visitingAny, { apple: { visitChildren: visitKeys('core') }});
-    expect(replacing.visitsKey({ type: 'apple' }, 'any')).toBe(false);
-    expect(replacing.visitsKey({ type: 'apple' }, 'core')).toBe(true);
+    expect(replacing.visitedKeys({ type: 'apple' })).toEqual(new Set([ 'core' ]));
   });
 
   it('replaces the visitChildren of the default of a type by that of a callback', ({ expect }) => {

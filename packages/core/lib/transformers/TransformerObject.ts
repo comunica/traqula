@@ -415,7 +415,7 @@ export class TransformerObject {
           const val = (<Record<string, unknown>> copy)[key];
 
           // If shallow copy required, do
-          if (shallowKeys && shallowKeys?.has(key)) {
+          if (shallowKeys?.has(key)) {
             // Do not add stack entry - assign straight away
             (<Record<string, unknown>> copy)[key] = this.cloneObj(val);
           } else if (val !== null && typeof val === 'object' && (ignoreKeys === undefined || !ignoreKeys.has(key))) {
@@ -435,7 +435,7 @@ export class TransformerObject {
         // Only add to the stack when you did not shortcut
         if (!didShortCut) {
           if (Array.isArray(curObject)) {
-            const newArr = this.cloneObj(curObject);
+            const newArr = [ ...curObject ];
             handleMapperOnLen.push(stack.length);
             mapperCopyStack.push(newArr);
             mapperOrigStack.push(curObject);
@@ -675,7 +675,7 @@ export class TransformerObject {
         }
 
         if (Array.isArray(curObject)) {
-          const newArr = this.cloneObj(curObject);
+          const newArr = [ ...curObject ];
           curParent[curKey] = newArr;
           pushArrayOnStack(newArr, rewriteCount, depth);
           continue;

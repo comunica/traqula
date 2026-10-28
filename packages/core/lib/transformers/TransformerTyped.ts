@@ -9,6 +9,7 @@ import type {
   VisitPath,
 } from './TransformerObject.js';
 import {
+  canonicalContext,
   isKeyIgnored,
   mapAwaitable,
   mergeContextWithFallback,
@@ -19,7 +20,7 @@ import {
 /**
  * The context of a node without a callback or per type default, shared to not allocate one per node.
  */
-const emptyContext: TransformContext = Object.freeze({});
+const emptyContext: TransformContext = Object.freeze(canonicalContext({}));
 
 /**
  * Whether a value is a node: an object with a string type.
@@ -192,6 +193,8 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     protected defaultNodePreVisitor: DefaultNodePreVisitor<Nodes> = {},
   ) {
     super(defaultContext);
+    this.defaultNodePreVisitor = <DefaultNodePreVisitor<Nodes>> Object.fromEntries(Object.entries(defaultNodePreVisitor)
+      .map(([ type, context ]) => [ type, canonicalContext(<TransformContext> context) ]));
   };
 
   public override clone(

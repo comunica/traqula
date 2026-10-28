@@ -1827,6 +1827,8 @@ describe('visitOnlyKnownKeys', () => {
     const ignoring = new TransformerTyped<Apple | Crate>({}, { crate: { ignoreKeys: new Set([ 'content' ]) }});
     expect(ignoring.visitedKeys({ type: 'crate', content: []})).toEqual(new Set([ 'type' ]));
     expect(ignoring.visitedKeys({ type: 'apple', name: 'a' })).toEqual(new Set([ 'type', 'name' ]));
+    const shallow = new TransformerTyped<Apple>({ shallowKeys: new Set([ 'core' ]) });
+    expect(shallow.visitedKeys({ type: 'apple', core: {}})).toEqual(new Set([ 'type' ]));
   });
 
   it('tells which keys visitChildren visits as a whole', ({ expect }) => {

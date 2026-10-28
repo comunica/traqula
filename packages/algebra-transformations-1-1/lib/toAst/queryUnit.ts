@@ -1,5 +1,5 @@
 import type * as RDF from '@rdfjs/types';
-import type { PreOrderMappingReturn } from '@traqula/core';
+import type { PreOrderMappingReturn, TransformerSubTyped } from '@traqula/core';
 import type {
   BasicGraphPattern,
   Expression,
@@ -85,6 +85,10 @@ AstIndir<'collectVariables', Set<string>, [object, Set<string>, string[]?]> = {
         }
       },
       (object) => {
+        // The visitor reads the variables of a term, also those within its quoted triples
+        if (isTermWithoutType(object)) {
+          return { continue: false };
+        }
         const visitedKeys = algebraTransformer.visitedKeys(object);
         const skippedKeys = Object.keys(object).filter(key => isIgnoredKey(object, key) || !visitedKeys.has(key));
         // Terms at keys the transformer skips, like the algebra utilities and allowlists do, are read here
@@ -178,14 +182,34 @@ export const findAlgSubqueryCut: AstIndir<'findSubqueryCut', AlgSubqueryCut | un
  * Orderings in that part stay outside, since a subquery does not keep its order.
  * Aggregate variables are only projected when the outer query references them.
  */
+/**
+ * Per algebra transformer, its clone that only steps into the operations a callback asks to continue into.
+ */
+const chainTransformers = new WeakMap<TransformerSubTyped<Algebra.Operation>, TransformerSubTyped<Algebra.Operation>>();
+
+/**
+ * The clone of an algebra transformer that only steps into the operations a callback asks to continue into.
+ * @param algebraTransformer the transformer to clone.
+ * @return the clone, made once per transformer.
+ */
+function chainTransformerOf(
+  algebraTransformer: TransformerSubTyped<Algebra.Operation>,
+): TransformerSubTyped<Algebra.Operation> {
+  let chainTransformer = chainTransformers.get(algebraTransformer);
+  if (!chainTransformer) {
+    chainTransformer = algebraTransformer.clone({ continue: false });
+    chainTransformers.set(algebraTransformer, chainTransformer);
+  }
+  return chainTransformer;
+}
+
 export const wrapAlgInSubquery: AstIndir<'wrapInSubquery', AlgQueryForm, [AlgQueryForm, AlgSubqueryCut]> = {
   name: 'wrapInSubquery',
   fun: ({ SUBRULE }) => ({
     algebraFactory: AF,
     algebraTransformer = defaultAlgebraTransformer,
   }, op, { start, aggregateVariables }) => {
-    // Only steps into the operations a callback asks to continue into
-    const chainTransformer = algebraTransformer.clone({ continue: false });
+    const chainTransformer = chainTransformerOf(algebraTransformer);
     const outerVariables = new Set<string>();
     function wrap(input: Algebra.Operation): Algebra.Operation {
       // Lift the orderings out of the part that moves into the subquery

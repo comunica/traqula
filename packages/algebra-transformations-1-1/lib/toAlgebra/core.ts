@@ -31,7 +31,7 @@ export interface AlgebraContext {
  */
 export interface TransformerConfigs {
   /**
-   * Transformer to traverse the AST with. Defaults to an {@link AstTransformer} that visits all keys.
+   * Transformer to traverse the AST with. Defaults to an {@link AstTransformer}.
    */
   astTransformer?: AstTransformer;
   /**

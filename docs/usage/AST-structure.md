@@ -134,18 +134,18 @@ const operations: string[] = [];
 transformer.visitNode(ast, {
   'update': { preVisitor: () => ({ visitChildren: (update, visitKey, stepIntoKey) => {
     const updates = stepIntoKey(update, 'updates');
-    for (let index = 0; index < updates.length; index++) {
+    for (let index = updates.length - 1; index >= 0; index--) {
       visitKey(stepIntoKey(updates, index), 'operation');
     }
   } }) },
   'updateOperation': { visitor: (operation) => { operations.push(operation.subType); } },
 });
-const truety = operations.join() === 'clear,insertdata';
+const truety = operations.join() === 'insertdata,clear';
 ```
 
 Keep in mind that:
 - a context's `visitChildren` replaces that of its default, it is not merged with it;
-- the children passed to `visitKey` last are traversed first, like the last keys of an object;
+- the children passed to `visitKey` last are traversed first, so loop over arrays backwards to traverse them in order;
 - all elements of a visited array are visited, arrays are not filtered;
 - when transforming, `stepIntoKey` returns a copy put in place of the original, so write through it, not around it;
 - the node's `ignoreKeys` and `shallowKeys` still apply to its own keys, also when stepping into them;
@@ -167,7 +167,7 @@ import type { Sparql11Nodes } from '@traqula/rules-sparql-1-1';
 const allowlist = visitOnlyKnownKeys<Sparql11Nodes>({
   // ...
   update: { updates: (updates, visitKey, stepIntoKey) => {
-    for (let index = 0; index < updates.length; index++) {
+    for (let index = updates.length - 1; index >= 0; index--) {
       const updateWithContext = stepIntoKey(updates, index);
       visitKey(updateWithContext, 'operation');
       visitKey(updateWithContext, 'context');

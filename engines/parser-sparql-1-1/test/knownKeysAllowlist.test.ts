@@ -1,3 +1,5 @@
+import { TransformerSubTyped } from '@traqula/core';
+import type { Sparql11Nodes } from '@traqula/rules-sparql-1-1';
 import { AstTransformer, astKnownKeysAllowlist } from '@traqula/rules-sparql-1-1';
 import { positiveTest } from '@traqula/test-utils';
 import { describe, it, vi } from 'vitest';
@@ -66,6 +68,22 @@ describe('astKnownKeysAllowlist', () => {
     const ast = new Parser().parse('SELECT * WHERE { VALUES ?loc { <a> } }');
     expect(sameNodes(visitedNodes(unrestricted, ast), visitedNodes(allowlisted, ast))).toBe(true);
     expect(visitedNodes(unrestricted, ast)).toContainEqual(expect.objectContaining({ value: 'a' }));
+  });
+
+  it('keeps the order of the rows of VALUES and of updates', ({ expect }) => {
+    const plain = new TransformerSubTyped<Sparql11Nodes>();
+    const values = new Parser().parse('SELECT * WHERE { VALUES (?a ?b) { (<x1> <y1>) (<x2> <y2>) } }');
+    const updates = new Parser().parse('INSERT DATA { <a> <b> <c> } ; CLEAR ALL');
+    // The terms of the rows, and the operations of the updates, since the allowlist orders the keys of a node itself
+    const rowsAndOperations = (transformer: AstTransformer, ast: object): object[] => visitedNodes(transformer, ast)
+      .filter(node => /^[xy]\d$/u.test((<{ value: string }> node).value) ||
+        [ 'insertdata', 'clear' ].includes((<{ subType: string }> node).subType));
+    for (const ast of [ values, updates ]) {
+      const expected = rowsAndOperations(plain, ast);
+      expect(expected).toHaveLength(ast === values ? 4 : 2);
+      expect(rowsAndOperations(unrestricted, ast)).toEqual(expected);
+      expect(rowsAndOperations(allowlisted, ast)).toEqual(expected);
+    }
   });
 
   it('does not visit the inherited keys of a pattern', ({ expect }) => {

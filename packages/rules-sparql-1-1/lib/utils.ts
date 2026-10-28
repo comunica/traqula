@@ -75,12 +75,13 @@ export class AstTransformer extends TransformerSubTyped<Sparql11Nodes> {
 
 /**
  * Visits the terms of the rows of VALUES, which map variable names to terms.
+ * Loops backwards, so the rows are traversed in order.
  * @param rows the rows to visit the terms of.
  * @param visitKey visits a term of a row.
  * @param stepIntoKey steps into a row.
  */
 const visitValuesRows: VisitChildren<ValuePatternRow[]> = (rows, visitKey, stepIntoKey) => {
-  for (let index = 0; index < rows.length; index++) {
+  for (let index = rows.length - 1; index >= 0; index--) {
     const row = stepIntoKey(rows, index);
     for (const variable in row) {
       visitKey(row, variable);
@@ -267,6 +268,7 @@ export function resolveTermIri(term: TermIri, prefixes: Record<string, string>, 
 /**
  * Per node type, the known keys that can hold nodes, skipping source locations, see {@link visitOnlyKnownKeys}.
  * The objects without a type that hold nodes are stepped into, so their unknown keys are skipped too.
+ * Arrays are looped backwards, so their elements are traversed in order, like a traversal of the keys does.
  */
 export const astKnownKeys = {
   path: { items: true },
@@ -280,7 +282,7 @@ export const astKnownKeys = {
     triples: true,
   },
   update: { updates: (updates, visitKey, stepIntoKey) => {
-    for (let index = 0; index < updates.length; index++) {
+    for (let index = updates.length - 1; index >= 0; index--) {
       const updateWithContext = stepIntoKey(updates, index);
       visitKey(updateWithContext, 'operation');
       visitKey(updateWithContext, 'context');
@@ -313,7 +315,7 @@ export const astKnownKeys = {
     insert: true,
   },
   datasetClauses: { clauses: (clauses, visitKey, stepIntoKey) => {
-    for (let index = 0; index < clauses.length; index++) {
+    for (let index = clauses.length - 1; index >= 0; index--) {
       visitKey(stepIntoKey(clauses, index), 'value');
     }
   } },
@@ -322,13 +324,13 @@ export const astKnownKeys = {
   solutionModifier: {
     having: true,
     orderDefs: (orderDefs, visitKey, stepIntoKey) => {
-      for (let index = 0; index < orderDefs.length; index++) {
+      for (let index = orderDefs.length - 1; index >= 0; index--) {
         visitKey(stepIntoKey(orderDefs, index), 'expression');
       }
     },
     // A grouping is an expression, or a bind without a type
     groupings: (groupings, visitKey, stepIntoKey) => {
-      for (let index = 0; index < groupings.length; index++) {
+      for (let index = groupings.length - 1; index >= 0; index--) {
         if (isNode(groupings[index])) {
           visitKey(groupings, index);
         } else {

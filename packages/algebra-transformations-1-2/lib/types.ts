@@ -17,11 +17,11 @@ export type FlattenedTriple = Patch<Trans11.FlattenedTriple, { predicate: RDF.Te
 export type TransformerConfigs = Patch<Trans11.TransformerConfigs, { astTransformer?: AstTransformer }>;
 export type ContextConfigs = Patch<Trans11.ContextConfigs, TransformerConfigs>;
 export function createAlgebraContext(config: ContextConfigs): AlgebraContext {
-  const context11 = createAlgebraContext11(config);
+  const transformer = config.astTransformer ?? new AstTransformer();
   return {
-    ...context11,
+    ...createAlgebraContext11({ ...config, astTransformer: transformer }),
     astFactory: new AstFactory(),
-    transformer: config.astTransformer ?? new AstTransformer(),
+    transformer,
   };
 }
 
@@ -38,11 +38,11 @@ export type AstContext = Patch<Trans11.AstContext, {
  * @return the context to start the translation with.
  */
 export function createAstContext(config: TransformerConfigs = {}): AstContext {
-  const context11 = createAstContext11(config);
+  const transformer = config.astTransformer ?? new AstTransformer();
   return {
-    ...context11,
+    ...createAstContext11({ ...config, astTransformer: transformer }),
     astFactory: new AstFactory(),
-    transformer: config.astTransformer ?? new AstTransformer(),
+    transformer,
   };
 }
 

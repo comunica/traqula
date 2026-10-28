@@ -174,7 +174,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
    * The keys of an object whose values a traversal visits as a whole, by the default of its node type or the default
    * context. Lets hand-written traversals respect the defaults of this transformer, like its allowlists.
    * @param object the object holding the keys.
-   * @return the keys visited, without those only stepped into by {@link VisitContext.visitChildren}.
+   * @return the keys visited, without those ignored, shallowly copied, or only stepped into by visitChildren.
    */
   public visitedKeys(object: object): Set<string> {
     const nodeDefault = this.nodeDefaultOf(object);
@@ -194,6 +194,9 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
       }
     }
     for (const key of nodeDefault?.ignoreKeys ?? this.defaultContext.ignoreKeys ?? []) {
+      visited.delete(key);
+    }
+    for (const key of nodeDefault?.shallowKeys ?? this.defaultContext.shallowKeys ?? []) {
       visited.delete(key);
     }
     return visited;

@@ -195,7 +195,8 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     const recordVisit = <VisitKey> ((holder: object, visitedKey: string): void => {
       visited ||= holder === object && visitedKey === key;
     });
-    const stepIntoKey = <StepIntoKey> ((holder: Record<string, unknown>, steppedKey: string) => holder[steppedKey]);
+    const stepIntoKey = <StepIntoKey> ((holder: Record<string, unknown> | undefined, steppedKey: string) =>
+      holder?.[steppedKey]);
     visitChildren(object, recordVisit, stepIntoKey);
     return visited;
   }

@@ -53,8 +53,7 @@ export enum CommonIRIs {
 /**
  * A {@link TransformerSubTyped} specialized for the SPARQL 1.1 AST node types.
  * Provides a type-safe visitor/transformer that dispatches based on node `type` and `subType` fields.
- * Source locations hold no nodes, so it skips the `loc` key of nodes, unless the default context gives its own
- * visitChildren or visitOnlyKeys.
+ * Source locations hold no nodes, so it skips them, unless the default context gives visitChildren or visitOnlyKeys.
  *
  * @example
  * ```typescript
@@ -69,34 +68,33 @@ export class AstTransformer extends TransformerSubTyped<Sparql11Nodes> {
     defaultContext: TransformContext = {},
     defaultNodePreVisitor: DefaultNodePreVisitor<Sparql11Nodes> = {},
   ) {
-    super(withoutNodeLocations(defaultContext), defaultNodePreVisitor);
+    super(withoutSourceLocations(defaultContext), defaultNodePreVisitor);
   }
 }
 
 /**
- * Visits every key of an object, except the source location of a node, which holds no nodes.
- * Unlike ignoring `loc`, this still visits a VALUES row binding a variable named `loc`.
+ * Visits every key of an object, except a `loc` holding a source location, since those hold no nodes.
+ * Unlike ignoring `loc`, this still visits the term a VALUES row binds to a variable named `loc`.
  * @param object the object to visit the keys of.
  * @param visitKey visits the value of a key.
  */
-export const visitAllButNodeLocation: VisitChildren<Record<string, unknown>> = (object, visitKey) => {
-  const isNodeObject = isNode(object);
+export const visitAllButSourceLocation: VisitChildren<Record<string, unknown>> = (object, visitKey) => {
   for (const key in object) {
-    if (Object.hasOwn(object, key) && !(isNodeObject && key === 'loc')) {
+    if (Object.hasOwn(object, key) && (key !== 'loc' || isNode(object.loc))) {
       visitKey(object, key);
     }
   }
 };
 
 /**
- * Completes a default context to skip the source locations of nodes, unless it gives visitChildren or visitOnlyKeys.
+ * Completes a default context to skip source locations, unless it gives visitChildren or visitOnlyKeys.
  * @param defaultContext the default context of an AST transformer.
  * @return the completed default context.
  */
-export function withoutNodeLocations(defaultContext: TransformContext): TransformContext {
+export function withoutSourceLocations(defaultContext: TransformContext): TransformContext {
   return defaultContext.visitOnlyKeys ?
     defaultContext :
-      { visitChildren: <VisitChildren> visitAllButNodeLocation, ...defaultContext };
+      { visitChildren: <VisitChildren> visitAllButSourceLocation, ...defaultContext };
 }
 
 /**

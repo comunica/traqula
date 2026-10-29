@@ -49,11 +49,11 @@ export type DefaultNodePreVisitor<Nodes extends Typed> =
   {[T in Nodes['type']]?: TransformContext<Extract<Nodes, Typed<T>>> };
 
 /**
- * The keys of an object whose value can be an object or array, other than a function.
+ * The keys of an object whose value can be an object or array, other than a function, including unknown values.
  */
 type ObjectValuedKeys<Obj> = {
-  [Key in ChildKey<Obj>]:
-  [Exclude<Extract<ChildValue<Obj, Key>, object>, Function>] extends [never] ? never : Key
+  [Key in ChildKey<Obj>]: unknown extends ChildValue<Obj, Key> ? Key :
+      [Exclude<Extract<ChildValue<Obj, Key>, object>, Function>] extends [never] ? never : Key
 }[ChildKey<Obj>];
 
 /**

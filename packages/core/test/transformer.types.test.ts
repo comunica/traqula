@@ -1,15 +1,13 @@
 import { describe, it, expectTypeOf } from 'vitest';
 import type {
   KnownNodeKeys,
-  ObjectKeyHint,
   TransformContext,
   TransformerSubTyped,
   TransformerTyped,
   VisitChildren,
   VisitContext,
 } from '../lib/index.js';
-import type { ChildKey, ChildValue } from '../lib/transformers/TransformerObject.js';
-import type { CanHoldNode } from '../lib/transformers/TransformerTyped.js';
+import type { ChildKey, ChildValue, ObjectKeyHint } from '../lib/transformers/TransformerObject.js';
 import type { SourceLocation } from '../lib/types.js';
 
 interface Pattern {
@@ -26,13 +24,15 @@ interface Literal {
 
 interface Shelf {
   type: 'shelf';
-  rows: {
-    literal?: Literal;
-    label: string;
-    within: { literal: Literal };
-    loc: SourceLocation;
-    term: { termType: 'Quad'; subject: Literal };
-  }[];
+  rows: { literal?: Literal; label: string }[];
+}
+
+interface Crate {
+  type: 'crate';
+  label: string;
+  onOpen: () => void;
+  loc: SourceLocation;
+  content: Literal | string;
 }
 
 type Nodes = Pattern | Literal;
@@ -79,19 +79,22 @@ describe('transformer', () => {
       expectTypeOf<HintedKeys<DefaultNodeContexts['pattern']>>().toEqualTypeOf<ObjectKeyHint<Pattern>>();
     });
 
-    it('requires known node keys to list exactly the keys that can hold nodes', () => {
+    it('requires known node keys to list exactly the keys holding objects', () => {
       expectTypeOf<KnownNodeKeys<Nodes>['pattern']>().toEqualTypeOf<{
-        subject: true | VisitChildren<Literal>;
-        predicate: true | VisitChildren<Literal>;
+        subject: boolean | VisitChildren<Literal>;
+        predicate: boolean | VisitChildren<Literal>;
       }>();
-      expectTypeOf<KnownNodeKeys<Nodes>['term']>().toEqualTypeOf<Record<string, never>>();
+      expectTypeOf<keyof KnownNodeKeys<Nodes>['term']>().toEqualTypeOf<never>();
       expectTypeOf<{ pattern: { subject: true }}>().not.toExtend<KnownNodeKeys<Pattern>>();
+      // Not primitives nor functions
+      expectTypeOf<keyof KnownNodeKeys<Crate>['crate']>().toEqualTypeOf<'loc' | 'content'>();
     });
 
     it('accepts a visitor of the value of a known node key', () => {
       expectTypeOf<{ rows: VisitChildren<Shelf['rows']> }>().toExtend<KnownNodeKeys<Shelf>['shelf']>();
       expectTypeOf<{ rows: VisitChildren<Shelf> }>().not.toExtend<KnownNodeKeys<Shelf>['shelf']>();
       expectTypeOf<{ rows: true }>().toExtend<KnownNodeKeys<Shelf>['shelf']>();
+      expectTypeOf<{ rows: false }>().toExtend<KnownNodeKeys<Shelf>['shelf']>();
       expectTypeOf<{ rows: []}>().not.toExtend<KnownNodeKeys<Shelf>['shelf']>();
       expectTypeOf<VisitChildren<Shelf['rows']>>().toExtend<KnownNodeKeys<Shelf>['shelf']['rows']>();
     });
@@ -109,22 +112,6 @@ describe('transformer', () => {
     it('keeps the context of a node a context of any object', () => {
       expectTypeOf<VisitContext<Pattern>['visitChildren']>().toEqualTypeOf<VisitChildren<Pattern> | undefined>();
       expectTypeOf<TransformContext<Pattern>>().toExtend<TransformContext>();
-    });
-
-    it('finds nodes within arrays and objects without a type, but not within skipped values', () => {
-      interface Location {
-        start: number;
-        within?: Location;
-      }
-      expectTypeOf<CanHoldNode<string | undefined>>().toEqualTypeOf<false>();
-      expectTypeOf<CanHoldNode<() => Literal>>().toEqualTypeOf<false>();
-      expectTypeOf<CanHoldNode<{ untyped: { value: string }}>>().toEqualTypeOf<false>();
-      expectTypeOf<CanHoldNode<{ untyped: object }>>().toEqualTypeOf<true>();
-      expectTypeOf<CanHoldNode<{ termType: 'Quad'; subject: Literal }>>().toEqualTypeOf<false>();
-      expectTypeOf<CanHoldNode<string | Record<string, Literal>[]>>().toEqualTypeOf<true>();
-      expectTypeOf<CanHoldNode<unknown>>().toEqualTypeOf<true>();
-      expectTypeOf<CanHoldNode<Location | { location: Location }, Location>>().toEqualTypeOf<false>();
-      expectTypeOf<CanHoldNode<Literal, Literal>>().toEqualTypeOf<true>();
     });
   });
 });

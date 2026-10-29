@@ -1,5 +1,5 @@
 import type { DefaultNodePreVisitor, KnownNodeKeys, TransformContext, Typed, VisitChildren } from '@traqula/core';
-import { isNode, TransformerSubTyped, visitOnlyKnownKeys } from '@traqula/core';
+import { TransformerSubTyped, visitElementKeys, visitOnlyKnownKeys } from '@traqula/core';
 import { AstFactory } from './astFactory.js';
 import { pnLocalEscPattern } from './lexer/lexerPatterns.js';
 import type { Sparql11Nodes, TermIri, ValuePatternRow } from './Sparql11types.js';
@@ -264,12 +264,12 @@ export function resolveTermIri(term: TermIri, prefixes: Record<string, string>, 
 }
 
 /**
- * Per node type, the known keys that can hold nodes, skipping source locations, see {@link visitOnlyKnownKeys}.
+ * Per node type, its keys holding objects, and whether to visit them, see {@link visitOnlyKnownKeys}.
  * The objects without a type that hold nodes are stepped into, so their unknown keys are skipped too.
  * Arrays are looped backwards, so their elements are traversed in order, like a traversal of the keys does.
  */
 export const astKnownKeys = {
-  path: { items: true },
+  path: { items: true, loc: false },
   pattern: {
     values: visitValuesRows,
     name: true,
@@ -278,14 +278,9 @@ export const astKnownKeys = {
     variables: true,
     patterns: true,
     triples: true,
+    loc: false,
   },
-  update: { updates: (updates, { visitKey, stepIntoKey }) => {
-    for (let index = updates.length - 1; index >= 0; index--) {
-      const updateWithContext = stepIntoKey(updates, index);
-      visitKey(updateWithContext, 'operation');
-      visitKey(updateWithContext, 'context');
-    }
-  } },
+  update: { updates: visitElementKeys('operation', 'context'), loc: false },
   query: {
     values: true,
     template: true,
@@ -299,9 +294,10 @@ export const astKnownKeys = {
     datasets: true,
     where: true,
     variables: true,
+    loc: false,
   },
-  graph: { graph: true, triples: true },
-  graphRef: { graph: true },
+  graph: { graph: true, triples: true, loc: false },
+  graphRef: { graph: true, loc: false },
   updateOperation: {
     data: true,
     source: true,
@@ -311,38 +307,22 @@ export const astKnownKeys = {
     where: true,
     delete: true,
     insert: true,
+    loc: false,
   },
-  datasetClauses: { clauses: (clauses, { visitKey, stepIntoKey }) => {
-    for (let index = clauses.length - 1; index >= 0; index--) {
-      visitKey(stepIntoKey(clauses, index), 'value');
-    }
-  } },
-  tripleCollection: { triples: true, identifier: true },
-  triple: { object: true, subject: true, predicate: true },
+  datasetClauses: { clauses: visitElementKeys('value'), loc: false },
+  tripleCollection: { triples: true, identifier: true, loc: false },
+  triple: { object: true, subject: true, predicate: true, loc: false },
   solutionModifier: {
     having: true,
-    orderDefs: (orderDefs, { visitKey, stepIntoKey }) => {
-      for (let index = orderDefs.length - 1; index >= 0; index--) {
-        visitKey(stepIntoKey(orderDefs, index), 'expression');
-      }
-    },
+    orderDefs: visitElementKeys('expression'),
     // A grouping is an expression, or a bind without a type
-    groupings: (groupings, { visitKey, stepIntoKey }) => {
-      for (let index = groupings.length - 1; index >= 0; index--) {
-        if (isNode(groupings[index])) {
-          visitKey(groupings, index);
-        } else {
-          const bind = stepIntoKey(groupings, index);
-          visitKey(bind, 'variable');
-          visitKey(bind, 'value');
-        }
-      }
-    },
+    groupings: visitElementKeys('variable', 'value'),
+    loc: false,
   },
-  expression: { function: true, args: true, expression: true },
-  contextDef: { value: true },
-  wildcard: {},
-  term: { langOrIri: true },
+  expression: { function: true, args: true, expression: true, loc: false },
+  contextDef: { value: true, loc: false },
+  wildcard: { loc: false },
+  term: { langOrIri: true, loc: false },
 } satisfies KnownNodeKeys<Sparql11Nodes>;
 
 /**

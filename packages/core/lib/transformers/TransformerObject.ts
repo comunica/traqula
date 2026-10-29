@@ -41,13 +41,13 @@ export type ChildValue<Holder, Key> = Holder extends readonly (infer Element)[] 
 /**
  * Visits the value at a key of an object, or at an index of an array, when it is an object or array.
  */
-export type VisitKey = <Holder extends object>(holder: Holder, key: ChildKey<Holder>) => void;
+type VisitKey = <Holder extends object>(holder: Holder, key: ChildKey<Holder>) => void;
 
 /**
  * Returns the value at a key, to visit the children within it.
  * When transforming, it is a shallow copy put in its place, so changes do not reach the original.
  */
-export type StepIntoKey = <Holder extends object, Key extends ChildKey<Holder>>(holder: Holder, key: Key) =>
+type StepIntoKey = <Holder extends object, Key extends ChildKey<Holder>>(holder: Holder, key: Key) =>
 ChildValue<Holder, Key>;
 
 /**
@@ -86,6 +86,11 @@ interface VisitChildrenOptions {
   /** Whether stepping into a key puts a shallow copy in its place. */
   copiesSteps: boolean;
 }
+
+/**
+ * Calls the {@link VisitChildren} of a node.
+ */
+type VisitChildrenOf = (node: object, options: VisitChildrenOptions) => void;
 
 /**
  * The context with every key of a {@link TransformContext} defined, in a fixed order.
@@ -238,7 +243,7 @@ export class TransformerObject {
    */
   private createVisitChildrenOf(
     pushChild: (child: object, holder: object, key: string) => void,
-  ): (node: object, options: VisitChildrenOptions) => void {
+  ): VisitChildrenOf {
     let currentNode: object | undefined;
     let currentOptions: VisitChildrenOptions | undefined;
     const currentCopies = new Set<object>();
@@ -392,7 +397,8 @@ export class TransformerObject {
       stackParentKey.push(key);
       stackParent.push(parent);
     };
-    const visitChildrenOf = this.createVisitChildrenOf(pushChild);
+    // Created on first use, so traversals without visitChildren do not pay for it
+    let visitChildrenOf: VisitChildrenOf | undefined;
 
     // Everything after the preVisitor call - split out so it can also run from inside a resolved promise.
     const expand = (curObject: object, curParent: object, curKey: string, context: TransformContext): void => {
@@ -415,6 +421,7 @@ export class TransformerObject {
       // Extend stack if needed. When shortcutted, should still unwind the stack, but no longer add to it.
       if (continues && !didShortCut) {
         if (visitChildren) {
+          visitChildrenOf ??= this.createVisitChildrenOf(pushChild);
           visitChildrenOf(copy, { visitChildren, ignoreKeys, shallowKeys, copiesSteps: copyFlag });
           return;
         }
@@ -610,7 +617,8 @@ export class TransformerObject {
       stackRewriteCount.push(0);
       stackDepth.push(childDepth);
     };
-    const visitChildrenOf = this.createVisitChildrenOf(pushChild);
+    // Created on first use, so traversals without visitChildren do not pay for it
+    let visitChildrenOf: VisitChildrenOf | undefined;
 
     const applyResult = (
       mapperResult: PreOrderMappingReturn,
@@ -654,6 +662,7 @@ export class TransformerObject {
       const newAsRecord = <Record<string, unknown>> newValue;
       childDepth = depth + 1;
       if (visitChildren) {
+        visitChildrenOf ??= this.createVisitChildrenOf(pushChild);
         visitChildrenOf(newAsRecord, { visitChildren, ignoreKeys, shallowKeys, copiesSteps: defaultCopyFlag });
         return;
       }
@@ -796,7 +805,8 @@ export class TransformerObject {
       stack.push(val);
     };
     // A visit copies nothing, also not the shallowKeys
-    const visitChildrenOf = this.createVisitChildrenOf(pushChild);
+    // Created on first use, so traversals without visitChildren do not pay for it
+    let visitChildrenOf: VisitChildrenOf | undefined;
 
     // Everything after the preVisitor call - split out so it can also run from inside a resolved promise.
     const expand = (curObject: object, context: VisitContext): void => {
@@ -812,6 +822,7 @@ export class TransformerObject {
       // Extend stack if needed. When shortcutted, should still unwind the stack, but no longer add to it.
       if (continues && !didShortCut) {
         if (visitChildren) {
+          visitChildrenOf ??= this.createVisitChildrenOf(pushChild);
           visitChildrenOf(curObject, { visitChildren, ignoreKeys, shallowKeys: undefined, copiesSteps: false });
           return;
         }

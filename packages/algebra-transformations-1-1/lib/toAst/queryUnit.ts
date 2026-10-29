@@ -1,5 +1,5 @@
 import type * as RDF from '@rdfjs/types';
-import type { PreOrderMappingReturn, TransformerSubTyped } from '@traqula/core';
+import type { VisitContext } from '@traqula/core';
 import type {
   BasicGraphPattern,
   Expression,
@@ -74,34 +74,28 @@ export const collectAlgVariables:
 AstIndir<'collectVariables', Set<string>, [object, Set<string>, string[]?]> = {
   name: 'collectVariables',
   fun: () => ({ algebraTransformer = defaultAlgebraTransformer }, value, names, ignoreKeysList = []) => {
-    const isIgnoredKey = (object: object, key: string): boolean => object === value && ignoreKeysList.includes(key);
-    const addVariables = (term: RDF.Term): void => forEachTermVariable(term, variable => names.add(variable.value));
-    const isTermWithoutType = (term: unknown): term is RDF.Term => isTerm(term) && !('type' in term);
-    algebraTransformer.visitObject(
-      value,
-      (object) => {
-        if (isTermWithoutType(object)) {
-          addVariables(object);
-        }
-      },
-      (object) => {
-        // The visitor reads the variables of a term, also those within its quoted triples
-        if (isTermWithoutType(object)) {
-          return { continue: false };
-        }
-        const visitedKeys = algebraTransformer.visitedKeys(object);
-        const skippedKeys = Object.keys(object).filter(key => isIgnoredKey(object, key) || !visitedKeys.has(key));
-        // Terms at keys the transformer skips, like the algebra utilities and allowlists do, are read here
-        for (const key of skippedKeys) {
-          if (!isIgnoredKey(object, key)) {
-            for (const term of [ (<Record<string, unknown>> object)[key] ].flat().filter(isTermWithoutType)) {
+    const ignoreKeys = new Set(ignoreKeysList);
+    const rootContext: VisitContext = { ignoreKeys };
+    const nodeContext: VisitContext = {};
+    const addVariables = (term: unknown): void => {
+      if (isTerm(term)) {
+        forEachTermVariable(term, variable => names.add(variable.value));
+      }
+    };
+    // Transformers do not step into terms, so the visitor of a node reads the terms it holds
+    const callbacks = {
+      preVisitor: (node: object) => node === value ? rootContext : nodeContext,
+      visitor: (node: object) => {
+        for (const [ key, held ] of Object.entries(node)) {
+          if (node !== value || !ignoreKeys.has(key)) {
+            for (const term of Array.isArray(held) ? held : [ held ]) {
               addVariables(term);
             }
           }
         }
-        return { ignoreKeys: new Set(skippedKeys) };
       },
-    );
+    };
+    algebraTransformer.visitNode(value, Object.fromEntries(Object.values(types).map(type => [ type, callbacks ])));
     return names;
   },
 };
@@ -182,71 +176,42 @@ export const findAlgSubqueryCut: AstIndir<'findSubqueryCut', AlgSubqueryCut | un
  * Orderings in that part stay outside, since a subquery does not keep its order.
  * Aggregate variables are only projected when the outer query references them.
  */
-/**
- * Per algebra transformer, its clone that only steps into the operations a callback asks to continue into.
- */
-const chainTransformers = new WeakMap<TransformerSubTyped<Algebra.Operation>, TransformerSubTyped<Algebra.Operation>>();
-
-/**
- * The clone of an algebra transformer that only steps into the operations a callback asks to continue into.
- * @param algebraTransformer the transformer to clone.
- * @return the clone, made once per transformer.
- */
-function chainTransformerOf(
-  algebraTransformer: TransformerSubTyped<Algebra.Operation>,
-): TransformerSubTyped<Algebra.Operation> {
-  let chainTransformer = chainTransformers.get(algebraTransformer);
-  if (!chainTransformer) {
-    chainTransformer = algebraTransformer.clone({ continue: false });
-    chainTransformers.set(algebraTransformer, chainTransformer);
-  }
-  return chainTransformer;
-}
-
 export const wrapAlgInSubquery: AstIndir<'wrapInSubquery', AlgQueryForm, [AlgQueryForm, AlgSubqueryCut]> = {
   name: 'wrapInSubquery',
   fun: ({ SUBRULE }) => ({
     algebraFactory: AF,
     algebraTransformer = defaultAlgebraTransformer,
   }, op, { start, aggregateVariables }) => {
-    const chainTransformer = chainTransformerOf(algebraTransformer);
     const outerVariables = new Set<string>();
-    function wrap(input: Algebra.Operation): Algebra.Operation {
-      // Lift the orderings out of the part that moves into the subquery
-      const orderings: Algebra.OrderBy[] = [];
-      const subqueryInput = chainTransformer.transformNodePreOrder<'unsafe', Algebra.Operation>(input, {
-        [types.EXTEND]: extend => ({ newValue: extend, continue: true }),
-        [types.ORDER_BY]: (ordering) => {
-          orderings.push(ordering);
-          SUBRULE(collectAlgVariables, ordering.expressions, outerVariables);
-          return { newValue: ordering.input, continue: true, reTransform: true };
-        },
-      });
+    // Lift the orderings out of the part that moves into the subquery
+    const orderings: Algebra.OrderBy[] = [];
+    const withoutOrderings = (operation: Algebra.Operation): Algebra.Operation => {
+      if (operation.type === types.ORDER_BY) {
+        orderings.push(operation);
+        SUBRULE(collectAlgVariables, operation.expressions, outerVariables);
+        return withoutOrderings(operation.input);
+      }
+      return operation.type === types.EXTEND ? { ...operation, input: withoutOrderings(operation.input) } : operation;
+    };
+    // Walk down from the query form to the start of the subquery, through the orderings and extends that stay outside
+    type ChainOperation = AlgQueryForm | Algebra.Extend | Algebra.OrderBy;
+    const wrapBelow = <Operation extends ChainOperation>(operation: Operation): Operation => {
+      SUBRULE(collectAlgVariables, operation, outerVariables, [ 'input' ]);
+      if (operation.input !== start) {
+        return { ...operation, input: wrapBelow(<ChainOperation> operation.input) };
+      }
+      const subqueryInput = withoutOrderings(start);
       const projection = inScopeVariables(
         subqueryInput,
-        (operation, callbacks) => algebraTransformer.visitNode(operation, callbacks),
+        (subqueryOperation, callbacks) => algebraTransformer.visitNode(subqueryOperation, callbacks),
       ).filter(variable => !aggregateVariables.has(variable.value) || outerVariables.has(variable.value));
-      return orderings.reduceRight<Algebra.Operation>(
+      const input = orderings.reduceRight<Algebra.Operation>(
         (result, ordering) => ({ ...ordering, input: result }),
         AF.createProject(subqueryInput, projection),
       );
-    }
-    // Walk down from the query form to the start of the subquery, through the orderings and extends that stay outside
-    const step = (operation: AlgQueryForm | Algebra.Extend | Algebra.OrderBy): PreOrderMappingReturn => {
-      SUBRULE(collectAlgVariables, operation, outerVariables, [ 'input' ]);
-      if (operation.input === start) {
-        return { newValue: { ...operation, input: wrap(operation.input) }};
-      }
-      return { newValue: operation, continue: true };
+      return { ...operation, input };
     };
-    return chainTransformer.transformNodePreOrder<'unsafe', typeof op>(op, {
-      [types.PROJECT]: step,
-      [types.ASK]: step,
-      [types.DESCRIBE]: step,
-      [types.CONSTRUCT]: step,
-      [types.EXTEND]: step,
-      [types.ORDER_BY]: step,
-    });
+    return wrapBelow(op);
   },
 };
 

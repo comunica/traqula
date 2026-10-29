@@ -1,14 +1,12 @@
-import type { SourceLocation, Typed } from '../types.js';
+import type { Typed } from '../types.js';
 import type {
   Awaitable,
   ChildKey,
   ChildValue,
   PreOrderMappingReturn,
-  StepIntoKey,
   TransformContext,
   VisitChildren,
   VisitContext,
-  VisitKey,
 } from './TransformerObject.js';
 import {
   canonicalContext,
@@ -51,67 +49,33 @@ export type DefaultNodePreVisitor<Nodes extends Typed> =
   {[T in Nodes['type']]?: TransformContext<Extract<Nodes, Typed<T>>> };
 
 /**
- * Values that hold no nodes, and are thus not looked into by default: source locations and RDF terms.
+ * The keys of an object whose value can be an object or array, other than a function.
  */
-export type NodeFreeValue = SourceLocation | { termType: string };
+type ObjectValuedKeys<Obj> = {[Key in ChildKey<Obj>]:
+  [Exclude<Extract<ChildValue<Obj, Key>, object>, Function>] extends [never] ? never : Key }[ChildKey<Obj>];
 
 /**
- * Whether a value can hold a node, directly or within arrays and objects without a type.
- * Values of type `Skipped` that are not nodes themselves are not looked into.
+ * Per node type, every key whose value can be an object, mapped to whether it is visited, or to the
+ * {@link VisitChildren} of its value, which is stepped into first.
  */
-export type CanHoldNode<Value, Skipped = NodeFreeValue> = unknown extends Value ? true :
-  true extends MemberCanHoldNode<Value, Skipped> ? true : false;
+export type KnownNodeKeys<Nodes extends Typed> = {[T in Nodes['type']]: {
+  [Key in ObjectValuedKeys<Extract<Nodes, Typed<T>>>]:
+  boolean | VisitChildren<Extract<ChildValue<Extract<Nodes, Typed<T>>, Key>, object>> };
+};
 
 /**
- * Any function, which holds no nodes.
- */
-type AnyFunction = (...args: any[]) => unknown;
-
-/**
- * {@link CanHoldNode} of each member of a union.
- */
-type MemberCanHoldNode<Value, Skipped> = Value extends Typed ? true :
-  Value extends Skipped | AnyFunction ? false :
-    Value extends readonly (infer Element)[] ? CanHoldNode<Element, Skipped> :
-      Value extends object ? ([keyof Value] extends [never] ? true : CanHoldNode<Value[keyof Value], Skipped>) : false;
-
-/**
- * The keys of an object that can hold a node, also when the object is a union of objects.
- */
-export type NodeHoldingKeys<Obj, Skipped = NodeFreeValue> = {[Key in ChildKey<Obj>]:
-  CanHoldNode<ChildValue<Obj, Key>, Skipped> extends true ? Key : never }[ChildKey<Obj>];
-
-/**
- * Per node type, exactly the keys that can hold a node, mapped to `true` or to the {@link VisitChildren} of the
- * value of the key, which is stepped into first.
- * The compiler rejects missing and other keys, also for a type without such keys.
- * @typeParam Skipped - Values that are not looked into, by default source locations and RDF terms.
- */
-export type KnownNodeKeys<Nodes extends Typed, Skipped = NodeFreeValue> =
-  {[T in Nodes['type']]: KnownNodeKeysOfType<Extract<Nodes, Typed<T>>, Skipped> };
-
-/**
- * The {@link KnownNodeKeys} of a single node type.
- */
-type KnownNodeKeysOfType<Node, Skipped, Keys extends PropertyKey = NodeHoldingKeys<Node, Skipped>> =
-  [Keys] extends [never] ?
-    Record<string, never> :
-      {[Key in Keys]: true | VisitChildren<Extract<ChildValue<Node, Key>, object>> };
-
-/**
- * Creates a {@link DefaultNodePreVisitor} that per node type only visits the known keys that can hold nodes,
- * skipping unknown keys like those of an extension.
- * @param knownKeys per node type, the keys that can hold a node.
+ * Creates a {@link DefaultNodePreVisitor} that per node type only visits the known keys it is told to visit,
+ * skipping the others, and unknown keys like those of an extension.
+ * @param knownKeys per node type, its keys holding objects, and whether to visit them.
  * @return the contexts per node type, to give to a {@link TransformerTyped} or {@link TransformerSubTyped}.
  */
-export function visitOnlyKnownKeys<Nodes extends Typed, Skipped = NodeFreeValue>(
-  knownKeys: KnownNodeKeys<Nodes, Skipped>,
-): DefaultNodePreVisitor<Nodes> {
+export function visitOnlyKnownKeys<Nodes extends Typed>(knownKeys: KnownNodeKeys<Nodes>): DefaultNodePreVisitor<Nodes> {
   const contexts: Record<string, TransformContext> = {};
   for (const [ type, keys ] of Object.entries(knownKeys)) {
-    const entries = Object.entries(<Record<string, true | VisitChildren>> keys);
+    const entries = Object.entries(<Record<string, boolean | VisitChildren>> keys);
     const visitedKeys = entries.filter(([ , visitor ]) => visitor === true).map(([ key ]) => key);
-    const valueVisitors = entries.flatMap(([ key, visitor ]) => visitor === true ? [] : [{ key, visitor }]);
+    const valueVisitors = entries
+      .flatMap(([ key, visitor ]) => typeof visitor === 'function' ? [{ key, visitor }] : []);
     // A callback reads the known keys only, instead of checking every key of the node
     const visitChildren: VisitChildren<Record<string, unknown>> = (node, helpers) => {
       for (const key of visitedKeys) {
@@ -130,6 +94,29 @@ export function visitOnlyKnownKeys<Nodes extends Typed, Skipped = NodeFreeValue>
 }
 
 /**
+ * Creates a {@link VisitChildren} of an array that visits its nodes, and the given keys of its other elements.
+ * Loops backwards, so the elements are traversed in order.
+ * @param keys the keys to visit of the elements without a type.
+ * @return the callback visiting the elements of an array.
+ */
+export function visitElementKeys<Element extends object>(
+  ...keys: ChildKey<Exclude<Element, Typed>>[]
+): VisitChildren<Element[]> {
+  return (elements, { visitKey, stepIntoKey }) => {
+    for (let index = elements.length - 1; index >= 0; index--) {
+      if (isNode(elements[index])) {
+        visitKey(elements, index);
+        continue;
+      }
+      const element = stepIntoKey(elements, index);
+      for (const key of keys) {
+        visitKey(element, <never> key);
+      }
+    }
+  };
+}
+
+/**
  * Type-aware AST transformer that dispatches visit and transform callbacks
  * based on the `type` field of {@link Typed} nodes.
  *
@@ -143,10 +130,9 @@ export function visitOnlyKnownKeys<Nodes extends Typed, Skipped = NodeFreeValue>
  *   Each member must extend {@link Typed}.
  */
 export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
-  public constructor(
-    defaultContext: TransformContext = {},
-    protected defaultNodePreVisitor: DefaultNodePreVisitor<Nodes> = {},
-  ) {
+  protected readonly defaultNodePreVisitor: DefaultNodePreVisitor<Nodes>;
+
+  public constructor(defaultContext: TransformContext = {}, defaultNodePreVisitor: DefaultNodePreVisitor<Nodes> = {}) {
     super(defaultContext);
     this.defaultNodePreVisitor = <DefaultNodePreVisitor<Nodes>> Object.fromEntries(Object.entries(defaultNodePreVisitor)
       .map(([ type, context ]) => [ type, canonicalContext(<TransformContext> context) ]));
@@ -163,43 +149,6 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
   }
 
   /**
-   * The keys of an object the default of its type, or else the default context, looks into.
-   * Lets hand-written recursions, like those of toAst, respect allowlists.
-   * @param object the object holding the keys.
-   * @return the keys visited or stepped into, without the ignoreKeys and shallowKeys.
-   */
-  public visitedKeys(object: object): Set<string> {
-    const nodeDefault = this.nodeDefaultOf(object);
-    const visitChildren = nodeDefault?.visitChildren ?? this.defaultContext.visitChildren;
-    const visited = new Set<string>(visitChildren ? [] : Object.keys(object));
-    if (visitChildren) {
-      const recordKey = (holder: Record<string, unknown> | undefined, key: string): unknown => {
-        if (holder === object) {
-          visited.add(key);
-        }
-        return holder?.[key];
-      };
-      visitChildren(object, { visitKey: <VisitKey> recordKey, stepIntoKey: <StepIntoKey> recordKey });
-    }
-    for (const key of nodeDefault?.ignoreKeys ?? this.defaultContext.ignoreKeys ?? []) {
-      visited.delete(key);
-    }
-    for (const key of nodeDefault?.shallowKeys ?? this.defaultContext.shallowKeys ?? []) {
-      visited.delete(key);
-    }
-    return visited;
-  }
-
-  /**
-   * The per type default of a node.
-   * @param node the node, which need not be an object.
-   * @return the default of its type, if any.
-   */
-  private nodeDefaultOf(node: unknown): TransformContext | undefined {
-    return isNode(node) ? this.defaultNodePreVisitor[<Nodes['type']> node.type] : undefined;
-  }
-
-  /**
    * Completes the context a callback gave for a node with the per type default of that node.
    * @param node the node the context is for, which need not be an object.
    * @param context the context of the callback, or undefined when the node has no callback.
@@ -209,26 +158,12 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
     node: unknown,
     context?: Context,
   ): Context {
-    // Inlines nodeDefaultOf, since this runs for every object of a traversal
     const type = (<Partial<Typed<Nodes['type']>> | undefined> node)?.type;
     const nodeDefault = typeof type === 'string' ? this.defaultNodePreVisitor[type] : undefined;
     if (nodeDefault === undefined) {
       return context ?? <Context> emptyContext;
     }
     return context ? { ...<Context> nodeDefault, ...context } : <Context> nodeDefault;
-  }
-
-  /**
-   * Async variant of {@link withNodeDefault}, awaiting the context when it is a promise.
-   * @param node the node the context is for.
-   * @param context the context of the callback.
-   * @return the per type default, overwritten by the given context.
-   */
-  protected withNodeDefaultAsync<Context extends VisitContext>(
-    node: object,
-    context: Awaitable<Context>,
-  ): Awaitable<Context> {
-    return mapAwaitable(context, resolved => this.withNodeDefault(node, resolved));
   }
 
   /**
@@ -240,19 +175,6 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
    */
   protected withNewValueDefault(mapped: object, result: PreOrderMappingReturn): PreOrderMappingReturn {
     return this.withNodeDefault(isNode(result.newValue) ? result.newValue : mapped, result);
-  }
-
-  /**
-   * Async variant of {@link withNewValueDefault}, awaiting the result when it is a promise.
-   * @param mapped the node that was mapped.
-   * @param result the result of the mapper.
-   * @return the per type default, overwritten by the result.
-   */
-  protected withNewValueDefaultAsync(
-    mapped: object,
-    result: Awaitable<PreOrderMappingReturn>,
-  ): Awaitable<PreOrderMappingReturn> {
-    return mapAwaitable(result, resolved => this.withNewValueDefault(mapped, resolved));
   }
 
   /**
@@ -322,7 +244,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
       if (casted.type) {
         ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
       }
-      return ogPreVisit ? this.withNodeDefaultAsync(casted, ogPreVisit(casted)) : this.withNodeDefault(casted);
+      return mapAwaitable(ogPreVisit?.(casted), context => this.withNodeDefault(casted, context));
     };
     return <any> this.transformObjectAsync(startObject, transformWrapper, preVisitWrapper);
   }
@@ -391,9 +313,8 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
       if (casted.type) {
         ogPreTransform = nodeCallBacks[casted.type];
       }
-      return this.withNewValueDefaultAsync(copy, ogPreTransform ?
-        ogPreTransform(copy, orig) :
-          { newValue: copy, reTransform: false });
+      const result = ogPreTransform ? ogPreTransform(copy, orig) : { newValue: copy, reTransform: false };
+      return mapAwaitable(result, resolved => this.withNewValueDefault(copy, resolved));
     };
 
     return <any> this.transformObjectPreOrderAsync(startObject, preTransformWrapper);
@@ -467,7 +388,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
       if (casted.type) {
         ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
       }
-      return ogPreVisit ? this.withNodeDefaultAsync(casted, ogPreVisit(casted)) : this.withNodeDefault(casted);
+      return mapAwaitable(ogPreVisit?.(casted), context => this.withNodeDefault(casted, context));
     };
     return this.visitObjectAsync(startObject, visitorWrapper, preVisitWrapper);
   }

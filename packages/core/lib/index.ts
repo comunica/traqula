@@ -18,9 +18,6 @@ export * from './types.js';
 export {
   VisitContext,
   TransformContext,
-  ObjectKeyHint,
-  VisitKey,
-  StepIntoKey,
   VisitChildren,
   VisitChildrenHelpers,
   PreOrderMappingReturn,
@@ -29,12 +26,12 @@ export {
   Awaitable,
 } from './transformers/TransformerObject.js';
 export {
-  isNode,
   TransformerTyped,
   Safeness,
   SafeWrap,
   DefaultNodePreVisitor,
   KnownNodeKeys,
   visitOnlyKnownKeys,
+  visitElementKeys,
 } from './transformers/TransformerTyped.js';
 export { TransformerSubTyped } from './transformers/TransformerSubTyped.js';

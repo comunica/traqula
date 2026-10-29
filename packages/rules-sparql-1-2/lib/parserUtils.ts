@@ -1,9 +1,9 @@
 import type { DefaultNodePreVisitor, KnownNodeKeys, TransformContext } from '@traqula/core';
 import {
-  isNode,
   TransformerSubTyped,
   traqulaIndentation,
   traqulaNewlineAlternative,
+  visitElementKeys,
   visitOnlyKnownKeys,
 } from '@traqula/core';
 import { astKnownKeys as astKnownKeys11, astTransformerDefaults } from '@traqula/rules-sparql-1-1';
@@ -98,15 +98,7 @@ export class AstTransformer extends TransformerSubTyped<Sparql12Nodes> {
 export const astKnownKeys = {
   ...astKnownKeys11,
   // An annotation is a node, or a wrapped term without a type
-  triple: { ...astKnownKeys11.triple, annotations: (annotations, { visitKey, stepIntoKey }) => {
-    for (let index = annotations.length - 1; index >= 0; index--) {
-      if (isNode(annotations[index])) {
-        visitKey(annotations, index);
-      } else {
-        visitKey(stepIntoKey(annotations, index), 'val');
-      }
-    }
-  } },
+  triple: { ...astKnownKeys11.triple, annotations: visitElementKeys('val') },
   term: { ...astKnownKeys11.term, object: true, subject: true, predicate: true },
 } satisfies KnownNodeKeys<Sparql12Nodes>;
 

@@ -1820,28 +1820,6 @@ describe('visitOnlyKnownKeys', () => {
     expect(visited).toEqual([ 'inCrate', 'inWrapper' ]);
   });
 
-  it('tells which keys of an object are visited', ({ expect }) => {
-    const strict = new TransformerTyped<Apple | Crate>({ visitChildren: visitKeys() }, knownKeys);
-    expect(strict.visitedKeys({ type: 'apple', name: 'a', core: {}})).toEqual(new Set([ 'core' ]));
-    expect(strict.visitedKeys({ untyped: true })).toEqual(new Set());
-    const ignoring = new TransformerTyped<Apple | Crate>({}, { crate: { ignoreKeys: new Set([ 'content' ]) }});
-    expect(ignoring.visitedKeys({ type: 'crate', content: []})).toEqual(new Set([ 'type' ]));
-    expect(ignoring.visitedKeys({ type: 'apple', name: 'a' })).toEqual(new Set([ 'type', 'name' ]));
-    const shallow = new TransformerTyped<Apple>({ shallowKeys: new Set([ 'core' ]) });
-    expect(shallow.visitedKeys({ type: 'apple', core: {}})).toEqual(new Set([ 'type' ]));
-  });
-
-  it('tells which keys visitChildren visits or steps into', ({ expect }) => {
-    const strict = new TransformerTyped<Apple | Crate | Shelf>({ visitChildren: visitKeys() }, shelfKnownKeys);
-    expect(strict.visitedKeys(makeShelf())).toEqual(new Set([ 'crate', 'rows' ]));
-    const ignoring = new TransformerTyped<Apple | Crate | Shelf>({ ignoreKeys: new Set([ 'crate' ]) }, shelfKnownKeys);
-    expect(ignoring.visitedKeys(makeShelf())).toEqual(new Set([ 'rows' ]));
-    const visitingAny: VisitContext = { visitChildren: visitKeys('any') };
-    expect(new TransformerTyped<Apple>(visitingAny).visitedKeys({ type: 'apple' })).toEqual(new Set([ 'any' ]));
-    const replacing = new TransformerTyped<Apple>(visitingAny, { apple: { visitChildren: visitKeys('core') }});
-    expect(replacing.visitedKeys({ type: 'apple' })).toEqual(new Set([ 'core' ]));
-  });
-
   it('replaces the visitChildren of the default of a type by that of a callback', ({ expect }) => {
     const transformer = new TransformerTyped<Apple | Crate | Shelf>({}, shelfKnownKeys);
     expect(visitApples(transformer, { visitChildren: visitKeys('crate') })).toEqual([ 'inCrate' ]);

@@ -77,21 +77,13 @@ export type VisitChildren<Obj = object> = {
  * How a traversal calls the {@link VisitChildren} of one node.
  */
 interface VisitChildrenOptions {
-  /**
-   * The callback visiting the children of the node.
-   */
+  /** The callback visiting the children of the node. */
   visitChildren: VisitChildren;
-  /**
-   * The keys of the node that are not visited.
-   */
+  /** The keys of the node that are not visited. */
   ignoreKeys: Set<string> | undefined;
-  /**
-   * The keys of the node that are shallowly copied, and not visited.
-   */
+  /** The keys of the node that are shallowly copied, and not visited. */
   shallowKeys: Set<string> | undefined;
-  /**
-   * Whether stepping into a key puts a shallow copy in its place.
-   */
+  /** Whether stepping into a key puts a shallow copy in its place. */
   copiesSteps: boolean;
 }
 

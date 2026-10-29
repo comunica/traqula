@@ -77,14 +77,13 @@ export class AstTransformer extends TransformerSubTyped<Sparql11Nodes> {
  * Visits the terms of the rows of VALUES, which map variable names to terms.
  * Loops backwards, so the rows are traversed in order.
  * @param rows the rows to visit the terms of.
- * @param visitKey visits a term of a row.
- * @param stepIntoKey steps into a row.
+ * @param helpers steps into a row, and visits its terms.
  */
-const visitValuesRows: VisitChildren<ValuePatternRow[]> = (rows, visitKey, stepIntoKey) => {
+const visitValuesRows: VisitChildren<ValuePatternRow[]> = (rows, helpers) => {
   for (let index = rows.length - 1; index >= 0; index--) {
-    const row = stepIntoKey(rows, index);
+    const row = helpers.stepIntoKey(rows, index);
     for (const variable in row) {
-      visitKey(row, variable);
+      helpers.visitKey(row, variable);
     }
   }
 };
@@ -93,19 +92,18 @@ const visitValuesRows: VisitChildren<ValuePatternRow[]> = (rows, visitKey, stepI
  * Visits every key of a pattern, stepping into the rows of VALUES, so the default ignoreKeys do not apply to the
  * variables of a row.
  * @param pattern the pattern to visit the keys of.
- * @param visitKey visits the value of a key.
- * @param stepIntoKey steps into the rows of VALUES.
+ * @param helpers visits the value of a key, or steps into the rows of VALUES.
  */
-const visitPatternWithValuesRows: VisitChildren<Record<string, unknown>> = (pattern, visitKey, stepIntoKey) => {
+const visitPatternWithValuesRows: VisitChildren<Record<string, unknown>> = (pattern, helpers) => {
   for (const key in pattern) {
     if (!Object.hasOwn(pattern, key)) {
       continue;
     }
     if (key !== 'values') {
-      visitKey(pattern, key);
+      helpers.visitKey(pattern, key);
       continue;
     }
-    visitValuesRows(<ValuePatternRow[]> stepIntoKey(pattern, key), visitKey, stepIntoKey);
+    visitValuesRows(<ValuePatternRow[]> helpers.stepIntoKey(pattern, key), helpers);
   }
 };
 
@@ -281,7 +279,7 @@ export const astKnownKeys = {
     patterns: true,
     triples: true,
   },
-  update: { updates: (updates, visitKey, stepIntoKey) => {
+  update: { updates: (updates, { visitKey, stepIntoKey }) => {
     for (let index = updates.length - 1; index >= 0; index--) {
       const updateWithContext = stepIntoKey(updates, index);
       visitKey(updateWithContext, 'operation');
@@ -292,7 +290,7 @@ export const astKnownKeys = {
     values: true,
     template: true,
     context: true,
-    solutionModifiers: (solutionModifiers, visitKey) => {
+    solutionModifiers: (solutionModifiers, { visitKey }) => {
       visitKey(solutionModifiers, 'group');
       visitKey(solutionModifiers, 'having');
       visitKey(solutionModifiers, 'order');
@@ -314,7 +312,7 @@ export const astKnownKeys = {
     delete: true,
     insert: true,
   },
-  datasetClauses: { clauses: (clauses, visitKey, stepIntoKey) => {
+  datasetClauses: { clauses: (clauses, { visitKey, stepIntoKey }) => {
     for (let index = clauses.length - 1; index >= 0; index--) {
       visitKey(stepIntoKey(clauses, index), 'value');
     }
@@ -323,13 +321,13 @@ export const astKnownKeys = {
   triple: { object: true, subject: true, predicate: true },
   solutionModifier: {
     having: true,
-    orderDefs: (orderDefs, visitKey, stepIntoKey) => {
+    orderDefs: (orderDefs, { visitKey, stepIntoKey }) => {
       for (let index = orderDefs.length - 1; index >= 0; index--) {
         visitKey(stepIntoKey(orderDefs, index), 'expression');
       }
     },
     // A grouping is an expression, or a bind without a type
-    groupings: (groupings, visitKey, stepIntoKey) => {
+    groupings: (groupings, { visitKey, stepIntoKey }) => {
       for (let index = groupings.length - 1; index >= 0; index--) {
         if (isNode(groupings[index])) {
           visitKey(groupings, index);

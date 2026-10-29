@@ -58,7 +58,7 @@ interface CategoryTree {
  * Visits the given keys of an object, like the keys a node allows.
  */
 function visitKeys(...keys: string[]): VisitChildren {
-  return (object, visitKey) => {
+  return (object, { visitKey }) => {
     for (const key of keys) {
       visitKey(object, <never> key);
     }
@@ -1773,7 +1773,7 @@ describe('visitOnlyKnownKeys', () => {
     crate: { content: true },
     shelf: {
       crate: true,
-      rows: (rows, visitKey, stepIntoKey) => {
+      rows: (rows, { visitKey, stepIntoKey }) => {
         for (let index = 0; index < rows.length; index++) {
           visitKey(stepIntoKey(rows, index), 'apple');
         }
@@ -1831,12 +1831,11 @@ describe('visitOnlyKnownKeys', () => {
     expect(shallow.visitedKeys({ type: 'apple', core: {}})).toEqual(new Set([ 'type' ]));
   });
 
-  it('tells which keys visitChildren visits as a whole', ({ expect }) => {
+  it('tells which keys visitChildren visits or steps into', ({ expect }) => {
     const strict = new TransformerTyped<Apple | Crate | Shelf>({ visitChildren: visitKeys() }, shelfKnownKeys);
-    // The rows are only stepped into
-    expect(strict.visitedKeys(makeShelf())).toEqual(new Set([ 'crate' ]));
+    expect(strict.visitedKeys(makeShelf())).toEqual(new Set([ 'crate', 'rows' ]));
     const ignoring = new TransformerTyped<Apple | Crate | Shelf>({ ignoreKeys: new Set([ 'crate' ]) }, shelfKnownKeys);
-    expect(ignoring.visitedKeys(makeShelf())).toEqual(new Set());
+    expect(ignoring.visitedKeys(makeShelf())).toEqual(new Set([ 'rows' ]));
     const visitingAny: VisitContext = { visitChildren: visitKeys('any') };
     expect(new TransformerTyped<Apple>(visitingAny).visitedKeys({ type: 'apple' })).toEqual(new Set([ 'any' ]));
     const replacing = new TransformerTyped<Apple>(visitingAny, { apple: { visitChildren: visitKeys('core') }});
@@ -1847,7 +1846,8 @@ describe('visitOnlyKnownKeys', () => {
     const transformer = new TransformerTyped<Apple | Crate | Shelf>({}, shelfKnownKeys);
     expect(visitApples(transformer, { visitChildren: visitKeys('crate') })).toEqual([ 'inCrate' ]);
     expect(visitApples(transformer, {
-      visitChildren: (shelf, visitKey, stepIntoKey) => visitKey(stepIntoKey(stepIntoKey(shelf, 'rows'), 0), 'apple'),
+      visitChildren: (shelf, { visitKey, stepIntoKey }) =>
+        visitKey(stepIntoKey(stepIntoKey(shelf, 'rows'), 0), 'apple'),
     })).toEqual([ 'inRow' ]);
   });
 });
@@ -1865,7 +1865,7 @@ describe('transformerObject visitChildren', () => {
   });
   const named = (obj: object): string | undefined => (<{ name?: string }> obj).name;
   // Visits the item of each row, the values of the record, and the direct leaf
-  const visitTreeChildren: VisitChildren<any> = (tree, visitKey, stepIntoKey) => {
+  const visitTreeChildren: VisitChildren<any> = (tree, { visitKey, stepIntoKey }) => {
     const rows = stepIntoKey(tree, 'rows');
     for (let index = 0; index < rows.length; index++) {
       visitKey(stepIntoKey(rows, index), 'item');
@@ -1906,7 +1906,7 @@ describe('transformerObject visitChildren', () => {
 
   it('transformObject copies an object stepped into twice once', ({ expect }) => {
     const tree = { holder: { a: leaf('a'), b: leaf('b') }};
-    const visitHolder: VisitChildren<typeof tree> = (object, visitKey, stepIntoKey) => {
+    const visitHolder: VisitChildren<typeof tree> = (object, { visitKey, stepIntoKey }) => {
       visitKey(stepIntoKey(object, 'holder'), 'a');
       visitKey(stepIntoKey(object, 'holder'), 'b');
     };
@@ -1986,7 +1986,7 @@ describe('transformerObject visitChildren', () => {
 
   it('uses the visitChildren of the default context, unless the context has its own', ({ expect }) => {
     const tree = { name: 'root', direct: leaf('direct'), skipped: leaf('skipped') };
-    const visitDirect: VisitChildren = (object, visitKey) => visitKey(object, <never> 'direct');
+    const visitDirect: VisitChildren = (object, { visitKey }) => visitKey(object, <never> 'direct');
     const defaulting = new TransformerObject({ visitChildren: visitDirect });
     const traverse = (visitChildren?: VisitChildren): string[][] => {
       const visited: string[] = [];
@@ -2024,7 +2024,9 @@ describe('transformerObject visitChildren', () => {
   });
 
   it('async variants visit the children too', async({ expect }) => {
-    const visiting = new TransformerObject({ visitChildren: (object, visitKey) => visitKey(object, <never> 'direct') });
+    const visiting = new TransformerObject({
+      visitChildren: (object, { visitKey }) => visitKey(object, <never> 'direct'),
+    });
     const visited: string[] = [];
     await visiting.visitObjectAsync(makeTree(), async(obj) => {
       visited.push(named(obj)!);

@@ -22,6 +22,7 @@ export {
   VisitKey,
   StepIntoKey,
   VisitChildren,
+  VisitChildrenHelpers,
   PreOrderMappingReturn,
   TransformerObject,
   SelectiveTraversalContext,

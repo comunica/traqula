@@ -51,87 +51,48 @@ export type StepIntoKey = <Holder extends object, Key extends ChildKey<Holder>>(
 ChildValue<Holder, Key>;
 
 /**
- * Visits the children of an object through {@link VisitKey}, stepping into objects without a type through
- * {@link StepIntoKey}. Checked as a method, so the callback of a type also serves the types that extend it.
+ * The functions a {@link VisitChildren} visits the children of an object with.
+ */
+export interface VisitChildrenHelpers {
+  /**
+   * Visits the value at a key, when it is an object or array.
+   */
+  visitKey: VisitKey;
+  /**
+   * Returns the value at a key, to visit the children within it.
+   */
+  stepIntoKey: StepIntoKey;
+}
+
+/**
+ * Visits the children of an object through its {@link VisitChildrenHelpers}.
+ * Checked as a method, so the callback of a type also serves the types that extend it.
  */
 export type VisitChildren<Obj = object> = {
   // eslint-disable-next-line ts/method-signature-style
-  visitChildren(this: void, object: Obj, visitKey: VisitKey, stepIntoKey: StepIntoKey): void;
+  visitChildren(this: void, object: Obj, helpers: VisitChildrenHelpers): void;
 }['visitChildren'];
 
 /**
- * Calls the {@link VisitChildren} of a node, after shallowly copying its shallowKeys, and skipping those and its
- * ignoreKeys.
+ * How a traversal calls the {@link VisitChildren} of one node.
  */
-type VisitChildrenOf = (
-  node: object,
-  visitChildren: VisitChildren,
-  ignoreKeys: Set<string> | undefined,
-  shallowKeys: Set<string> | undefined,
-  copiesSteps: boolean,
-) => void;
-
-/**
- * Creates the {@link VisitKey} and {@link StepIntoKey} of a traversal, and calls visitChildren callbacks with them.
- * Stepping into a key twice for the same node gives the same copy.
- * @param pushChild adds a child to the traversal, with the object holding it and its key.
- * @param transformer the transformer that copies the objects stepped into.
- * @return calls the visitChildren of a node.
- */
-function createVisitChildrenOf(
-  pushChild: (child: object, holder: object, key: string) => void,
-  transformer: TransformerObject,
-): VisitChildrenOf {
-  let currentNode: object | undefined;
-  let currentIgnoreKeys: Set<string> | undefined;
-  let currentShallowKeys: Set<string> | undefined;
-  let currentCopiesSteps = false;
-  const currentCopies = new Set<object>();
-  const isSkipped = (holder: unknown, key: string): boolean => holder === currentNode &&
-    ((currentIgnoreKeys !== undefined && currentIgnoreKeys.has(key)) ||
-      (currentShallowKeys !== undefined && currentShallowKeys.has(key)));
-  const visitKey = <VisitKey> ((holder: Record<string, unknown> | undefined, key: string): void => {
-    const value = holder?.[key];
-    if (value !== null && typeof value === 'object' && !isSkipped(holder, key)) {
-      pushChild(value, <object> holder, String(key));
-    }
-  });
-  const stepIntoKey = <StepIntoKey> ((holder: Record<string, unknown> | undefined, key: string): unknown => {
-    const value = holder?.[key];
-    if (value === null || typeof value !== 'object') {
-      return value;
-    }
-    // An empty container, so the children within a skipped key are skipped too
-    if (isSkipped(holder, key)) {
-      return Array.isArray(value) ? [] : {};
-    }
-    if (!currentCopiesSteps || currentCopies.has(value)) {
-      return value;
-    }
-    const copy = transformer.cloneObj(value);
-    currentCopies.add(copy);
-    (<Record<string, unknown>> holder)[key] = copy;
-    return copy;
-  });
-  return (node, visitChildren, ignoreKeys, shallowKeys, copiesSteps) => {
-    if (shallowKeys !== undefined) {
-      const holder = <Record<string, unknown>> node;
-      for (const key of shallowKeys) {
-        const value = holder[key];
-        if (value !== null && typeof value === 'object' && Object.hasOwn(holder, key)) {
-          holder[key] = transformer.cloneObj(value);
-        }
-      }
-    }
-    currentNode = node;
-    currentIgnoreKeys = ignoreKeys;
-    currentShallowKeys = shallowKeys;
-    currentCopiesSteps = copiesSteps;
-    visitChildren(node, visitKey, stepIntoKey);
-    if (currentCopies.size > 0) {
-      currentCopies.clear();
-    }
-  };
+interface VisitChildrenOptions {
+  /**
+   * The callback visiting the children of the node.
+   */
+  visitChildren: VisitChildren;
+  /**
+   * The keys of the node that are not visited.
+   */
+  ignoreKeys: Set<string> | undefined;
+  /**
+   * The keys of the node that are shallowly copied, and not visited.
+   */
+  shallowKeys: Set<string> | undefined;
+  /**
+   * Whether stepping into a key puts a shallow copy in its place.
+   */
+  copiesSteps: boolean;
 }
 
 /**
@@ -278,6 +239,63 @@ export class TransformerObject {
   }
 
   /**
+   * Creates the {@link VisitChildrenHelpers} of a traversal.
+   * Stepping into a key twice for the same node gives the same copy.
+   * @param pushChild adds a child to the traversal, with the object holding it and its key.
+   * @return calls the visitChildren of a node, after shallowly copying its shallowKeys.
+   */
+  private createVisitChildrenOf(
+    pushChild: (child: object, holder: object, key: string) => void,
+  ): (node: object, options: VisitChildrenOptions) => void {
+    let currentNode: object | undefined;
+    let currentOptions: VisitChildrenOptions | undefined;
+    const currentCopies = new Set<object>();
+    const isSkipped = (holder: unknown, key: string): boolean => holder === currentNode &&
+      (currentOptions!.ignoreKeys?.has(key) === true || currentOptions!.shallowKeys?.has(key) === true);
+    const visitKey = <VisitKey> ((holder: Record<string, unknown> | undefined, key: string): void => {
+      const value = holder?.[key];
+      if (value !== null && typeof value === 'object' && !isSkipped(holder, key)) {
+        pushChild(value, <object> holder, String(key));
+      }
+    });
+    const stepIntoKey = <StepIntoKey> ((holder: Record<string, unknown> | undefined, key: string): unknown => {
+      const value = holder?.[key];
+      if (value === null || typeof value !== 'object') {
+        return value;
+      }
+      // Nothing within a skipped key is visited, so the callback gets a container without children
+      if (isSkipped(holder, key)) {
+        return Array.isArray(value) ? [] : {};
+      }
+      if (!currentOptions!.copiesSteps || currentCopies.has(value)) {
+        return value;
+      }
+      const copy = this.cloneObj(value);
+      currentCopies.add(copy);
+      (<Record<string, unknown>> holder)[key] = copy;
+      return copy;
+    });
+    const helpers: VisitChildrenHelpers = { visitKey, stepIntoKey };
+    return (node, options) => {
+      if (options.shallowKeys !== undefined) {
+        const holder = <Record<string, unknown>> node;
+        for (const key of options.shallowKeys) {
+          const value = holder[key];
+          if (value !== null && typeof value === 'object' && Object.hasOwn(holder, key)) {
+            holder[key] = this.cloneObj(value);
+          }
+        }
+      }
+      currentNode = node;
+      currentOptions = options;
+      options.visitChildren(node, helpers);
+      if (currentCopies.size > 0) {
+        currentCopies.clear();
+      }
+    };
+  }
+
+  /**
    * Recursively transforms all objects that are not arrays. Mapper is called on deeper objects first.
    *
    * `transformObject` never inspects the values a mapper returns; a returned promise is stored as-is.
@@ -382,7 +400,7 @@ export class TransformerObject {
       stackParentKey.push(key);
       stackParent.push(parent);
     };
-    const visitChildrenOf = createVisitChildrenOf(pushChild, this);
+    const visitChildrenOf = this.createVisitChildrenOf(pushChild);
 
     // Everything after the preVisitor call - split out so it can also run from inside a resolved promise.
     const expand = (curObject: object, curParent: object, curKey: string, context: TransformContext): void => {
@@ -405,7 +423,7 @@ export class TransformerObject {
       // Extend stack if needed. When shortcutted, should still unwind the stack, but no longer add to it.
       if (continues && !didShortCut) {
         if (visitChildren) {
-          visitChildrenOf(copy, visitChildren, ignoreKeys, shallowKeys, copyFlag);
+          visitChildrenOf(copy, { visitChildren, ignoreKeys, shallowKeys, copiesSteps: copyFlag });
           return;
         }
         for (const key in copy) {
@@ -600,7 +618,7 @@ export class TransformerObject {
       stackRewriteCount.push(0);
       stackDepth.push(childDepth);
     };
-    const visitChildrenOf = createVisitChildrenOf(pushChild, this);
+    const visitChildrenOf = this.createVisitChildrenOf(pushChild);
 
     const applyResult = (
       mapperResult: PreOrderMappingReturn,
@@ -644,7 +662,7 @@ export class TransformerObject {
       const newAsRecord = <Record<string, unknown>> newValue;
       childDepth = depth + 1;
       if (visitChildren) {
-        visitChildrenOf(newAsRecord, visitChildren, ignoreKeys, shallowKeys, defaultCopyFlag);
+        visitChildrenOf(newAsRecord, { visitChildren, ignoreKeys, shallowKeys, copiesSteps: defaultCopyFlag });
         return;
       }
       // In any other case, push the children, ignoring ignoreKeys and shallowKeys.
@@ -786,7 +804,7 @@ export class TransformerObject {
       stack.push(val);
     };
     // A visit copies nothing, also not the shallowKeys
-    const visitChildrenOf = createVisitChildrenOf(pushChild, this);
+    const visitChildrenOf = this.createVisitChildrenOf(pushChild);
 
     // Everything after the preVisitor call - split out so it can also run from inside a resolved promise.
     const expand = (curObject: object, context: VisitContext): void => {
@@ -802,7 +820,7 @@ export class TransformerObject {
       // Extend stack if needed. When shortcutted, should still unwind the stack, but no longer add to it.
       if (continues && !didShortCut) {
         if (visitChildren) {
-          visitChildrenOf(curObject, visitChildren, ignoreKeys, undefined, false);
+          visitChildrenOf(curObject, { visitChildren, ignoreKeys, shallowKeys: undefined, copiesSteps: false });
           return;
         }
         for (const key in curObject) {

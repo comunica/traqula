@@ -131,7 +131,7 @@ replaces that.
 ### Custom Traversal
 
 A context can give `visitChildren` instead: a callback that visits the children of the object itself.
-It calls `visitKey(holder, key)` for each child to traverse.
+It calls the `visitKey(holder, key)` of its second argument for each child to traverse.
 
 To reach children within objects without a `type`, like the elements of the `updates` of an update,
 it first calls `stepIntoKey(holder, key)`. The compiler checks the keys of both.
@@ -145,7 +145,7 @@ const ast = new Parser().parse('INSERT DATA { <a> <b> <c> } ; CLEAR ALL');
 const transformer = new AstTransformer({ visitChildren: () => {} });
 const operations: string[] = [];
 transformer.visitNode(ast, {
-  'update': { preVisitor: () => ({ visitChildren: (update, visitKey, stepIntoKey) => {
+  'update': { preVisitor: () => ({ visitChildren: (update, { visitKey, stepIntoKey }) => {
     const updates = stepIntoKey(update, 'updates');
     for (let index = updates.length - 1; index >= 0; index--) {
       visitKey(stepIntoKey(updates, index), 'operation');
@@ -184,7 +184,7 @@ import type { Sparql11Nodes } from '@traqula/rules-sparql-1-1';
 const allowlist = visitOnlyKnownKeys<Sparql11Nodes>({
   // ...
   path: { items: true },
-  update: { updates: (updates, visitKey, stepIntoKey) => {
+  update: { updates: (updates, { visitKey, stepIntoKey }) => {
     for (let index = updates.length - 1; index >= 0; index--) {
       const updateWithContext = stepIntoKey(updates, index);
       visitKey(updateWithContext, 'operation');

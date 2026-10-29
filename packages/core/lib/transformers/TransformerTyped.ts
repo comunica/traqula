@@ -1,6 +1,8 @@
 import type { SourceLocation, Typed } from '../types.js';
 import type {
   Awaitable,
+  ChildKey,
+  ChildValue,
   PreOrderMappingReturn,
   StepIntoKey,
   TransformContext,
@@ -49,17 +51,6 @@ export type DefaultNodePreVisitor<Nodes extends Typed> =
   {[T in Nodes['type']]?: TransformContext<Extract<Nodes, Typed<T>>> };
 
 /**
- * All keys of an object, also when the object is a union of objects.
- */
-export type AllObjectKeys<Obj> = Obj extends unknown ? keyof Obj & string : never;
-
-/**
- * All values a key can have, also when the object is a union of objects.
- */
-export type AllObjectValues<Obj, Key extends string> =
-  Obj extends unknown ? (Key extends keyof Obj ? Obj[Key] : never) : never;
-
-/**
  * Values that hold no nodes, and are thus not looked into by default: source locations and RDF terms.
  */
 export type NodeFreeValue = SourceLocation | { termType: string };
@@ -87,8 +78,8 @@ type MemberCanHoldNode<Value, Skipped> = Value extends Typed ? true :
 /**
  * The keys of an object that can hold a node, also when the object is a union of objects.
  */
-export type NodeHoldingKeys<Obj, Skipped = NodeFreeValue> = {[Key in AllObjectKeys<Obj>]:
-  CanHoldNode<AllObjectValues<Obj, Key>, Skipped> extends true ? Key : never }[AllObjectKeys<Obj>];
+export type NodeHoldingKeys<Obj, Skipped = NodeFreeValue> = {[Key in ChildKey<Obj>]:
+  CanHoldNode<ChildValue<Obj, Key>, Skipped> extends true ? Key : never }[ChildKey<Obj>];
 
 /**
  * Per node type, exactly the keys that can hold a node, mapped to `true` or to the {@link VisitChildren} of the
@@ -102,9 +93,10 @@ export type KnownNodeKeys<Nodes extends Typed, Skipped = NodeFreeValue> =
 /**
  * The {@link KnownNodeKeys} of a single node type.
  */
-type KnownNodeKeysOfType<Node, Skipped, Keys extends string = NodeHoldingKeys<Node, Skipped>> = [Keys] extends [never] ?
-  Record<string, never> :
-    {[Key in Keys]: true | VisitChildren<Extract<AllObjectValues<Node, Key>, object>> };
+type KnownNodeKeysOfType<Node, Skipped, Keys extends PropertyKey = NodeHoldingKeys<Node, Skipped>> =
+  [Keys] extends [never] ?
+    Record<string, never> :
+      {[Key in Keys]: true | VisitChildren<Extract<ChildValue<Node, Key>, object>> };
 
 /**
  * Creates a {@link DefaultNodePreVisitor} that per node type only visits the known keys that can hold nodes,
@@ -121,14 +113,14 @@ export function visitOnlyKnownKeys<Nodes extends Typed, Skipped = NodeFreeValue>
     const visitedKeys = entries.filter(([ , visitor ]) => visitor === true).map(([ key ]) => key);
     const valueVisitors = entries.flatMap(([ key, visitor ]) => visitor === true ? [] : [{ key, visitor }]);
     // A callback reads the known keys only, instead of checking every key of the node
-    const visitChildren: VisitChildren<Record<string, unknown>> = (node, visitKey, stepIntoKey) => {
+    const visitChildren: VisitChildren<Record<string, unknown>> = (node, helpers) => {
       for (const key of visitedKeys) {
-        visitKey(node, key);
+        helpers.visitKey(node, key);
       }
       for (const { key, visitor } of valueVisitors) {
-        const value = stepIntoKey(node, key);
+        const value = helpers.stepIntoKey(node, key);
         if (value !== null && typeof value === 'object') {
-          visitor(value, visitKey, stepIntoKey);
+          visitor(value, helpers);
         }
       }
     };
@@ -171,27 +163,23 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
   }
 
   /**
-   * The keys of an object whose values a traversal visits as a whole, by the default of its node type or the default
-   * context. Lets hand-written traversals respect the defaults of this transformer, like its allowlists.
+   * The keys of an object the default of its type, or else the default context, looks into.
+   * Lets hand-written recursions, like those of toAst, respect allowlists.
    * @param object the object holding the keys.
-   * @return the keys visited, without those ignored, shallowly copied, or only stepped into by visitChildren.
+   * @return the keys visited or stepped into, without the ignoreKeys and shallowKeys.
    */
   public visitedKeys(object: object): Set<string> {
     const nodeDefault = this.nodeDefaultOf(object);
     const visitChildren = nodeDefault?.visitChildren ?? this.defaultContext.visitChildren;
-    const visited = new Set<string>();
+    const visited = new Set<string>(visitChildren ? [] : Object.keys(object));
     if (visitChildren) {
-      const recordVisit = <VisitKey> ((holder: object, key: string): void => {
+      const recordKey = (holder: Record<string, unknown> | undefined, key: string): unknown => {
         if (holder === object) {
           visited.add(key);
         }
-      });
-      const stepIntoKey = <StepIntoKey> ((holder: Record<string, unknown> | undefined, key: string) => holder?.[key]);
-      visitChildren(object, recordVisit, stepIntoKey);
-    } else {
-      for (const key of Object.keys(object)) {
-        visited.add(key);
-      }
+        return holder?.[key];
+      };
+      visitChildren(object, { visitKey: <VisitKey> recordKey, stepIntoKey: <StepIntoKey> recordKey });
     }
     for (const key of nodeDefault?.ignoreKeys ?? this.defaultContext.ignoreKeys ?? []) {
       visited.delete(key);

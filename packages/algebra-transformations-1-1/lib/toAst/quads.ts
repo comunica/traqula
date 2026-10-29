@@ -75,7 +75,7 @@ export const removeAlgQuads: AstIndir<'removeQuads', Algebra.Operation, [Algebra
  * Traverses with the algebra transformer, so its allowlist decides which keys hold operations.
  * @param graphs receives the graphs the value hands to its parent, in order of occurrence.
  * @param projectionScope whether we are directly below an EXTEND/ORDER_BY chain rooted at a
- * PROJECT/ASK/CONSTRUCT/DESCRIBE - see {@link inputProjectionScope}.
+ * PROJECT/ASK/CONSTRUCT/DESCRIBE, so read as SELECT state rather than a pattern.
  */
 export const removeAlgQuadsRecursive: AstIndir<
   'removeQuadsRecursive',
@@ -92,41 +92,71 @@ unknown,
     // The original operations directly below an EXTEND/ORDER_BY chain rooted at a query form
     const inProjectionScope = new Set<unknown>(projectionScope ? [ value ] : []);
     const noContext = {};
-    const leafContext = { continue: false };
-    // UPDATE operations with patterns handle graphs a bit differently: they are kept as is
-    const deleteInsertContext = { continue: false, copy: false };
-    // A CONSTRUCT template holds the triples to produce, not patterns of the WHERE clause:
-    // it is never wrapped in a GRAPH, and does not change how the WHERE clause is wrapped.
-    const constructContext = { ignoreKeys: new Set([ 'template' ]) };
-    const preVisitor = (orig: Algebra.Operation): TransformContext => {
-      if (inputProjectionScope(orig, inProjectionScope.has(orig))) {
-        inProjectionScope.add((<Algebra.Single> orig).input);
-      }
-      if (orig.type === types.CONSTRUCT) {
-        return constructContext;
-      }
-      if (orig.type === types.DELETE_INSERT) {
-        return deleteInsertContext;
-      }
-      // A pattern holds no operations
-      const isLeaf = (orig.type === types.PATTERN || orig.type === types.PATH) && orig.graph;
-      return isLeaf ? leafContext : noContext;
+    /**
+     * Puts the input of an operation in projection scope.
+     * @param orig the operation whose input is read as SELECT state.
+     * @return no context, so the input is traversed.
+     */
+    const scopeInput = (orig: Algebra.Single): TransformContext => {
+      inProjectionScope.add(orig.input);
+      return noContext;
     };
-    const transform = (copy: Algebra.Operation, orig: Algebra.Operation): unknown => {
-      if ((copy.type === types.PATTERN || copy.type === types.PATH) && copy.graph) {
-        const graph = <Graph> copy.graph;
-        let result: Algebra.Operation = copy;
-        // Remove non-default graphs
-        if (graph.value !== DEFAULT_GRAPH_NAME) {
-          result = copy.type === types.PATTERN ?
+    /**
+     * Removes the graph of a quad pattern or path, and registers it to its parent.
+     * @param copy the pattern or path.
+     * @return the pattern or path without graph.
+     */
+    const removeGraph = (copy: Algebra.Pattern | Algebra.Path): unknown => {
+      const graph = <Graph> copy.graph;
+      // Remove non-default graphs
+      const result = graph.value === DEFAULT_GRAPH_NAME ?
+        copy :
+          (copy.type === types.PATTERN ?
             AF.createPattern(copy.subject, copy.predicate, copy.object) :
-            AF.createPath(copy.subject, copy.predicate, copy.object);
-        }
-        graphsOf.set(result, [ graph ]);
-        return result;
-      }
-      return wrapGraphsOfKeys(copy, orig);
+            AF.createPath(copy.subject, copy.predicate, copy.object));
+      graphsOf.set(result, [ graph ]);
+      return result;
     };
+    // A pattern or path holds no operations with graphs
+    const quadCallbacks = { preVisitor: () => ({ continue: false }), transform: removeGraph };
+    const scopeCallbacks = { preVisitor: scopeInput, transform: wrapGraphsOfKeys };
+    const callbacks = {
+      ...Object.fromEntries(Object.values(types).map(type => [ type, { transform: wrapGraphsOfKeys }])),
+      // The input of a query form is read as SELECT state, see registerProjection
+      [types.PROJECT]: scopeCallbacks,
+      [types.ASK]: scopeCallbacks,
+      [types.DESCRIBE]: scopeCallbacks,
+      [types.CONSTRUCT]: {
+        // A CONSTRUCT template holds the triples to produce, not patterns of the WHERE clause:
+        // it is never wrapped in a GRAPH, and does not change how the WHERE clause is wrapped.
+        preVisitor: (orig: Algebra.Construct) => ({ ...scopeInput(orig), ignoreKeys: new Set([ 'template' ]) }),
+        transform: wrapGraphsOfKeys,
+      },
+      // An EXTEND/ORDER_BY chain carries the projection scope
+      [types.EXTEND]: { preVisitor: carryScope, transform: wrapGraphsOfKeys },
+      [types.ORDER_BY]: { preVisitor: carryScope, transform: wrapGraphsOfKeys },
+      [types.GROUP]: {
+        // `translateAlgGroup` reads an EXTEND binding a group variable as a `GROUP BY (expr AS ?v)` condition
+        preVisitor: (orig: Algebra.Group) => orig.input.type === types.EXTEND &&
+          orig.variables.some(variable => variable.value === (<Algebra.Extend> orig.input).variable.value) ?
+          scopeInput(orig) :
+          noContext,
+        transform: wrapGraphsOfKeys,
+      },
+      [types.PATTERN]: quadCallbacks,
+      [types.PATH]: quadCallbacks,
+      // UPDATE operations with patterns handle graphs a bit differently: they are kept as is
+      [types.DELETE_INSERT]: { preVisitor: () => ({ continue: false, copy: false }) },
+    };
+
+    /**
+     * Carries the projection scope of an EXTEND/ORDER_BY on to its input.
+     * @param orig the EXTEND/ORDER_BY.
+     * @return no context, so the input is traversed.
+     */
+    function carryScope(orig: Algebra.Extend | Algebra.OrderBy): TransformContext {
+      return inProjectionScope.has(orig) ? scopeInput(orig) : noContext;
+    }
 
     /**
      * Wraps the keys of an operation that hold graphs, once its children are transformed.
@@ -222,10 +252,9 @@ unknown,
       return result;
     }
 
-    const callbacks = { preVisitor, transform };
     const result = algebraTransformer.transformNode<'unsafe', object>(
       <object> value,
-      Object.fromEntries(Object.values(types).map(type => [ type, callbacks ])),
+      callbacks,
     );
     for (const operation of Array.isArray(result) ? result : [ result ]) {
       graphs.push(...graphsOf.get(operation) ?? []);
@@ -233,28 +262,6 @@ unknown,
     return result;
   },
 };
-
-/**
- * Whether `knownOp`'s `input` will be read as a SELECT-expression EXTEND rather than a BIND -
- * mirrors `registerProjection`'s `c.project`. True under PROJECT/ASK/CONSTRUCT/DESCRIBE, carried through an
- * EXTEND/ORDER_BY chain, false otherwise.
- * Also true under a GROUP whose input is an EXTEND binding a group variable:
- * `translateAlgGroup` reads it as a `GROUP BY (expr AS ?v)` condition rather than a BIND.
- */
-function inputProjectionScope(knownOp: Algebra.Operation, projectionScope: boolean): boolean {
-  if ([ types.PROJECT, types.ASK, types.CONSTRUCT, types.DESCRIBE ].includes(knownOp.type)) {
-    return true;
-  }
-  if (knownOp.type === types.GROUP) {
-    const input = knownOp.input;
-    return input.type === types.EXTEND &&
-      knownOp.variables.some(variable => variable.value === input.variable.value);
-  }
-  if (knownOp.type === types.EXTEND || knownOp.type === types.ORDER_BY) {
-    return projectionScope;
-  }
-  return false;
-}
 
 /**
  * Graphs should be an array of length identical to `op.patterns`,

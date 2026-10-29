@@ -95,23 +95,22 @@ export function astTransformerDefaults<Nodes extends Typed>(
     { ignoreKeys: new Set([ 'loc' ]), ...defaultContext },
     defaultContext.visitChildren ?
       defaultNodePreVisitor :
-        { pattern: { visitChildren: <VisitChildren> visitPatternKeys }, ...defaultNodePreVisitor },
+        {
+          pattern: {
+            // Visits every key of a pattern, stepping into the rows of VALUES like astKnownKeys does
+            visitChildren: <VisitChildren> ((pattern: Record<string, unknown>, helpers: VisitChildrenHelpers) => {
+              for (const key of Object.keys(pattern)) {
+                if (key === 'values') {
+                  astKnownKeys.pattern.values(<ValuePatternRow[]> helpers.stepIntoKey(pattern, key), helpers);
+                } else {
+                  helpers.visitKey(pattern, key);
+                }
+              }
+            }),
+          },
+          ...defaultNodePreVisitor,
+        },
   ];
-}
-
-/**
- * Visits every key of a pattern, stepping into the rows of VALUES like {@link astKnownKeys} does.
- * @param pattern the pattern to visit the keys of.
- * @param helpers visits the value of a key, or steps into the rows of VALUES.
- */
-function visitPatternKeys(pattern: Record<string, unknown>, helpers: VisitChildrenHelpers): void {
-  for (const key of Object.keys(pattern)) {
-    if (key === 'values') {
-      astKnownKeys.pattern.values(<ValuePatternRow[]> helpers.stepIntoKey(pattern, key), helpers);
-    } else {
-      helpers.visitKey(pattern, key);
-    }
-  }
 }
 
 /**

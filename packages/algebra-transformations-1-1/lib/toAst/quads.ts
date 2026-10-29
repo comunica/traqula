@@ -92,6 +92,7 @@ unknown,
     // The original operations directly below an EXTEND/ORDER_BY chain rooted at a query form
     const inProjectionScope = new Set<unknown>(projectionScope ? [ value ] : []);
     const noContext = {};
+
     const preVisitor = (orig: Algebra.Operation): TransformContext => {
       if (inputProjectionScope(orig, inProjectionScope.has(orig))) {
         inProjectionScope.add((<Algebra.Single> orig).input);
@@ -101,6 +102,7 @@ unknown,
         ((orig.type === types.PATTERN || orig.type === types.PATH) && orig.graph);
       return isLeaf ? { continue: false } : noContext;
     };
+
     const transform = (copy: Algebra.Operation, orig: Algebra.Operation): unknown => {
       if (orig.type === types.DELETE_INSERT) {
         return orig;
@@ -225,6 +227,7 @@ unknown,
       <object> value,
       Object.fromEntries(Object.values(types).map(type => [ type, callbacks ])),
     );
+
     for (const operation of Array.isArray(result) ? result : [ result ]) {
       graphs.push(...graphsOf.get(operation) ?? []);
     }

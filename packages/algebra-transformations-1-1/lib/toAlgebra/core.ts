@@ -30,13 +30,9 @@ export interface AlgebraContext {
  * The transformers the rules traverse with, e.g. ones using known keys allowlists to skip unknown keys.
  */
 export interface TransformerConfigs {
-  /**
-   * Transformer to traverse the AST with. Defaults to an {@link AstTransformer}.
-   */
+  /** Transformer to traverse the AST with. Defaults to an {@link AstTransformer}. */
   astTransformer?: AstTransformer;
-  /**
-   * Transformer to traverse the algebra with. Defaults to the transformer of the algebra utilities.
-   */
+  /** Transformer to traverse the algebra with. Defaults to the transformer of the algebra utilities. */
   algebraTransformer?: TransformerSubTyped<Algebra.Operation>;
 }
 

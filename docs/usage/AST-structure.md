@@ -173,21 +173,27 @@ Pass `astKnownKeysAllowlist` of `@traqula/rules-sparql-1-1` or `@traqula/rules-s
 or `algebraUtils.knownKeysAllowlist`, as the per type defaults.
 Known node types then only visit their keys that can hold nodes; other objects get the default context.
 
+`visitOnlyKnownKeys` of `@traqula/core` builds such an allowlist, the compiler checking that it lists exactly the keys
+that can hold a node. A key maps to `true`, or to the `visitChildren` of its value, which is stepped into first.
+Spread `astKnownKeys` to extend the AST allowlists.
+
 ```typescript
-import { AstTransformer, astKnownKeysAllowlist } from '@traqula/rules-sparql-1-1';
-import { Parser } from '@traqula/parser-sparql-1-1'
+import { visitOnlyKnownKeys } from '@traqula/core';
+import type { Sparql11Nodes } from '@traqula/rules-sparql-1-1';
 
-const ast = new Parser().parse('SELECT * WHERE { ?s ?p ?o }');
-// An engine adds metadata that is no part of the query
-const annotated = { ...ast, metadata: { type: 'term', subType: 'variable', value: 'metadata' }};
-const variables: string[] = [];
-new AstTransformer({}, astKnownKeysAllowlist).visitNodeSpecific(annotated, {}, {
-  'term': { 'variable': { visitor: (variable) => { variables.push(variable.value); } }},
+const allowlist = visitOnlyKnownKeys<Sparql11Nodes>({
+  // ...
+  path: { items: true },
+  update: { updates: (updates, visitKey, stepIntoKey) => {
+    for (let index = updates.length - 1; index >= 0; index--) {
+      const updateWithContext = stepIntoKey(updates, index);
+      visitKey(updateWithContext, 'operation');
+      visitKey(updateWithContext, 'context');
+    }
+  } },
+  // ...
 });
-const truety = !variables.includes('metadata');
 ```
-
-`visitOnlyKnownKeys` of `@traqula/core` builds such an allowlist; spread `astKnownKeys` to extend the AST allowlists.
 
 ### Passing Transformers to the Parser and Algebra
 

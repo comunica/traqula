@@ -45,6 +45,7 @@ export interface SparqlContext {
   /**
    * Transformer the validations traverse the AST with. Defaults to an {@link AstTransformer}.
    */
+  // TODO(major): optional type can become mandatory here.
   astTransformer?: AstTransformer;
   /**
    * Set of queryModes. Primarily used for note 8, 14.

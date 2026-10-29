@@ -3,6 +3,8 @@
 //  (findPatternBoundedVars).
 //  The SPARQL 1.2 queryProjectionIsGood, selectExpressionAliasesNotInScope and checkNote13
 //  only exist (and partially copy the SPARQL 1.1 logic) to call the SPARQL 1.2 findPatternBoundedVars.
+// TODO(major): let the validation functions take the context instead of an optional transformer,
+//  and traverse with its astTransformer, which is then no longer optional.
 import { AstFactory } from '../astFactory.js';
 import type { SparqlContext } from '../sparql11HelperTypes.js';
 import type {

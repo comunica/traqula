@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { BaseQuad } from '@rdfjs/types';
-import { AstFactory, lex as l12 } from '@traqula/rules-sparql-1-2';
+import { AstFactory, AstTransformer, astKnownKeysAllowlist, lex as l12 } from '@traqula/rules-sparql-1-2';
 import {
   positiveTest,
   importSparql11NoteTests,
@@ -19,13 +19,30 @@ describe('a SPARQL 1.2 parser', () => {
     defaultContext: { astFactory: sourceTrackingAstFactory },
     lexerConfig: { positionTracking: 'full' },
   });
-  const noSourceTrackingParser = new Parser({ defaultContext: { astFactory }});
+  // Only visits the keys the allowlist allows, so validation must work with it too
+  const knownKeysTransformer = new AstTransformer({ visitChildren: () => {} }, astKnownKeysAllowlist);
+  const noSourceTrackingParser = new Parser({ defaultContext: { astFactory, astTransformer: knownKeysTransformer }});
   const context = { prefixes: { ex: 'http://example.org/' }};
 
   beforeEach(() => {
     astFactory.resetBlankNodeCounter();
     sourceTrackingAstFactory.resetBlankNodeCounter();
   });
+
+  /**
+   * The nodes the transformer visits in the AST.
+   */
+  function visitedNodes(transformer: AstTransformer, ast: unknown): Set<object> {
+    const visited = new Set<object>();
+    const visitor = (node: object): void => {
+      visited.add(node);
+    };
+    transformer.visitNode(
+      <object> ast,
+      Object.fromEntries(Object.keys(astKnownKeysAllowlist).map(type => [ type, { visitor }])),
+    );
+    return visited;
+  }
 
   function _sinkAst(suite: string, test: string, response: object): void {
     const dir = getStaticFilePath();
@@ -52,6 +69,7 @@ describe('a SPARQL 1.2 parser', () => {
       it(`can parse ${name}`, async({ expect }) => {
         const { query, astWithSource } = await statics();
         const res: unknown = sourceTrackingParser.parsePath(query, context);
+        expect(visitedNodes(knownKeysTransformer, res)).toEqual(visitedNodes(new AstTransformer(), res));
         expect(res, 'source tracking res').toEqualParsedQuery(astWithSource);
         const resNoSource = noSourceTrackingParser.parsePath(query, context);
         expect(resNoSource, 'no source tracking res')
@@ -66,6 +84,7 @@ describe('a SPARQL 1.2 parser', () => {
         const { query, astWithSource } = await statics();
         const astNoSource = astFactory.forcedAutoGenTree(<object> astWithSource);
         const res: unknown = sourceTrackingParser.parse(query, context);
+        expect(visitedNodes(knownKeysTransformer, res)).toEqual(visitedNodes(new AstTransformer(), res));
         expect(res, 'source tracking res')
           .toEqualParsedQueryIgnoring(obj => astFactory.isTriple(obj), [ 'annotations' ], astWithSource);
         const resNoSource = noSourceTrackingParser.parse(query, context);
@@ -92,6 +111,7 @@ describe('a SPARQL 1.2 parser', () => {
         const { query, astWithSource } = await statics();
         const astNoSource = astFactory.forcedAutoGenTree(<object> astWithSource);
         const res: unknown = sourceTrackingParser.parse(query, context);
+        expect(visitedNodes(knownKeysTransformer, res)).toEqual(visitedNodes(new AstTransformer(), res));
         // _sinkAst('sparql-1-2', name, <object> res);
         expect(res, 'source tracking res').toEqualParsedQuery(astWithSource);
         const resNoSource = noSourceTrackingParser.parse(query, context);

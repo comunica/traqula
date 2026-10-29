@@ -58,6 +58,7 @@ export type SparqlContext = T11.SparqlContext & {
   /**
    * Transformer the validations traverse the AST with. Defaults to an {@link AstTransformer}.
    */
+  // TODO(major): optional type can become mandatory here.
   astTransformer?: AstTransformer;
   /**
    * Function that decodes UCHAR codepoint escapes (\\uXXXX / \\UXXXXXXXX) within a string.

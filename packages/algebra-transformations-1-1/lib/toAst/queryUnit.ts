@@ -75,7 +75,6 @@ AstIndir<'collectVariables', Set<string>, [object, Set<string>, string[]?]> = {
   name: 'collectVariables',
   fun: () => ({ algebraTransformer = defaultAlgebraTransformer }, value, names, ignoreKeysList = []) => {
     const ignoreKeys = new Set(ignoreKeysList);
-    algebraTransformer.clone({ continue: false });
     const rootContext: VisitContext = { ignoreKeys };
     const nodeContext: VisitContext = {};
     const addVariables = (term: unknown): void => {

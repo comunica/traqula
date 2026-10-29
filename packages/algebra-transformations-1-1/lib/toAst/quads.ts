@@ -93,6 +93,8 @@ unknown,
     const inProjectionScope = new Set<unknown>(projectionScope ? [ value ] : []);
     const noContext = {};
     const leafContext = { continue: false };
+    // UPDATE operations with patterns handle graphs a bit differently: they are kept as is
+    const deleteInsertContext = { continue: false, copy: false };
     // A CONSTRUCT template holds the triples to produce, not patterns of the WHERE clause:
     // it is never wrapped in a GRAPH, and does not change how the WHERE clause is wrapped.
     const constructContext = { ignoreKeys: new Set([ 'template' ]) };
@@ -103,15 +105,14 @@ unknown,
       if (orig.type === types.CONSTRUCT) {
         return constructContext;
       }
-      // UPDATE operations with patterns handle graphs a bit differently, and a pattern holds no operations
-      const isLeaf = orig.type === types.DELETE_INSERT ||
-        ((orig.type === types.PATTERN || orig.type === types.PATH) && orig.graph);
+      if (orig.type === types.DELETE_INSERT) {
+        return deleteInsertContext;
+      }
+      // A pattern holds no operations
+      const isLeaf = (orig.type === types.PATTERN || orig.type === types.PATH) && orig.graph;
       return isLeaf ? leafContext : noContext;
     };
     const transform = (copy: Algebra.Operation, orig: Algebra.Operation): unknown => {
-      if (orig.type === types.DELETE_INSERT) {
-        return orig;
-      }
       if ((copy.type === types.PATTERN || copy.type === types.PATH) && copy.graph) {
         const graph = <Graph> copy.graph;
         let result: Algebra.Operation = copy;

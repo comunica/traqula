@@ -1,6 +1,8 @@
 import { Canonicalizer, algebraUtils } from '@traqula/algebra-transformations-1-2';
 import type { Algebra } from '@traqula/algebra-transformations-1-2';
+import { TransformerSubTyped } from '@traqula/core';
 import { Parser } from '@traqula/parser-sparql-1-2';
+import { AstTransformer, astKnownKeysAllowlist } from '@traqula/rules-sparql-1-2';
 import { sparqlAlgebraNegativeTests, sparqlAlgebraTests } from '@traqula/test-utils';
 import type {
   NegativeAlgebraSuite,
@@ -10,6 +12,17 @@ import { describe, it } from 'vitest';
 import { toAlgebra } from '../lib/index.js';
 
 export const suites: AlgebraTestSuite[] = [ 'dawg-syntax', 'sparql11-query', 'sparql-1.1', 'sparql12' ];
+
+/**
+ * Transformers that only visit the keys the allowlists allow, so they skip unknown keys.
+ */
+export const knownKeysTransformers = {
+  astTransformer: new AstTransformer({ visitChildren: () => {} }, astKnownKeysAllowlist),
+  algebraTransformer: new TransformerSubTyped<Algebra.Operation>(
+    { visitChildren: () => {} },
+    algebraUtils.knownKeysAllowlist,
+  ),
+};
 
 // https://www.w3.org/2001/sw/DataAccess/tests/r2#syntax-basic-01
 // https://www.w3.org/2009/sparql/implementations/
@@ -37,6 +50,14 @@ describe('algebra output 1.2', () => {
               }),
             );
             expect(canon.canonicalizeQuery(algebra, blankToVariable))
+              .toEqual(canon.canonicalizeQuery(<Algebra.Operation>json, blankToVariable));
+            const knownKeysAlgebra = algebraUtils.objectify(toAlgebra(ast, {
+              quads: name.endsWith('-quads'),
+              blankToVariable,
+              namedAggregatorCallback,
+              ...knownKeysTransformers,
+            }));
+            expect(canon.canonicalizeQuery(knownKeysAlgebra, blankToVariable))
               .toEqual(canon.canonicalizeQuery(<Algebra.Operation>json, blankToVariable));
           });
         }

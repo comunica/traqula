@@ -1,4 +1,11 @@
-import type { DefaultNodePreVisitor, KnownNodeKeys, TransformContext, Typed, VisitChildren } from '@traqula/core';
+import type {
+  DefaultNodePreVisitor,
+  KnownNodeKeys,
+  TransformContext,
+  Typed,
+  VisitChildren,
+  VisitChildrenHelpers,
+} from '@traqula/core';
 import { TransformerSubTyped, visitElementKeys, visitOnlyKnownKeys } from '@traqula/core';
 import { AstFactory } from './astFactory.js';
 import { pnLocalEscPattern } from './lexer/lexerPatterns.js';
@@ -74,40 +81,6 @@ export class AstTransformer extends TransformerSubTyped<Sparql11Nodes> {
 }
 
 /**
- * Visits the terms of the rows of VALUES, which map variable names to terms.
- * Loops backwards, so the rows are traversed in order.
- * @param rows the rows to visit the terms of.
- * @param helpers steps into a row, and visits its terms.
- */
-const visitValuesRows: VisitChildren<ValuePatternRow[]> = (rows, helpers) => {
-  for (let index = rows.length - 1; index >= 0; index--) {
-    const row = helpers.stepIntoKey(rows, index);
-    for (const variable in row) {
-      helpers.visitKey(row, variable);
-    }
-  }
-};
-
-/**
- * Visits every key of a pattern, stepping into the rows of VALUES, so the default ignoreKeys do not apply to the
- * variables of a row.
- * @param pattern the pattern to visit the keys of.
- * @param helpers visits the value of a key, or steps into the rows of VALUES.
- */
-const visitPatternWithValuesRows: VisitChildren<Record<string, unknown>> = (pattern, helpers) => {
-  for (const key in pattern) {
-    if (!Object.hasOwn(pattern, key)) {
-      continue;
-    }
-    if (key !== 'values') {
-      helpers.visitKey(pattern, key);
-      continue;
-    }
-    visitValuesRows(<ValuePatternRow[]> helpers.stepIntoKey(pattern, key), helpers);
-  }
-};
-
-/**
  * Completes the defaults of an AST transformer: it ignores the `loc` keys, and steps into the rows of VALUES so a
  * variable named `loc` is still visited, unless the default context gives visitChildren.
  * @param defaultContext the default context of the transformer, whose ignoreKeys replace the ignored `loc`.
@@ -122,8 +95,23 @@ export function astTransformerDefaults<Nodes extends Typed>(
     { ignoreKeys: new Set([ 'loc' ]), ...defaultContext },
     defaultContext.visitChildren ?
       defaultNodePreVisitor :
-        { pattern: { visitChildren: <VisitChildren> visitPatternWithValuesRows }, ...defaultNodePreVisitor },
+        { pattern: { visitChildren: <VisitChildren> visitPatternKeys }, ...defaultNodePreVisitor },
   ];
+}
+
+/**
+ * Visits every key of a pattern, stepping into the rows of VALUES like {@link astKnownKeys} does.
+ * @param pattern the pattern to visit the keys of.
+ * @param helpers visits the value of a key, or steps into the rows of VALUES.
+ */
+function visitPatternKeys(pattern: Record<string, unknown>, helpers: VisitChildrenHelpers): void {
+  for (const key of Object.keys(pattern)) {
+    if (key === 'values') {
+      astKnownKeys.pattern.values(<ValuePatternRow[]> helpers.stepIntoKey(pattern, key), helpers);
+    } else {
+      helpers.visitKey(pattern, key);
+    }
+  }
 }
 
 /**
@@ -271,7 +259,15 @@ export function resolveTermIri(term: TermIri, prefixes: Record<string, string>, 
 export const astKnownKeys = {
   path: { items: true, loc: false },
   pattern: {
-    values: visitValuesRows,
+    // The rows of VALUES map variable names to terms; looped backwards, so they are traversed in order
+    values: (rows: ValuePatternRow[], { visitKey, stepIntoKey }: VisitChildrenHelpers) => {
+      for (let index = rows.length - 1; index >= 0; index--) {
+        const row = stepIntoKey(rows, index);
+        for (const variable in row) {
+          visitKey(row, variable);
+        }
+      }
+    },
     name: true,
     variable: true,
     expression: true,

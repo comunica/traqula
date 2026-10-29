@@ -54,13 +54,9 @@ ChildValue<Holder, Key>;
  * The functions a {@link VisitChildren} visits the children of an object with.
  */
 export interface VisitChildrenHelpers {
-  /**
-   * Visits the value at a key, when it is an object or array.
-   */
+  /** Visits the value at a key, when it is an object or array. */
   visitKey: VisitKey;
-  /**
-   * Returns the value at a key, to visit the children within it.
-   */
+  /** Returns the value at a key, to visit the children within it. */
   stepIntoKey: StepIntoKey;
 }
 

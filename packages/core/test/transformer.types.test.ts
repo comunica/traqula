@@ -31,6 +31,7 @@ interface Crate {
   type: 'crate';
   label: string;
   onOpen: () => void;
+  extra: unknown;
   loc: SourceLocation;
   content: Literal | string;
 }
@@ -86,8 +87,8 @@ describe('transformer', () => {
       }>();
       expectTypeOf<keyof KnownNodeKeys<Nodes>['term']>().toEqualTypeOf<never>();
       expectTypeOf<{ pattern: { subject: true }}>().not.toExtend<KnownNodeKeys<Pattern>>();
-      // Not primitives nor functions
-      expectTypeOf<keyof KnownNodeKeys<Crate>['crate']>().toEqualTypeOf<'loc' | 'content'>();
+      // Not primitives nor functions, but unknown values
+      expectTypeOf<keyof KnownNodeKeys<Crate>['crate']>().toEqualTypeOf<'extra' | 'loc' | 'content'>();
     });
 
     it('accepts a visitor of the value of a known node key', () => {

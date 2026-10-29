@@ -92,14 +92,21 @@ unknown,
     // The original operations directly below an EXTEND/ORDER_BY chain rooted at a query form
     const inProjectionScope = new Set<unknown>(projectionScope ? [ value ] : []);
     const noContext = {};
+    const leafContext = { continue: false };
+    // A CONSTRUCT template holds the triples to produce, not patterns of the WHERE clause:
+    // it is never wrapped in a GRAPH, and does not change how the WHERE clause is wrapped.
+    const constructContext = { ignoreKeys: new Set([ 'template' ]) };
     const preVisitor = (orig: Algebra.Operation): TransformContext => {
       if (inputProjectionScope(orig, inProjectionScope.has(orig))) {
         inProjectionScope.add((<Algebra.Single> orig).input);
       }
+      if (orig.type === types.CONSTRUCT) {
+        return constructContext;
+      }
       // UPDATE operations with patterns handle graphs a bit differently, and a pattern holds no operations
       const isLeaf = orig.type === types.DELETE_INSERT ||
         ((orig.type === types.PATTERN || orig.type === types.PATH) && orig.graph);
-      return isLeaf ? { continue: false } : noContext;
+      return isLeaf ? leafContext : noContext;
     };
     const transform = (copy: Algebra.Operation, orig: Algebra.Operation): unknown => {
       if (orig.type === types.DELETE_INSERT) {
@@ -136,12 +143,6 @@ unknown,
       // Track all the unique graph names for the entire Operation
       const operationGraphNames: Record<string, Graph> = Object.create(null);
       for (const [ key, value ] of Object.entries(result)) {
-        // A CONSTRUCT template holds the triples to produce, not patterns of the WHERE clause:
-        // it is never wrapped in a GRAPH, and does not change how the WHERE clause is wrapped.
-        if (orig.type === types.CONSTRUCT && key === 'template') {
-          result[key] = orig.template;
-          continue;
-        }
         const newGraphs: Graph[] = [];
         if (Array.isArray(value)) {
           elementGraphs[key] = value.map((element) => {

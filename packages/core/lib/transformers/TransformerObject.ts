@@ -96,6 +96,11 @@ interface VisitChildrenOptions {
 }
 
 /**
+ * Calls the {@link VisitChildren} of a node.
+ */
+type VisitChildrenOf = (node: object, options: VisitChildrenOptions) => void;
+
+/**
  * The context with every key of a {@link TransformContext} defined, in a fixed order.
  * Contexts of one shape keep the property reads of a traversal fast, also when transformers with different
  * defaults run in the same process.
@@ -246,7 +251,7 @@ export class TransformerObject {
    */
   private createVisitChildrenOf(
     pushChild: (child: object, holder: object, key: string) => void,
-  ): (node: object, options: VisitChildrenOptions) => void {
+  ): VisitChildrenOf {
     let currentNode: object | undefined;
     let currentOptions: VisitChildrenOptions | undefined;
     const currentCopies = new Set<object>();
@@ -400,7 +405,8 @@ export class TransformerObject {
       stackParentKey.push(key);
       stackParent.push(parent);
     };
-    const visitChildrenOf = this.createVisitChildrenOf(pushChild);
+    // Created on first use, so traversals without visitChildren do not pay for it
+    let visitChildrenOf: VisitChildrenOf | undefined;
 
     // Everything after the preVisitor call - split out so it can also run from inside a resolved promise.
     const expand = (curObject: object, curParent: object, curKey: string, context: TransformContext): void => {
@@ -423,6 +429,7 @@ export class TransformerObject {
       // Extend stack if needed. When shortcutted, should still unwind the stack, but no longer add to it.
       if (continues && !didShortCut) {
         if (visitChildren) {
+          visitChildrenOf ??= this.createVisitChildrenOf(pushChild);
           visitChildrenOf(copy, { visitChildren, ignoreKeys, shallowKeys, copiesSteps: copyFlag });
           return;
         }
@@ -618,7 +625,8 @@ export class TransformerObject {
       stackRewriteCount.push(0);
       stackDepth.push(childDepth);
     };
-    const visitChildrenOf = this.createVisitChildrenOf(pushChild);
+    // Created on first use, so traversals without visitChildren do not pay for it
+    let visitChildrenOf: VisitChildrenOf | undefined;
 
     const applyResult = (
       mapperResult: PreOrderMappingReturn,
@@ -662,6 +670,7 @@ export class TransformerObject {
       const newAsRecord = <Record<string, unknown>> newValue;
       childDepth = depth + 1;
       if (visitChildren) {
+        visitChildrenOf ??= this.createVisitChildrenOf(pushChild);
         visitChildrenOf(newAsRecord, { visitChildren, ignoreKeys, shallowKeys, copiesSteps: defaultCopyFlag });
         return;
       }
@@ -804,7 +813,8 @@ export class TransformerObject {
       stack.push(val);
     };
     // A visit copies nothing, also not the shallowKeys
-    const visitChildrenOf = this.createVisitChildrenOf(pushChild);
+    // Created on first use, so traversals without visitChildren do not pay for it
+    let visitChildrenOf: VisitChildrenOf | undefined;
 
     // Everything after the preVisitor call - split out so it can also run from inside a resolved promise.
     const expand = (curObject: object, context: VisitContext): void => {
@@ -820,6 +830,7 @@ export class TransformerObject {
       // Extend stack if needed. When shortcutted, should still unwind the stack, but no longer add to it.
       if (continues && !didShortCut) {
         if (visitChildren) {
+          visitChildrenOf ??= this.createVisitChildrenOf(pushChild);
           visitChildrenOf(curObject, { visitChildren, ignoreKeys, shallowKeys: undefined, copiesSteps: false });
           return;
         }

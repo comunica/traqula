@@ -111,11 +111,8 @@ describe('transformer', () => {
       expectTypeOf<TransformContext<Pattern>>().toExtend<TransformContext>();
     });
 
-    it('finds nodes within arrays and objects without a type, but not within skipped values', () => {
-      interface Location {
-        start: number;
-        within?: Location;
-      }
+    it('finds nodes within arrays and objects without a type, but not within source locations and terms', () => {
+      expectTypeOf<CanHoldNode<SourceLocation | { location: SourceLocation }>>().toEqualTypeOf<false>();
       expectTypeOf<CanHoldNode<string | undefined>>().toEqualTypeOf<false>();
       expectTypeOf<CanHoldNode<() => Literal>>().toEqualTypeOf<false>();
       expectTypeOf<CanHoldNode<{ untyped: { value: string }}>>().toEqualTypeOf<false>();
@@ -123,8 +120,6 @@ describe('transformer', () => {
       expectTypeOf<CanHoldNode<{ termType: 'Quad'; subject: Literal }>>().toEqualTypeOf<false>();
       expectTypeOf<CanHoldNode<string | Record<string, Literal>[]>>().toEqualTypeOf<true>();
       expectTypeOf<CanHoldNode<unknown>>().toEqualTypeOf<true>();
-      expectTypeOf<CanHoldNode<Location | { location: Location }, Location>>().toEqualTypeOf<false>();
-      expectTypeOf<CanHoldNode<Literal, Literal>>().toEqualTypeOf<true>();
     });
   });
 });

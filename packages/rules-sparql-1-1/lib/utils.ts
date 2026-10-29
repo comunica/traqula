@@ -1,5 +1,5 @@
 import type { DefaultNodePreVisitor, KnownNodeKeys, TransformContext, Typed, VisitChildren } from '@traqula/core';
-import { isNode, TransformerSubTyped, visitOnlyKnownKeys } from '@traqula/core';
+import { TransformerSubTyped, visitElementKeys, visitOnlyKnownKeys } from '@traqula/core';
 import { AstFactory } from './astFactory.js';
 import { pnLocalEscPattern } from './lexer/lexerPatterns.js';
 import type { Sparql11Nodes, TermIri, ValuePatternRow } from './Sparql11types.js';
@@ -279,13 +279,7 @@ export const astKnownKeys = {
     patterns: true,
     triples: true,
   },
-  update: { updates: (updates, { visitKey, stepIntoKey }) => {
-    for (let index = updates.length - 1; index >= 0; index--) {
-      const updateWithContext = stepIntoKey(updates, index);
-      visitKey(updateWithContext, 'operation');
-      visitKey(updateWithContext, 'context');
-    }
-  } },
+  update: { updates: visitElementKeys('operation', 'context') },
   query: {
     values: true,
     template: true,
@@ -312,32 +306,14 @@ export const astKnownKeys = {
     delete: true,
     insert: true,
   },
-  datasetClauses: { clauses: (clauses, { visitKey, stepIntoKey }) => {
-    for (let index = clauses.length - 1; index >= 0; index--) {
-      visitKey(stepIntoKey(clauses, index), 'value');
-    }
-  } },
+  datasetClauses: { clauses: visitElementKeys('value') },
   tripleCollection: { triples: true, identifier: true },
   triple: { object: true, subject: true, predicate: true },
   solutionModifier: {
     having: true,
-    orderDefs: (orderDefs, { visitKey, stepIntoKey }) => {
-      for (let index = orderDefs.length - 1; index >= 0; index--) {
-        visitKey(stepIntoKey(orderDefs, index), 'expression');
-      }
-    },
+    orderDefs: visitElementKeys('expression'),
     // A grouping is an expression, or a bind without a type
-    groupings: (groupings, { visitKey, stepIntoKey }) => {
-      for (let index = groupings.length - 1; index >= 0; index--) {
-        if (isNode(groupings[index])) {
-          visitKey(groupings, index);
-        } else {
-          const bind = stepIntoKey(groupings, index);
-          visitKey(bind, 'variable');
-          visitKey(bind, 'value');
-        }
-      }
-    },
+    groupings: visitElementKeys('variable', 'value'),
   },
   expression: { function: true, args: true, expression: true },
   contextDef: { value: true },

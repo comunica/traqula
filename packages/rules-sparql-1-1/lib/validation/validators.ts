@@ -62,6 +62,9 @@ export function getAggregatesOfExpression(
 /**
  * Get the built-in and custom aggregates of an expression.
  * Does not look inside them, nor in EXISTS or NOT EXISTS patterns.
+ * @param expression - The expression to search.
+ * @param isAggregateFunction - Whether a function call is a custom aggregate.
+ * @param astTransformer - The transformer to traverse the expression with.
  */
 function findAggregates(
   expression: Expression,
@@ -390,7 +393,9 @@ export function functionCallIsGood(
  * https://www.w3.org/TR/sparql12-query/#variableScope
  * > In SELECT, the variable v must not be in-scope in the graph pattern of the SELECT clause,
  * > nor used in another select expression earlier in the clause.
- * The select expressions are traversed with the given transformer.
+ * @param query - The query whose select expressions to check.
+ * @param query.variables - The variables and select expressions of the query.
+ * @param astTransformer - The transformer to traverse the select expressions with.
  */
 export function selectExpressionAliasesNotUsedEarlier(
   query: { variables: readonly (TermVariable | Wildcard | { variable: TermVariable; expression: object })[] },

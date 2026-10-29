@@ -175,22 +175,17 @@ Known node types then only visit their keys that can hold nodes; other objects g
 
 `visitOnlyKnownKeys` of `@traqula/core` builds such an allowlist, the compiler checking that it lists exactly the keys
 that can hold a node. A key maps to `true`, or to the `visitChildren` of its value, which is stepped into first.
+`visitElementKeys` gives that callback for an array: it visits its nodes, and the given keys of its other elements.
 Spread `astKnownKeys` to extend the AST allowlists.
 
 ```typescript
-import { visitOnlyKnownKeys } from '@traqula/core';
+import { visitElementKeys, visitOnlyKnownKeys } from '@traqula/core';
 import type { Sparql11Nodes } from '@traqula/rules-sparql-1-1';
 
 const allowlist = visitOnlyKnownKeys<Sparql11Nodes>({
   // ...
   path: { items: true },
-  update: { updates: (updates, { visitKey, stepIntoKey }) => {
-    for (let index = updates.length - 1; index >= 0; index--) {
-      const updateWithContext = stepIntoKey(updates, index);
-      visitKey(updateWithContext, 'operation');
-      visitKey(updateWithContext, 'context');
-    }
-  } },
+  update: { updates: visitElementKeys('operation', 'context') },
   // ...
 });
 ```

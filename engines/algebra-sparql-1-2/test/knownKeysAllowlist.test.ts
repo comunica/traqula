@@ -81,6 +81,22 @@ describe('algebraUtils.knownKeysAllowlist', () => {
     }
   });
 
+  it('lets toAst give the same AST with an algebra transformer that only visits known keys', ({ expect }) => {
+    // A default that visits no children, so only the keys of the allowlist are traversed
+    const algebraTransformer = new TransformerSubTyped<Algebra.Operation>(
+      { visitChildren: () => {} },
+      algebraUtils.knownKeysAllowlist,
+    );
+    for (const suite of suites) {
+      for (const { name, json } of sparqlAlgebraTests(suite, false, false)) {
+        expect(toAst(<Algebra.Operation> json, { algebraTransformer }), name).toEqual(toAst(<Algebra.Operation> json));
+      }
+    }
+    for (const { name, json } of sparqlAlgebraOnlyTests('sparql-1.1-algebra-only')) {
+      expect(toAst(<Algebra.Operation> json, { algebraTransformer }), name).toEqual(toAst(<Algebra.Operation> json));
+    }
+  });
+
   it('lets contexts without an algebra transformer traverse with the default one', ({ expect }) => {
     const parser = new Parser();
     const algebraTransformer = undefined;

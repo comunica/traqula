@@ -5,6 +5,7 @@ import type {
   TransformContext,
   VisitContext,
 } from './TransformerObject.js';
+import { mapAwaitable } from './TransformerObject.js';
 import type { DefaultNodePreVisitor, Safeness, SafeWrap } from './TransformerTyped.js';
 import { TransformerTyped } from './TransformerTyped.js';
 
@@ -153,7 +154,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
           ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
         }
       }
-      return ogPreVisit ? this.withNodeDefaultAsync(casted, ogPreVisit(casted)) : this.withNodeDefault(casted);
+      return mapAwaitable(ogPreVisit?.(casted), context => this.withNodeDefault(casted, context));
     };
     return <any> this.transformObjectAsync(startObject, transformWrapper, preVisitWrapper);
   }
@@ -244,9 +245,8 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
           ogPreTransform = nodeCallBacks[casted.type];
         }
       }
-      return this.withNewValueDefaultAsync(copy, ogPreTransform ?
-        ogPreTransform(copy, orig) :
-          { newValue: copy, reTransform: false });
+      const result = ogPreTransform ? ogPreTransform(copy, orig) : { newValue: copy, reTransform: false };
+      return mapAwaitable(result, resolved => this.withNewValueDefault(copy, resolved));
     };
     return <any> this.transformObjectPreOrderAsync(startObject, preTransformWrapper);
   }
@@ -362,7 +362,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
           ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
         }
       }
-      return ogPreVisit ? this.withNodeDefaultAsync(casted, ogPreVisit(casted)) : this.withNodeDefault(casted);
+      return mapAwaitable(ogPreVisit?.(casted), context => this.withNodeDefault(casted, context));
     };
     return this.visitObjectAsync(startObject, visitWrapper, preVisitWrapper);
   }

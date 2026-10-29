@@ -1840,6 +1840,10 @@ describe('visitOnlyKnownKeys', () => {
     expect(new TransformerTyped<Apple>(visitingAny).visitedKeys({ type: 'apple' })).toEqual(new Set([ 'any' ]));
     const replacing = new TransformerTyped<Apple>(visitingAny, { apple: { visitChildren: visitKeys('core') }});
     expect(replacing.visitedKeys({ type: 'apple' })).toEqual(new Set([ 'core' ]));
+    // Keys within the objects stepped into are not keys of the object itself
+    const stepping = new TransformerTyped<Shelf>({}, { shelf: { visitChildren: (shelf, { visitKey, stepIntoKey }) =>
+      visitKey(stepIntoKey(shelf, 'crate'), 'content') }});
+    expect(stepping.visitedKeys(makeShelf())).toEqual(new Set([ 'crate' ]));
   });
 
   it('replaces the visitChildren of the default of a type by that of a callback', ({ expect }) => {

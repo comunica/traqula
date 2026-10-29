@@ -1,14 +1,12 @@
-import type { SourceLocation, Typed } from '../types.js';
+import type { Typed } from '../types.js';
 import type {
   Awaitable,
   ChildKey,
   ChildValue,
   PreOrderMappingReturn,
-  StepIntoKey,
   TransformContext,
   VisitChildren,
   VisitContext,
-  VisitKey,
 } from './TransformerObject.js';
 import {
   canonicalContext,
@@ -51,62 +49,33 @@ export type DefaultNodePreVisitor<Nodes extends Typed> =
   {[T in Nodes['type']]?: TransformContext<Extract<Nodes, Typed<T>>> };
 
 /**
- * Values that hold no nodes, and are thus not looked into by default: source locations and RDF terms.
+ * The keys of an object whose value can be an object or array, other than a function.
  */
-export type NodeFreeValue = SourceLocation | { termType: string };
+type ObjectValuedKeys<Obj> = {[Key in ChildKey<Obj>]:
+  [Exclude<Extract<ChildValue<Obj, Key>, object>, Function>] extends [never] ? never : Key }[ChildKey<Obj>];
 
 /**
- * Whether a value can hold a node, directly or within arrays and objects without a type.
- * A {@link NodeFreeValue} that is not a node itself is not looked into.
+ * Per node type, every key whose value can be an object, mapped to whether it is visited, or to the
+ * {@link VisitChildren} of its value, which is stepped into first.
  */
-export type CanHoldNode<Value> = unknown extends Value ? true : true extends MemberCanHoldNode<Value> ? true : false;
+export type KnownNodeKeys<Nodes extends Typed> = {[T in Nodes['type']]: {
+  [Key in ObjectValuedKeys<Extract<Nodes, Typed<T>>>]:
+  boolean | VisitChildren<Extract<ChildValue<Extract<Nodes, Typed<T>>, Key>, object>> };
+};
 
 /**
- * Any function, which holds no nodes.
- */
-type AnyFunction = (...args: any[]) => unknown;
-
-/**
- * {@link CanHoldNode} of each member of a union.
- */
-type MemberCanHoldNode<Value> = Value extends Typed ? true :
-  Value extends NodeFreeValue | AnyFunction ? false :
-    Value extends readonly (infer Element)[] ? CanHoldNode<Element> :
-      Value extends object ? ([keyof Value] extends [never] ? true : CanHoldNode<Value[keyof Value]>) : false;
-
-/**
- * The keys of an object that can hold a node, also when the object is a union of objects.
- */
-export type NodeHoldingKeys<Obj> = {[Key in ChildKey<Obj>]:
-  CanHoldNode<ChildValue<Obj, Key>> extends true ? Key : never }[ChildKey<Obj>];
-
-/**
- * Per node type, exactly the keys that can hold a node, mapped to `true` or to the {@link VisitChildren} of the
- * value of the key, which is stepped into first.
- * The compiler rejects missing and other keys, also for a type without such keys.
- */
-export type KnownNodeKeys<Nodes extends Typed> = {[T in Nodes['type']]: KnownNodeKeysOfType<Extract<Nodes, Typed<T>>> };
-
-/**
- * The {@link KnownNodeKeys} of a single node type.
- */
-type KnownNodeKeysOfType<Node, Keys extends PropertyKey = NodeHoldingKeys<Node>> =
-  [Keys] extends [never] ?
-    Record<string, never> :
-      {[Key in Keys]: true | VisitChildren<Extract<ChildValue<Node, Key>, object>> };
-
-/**
- * Creates a {@link DefaultNodePreVisitor} that per node type only visits the known keys that can hold nodes,
- * skipping unknown keys like those of an extension.
- * @param knownKeys per node type, the keys that can hold a node.
+ * Creates a {@link DefaultNodePreVisitor} that per node type only visits the known keys it is told to visit,
+ * skipping the others, and unknown keys like those of an extension.
+ * @param knownKeys per node type, its keys holding objects, and whether to visit them.
  * @return the contexts per node type, to give to a {@link TransformerTyped} or {@link TransformerSubTyped}.
  */
 export function visitOnlyKnownKeys<Nodes extends Typed>(knownKeys: KnownNodeKeys<Nodes>): DefaultNodePreVisitor<Nodes> {
   const contexts: Record<string, TransformContext> = {};
   for (const [ type, keys ] of Object.entries(knownKeys)) {
-    const entries = Object.entries(<Record<string, true | VisitChildren>> keys);
+    const entries = Object.entries(<Record<string, boolean | VisitChildren>> keys);
     const visitedKeys = entries.filter(([ , visitor ]) => visitor === true).map(([ key ]) => key);
-    const valueVisitors = entries.flatMap(([ key, visitor ]) => visitor === true ? [] : [{ key, visitor }]);
+    const valueVisitors = entries
+      .flatMap(([ key, visitor ]) => typeof visitor === 'function' ? [{ key, visitor }] : []);
     // A callback reads the known keys only, instead of checking every key of the node
     const visitChildren: VisitChildren<Record<string, unknown>> = (node, helpers) => {
       for (const key of visitedKeys) {
@@ -177,40 +146,6 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
       { ...this.defaultContext, ...newDefaultContext },
       { ...this.defaultNodePreVisitor, ...newDefaultNodePreVisitor },
     );
-  }
-
-  /**
-   * The keys of an object the default of its type, or else the default context, looks into.
-   * Lets hand-written recursions, like those of toAst, respect allowlists.
-   * @param object the object holding the keys.
-   * @return the keys visited or stepped into, without the ignoreKeys and shallowKeys.
-   */
-  public visitedKeys(object: object): Set<string> {
-    const nodeDefault = this.withNodeDefault(object);
-    const visitChildren = nodeDefault.visitChildren ?? this.defaultContext.visitChildren;
-    let visited: Set<string>;
-    if (visitChildren) {
-      visited = new Set();
-      const visitKey = <VisitKey> ((holder: object, key: string): void => {
-        if (holder === object) {
-          visited.add(key);
-        }
-      });
-      // An empty container, since only the keys of the object itself are recorded
-      const stepIntoKey = <StepIntoKey> ((holder: object, key: string): unknown => {
-        visitKey(holder, <never> key);
-        return Array.isArray((<Record<string, unknown>> holder)[key]) ? [] : {};
-      });
-      visitChildren(object, { visitKey, stepIntoKey });
-    } else {
-      visited = new Set(Object.keys(object));
-    }
-    const ignoreKeys = nodeDefault.ignoreKeys ?? this.defaultContext.ignoreKeys ?? [];
-    const shallowKeys = nodeDefault.shallowKeys ?? this.defaultContext.shallowKeys ?? [];
-    for (const key of [ ...ignoreKeys, ...shallowKeys ]) {
-      visited.delete(key);
-    }
-    return visited;
   }
 
   /**

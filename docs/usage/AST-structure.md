@@ -173,8 +173,8 @@ Pass `astKnownKeysAllowlist` of `@traqula/rules-sparql-1-1` or `@traqula/rules-s
 or `algebraUtils.knownKeysAllowlist`, as the per type defaults.
 Known node types then only visit their keys that can hold nodes; other objects get the default context.
 
-`visitOnlyKnownKeys` of `@traqula/core` builds such an allowlist, the compiler checking that it lists exactly the keys
-that can hold a node. A key maps to `true`, or to the `visitChildren` of its value, which is stepped into first.
+`visitOnlyKnownKeys` of `@traqula/core` builds such an allowlist, the compiler checking that it lists every key holding
+an object: `true` visits it, `false` skips it, and a `visitChildren` steps into its value first.
 `visitElementKeys` gives that callback for an array: it visits its nodes, and the given keys of its other elements.
 Spread `astKnownKeys` to extend the AST allowlists.
 
@@ -184,8 +184,8 @@ import type { Sparql11Nodes } from '@traqula/rules-sparql-1-1';
 
 const allowlist = visitOnlyKnownKeys<Sparql11Nodes>({
   // ...
-  path: { items: true },
-  update: { updates: visitElementKeys('operation', 'context') },
+  path: { items: true, loc: false },
+  update: { updates: visitElementKeys('operation', 'context'), loc: false },
   // ...
 });
 ```

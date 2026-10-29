@@ -41,13 +41,13 @@ export type ChildValue<Holder, Key> = Holder extends readonly (infer Element)[] 
 /**
  * Visits the value at a key of an object, or at an index of an array, when it is an object or array.
  */
-export type VisitKey = <Holder extends object>(holder: Holder, key: ChildKey<Holder>) => void;
+type VisitKey = <Holder extends object>(holder: Holder, key: ChildKey<Holder>) => void;
 
 /**
  * Returns the value at a key, to visit the children within it.
  * When transforming, it is a shallow copy put in its place, so changes do not reach the original.
  */
-export type StepIntoKey = <Holder extends object, Key extends ChildKey<Holder>>(holder: Holder, key: Key) =>
+type StepIntoKey = <Holder extends object, Key extends ChildKey<Holder>>(holder: Holder, key: Key) =>
 ChildValue<Holder, Key>;
 
 /**

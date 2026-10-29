@@ -647,6 +647,26 @@ GROUP BY ?s`);
     expect(result).toMatchObject([{ type: 'pattern' }, { type: 'pattern' }]);
   });
 
+  it('wraps the graph below an EXTEND that is in projection scope', ({ expect }) => {
+    const transformer = toAst11Builder.build();
+    const c = createAstContext();
+    const g = AF.dataFactory.namedNode('http://example/g');
+    const variable = AF.dataFactory.variable!('s');
+    const extend = AF.createExtend(
+      AF.createBgp([ AF.createPattern(variable, variable, variable, g) ]),
+      AF.dataFactory.variable!('x'),
+      AF.createTermExpression(variable),
+    );
+    const outsideGraphs: unknown[] = [];
+    const outside = transformer.removeQuadsRecursive(c, extend, <any> outsideGraphs, false);
+    expect(outsideGraphs).toEqual([ g ]);
+    expect(outside).toMatchObject({ type: 'extend', input: { type: 'bgp' }});
+    const insideGraphs: unknown[] = [];
+    const inside = transformer.removeQuadsRecursive(c, extend, <any> insideGraphs, true);
+    expect(insideGraphs).toEqual([]);
+    expect(inside).toMatchObject({ type: 'extend', input: { type: 'graph', name: g }});
+  });
+
   it('wraps the input of an EXISTS within an aggregate in its GRAPH', ({ expect }) => {
     const result = roundTripQuads(`PREFIX : <http://example/>
 SELECT (COUNT(EXISTS { GRAPH ?g { ?s :q ?o } }) AS ?c) WHERE { ?s :p ?g }`);

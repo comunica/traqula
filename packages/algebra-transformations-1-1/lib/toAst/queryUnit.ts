@@ -1,6 +1,5 @@
 import type * as RDF from '@rdfjs/types';
 import type { VisitContext } from '@traqula/core';
-import { isNode } from '@traqula/core';
 import type {
   BasicGraphPattern,
   Expression,
@@ -79,7 +78,7 @@ AstIndir<'collectVariables', Set<string>, [object, Set<string>, string[]?]> = {
     const rootContext: VisitContext = { ignoreKeys };
     const nodeContext: VisitContext = {};
     const addVariables = (term: unknown): void => {
-      if (isTerm(term) && !isNode(term)) {
+      if (isTerm(term)) {
         forEachTermVariable(term, variable => names.add(variable.value));
       }
     };

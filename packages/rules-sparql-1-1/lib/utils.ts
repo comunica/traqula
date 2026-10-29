@@ -264,12 +264,12 @@ export function resolveTermIri(term: TermIri, prefixes: Record<string, string>, 
 }
 
 /**
- * Per node type, the known keys that can hold nodes, skipping source locations, see {@link visitOnlyKnownKeys}.
+ * Per node type, its keys holding objects, and whether to visit them, see {@link visitOnlyKnownKeys}.
  * The objects without a type that hold nodes are stepped into, so their unknown keys are skipped too.
  * Arrays are looped backwards, so their elements are traversed in order, like a traversal of the keys does.
  */
 export const astKnownKeys = {
-  path: { items: true },
+  path: { items: true, loc: false },
   pattern: {
     values: visitValuesRows,
     name: true,
@@ -278,8 +278,9 @@ export const astKnownKeys = {
     variables: true,
     patterns: true,
     triples: true,
+    loc: false,
   },
-  update: { updates: visitElementKeys('operation', 'context') },
+  update: { updates: visitElementKeys('operation', 'context'), loc: false },
   query: {
     values: true,
     template: true,
@@ -293,9 +294,10 @@ export const astKnownKeys = {
     datasets: true,
     where: true,
     variables: true,
+    loc: false,
   },
-  graph: { graph: true, triples: true },
-  graphRef: { graph: true },
+  graph: { graph: true, triples: true, loc: false },
+  graphRef: { graph: true, loc: false },
   updateOperation: {
     data: true,
     source: true,
@@ -305,20 +307,22 @@ export const astKnownKeys = {
     where: true,
     delete: true,
     insert: true,
+    loc: false,
   },
-  datasetClauses: { clauses: visitElementKeys('value') },
-  tripleCollection: { triples: true, identifier: true },
-  triple: { object: true, subject: true, predicate: true },
+  datasetClauses: { clauses: visitElementKeys('value'), loc: false },
+  tripleCollection: { triples: true, identifier: true, loc: false },
+  triple: { object: true, subject: true, predicate: true, loc: false },
   solutionModifier: {
     having: true,
     orderDefs: visitElementKeys('expression'),
     // A grouping is an expression, or a bind without a type
     groupings: visitElementKeys('variable', 'value'),
+    loc: false,
   },
-  expression: { function: true, args: true, expression: true },
-  contextDef: { value: true },
-  wildcard: {},
-  term: { langOrIri: true },
+  expression: { function: true, args: true, expression: true, loc: false },
+  contextDef: { value: true, loc: false },
+  wildcard: { loc: false },
+  term: { langOrIri: true, loc: false },
 } satisfies KnownNodeKeys<Sparql11Nodes>;
 
 /**

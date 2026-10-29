@@ -125,8 +125,9 @@ The second argument holds the per type defaults: a default context per node `typ
 ### Default Traversal
 
 By default, a transformer visits every key of an object, except its `ignoreKeys`.
-An `AstTransformer` ignores `loc` by default, since source locations hold no nodes; giving your own `ignoreKeys`
-replaces that.
+An `AstTransformer` ignores the `loc` of nodes by default, since source locations hold no nodes; giving your own
+`ignoreKeys` replaces that. Objects without a type, like the rows of VALUES, keep their `loc` key, so a variable named
+`loc` is still visited.
 
 ### Custom Traversal
 
@@ -163,8 +164,6 @@ Keep in mind that:
 - when transforming, `stepIntoKey` returns a copy put in place of the original, so write through it.
 
 The node's `ignoreKeys` and `shallowKeys` still apply to its own keys, and the object you start from is always visited.
-An `AstTransformer` uses `visitChildren` for patterns, stepping into the rows of VALUES, so it still visits a variable
-named `loc`.
 
 ### Known Keys Allowlists
 

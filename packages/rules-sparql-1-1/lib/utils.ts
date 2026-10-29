@@ -3,7 +3,6 @@ import type {
   KnownNodeKeys,
   TransformContext,
   Typed,
-  VisitChildren,
   VisitChildrenHelpers,
 } from '@traqula/core';
 import { TransformerSubTyped, visitElementKeys, visitOnlyKnownKeys } from '@traqula/core';
@@ -60,8 +59,7 @@ export enum CommonIRIs {
 /**
  * A {@link TransformerSubTyped} specialized for the SPARQL 1.1 AST node types.
  * Provides a type-safe visitor/transformer that dispatches based on node `type` and `subType` fields.
- * Source locations hold no nodes, so it ignores the `loc` keys, unless the default context gives other ignoreKeys.
- * It steps into the rows of VALUES, so it still visits a variable named `loc`.
+ * Source locations hold no nodes, so it ignores the `loc` of nodes, unless the default context gives ignoreKeys.
  *
  * @example
  * ```typescript
@@ -76,40 +74,31 @@ export class AstTransformer extends TransformerSubTyped<Sparql11Nodes> {
     defaultContext: TransformContext = {},
     defaultNodePreVisitor: DefaultNodePreVisitor<Sparql11Nodes> = {},
   ) {
-    super(...astTransformerDefaults(defaultContext, defaultNodePreVisitor));
+    super(...astTransformerDefaults(astKnownKeys, defaultContext, defaultNodePreVisitor));
   }
 }
 
 /**
- * Completes the defaults of an AST transformer: it ignores the `loc` keys, and steps into the rows of VALUES so a
- * variable named `loc` is still visited, unless the default context gives visitChildren.
- * @param defaultContext the default context of the transformer, whose ignoreKeys replace the ignored `loc`.
- * @param defaultNodePreVisitor the per type defaults of the transformer, which can replace those of patterns.
+ * Completes the defaults of an AST transformer: unless the default context gives ignoreKeys, it ignores the `loc` of
+ * the nodes, since source locations hold no nodes. Objects without a type, like the rows of VALUES, keep their `loc`
+ * key, so a variable named `loc` is still visited.
+ * @param knownKeys the known keys of the AST, whose node types skip their `loc`.
+ * @param defaultContext the default context of the transformer.
+ * @param defaultNodePreVisitor the per type defaults of the transformer, which replace those skipping `loc`.
  * @return the completed default context and per type defaults.
  */
 export function astTransformerDefaults<Nodes extends Typed>(
+  knownKeys: KnownNodeKeys<Nodes>,
   defaultContext: TransformContext,
   defaultNodePreVisitor: DefaultNodePreVisitor<Nodes>,
 ): [TransformContext, DefaultNodePreVisitor<Nodes>] {
+  if (defaultContext.ignoreKeys) {
+    return [ defaultContext, defaultNodePreVisitor ];
+  }
+  const skipLoc = { ignoreKeys: new Set([ 'loc' ]) };
   return [
-    { ignoreKeys: new Set([ 'loc' ]), ...defaultContext },
-    defaultContext.visitChildren ?
-      defaultNodePreVisitor :
-        {
-          pattern: {
-            // Visits every key of a pattern, stepping into the rows of VALUES like astKnownKeys does
-            visitChildren: <VisitChildren> ((pattern: Record<string, unknown>, helpers: VisitChildrenHelpers) => {
-              for (const key of Object.keys(pattern)) {
-                if (key === 'values') {
-                  astKnownKeys.pattern.values(<ValuePatternRow[]> helpers.stepIntoKey(pattern, key), helpers);
-                } else {
-                  helpers.visitKey(pattern, key);
-                }
-              }
-            }),
-          },
-          ...defaultNodePreVisitor,
-        },
+    defaultContext,
+    { ...Object.fromEntries(Object.keys(knownKeys).map(type => [ type, skipLoc ])), ...defaultNodePreVisitor },
   ];
 }
 

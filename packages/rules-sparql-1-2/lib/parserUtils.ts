@@ -80,15 +80,14 @@ Partial<SparqlContext & SparqlGeneratorContext & { origSource: string; offset?: 
 
 /**
  * A {@link TransformerSubTyped} specialized for the SPARQL 1.2 AST node types.
- * Source locations hold no nodes, so it ignores the `loc` keys, unless the default context gives other ignoreKeys.
- * It steps into the rows of VALUES, so it still visits a variable named `loc`.
+ * Source locations hold no nodes, so it ignores the `loc` of nodes, unless the default context gives ignoreKeys.
  */
 export class AstTransformer extends TransformerSubTyped<Sparql12Nodes> {
   public constructor(
     defaultContext: TransformContext = {},
     defaultNodePreVisitor: DefaultNodePreVisitor<Sparql12Nodes> = {},
   ) {
-    super(...astTransformerDefaults(defaultContext, defaultNodePreVisitor));
+    super(...astTransformerDefaults(astKnownKeys, defaultContext, defaultNodePreVisitor));
   }
 }
 

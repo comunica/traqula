@@ -1,6 +1,6 @@
 import { ParserBuilder } from '@traqula/core';
 import type { gram } from '@traqula/rules-sparql-1-1';
-import { AstFactory, completeParseContext, lex } from '@traqula/rules-sparql-1-1';
+import { AstFactory, AstTransformer, completeParseContext, lex } from '@traqula/rules-sparql-1-1';
 import { beforeEach, describe, it } from 'vitest';
 import { Parser, sparql11ParserBuilder } from '../lib/index.js';
 
@@ -238,5 +238,14 @@ describe('extra parser coverage', () => {
       const result = parser.parse('PREFIX constructor: <http://ex.org/> SELECT * WHERE { ?s constructor:foo ?o }');
       expect(result).toMatchObject({ type: 'query', subType: 'select' });
     });
+  });
+
+  it('visits the VALUES of a variable named loc', ({ expect }) => {
+    const ast = parser.parse('SELECT * WHERE { VALUES ?loc { <http://a> } }');
+    const visited: object[] = [];
+    new AstTransformer().visitNode(ast, { term: { visitor: (term) => {
+      visited.push(term);
+    } }});
+    expect(visited).toContainEqual(expect.objectContaining({ value: 'http://a' }));
   });
 });

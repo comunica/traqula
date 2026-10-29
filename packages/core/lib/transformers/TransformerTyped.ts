@@ -51,16 +51,20 @@ export type DefaultNodePreVisitor<Nodes extends Typed> =
 /**
  * The keys of an object whose value can be an object or array, other than a function, including unknown values.
  */
-type ObjectValuedKeys<Obj> = {[Key in ChildKey<Obj>]: unknown extends ChildValue<Obj, Key> ? Key :
-    [Exclude<Extract<ChildValue<Obj, Key>, object>, Function>] extends [never] ? never : Key }[ChildKey<Obj>];
+type ObjectValuedKeys<Obj> = {
+  [Key in ChildKey<Obj>]: unknown extends ChildValue<Obj, Key> ? Key :
+      [Exclude<Extract<ChildValue<Obj, Key>, object>, Function>] extends [never] ? never : Key
+}[ChildKey<Obj>];
 
 /**
  * Per node type, every key whose value can be an object, mapped to whether it is visited, or to the
  * {@link VisitChildren} of its value, which is stepped into first.
  */
-export type KnownNodeKeys<Nodes extends Typed> = {[T in Nodes['type']]: {
-  [Key in ObjectValuedKeys<Extract<Nodes, Typed<T>>>]:
-  boolean | VisitChildren<Extract<ChildValue<Extract<Nodes, Typed<T>>, Key>, object>> };
+export type KnownNodeKeys<Nodes extends Typed> = {
+  [T in Nodes['type']]: {
+    [Key in ObjectValuedKeys<Extract<Nodes, Typed<T>>>]:
+      | boolean
+      | VisitChildren<Extract<ChildValue<Extract<Nodes, Typed<T>>, Key>, object>> };
 };
 
 /**
@@ -95,7 +99,6 @@ export function visitOnlyKnownKeys<Nodes extends Typed>(knownKeys: KnownNodeKeys
 
 /**
  * Creates a {@link VisitChildren} of an array that visits its nodes, and the given keys of its other elements.
- * Loops backwards, so the elements are traversed in order.
  * @param keys the keys to visit of the elements without a type.
  * @return the callback visiting the elements of an array.
  */
@@ -103,6 +106,7 @@ export function visitElementKeys<Element extends object>(
   ...keys: ChildKey<Exclude<Element, Typed>>[]
 ): VisitChildren<Element[]> {
   return (elements, { visitKey, stepIntoKey }) => {
+    // Loops backwards, so the elements are traversed in order.
     for (let index = elements.length - 1; index >= 0; index--) {
       if (isNode(elements[index])) {
         visitKey(elements, index);

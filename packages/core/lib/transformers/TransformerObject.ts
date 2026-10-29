@@ -54,13 +54,9 @@ ChildValue<Holder, Key>;
  * The functions a {@link VisitChildren} visits the children of an object with.
  */
 export interface VisitChildrenHelpers {
-  /**
-   * Visits the value at a key, when it is an object or array.
-   */
+  /** Visits the value at a key, when it is an object or array. */
   visitKey: VisitKey;
-  /**
-   * Returns the value at a key, to visit the children within it.
-   */
+  /** Returns the value at a key, to visit the children within it. */
   stepIntoKey: StepIntoKey;
 }
 
@@ -77,21 +73,13 @@ export type VisitChildren<Obj = object> = {
  * How a traversal calls the {@link VisitChildren} of one node.
  */
 interface VisitChildrenOptions {
-  /**
-   * The callback visiting the children of the node.
-   */
+  /** The callback visiting the children of the node. */
   visitChildren: VisitChildren;
-  /**
-   * The keys of the node that are not visited.
-   */
+  /** The keys of the node that are not visited. */
   ignoreKeys: Set<string> | undefined;
-  /**
-   * The keys of the node that are shallowly copied, and not visited.
-   */
+  /** The keys of the node that are shallowly copied, and not visited. */
   shallowKeys: Set<string> | undefined;
-  /**
-   * Whether stepping into a key puts a shallow copy in its place.
-   */
+  /** Whether stepping into a key puts a shallow copy in its place. */
   copiesSteps: boolean;
 }
 

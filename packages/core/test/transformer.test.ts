@@ -1114,10 +1114,10 @@ describe('pre-order per type defaults', () => {
     }
   });
 
-  it('apply the default of the mapped node when the mapper returns a value without a type', ({ expect }) => {
+  it('apply the default context when the mapper returns a value without a type', ({ expect }) => {
     const { leaves, leaf } = recordLeaves();
     typed.transformNodePreOrder(tree, { wrap: copy => ({ newValue: { untyped: copy.inner }}), leaf });
-    expect(leaves).toEqual([]);
+    expect(leaves).toEqual([ 'skipped' ]);
     expect(typed.transformNodePreOrder(tree, { wrap: () => ({ newValue: 'primitive' }) })).toBe('primitive');
   });
 });

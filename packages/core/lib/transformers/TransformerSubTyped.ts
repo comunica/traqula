@@ -207,9 +207,8 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
           ogPreTransform = nodeCallBacks[casted.type];
         }
       }
-      return this.withNewValueDefault(copy, ogPreTransform ?
-        ogPreTransform(copy, orig) :
-          { newValue: copy, reTransform: false });
+      const result = ogPreTransform ? ogPreTransform(copy, orig) : { newValue: copy, reTransform: false };
+      return this.withNodeDefault(result.newValue, result);
     };
     return <any> this.transformObjectPreOrder(startObject, preTransformWrapper);
   }
@@ -246,7 +245,7 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
         }
       }
       const result = ogPreTransform ? ogPreTransform(copy, orig) : { newValue: copy, reTransform: false };
-      return mapAwaitable(result, resolved => this.withNewValueDefault(copy, resolved));
+      return mapAwaitable(result, resolved => this.withNodeDefault(resolved.newValue, resolved));
     };
     return <any> this.transformObjectPreOrderAsync(startObject, preTransformWrapper);
   }

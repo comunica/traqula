@@ -171,17 +171,6 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
   }
 
   /**
-   * Completes the result of a pre-order mapper with the per type default of the node it returns, or else of the
-   * node it mapped.
-   * @param mapped the node that was mapped.
-   * @param result the result of the mapper.
-   * @return the per type default, overwritten by the result.
-   */
-  protected withNewValueDefault(mapped: object, result: PreOrderMappingReturn): PreOrderMappingReturn {
-    return this.withNodeDefault(isNode(result.newValue) ? result.newValue : mapped, result);
-  }
-
-  /**
    * Transform a single node ({@link Typed}).
    * @param startObject the object from which we will start the transformation,
    *   potentially visiting and transforming its descendants along the way.
@@ -290,9 +279,8 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
       if (casted.type) {
         ogPreTransform = nodeCallBacks[casted.type];
       }
-      return this.withNewValueDefault(copy, ogPreTransform ?
-        ogPreTransform(copy, orig) :
-          { newValue: copy, reTransform: false });
+      const result = ogPreTransform ? ogPreTransform(copy, orig) : { newValue: copy, reTransform: false };
+      return this.withNodeDefault(result.newValue, result);
     };
 
     return <any> this.transformObjectPreOrder(startObject, preTransformWrapper);
@@ -318,7 +306,7 @@ export class TransformerTyped<Nodes extends Typed> extends TransformerObject {
         ogPreTransform = nodeCallBacks[casted.type];
       }
       const result = ogPreTransform ? ogPreTransform(copy, orig) : { newValue: copy, reTransform: false };
-      return mapAwaitable(result, resolved => this.withNewValueDefault(copy, resolved));
+      return mapAwaitable(result, resolved => this.withNodeDefault(resolved.newValue, resolved));
     };
 
     return <any> this.transformObjectPreOrderAsync(startObject, preTransformWrapper);

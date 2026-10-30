@@ -240,12 +240,14 @@ describe('extra parser coverage', () => {
     });
   });
 
-  it('visits the VALUES of a variable named loc', ({ expect }) => {
-    const ast = parser.parse('SELECT * WHERE { VALUES ?loc { <http://a> } }');
+  it('visits the VALUES of variables named loc and type', ({ expect }) => {
+    const ast = parser.parse('SELECT * WHERE { VALUES (?loc ?type) { (<http://a> <http://b>) (UNDEF <http://c>) } }');
     const visited: object[] = [];
     new AstTransformer().visitNode(ast, { term: { visitor: (term) => {
       visited.push(term);
     } }});
-    expect(visited).toContainEqual(expect.objectContaining({ value: 'http://a' }));
+    for (const value of [ 'http://a', 'http://b', 'http://c' ]) {
+      expect(visited).toContainEqual(expect.objectContaining({ value }));
+    }
   });
 });

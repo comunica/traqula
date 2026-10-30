@@ -9,6 +9,14 @@ import { eTypes } from './core.js';
 type Graph = RDF.NamedNode | RDF.DefaultGraph | RDF.Variable;
 
 /**
+ * Identifies a graph by its term type and value, as the value alone does not tell `<>` from the default graph,
+ * nor the variable `?g` from the relative IRI `<g>`.
+ */
+function graphKey(graph: Graph): string {
+  return `${graph.termType}:${graph.value}`;
+}
+
+/**
  * Wraps an operation in a GRAPH. An expression cannot be wrapped, so the input of every EXISTS within it is wrapped.
  */
 function wrapInGraph(AF: AlgebraFactory, op: Algebra.Operation, graph: Graph): object {
@@ -89,7 +97,10 @@ unknown,
   ) => {
     // Per transformed operation, the graphs it hands to its parent, in order of occurrence
     const graphsOfOp = new Map<object, Graph[]>();
-    // The original operations directly below an EXTEND/ORDER_BY chain rooted at a query form
+    // The original operations directly below an EXTEND/ORDER_BY chain rooted at a query form.
+    // Tracked by identity, which assumes the operations form a tree: an operation object occurring both in
+    // and out of projection scope is in scope at its occurrences visited after the one in scope.
+    // That only adds GRAPH boundaries, so the query keeps its meaning, but the shape depends on the order.
     const inProjectionScope = new Set<unknown>(projectionScope ? [ value ] : []);
     const noContext = {};
     const defaultGraph = AF.dataFactory.defaultGraph();
@@ -118,16 +129,18 @@ unknown,
 
     // Removes the graph of a quad pattern or path, and registers it to its parent.
     const removeGraph = (copy: Algebra.Pattern | Algebra.Path): unknown => {
+      // A pattern or path without a graph, e.g. one not built by the algebra factory, is in the default graph
+      const graph = <Graph | undefined> copy.graph ?? defaultGraph;
       // Remove non-default graphs
       let result = copy;
-      if (!defaultGraph.equals(copy.graph)) {
+      if (!defaultGraph.equals(graph)) {
         if (copy.type === types.PATTERN) {
           result = AF.createPattern(copy.subject, copy.predicate, copy.object);
         } else {
           result = AF.createPath(copy.subject, copy.predicate, copy.object);
         }
       }
-      graphsOfOp.set(result, [ <Graph> copy.graph ]);
+      graphsOfOp.set(result, [ graph ]);
       return result;
     };
 
@@ -156,7 +169,7 @@ unknown,
         if (newGraphs.length > 0) {
           keyGraphs[key] = newGraphs;
           for (const graph of newGraphs) {
-            operationGraphNames[graph.value] = graph;
+            operationGraphNames[graphKey(graph)] = graph;
           }
         }
       }
@@ -277,8 +290,9 @@ Algebra.Join | Algebra.Graph | Algebra.Bgp,
     const graphPatterns: Record<string, { patterns: Algebra.Pattern[]; graph: RDF.NamedNode }> = Object.create(null);
     for (const [ index, pattern ] of op.patterns.entries()) {
       const graph = graphs[index];
-      graphPatterns[graph.value] = graphPatterns[graph.value] ?? { patterns: [], graph };
-      graphPatterns[graph.value].patterns.push(pattern);
+      const key = graphKey(graph);
+      graphPatterns[key] = graphPatterns[key] ?? { patterns: [], graph };
+      graphPatterns[key].patterns.push(pattern);
     }
 
     // Create graph objects for every cluster

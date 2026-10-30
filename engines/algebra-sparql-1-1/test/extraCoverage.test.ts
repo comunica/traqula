@@ -285,6 +285,87 @@ GROUP BY ?s`);
     });
   });
 
+  describe('removing the graphs of quads', () => {
+    const s = AF.dataFactory.variable!('s');
+    const p = AF.dataFactory.variable!('p');
+    const o = AF.dataFactory.variable!('o');
+
+    function generate(op: Algebra.Operation): string {
+      return generator.generate(F.forcedAutoGenTree(toAst(op)));
+    }
+
+    it('reads a pattern or path without a graph as default graph content', ({ expect }) => {
+      const pattern = <Algebra.Pattern> { type: 'pattern', subject: s, predicate: p, object: o };
+      const path = <Algebra.Path> {
+        type: 'path',
+        subject: s,
+        predicate: AF.createLink(AF.dataFactory.namedNode('http://p')),
+        object: o,
+      };
+      const algebra = AF.createProject(AF.createJoin([
+        AF.createBgp([ pattern, AF.createPattern(s, p, o, AF.dataFactory.namedNode('http://g')) ]),
+        path,
+      ]), [ s ]);
+      expect(generate(algebra)).toBe(`SELECT ?s WHERE {
+  ?s ?p ?o .
+  GRAPH <http://g> {
+    ?s ?p ?o .
+  }
+  ?s <http://p> ?o .
+}`);
+    });
+
+    it('does not take the default graph for the graph <>', ({ expect }) => {
+      const algebra = AF.createProject(AF.createBgp([
+        AF.createPattern(s, p, o),
+        AF.createPattern(s, p, o, AF.dataFactory.namedNode('')),
+      ]), [ s ]);
+      expect(generate(algebra)).toBe(`SELECT ?s WHERE {
+  ?s ?p ?o .
+  GRAPH <> {
+    ?s ?p ?o .
+  }
+}`);
+    });
+
+    it('does not take the graph variable ?g for the graph <g>', ({ expect }) => {
+      const algebra = AF.createProject(AF.createBgp([
+        AF.createPattern(s, p, o, AF.dataFactory.variable!('g')),
+        AF.createPattern(s, p, o, AF.dataFactory.namedNode('g')),
+      ]), [ s ]);
+      expect(generate(algebra)).toBe(`SELECT ?s WHERE {
+  GRAPH ?g {
+    ?s ?p ?o .
+  }
+  GRAPH <g> {
+    ?s ?p ?o .
+  }
+}`);
+    });
+
+    it('wraps the input of an EXTEND in projection scope itself', ({ expect }) => {
+      const transformer = toAst11Builder.build();
+      const g = AF.dataFactory.namedNode('http://g');
+      const extend = AF.createExtend(
+        AF.createBgp([ AF.createPattern(s, p, o, g) ]),
+        AF.dataFactory.variable!('x'),
+        AF.createTermExpression(s),
+      );
+      const inScope: (typeof g)[] = [];
+      expect(transformer.removeQuadsRecursive(createAstContext(), extend, inScope, true)).toMatchObject({
+        type: 'extend',
+        input: { type: 'graph', name: g, input: { type: 'bgp' }},
+      });
+      expect(inScope).toEqual([]);
+      const outOfScope: (typeof g)[] = [];
+      expect(transformer.removeQuadsRecursive(createAstContext(), extend, outOfScope, false)).toMatchObject({
+        type: 'extend',
+        input: { type: 'bgp' },
+      });
+      expect(outOfScope).toEqual([ g ]);
+    });
+  });
+
   describe('recurseGraph variable replacement', () => {
     it('replaces variables inside recurseGraph when extend variable matches graph var', ({ expect }) => {
       const algebra = toAlgebra(

@@ -80,8 +80,8 @@ export class AstTransformer extends TransformerSubTyped<Sparql11Nodes> {
 
 /**
  * Completes the defaults of an AST transformer: unless the default context gives ignoreKeys, it ignores the `loc` of
- * the nodes, since source locations hold no nodes. Objects without a type, like the rows of VALUES, keep their `loc`
- * key, so a variable named `loc` is still visited.
+ * the nodes, since source locations hold no nodes. Only objects whose `type` is a string are nodes, so the rows of
+ * VALUES keep their `loc` key, also when a variable is named `type`, and a variable named `loc` is still visited.
  * @param knownKeys the known keys of the AST, whose node types skip their `loc`.
  * @param defaultContext the default context of the transformer.
  * @param defaultNodePreVisitor the per type defaults of the transformer, which replace those skipping `loc`.

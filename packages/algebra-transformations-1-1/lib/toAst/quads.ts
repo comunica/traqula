@@ -100,7 +100,7 @@ unknown,
       return noContext;
     };
 
-    const opIsBoundy = (operation: Algebra.Operation, graph: Graph | undefined): boolean => {
+    const opIsBoundary = (operation: Algebra.Operation, graph: Graph | undefined): boolean => {
       let result = [
         types.PROJECT,
         types.ASK,
@@ -120,7 +120,7 @@ unknown,
     const removeGraph = (copy: Algebra.Pattern | Algebra.Path): unknown => {
       // Remove non-default graphs
       let result = copy;
-      if (defaultGraph.equals(copy.graph)) {
+      if (!defaultGraph.equals(copy.graph)) {
         if (copy.type === types.PATTERN) {
           result = AF.createPattern(copy.subject, copy.predicate, copy.object);
         } else {
@@ -174,7 +174,7 @@ unknown,
       // graphs merge into one GRAPH block instead of each wrapping itself separately.
       // A FILTER on the graph variable is a boundary too: ?g is not bound within GRAPH ?g (18.5).
       const onlyGraph = graphNameSet.length === 1 ? operationGraphNames[graphNameSet[0]] : undefined;
-      const isBoundary = opIsBoundy(orig, onlyGraph);
+      const isBoundary = opIsBoundary(orig, onlyGraph);
 
       if (graphNameSet.length === 1 && !isBoundary) {
         graphsOfOp.set(result, [ operationGraphNames[graphNameSet[0]] ]);
@@ -198,7 +198,7 @@ unknown,
             // If no graph or DefaultGraph, do nothing, else wrap in plainly in Graph
             return graph === undefined || defaultGraph.equals(graph) ? child : wrapInGraph(AF, child, graph);
           });
-        } else if (defaultGraph.equals(keyGraphs[key][0])) {
+        } else if (!defaultGraph.equals(keyGraphs[key][0])) {
           result[key] = wrapInGraph(AF, value, keyGraphs[key][0]);
         }
       }

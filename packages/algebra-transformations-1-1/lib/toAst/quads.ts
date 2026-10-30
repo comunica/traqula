@@ -6,12 +6,12 @@ import { defaultAlgebraTransformer, types } from '../toAlgebra/index.js';
 import type { AstIndir } from './core.js';
 import { eTypes } from './core.js';
 
-const DEFAULT_GRAPH_NAME = '';
+type Graph = RDF.NamedNode | RDF.DefaultGraph | RDF.Variable;
 
 /**
  * Wraps an operation in a GRAPH. An expression cannot be wrapped, so the input of every EXISTS within it is wrapped.
  */
-function wrapInGraph(AF: AlgebraFactory, op: Algebra.Operation, graph: RDF.NamedNode | RDF.DefaultGraph): object {
+function wrapInGraph(AF: AlgebraFactory, op: Algebra.Operation, graph: Graph): object {
   if (op.type !== types.EXPRESSION) {
     return AF.createGraph(op, <RDF.NamedNode> graph);
   }
@@ -58,8 +58,6 @@ function mentionsVariable(
   return found;
 }
 
-type Graph = RDF.NamedNode | RDF.DefaultGraph;
-
 /**
  * Removes quad component of triple and ...
  */
@@ -83,47 +81,57 @@ unknown,
 [unknown, Graph[], boolean]
 > = {
   name: 'removeQuadsRecursive',
-  fun: ({ SUBRULE }) => ({
-    algebraFactory: AF,
-    algebraTransformer = defaultAlgebraTransformer,
-  }, value, graphs, projectionScope) => {
+  fun: ({ SUBRULE }) => (
+    { algebraFactory: AF, algebraTransformer = defaultAlgebraTransformer },
+    value,
+    graphs,
+    projectionScope,
+  ) => {
     // Per transformed operation, the graphs it hands to its parent, in order of occurrence
-    const graphsOf = new Map<object, Graph[]>();
+    const graphsOfOp = new Map<object, Graph[]>();
     // The original operations directly below an EXTEND/ORDER_BY chain rooted at a query form
     const inProjectionScope = new Set<unknown>(projectionScope ? [ value ] : []);
     const noContext = {};
-    /**
-     * Puts the input of an operation in projection scope.
-     * @param orig the operation whose input is read as SELECT state.
-     * @return no context, so the input is traversed.
-     */
+    const defaultGraph = AF.dataFactory.defaultGraph();
+
+    // Puts the input of an operation in projection scope.
     const scopeInput = (orig: Algebra.Single): TransformContext => {
       inProjectionScope.add(orig.input);
       return noContext;
     };
-    /**
-     * Removes the graph of a quad pattern or path, and registers it to its parent.
-     * @param copy the pattern or path.
-     * @return the pattern or path without graph.
-     */
-    const removeGraph = (copy: Algebra.Pattern | Algebra.Path): unknown => {
-      const graph = <Graph> copy.graph;
-      // Remove non-default graphs
-      const result = graph.value === DEFAULT_GRAPH_NAME ?
-        copy :
-          (copy.type === types.PATTERN ?
-            AF.createPattern(copy.subject, copy.predicate, copy.object) :
-            AF.createPath(copy.subject, copy.predicate, copy.object));
-      graphsOf.set(result, [ graph ]);
+
+    const opIsBoundy = (operation: Algebra.Operation, graph: Graph | undefined): boolean => {
+      let result = [
+        types.PROJECT,
+        types.ASK,
+        types.DESCRIBE,
+        types.CONSTRUCT,
+        types.SERVICE,
+        types.GROUP,
+        types.ORDER_BY,
+      ].includes(operation.type);
+      result ||= operation.type === types.EXTEND && inProjectionScope.has(operation);
+      result ||= operation.type === types.FILTER && graph?.termType === 'Variable' &&
+        mentionsVariable(SUBRULE, algebraTransformer, operation.expression, graph);
       return result;
     };
 
-    /**
-     * Wraps the keys of an operation that hold graphs, once its children are transformed.
-     * @param result the copy of the operation, holding the transformed children.
-     * @param orig the original operation.
-     * @return the operation, with its graphs registered in graphsOf.
-     */
+    // Removes the graph of a quad pattern or path, and registers it to its parent.
+    const removeGraph = (copy: Algebra.Pattern | Algebra.Path): unknown => {
+      // Remove non-default graphs
+      let result = copy;
+      if (defaultGraph.equals(copy.graph)) {
+        if (copy.type === types.PATTERN) {
+          result = AF.createPattern(copy.subject, copy.predicate, copy.object);
+        } else {
+          result = AF.createPath(copy.subject, copy.predicate, copy.object);
+        }
+      }
+      graphsOfOp.set(result, [ <Graph> copy.graph ]);
+      return result;
+    };
+
+    // Wraps the keys of an operation that hold graphs, once its children are transformed.
     function wrapGraphsOfKeys(result: Record<string, any>, orig: Algebra.Operation): unknown {
       // Unique graphs per key
       const keyGraphs: Record<string, Graph[]> = Object.create(null);
@@ -137,12 +145,12 @@ unknown,
         const newGraphs: Graph[] = [];
         if (Array.isArray(value)) {
           elementGraphs[key] = value.map((element) => {
-            const graphsOfElement = graphsOf.get(element) ?? [];
+            const graphsOfElement = graphsOfOp.get(element) ?? [];
             newGraphs.push(...graphsOfElement);
             return graphsOfElement.length === 1 ? graphsOfElement[0] : undefined;
           });
         } else {
-          newGraphs.push(...graphsOf.get(value) ?? []);
+          newGraphs.push(...graphsOfOp.get(value) ?? []);
         }
         // If a graph was registered, we register the discovery we did at this key of the object
         if (newGraphs.length > 0) {
@@ -165,32 +173,20 @@ unknown,
       // LEFT_JOIN, MINUS, UNION) do defer: they share a group with sibling patterns, so matching
       // graphs merge into one GRAPH block instead of each wrapping itself separately.
       // A FILTER on the graph variable is a boundary too: ?g is not bound within GRAPH ?g (18.5).
-      const onlyGraph = <RDF.Term | undefined> (graphNameSet.length === 1 ?
-        operationGraphNames[graphNameSet[0]] :
-        undefined);
-      const isBoundary = [
-        types.PROJECT,
-        types.ASK,
-        types.DESCRIBE,
-        types.CONSTRUCT,
-        types.SERVICE,
-        types.GROUP,
-        types.ORDER_BY,
-      ].includes(orig.type) ||
-        (orig.type === types.EXTEND && inProjectionScope.has(orig)) ||
-        (orig.type === types.FILTER && onlyGraph?.termType === 'Variable' &&
-          mentionsVariable(SUBRULE, algebraTransformer, orig.expression, onlyGraph));
+      const onlyGraph = graphNameSet.length === 1 ? operationGraphNames[graphNameSet[0]] : undefined;
+      const isBoundary = opIsBoundy(orig, onlyGraph);
+
       if (graphNameSet.length === 1 && !isBoundary) {
-        graphsOf.set(result, [ operationGraphNames[graphNameSet[0]] ]);
+        graphsOfOp.set(result, [ operationGraphNames[graphNameSet[0]] ]);
         return result;
       }
+
       // The graphs are wrapped here, so to the parent this is default graph content.
       // Registering nothing would let the parent pull it into the GRAPH of one of its siblings.
-      const defaultGraph = [ AF.dataFactory.defaultGraph() ];
       if (orig.type === types.BGP) {
         // This is the specific case that `op` got changed because of using quads.
         const split = SUBRULE(splitAlgBgpToGraphs, orig, <RDF.NamedNode[]> keyGraphs.patterns);
-        graphsOf.set(split, defaultGraph);
+        graphsOfOp.set(split, [ defaultGraph ]);
         return split;
       }
       // Multiple graphs (or project), need to create graph objects for them
@@ -200,14 +196,14 @@ unknown,
           result[key] = value.map((child, idx) => {
             const graph = elementGraphs[key][idx];
             // If no graph or DefaultGraph, do nothing, else wrap in plainly in Graph
-            return graph === undefined || graph.termType === 'DefaultGraph' ? child : wrapInGraph(AF, child, graph);
+            return graph === undefined || defaultGraph.equals(graph) ? child : wrapInGraph(AF, child, graph);
           });
-        } else if (keyGraphs[key][0].termType !== 'DefaultGraph') {
+        } else if (defaultGraph.equals(keyGraphs[key][0])) {
           result[key] = wrapInGraph(AF, value, keyGraphs[key][0]);
         }
       }
       if (!isBoundary) {
-        graphsOf.set(result, defaultGraph);
+        graphsOfOp.set(result, [ defaultGraph ]);
       }
       return result;
     }
@@ -257,7 +253,7 @@ unknown,
       },
     );
     for (const operation of Array.isArray(result) ? result : [ result ]) {
-      graphs.push(...graphsOf.get(operation) ?? []);
+      graphs.push(...graphsOfOp.get(operation) ?? []);
     }
     return result;
   },
@@ -272,10 +268,11 @@ unknown,
 export const splitAlgBgpToGraphs: AstIndir<
   'splitBgpToGraphs',
 Algebra.Join | Algebra.Graph | Algebra.Bgp,
-[Algebra.Bgp, (RDF.NamedNode | RDF.DefaultGraph)[]]
+[Algebra.Bgp, (Graph)[]]
 > = {
   name: 'splitBgpToGraphs',
   fun: () => ({ algebraFactory: AF }, op, graphs) => {
+    const defaultGraph = AF.dataFactory.defaultGraph();
     // Split patterns per graph
     const graphPatterns: Record<string, { patterns: Algebra.Pattern[]; graph: RDF.NamedNode }> = Object.create(null);
     for (const [ index, pattern ] of op.patterns.entries()) {
@@ -286,10 +283,10 @@ Algebra.Join | Algebra.Graph | Algebra.Bgp,
 
     // Create graph objects for every cluster
     const children: (Algebra.Graph | Algebra.Bgp)[] = [];
-    for (const [ graphName, { patterns, graph }] of Object.entries(graphPatterns)) {
+    for (const [ , { patterns, graph }] of Object.entries(graphPatterns)) {
       const bgp = AF.createBgp(patterns);
       // No name means DefaultGraph, otherwise wrap in graph
-      children.push(graphName === DEFAULT_GRAPH_NAME ? bgp : AF.createGraph(bgp, graph));
+      children.push(defaultGraph.equals(graph) ? bgp : AF.createGraph(bgp, graph));
     }
 
     // Join the graph objects

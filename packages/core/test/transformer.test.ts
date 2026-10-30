@@ -4,7 +4,13 @@ import type {
   TransformContext,
   VisitChildren,
 } from '../lib/index.js';
-import { TransformerTyped, TransformerSubTyped, TransformerObject, visitOnlyKnownKeys } from '../lib/index.js';
+import {
+  TransformerTyped,
+  TransformerSubTyped,
+  TransformerObject,
+  forEveryNodeType,
+  visitOnlyKnownKeys,
+} from '../lib/index.js';
 
 interface Fruit {
   type: 'fruit';
@@ -401,6 +407,36 @@ describe('transformerTyped without-type branches', () => {
     const obj = { type: 'fruit', child: { noType: true }};
     transformer.visitNode(obj, { fruit: { visitor: () => visited.push('fruit') }});
     expect(visited).toContain('fruit');
+  });
+});
+
+describe('forEveryNodeType', () => {
+  const transformer = new TransformerTyped<{ type: string }>();
+
+  it('gives every node type the fallback, unless overridden', ({ expect }) => {
+    const visited: string[] = [];
+    const obj = { type: 'fruit', child: { type: 'unknown', child: { type: 'vegetable' }}};
+    transformer.visitNode(obj, forEveryNodeType({ visitor: (node: { type: string }) => visited.push(node.type) }, {
+      vegetable: { visitor: () => visited.push('override') },
+    }));
+    expect(visited).toEqual([ 'override', 'unknown', 'fruit' ]);
+  });
+
+  it('does not take objects with a type that is not a string for nodes', ({ expect }) => {
+    const visited: object[] = [];
+    // Like a VALUES row binding a variable named type
+    const row = { type: { termType: 'NamedNode', value: 'http://a' }};
+    transformer.visitNode({ type: 'values', rows: [ row ]}, forEveryNodeType({ visitor: (node: object) => {
+      visited.push(node);
+    } }));
+    expect(visited).not.toContain(row);
+    expect(visited).toHaveLength(1);
+  });
+
+  it('does not take inherited or symbol keys for node types', ({ expect }) => {
+    const callbacks = forEveryNodeType({ visitor: () => {} });
+    expect(Object.is(Reflect.get(callbacks, 'toString'), Reflect.get(Object.prototype, 'toString'))).toBe(true);
+    expect((<Record<symbol, unknown>> callbacks)[Symbol.iterator]).toBeUndefined();
   });
 });
 

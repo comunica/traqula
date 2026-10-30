@@ -1,5 +1,6 @@
 import { Canonicalizer, algebraUtils } from '@traqula/algebra-transformations-1-2';
 import type { Algebra } from '@traqula/algebra-transformations-1-2';
+import { forEveryNodeType } from '@traqula/core';
 import { Generator as Generator12 } from '@traqula/generator-sparql-1-2';
 import { Parser as Parser12 } from '@traqula/parser-sparql-1-2';
 import { AstFactory } from '@traqula/rules-sparql-1-2';
@@ -18,8 +19,7 @@ describe('sparql 1.2 algebra transformer', () => {
   // A cyclic unknown key, like the metadata Comunica adds to operations
   const metadata: Record<string, unknown> = { type: 'metadata' };
   metadata.self = metadata;
-  const addMetadata = Object.fromEntries(Object.keys(algebraUtils.knownKeysAllowlist)
-    .map(type => [ type, { transform: (copy: object) => ({ ...copy, metadata }) }]));
+  const addMetadata = forEveryNodeType({ transform: (copy: object) => ({ ...copy, metadata }) });
 
   /**
    * Generates the canonical SPARQL of the algebra, also when only visiting the known keys of the algebra with metadata.

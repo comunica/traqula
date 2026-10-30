@@ -1,5 +1,6 @@
 import type * as RDF from '@rdfjs/types';
 import type { IndirDefArg, TransformContext, TransformerSubTyped } from '@traqula/core';
+import { forEveryNodeType } from '@traqula/core';
 import type { AlgebraFactory } from '../algebraFactory.js';
 import type { Algebra } from '../index.js';
 import { defaultAlgebraTransformer, types } from '../toAlgebra/index.js';
@@ -236,8 +237,7 @@ unknown,
 
     const result = algebraTransformer.transformNode<'unsafe', object>(
       <object> value,
-      {
-        ...Object.fromEntries(Object.values(types).map(type => [ type, { transform: wrapGraphsOfKeys }])),
+      forEveryNodeType({ transform: wrapGraphsOfKeys }, {
         // The input of a query form is read as SELECT state, see registerProjection
         [types.PROJECT]: scopeCallbacks,
         [types.ASK]: scopeCallbacks,
@@ -263,7 +263,7 @@ unknown,
         [types.PATH]: quadCallbacks,
         // UPDATE operations with patterns handle graphs a bit differently: they are kept as is
         [types.DELETE_INSERT]: { preVisitor: () => ({ continue: false, copy: false }) },
-      },
+      }),
     );
     for (const operation of Array.isArray(result) ? result : [ result ]) {
       graphs.push(...graphsOfOp.get(operation) ?? []);

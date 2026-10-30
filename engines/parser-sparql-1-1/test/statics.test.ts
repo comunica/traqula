@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { BaseQuad } from '@rdfjs/types';
+import { forEveryNodeType } from '@traqula/core';
 import { AstFactory, AstTransformer, astKnownKeysAllowlist, lex } from '@traqula/rules-sparql-1-1';
 import {
   getStaticFilePath,
@@ -42,10 +43,7 @@ describe('a SPARQL 1.1 parser', () => {
     const visitor = (node: object): void => {
       visited.add(node);
     };
-    transformer.visitNode(
-      <object> ast,
-      Object.fromEntries(Object.keys(astKnownKeysAllowlist).map(type => [ type, { visitor }])),
-    );
+    transformer.visitNode(<object> ast, forEveryNodeType({ visitor }));
     return visited;
   }
 

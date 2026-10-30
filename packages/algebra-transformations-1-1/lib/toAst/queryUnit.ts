@@ -1,5 +1,6 @@
 import type * as RDF from '@rdfjs/types';
 import type { PreOrderMappingReturn, VisitContext } from '@traqula/core';
+import { forEveryNodeType } from '@traqula/core';
 import type {
   BasicGraphPattern,
   Expression,
@@ -82,7 +83,7 @@ AstIndir<'collectVariables', Set<string>, [object, Set<string>, string[]?]> = {
         forEachTermVariable(term, variable => names.add(variable.value));
       }
     };
-    // Transformers do not step into terms, so the visitor of a node reads the terms it holds
+    // Callbacks only fire on typed nodes, not on terms, so the visitor of a node reads the terms it holds
     const callbacks = {
       preVisitor: (node: object) => node === value ? rootContext : nodeContext,
       visitor: (node: object) => {
@@ -95,7 +96,7 @@ AstIndir<'collectVariables', Set<string>, [object, Set<string>, string[]?]> = {
         }
       },
     };
-    algebraTransformer.visitNode(value, Object.fromEntries(Object.values(types).map(type => [ type, callbacks ])));
+    algebraTransformer.visitNode(value, forEveryNodeType(callbacks));
     return names;
   },
 };

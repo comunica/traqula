@@ -160,7 +160,7 @@ export function selectExpressionAliasesNotInScope(
     // Grouping only keeps the variables of the group keys in scope.
     // Without a callback, any function call might be an aggregate, so fewer variables are in scope.
     const isAggregateFunction = namedAggregatorTest(options) ?? (() => true);
-    if (!isGroupedQuery(<T11.QuerySelect> <unknown> query, isAggregateFunction)) {
+    if (!isGroupedQuery(<T11.QuerySelect> <unknown> query, isAggregateFunction, options.astTransformer)) {
       findPatternBoundedVars(query.where, inScopeVars);
     }
     for (const variable of getGroupKeyVariables(query.solutionModifiers.group)) {
@@ -172,7 +172,7 @@ export function selectExpressionAliasesNotInScope(
       }
     }
   }
-  selectExpressionAliasesNotUsedEarlier(query);
+  selectExpressionAliasesNotUsedEarlier(query, options.astTransformer);
   selectExpressionAliasesNotInValues(query);
 }
 

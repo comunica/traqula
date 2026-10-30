@@ -1,5 +1,6 @@
 import type {
   Algebra,
+  TransformerConfigs,
 } from '@traqula/algebra-transformations-1-1';
 import {
   registerProjection,
@@ -193,10 +194,12 @@ export const toAst11Builder = IndirBuilder
 
 /**
  * Transform an operation to a SPARQL 1.1 Traqula AST.
- * @param op
+ * @param op - the operation to transform.
+ * @param options - the transformers the rules traverse with, defaulting to ones that visit all keys.
+ * @returns the AST of the operation.
  */
-export function toAst(op: Algebra.Operation): SparqlQuery {
-  const c = createAstContext();
+export function toAst(op: Algebra.Operation, options: TransformerConfigs = {}): SparqlQuery {
+  const c = createAstContext(options);
   const transformer = toAst11Builder.build();
   return transformer.algToSparql(c, op);
 }

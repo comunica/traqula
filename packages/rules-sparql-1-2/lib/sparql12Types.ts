@@ -3,6 +3,7 @@ import type * as T11 from '@traqula/rules-sparql-1-1';
 
 export type Sparql12Nodes =
   | GraphRef
+  | GraphQuads
   | UpdateOperation
   | Update
   | Query

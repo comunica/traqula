@@ -1,18 +1,26 @@
 import type * as RDF from '@rdfjs/types';
-import type { IndirDefArg } from '@traqula/core';
+import type { IndirDefArg, TransformContext, TransformerSubTyped } from '@traqula/core';
+import { forEveryNodeType } from '@traqula/core';
 import type { AlgebraFactory } from '../algebraFactory.js';
 import type { Algebra } from '../index.js';
-import { types } from '../toAlgebra/index.js';
-import { visitOperationSub } from '../util.js';
+import { defaultAlgebraTransformer, types } from '../toAlgebra/index.js';
 import type { AstIndir } from './core.js';
 import { eTypes } from './core.js';
 
-const DEFAULT_GRAPH_NAME = '';
+type Graph = RDF.NamedNode | RDF.DefaultGraph | RDF.Variable;
+
+/**
+ * Identifies a graph by its term type and value, as the value alone does not tell `<>` from the default graph,
+ * nor the variable `?g` from the relative IRI `<g>`.
+ */
+function graphKey(graph: Graph): string {
+  return `${graph.termType}:${graph.value}`;
+}
 
 /**
  * Wraps an operation in a GRAPH. An expression cannot be wrapped, so the input of every EXISTS within it is wrapped.
  */
-function wrapInGraph(AF: AlgebraFactory, op: Algebra.Operation, graph: RDF.NamedNode | RDF.DefaultGraph): object {
+function wrapInGraph(AF: AlgebraFactory, op: Algebra.Operation, graph: Graph): object {
   if (op.type !== types.EXPRESSION) {
     return AF.createGraph(op, <RDF.NamedNode> graph);
   }
@@ -44,11 +52,12 @@ export const algTermMentionsVariable: AstIndir<'termMentionsVariable', boolean, 
  */
 function mentionsVariable(
   SUBRULE: IndirDefArg['SUBRULE'],
+  algebraTransformer: TransformerSubTyped<Algebra.Operation>,
   expression: Algebra.Expression,
   variable: RDF.Variable,
 ): boolean {
   let found = false;
-  visitOperationSub(expression, {}, { [types.EXPRESSION]: {
+  algebraTransformer.visitNodeSpecific(expression, {}, { [types.EXPRESSION]: {
     [eTypes.EXISTENCE]: { preVisitor: () => ({ continue: false }) },
     [eTypes.TERM]: { preVisitor: (term) => {
       found = SUBRULE(algTermMentionsVariable, term.term, variable);
@@ -68,130 +77,43 @@ export const removeAlgQuads: AstIndir<'removeQuads', Algebra.Operation, [Algebra
 };
 
 /**
- * Whether `knownOp`'s `input` will be read as a SELECT-expression EXTEND rather than a BIND -
- * mirrors `registerProjection`'s `c.project`. True under PROJECT/ASK/CONSTRUCT/DESCRIBE, carried through an
- * EXTEND/ORDER_BY chain, false otherwise.
- * Also true under a GROUP whose input is an EXTEND binding a group variable:
- * `translateAlgGroup` reads it as a `GROUP BY (expr AS ?v)` condition rather than a BIND.
- */
-function inputProjectionScope(knownOp: Algebra.Operation, projectionScope: boolean): boolean {
-  if ([ types.PROJECT, types.ASK, types.CONSTRUCT, types.DESCRIBE ].includes(knownOp.type)) {
-    return true;
-  }
-  if (knownOp.type === types.GROUP) {
-    const input = knownOp.input;
-    return input.type === types.EXTEND &&
-      knownOp.variables.some(variable => variable.value === input.variable.value);
-  }
-  if (knownOp.type === types.EXTEND || knownOp.type === types.ORDER_BY) {
-    return projectionScope;
-  }
-  return false;
-}
-
-/**
  * Removes quad component of triples and wrap found bgps in Algebra.GraphOperations
- * Mainly returns same type as first arg
+ * Mainly returns same type as first arg.
+ * Traverses with the algebra transformer, so its allowlist decides which keys hold operations.
+ * @param graphs receives the graphs the value hands to its parent, in order of occurrence.
  * @param projectionScope whether we are directly below an EXTEND/ORDER_BY chain rooted at a
- * PROJECT/ASK/CONSTRUCT/DESCRIBE - see {@link inputProjectionScope}.
+ * PROJECT/ASK/CONSTRUCT/DESCRIBE, so read as SELECT state rather than a pattern.
  */
 export const removeAlgQuadsRecursive: AstIndir<
   'removeQuadsRecursive',
 unknown,
-[unknown, (RDF.NamedNode | RDF.DefaultGraph)[], boolean]
+[unknown, Graph[], boolean]
 > = {
   name: 'removeQuadsRecursive',
-  fun: ({ SUBRULE }) => ({ algebraFactory: AF }, unknownVal, graphs, projectionScope) => {
-    if (Array.isArray(unknownVal)) {
-      return unknownVal.map(sub => SUBRULE(removeAlgQuadsRecursive, sub, graphs, projectionScope));
-    }
+  fun: ({ SUBRULE }) => (
+    { algebraFactory: AF, algebraTransformer = defaultAlgebraTransformer },
+    value,
+    graphs,
+    projectionScope,
+  ) => {
+    // Per transformed operation, the graphs it hands to its parent, in order of occurrence
+    const graphsOfOp = new Map<object, Graph[]>();
+    // The original operations directly below an EXTEND/ORDER_BY chain rooted at a query form.
+    // Tracked by identity, which assumes the operations form a tree: an operation object occurring both in
+    // and out of projection scope is in scope at its occurrences visited after the one in scope.
+    // That only adds GRAPH boundaries, so the query keeps its meaning, but the shape depends on the order.
+    const inProjectionScope = new Set<unknown>(projectionScope ? [ value ] : []);
+    const noContext = {};
+    const defaultGraph = AF.dataFactory.defaultGraph();
 
-    // Operations have a string `type`. VALUES bindings can hold a `type` key too (for `?type`), holding a term.
-    if (typeof unknownVal !== 'object' || unknownVal === null || !('type' in unknownVal) ||
-      typeof unknownVal.type !== 'string') {
-      return unknownVal;
-    }
-    const knownOp = <Algebra.Operation> unknownVal;
+    // Puts the input of an operation in projection scope.
+    const scopeInput = (orig: Algebra.Single): TransformContext => {
+      inProjectionScope.add(orig.input);
+      return noContext;
+    };
 
-    // UPDATE operations with Patterns handle graphs a bit differently - do not traverse
-    if (knownOp.type === types.DELETE_INSERT) {
-      return unknownVal;
-    }
-
-    // If triple or path register graph and return - graphs will be populated by in order graph occurrence
-    if ((knownOp.type === types.PATTERN || knownOp.type === types.PATH) && knownOp.graph) {
-      const graph = <RDF.NamedNode | RDF.DefaultGraph> knownOp.graph;
-      // We create a list that tracks, for each pattern the original graph and remove the graph
-      graphs.push(graph);
-      // Remove non-default graphs
-      if (graph.value !== DEFAULT_GRAPH_NAME) {
-        return knownOp.type === types.PATTERN ?
-          AF.createPattern(knownOp.subject, knownOp.predicate, knownOp.object) :
-          AF.createPath(knownOp.subject, knownOp.predicate, knownOp.object);
-      }
-      return knownOp;
-    }
-
-    // We build our `op` again.
-    // Keys are those of an operation, never user-controlled names (see the `type` check above),
-    //  and the result is an operation again, so it keeps the regular Object prototype.
-    const result: any = {};
-    // Unique graphs per key (keyof T)
-    const keyGraphs: Record<string, (RDF.NamedNode | RDF.DefaultGraph)[]> = Object.create(null);
-    // For keys holding an array: the graph each element registered, if any.
-    // Not every element registers one (e.g. the term `?s` in `IF(?s, EXISTS {...}, EXISTS {...})`),
-    // so the graphs of a key cannot be matched with its elements by index.
-    const elementGraphs: Record<string, (RDF.NamedNode | RDF.DefaultGraph | undefined)[]> = Object.create(null);
-    // Track all the unique graph names for the entire Operation
-    const operationGraphNames: Record<string, RDF.NamedNode | RDF.DefaultGraph> = Object.create(null);
-    for (const [ key, value ] of Object.entries(knownOp)) {
-      // A CONSTRUCT template holds the triples to produce, not patterns of the WHERE clause:
-      // it is never wrapped in a GRAPH, and does not change how the WHERE clause is wrapped.
-      if (knownOp.type === types.CONSTRUCT && key === 'template') {
-        result[key] = value;
-        continue;
-      }
-      const newGraphs: (RDF.NamedNode | RDF.DefaultGraph)[] = [];
-      // Only `input` ever continues a projection-scope chain; every other key (an EXTEND's own
-      // `expression`, for instance) starts fresh outside of it - see `inputProjectionScope`.
-      const childScope = key === 'input' && inputProjectionScope(knownOp, projectionScope);
-      if (Array.isArray(value)) {
-        elementGraphs[key] = [];
-        result[key] = value.map((element) => {
-          const graphsOfElement: (RDF.NamedNode | RDF.DefaultGraph)[] = [];
-          const newElement = SUBRULE(removeAlgQuadsRecursive, element, graphsOfElement, childScope);
-          elementGraphs[key].push(graphsOfElement.length === 1 ? graphsOfElement[0] : undefined);
-          newGraphs.push(...graphsOfElement);
-          return newElement;
-        });
-      } else {
-        result[key] = SUBRULE(removeAlgQuadsRecursive, value, newGraphs, childScope);
-      }
-
-      // If a graph was registered, we register the discovery we did at this key of the object
-      //  and create graph identifier map
-      if (newGraphs.length > 0) {
-        keyGraphs[key] = newGraphs;
-        for (const graph of newGraphs) {
-          operationGraphNames[graph.value] = graph;
-        }
-      }
-    }
-
-    const graphNameSet = Object.keys(operationGraphNames);
-    // Finally, if we found graphs at some keys, wrap those keys in Algebra.graphOperations
-    if (graphNameSet.length > 0) {
-      // PROJECT/SERVICE/GROUP/ORDER_BY, and EXTEND in projection scope, never bracket their
-      // input - they're external SELECT state, not a pattern - so the GRAPH must wrap right
-      // below them, not defer further up. The same goes for the other query forms, ASK/DESCRIBE/CONSTRUCT,
-      // whose WHERE clause would otherwise lose its GRAPH. FILTER and the multi-branch combinators (JOIN,
-      // LEFT_JOIN, MINUS, UNION) do defer: they share a group with sibling patterns, so matching
-      // graphs merge into one GRAPH block instead of each wrapping itself separately.
-      // A FILTER on the graph variable is a boundary too: ?g is not bound within GRAPH ?g (18.5).
-      const onlyGraph = <RDF.Term | undefined> (graphNameSet.length === 1 ?
-        operationGraphNames[graphNameSet[0]] :
-        undefined);
-      const isBoundary = [
+    const opIsBoundary = (operation: Algebra.Operation, graph: Graph | undefined): boolean => {
+      let result = [
         types.PROJECT,
         types.ASK,
         types.DESCRIBE,
@@ -199,39 +121,153 @@ unknown,
         types.SERVICE,
         types.GROUP,
         types.ORDER_BY,
-      ].includes(knownOp.type) ||
-        (knownOp.type === types.EXTEND && projectionScope) ||
-        (knownOp.type === types.FILTER && onlyGraph?.termType === 'Variable' &&
-          mentionsVariable(SUBRULE, knownOp.expression, onlyGraph));
-      if (graphNameSet.length === 1 && !isBoundary) {
-        graphs.push(operationGraphNames[graphNameSet[0]]);
-      } else if (knownOp.type === types.BGP) {
-        // This is the specific case that `op` got changed because of using quads. -
-        // Its graphs get wrapped here, so to its parent it is default graph content, see below.
-        graphs.push(AF.dataFactory.defaultGraph());
-        return SUBRULE(splitAlgBgpToGraphs, knownOp, keyGraphs.patterns);
-      } else {
-        // Multiple graphs (or project), need to create graph objects for them
-        for (const key of Object.keys(keyGraphs)) {
-          const value = result[key];
-          if (Array.isArray(value)) {
-            result[key] = value.map((child, idx) => {
-              const graph = elementGraphs[key][idx];
-              // If no graph or DefaultGraph, do nothing, else wrap in plainly in Graph
-              return graph === undefined || graph.termType === 'DefaultGraph' ? child : wrapInGraph(AF, child, graph);
-            });
-          } else if (keyGraphs[key][0].termType !== 'DefaultGraph') {
-            result[key] = wrapInGraph(AF, value, keyGraphs[key][0]);
-          }
-        }
-        // The graphs are wrapped here, so to the parent this is default graph content.
-        // Registering nothing would let the parent pull it into the GRAPH of one of its siblings.
-        if (!isBoundary) {
-          graphs.push(AF.dataFactory.defaultGraph());
+      ].includes(operation.type);
+      result ||= operation.type === types.EXTEND && inProjectionScope.has(operation);
+      result ||= operation.type === types.FILTER && graph?.termType === 'Variable' &&
+        mentionsVariable(SUBRULE, algebraTransformer, operation.expression, graph);
+      return result;
+    };
+
+    // Removes the graph of a quad pattern or path, and registers it to its parent.
+    const removeGraph = (copy: Algebra.Pattern | Algebra.Path): unknown => {
+      // A pattern or path without a graph, e.g. one not built by the algebra factory, is in the default graph
+      const graph = <Graph | undefined> copy.graph ?? defaultGraph;
+      // Remove non-default graphs
+      let result = copy;
+      if (!defaultGraph.equals(graph)) {
+        if (copy.type === types.PATTERN) {
+          result = AF.createPattern(copy.subject, copy.predicate, copy.object);
+        } else {
+          result = AF.createPath(copy.subject, copy.predicate, copy.object);
         }
       }
+      graphsOfOp.set(result, [ graph ]);
+      return result;
+    };
+
+    // Wraps the keys of an operation that hold graphs, once its children are transformed.
+    function wrapGraphsOfKeys(result: Record<string, any>, orig: Algebra.Operation): unknown {
+      // Unique graphs per key
+      const keyGraphs: Record<string, Graph[]> = Object.create(null);
+      // For keys holding an array: the graph each element registered, if any.
+      // Not every element registers one (e.g. the term `?s` in `IF(?s, EXISTS {...}, EXISTS {...})`),
+      // so the graphs of a key cannot be matched with its elements by index.
+      const elementGraphs: Record<string, (Graph | undefined)[]> = Object.create(null);
+      // Track all the unique graph names for the entire Operation
+      const operationGraphNames: Record<string, Graph> = Object.create(null);
+      for (const [ key, value ] of Object.entries(result)) {
+        const newGraphs: Graph[] = [];
+        if (Array.isArray(value)) {
+          elementGraphs[key] = value.map((element) => {
+            const graphsOfElement = graphsOfOp.get(element) ?? [];
+            newGraphs.push(...graphsOfElement);
+            return graphsOfElement.length === 1 ? graphsOfElement[0] : undefined;
+          });
+        } else {
+          newGraphs.push(...graphsOfOp.get(value) ?? []);
+        }
+        // If a graph was registered, we register the discovery we did at this key of the object
+        if (newGraphs.length > 0) {
+          keyGraphs[key] = newGraphs;
+          for (const graph of newGraphs) {
+            operationGraphNames[graphKey(graph)] = graph;
+          }
+        }
+      }
+
+      const graphNameSet = Object.keys(operationGraphNames);
+      if (graphNameSet.length === 0) {
+        return result;
+      }
+      // Finally, as we found graphs at some keys, wrap those keys in Algebra.graphOperations.
+      // PROJECT/SERVICE/GROUP/ORDER_BY, and EXTEND in projection scope, never bracket their
+      // input - they're external SELECT state, not a pattern - so the GRAPH must wrap right
+      // below them, not defer further up. The same goes for the other query forms, ASK/DESCRIBE/CONSTRUCT,
+      // whose WHERE clause would otherwise lose its GRAPH. FILTER and the multi-branch combinators (JOIN,
+      // LEFT_JOIN, MINUS, UNION) do defer: they share a group with sibling patterns, so matching
+      // graphs merge into one GRAPH block instead of each wrapping itself separately.
+      // A FILTER on the graph variable is a boundary too: ?g is not bound within GRAPH ?g (18.5).
+      const onlyGraph = graphNameSet.length === 1 ? operationGraphNames[graphNameSet[0]] : undefined;
+      const isBoundary = opIsBoundary(orig, onlyGraph);
+
+      if (graphNameSet.length === 1 && !isBoundary) {
+        graphsOfOp.set(result, [ operationGraphNames[graphNameSet[0]] ]);
+        return result;
+      }
+
+      // The graphs are wrapped here, so to the parent this is default graph content.
+      // Registering nothing would let the parent pull it into the GRAPH of one of its siblings.
+      if (orig.type === types.BGP) {
+        // This is the specific case that `op` got changed because of using quads.
+        const split = SUBRULE(splitAlgBgpToGraphs, orig, <RDF.NamedNode[]> keyGraphs.patterns);
+        graphsOfOp.set(split, [ defaultGraph ]);
+        return split;
+      }
+      // Multiple graphs (or project), need to create graph objects for them
+      for (const key of Object.keys(keyGraphs)) {
+        const value = result[key];
+        if (Array.isArray(value)) {
+          result[key] = value.map((child, idx) => {
+            const graph = elementGraphs[key][idx];
+            // If no graph or DefaultGraph, do nothing, else wrap in plainly in Graph
+            return graph === undefined || defaultGraph.equals(graph) ? child : wrapInGraph(AF, child, graph);
+          });
+        } else if (!defaultGraph.equals(keyGraphs[key][0])) {
+          result[key] = wrapInGraph(AF, value, keyGraphs[key][0]);
+        }
+      }
+      if (!isBoundary) {
+        graphsOfOp.set(result, [ defaultGraph ]);
+      }
+      return result;
     }
 
+    // A pattern or path holds no operations with graphs
+    const quadCallbacks = { preVisitor: () => ({ continue: false }), transform: removeGraph };
+    const scopeCallbacks = { preVisitor: scopeInput, transform: wrapGraphsOfKeys };
+
+    /**
+     * Carries the projection scope of an EXTEND/ORDER_BY on to its input.
+     * @param orig the EXTEND/ORDER_BY.
+     * @return no context, so the input is traversed.
+     */
+    function carryScope(orig: Algebra.Extend | Algebra.OrderBy): TransformContext {
+      return inProjectionScope.has(orig) ? scopeInput(orig) : noContext;
+    }
+
+    const result = algebraTransformer.transformNode<'unsafe', object>(
+      <object> value,
+      forEveryNodeType({ transform: wrapGraphsOfKeys }, {
+        // The input of a query form is read as SELECT state, see registerProjection
+        [types.PROJECT]: scopeCallbacks,
+        [types.ASK]: scopeCallbacks,
+        [types.DESCRIBE]: scopeCallbacks,
+        [types.CONSTRUCT]: {
+          // A CONSTRUCT template holds the triples to produce, not patterns of the WHERE clause:
+          // it is never wrapped in a GRAPH, and does not change how the WHERE clause is wrapped.
+          preVisitor: (orig: Algebra.Construct) => ({ ...scopeInput(orig), ignoreKeys: new Set([ 'template' ]) }),
+          transform: wrapGraphsOfKeys,
+        },
+        // An EXTEND/ORDER_BY chain carries the projection scope
+        [types.EXTEND]: { preVisitor: carryScope, transform: wrapGraphsOfKeys },
+        [types.ORDER_BY]: { preVisitor: carryScope, transform: wrapGraphsOfKeys },
+        [types.GROUP]: {
+          // `translateAlgGroup` reads an EXTEND binding a group variable as a `GROUP BY (expr AS ?v)` condition
+          preVisitor: (orig: Algebra.Group) => orig.input.type === types.EXTEND &&
+          orig.variables.some(variable => variable.value === (<Algebra.Extend> orig.input).variable.value) ?
+            scopeInput(orig) :
+            noContext,
+          transform: wrapGraphsOfKeys,
+        },
+        [types.PATTERN]: quadCallbacks,
+        [types.PATH]: quadCallbacks,
+        // UPDATE operations with patterns handle graphs a bit differently: they are kept as is
+        [types.DELETE_INSERT]: { preVisitor: () => ({ continue: false, copy: false }) },
+      }),
+    );
+    for (const operation of Array.isArray(result) ? result : [ result ]) {
+      graphs.push(...graphsOfOp.get(operation) ?? []);
+    }
     return result;
   },
 };
@@ -245,24 +281,26 @@ unknown,
 export const splitAlgBgpToGraphs: AstIndir<
   'splitBgpToGraphs',
 Algebra.Join | Algebra.Graph | Algebra.Bgp,
-[Algebra.Bgp, (RDF.NamedNode | RDF.DefaultGraph)[]]
+[Algebra.Bgp, (Graph)[]]
 > = {
   name: 'splitBgpToGraphs',
   fun: () => ({ algebraFactory: AF }, op, graphs) => {
+    const defaultGraph = AF.dataFactory.defaultGraph();
     // Split patterns per graph
     const graphPatterns: Record<string, { patterns: Algebra.Pattern[]; graph: RDF.NamedNode }> = Object.create(null);
     for (const [ index, pattern ] of op.patterns.entries()) {
       const graph = graphs[index];
-      graphPatterns[graph.value] = graphPatterns[graph.value] ?? { patterns: [], graph };
-      graphPatterns[graph.value].patterns.push(pattern);
+      const key = graphKey(graph);
+      graphPatterns[key] = graphPatterns[key] ?? { patterns: [], graph };
+      graphPatterns[key].patterns.push(pattern);
     }
 
     // Create graph objects for every cluster
     const children: (Algebra.Graph | Algebra.Bgp)[] = [];
-    for (const [ graphName, { patterns, graph }] of Object.entries(graphPatterns)) {
+    for (const [ , { patterns, graph }] of Object.entries(graphPatterns)) {
       const bgp = AF.createBgp(patterns);
       // No name means DefaultGraph, otherwise wrap in graph
-      children.push(graphName === DEFAULT_GRAPH_NAME ? bgp : AF.createGraph(bgp, graph));
+      children.push(defaultGraph.equals(graph) ? bgp : AF.createGraph(bgp, graph));
     }
 
     // Join the graph objects

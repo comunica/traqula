@@ -1,12 +1,13 @@
 import { Canonicalizer, algebraUtils } from '@traqula/algebra-transformations-1-2';
 import type { Algebra } from '@traqula/algebra-transformations-1-2';
+import { forEveryNodeType } from '@traqula/core';
 import { Generator as Generator12 } from '@traqula/generator-sparql-1-2';
 import { Parser as Parser12 } from '@traqula/parser-sparql-1-2';
 import { AstFactory } from '@traqula/rules-sparql-1-2';
 import { positiveTest, sparqlAlgebraOnlyTests, sparqlAlgebraTests } from '@traqula/test-utils';
 import { describe, it } from 'vitest';
 import { toAst, toAlgebra } from '../lib/index.js';
-import { suites } from './algebra.test.js';
+import { knownKeysTransformers, suites } from './algebra.test.js';
 
 // https://www.w3.org/2001/sw/DataAccess/tests/r2#syntax-basic-01
 // https://www.w3.org/2009/sparql/implementations/
@@ -15,6 +16,21 @@ describe('sparql 1.2 algebra transformer', () => {
   const canon = new Canonicalizer();
   const parser = new Parser12();
   const generator = new Generator12();
+  // A cyclic unknown key, like the metadata Comunica adds to operations
+  const metadata: Record<string, unknown> = { type: 'metadata' };
+  metadata.self = metadata;
+  const addMetadata = forEveryNodeType({ transform: (copy: object) => ({ ...copy, metadata }) });
+
+  /**
+   * Generates the canonical SPARQL of the algebra, also when only visiting the known keys of the algebra with metadata.
+   */
+  function generateCanonical(algebra: Algebra.Operation): string[] {
+    const withMetadata = algebraUtils.mapOperation<'unsafe', Algebra.Operation>(algebra, addMetadata);
+    return [
+      generator.generate(toAst(algebra)).trim(),
+      generator.generate(toAst(withMetadata, knownKeysTransformers)).trim(),
+    ];
+  }
 
   describe('sparqlAlgebraTests', () => {
     for (const suite of suites) {
@@ -48,9 +64,7 @@ describe('sparql 1.2 algebra transformer', () => {
               const parsedAst = parser.parse(sparql, { astFactory, namedAggregatorCallback });
               const algebra = toAlgebra(parsedAst, { quads, blankToVariable, namedAggregatorCallback });
               // Console.log(JSON.stringify(algebra, null, 2));
-              const genAst = toAst(algebra);
-              const canonical = generator.generate(genAst);
-              expect(canonical.trim()).toEqual(canonicalSparql.trim());
+              expect(generateCanonical(algebra)).toEqual([ canonicalSparql.trim(), canonicalSparql.trim() ]);
             });
           }
         });
@@ -61,8 +75,7 @@ describe('sparql 1.2 algebra transformer', () => {
   describe('sparqlAlgebraOnlyTests Canonical SPARQL', () => {
     for (const { name, json, canonicalSparql } of sparqlAlgebraOnlyTests('sparql-1.1-algebra-only')) {
       it (name, ({ expect }) => {
-        const canonical = generator.generate(toAst(<Algebra.Operation> json));
-        expect(canonical.trim()).toEqual(canonicalSparql.trim());
+        expect(generateCanonical(<Algebra.Operation> json)).toEqual([ canonicalSparql.trim(), canonicalSparql.trim() ]);
       });
     }
   });

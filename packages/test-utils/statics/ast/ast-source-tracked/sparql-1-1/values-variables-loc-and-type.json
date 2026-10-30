@@ -1,0 +1,114 @@
+{
+  "context": [],
+  "subType": "select",
+  "where": {
+    "type": "pattern",
+    "subType": "group",
+    "patterns": [
+      {
+        "type": "pattern",
+        "subType": "values",
+        "variables": [
+          {
+            "type": "term",
+            "subType": "variable",
+            "value": "loc",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 25,
+              "end": 29
+            }
+          },
+          {
+            "type": "term",
+            "subType": "variable",
+            "value": "type",
+            "loc": {
+              "sourceLocationType": "source",
+              "start": 30,
+              "end": 35
+            }
+          }
+        ],
+        "values": [
+          {
+            "loc": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "http://a",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 40,
+                "end": 50
+              }
+            },
+            "type": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "http://b",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 51,
+                "end": 61
+              }
+            }
+          },
+          {
+            "type": {
+              "type": "term",
+              "subType": "namedNode",
+              "value": "http://c",
+              "loc": {
+                "sourceLocationType": "source",
+                "start": 70,
+                "end": 80
+              }
+            }
+          }
+        ],
+        "loc": {
+          "sourceLocationType": "source",
+          "start": 17,
+          "end": 83
+        }
+      }
+    ],
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 15,
+      "end": 85
+    }
+  },
+  "solutionModifiers": {},
+  "datasets": {
+    "type": "datasetClauses",
+    "clauses": [],
+    "loc": {
+      "sourceLocationType": "noMaterialize"
+    }
+  },
+  "variables": [
+    {
+      "type": "wildcard",
+      "loc": {
+        "sourceLocationType": "source",
+        "start": 7,
+        "end": 8
+      }
+    }
+  ],
+  "loc": {
+    "sourceLocationType": "inlinedSource",
+    "newSource": "SELECT * WHERE { VALUES (?loc ?type) { (<http://a> <http://b>) (UNDEF <http://c>) } }",
+    "start": 0,
+    "end": 9007199254740991,
+    "loc": {
+      "sourceLocationType": "source",
+      "start": 0,
+      "end": 85
+    },
+    "startOnNew": 0,
+    "endOnNew": 85
+  },
+  "type": "query"
+}

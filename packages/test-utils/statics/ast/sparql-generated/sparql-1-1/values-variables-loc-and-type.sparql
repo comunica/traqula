@@ -1,0 +1,6 @@
+SELECT * WHERE {
+  VALUES( ?loc ?type ){
+    ( <http://a> <http://b> )
+    ( UNDEF <http://c> )
+  }
+}

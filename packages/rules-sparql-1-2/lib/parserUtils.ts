@@ -1,4 +1,12 @@
-import { TransformerSubTyped, traqulaIndentation, traqulaNewlineAlternative } from '@traqula/core';
+import type { DefaultNodePreVisitor, KnownNodeKeys, TransformContext } from '@traqula/core';
+import {
+  TransformerSubTyped,
+  traqulaIndentation,
+  traqulaNewlineAlternative,
+  visitElementKeys,
+  visitOnlyKnownKeys,
+} from '@traqula/core';
+import { astKnownKeys as astKnownKeys11, astTransformerDefaults } from '@traqula/rules-sparql-1-1';
 import { AstFactory } from './AstFactory.js';
 import type { SparqlContext, SparqlGeneratorContext } from './sparql12HelperTypes.js';
 import type { Sparql12Nodes } from './sparql12Types.js';
@@ -38,6 +46,7 @@ export function completeParseContext(
     skipValidation: context.skipValidation ?? false,
     rejectGroupedSelectAliasReuse: context.rejectGroupedSelectAliasReuse ?? false,
     namedAggregatorCallback: context.namedAggregatorCallback,
+    astTransformer: context.astTransformer,
     /**
      * @deprecated since it cannot be used for string decoding.
      */
@@ -69,4 +78,30 @@ Partial<SparqlContext & SparqlGeneratorContext & { origSource: string; offset?: 
   };
 }
 
-export class AstTransformer extends TransformerSubTyped<Sparql12Nodes> {}
+/**
+ * A {@link TransformerSubTyped} specialized for the SPARQL 1.2 AST node types.
+ * Source locations hold no nodes, so it ignores the `loc` of nodes, unless the default context gives ignoreKeys.
+ */
+export class AstTransformer extends TransformerSubTyped<Sparql12Nodes> {
+  public constructor(
+    defaultContext: TransformContext = {},
+    defaultNodePreVisitor: DefaultNodePreVisitor<Sparql12Nodes> = {},
+  ) {
+    super(...astTransformerDefaults(astKnownKeys, defaultContext, defaultNodePreVisitor));
+  }
+}
+
+/**
+ * Per node type, the known keys that can hold nodes: those of SPARQL 1.1, plus annotations and triple terms.
+ */
+export const astKnownKeys = {
+  ...astKnownKeys11,
+  // An annotation is a node, or a wrapped term without a type
+  triple: { ...astKnownKeys11.triple, annotations: visitElementKeys('val') },
+  term: { ...astKnownKeys11.term, object: true, subject: true, predicate: true },
+} satisfies KnownNodeKeys<Sparql12Nodes>;
+
+/**
+ * Contexts per node type that only visit the {@link astKnownKeys}.
+ */
+export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql12Nodes>(astKnownKeys);

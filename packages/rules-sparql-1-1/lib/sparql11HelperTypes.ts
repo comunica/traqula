@@ -1,5 +1,6 @@
 import type { GeneratorRule, ParserRule, traqulaIndentation, traqulaNewlineAlternative } from '@traqula/core';
 import type { AstFactory } from './astFactory.js';
+import type { AstTransformer } from './utils.js';
 
 export interface SparqlContext {
   /**
@@ -41,6 +42,11 @@ export interface SparqlContext {
    * Can be called multiple times per function call.
    */
   namedAggregatorCallback?: (iri: string) => boolean;
+  /**
+   * Transformer the validations traverse the AST with. Defaults to an {@link AstTransformer}.
+   */
+  // TODO(major): optional type can become mandatory here.
+  astTransformer?: AstTransformer;
   /**
    * Set of queryModes. Primarily used for note 8, 14.
    */

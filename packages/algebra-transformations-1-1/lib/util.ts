@@ -1,6 +1,6 @@
 import type * as RDF from '@rdfjs/types';
 import type { TransformContext, VisitContext } from '@traqula/core';
-import { TransformerSubTyped } from '@traqula/core';
+import { TransformerSubTyped, visitOnlyKnownKeys } from '@traqula/core';
 import type * as A from './algebra.js';
 import { ExpressionTypes, Types } from './algebra.js';
 
@@ -42,6 +42,61 @@ const transformer = new TransformerSubTyped<A.Operation>({}, {
 export function algebraTransformer(defaultContext: TransformContext): TransformerSubTyped<A.Operation> {
   return transformer.clone(defaultContext);
 }
+
+/**
+ * Contexts per operation type that only visit the known keys that can hold operations, skipping RDF terms.
+ */
+export const knownKeysAllowlist = visitOnlyKnownKeys<A.Operation>({
+  [Types.ASK]: { input: true },
+  [Types.BGP]: { patterns: true },
+  [Types.CONSTRUCT]: { input: true, template: true },
+  [Types.DESCRIBE]: { input: true, terms: false },
+  [Types.DISTINCT]: { input: true },
+  [Types.EXPRESSION]: {
+    input: true,
+    args: true,
+    expression: true,
+    wildcard: true,
+    name: false,
+    term: false,
+    variable: false,
+  },
+  [Types.EXTEND]: { input: true, expression: true, variable: false },
+  [Types.FILTER]: { input: true, expression: true },
+  [Types.FROM]: { input: true, default: false, named: false },
+  [Types.GRAPH]: { input: true, name: false },
+  [Types.GROUP]: { input: true, aggregates: true, variables: false },
+  [Types.JOIN]: { input: true },
+  [Types.LEFT_JOIN]: { input: true, expression: true },
+  [Types.MINUS]: { input: true, graphScopeVar: false },
+  [Types.NOP]: {},
+  [Types.ORDER_BY]: { input: true, expressions: true },
+  [Types.PATTERN]: { subject: false, predicate: false, object: false, graph: false },
+  [Types.PROJECT]: { input: true, variables: false },
+  [Types.REDUCED]: { input: true },
+  [Types.SERVICE]: { input: true, name: false },
+  [Types.SLICE]: { input: true },
+  [Types.UNION]: { input: true },
+  [Types.VALUES]: { variables: false, bindings: false },
+  [Types.COMPOSITE_UPDATE]: { updates: true },
+  [Types.DELETE_INSERT]: { where: true, delete: true, insert: true },
+  [Types.LOAD]: { source: false, destination: false },
+  [Types.CLEAR]: { source: false },
+  [Types.CREATE]: { source: false },
+  [Types.DROP]: { source: false },
+  [Types.ADD]: { source: false, destination: false },
+  [Types.MOVE]: { source: false, destination: false },
+  [Types.COPY]: { source: false, destination: false },
+  [Types.PATH]: { predicate: true, subject: false, object: false, graph: false },
+  [Types.ALT]: { input: true },
+  [Types.INV]: { path: true },
+  [Types.LINK]: { iri: false },
+  [Types.ONE_OR_MORE_PATH]: { path: true },
+  [Types.SEQ]: { input: true },
+  [Types.NPS]: { iris: false },
+  [Types.ZERO_OR_MORE_PATH]: { path: true },
+  [Types.ZERO_OR_ONE_PATH]: { path: true },
+});
 
 /**
  * Transform a single operation.
@@ -388,6 +443,21 @@ export function objectify(algebra: any): any {
 }
 
 /**
+ * Calls the callback on every variable of a term, also on those within quoted triples.
+ * @param term the term to find the variables of.
+ * @param callback called on every variable found.
+ */
+export function forEachTermVariable(term: RDF.Term, callback: (variable: RDF.Variable) => void): void {
+  if (term.termType === 'Variable') {
+    callback(term);
+  } else if (term.termType === 'Quad') {
+    for (const component of [ term.subject, term.predicate, term.object, term.graph ]) {
+      forEachTermVariable(component, callback);
+    }
+  }
+}
+
+/**
  * Detects all [in-scope variables](https://www.w3.org/TR/sparql12-query/#variableScope).
  * In practice this means iterating through the entire algebra tree, finding all variables,
  * and stopping at every operation that hides the variables of its input:
@@ -412,35 +482,6 @@ export function inScopeVariables(
 
   function addVariable(v: RDF.Variable): void {
     variables[v.value] = v;
-  }
-
-  function recurseTerm(quad: RDF.BaseQuad): void {
-    // Subject
-    if (quad.subject.termType === 'Variable') {
-      addVariable(quad.subject);
-    } else if (quad.subject.termType === 'Quad') {
-      recurseTerm(quad.subject);
-    }
-    // Predicate
-    if (quad.predicate.termType === 'Variable') {
-      addVariable(quad.predicate);
-    } else if (quad.predicate.termType === 'Quad') {
-      recurseTerm(quad.predicate);
-    }
-    // Object
-    if (quad.object.termType === 'Variable') {
-      addVariable(quad.object);
-    } else if (quad.object.termType === 'Quad') {
-      recurseTerm(quad.object);
-    }
-
-    // Graph
-    if (quad.graph.termType === 'Variable') {
-      addVariable(quad.graph);
-    }
-    if (quad.graph.termType === 'Quad') {
-      recurseTerm(quad.graph);
-    }
   }
 
   function visitingRecursion(curOp: A.BaseOperation): void {
@@ -482,26 +523,12 @@ export function inScopeVariables(
         },
       },
       [Types.PATH]: { visitor: (op) => {
-        // Subject
-        if (op.subject.termType === 'Variable') {
-          addVariable(op.subject);
-        } else if (op.subject.termType === 'Quad') {
-          recurseTerm(op.subject);
-        }
-        // Predicate
-        if (op.object.termType === 'Variable') {
-          addVariable(op.object);
-        } else if (op.object.termType === 'Quad') {
-          recurseTerm(op.object);
-        }
-        // Object
-        if (op.graph.termType === 'Variable') {
-          addVariable(op.graph);
-        } else if (op.graph.termType === 'Quad') {
-          recurseTerm(op.graph);
+        // The predicate of a path is a path operation, not a term
+        for (const term of [ op.subject, op.object, op.graph ]) {
+          forEachTermVariable(term, addVariable);
         }
       } },
-      [Types.PATTERN]: { visitor: op => recurseTerm(op) },
+      [Types.PATTERN]: { visitor: op => forEachTermVariable(op, addVariable) },
       [Types.PROJECT]: {
         preVisitor: () => ({ continue: false }),
         visitor: (op) => {

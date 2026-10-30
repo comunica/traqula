@@ -7,7 +7,111 @@ export function isPromise(value: unknown): value is Promise<unknown> {
   return value instanceof Promise;
 }
 
-export interface VisitContext {
+/**
+ * Applies a function to a value, once it resolved when it is a promise.
+ * @param value the value, or a promise of it.
+ * @param apply the function to apply.
+ * @return the result, or a promise of it.
+ */
+export function mapAwaitable<Value, Result>(
+  value: Awaitable<Value>,
+  apply: (value: Value) => Result,
+): Awaitable<Result> {
+  return isPromise(value) ? value.then(apply) : apply(value);
+}
+
+/**
+ * A key of the given object, or any other string.
+ * Unlike `keyof Obj | string`, the IDE keeps suggesting the keys of the object.
+ */
+export type ObjectKeyHint<Obj> = (keyof Obj & string) | (string & NonNullable<unknown>);
+
+/**
+ * The keys of an object, also when it is a union of objects, or the indexes of an array.
+ */
+export type ChildKey<Holder> = Holder extends readonly unknown[] ? number :
+    (Holder extends unknown ? keyof Holder & string : never);
+
+/**
+ * The value at a {@link ChildKey}, also when the holder is a union of objects, undefined for those without the key.
+ */
+export type ChildValue<Holder, Key> = Holder extends readonly (infer Element)[] ? Element :
+    (Holder extends unknown ? (Key extends keyof Holder ? Holder[Key] : undefined) : never);
+
+/**
+ * Visits the value at a key of an object, or at an index of an array, when it is an object or array.
+ */
+type VisitKey = <Holder extends object>(holder: Holder, key: ChildKey<Holder>) => void;
+
+/**
+ * Returns the value at a key, to visit the children within it.
+ * When transforming, it is a shallow copy put in its place, so changes do not reach the original.
+ */
+type StepIntoKey = <Holder extends object, Key extends ChildKey<Holder>>(holder: Holder, key: Key) =>
+ChildValue<Holder, Key>;
+
+/**
+ * The functions a {@link VisitChildren} visits the children of an object with.
+ */
+export interface VisitChildrenHelpers {
+  /** Visits the value at a key, when it is an object or array. */
+  visitKey: VisitKey;
+  /** Returns the value at a key, to visit the children within it. */
+  stepIntoKey: StepIntoKey;
+}
+
+/**
+ * Visits the children of an object through its {@link VisitChildrenHelpers}.
+ * Checked as a method, so the callback of a type also serves the types that extend it.
+ */
+export type VisitChildren<Obj = object> = {
+  // eslint-disable-next-line ts/method-signature-style
+  visitChildren(this: void, object: Obj, helpers: VisitChildrenHelpers): void;
+}['visitChildren'];
+
+/**
+ * How a traversal calls the {@link VisitChildren} of one node.
+ */
+interface VisitChildrenOptions {
+  /** The callback visiting the children of the node. */
+  visitChildren: VisitChildren;
+  /** The keys of the node that are not visited. */
+  ignoreKeys: Set<string> | undefined;
+  /** The keys of the node that are shallowly copied, and not visited. */
+  shallowKeys: Set<string> | undefined;
+  /** Whether stepping into a key puts a shallow copy in its place. */
+  copiesSteps: boolean;
+}
+
+/**
+ * Calls the {@link VisitChildren} of a node.
+ */
+type VisitChildrenOf = (node: object, options: VisitChildrenOptions) => void;
+
+/**
+ * The context with every key of a {@link TransformContext} defined, in a fixed order.
+ * Contexts of one shape keep the property reads of a traversal fast, also when transformers with different
+ * defaults run in the same process.
+ * @param context the context to complete.
+ * @return the completed context.
+ */
+export function canonicalContext<Context extends TransformContext>(context: Context): Context {
+  return <Context> {
+    shortcut: undefined,
+    continue: undefined,
+    ignoreKeys: undefined,
+    visitChildren: undefined,
+    shallowKeys: undefined,
+    copy: undefined,
+    reTransform: undefined,
+    ...context,
+  };
+}
+
+/**
+ * @typeParam Obj - The object this context applies to, its keys are suggested by the IDE.
+ */
+export interface VisitContext<Obj = object> {
   /**
    * Whether you should stop iterating after this object. Default false.
    */
@@ -19,15 +123,23 @@ export interface VisitContext {
   /**
    * Object keys that can be ignored, meaning they do not get visited.
    */
-  ignoreKeys?: Set<string>;
+  ignoreKeys?: Set<ObjectKeyHint<Obj>>;
+  /**
+   * Visits the children of this object instead of its keys, replacing the visitChildren of a default.
+   * A callback visiting no children in the default context makes a transformer only visit what nodes allow.
+   */
+  visitChildren?: VisitChildren<Obj>;
 }
 
-export interface TransformContext extends VisitContext {
+/**
+ * @typeParam Obj - The object this context applies to, its keys are suggested by the IDE.
+ */
+export interface TransformContext<Obj = object> extends VisitContext<Obj> {
   /**
    * Object keys that will be shallowly copied but not traversed.
-   * When the same key is included here and in ignoreKeys, the copy will still be made.
+   * When the same key is ignored through {@link ignoreKeys}, the copy will still be made.
    */
-  shallowKeys?: Set<string>;
+  shallowKeys?: Set<ObjectKeyHint<Obj>>;
   /**
    * Whether the visited object should be shallowly copied or not. Defaults to true.
    */
@@ -80,11 +192,15 @@ export class TransformerObject {
    */
   protected maxNodeRewrites = 1_000;
 
+  protected readonly defaultContext: TransformContext;
+
   /**
    * Creates stateless transformer.
    * @param defaultContext
    */
-  public constructor(protected readonly defaultContext: TransformContext = {}) {}
+  public constructor(defaultContext: TransformContext = {}) {
+    this.defaultContext = canonicalContext(defaultContext);
+  }
 
   public clone(newDefaultContext: TransformContext = {}): TransformerObject {
     return new TransformerObject({ ...this.defaultContext, ...newDefaultContext });
@@ -99,6 +215,9 @@ export class TransformerObject {
     if (obj === null || typeof obj !== 'object') {
       return obj;
     }
+    if (Array.isArray(obj)) {
+      return <T> [ ...obj ];
+    }
 
     const proto = Object.getPrototypeOf(obj);
 
@@ -110,6 +229,63 @@ export class TransformerObject {
 
     // Otherwise, preserve prototype for custom objects
     return Object.assign(Object.create(proto), obj);
+  }
+
+  /**
+   * Creates the {@link VisitChildrenHelpers} of a traversal.
+   * Stepping into a key twice for the same node gives the same copy.
+   * @param pushChild adds a child to the traversal, with the object holding it and its key.
+   * @return calls the visitChildren of a node, after shallowly copying its shallowKeys.
+   */
+  private createVisitChildrenOf(
+    pushChild: (child: object, holder: object, key: string) => void,
+  ): VisitChildrenOf {
+    let currentNode: object | undefined;
+    let currentOptions: VisitChildrenOptions | undefined;
+    const currentCopies = new Set<object>();
+    const isSkipped = (holder: unknown, key: string): boolean => holder === currentNode &&
+      (currentOptions!.ignoreKeys?.has(key) === true || currentOptions!.shallowKeys?.has(key) === true);
+    const visitKey = <VisitKey> ((holder: Record<string, unknown> | undefined, key: string): void => {
+      const value = holder?.[key];
+      if (value !== null && typeof value === 'object' && !isSkipped(holder, key)) {
+        pushChild(value, <object> holder, String(key));
+      }
+    });
+    const stepIntoKey = <StepIntoKey> ((holder: Record<string, unknown> | undefined, key: string): unknown => {
+      const value = holder?.[key];
+      if (value === null || typeof value !== 'object') {
+        return value;
+      }
+      // Nothing within a skipped key is visited, so the callback gets a container without children
+      if (isSkipped(holder, key)) {
+        return Array.isArray(value) ? [] : {};
+      }
+      if (!currentOptions!.copiesSteps || currentCopies.has(value)) {
+        return value;
+      }
+      const copy = this.cloneObj(value);
+      currentCopies.add(copy);
+      (<Record<string, unknown>> holder)[key] = copy;
+      return copy;
+    });
+    const helpers: VisitChildrenHelpers = { visitKey, stepIntoKey };
+    return (node, options) => {
+      if (options.shallowKeys !== undefined) {
+        const holder = <Record<string, unknown>> node;
+        for (const key of options.shallowKeys) {
+          const value = holder[key];
+          if (value !== null && typeof value === 'object' && Object.hasOwn(holder, key)) {
+            holder[key] = this.cloneObj(value);
+          }
+        }
+      }
+      currentNode = node;
+      currentOptions = options;
+      options.visitChildren(node, helpers);
+      if (currentCopies.size > 0) {
+        currentCopies.clear();
+      }
+    };
   }
 
   /**
@@ -160,6 +336,7 @@ export class TransformerObject {
     const defaultCopyFlag = defaults.copy ?? true;
     const defaultContinues = defaults.continue ?? true;
     const defaultIgnoreKeys = defaults.ignoreKeys;
+    const defaultVisitChildren = defaults.visitChildren;
     const defaultShallowKeys = defaults.shallowKeys;
     const defaultDidShortCut = defaults.shortcut ?? false;
 
@@ -211,11 +388,20 @@ export class TransformerObject {
       return undefined;
     }
 
+    const pushChild = (val: object, parent: object, key: string): void => {
+      stack.push(val);
+      stackParentKey.push(key);
+      stackParent.push(parent);
+    };
+    // Created on first use, so traversals without visitChildren do not pay for it
+    let visitChildrenOf: VisitChildrenOf | undefined;
+
     // Everything after the preVisitor call - split out so it can also run from inside a resolved promise.
     const expand = (curObject: object, curParent: object, curKey: string, context: TransformContext): void => {
       const copyFlag = context.copy ?? defaultCopyFlag;
       const continues = context.continue ?? defaultContinues;
       const ignoreKeys = context.ignoreKeys ?? defaultIgnoreKeys;
+      const visitChildren = context.visitChildren ?? defaultVisitChildren;
       const shallowKeys = context.shallowKeys ?? defaultShallowKeys;
       didShortCut = context.shortcut ?? defaultDidShortCut;
 
@@ -230,6 +416,11 @@ export class TransformerObject {
 
       // Extend stack if needed. When shortcutted, should still unwind the stack, but no longer add to it.
       if (continues && !didShortCut) {
+        if (visitChildren) {
+          visitChildrenOf ??= this.createVisitChildrenOf(pushChild);
+          visitChildrenOf(copy, { visitChildren, ignoreKeys, shallowKeys, copiesSteps: copyFlag });
+          return;
+        }
         for (const key in copy) {
           if (!Object.hasOwn(copy, key)) {
             continue;
@@ -370,6 +561,7 @@ export class TransformerObject {
     const defaultCopyFlag = defaults.copy ?? true;
     const defaultContinues = defaults.continue ?? true;
     const defaultIgnoreKeys = defaults.ignoreKeys;
+    const defaultVisitChildren = defaults.visitChildren;
     const defaultShallowKeys = defaults.shallowKeys;
     const defaultDidShortCut = defaults.shortcut ?? false;
     const defaultReTransform = defaults.reTransform ?? false;
@@ -412,6 +604,18 @@ export class TransformerObject {
       }
     }
 
+    // The depth of the children pushed, set before pushing them, so pushChild is created once
+    let childDepth = 0;
+    const pushChild = (val: object, parent: object, key: string): void => {
+      stack.push(val);
+      stackParent.push(parent);
+      stackParentKey.push(key);
+      stackRewriteCount.push(0);
+      stackDepth.push(childDepth);
+    };
+    // Created on first use, so traversals without visitChildren do not pay for it
+    let visitChildrenOf: VisitChildrenOf | undefined;
+
     const applyResult = (
       mapperResult: PreOrderMappingReturn,
       curParent: Record<string, unknown>,
@@ -426,6 +630,7 @@ export class TransformerObject {
 
       const continues = mapperResult.continue ?? defaultContinues;
       const ignoreKeys = mapperResult.ignoreKeys ?? defaultIgnoreKeys;
+      const visitChildren = mapperResult.visitChildren ?? defaultVisitChildren;
       const shallowKeys = mapperResult.shallowKeys ?? defaultShallowKeys;
       const reTransform = mapperResult.reTransform ?? defaultReTransform;
       didShortCut = mapperResult.shortcut ?? defaultDidShortCut;
@@ -450,23 +655,25 @@ export class TransformerObject {
         stackDepth.push(depth);
         return;
       }
-      // In any other case, push the children, ignoring ignoreKeys and shallowKeys.
-      // Creating shallow copies of shallowKeys.
       const newAsRecord = <Record<string, unknown>> newValue;
+      childDepth = depth + 1;
+      if (visitChildren) {
+        visitChildrenOf ??= this.createVisitChildrenOf(pushChild);
+        visitChildrenOf(newAsRecord, { visitChildren, ignoreKeys, shallowKeys, copiesSteps: defaultCopyFlag });
+        return;
+      }
+      // In any other case, push the children, ignoring ignoreKeys and shallowKeys.
+      // Creating shallow copies of shallowKeys, even when they are ignored.
       for (const key in newAsRecord) {
-        if (!Object.hasOwn(newAsRecord, key) || ignoreKeys?.has(key)) {
+        if (!Object.hasOwn(newAsRecord, key)) {
           continue;
         }
         const val = newAsRecord[key];
         if (val !== null && typeof val === 'object') {
           if (shallowKeys?.has(key)) {
             newAsRecord[key] = this.cloneObj(val);
-          } else {
-            stack.push(val);
-            stackParent.push(newAsRecord);
-            stackParentKey.push(key);
-            stackRewriteCount.push(0);
-            stackDepth.push(depth + 1);
+          } else if (ignoreKeys === undefined || !ignoreKeys.has(key)) {
+            pushChild(val, newAsRecord, key);
           }
         }
       }
@@ -554,6 +761,7 @@ export class TransformerObject {
     const defaults = this.defaultContext;
     const defaultContinues = defaults.continue ?? true;
     const defaultIgnoreKeys = defaults.ignoreKeys;
+    const defaultVisitChildren = defaults.visitChildren;
     const defaultShortcut = defaults.shortcut ?? false;
 
     let didShortCut = false;
@@ -589,11 +797,19 @@ export class TransformerObject {
       return undefined;
     }
 
+    const pushChild = (val: object): void => {
+      stack.push(val);
+    };
+    // A visit copies nothing, also not the shallowKeys
+    // Created on first use, so traversals without visitChildren do not pay for it
+    let visitChildrenOf: VisitChildrenOf | undefined;
+
     // Everything after the preVisitor call - split out so it can also run from inside a resolved promise.
     const expand = (curObject: object, context: VisitContext): void => {
       didShortCut = context.shortcut ?? defaultShortcut;
       const continues = context.continue ?? defaultContinues;
       const ignoreKeys = context.ignoreKeys ?? defaultIgnoreKeys;
+      const visitChildren = context.visitChildren ?? defaultVisitChildren;
 
       // Register that you want to be visited
       handleVisitorOnLen.push(stack.length);
@@ -601,6 +817,11 @@ export class TransformerObject {
 
       // Extend stack if needed. When shortcutted, should still unwind the stack, but no longer add to it.
       if (continues && !didShortCut) {
+        if (visitChildren) {
+          visitChildrenOf ??= this.createVisitChildrenOf(pushChild);
+          visitChildrenOf(curObject, { visitChildren, ignoreKeys, shallowKeys: undefined, copiesSteps: false });
+          return;
+        }
         for (const key in curObject) {
           if (!Object.hasOwn(curObject, key)) {
             continue;

@@ -3,6 +3,8 @@
 //  (findPatternBoundedVars).
 //  The SPARQL 1.2 queryProjectionIsGood, selectExpressionAliasesNotInScope and checkNote13
 //  only exist (and partially copy the SPARQL 1.1 logic) to call the SPARQL 1.2 findPatternBoundedVars.
+// TODO(major): let the validation functions take the context instead of an optional transformer,
+//  and traverse with its astTransformer, which is then no longer optional.
 import { AstFactory } from '../astFactory.js';
 import type { SparqlContext } from '../sparql11HelperTypes.js';
 import type {
@@ -48,26 +50,35 @@ const noFunctionCall: AggregateFunctionTest = () => false;
 /**
  * Get all built-in aggregates of an expression, also when nested in operators or function calls.
  * Does not look inside aggregates, nor in EXISTS or NOT EXISTS patterns.
+ * @param expression - The expression to get the aggregates of.
+ * @param astTransformer - The transformer to traverse the expression with.
  */
-export function getAggregatesOfExpression(expression: Expression): ExpressionAggregate[] {
+export function getAggregatesOfExpression(
+  expression: Expression,
+  astTransformer?: AstTransformer,
+): ExpressionAggregate[] {
   // Only built-in aggregates are returned, so function calls are searched like any other expression.
-  return <ExpressionAggregate[]> findAggregates(expression, noFunctionCall);
+  return <ExpressionAggregate[]> findAggregates(expression, noFunctionCall, astTransformer);
 }
 
 /**
  * Get the built-in and custom aggregates of an expression.
  * Does not look inside them, nor in EXISTS or NOT EXISTS patterns.
+ * @param expression - The expression to search.
+ * @param isAggregateFunction - Whether a function call is a custom aggregate.
+ * @param astTransformer - The transformer to traverse the expression with.
  */
 function findAggregates(
   expression: Expression,
   isAggregateFunction: AggregateFunctionTest,
+  astTransformer: AstTransformer = expressionTransformer,
 ): (ExpressionAggregate | ExpressionFunctionCall)[] {
   const found: (ExpressionAggregate | ExpressionFunctionCall)[] = [];
   const onFound = (node: ExpressionAggregate | ExpressionFunctionCall): { continue: boolean } => {
     found.push(node);
     return { continue: false };
   };
-  expressionTransformer.visitNodeSpecific(expression, {}, { expression: {
+  astTransformer.visitNodeSpecific(expression, {}, { expression: {
     ...skipPatternOperation,
     aggregate: { preVisitor: onFound },
     functionCall: { preVisitor: functionCall => isAggregateFunction(functionCall) ? onFound(functionCall) : {}},
@@ -126,14 +137,16 @@ export function getGroupedVariables(query: {
  * @param expression - The expression to get the variables of.
  * @param variables - The set to add the variables to.
  * @param isAggregateFunction - Whether a function call is a custom aggregate. Default: any function call might be.
+ * @param astTransformer - The transformer to traverse the expression with.
  */
 export function getVariablesFromExpression(
   expression: Expression,
   variables: Set<string>,
   // Without a test, any function call might be an aggregate, whose arguments need not be grouped.
   isAggregateFunction: AggregateFunctionTest = anyFunctionCall,
+  astTransformer: AstTransformer = expressionTransformer,
 ): void {
-  expressionTransformer.visitNodeSpecific(expression, {}, {
+  astTransformer.visitNodeSpecific(expression, {}, {
     expression: {
       ...skipPatternOperation,
       aggregate: stopVisit,
@@ -149,7 +162,7 @@ export function getVariablesFromExpression(
  * Options of {@link queryProjectionIsGood}, the equally named fields of the parse context.
  */
 export type ProjectionValidationOptions =
-  Pick<SparqlContext, 'rejectGroupedSelectAliasReuse' | 'namedAggregatorCallback'> &
+  Pick<SparqlContext, 'rejectGroupedSelectAliasReuse' | 'namedAggregatorCallback' | 'astTransformer'> &
   Partial<Pick<SparqlContext, 'prefixes' | 'baseIRI'>>;
 
 /**
@@ -197,7 +210,7 @@ export function queryProjectionRespectsGrouping(
 ): void {
   const isAggregateFunction = namedAggregatorTest(options);
   // Without a callback, no function call groups the query, so fewer variables need to be grouped.
-  const isGrouped = isGroupedQuery(query, isAggregateFunction ?? noFunctionCall);
+  const isGrouped = isGroupedQuery(query, isAggregateFunction ?? noFunctionCall, options.astTransformer);
   // NoGroupByOnWildcardSelect
   if (query.variables.length === 1 && F.isWildcard(query.variables[0])) {
     if (query.solutionModifiers.group !== undefined) {
@@ -227,7 +240,7 @@ export function queryProjectionRespectsGrouping(
         }
       } else {
         const usedvars = new Set<string>();
-        getVariablesFromExpression(selectVar.expression, usedvars, isAggregateFunction);
+        getVariablesFromExpression(selectVar.expression, usedvars, isAggregateFunction, options.astTransformer);
         for (const usedvar of usedvars) {
           if (asBoundVars.has(usedvar)) {
             if (options.rejectGroupedSelectAliasReuse) {
@@ -293,7 +306,7 @@ export function selectExpressionAliasesNotInScope(
     const inScopeVars = new Set<string>();
     // Grouping only keeps the variables of the group keys in scope.
     // Without a callback, any function call might be an aggregate, so fewer variables are in scope.
-    if (!isGroupedQuery(query, namedAggregatorTest(options) ?? anyFunctionCall)) {
+    if (!isGroupedQuery(query, namedAggregatorTest(options) ?? anyFunctionCall, options.astTransformer)) {
       findPatternBoundedVars(query.where, inScopeVars);
     }
     for (const variable of getGroupKeyVariables(query.solutionModifiers.group)) {
@@ -305,7 +318,7 @@ export function selectExpressionAliasesNotInScope(
       }
     }
   }
-  selectExpressionAliasesNotUsedEarlier(query);
+  selectExpressionAliasesNotUsedEarlier(query, options.astTransformer);
   selectExpressionAliasesNotInValues(query);
 }
 
@@ -313,16 +326,18 @@ export function selectExpressionAliasesNotInScope(
  * A query is grouped when it has a GROUP BY clause or uses aggregates (18.2.4.1).
  * @param query - The SELECT query.
  * @param isAggregateFunction - Whether a function call is a custom aggregate.
+ * @param astTransformer - The transformer to traverse the expressions with.
  */
 export function isGroupedQuery(
   query: Pick<QuerySelect, 'variables' | 'solutionModifiers'>,
   isAggregateFunction: AggregateFunctionTest,
+  astTransformer?: AstTransformer,
 ): boolean {
   if (query.solutionModifiers.group) {
     return true;
   }
   return getAggregationScopeExpressions(query)
-    .some(expression => findAggregates(expression, isAggregateFunction).length > 0);
+    .some(expression => findAggregates(expression, isAggregateFunction, astTransformer).length > 0);
 }
 
 /**
@@ -353,11 +368,16 @@ export function aggregateIsAllowed(parseMode: ReadonlySet<string>): void {
 /**
  * Validates a function call: only custom aggregates can use DISTINCT,
  * and custom aggregates are validated like built-in aggregates, see {@link aggregateIsAllowed}.
+ * @param functionCall - The function call to validate.
+ * @param isAggregateFunction - Whether a function call is a custom aggregate.
+ * @param parseMode - The parse mode at the function call.
+ * @param astTransformer - The transformer to traverse the arguments with.
  */
 export function functionCallIsGood(
   functionCall: ExpressionFunctionCall,
   isAggregateFunction: AggregateFunctionTest,
   parseMode: ReadonlySet<string>,
+  astTransformer?: AstTransformer,
 ): void {
   if (!isAggregateFunction(functionCall)) {
     if (functionCall.distinct) {
@@ -366,7 +386,7 @@ export function functionCallIsGood(
     return;
   }
   aggregateIsAllowed(parseMode);
-  if (functionCall.args.some(arg => findAggregates(arg, isAggregateFunction).length > 0)) {
+  if (functionCall.args.some(arg => findAggregates(arg, isAggregateFunction, astTransformer).length > 0)) {
     throw new Error('An aggregate function is not allowed within an aggregate function.');
   }
 }
@@ -375,9 +395,13 @@ export function functionCallIsGood(
  * https://www.w3.org/TR/sparql12-query/#variableScope
  * > In SELECT, the variable v must not be in-scope in the graph pattern of the SELECT clause,
  * > nor used in another select expression earlier in the clause.
+ * @param query - The query whose select expressions to check.
+ * @param query.variables - The variables and select expressions of the query.
+ * @param astTransformer - The transformer to traverse the select expressions with.
  */
 export function selectExpressionAliasesNotUsedEarlier(
   query: { variables: readonly (TermVariable | Wildcard | { variable: TermVariable; expression: object })[] },
+  astTransformer: AstTransformer = transformer,
 ): void {
   const usedVars = new Set<string>();
   for (const variable of query.variables) {
@@ -385,7 +409,7 @@ export function selectExpressionAliasesNotUsedEarlier(
       if (usedVars.has(variable.variable.value)) {
         throw new Error(`Target id of 'AS' (?${variable.variable.value}) is used in an earlier select expression`);
       }
-      transformer.visitNodeSpecific(<Expression> variable.expression, {}, { term: { variable: { visitor: (var_) => {
+      astTransformer.visitNodeSpecific(<Expression> variable.expression, {}, { term: { variable: { visitor: (var_) => {
         usedVars.add(var_.value);
       } }}});
     }
@@ -489,8 +513,10 @@ export function checkNote13(patterns: Pattern[]): void {
 /**
  * https://www.w3.org/TR/sparql11-query/#grammarBNodes
  * > two INSERT DATA operations within a single SPARQL Update request
+ * @param updateQuery - The update request to validate.
+ * @param astTransformer - The transformer to traverse the INSERT DATA operations with.
  */
-export function updateNoReuseBlankNodeLabels(updateQuery: Update): void {
+export function updateNoReuseBlankNodeLabels(updateQuery: Update, astTransformer: AstTransformer = transformer): void {
   const blankLabelsUsedInInsertData = new Set<string>();
   for (const update of updateQuery.updates) {
     if (!update.operation) {
@@ -499,7 +525,7 @@ export function updateNoReuseBlankNodeLabels(updateQuery: Update): void {
     const operation = update.operation;
     if (operation.subType === 'insertdata') {
       const blankNodesHere = new Set<string>();
-      transformer.visitNodeSpecific(operation, {}, { term: { blankNode: { visitor: (blankNode) => {
+      astTransformer.visitNodeSpecific(operation, {}, { term: { blankNode: { visitor: (blankNode) => {
         blankNodesHere.add(blankNode.label);
         if (blankLabelsUsedInInsertData.has(blankNode.label)) {
           throw new Error('Detected reuse blank node across different INSERT DATA clauses');
@@ -515,8 +541,10 @@ export function updateNoReuseBlankNodeLabels(updateQuery: Update): void {
 /**
  * https://www.w3.org/TR/sparql11-query/#bgpBNodeLabels
  * > A label can be used in only a single basic graph pattern in any query.
+ * @param patterns - The patterns of a group graph pattern.
+ * @param astTransformer - The transformer to traverse the patterns with.
  */
-export function checkBlankNodeBGPScope(patterns: Pattern[]): void {
+export function checkBlankNodeBGPScope(patterns: Pattern[], astTransformer: AstTransformer = transformer): void {
   const labelOwner = new Map<string, object>();
 
   // Each entry is a unique object used only as an identity marker for "the current scope"
@@ -525,7 +553,7 @@ export function checkBlankNodeBGPScope(patterns: Pattern[]): void {
 
   function collectBlankNodeLabels(bgp: PatternBgp): Set<string> {
     const labels = new Set<string>();
-    transformer.visitNodeSpecific(bgp, {}, { term: { blankNode: { visitor: (blankNode) => {
+    astTransformer.visitNodeSpecific(bgp, {}, { term: { blankNode: { visitor: (blankNode) => {
       labels.add(blankNode.label);
     } }}});
     return labels;
@@ -547,7 +575,7 @@ export function checkBlankNodeBGPScope(patterns: Pattern[]): void {
     },
   };
 
-  transformer.visitNodeSpecific(
+  astTransformer.visitNodeSpecific(
     patterns,
     {
       query: {

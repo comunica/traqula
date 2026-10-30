@@ -12,6 +12,7 @@ import type {
   TripleNesting,
 } from '@traqula/rules-sparql-1-1';
 import { Algebra } from '../index.js';
+import { defaultAlgebraTransformer } from '../toAlgebra/index.js';
 import { inScopeVariables } from '../util.js';
 import type { AstIndir } from './core.js';
 import { findAlgGroupBelow } from './core.js';
@@ -54,7 +55,13 @@ export const translateAlgTerm: AstIndir<'translateTerm', Term, [RDF.Term]> = {
  */
 export const translateAlgExtend: AstIndir<'translateExtend', Pattern | Pattern[], [Algebra.Extend]> = {
   name: 'translateExtend',
-  fun: ({ SUBRULE }) => ({ astFactory: F, algebraFactory, project, extend }, op) => {
+  fun: ({ SUBRULE }) => ({
+    astFactory: F,
+    algebraFactory,
+    algebraTransformer = defaultAlgebraTransformer,
+    project,
+    extend,
+  }, op) => {
     if (project) {
       extend.push(op);
       return SUBRULE(translateAlgPatternNew, op.input);
@@ -62,7 +69,10 @@ export const translateAlgExtend: AstIndir<'translateExtend', Pattern | Pattern[]
     // Extends over a group would be BINDs evaluated before the grouping.
     //  Outside the chain on top of a query form, they are evaluated in a SELECT subquery of their own instead.
     if (SUBRULE(findAlgGroupBelow, op, 'projection')) {
-      return SUBRULE(translateAlgPatternIntoGroup, algebraFactory.createProject(op, inScopeVariables(op)));
+      return SUBRULE(translateAlgPatternIntoGroup, algebraFactory.createProject(
+        op,
+        inScopeVariables(op, (operation, callbacks) => algebraTransformer.visitNode(operation, callbacks)),
+      ));
     }
     // Many extends can be put in a single group
     const extendsOperations: Algebra.Extend[] = [];

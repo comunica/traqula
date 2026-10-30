@@ -1,5 +1,6 @@
 import type * as RDF from '@rdfjs/types';
-import type { PreOrderMappingReturn } from '@traqula/core';
+import type { PreOrderMappingReturn, VisitContext } from '@traqula/core';
+import { forEveryNodeType } from '@traqula/core';
 import type {
   BasicGraphPattern,
   Expression,
@@ -15,19 +16,14 @@ import type {
   TermVariable,
 } from '@traqula/rules-sparql-1-1';
 import type { Algebra } from '../index.js';
-import { isVariable, types } from '../toAlgebra/index.js';
-import { algebraTransformer, inScopeVariables, visitObject } from '../util.js';
+import { defaultAlgebraTransformer, isTerm, types } from '../toAlgebra/index.js';
+import { forEachTermVariable, inScopeVariables } from '../util.js';
 import type { AstIndir } from './core.js';
 import { findAlgGroupBelow, resetContext } from './core.js';
 import { translateAlgExpressionOrOrdering, translateAlgPureExpression } from './expression.js';
 import type { RdfTermToAst } from './general.js';
 import { translateAlgPattern, translateAlgTerm } from './general.js';
 import { translateAlgPatternNew } from './pattern.js';
-
-/**
- * Only steps into the operations a callback asks to continue into.
- */
-const chainTransformer = algebraTransformer({ continue: false });
 
 /**
  * Only delegates to {@link translateAlgProject}, like the other query forms.
@@ -78,18 +74,29 @@ AstIndir<'replaceAggregatorVariables', unknown, [unknown, Record<string, Express
 export const collectAlgVariables:
 AstIndir<'collectVariables', Set<string>, [object, Set<string>, string[]?]> = {
   name: 'collectVariables',
-  fun: () => (_, value, names, ignoreKeysList = []) => {
+  fun: () => ({ algebraTransformer = defaultAlgebraTransformer }, value, names, ignoreKeysList = []) => {
     const ignoreKeys = new Set(ignoreKeysList);
-    visitObject(
-      value,
-      (object) => {
-        const term = <RDF.Term> object;
-        if (isVariable(term)) {
-          names.add(term.value);
+    const rootContext: VisitContext = { ignoreKeys };
+    const nodeContext: VisitContext = {};
+    const addVariables = (term: unknown): void => {
+      if (isTerm(term)) {
+        forEachTermVariable(term, variable => names.add(variable.value));
+      }
+    };
+    // Callbacks only fire on typed nodes, not on terms, so the visitor of a node reads the terms it holds
+    const callbacks = {
+      preVisitor: (node: object) => node === value ? rootContext : nodeContext,
+      visitor: (node: object) => {
+        for (const [ key, held ] of Object.entries(node)) {
+          if (node !== value || !ignoreKeys.has(key)) {
+            for (const term of Array.isArray(held) ? held : [ held ]) {
+              addVariables(term);
+            }
+          }
         }
       },
-      object => (object === value ? { ignoreKeys } : {}),
-    );
+    };
+    algebraTransformer.visitNode(value, forEveryNodeType(callbacks));
     return names;
   },
 };
@@ -172,7 +179,12 @@ export const findAlgSubqueryCut: AstIndir<'findSubqueryCut', AlgSubqueryCut | un
  */
 export const wrapAlgInSubquery: AstIndir<'wrapInSubquery', AlgQueryForm, [AlgQueryForm, AlgSubqueryCut]> = {
   name: 'wrapInSubquery',
-  fun: ({ SUBRULE }) => ({ algebraFactory: AF }, op, { start, aggregateVariables }) => {
+  fun: ({ SUBRULE }) => ({
+    algebraFactory: AF,
+    algebraTransformer = defaultAlgebraTransformer,
+  }, op, { start, aggregateVariables }) => {
+    // Only steps into the operations a callback asks to continue into
+    const chainTransformer = algebraTransformer.clone({ continue: false });
     const outerVariables = new Set<string>();
     function wrap(input: Algebra.Operation): Algebra.Operation {
       // Lift the orderings out of the part that moves into the subquery
@@ -185,8 +197,10 @@ export const wrapAlgInSubquery: AstIndir<'wrapInSubquery', AlgQueryForm, [AlgQue
           return { newValue: ordering.input, continue: true, reTransform: true };
         },
       });
-      const projection = inScopeVariables(subqueryInput)
-        .filter(variable => !aggregateVariables.has(variable.value) || outerVariables.has(variable.value));
+      const projection = inScopeVariables(
+        subqueryInput,
+        (subqueryOperation, callbacks) => algebraTransformer.visitNode(subqueryOperation, callbacks),
+      ).filter(variable => !aggregateVariables.has(variable.value) || outerVariables.has(variable.value));
       return orderings.reduceRight<Algebra.Operation>(
         (result, ordering) => ({ ...ordering, input: result }),
         AF.createProject(subqueryInput, projection),

@@ -1,7 +1,14 @@
-import { TransformerSubTyped } from '@traqula/core';
+import type {
+  DefaultNodePreVisitor,
+  KnownNodeKeys,
+  TransformContext,
+  Typed,
+  VisitChildrenHelpers,
+} from '@traqula/core';
+import { TransformerSubTyped, visitElementKeys, visitOnlyKnownKeys } from '@traqula/core';
 import { AstFactory } from './astFactory.js';
 import { pnLocalEscPattern } from './lexer/lexerPatterns.js';
-import type { Sparql11Nodes, TermIri } from './Sparql11types.js';
+import type { Sparql11Nodes, TermIri, ValuePatternRow } from './Sparql11types.js';
 
 /**
  * Transform input in accordance to [19.2](https://www.w3.org/TR/sparql11-query/#codepointEscape)
@@ -52,6 +59,7 @@ export enum CommonIRIs {
 /**
  * A {@link TransformerSubTyped} specialized for the SPARQL 1.1 AST node types.
  * Provides a type-safe visitor/transformer that dispatches based on node `type` and `subType` fields.
+ * Source locations hold no nodes, so it ignores the `loc` of nodes, unless the default context gives ignoreKeys.
  *
  * @example
  * ```typescript
@@ -61,7 +69,38 @@ export enum CommonIRIs {
  * });
  * ```
  */
-export class AstTransformer extends TransformerSubTyped<Sparql11Nodes> {}
+export class AstTransformer extends TransformerSubTyped<Sparql11Nodes> {
+  public constructor(
+    defaultContext: TransformContext = {},
+    defaultNodePreVisitor: DefaultNodePreVisitor<Sparql11Nodes> = {},
+  ) {
+    super(...astTransformerDefaults(astKnownKeys, defaultContext, defaultNodePreVisitor));
+  }
+}
+
+/**
+ * Completes the defaults of an AST transformer: unless the default context gives ignoreKeys, it ignores the `loc` of
+ * the nodes, since source locations hold no nodes. Only objects whose `type` is a string are nodes, so the rows of
+ * VALUES keep their `loc` key, also when a variable is named `type`, and a variable named `loc` is still visited.
+ * @param knownKeys the known keys of the AST, whose node types skip their `loc`.
+ * @param defaultContext the default context of the transformer.
+ * @param defaultNodePreVisitor the per type defaults of the transformer, which replace those skipping `loc`.
+ * @return the completed default context and per type defaults.
+ */
+export function astTransformerDefaults<Nodes extends Typed>(
+  knownKeys: KnownNodeKeys<Nodes>,
+  defaultContext: TransformContext,
+  defaultNodePreVisitor: DefaultNodePreVisitor<Nodes>,
+): [TransformContext, DefaultNodePreVisitor<Nodes>] {
+  if (defaultContext.ignoreKeys) {
+    return [ defaultContext, defaultNodePreVisitor ];
+  }
+  const skipLoc = { ignoreKeys: new Set([ 'loc' ]) };
+  return [
+    defaultContext,
+    { ...Object.fromEntries(Object.keys(knownKeys).map(type => [ type, skipLoc ])), ...defaultNodePreVisitor },
+  ];
+}
 
 /**
  * Absolute IRIs start with a scheme - [RFC 3986, section 3.1](https://www.rfc-editor.org/rfc/rfc3986#section-3.1)
@@ -199,3 +238,78 @@ export function resolveTermIri(term: TermIri, prefixes: Record<string, string>, 
   }
   return resolveIRI(fullIri, baseIRI);
 }
+
+/**
+ * Per node type, its keys holding objects, and whether to visit them, see {@link visitOnlyKnownKeys}.
+ * The objects without a type that hold nodes are stepped into, so their unknown keys are skipped too.
+ * Arrays are looped backwards, so their elements are traversed in order, like a traversal of the keys does.
+ */
+export const astKnownKeys = {
+  path: { items: true, loc: false },
+  pattern: {
+    // The rows of VALUES map variable names to terms; looped backwards, so they are traversed in order
+    values: (rows: ValuePatternRow[], { visitKey, stepIntoKey }: VisitChildrenHelpers) => {
+      for (let index = rows.length - 1; index >= 0; index--) {
+        const row = stepIntoKey(rows, index);
+        for (const variable in row) {
+          visitKey(row, variable);
+        }
+      }
+    },
+    name: true,
+    variable: true,
+    expression: true,
+    variables: true,
+    patterns: true,
+    triples: true,
+    loc: false,
+  },
+  update: { updates: visitElementKeys('operation', 'context'), loc: false },
+  query: {
+    values: true,
+    template: true,
+    context: true,
+    solutionModifiers: (solutionModifiers, { visitKey }) => {
+      visitKey(solutionModifiers, 'group');
+      visitKey(solutionModifiers, 'having');
+      visitKey(solutionModifiers, 'order');
+      visitKey(solutionModifiers, 'limitOffset');
+    },
+    datasets: true,
+    where: true,
+    variables: true,
+    loc: false,
+  },
+  graph: { graph: true, triples: true, loc: false },
+  graphRef: { graph: true, loc: false },
+  updateOperation: {
+    data: true,
+    source: true,
+    destination: true,
+    from: true,
+    graph: true,
+    where: true,
+    delete: true,
+    insert: true,
+    loc: false,
+  },
+  datasetClauses: { clauses: visitElementKeys('value'), loc: false },
+  tripleCollection: { triples: true, identifier: true, loc: false },
+  triple: { object: true, subject: true, predicate: true, loc: false },
+  solutionModifier: {
+    having: true,
+    orderDefs: visitElementKeys('expression'),
+    // A grouping is an expression, or a bind without a type
+    groupings: visitElementKeys('variable', 'value'),
+    loc: false,
+  },
+  expression: { function: true, args: true, expression: true, loc: false },
+  contextDef: { value: true, loc: false },
+  wildcard: { loc: false },
+  term: { langOrIri: true, loc: false },
+} satisfies KnownNodeKeys<Sparql11Nodes>;
+
+/**
+ * Contexts per node type that only visit the {@link astKnownKeys}.
+ */
+export const astKnownKeysAllowlist = visitOnlyKnownKeys<Sparql11Nodes>(astKnownKeys);

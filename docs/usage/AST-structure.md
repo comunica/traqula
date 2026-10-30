@@ -126,7 +126,8 @@ The second argument holds the per type defaults: a default context per node `typ
 
 By default, a transformer visits every key of an object, except its `ignoreKeys`.
 An `AstTransformer` ignores the `loc` of nodes by default, since source locations hold no nodes; giving your own
-`ignoreKeys` replaces that. Objects without a type, like the rows of VALUES, keep their `loc` key, so a variable named
+`ignoreKeys` replaces that.
+Objects without a type, like the rows of VALUES, keep their `loc` key, so a variable named
 `loc` is still visited.
 
 ### Custom Traversal

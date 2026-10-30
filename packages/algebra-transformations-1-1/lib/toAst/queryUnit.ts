@@ -1,5 +1,5 @@
 import type * as RDF from '@rdfjs/types';
-import type { VisitContext } from '@traqula/core';
+import type { PreOrderMappingReturn, VisitContext } from '@traqula/core';
 import type {
   BasicGraphPattern,
   Expression,
@@ -182,36 +182,45 @@ export const wrapAlgInSubquery: AstIndir<'wrapInSubquery', AlgQueryForm, [AlgQue
     algebraFactory: AF,
     algebraTransformer = defaultAlgebraTransformer,
   }, op, { start, aggregateVariables }) => {
+    // Only steps into the operations a callback asks to continue into
+    const chainTransformer = algebraTransformer.clone({ continue: false });
     const outerVariables = new Set<string>();
-    // Lift the orderings out of the part that moves into the subquery
-    const orderings: Algebra.OrderBy[] = [];
-    const withoutOrderings = (operation: Algebra.Operation): Algebra.Operation => {
-      if (operation.type === types.ORDER_BY) {
-        orderings.push(operation);
-        SUBRULE(collectAlgVariables, operation.expressions, outerVariables);
-        return withoutOrderings(operation.input);
-      }
-      return operation.type === types.EXTEND ? { ...operation, input: withoutOrderings(operation.input) } : operation;
-    };
-    // Walk down from the query form to the start of the subquery, through the orderings and extends that stay outside
-    type ChainOperation = AlgQueryForm | Algebra.Extend | Algebra.OrderBy;
-    const wrapBelow = <Operation extends ChainOperation>(operation: Operation): Operation => {
-      SUBRULE(collectAlgVariables, operation, outerVariables, [ 'input' ]);
-      if (operation.input !== start) {
-        return { ...operation, input: wrapBelow(<ChainOperation> operation.input) };
-      }
-      const subqueryInput = withoutOrderings(start);
+    function wrap(input: Algebra.Operation): Algebra.Operation {
+      // Lift the orderings out of the part that moves into the subquery
+      const orderings: Algebra.OrderBy[] = [];
+      const subqueryInput = chainTransformer.transformNodePreOrder<'unsafe', Algebra.Operation>(input, {
+        [types.EXTEND]: extend => ({ newValue: extend, continue: true }),
+        [types.ORDER_BY]: (ordering) => {
+          orderings.push(ordering);
+          SUBRULE(collectAlgVariables, ordering.expressions, outerVariables);
+          return { newValue: ordering.input, continue: true, reTransform: true };
+        },
+      });
       const projection = inScopeVariables(
         subqueryInput,
         (subqueryOperation, callbacks) => algebraTransformer.visitNode(subqueryOperation, callbacks),
       ).filter(variable => !aggregateVariables.has(variable.value) || outerVariables.has(variable.value));
-      const input = orderings.reduceRight<Algebra.Operation>(
+      return orderings.reduceRight<Algebra.Operation>(
         (result, ordering) => ({ ...ordering, input: result }),
         AF.createProject(subqueryInput, projection),
       );
-      return { ...operation, input };
+    }
+    // Walk down from the query form to the start of the subquery, through the orderings and extends that stay outside
+    const step = (operation: AlgQueryForm | Algebra.Extend | Algebra.OrderBy): PreOrderMappingReturn => {
+      SUBRULE(collectAlgVariables, operation, outerVariables, [ 'input' ]);
+      if (operation.input === start) {
+        return { newValue: { ...operation, input: wrap(operation.input) }};
+      }
+      return { newValue: operation, continue: true };
     };
-    return wrapBelow(op);
+    return chainTransformer.transformNodePreOrder<'unsafe', typeof op>(op, {
+      [types.PROJECT]: step,
+      [types.ASK]: step,
+      [types.DESCRIBE]: step,
+      [types.CONSTRUCT]: step,
+      [types.EXTEND]: step,
+      [types.ORDER_BY]: step,
+    });
   },
 };
 

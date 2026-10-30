@@ -1,6 +1,18 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.5.0-alpha.4"></a>
+## [v1.5.0-alpha.4](https://github.com/comunica/traqula/compare/v1.5.0-alpha.3...v1.5.0-alpha.4) - 2026-10-30
+
+* [Add callback based traversal and known keys allowlists, and let parse and algebra contexts take their transformers (#197)](https://github.com/comunica/traqula/commit/98e4ad2110023290339bacdc27d1d6f154dbdaec)
+* [Update dependency minimatch to v11.0.3 (#246)](https://github.com/comunica/traqula/commit/91726f73f4bf3dfc46991dd5684fa7f35acebcf2)
+* [Update dependency minimatch to v11 (#245)](https://github.com/comunica/traqula/commit/5df842cebf2905302443324a9e2ecb2c648ce4f5)
+* [Update dependency axios to v1.21.0 (#244)](https://github.com/comunica/traqula/commit/e02f9d9b444f1b8036dc88f74c47a2d21ba9e2b5)
+* [Fail fast on cyclic input in pre-order transforms and array-only cycles (#242)](https://github.com/comunica/traqula/commit/e83cd93c0e68d2aa633cb4b9befd2538b69a3c69)
+* [Reject async transforms instead of throwing synchronously (#241)](https://github.com/comunica/traqula/commit/ec4c4914993ed5ea8d8e3d92470ad0c6bc1f686c)
+* [Fail fast on cyclic input in transformObject and visitObject (#240)](https://github.com/comunica/traqula/commit/25169d0cdfa2cdf3827a5c16faf3b229783dce67)
+* [Keep FILTERs on the graph variable within triple terms outside of GRAPH (#239)](https://github.com/comunica/traqula/commit/00ce4dd3dc86dea60cddc317997ee2c9042f0d4f)
+
 <a name="v1.5.0-alpha.3"></a>
 ## [v1.5.0-alpha.3](https://github.com/comunica/traqula/compare/v1.5.0-alpha.2...v1.5.0-alpha.3) - 2026-10-15
 

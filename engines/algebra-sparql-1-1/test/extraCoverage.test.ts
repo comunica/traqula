@@ -575,6 +575,27 @@ GROUP BY ?s`);
     });
   });
 
+  describe('recurseGraph operations of extensions', () => {
+    it('assigns the graph to the patterns within an operation whose type is not known up front', ({ expect }) => {
+      const transformer = toAlgebra11Builder.build();
+      const c = createAlgebraContext({ quads: true });
+      const g = AF.dataFactory.namedNode('http://g');
+      const pattern = AF.createPattern(
+        AF.dataFactory.variable!('s'),
+        AF.dataFactory.variable!('p'),
+        AF.dataFactory.variable!('o'),
+      );
+      const extension = <Algebra.Operation> <unknown> {
+        type: 'extension',
+        input: AF.createBgp([ pattern ]),
+        empty: null,
+      };
+      const result = <any> transformer.recurseGraph(c, extension, g, undefined);
+      expect(result.input.patterns[0].graph).toEqual(g);
+      expect(result.empty).toBeNull();
+    });
+  });
+
   describe('recurseGraph BGP subject/predicate replacement', () => {
     it('replaces subject and predicate equal to graph variable when replacement is set', ({ expect }) => {
       // When the inner subquery PROJECT does not project the graph variable ?g.

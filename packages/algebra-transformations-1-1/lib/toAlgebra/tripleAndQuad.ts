@@ -1,8 +1,9 @@
 import type * as RDF from '@rdfjs/types';
+import { isNode } from '@traqula/core';
 import type { BasicGraphPattern, PathPure, TripleCollection, TripleNesting } from '@traqula/rules-sparql-1-1';
 import type { Algebra } from '../index.js';
 import type { AlgebraIndir, FlattenedTriple } from './core.js';
-import { isVariable, types, typeVals } from './core.js';
+import { isVariable, types } from './core.js';
 import { generateFreshVar, translateTerm } from './general.js';
 
 export const translateTripleCollection:
@@ -169,9 +170,9 @@ AlgebraIndir<'recurseGraph', Algebra.Operation, [Algebra.Operation, RDF.Term, RD
           algOp[castedKey] = <any> value.map((x: any) => replacement && isVariable(x) && x.equals(graph) ?
             replacement :
             SUBRULE(recurseGraph, x, graph, replacement));
-        } else if (typeVals.includes(value.type)) {
-          // Can't do instanceof on an interface
-          algOp[castedKey] = <any> SUBRULE(recurseGraph, value, graph, replacement);
+        } else if (isNode(value)) {
+          // Also the operations of extensions, whose types are not known up front
+          algOp[castedKey] = <any> SUBRULE(recurseGraph, <Algebra.Operation> value, graph, replacement);
         } else if (replacement && isVariable(value) && value.equals(graph)) {
           algOp[castedKey] = <any> replacement;
         }

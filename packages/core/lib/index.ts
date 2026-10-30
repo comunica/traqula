@@ -34,5 +34,6 @@ export {
   visitOnlyKnownKeys,
   visitElementKeys,
   forEveryNodeType,
+  isNode,
 } from './transformers/TransformerTyped.js';
 export { TransformerSubTyped } from './transformers/TransformerSubTyped.js';

@@ -1048,24 +1048,6 @@ describe('transformerSubTyped preOrder', () => {
 
     expect(result.value).toBe('transformed-type');
   });
-
-  it('transformNodeSpecificPreOrder only dispatches nodes carrying a subType', ({ expect }) => {
-    // TODO(major): this should change. The first array should call always (same for the other functions).
-    const tree = {
-      type: 'category',
-      value: 'no-subType',
-      child: { type: 'category', subType: 'b', value: 'child' },
-    };
-
-    const result = <any> transformer.transformNodeSpecificPreOrder(
-      tree,
-      { category: (copy: any) => ({ newValue: { ...copy, mapped: 'yes' }}) },
-      {},
-    );
-
-    expect(result.mapped).toBeUndefined();
-    expect(result.child.mapped).toBe('yes');
-  });
 });
 
 describe('pre-order per type defaults', () => {
@@ -1652,6 +1634,105 @@ describe('transformer async branch coverage', () => {
     });
     // Deepest first: child (b via type) before root (a via specific)
     expect(visited).toEqual([ 'type:b', 'specific:a' ]);
+  });
+});
+
+describe('transformerSubTyped type callbacks on nodes without a subType', () => {
+  const transformer = new TransformerSubTyped<Fruit | SubTypedNode>();
+  const tree = {
+    type: 'fruit',
+    child: { type: 'category', subType: 'a', value: 'child' },
+    untouched: { type: 'category', subType: 'b', value: 'untouched' },
+  };
+  const markViaType = (copy: any): object => ({ ...copy, viaType: true });
+  const markViaSpecific = (copy: any): object => ({ ...copy, viaSpecific: true });
+  /**
+   * Summarises which nodes of a transformed tree got marked.
+   */
+  const markedNodes = (result: any): object => ({
+    root: result.viaType,
+    child: result.child.viaSpecific,
+    untouched: result.untouched,
+  });
+  const expectedMarks = { root: true, child: true, untouched: tree.untouched };
+
+  it('transformNodeSpecific', ({ expect }) => {
+    const result = transformer.transformNodeSpecific(
+      tree,
+      { fruit: { transform: markViaType }},
+      { category: { a: { transform: markViaSpecific }}},
+    );
+    expect(markedNodes(result)).toEqual(expectedMarks);
+  });
+
+  it('transformNodeSpecificAsync', async({ expect }) => {
+    const result = await transformer.transformNodeSpecificAsync(
+      tree,
+      { fruit: { transform: markViaType }},
+      { category: { a: { transform: markViaSpecific }}},
+    );
+    expect(markedNodes(result)).toEqual(expectedMarks);
+  });
+
+  it('transformNodeSpecificPreOrder', ({ expect }) => {
+    const result = transformer.transformNodeSpecificPreOrder(
+      tree,
+      { fruit: copy => ({ newValue: markViaType(copy) }) },
+      { category: { a: copy => ({ newValue: markViaSpecific(copy) }) }},
+    );
+    expect(markedNodes(result)).toEqual(expectedMarks);
+  });
+
+  it('transformNodeSpecificPreOrderAsync', async({ expect }) => {
+    const result = await transformer.transformNodeSpecificPreOrderAsync(
+      tree,
+      { fruit: copy => ({ newValue: markViaType(copy) }) },
+      { category: { a: copy => ({ newValue: markViaSpecific(copy) }) }},
+    );
+    expect(markedNodes(result)).toEqual(expectedMarks);
+  });
+
+  it('visitNodeSpecific', ({ expect }) => {
+    const visited: string[] = [];
+    transformer.visitNodeSpecific(
+      tree,
+      { fruit: { visitor: () => visited.push('fruit') }},
+      { category: { a: { visitor: () => visited.push('category:a') }}},
+    );
+    expect(visited).toEqual([ 'category:a', 'fruit' ]);
+  });
+
+  it('visitNodeSpecificAsync', async({ expect }) => {
+    const visited: string[] = [];
+    await transformer.visitNodeSpecificAsync(
+      tree,
+      { fruit: { visitor: () => {
+        visited.push('fruit');
+      } }},
+      { category: { a: { visitor: () => {
+        visited.push('category:a');
+      } }}},
+    );
+    expect(visited).toEqual([ 'category:a', 'fruit' ]);
+  });
+
+  it('transformNodeSpecific stops at the preVisitor of the type', ({ expect }) => {
+    const result = transformer.transformNodeSpecific(
+      tree,
+      { fruit: { preVisitor: () => ({ continue: false }) }},
+      { category: { a: { transform: markViaSpecific }}},
+    );
+    expect(result).toEqual(tree);
+  });
+
+  it('visitNodeSpecific stops at the preVisitor of the type', ({ expect }) => {
+    const visited: string[] = [];
+    transformer.visitNodeSpecific(
+      tree,
+      { fruit: { preVisitor: () => ({ continue: false }) }},
+      { category: { a: { visitor: () => visited.push('category:a') }}},
+    );
+    expect(visited).toEqual([]);
   });
 });
 

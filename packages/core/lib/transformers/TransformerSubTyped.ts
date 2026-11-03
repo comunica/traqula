@@ -10,6 +10,30 @@ import type { DefaultNodePreVisitor, Safeness, SafeWrap } from './TransformerTyp
 import { isNode, TransformerTyped } from './TransformerTyped.js';
 
 /**
+ * Finds the callback of a value: the one registered for its subType, falling back to the one registered for its type.
+ * @param value the value to find a callback for, which need not be a node.
+ * @param nodeCallBacks the callbacks registered per type.
+ * @param nodeSpecificCallBacks the callbacks registered per type and subType.
+ * @param callbackName the callback to pick from a registered entry, or undefined when the entry is the callback.
+ * @return the found callback, or undefined when neither the subType nor the type registered one.
+ */
+function findCallback(
+  value: unknown,
+  nodeCallBacks: Partial<Record<string, any>>,
+  nodeSpecificCallBacks: Partial<Record<string, Partial<Record<string, any>>>>,
+  callbackName?: 'transform' | 'preVisitor' | 'visitor',
+): ((...args: any[]) => any) | undefined {
+  if (!isNode(value)) {
+    return undefined;
+  }
+  const specificEntry = value.subType === undefined ? undefined : nodeSpecificCallBacks[value.type]?.[value.subType];
+  if (callbackName === undefined) {
+    return specificEntry ?? nodeCallBacks[value.type];
+  }
+  return specificEntry?.[callbackName] ?? nodeCallBacks[value.type]?.[callbackName];
+}
+
+/**
  * Most specific AST transformer that dispatches visit and transform callbacks
  * based on both the `type` and `subType` fields of {@link SubTyped} nodes.
  *
@@ -74,32 +98,12 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
       }}},
   ): Safe extends 'unsafe' ? OutType : unknown {
     const transformWrapper = (copy: object, orig: object): unknown => {
-      let ogTransform: ((copy: any, orig: any) => unknown) | undefined;
-      const casted = <SubTyped<Nodes['type']>>copy;
-      if (isNode(casted) && casted.subType) {
-        const specific = nodeSpecificCallBacks[casted.type];
-        if (specific) {
-          ogTransform = specific[<keyof typeof specific> casted.subType]?.transform;
-        }
-        if (!ogTransform) {
-          ogTransform = nodeCallBacks[casted.type]?.transform;
-        }
-      }
-      return ogTransform ? ogTransform(casted, orig) : copy;
+      const transform = findCallback(copy, nodeCallBacks, nodeSpecificCallBacks, 'transform');
+      return transform ? transform(copy, orig) : copy;
     };
     const preVisitWrapper = (curObject: object): TransformContext => {
-      let ogPreVisit: ((node: any) => TransformContext) | undefined;
-      const casted = <SubTyped<Nodes['type']>>curObject;
-      if (isNode(casted) && casted.subType) {
-        const specific = nodeSpecificCallBacks[casted.type];
-        if (specific) {
-          ogPreVisit = specific[<keyof typeof specific> casted.subType]?.preVisitor;
-        }
-        if (!ogPreVisit) {
-          ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
-        }
-      }
-      return this.withNodeDefault(casted, ogPreVisit?.(casted));
+      const preVisitor = findCallback(curObject, nodeCallBacks, nodeSpecificCallBacks, 'preVisitor');
+      return this.withNodeDefault(curObject, preVisitor?.(curObject));
     };
     return <any> this.transformObject(startObject, transformWrapper, preVisitWrapper);
   }
@@ -129,32 +133,12 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
       }}},
   ): Promise<Safe extends 'unsafe' ? OutType : unknown> {
     const transformWrapper = (copy: object, orig: object): Awaitable<unknown> => {
-      let ogTransform: ((copy: any, orig: any) => Awaitable<unknown>) | undefined;
-      const casted = <SubTyped<Nodes['type']>>copy;
-      if (isNode(casted) && casted.subType) {
-        const specific = nodeSpecificCallBacks[casted.type];
-        if (specific) {
-          ogTransform = specific[<keyof typeof specific> casted.subType]?.transform;
-        }
-        if (!ogTransform) {
-          ogTransform = nodeCallBacks[casted.type]?.transform;
-        }
-      }
-      return ogTransform ? ogTransform(casted, orig) : copy;
+      const transform = findCallback(copy, nodeCallBacks, nodeSpecificCallBacks, 'transform');
+      return transform ? transform(copy, orig) : copy;
     };
     const preVisitWrapper = (curObject: object): Awaitable<TransformContext> => {
-      let ogPreVisit: ((node: any) => Awaitable<TransformContext>) | undefined;
-      const casted = <SubTyped<Nodes['type']>>curObject;
-      if (isNode(casted) && casted.subType) {
-        const specific = nodeSpecificCallBacks[casted.type];
-        if (specific) {
-          ogPreVisit = specific[<keyof typeof specific> casted.subType]?.preVisitor;
-        }
-        if (!ogPreVisit) {
-          ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
-        }
-      }
-      return mapAwaitable(ogPreVisit?.(casted), context => this.withNodeDefault(casted, context));
+      const preVisitor = findCallback(curObject, nodeCallBacks, nodeSpecificCallBacks, 'preVisitor');
+      return mapAwaitable(preVisitor?.(curObject), context => this.withNodeDefault(curObject, context));
     };
     return <any> this.transformObjectAsync(startObject, transformWrapper, preVisitWrapper);
   }
@@ -196,18 +180,8 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
     }},
   ): Safe extends 'unsafe' ? OutType : unknown {
     const preTransformWrapper = (copy: object, orig: object): PreOrderMappingReturn => {
-      let ogPreTransform: ((copy: any, orig: any) => PreOrderMappingReturn) | undefined;
-      const casted = <SubTyped<Nodes['type']>> copy;
-      if (isNode(casted) && casted.subType) {
-        const specific = nodeSpecificCallBacks[casted.type];
-        if (specific) {
-          ogPreTransform = specific[<keyof typeof specific> casted.subType];
-        }
-        if (!ogPreTransform) {
-          ogPreTransform = nodeCallBacks[casted.type];
-        }
-      }
-      const result = ogPreTransform ? ogPreTransform(copy, orig) : { newValue: copy, reTransform: false };
+      const preTransform = findCallback(copy, nodeCallBacks, nodeSpecificCallBacks);
+      const result = preTransform ? preTransform(copy, orig) : { newValue: copy, reTransform: false };
       return this.withNodeDefault(result.newValue, result);
     };
     return <any> this.transformObjectPreOrder(startObject, preTransformWrapper);
@@ -233,18 +207,8 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
     }},
   ): Promise<Safe extends 'unsafe' ? OutType : unknown> {
     const preTransformWrapper = (copy: object, orig: object): Awaitable<PreOrderMappingReturn> => {
-      let ogPreTransform: ((copy: any, orig: any) => Awaitable<PreOrderMappingReturn>) | undefined;
-      const casted = <SubTyped<Nodes['type']>> copy;
-      if (isNode(casted) && casted.subType) {
-        const specific = nodeSpecificCallBacks[casted.type];
-        if (specific) {
-          ogPreTransform = specific[<keyof typeof specific> casted.subType];
-        }
-        if (!ogPreTransform) {
-          ogPreTransform = nodeCallBacks[casted.type];
-        }
-      }
-      const result = ogPreTransform ? ogPreTransform(copy, orig) : { newValue: copy, reTransform: false };
+      const preTransform = findCallback(copy, nodeCallBacks, nodeSpecificCallBacks);
+      const result = preTransform ? preTransform(copy, orig) : { newValue: copy, reTransform: false };
       return mapAwaitable(result, resolved => this.withNodeDefault(resolved.newValue, resolved));
     };
     return <any> this.transformObjectPreOrderAsync(startObject, preTransformWrapper);
@@ -283,34 +247,12 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
       }}},
   ): void {
     const visitWrapper = (curObject: object): void => {
-      let ogTransform: ((node: any) => void) | undefined;
-      const casted = <SubTyped<Nodes['type']>>curObject;
-      if (isNode(casted) && casted.subType) {
-        const specific = nodeSpecificCallBacks[casted.type];
-        if (specific) {
-          ogTransform = specific[<keyof typeof specific> casted.subType]?.visitor;
-        }
-        if (!ogTransform) {
-          ogTransform = nodeCallBacks[casted.type]?.visitor;
-        }
-      }
-      if (ogTransform) {
-        ogTransform(casted);
-      }
+      const visitor = findCallback(curObject, nodeCallBacks, nodeSpecificCallBacks, 'visitor');
+      visitor?.(curObject);
     };
     const preVisitWrapper = (curObject: object): VisitContext => {
-      let ogPreVisit: ((node: any) => VisitContext) | undefined;
-      const casted = <SubTyped<Nodes['type']>>curObject;
-      if (isNode(casted) && casted.subType) {
-        const specific = nodeSpecificCallBacks[casted.type];
-        if (specific) {
-          ogPreVisit = specific[<keyof typeof specific> casted.subType]?.preVisitor;
-        }
-        if (!ogPreVisit) {
-          ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
-        }
-      }
-      return this.withNodeDefault(casted, ogPreVisit?.(casted));
+      const preVisitor = findCallback(curObject, nodeCallBacks, nodeSpecificCallBacks, 'preVisitor');
+      return this.withNodeDefault(curObject, preVisitor?.(curObject));
     };
     this.visitObject(startObject, visitWrapper, preVisitWrapper);
   }
@@ -334,34 +276,12 @@ export class TransformerSubTyped<Nodes extends Typed> extends TransformerTyped<N
       }}},
   ): Promise<void> {
     const visitWrapper = (curObject: object): Awaitable<void> => {
-      let ogTransform: ((node: any) => Awaitable<void>) | undefined;
-      const casted = <SubTyped<Nodes['type']>>curObject;
-      if (isNode(casted) && casted.subType) {
-        const specific = nodeSpecificCallBacks[casted.type];
-        if (specific) {
-          ogTransform = specific[<keyof typeof specific> casted.subType]?.visitor;
-        }
-        if (!ogTransform) {
-          ogTransform = nodeCallBacks[casted.type]?.visitor;
-        }
-      }
-      if (ogTransform) {
-        return ogTransform(casted);
-      }
+      const visitor = findCallback(curObject, nodeCallBacks, nodeSpecificCallBacks, 'visitor');
+      return visitor?.(curObject);
     };
     const preVisitWrapper = (curObject: object): Awaitable<VisitContext> => {
-      let ogPreVisit: ((node: any) => Awaitable<VisitContext>) | undefined;
-      const casted = <SubTyped<Nodes['type']>>curObject;
-      if (isNode(casted) && casted.subType) {
-        const specific = nodeSpecificCallBacks[casted.type];
-        if (specific) {
-          ogPreVisit = specific[<keyof typeof specific> casted.subType]?.preVisitor;
-        }
-        if (!ogPreVisit) {
-          ogPreVisit = nodeCallBacks[casted.type]?.preVisitor;
-        }
-      }
-      return mapAwaitable(ogPreVisit?.(casted), context => this.withNodeDefault(casted, context));
+      const preVisitor = findCallback(curObject, nodeCallBacks, nodeSpecificCallBacks, 'preVisitor');
+      return mapAwaitable(preVisitor?.(curObject), context => this.withNodeDefault(curObject, context));
     };
     return this.visitObjectAsync(startObject, visitWrapper, preVisitWrapper);
   }

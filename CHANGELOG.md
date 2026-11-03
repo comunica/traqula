@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.5.0-alpha.5"></a>
+## [v1.5.0-alpha.5](https://github.com/comunica/traqula/compare/v1.5.0-alpha.4...v1.5.0-alpha.5) - 2026-11-03
+
+* [Apply type callbacks to nodes without a subType in TransformerSubTyped (#247)](https://github.com/comunica/traqula/commit/100189450b8ab0f6d29de4778ab09e803f3696af)
+
 <a name="v1.5.0-alpha.4"></a>
 ## [v1.5.0-alpha.4](https://github.com/comunica/traqula/compare/v1.5.0-alpha.3...v1.5.0-alpha.4) - 2026-10-30
 

@@ -26,7 +26,7 @@ function findCallback(
   if (!isNode(value)) {
     return undefined;
   }
-  const specificEntry = value.subType === undefined ? undefined : nodeSpecificCallBacks[value.type]?.[value.subType];
+  const specificEntry = value.subType ? nodeSpecificCallBacks[value.type]?.[value.subType] : undefined;
   if (callbackName === undefined) {
     return specificEntry ?? nodeCallBacks[value.type];
   }

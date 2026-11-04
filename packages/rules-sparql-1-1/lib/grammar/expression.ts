@@ -120,7 +120,7 @@ export const prefixOperators: ReadonlyMap<string, string> = new Map([
 export const expression: SparqlRule<'expression', Expression> = <const> {
   name: 'expression',
   impl: ({ SUBRULE }) => () => SUBRULE(conditionalOrExpression),
-  gImpl: ({ SUBRULE, PRINT_WORD, PRINT_WORDS }) => (ast, { astFactory: F }) => {
+  gImpl: ({ SUBRULE, PRINT_WORD }) => (ast, { astFactory: F }) => {
     if (F.isTerm(ast)) {
       SUBRULE(varOrTerm, ast);
     } else if (F.isExpressionPatternOperation(ast)) {
@@ -131,8 +131,8 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
       SUBRULE(iriOrFunction, ast);
     } else if (F.isExpressionAggregate(ast)) {
       SUBRULE(aggregate, ast);
+    // Infix operations are always bracketed: HAVING and GROUP BY generation relies on this
     } else if (ast.operator === 'in' || ast.operator === 'notin') {
-      // Always bracketed: HAVING and GROUP BY generation relies on this
       const [ left, ...right ] = ast.args;
       F.printFilter(ast, () => PRINT_WORD('('));
       SUBRULE(expression, left);
@@ -140,10 +140,13 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
       SUBRULE(argList, F.wrap({ args: right, distinct: false }, ast.loc));
       F.printFilter(ast, () => PRINT_WORD(')'));
     } else if (binaryInfixOperators.has(ast.operator)) {
-      // Always bracketed: HAVING and GROUP BY generation relies on this.
       // More than two operands are nested left-deep, as the parser builds them: ( ( ?a || ?b ) || ?c )
       const [ firstOperand, ...otherOperands ] = ast.args;
-      F.printFilter(ast, () => PRINT_WORDS(...otherOperands.map(() => '(')));
+      F.printFilter(ast, () => {
+        for (const _ of otherOperands) {
+          PRINT_WORD('(');
+        }
+      });
       SUBRULE(expression, firstOperand);
       for (const operand of otherOperands) {
         F.printFilter(ast, () => PRINT_WORD(ast.operator));

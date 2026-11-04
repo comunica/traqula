@@ -151,4 +151,22 @@ SELECT * WHERE { VALUES ?x { ex:a ex:b ex:c } ?x ?x ?x }`);
       expect(() => parser.parse(out)).not.toThrow();
     });
   });
+
+  describe('expression gImpl with more than two operands', () => {
+    const rawGenerator = sparql11GeneratorBuilder.build();
+    const generateOperation = (operator: string): string => rawGenerator.expression(
+      F.expressionOperation(operator, [ 'a', 'b', 'c' ].map(name => F.termVariable(name, F.gen())), F.gen()),
+      completeGeneratorContext({ astFactory: F }),
+    );
+
+    it.for([ '||', '&&', '+', '=' ])('nests %s left-deep into valid SPARQL', (operator, { expect }) => {
+      const result = generateOperation(operator);
+      expect(result).toBe(` ( ( ?a ${operator} ?b ) ${operator} ?c ) `);
+      expect(() => parser.parse(`SELECT * WHERE { FILTER(${result}) }`)).not.toThrow();
+    });
+
+    it('keeps the argument list of IN', ({ expect }) => {
+      expect(generateOperation('in')).toBe(' ( ?a IN ( ?b , ?c ) ) ');
+    });
+  });
 });

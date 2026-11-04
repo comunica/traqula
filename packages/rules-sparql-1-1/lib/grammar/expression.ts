@@ -104,8 +104,7 @@ export const expressionList: SparqlGrammarRule<'expressionList', Wrap<Expression
   ]),
 };
 
-const optimizedBracketsInfixOperator = new Set([ '||', '&&', '=', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/' ]);
-const infixOperators = new Set([ 'in', 'notin', '||', '&&', '=', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/' ]);
+const binaryInfixOperators = new Set([ '||', '&&', '=', '!=', '<', '>', '<=', '>=', '+', '-', '*', '/' ]);
 /**
  * The prefix operators of an expression operation, mapped to the symbol they are generated as.
  */
@@ -132,25 +131,22 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
       SUBRULE(iriOrFunction, ast);
     } else if (F.isExpressionAggregate(ast)) {
       SUBRULE(aggregate, ast);
-    } else if (infixOperators.has(ast.operator)) {
-      // We know it will be expressionOperator
+    } else if (ast.operator === 'in' || ast.operator === 'notin') {
       // Always bracketed: HAVING and GROUP BY generation relies on this
       const [ left, ...right ] = ast.args;
       F.printFilter(ast, () => PRINT_WORD('('));
       SUBRULE(expression, left);
-      F.printFilter(ast, () => {
-        if (ast.operator === 'notin') {
-          PRINT_WORD('NOT IN');
-        } else if (ast.operator === 'in') {
-          PRINT_WORD('IN');
-        } else {
-          PRINT_WORD(ast.operator.toUpperCase());
-        }
-      });
-      if (right.length === 1 && optimizedBracketsInfixOperator.has(ast.operator)) {
-        SUBRULE(expression, right[0]);
-      } else {
-        SUBRULE(argList, F.wrap({ args: right, distinct: false }, ast.loc));
+      F.printFilter(ast, () => PRINT_WORD(ast.operator === 'in' ? 'IN' : 'NOT IN'));
+      SUBRULE(argList, F.wrap({ args: right, distinct: false }, ast.loc));
+      F.printFilter(ast, () => PRINT_WORD(')'));
+    } else if (binaryInfixOperators.has(ast.operator)) {
+      // Always bracketed. More than two operands are chained, which parses left-deep: ( ?a || ?b || ?c )
+      const [ firstOperand, ...otherOperands ] = ast.args;
+      F.printFilter(ast, () => PRINT_WORD('('));
+      SUBRULE(expression, firstOperand);
+      for (const operand of otherOperands) {
+        F.printFilter(ast, () => PRINT_WORD(ast.operator));
+        SUBRULE(expression, operand);
       }
       F.printFilter(ast, () => PRINT_WORD(')'));
     } else if (prefixOperators.has(ast.operator)) {

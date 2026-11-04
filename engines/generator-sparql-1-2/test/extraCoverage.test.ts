@@ -1,3 +1,4 @@
+import { Parser } from '@traqula/parser-sparql-1-2';
 import { AstFactory, completeGeneratorContext } from '@traqula/rules-sparql-1-2';
 import { beforeEach, describe, it } from 'vitest';
 import { Generator, sparql12GeneratorBuilder } from '../lib/index.js';
@@ -78,6 +79,25 @@ describe('extra generator-sparql-1-2 coverage', () => {
 
       const result = generator.generate(query);
       expect(result).toContain(';');
+    });
+  });
+
+  describe('expression gImpl with more than two operands', () => {
+    const rawGenerator = sparql12GeneratorBuilder.build();
+    const parser = new Parser();
+    const generateOperation = (operator: string): string => rawGenerator.expression(
+      F.expressionOperation(operator, [ 'a', 'b', 'c' ].map(name => F.termVariable(name, F.gen())), F.gen()),
+      completeGeneratorContext({ astFactory: F }),
+    );
+
+    it.for([ '||', '&&', '+', '=' ])('nests %s left-deep into valid SPARQL', (operator, { expect }) => {
+      const result = generateOperation(operator);
+      expect(result).toBe(` ( ( ?a ${operator} ?b ) ${operator} ?c ) `);
+      expect(() => parser.parse(`SELECT * WHERE { FILTER(${result}) }`)).not.toThrow();
+    });
+
+    it('keeps the argument list of IN', ({ expect }) => {
+      expect(generateOperation('in')).toBe(' ( ?a IN ( ?b , ?c ) ) ');
     });
   });
 });

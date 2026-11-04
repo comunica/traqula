@@ -1,0 +1,4 @@
+SELECT ?s WHERE {
+  ?s ?p ?o .
+  FILTER ( ( ( ?o = <http://example.org/a> ) || ( ?o = <http://example.org/b> ) || ( ?o = <http://example.org/c> ) ) )
+}

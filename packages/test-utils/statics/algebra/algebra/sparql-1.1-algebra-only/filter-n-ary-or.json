@@ -1,0 +1,113 @@
+{
+  "type": "project",
+  "input": {
+    "type": "filter",
+    "input": {
+      "type": "bgp",
+      "patterns": [
+        {
+          "type": "pattern",
+          "termType": "Quad",
+          "subject": {
+            "termType": "Variable",
+            "value": "s"
+          },
+          "predicate": {
+            "termType": "Variable",
+            "value": "p"
+          },
+          "object": {
+            "termType": "Variable",
+            "value": "o"
+          },
+          "graph": {
+            "termType": "DefaultGraph",
+            "value": ""
+          }
+        }
+      ]
+    },
+    "expression": {
+      "type": "expression",
+      "subType": "operator",
+      "operator": "||",
+      "args": [
+        {
+          "type": "expression",
+          "subType": "operator",
+          "operator": "=",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "term",
+              "term": {
+                "termType": "Variable",
+                "value": "o"
+              }
+            },
+            {
+              "type": "expression",
+              "subType": "term",
+              "term": {
+                "termType": "NamedNode",
+                "value": "http://example.org/a"
+              }
+            }
+          ]
+        },
+        {
+          "type": "expression",
+          "subType": "operator",
+          "operator": "=",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "term",
+              "term": {
+                "termType": "Variable",
+                "value": "o"
+              }
+            },
+            {
+              "type": "expression",
+              "subType": "term",
+              "term": {
+                "termType": "NamedNode",
+                "value": "http://example.org/b"
+              }
+            }
+          ]
+        },
+        {
+          "type": "expression",
+          "subType": "operator",
+          "operator": "=",
+          "args": [
+            {
+              "type": "expression",
+              "subType": "term",
+              "term": {
+                "termType": "Variable",
+                "value": "o"
+              }
+            },
+            {
+              "type": "expression",
+              "subType": "term",
+              "term": {
+                "termType": "NamedNode",
+                "value": "http://example.org/c"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "s"
+    }
+  ]
+}

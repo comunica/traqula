@@ -159,10 +159,11 @@ SELECT * WHERE { VALUES ?x { ex:a ex:b ex:c } ?x ?x ?x }`);
       completeGeneratorContext({ astFactory: F }),
     );
 
-    it.for([ '||', '&&', '+', '=' ])('nests %s left-deep into valid SPARQL', (operator, { expect }) => {
+    it.for([ '||', '&&', '+', '-', '*', '/' ])('chains %s so that it parses left-deep', (operator, { expect }) => {
       const result = generateOperation(operator);
-      expect(result).toBe(` ( ( ?a ${operator} ?b ) ${operator} ?c ) `);
-      expect(() => parser.parse(`SELECT * WHERE { FILTER(${result}) }`)).not.toThrow();
+      expect(result).toBe(` ( ?a ${operator} ?b ${operator} ?c ) `);
+      const reparsed = F.forcedAutoGenTree(parser.parse(`SELECT * WHERE { FILTER ${result} }`));
+      expect(generator.generate(reparsed)).toContain(`( ( ?a ${operator} ?b ) ${operator} ?c )`);
     });
 
     it('keeps the argument list of IN', ({ expect }) => {

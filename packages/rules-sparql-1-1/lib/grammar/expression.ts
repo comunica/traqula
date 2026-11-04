@@ -131,8 +131,8 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
       SUBRULE(iriOrFunction, ast);
     } else if (F.isExpressionAggregate(ast)) {
       SUBRULE(aggregate, ast);
-    // Infix operations are always bracketed: HAVING and GROUP BY generation relies on this
     } else if (ast.operator === 'in' || ast.operator === 'notin') {
+      // Always bracketed: HAVING and GROUP BY generation relies on this
       const [ left, ...right ] = ast.args;
       F.printFilter(ast, () => PRINT_WORD('('));
       SUBRULE(expression, left);
@@ -140,19 +140,15 @@ export const expression: SparqlRule<'expression', Expression> = <const> {
       SUBRULE(argList, F.wrap({ args: right, distinct: false }, ast.loc));
       F.printFilter(ast, () => PRINT_WORD(')'));
     } else if (binaryInfixOperators.has(ast.operator)) {
-      // More than two operands are nested left-deep, as the parser builds them: ( ( ?a || ?b ) || ?c )
+      // Always bracketed. More than two operands are chained, which parses left-deep: ( ?a || ?b || ?c )
       const [ firstOperand, ...otherOperands ] = ast.args;
-      F.printFilter(ast, () => {
-        for (const _ of otherOperands) {
-          PRINT_WORD('(');
-        }
-      });
+      F.printFilter(ast, () => PRINT_WORD('('));
       SUBRULE(expression, firstOperand);
       for (const operand of otherOperands) {
         F.printFilter(ast, () => PRINT_WORD(ast.operator));
         SUBRULE(expression, operand);
-        F.printFilter(ast, () => PRINT_WORD(')'));
       }
+      F.printFilter(ast, () => PRINT_WORD(')'));
     } else if (prefixOperators.has(ast.operator)) {
       const [ expr ] = <[Expression]>ast.args;
       F.printFilter(ast, () => PRINT_WORD(prefixOperators.get(ast.operator)!));

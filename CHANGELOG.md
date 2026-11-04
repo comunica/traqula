@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.5.0-alpha.6"></a>
+## [v1.5.0-alpha.6](https://github.com/comunica/traqula/compare/v1.5.0-alpha.5...v1.5.0-alpha.6) - 2026-11-04
+
+* [Generate infix operations with more than two operands as valid SPARQL (#249)](https://github.com/comunica/traqula/commit/0fb7d233775861a8934d878ffb664b1fcd05d177)
+
 <a name="v1.5.0-alpha.5"></a>
 ## [v1.5.0-alpha.5](https://github.com/comunica/traqula/compare/v1.5.0-alpha.4...v1.5.0-alpha.5) - 2026-11-03
 

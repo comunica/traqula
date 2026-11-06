@@ -10,7 +10,8 @@ import type {
   ValuePatternRow,
 } from '@traqula/rules-sparql-1-1';
 import type * as Algebra from '../algebra.js';
-import { types } from '../toAlgebra/index.js';
+import { defaultAlgebraTransformer, types } from '../toAlgebra/index.js';
+import { inScopeVariables } from '../util.js';
 import type { AstIndir } from './core.js';
 import { findAlgGroupBelow, registerProjection } from './core.js';
 import { translateAlgPureExpression } from './expression.js';
@@ -46,6 +47,20 @@ export const translateAlgPatternIntoGroup: AstIndir<'translatePatternIntoGroup',
         throw new Error(`Unknown Operation type ${op.type}`);
     }
   },
+};
+
+/**
+ * Translates the operation as a SELECT subquery projecting all its in-scope variables.
+ * @param op - the operation to evaluate in its own scope.
+ * @return the group holding the subquery.
+ */
+export const translateAlgInOwnSubquery: AstIndir<'translateInOwnSubquery', PatternGroup, [Algebra.Operation]> = {
+  name: 'translateInOwnSubquery',
+  fun: ({ SUBRULE }) => ({ algebraFactory, algebraTransformer = defaultAlgebraTransformer }, op) =>
+    SUBRULE(translateAlgPatternIntoGroup, algebraFactory.createProject(
+      op,
+      inScopeVariables(op, (operation, callbacks) => algebraTransformer.visitNode(operation, callbacks)),
+    )),
 };
 
 export const translateAlgSinglePattern: AstIndir<'translateSinglePattern', Pattern, [Algebra.Operation]> = {
@@ -198,8 +213,11 @@ export const translateAlgJoin: AstIndir<'translateJoin', Pattern[], [Algebra.Joi
     // An OPTIONAL or MINUS applies to everything preceding it in its group.
     // Operands other than the first must thus be scoped by their own group when they contain one,
     // and thus get rewrapped ina  group, otherwise Join(A, Minus(B, C)) would be read back as Minus(Join(A, B), C).
-    const arr = op.input.flatMap((x, index) => {
-      const patterns = SUBRULE(operationAlgInputAsPatternList, x);
+    const arr = op.input.flatMap((operand, index) => {
+      // Any other group below an operand would move to the query and be evaluated after the join
+      const patterns = SUBRULE(findAlgGroupBelow, operand, 'having') ?
+          [ SUBRULE(translateAlgInOwnSubquery, operand) ] :
+        SUBRULE(operationAlgInputAsPatternList, operand);
       if (index > 0 && patterns.some(pattern => F.isPatternOptional(pattern) || F.isPatternMinus(pattern))) {
         return [ F.patternGroup(patterns, F.gen()) ];
       }

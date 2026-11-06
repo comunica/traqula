@@ -136,12 +136,13 @@ function countSelectableExtends(
 /**
  * Reorders the extends, orderings, and filters between a query form and its group, as far as they commute,
  * so orderings become the ORDER BY clause and filters become HAVING conditions.
+ * Filters that stay above the group are left for the own subquery of the group, see {@link translateAlgPatternNew}.
  * @param op - The query form whose input is reordered.
  * @return the query form with its orderings on top and its filters on the group, or the given one if nothing moves.
  */
 export const reorderAlgQueryChain: AstIndir<'reorderQueryChain', AlgQueryForm, [AlgQueryForm]> = {
   name: 'reorderQueryChain',
-  fun: ({ SUBRULE }) => (_, op) => {
+  fun: ({ SUBRULE }) => ({ algebraTransformer = defaultAlgebraTransformer }, op) => {
     type ChainOperation = Algebra.Extend | Algebra.OrderBy | Algebra.Filter;
     // The chain down to the HAVING conditions or the trailing VALUES, outermost first
     const chain: ChainOperation[] = [];
@@ -151,44 +152,48 @@ export const reorderAlgQueryChain: AstIndir<'reorderQueryChain', AlgQueryForm, [
       chain.push(bottom);
       bottom = bottom.input;
     }
+    if (chain.length === 0) {
+      return op;
+    }
 
-    // Orderings move up, keeping their relative order. Filters commute with them, and so do extends,
-    //  whose variable is not bound below them and can thus not affect the ordering.
-    const reordered = [
-      ...chain.filter(operation => operation.type === types.ORDER_BY),
-      ...chain.filter(operation => operation.type !== types.ORDER_BY),
-    ];
-
-    // Filters reading only group keys and aggregates move down onto the HAVING conditions,
-    //  inner filters first so they keep their relative order
+    // Filters reading only group keys and aggregates move down onto the HAVING conditions
     const valuesJoin = splitAlgValuesJoin(bottom);
-    let having = valuesJoin?.other ?? bottom;
-    const group = reordered.some(operation => operation.type === types.FILTER) ?
-      SUBRULE(findAlgGroupBelow, having, 'having') :
-      undefined;
+    const group = SUBRULE(findAlgGroupBelow, valuesJoin?.other ?? bottom, 'having');
+    const sunk = new Set<ChainOperation>();
     if (group) {
       const valuesVariables = new Set(valuesJoin?.values.variables.map(variable => variable.value));
-      const isGrouped = (variable: string): boolean => !valuesVariables.has(variable) &&
-        (group.variables.some(key => key.value === variable) ||
-          group.aggregates.some(aggregate => aggregate.variable.value === variable));
-      for (let index = reordered.length - 1; index >= 0; index--) {
-        const filter = reordered[index];
-        if (filter.type === types.FILTER &&
-          [ ...SUBRULE(collectAlgVariables, filter.expression, new Set()) ].every(isGrouped)) {
-          having = { ...filter, input: having };
-          reordered.splice(index, 1);
+      const grouped = new Set(inScopeVariables(group, (operation, callbacks) =>
+        algebraTransformer.visitNode(operation, callbacks))
+        .map(variable => variable.value)
+        .filter(variable => !valuesVariables.has(variable)));
+      for (const operation of chain) {
+        if (operation.type === types.FILTER &&
+          [ ...SUBRULE(collectAlgVariables, operation.expression, new Set()) ].every(name => grouped.has(name))) {
+          sunk.add(operation);
         }
       }
-
+    }
+    if (sunk.size > 0) {
+      const having = [ ...sunk ].reduceRight<Algebra.Operation>(
+        (input, filter) => ({ ...filter, input }),
+        valuesJoin?.other ?? bottom,
+      );
       if (valuesJoin) {
-        const operands = valuesJoin.join.input.map(operand => operand === valuesJoin.other ? having : operand);
-        bottom = { ...valuesJoin.join, input: operands };
+        const join = <Algebra.Join> bottom;
+        bottom = { ...join, input: join.input.map(operand => operand === valuesJoin.other ? having : operand) };
       } else {
         bottom = having;
       }
     }
 
-    if (reordered.length === chain.length && reordered.every((operation, index) => operation === chain[index])) {
+    // Orderings move up, keeping their relative order. Filters commute with them, and so do extends,
+    //  whose variable is not bound below them and can thus not affect the ordering.
+    const remaining = chain.filter(operation => !sunk.has(operation));
+    const reordered = [
+      ...remaining.filter(operation => operation.type === types.ORDER_BY),
+      ...remaining.filter(operation => operation.type !== types.ORDER_BY),
+    ];
+    if (sunk.size === 0 && reordered.every((operation, index) => operation === chain[index])) {
       return op;
     }
     const input = reordered.reduceRight<Algebra.Operation>((input, operation) => ({ ...operation, input }), bottom);

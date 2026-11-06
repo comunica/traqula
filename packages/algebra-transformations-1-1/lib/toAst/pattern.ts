@@ -63,6 +63,29 @@ export const translateAlgInOwnSubquery: AstIndir<'translateInOwnSubquery', Patte
     )),
 };
 
+const queryTypes = new Set<string>([
+  types.ASK,
+  types.PROJECT,
+  types.CONSTRUCT,
+  types.DESCRIBE,
+  types.DISTINCT,
+  types.FROM,
+  types.REDUCED,
+  types.SLICE,
+]);
+
+/**
+ * Translates the input of a solution modifier, which can only modify a query.
+ * @param op - the input of the solution modifier.
+ * @return the group holding the query, a subquery of its own when the input is no query.
+ */
+export const translateAlgModifiedQuery: AstIndir<'translateModifiedQuery', PatternGroup, [Algebra.Operation]> = {
+  name: 'translateModifiedQuery',
+  fun: ({ SUBRULE }) => (_, op) => queryTypes.has(op.type) ?
+    SUBRULE(translateAlgPatternIntoGroup, op) :
+    SUBRULE(translateAlgInOwnSubquery, op),
+};
+
 export const translateAlgSinglePattern: AstIndir<'translateSinglePattern', Pattern, [Algebra.Operation]> = {
   name: 'translateSinglePattern',
   fun: ({ SUBRULE }) => ({ astFactory: F }, op) => {
@@ -141,7 +164,7 @@ export const translateAlgPath: AstIndir<'translatePath', PatternBgp, [Algebra.Pa
 export const translateAlgFrom: AstIndir<'translateFrom', PatternGroup, [Algebra.From]> = {
   name: 'translateFrom',
   fun: ({ SUBRULE }) => (_, op) => {
-    const result = SUBRULE(translateAlgPatternIntoGroup, op.input);
+    const result = SUBRULE(translateAlgModifiedQuery, op.input);
     const query = <QueryBase> result.patterns[0];
     query.datasets = SUBRULE(translateAlgDatasetClauses, op.default, op.named);
     return result;
@@ -304,7 +327,7 @@ export const operationAlgInputAsPatternList: AstIndir<'operationInputAsPatternLi
 export const translateAlgSlice: AstIndir<'translateSlice', PatternGroup, [Algebra.Slice]> = {
   name: 'translateSlice',
   fun: ({ SUBRULE }) => ({ astFactory: F }, op) => {
-    const result = SUBRULE(translateAlgPatternIntoGroup, op.input);
+    const result = SUBRULE(translateAlgModifiedQuery, op.input);
     const query = <QueryBase>result.patterns[0];
     if (op.start !== 0) {
       query.solutionModifiers.limitOffset = query.solutionModifiers.limitOffset ??

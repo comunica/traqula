@@ -17,7 +17,7 @@ import { inScopeVariables } from '../util.js';
 import type { AstIndir } from './core.js';
 import { findAlgGroupBelow } from './core.js';
 import { translateAlgPureExpression } from './expression.js';
-import { translateAlgPatternIntoGroup, translateAlgPatternNew } from './pattern.js';
+import { translateAlgModifiedQuery, translateAlgPatternIntoGroup, translateAlgPatternNew } from './pattern.js';
 
 export type RdfTermToAst<T extends RDF.Term> = T extends RDF.Variable ? TermVariable :
   T extends RDF.BlankNode ? TermBlank :
@@ -138,7 +138,7 @@ export const translateAlgPattern: AstIndir<'translatePattern', TripleNesting, [A
 export const translateAlgReduced: AstIndir<'translateReduced', PatternGroup, [Algebra.Reduced]> = {
   name: 'translateReduced',
   fun: ({ SUBRULE }) => (_, op) => {
-    const result = SUBRULE(translateAlgPatternIntoGroup, op.input);
+    const result = SUBRULE(translateAlgModifiedQuery, op.input);
     const select = <QuerySelect>result.patterns[0];
     select.reduced = true;
     return result;
@@ -151,7 +151,7 @@ export const translateAlgReduced: AstIndir<'translateReduced', PatternGroup, [Al
 export const translateAlgDistinct: AstIndir<'translateDistinct', PatternGroup, [Algebra.Distinct]> = {
   name: 'translateDistinct',
   fun: ({ SUBRULE }) => (_, op) => {
-    const result = SUBRULE(translateAlgPatternIntoGroup, op.input);
+    const result = SUBRULE(translateAlgModifiedQuery, op.input);
     const select = <QuerySelect>result.patterns[0];
     select.distinct = true;
     return result;

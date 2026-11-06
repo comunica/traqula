@@ -726,6 +726,44 @@ SELECT (COUNT(EXISTS { GRAPH ?g { ?s :q ?o } }) AS ?c) WHERE { ?s :p ?g }`);
     expect(result.replaceAll(/\s+/gu, ' ')).toContain('COUNT( EXISTS { GRAPH ?g {');
     expect(roundTripQuads(result)).toBe(result);
   });
+
+  describe('modifier over an operation that is no query', () => {
+    const s = AF.dataFactory.variable!('s');
+    const o = AF.dataFactory.variable!('o');
+    const filteredSubquery = AF.createFilter(
+      AF.createProject(AF.createBgp([ AF.createPattern(s, AF.dataFactory.namedNode('http://p'), o) ]), [ o ]),
+      AF.createTermExpression(o),
+    );
+    const expectedWhere = `WHERE {
+  {
+    SELECT ?o WHERE {
+      ?s <http://p> ?o .
+    }
+  }
+  FILTER ( ?o )
+}`;
+    function generate(op: Algebra.Operation): string {
+      return generator.generate(F.forcedAutoGenTree(toAst(op)));
+    }
+
+    it('projects the input of a DISTINCT on its in-scope variables', ({ expect }) => {
+      expect(generate(AF.createDistinct(filteredSubquery))).toBe(`SELECT DISTINCT ?o ${expectedWhere}`);
+    });
+
+    it('projects the input of a REDUCED on its in-scope variables', ({ expect }) => {
+      expect(generate(AF.createReduced(filteredSubquery))).toBe(`SELECT REDUCED ?o ${expectedWhere}`);
+    });
+
+    it('projects the input of a slice on its in-scope variables', ({ expect }) => {
+      expect(generate(AF.createSlice(filteredSubquery, 1, 2))).toBe(`SELECT ?o ${expectedWhere}
+LIMIT 2 OFFSET 1`);
+    });
+
+    it('projects the input of a FROM on its in-scope variables', ({ expect }) => {
+      const from = AF.createFrom(filteredSubquery, [ AF.dataFactory.namedNode('http://g') ], []);
+      expect(generate(from)).toBe(`SELECT ?o FROM <http://g> ${expectedWhere}`);
+    });
+  });
 });
 
 describe('algebraGenerators filter', () => {

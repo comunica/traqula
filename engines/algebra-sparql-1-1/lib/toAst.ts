@@ -20,6 +20,7 @@ import {
   translateAlgZeroOrMorePath,
   translateAlgSeq,
   translateAlgPatternIntoGroup,
+  translateAlgModifiedQuery,
   translateAlgSinglePattern,
   translateAlgPatternNew,
   translateAlgPath,
@@ -134,6 +135,7 @@ export const toAst11Builder = IndirBuilder
   .addMany(
     // Pattern
     translateAlgPatternIntoGroup,
+    translateAlgModifiedQuery,
     translateAlgSinglePattern,
     translateAlgPatternNew,
     translateAlgBoundAggregate,

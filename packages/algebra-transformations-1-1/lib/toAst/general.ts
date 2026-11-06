@@ -126,12 +126,12 @@ export const translateAlgPattern: AstIndir<'translatePattern', TripleNesting, [A
 };
 
 /**
- * Reduced is wrapped around a project, set the query contained to be distinct
+ * Makes the query its input translates into REDUCED.
  */
 export const translateAlgReduced: AstIndir<'translateReduced', PatternGroup, [Algebra.Reduced]> = {
   name: 'translateReduced',
   fun: ({ SUBRULE }) => (_, op) => {
-    const result = SUBRULE(translateAlgIntoQuery, op.input);
+    const result = SUBRULE(translateAlgIntoQuery, op.input, Algebra.Types.REDUCED);
     const select = <QuerySelect>result.patterns[0];
     select.reduced = true;
     return result;
@@ -139,12 +139,12 @@ export const translateAlgReduced: AstIndir<'translateReduced', PatternGroup, [Al
 };
 
 /**
- * District is wrapped around a project, set the query contained to be distinct
+ * Makes the query its input translates into DISTINCT.
  */
 export const translateAlgDistinct: AstIndir<'translateDistinct', PatternGroup, [Algebra.Distinct]> = {
   name: 'translateDistinct',
   fun: ({ SUBRULE }) => (_, op) => {
-    const result = SUBRULE(translateAlgIntoQuery, op.input);
+    const result = SUBRULE(translateAlgIntoQuery, op.input, Algebra.Types.DISTINCT);
     const select = <QuerySelect>result.patterns[0];
     select.distinct = true;
     return result;

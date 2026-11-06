@@ -730,10 +730,8 @@ SELECT (COUNT(EXISTS { GRAPH ?g { ?s :q ?o } }) AS ?c) WHERE { ?s :p ?g }`);
   describe('operation that is no query where a query is expected', () => {
     const s = AF.dataFactory.variable!('s');
     const o = AF.dataFactory.variable!('o');
-    const filteredSubquery = AF.createFilter(
-      AF.createProject(AF.createBgp([ AF.createPattern(s, AF.dataFactory.namedNode('http://p'), o) ]), [ o ]),
-      AF.createTermExpression(o),
-    );
+    const project = AF.createProject(AF.createBgp([ AF.createPattern(s, AF.dataFactory.namedNode('http://p'), o) ]), [ o ]);
+    const filteredSubquery = AF.createFilter(project, AF.createTermExpression(o));
     const expectedWhere = `WHERE {
   {
     SELECT ?o WHERE {
@@ -755,6 +753,25 @@ SELECT (COUNT(EXISTS { GRAPH ?g { ?s :q ?o } }) AS ?c) WHERE { ?s :p ?g }`);
       ],
     ])('projects %s on its in-scope variables', ([ , operation, expected ], { expect }) => {
       expect(generate(operation)).toBe(expected);
+    });
+
+    it('evaluates a slice below a DISTINCT in a subquery', ({ expect }) => {
+      expect(generate(AF.createDistinct(AF.createSlice(project, 0, 3)))).toBe(`SELECT DISTINCT ?o WHERE {
+  SELECT ?o WHERE {
+    ?s <http://p> ?o .
+  }
+  LIMIT 3
+}`);
+    });
+
+    it('evaluates a slice below a slice in a subquery', ({ expect }) => {
+      expect(generate(AF.createSlice(AF.createSlice(project, 0, 10), 0, 20))).toBe(`SELECT ?o WHERE {
+  SELECT ?o WHERE {
+    ?s <http://p> ?o .
+  }
+  LIMIT 10
+}
+LIMIT 20`);
     });
   });
 });

@@ -1,0 +1,11 @@
+SELECT ?s ?o WHERE {
+  ?s <http://example.org/q> ?x .
+  OPTIONAL {
+    {
+      SELECT ?s ?p ?o WHERE {
+        ?s ?p ?o .
+      }
+      ORDER BY ASC ( ?o )
+    }
+  }
+}

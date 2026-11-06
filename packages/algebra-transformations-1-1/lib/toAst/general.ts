@@ -14,7 +14,7 @@ import type {
 import { Algebra } from '../index.js';
 import type { AstIndir } from './core.js';
 import { translateAlgPureExpression } from './expression.js';
-import { translateAlgModifiedQuery, translateAlgPatternNew } from './pattern.js';
+import { translateAlgInOwnSubquery, translateAlgModifiedQuery, translateAlgPatternNew } from './pattern.js';
 
 export type RdfTermToAst<T extends RDF.Term> = T extends RDF.Variable ? TermVariable :
   T extends RDF.BlankNode ? TermBlank :
@@ -95,11 +95,15 @@ AstIndir<'translateDatasetClauses', DatasetClauses, [RDF.NamedNode[], RDF.NamedN
 };
 
 /**
- * An order by is just registered to be handled in the creation of your QueryBase
+ * An order by on top of a query form is registered to become the ORDER BY clause of that query.
+ * Any other order by is translated in a SELECT subquery of its own.
  */
 export const translateAlgOrderBy: AstIndir<'translateOrderBy', Pattern | Pattern[], [Algebra.OrderBy]> = {
   name: 'translateOrderBy',
-  fun: ({ SUBRULE }) => ({ order }, op) => {
+  fun: ({ SUBRULE }) => ({ project, order }, op) => {
+    if (!project) {
+      return SUBRULE(translateAlgInOwnSubquery, op);
+    }
     order.push(...op.expressions);
     return SUBRULE(translateAlgPatternNew, op.input);
   },

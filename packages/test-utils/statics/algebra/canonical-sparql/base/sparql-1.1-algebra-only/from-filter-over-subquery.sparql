@@ -1,0 +1,8 @@
+SELECT ?o FROM <http://example.org/g> WHERE {
+  {
+    SELECT ?o WHERE {
+      ?s <http://example.org/p> ?o .
+    }
+  }
+  FILTER ( ?o )
+}

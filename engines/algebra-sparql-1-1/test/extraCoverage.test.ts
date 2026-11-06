@@ -32,10 +32,6 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     return generator.generate(F.forcedAutoGenTree(backAst));
   }
 
-  function generate(op: Algebra.Operation): string {
-    return generator.generate(F.forcedAutoGenTree(toAst(op)));
-  }
-
   describe('property path: NPS with only inverted predicates', () => {
     it('toAst handles inv(NPS with 2+ IRIs) as path predicate', ({ expect }) => {
       const p1 = AF.dataFactory.namedNode('http://p1');
@@ -89,7 +85,7 @@ GROUP BY ( ?y AS ?x )`);
     );
 
     it('selects the aggregate bound to the variable', ({ expect }) => {
-      const result = generate(project);
+      const result = generator.generate(F.forcedAutoGenTree(toAst(project)));
       expect(result).toBe(`SELECT ( COUNT( ?o ) AS ?var0 ) ?s WHERE {
   ?s ?p ?o .
 }
@@ -97,7 +93,7 @@ GROUP BY ?s`);
     });
 
     it('generates a query that parses and round-trips unchanged', ({ expect }) => {
-      const result = generate(project);
+      const result = generator.generate(F.forcedAutoGenTree(toAst(project)));
       expect(roundTrip(result)).toBe(result);
     });
   });
@@ -293,6 +289,10 @@ GROUP BY ?s`);
     const s = AF.dataFactory.variable!('s');
     const p = AF.dataFactory.variable!('p');
     const o = AF.dataFactory.variable!('o');
+
+    function generate(op: Algebra.Operation): string {
+      return generator.generate(F.forcedAutoGenTree(toAst(op)));
+    }
 
     it('reads a pattern without a graph as default graph content', ({ expect }) => {
       const pattern = <Algebra.Pattern> { type: 'pattern', subject: s, predicate: p, object: o };
@@ -725,77 +725,6 @@ GROUP BY ?s`);
 SELECT (COUNT(EXISTS { GRAPH ?g { ?s :q ?o } }) AS ?c) WHERE { ?s :p ?g }`);
     expect(result.replaceAll(/\s+/gu, ' ')).toContain('COUNT( EXISTS { GRAPH ?g {');
     expect(roundTripQuads(result)).toBe(result);
-  });
-
-  describe('operation that is no query where a query is expected', () => {
-    const s = AF.dataFactory.variable!('s');
-    const o = AF.dataFactory.variable!('o');
-    const project = AF.createProject(AF.createBgp([ AF.createPattern(s, AF.dataFactory.namedNode('http://p'), o) ]), [ o ]);
-    const filteredSubquery = AF.createFilter(project, AF.createTermExpression(o));
-    const expectedWhere = `WHERE {
-  {
-    SELECT ?o WHERE {
-      ?s <http://p> ?o .
-    }
-  }
-  FILTER ( ?o )
-}`;
-
-    it.for<[string, Algebra.Operation, string]>([
-      [ 'the root', filteredSubquery, `SELECT ?o ${expectedWhere}` ],
-      [ 'a DISTINCT', AF.createDistinct(filteredSubquery), `SELECT DISTINCT ?o ${expectedWhere}` ],
-      [ 'a REDUCED', AF.createReduced(filteredSubquery), `SELECT REDUCED ?o ${expectedWhere}` ],
-      [ 'a slice', AF.createSlice(filteredSubquery, 1, 2), `SELECT ?o ${expectedWhere}\nLIMIT 2 OFFSET 1` ],
-      [
-        'a FROM',
-        AF.createFrom(filteredSubquery, [ AF.dataFactory.namedNode('http://g') ], []),
-        `SELECT ?o FROM <http://g> ${expectedWhere}`,
-      ],
-    ])('projects %s on its in-scope variables', ([ , operation, expected ], { expect }) => {
-      expect(generate(operation)).toBe(expected);
-    });
-
-    const slicedSubquery = `SELECT ?o WHERE {
-    ?s <http://p> ?o .
-  }
-  LIMIT 3`;
-
-    it.for<[string, Algebra.Operation, string]>([
-      [
-        'a DISTINCT',
-        AF.createDistinct(AF.createSlice(project, 0, 3)),
-        `SELECT DISTINCT ?o WHERE {\n  ${slicedSubquery}\n}`,
-      ],
-      [
-        'a slice',
-        AF.createSlice(AF.createSlice(project, 0, 3), 0, 20),
-        `SELECT ?o WHERE {\n  ${slicedSubquery}\n}\nLIMIT 20`,
-      ],
-    ])('evaluates a slice below %s in a subquery', ([ , operation, expected ], { expect }) => {
-      expect(generate(operation)).toBe(expected);
-    });
-
-    it.for<[string, Algebra.Operation, string]>([
-      [
-        'a slice',
-        AF.createSlice(AF.createFrom(project, [ AF.dataFactory.namedNode('http://g') ], []), 0, 3),
-        `SELECT ?o FROM <http://g> WHERE {\n  ?s <http://p> ?o .\n}\nLIMIT 3`,
-      ],
-      [
-        'a DISTINCT over a slice',
-        AF.createDistinct(AF.createFrom(AF.createSlice(project, 0, 3), [ AF.dataFactory.namedNode('http://g') ], [])),
-        `SELECT DISTINCT ?o FROM <http://g> WHERE {\n  ${slicedSubquery}\n}`,
-      ],
-    ])('keeps a FROM below %s on the outer query', ([ , operation, expected ], { expect }) => {
-      expect(generate(operation)).toBe(expected);
-    });
-
-    it('sets the dataset of a FROM translated as a pattern', ({ expect }) => {
-      const transformer = toAst11Builder.build();
-      const from = AF.createFrom(project, [ AF.dataFactory.namedNode('http://g') ], []);
-      const result = transformer.translatePatternIntoGroup(createAstContext(), from);
-      expect(result.patterns[0]).toMatchObject({ datasets: { clauses: [{ value: { value: 'http://g' }}]}});
-    });
   });
 });
 

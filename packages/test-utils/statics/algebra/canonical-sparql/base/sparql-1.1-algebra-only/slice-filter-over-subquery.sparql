@@ -1,0 +1,9 @@
+SELECT ?o WHERE {
+  {
+    SELECT ?o WHERE {
+      ?s <http://example.org/p> ?o .
+    }
+  }
+  FILTER ( ?o )
+}
+LIMIT 2 OFFSET 1

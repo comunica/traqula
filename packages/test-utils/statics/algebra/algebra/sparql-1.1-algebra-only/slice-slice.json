@@ -1,0 +1,44 @@
+{
+  "type": "slice",
+  "input": {
+    "type": "slice",
+    "input": {
+      "type": "project",
+      "input": {
+        "type": "bgp",
+        "patterns": [
+          {
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": {
+              "termType": "Variable",
+              "value": "s"
+            },
+            "predicate": {
+              "termType": "NamedNode",
+              "value": "http://example.org/p"
+            },
+            "object": {
+              "termType": "Variable",
+              "value": "o"
+            },
+            "graph": {
+              "termType": "DefaultGraph",
+              "value": ""
+            }
+          }
+        ]
+      },
+      "variables": [
+        {
+          "termType": "Variable",
+          "value": "o"
+        }
+      ]
+    },
+    "start": 0,
+    "length": 3
+  },
+  "start": 0,
+  "length": 20
+}

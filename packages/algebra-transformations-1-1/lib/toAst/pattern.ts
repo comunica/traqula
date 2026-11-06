@@ -74,9 +74,9 @@ export type AlgSolutionModifierType = typeof types.DISTINCT | typeof types.REDUC
 const queryFormTypes = new Set<string>([ types.ASK, types.PROJECT, types.CONSTRUCT, types.DESCRIBE ]);
 
 /**
- * The operation types {@link translateAlgPatternIntoGroup} translates into a query, FROM aside.
+ * The operation types {@link translateAlgPatternIntoGroup} translates into a query.
  */
-const queryTypes = new Set<string>([ ...queryFormTypes, types.DISTINCT, types.REDUCED, types.SLICE ]);
+const queryTypes = new Set<string>([ ...queryFormTypes, types.DISTINCT, types.REDUCED, types.SLICE, types.FROM ]);
 
 /**
  * Per solution modifier, the input types it modifies within the same query.
@@ -99,7 +99,7 @@ export const translateAlgModifiedQuery:
 AstIndir<'translateModifiedQuery', PatternGroup, [Algebra.Operation, AlgSolutionModifierType?]> = {
   name: 'translateModifiedQuery',
   fun: ({ SUBRULE }) => (_, op, modifierType) => {
-    if (op.type === types.FROM) {
+    if (op.type === types.FROM && modifierType !== undefined) {
       return SUBRULE(translateAlgFrom, op, modifierType);
     }
     const modifiableTypes = modifierType === undefined ? queryTypes : queryTypesModifiableBy[modifierType];

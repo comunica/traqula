@@ -1,0 +1,4 @@
+SELECT ?o FROM <http://example.org/g> WHERE {
+  ?s <http://example.org/p> ?o .
+}
+LIMIT 3

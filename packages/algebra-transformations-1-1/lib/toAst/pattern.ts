@@ -40,7 +40,6 @@ export const translateAlgPatternIntoGroup: AstIndir<'translatePatternIntoGroup',
       case types.DESCRIBE: return SUBRULE(translateAlgProject, op, types.DESCRIBE);
       case types.DISTINCT: return SUBRULE(translateAlgDistinct, op);
       case types.FROM: return SUBRULE(translateAlgFrom, op);
-      case types.FILTER: return SUBRULE(translateAlgFilter, op);
       case types.REDUCED: return SUBRULE(translateAlgReduced, op);
       case types.SLICE: return SUBRULE(translateAlgSlice, op);
       default:
@@ -50,7 +49,7 @@ export const translateAlgPatternIntoGroup: AstIndir<'translatePatternIntoGroup',
 };
 
 /**
- * The operation types {@link translateAlgPatternIntoGroup} translates into a query.
+ * The operation types {@link translateAlgPatternIntoGroup} translates.
  */
 const algQueryTypes = new Set<string>([
   types.ASK,
@@ -64,13 +63,12 @@ const algQueryTypes = new Set<string>([
 ]);
 
 /**
- * Translates the input of a DISTINCT, REDUCED, slice or FROM, which modifies the query that input translates into.
- * An input that is no query gets projected on its in-scope variables, as `SELECT *` would.
- * @param op - The input of the modifying operation.
+ * Translates an operation into a query, projecting an operation that is no query on its in-scope variables.
+ * @param op - The operation to translate.
  * @return a group holding the query as its only pattern.
  */
-export const translateAlgModifiedQuery: AstIndir<'translateModifiedQuery', PatternGroup, [Algebra.Operation]> = {
-  name: 'translateModifiedQuery',
+export const translateAlgIntoQuery: AstIndir<'translateIntoQuery', PatternGroup, [Algebra.Operation]> = {
+  name: 'translateIntoQuery',
   fun: ({ SUBRULE }) => ({ algebraFactory: AF, algebraTransformer = defaultAlgebraTransformer }, op) => {
     const query = algQueryTypes.has(op.type) ?
       op :
@@ -88,6 +86,7 @@ export const translateAlgSinglePattern: AstIndir<'translateSinglePattern', Patte
     SUBRULE(registerProjection, op);
     switch (op.type) {
       case types.PATH: return SUBRULE(translateAlgPath, op);
+      case types.FILTER: return SUBRULE(translateAlgFilter, op);
       case types.BGP: return SUBRULE(translateAlgBgp, op);
       case types.GRAPH: return SUBRULE(translateAlgGraph, op);
       case types.SERVICE: return SUBRULE(translateAlgService, op);
@@ -152,7 +151,7 @@ export const translateAlgPath: AstIndir<'translatePath', PatternBgp, [Algebra.Pa
 export const translateAlgFrom: AstIndir<'translateFrom', PatternGroup, [Algebra.From]> = {
   name: 'translateFrom',
   fun: ({ SUBRULE }) => (_, op) => {
-    const result = SUBRULE(translateAlgModifiedQuery, op.input);
+    const result = SUBRULE(translateAlgIntoQuery, op.input);
     const query = <QueryBase> result.patterns[0];
     query.datasets = SUBRULE(translateAlgDatasetClauses, op.default, op.named);
     return result;
@@ -315,7 +314,7 @@ export const operationAlgInputAsPatternList: AstIndir<'operationInputAsPatternLi
 export const translateAlgSlice: AstIndir<'translateSlice', PatternGroup, [Algebra.Slice]> = {
   name: 'translateSlice',
   fun: ({ SUBRULE }) => ({ astFactory: F }, op) => {
-    const result = SUBRULE(translateAlgModifiedQuery, op.input);
+    const result = SUBRULE(translateAlgIntoQuery, op.input);
     const query = <QueryBase>result.patterns[0];
     if (op.start !== 0) {
       query.solutionModifiers.limitOffset = query.solutionModifiers.limitOffset ??

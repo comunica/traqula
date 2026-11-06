@@ -32,6 +32,10 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     return generator.generate(F.forcedAutoGenTree(backAst));
   }
 
+  function generate(op: Algebra.Operation): string {
+    return generator.generate(F.forcedAutoGenTree(toAst(op)));
+  }
+
   describe('property path: NPS with only inverted predicates', () => {
     it('toAst handles inv(NPS with 2+ IRIs) as path predicate', ({ expect }) => {
       const p1 = AF.dataFactory.namedNode('http://p1');
@@ -289,10 +293,6 @@ GROUP BY ?s`);
     const s = AF.dataFactory.variable!('s');
     const p = AF.dataFactory.variable!('p');
     const o = AF.dataFactory.variable!('o');
-
-    function generate(op: Algebra.Operation): string {
-      return generator.generate(F.forcedAutoGenTree(toAst(op)));
-    }
 
     it('reads a pattern without a graph as default graph content', ({ expect }) => {
       const pattern = <Algebra.Pattern> { type: 'pattern', subject: s, predicate: p, object: o };
@@ -727,7 +727,7 @@ SELECT (COUNT(EXISTS { GRAPH ?g { ?s :q ?o } }) AS ?c) WHERE { ?s :p ?g }`);
     expect(roundTripQuads(result)).toBe(result);
   });
 
-  describe('modifier over an operation that is no query', () => {
+  describe('operation that is no query where a query is expected', () => {
     const s = AF.dataFactory.variable!('s');
     const o = AF.dataFactory.variable!('o');
     const filteredSubquery = AF.createFilter(
@@ -742,26 +742,19 @@ SELECT (COUNT(EXISTS { GRAPH ?g { ?s :q ?o } }) AS ?c) WHERE { ?s :p ?g }`);
   }
   FILTER ( ?o )
 }`;
-    function generate(op: Algebra.Operation): string {
-      return generator.generate(F.forcedAutoGenTree(toAst(op)));
-    }
 
-    it('projects the input of a DISTINCT on its in-scope variables', ({ expect }) => {
-      expect(generate(AF.createDistinct(filteredSubquery))).toBe(`SELECT DISTINCT ?o ${expectedWhere}`);
-    });
-
-    it('projects the input of a REDUCED on its in-scope variables', ({ expect }) => {
-      expect(generate(AF.createReduced(filteredSubquery))).toBe(`SELECT REDUCED ?o ${expectedWhere}`);
-    });
-
-    it('projects the input of a slice on its in-scope variables', ({ expect }) => {
-      expect(generate(AF.createSlice(filteredSubquery, 1, 2))).toBe(`SELECT ?o ${expectedWhere}
-LIMIT 2 OFFSET 1`);
-    });
-
-    it('projects the input of a FROM on its in-scope variables', ({ expect }) => {
-      const from = AF.createFrom(filteredSubquery, [ AF.dataFactory.namedNode('http://g') ], []);
-      expect(generate(from)).toBe(`SELECT ?o FROM <http://g> ${expectedWhere}`);
+    it.for<[string, Algebra.Operation, string]>([
+      [ 'the root', filteredSubquery, `SELECT ?o ${expectedWhere}` ],
+      [ 'a DISTINCT', AF.createDistinct(filteredSubquery), `SELECT DISTINCT ?o ${expectedWhere}` ],
+      [ 'a REDUCED', AF.createReduced(filteredSubquery), `SELECT REDUCED ?o ${expectedWhere}` ],
+      [ 'a slice', AF.createSlice(filteredSubquery, 1, 2), `SELECT ?o ${expectedWhere}\nLIMIT 2 OFFSET 1` ],
+      [
+        'a FROM',
+        AF.createFrom(filteredSubquery, [ AF.dataFactory.namedNode('http://g') ], []),
+        `SELECT ?o FROM <http://g> ${expectedWhere}`,
+      ],
+    ])('projects %s on its in-scope variables', ([ , operation, expected ], { expect }) => {
+      expect(generate(operation)).toBe(expected);
     });
   });
 });

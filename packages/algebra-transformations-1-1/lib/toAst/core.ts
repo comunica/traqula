@@ -13,6 +13,7 @@ export interface AstContext {
    * This allows us to differentiate between BIND and SELECT when translating EXTEND
    */
   project: boolean;
+  // TODO(major): optional type can become mandatory here.
   /**
    * The group of the query being translated, other groups are translated in a subquery of their own.
    */

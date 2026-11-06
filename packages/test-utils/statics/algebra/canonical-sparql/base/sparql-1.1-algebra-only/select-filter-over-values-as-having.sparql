@@ -1,0 +1,8 @@
+SELECT ?s ( COUNT( ?o ) AS ?count ) WHERE {
+  ?s <http://ex.org/p> ?o .
+}
+GROUP BY ?s
+HAVING ( COUNT( ?o ) > "1"^^<http://www.w3.org/2001/XMLSchema#integer> )
+VALUES ?o {
+  <http://ex.org/a>
+}

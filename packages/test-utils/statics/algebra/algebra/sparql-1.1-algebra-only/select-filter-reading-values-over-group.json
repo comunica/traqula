@@ -1,0 +1,108 @@
+{
+  "type": "project",
+  "input": {
+    "type": "filter",
+    "input": {
+      "type": "join",
+      "input": [
+        {
+          "type": "group",
+          "input": {
+            "type": "bgp",
+            "patterns": [
+              {
+                "termType": "Quad",
+                "value": "",
+                "subject": {
+                  "termType": "Variable",
+                  "value": "s"
+                },
+                "predicate": {
+                  "termType": "NamedNode",
+                  "value": "http://ex.org/p"
+                },
+                "object": {
+                  "termType": "Variable",
+                  "value": "o"
+                },
+                "graph": {
+                  "termType": "DefaultGraph",
+                  "value": ""
+                },
+                "type": "pattern"
+              }
+            ]
+          },
+          "variables": [
+            {
+              "termType": "Variable",
+              "value": "s"
+            }
+          ],
+          "aggregates": [
+            {
+              "type": "expression",
+              "subType": "aggregate",
+              "aggregator": "count",
+              "expression": {
+                "type": "expression",
+                "subType": "term",
+                "term": {
+                  "termType": "Variable",
+                  "value": "o"
+                }
+              },
+              "distinct": false,
+              "variable": {
+                "termType": "Variable",
+                "value": "count"
+              }
+            }
+          ]
+        },
+        {
+          "type": "values",
+          "variables": [
+            {
+              "termType": "Variable",
+              "value": "s"
+            }
+          ],
+          "bindings": [
+            {
+              "s": {
+                "termType": "NamedNode",
+                "value": "http://ex.org/a"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "expression": {
+      "type": "expression",
+      "subType": "operator",
+      "operator": "isiri",
+      "args": [
+        {
+          "type": "expression",
+          "subType": "term",
+          "term": {
+            "termType": "Variable",
+            "value": "s"
+          }
+        }
+      ]
+    }
+  },
+  "variables": [
+    {
+      "termType": "Variable",
+      "value": "s"
+    },
+    {
+      "termType": "Variable",
+      "value": "count"
+    }
+  ]
+}

@@ -91,7 +91,6 @@ import {
   replaceAlgAggregatorVariables,
   collectAlgVariables,
   findAlgSubqueryCut,
-  isAlgSubstitutionSafe,
   reorderAlgQueryChain,
   wrapAlgInSubquery,
 } from '@traqula/algebra-transformations-1-1';
@@ -169,7 +168,6 @@ export const toAst11Builder = IndirBuilder
     translateAlgConstruct,
     replaceAlgAggregatorVariables,
     collectAlgVariables,
-    isAlgSubstitutionSafe,
     reorderAlgQueryChain,
     findAlgSubqueryCut,
     wrapAlgInSubquery,

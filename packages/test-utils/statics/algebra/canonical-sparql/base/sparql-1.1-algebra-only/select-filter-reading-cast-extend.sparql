@@ -1,5 +1,0 @@
-SELECT ?s ( <http://www.w3.org/2001/XMLSchema#string> ( COUNT( ?o ) ) AS ?text ) WHERE {
-  ?s <http://ex.org/p> ?o .
-}
-GROUP BY ?s
-HAVING ( <http://www.w3.org/2001/XMLSchema#string> ( COUNT( ?o ) ) != "0"^^<http://www.w3.org/2001/XMLSchema#string> )

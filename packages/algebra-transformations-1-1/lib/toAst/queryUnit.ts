@@ -16,10 +16,10 @@ import type {
   TermVariable,
 } from '@traqula/rules-sparql-1-1';
 import type { Algebra } from '../index.js';
-import { defaultAlgebraTransformer, isTerm, isVariable, types } from '../toAlgebra/index.js';
+import { defaultAlgebraTransformer, isTerm, types } from '../toAlgebra/index.js';
 import { forEachTermVariable, inScopeVariables } from '../util.js';
 import type { AstIndir } from './core.js';
-import { eTypes, findAlgGroupBelow, resetContext, splitAlgValuesJoin } from './core.js';
+import { findAlgGroupBelow, resetContext, splitAlgValuesJoin } from './core.js';
 import { translateAlgExpressionOrOrdering, translateAlgPureExpression } from './expression.js';
 import type { RdfTermToAst } from './general.js';
 import { translateAlgPattern, translateAlgTerm } from './general.js';
@@ -133,42 +133,6 @@ function countSelectableExtends(
   return firstUnprojected < 0 ? outermostFirst.length : firstUnprojected;
 }
 
-// Operators telling whether a variable is bound
-const bindingOperators = new Set([ 'bound' ]);
-// Operators giving another result on each evaluation
-const nonDeterministicOperators = new Set([ 'rand', 'uuid', 'struuid', 'bnode' ]);
-// The XPath constructor functions SPARQL defines, which cast deterministically
-const castFunctions = new Set([ 'boolean', 'double', 'float', 'decimal', 'integer', 'dateTime', 'string' ]
-  .map(type => `http://www.w3.org/2001/XMLSchema#${type}`));
-
-/**
- * Whether the expression keeps its result when its variables are replaced by the expressions binding them:
- * it tests no binding and reads no pattern. When it is evaluated again, it must moreover be deterministic.
- * @param expression - The expression to check.
- * @param isEvaluatedAgain - Whether the expression is evaluated again, and must thus call no nondeterministic or
- * custom function.
- * @return whether substitution keeps the result of the expression.
- */
-export const isAlgSubstitutionSafe: AstIndir<'isSubstitutionSafe', boolean, [Algebra.Expression, boolean]> = {
-  name: 'isSubstitutionSafe',
-  fun: () => ({ algebraTransformer = defaultAlgebraTransformer }, expression, isEvaluatedAgain) => {
-    let safe = true;
-    const unsafe = (): { shortcut: boolean } => {
-      safe = false;
-      return { shortcut: true };
-    };
-    algebraTransformer.visitNodeSpecific(expression, {}, { [types.EXPRESSION]: {
-      [eTypes.OPERATOR]: { preVisitor: operator => bindingOperators.has(operator.operator) ||
-        (isEvaluatedAgain && nonDeterministicOperators.has(operator.operator)) ?
-        unsafe() :
-          {}},
-      [eTypes.EXISTENCE]: { preVisitor: unsafe },
-      [eTypes.NAMED]: { preVisitor: named => isEvaluatedAgain && !castFunctions.has(named.name.value) ? unsafe() : {}},
-    }});
-    return safe;
-  },
-};
-
 /**
  * Reorders the extends, orderings, and filters between a query form and its group, as far as they commute,
  * so orderings become the ORDER BY clause and filters become HAVING conditions.
@@ -177,7 +141,7 @@ export const isAlgSubstitutionSafe: AstIndir<'isSubstitutionSafe', boolean, [Alg
  */
 export const reorderAlgQueryChain: AstIndir<'reorderQueryChain', AlgQueryForm, [AlgQueryForm]> = {
   name: 'reorderQueryChain',
-  fun: ({ SUBRULE }) => ({ algebraTransformer = defaultAlgebraTransformer }, op) => {
+  fun: ({ SUBRULE }) => (_, op) => {
     type ChainOperation = Algebra.Extend | Algebra.OrderBy | Algebra.Filter;
     // The chain down to the HAVING conditions or the trailing VALUES, outermost first
     const chain: ChainOperation[] = [];
@@ -195,55 +159,24 @@ export const reorderAlgQueryChain: AstIndir<'reorderQueryChain', AlgQueryForm, [
       ...chain.filter(operation => operation.type !== types.ORDER_BY),
     ];
 
-    // Filters move down onto the HAVING conditions, inner filters first so they keep their relative order.
-    //  HAVING only reads group keys and aggregates, so the extends below a filter are substituted into it.
-    const outermostFilter = reordered.findIndex(operation => operation.type === types.FILTER);
+    // Filters reading only group keys and aggregates move down onto the HAVING conditions,
+    //  inner filters first so they keep their relative order
     const valuesJoin = splitAlgValuesJoin(bottom);
     let having = valuesJoin?.other ?? bottom;
-    const group = outermostFilter < 0 ? undefined : SUBRULE(findAlgGroupBelow, having, 'having');
+    const group = reordered.some(operation => operation.type === types.FILTER) ?
+      SUBRULE(findAlgGroupBelow, having, 'having') :
+      undefined;
     if (group) {
       const valuesVariables = new Set(valuesJoin?.values.variables.map(variable => variable.value));
-      const grouped = new Set([ ...group.variables, ...group.aggregates.map(aggregate => aggregate.variable) ]
-        .map(variable => variable.value)
-        .filter(variable => !valuesVariables.has(variable)));
-      // The expressions of the extends below the current operation, reading only grouped variables
-      const substitutions = new Map<string, Algebra.Expression>();
-
-      // The expression in grouped variables, or undefined if substituting or evaluating it again changes its result
-      function toGroupedExpression(
-        expression: Algebra.Expression,
-        isEvaluatedAgain: boolean,
-      ): Algebra.Expression | undefined {
-        const ungrouped = [ ...SUBRULE(collectAlgVariables, expression, new Set()) ]
-          .filter(variable => !grouped.has(variable));
-        const isSubstituted = ungrouped.length > 0;
-        if (!ungrouped.every(variable => substitutions.has(variable)) || ((isSubstituted || isEvaluatedAgain) &&
-          !SUBRULE(isAlgSubstitutionSafe, expression, isEvaluatedAgain))) {
-          return undefined;
-        }
-        return isSubstituted ?
-          algebraTransformer.transformNodeSpecific<'unsafe', Algebra.Expression>(expression, {}, {
-            [types.EXPRESSION]: { [eTypes.TERM]: { transform: (copy: Algebra.TermExpression) =>
-              (isVariable(copy.term) ? substitutions.get(copy.term.value) : undefined) ?? copy }},
-          }) :
-          expression;
-      }
-
-      for (let index = reordered.length - 1; index >= outermostFilter; index--) {
-        const operation = reordered[index];
-        if (operation.type === types.EXTEND) {
-          const expression = toGroupedExpression(operation.expression, true);
-          if (expression) {
-            substitutions.set(operation.variable.value, expression);
-          }
-        } else {
-          // The orderings are above the outermost filter, so this is a filter
-          const filter = <Algebra.Filter> operation;
-          const expression = toGroupedExpression(filter.expression, false);
-          if (expression) {
-            having = { ...filter, expression, input: having };
-            reordered.splice(index, 1);
-          }
+      const isGrouped = (variable: string): boolean => !valuesVariables.has(variable) &&
+        (group.variables.some(key => key.value === variable) ||
+          group.aggregates.some(aggregate => aggregate.variable.value === variable));
+      for (let index = reordered.length - 1; index >= 0; index--) {
+        const filter = reordered[index];
+        if (filter.type === types.FILTER &&
+          [ ...SUBRULE(collectAlgVariables, filter.expression, new Set()) ].every(isGrouped)) {
+          having = { ...filter, input: having };
+          reordered.splice(index, 1);
         }
       }
 

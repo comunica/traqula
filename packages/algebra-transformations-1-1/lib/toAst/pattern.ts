@@ -66,8 +66,7 @@ export const translateAlgInOwnSubquery: AstIndir<'translateInOwnSubquery', Patte
 /**
  * The solution modifiers {@link translateAlgModifiedQuery} translates the input of.
  */
-export type AlgSolutionModifierType =
-  typeof types.DISTINCT | typeof types.REDUCED | typeof types.SLICE | typeof types.FROM;
+export type AlgSolutionModifierType = typeof types.DISTINCT | typeof types.REDUCED | typeof types.SLICE;
 
 /**
  * The query forms, which DISTINCT and REDUCED modify within the same query.
@@ -75,30 +74,39 @@ export type AlgSolutionModifierType =
 const queryFormTypes = new Set<string>([ types.ASK, types.PROJECT, types.CONSTRUCT, types.DESCRIBE ]);
 
 /**
+ * The operation types {@link translateAlgPatternIntoGroup} translates into a query, FROM aside.
+ */
+const queryTypes = new Set<string>([ ...queryFormTypes, types.DISTINCT, types.REDUCED, types.SLICE ]);
+
+/**
  * Per solution modifier, the input types it modifies within the same query.
- * SPARQL applies DISTINCT and REDUCED after the projection, then the slice, and FROM to the whole query.
+ * SPARQL applies DISTINCT and REDUCED after the projection, and then the slice.
  */
 const queryTypesModifiableBy: Record<AlgSolutionModifierType, Set<string>> = {
   [types.DISTINCT]: queryFormTypes,
   [types.REDUCED]: queryFormTypes,
   [types.SLICE]: new Set([ ...queryFormTypes, types.DISTINCT, types.REDUCED ]),
-  // Every operation type translatePatternIntoGroup translates into a query
-  [types.FROM]: new Set([ ...queryFormTypes, types.DISTINCT, types.REDUCED, types.SLICE, types.FROM ]),
 };
 
 /**
  * Translates the input of a solution modifier, which can only modify a query.
- * @param op - the input of the solution modifier, or the root operation.
- * @param modifierType - the type of the solution modifier, undefined for the root operation.
+ * FROM only sets the dataset, so it commutes with the solution modifiers and stays on the outer query.
+ * @param op - the input of the solution modifier or FROM, or the root operation.
+ * @param modifierType - the type of the solution modifier, undefined when any query can be modified.
  * @return the group holding the query, a subquery of its own when the modifier cannot modify the input's query.
  */
 export const translateAlgModifiedQuery:
 AstIndir<'translateModifiedQuery', PatternGroup, [Algebra.Operation, AlgSolutionModifierType?]> = {
   name: 'translateModifiedQuery',
-  // The root, like the input of FROM, can be any query
-  fun: ({ SUBRULE }) => (_, op, modifierType = types.FROM) => queryTypesModifiableBy[modifierType].has(op.type) ?
-    SUBRULE(translateAlgPatternIntoGroup, op) :
-    SUBRULE(translateAlgInOwnSubquery, op),
+  fun: ({ SUBRULE }) => (_, op, modifierType) => {
+    if (op.type === types.FROM) {
+      return SUBRULE(translateAlgFrom, op, modifierType);
+    }
+    const modifiableTypes = modifierType === undefined ? queryTypes : queryTypesModifiableBy[modifierType];
+    return modifiableTypes.has(op.type) ?
+      SUBRULE(translateAlgPatternIntoGroup, op) :
+      SUBRULE(translateAlgInOwnSubquery, op);
+  },
 };
 
 export const translateAlgSinglePattern: AstIndir<'translateSinglePattern', Pattern, [Algebra.Operation]> = {
@@ -174,11 +182,14 @@ export const translateAlgPath: AstIndir<'translatePath', PatternBgp, [Algebra.Pa
 
 /**
  * Sets the dataset clauses of the query its input translates into.
+ * @param op - the FROM operation.
+ * @param modifierType - the type of the solution modifier over the FROM, if any.
+ * @return the group holding the query.
  */
-export const translateAlgFrom: AstIndir<'translateFrom', PatternGroup, [Algebra.From]> = {
+export const translateAlgFrom: AstIndir<'translateFrom', PatternGroup, [Algebra.From, AlgSolutionModifierType?]> = {
   name: 'translateFrom',
-  fun: ({ SUBRULE }) => (_, op) => {
-    const result = SUBRULE(translateAlgModifiedQuery, op.input, types.FROM);
+  fun: ({ SUBRULE }) => (_, op, modifierType) => {
+    const result = SUBRULE(translateAlgModifiedQuery, op.input, modifierType);
     const query = <QueryBase> result.patterns[0];
     query.datasets = SUBRULE(translateAlgDatasetClauses, op.default, op.named);
     return result;

@@ -774,6 +774,28 @@ SELECT (COUNT(EXISTS { GRAPH ?g { ?s :q ?o } }) AS ?c) WHERE { ?s :p ?g }`);
     ])('evaluates a slice below %s in a subquery', ([ , operation, expected ], { expect }) => {
       expect(generate(operation)).toBe(expected);
     });
+
+    it.for<[string, Algebra.Operation, string]>([
+      [
+        'a slice',
+        AF.createSlice(AF.createFrom(project, [ AF.dataFactory.namedNode('http://g') ], []), 0, 3),
+        `SELECT ?o FROM <http://g> WHERE {\n  ?s <http://p> ?o .\n}\nLIMIT 3`,
+      ],
+      [
+        'a DISTINCT over a slice',
+        AF.createDistinct(AF.createFrom(AF.createSlice(project, 0, 3), [ AF.dataFactory.namedNode('http://g') ], [])),
+        `SELECT DISTINCT ?o FROM <http://g> WHERE {\n  ${slicedSubquery}\n}`,
+      ],
+    ])('keeps a FROM below %s on the outer query', ([ , operation, expected ], { expect }) => {
+      expect(generate(operation)).toBe(expected);
+    });
+
+    it('sets the dataset of a FROM translated as a pattern', ({ expect }) => {
+      const transformer = toAst11Builder.build();
+      const from = AF.createFrom(project, [ AF.dataFactory.namedNode('http://g') ], []);
+      const result = transformer.translatePatternIntoGroup(createAstContext(), from);
+      expect(result.patterns[0]).toMatchObject({ datasets: { clauses: [{ value: { value: 'http://g' }}]}});
+    });
   });
 });
 

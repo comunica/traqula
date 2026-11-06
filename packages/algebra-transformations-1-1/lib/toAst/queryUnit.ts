@@ -186,31 +186,29 @@ export const reorderAlgQueryChain: AstIndir<'reorderQueryChain', AlgQueryForm, [
       reordered.splice(index, 0, operation);
     }
 
-    // Filters move down onto the HAVING conditions past the operations not binding variables they read,
+    // Filters reading only group keys and aggregates move down onto the HAVING conditions,
     //  inner filters first so they keep their relative order
-    if (SUBRULE(findAlgGroupBelow, bottom, 'values')) {
-      const valuesJoin = SUBRULE(findAlgGroupBelow, bottom, 'having') ? undefined : splitAlgValuesJoin(bottom)!;
+    const group = SUBRULE(findAlgGroupBelow, bottom, 'values');
+    if (group) {
+      const valuesJoin = splitAlgValuesJoin(bottom);
+      const valuesVariables = new Set(valuesJoin?.values.variables.map(variable => variable.value));
+      const isGrouped = (variable: string): boolean => !valuesVariables.has(variable) &&
+        (group.variables.some(key => key.value === variable) ||
+          group.aggregates.some(aggregate => aggregate.variable.value === variable));
       let having = valuesJoin?.other ?? bottom;
-      const boundBelow = valuesJoin?.values.variables.map(variable => variable.value) ?? [];
       for (let index = reordered.length - 1; index >= 0; index--) {
-        const operation = reordered[index];
-        if (operation.type === types.EXTEND) {
-          boundBelow.push(operation.variable.value);
-        } else if (operation.type === types.FILTER) {
-          const variables = boundBelow.length > 0 ? readVariables(operation) : new Set<string>();
-          if (!boundBelow.some(variable => variables.has(variable))) {
-            having = { ...operation, input: having };
-            reordered.splice(index, 1);
-            moved = true;
-          }
+        const filter = reordered[index];
+        if (filter.type === types.FILTER && [ ...readVariables(filter) ].every(isGrouped)) {
+          having = { ...filter, input: having };
+          reordered.splice(index, 1);
+          moved = true;
         }
       }
-      if (valuesJoin) {
-        const join = <Algebra.Join> bottom;
-        const operands = join.input.map(operand => operand === valuesJoin.other ? having : operand);
-        bottom = { ...join, input: operands };
-      } else {
+      if (!valuesJoin) {
         bottom = having;
+      } else if (having !== valuesJoin.other) {
+        const join = <Algebra.Join> bottom;
+        bottom = { ...join, input: join.input.map(operand => operand === valuesJoin.other ? having : operand) };
       }
     }
 

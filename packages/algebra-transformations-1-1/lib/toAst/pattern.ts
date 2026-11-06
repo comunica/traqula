@@ -81,9 +81,17 @@ export const translateAlgSinglePattern: AstIndir<'translateSinglePattern', Patte
   },
 };
 
+/**
+ * The solution modifiers of a group belong to the query of that group.
+ * An operation over any other group is thus translated in a subquery of its own.
+ */
 export const translateAlgPatternNew: AstIndir<'translatePatternNew', Pattern | Pattern[], [Algebra.Operation]> = {
   name: 'translatePatternNew',
-  fun: ({ SUBRULE }) => (_, op) => {
+  fun: ({ SUBRULE }) => ({ queryGroup }, op) => {
+    const group = SUBRULE(findAlgGroupBelow, op, 'projection');
+    if (group && group !== queryGroup) {
+      return SUBRULE(translateAlgInOwnSubquery, op);
+    }
     SUBRULE(registerProjection, op);
     switch (op.type) {
       case types.ORDER_BY: return SUBRULE(translateAlgOrderBy, op);
@@ -213,11 +221,8 @@ export const translateAlgJoin: AstIndir<'translateJoin', Pattern[], [Algebra.Joi
     // An OPTIONAL or MINUS applies to everything preceding it in its group.
     // Operands other than the first must thus be scoped by their own group when they contain one,
     // and thus get rewrapped ina  group, otherwise Join(A, Minus(B, C)) would be read back as Minus(Join(A, B), C).
-    const arr = op.input.flatMap((operand, index) => {
-      // Any other group below an operand would move to the query and be evaluated after the join
-      const patterns = SUBRULE(findAlgGroupBelow, operand, 'having') ?
-          [ SUBRULE(translateAlgInOwnSubquery, operand) ] :
-        SUBRULE(operationAlgInputAsPatternList, operand);
+    const arr = op.input.flatMap((x, index) => {
+      const patterns = SUBRULE(operationAlgInputAsPatternList, x);
       if (index > 0 && patterns.some(pattern => F.isPatternOptional(pattern) || F.isPatternMinus(pattern))) {
         return [ F.patternGroup(patterns, F.gen()) ];
       }

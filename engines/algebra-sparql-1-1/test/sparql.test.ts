@@ -65,7 +65,7 @@ describe('sparql algebra 1.1 output', () => {
       it (name, ({ expect }) => {
         const canonical = generator.generate(toAst(<Algebra.Operation> json));
         expect(canonical.trim()).toEqual(canonicalSparql.trim());
-        if (!noFixpoint.has(name.split('/').at(-1)!)) {
+        if (!noFixpoint.has(name.split(/[/\\]/u).at(-1)!)) {
           // Parsing the canonical SPARQL translates back to the same canonical SPARQL
           expect(generator.generate(toAst(toAlgebra(parser.parse(canonical)))).trim()).toEqual(canonical.trim());
         }

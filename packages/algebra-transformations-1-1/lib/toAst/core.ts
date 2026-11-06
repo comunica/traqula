@@ -84,6 +84,21 @@ export const resetContext: AstIndir<'resetContext', void, []> = {
 };
 
 /**
+ * Splits a join of two operands, one of them a VALUES. Join is commutative, so the VALUES can be either operand.
+ * @param op - The operation to split.
+ * @return the VALUES and the other operand, or undefined when the operation is no such join.
+ */
+export function splitAlgValuesJoin(op: Algebra.Operation):
+{ values: Algebra.Values; other: Algebra.Operation } | undefined {
+  if (op.type === types.JOIN && op.input.length === 2) {
+    const valuesIndex = op.input.findIndex(operand => operand.type === types.VALUES);
+    if (valuesIndex >= 0) {
+      return { values: <Algebra.Values> op.input[valuesIndex], other: op.input[1 - valuesIndex] };
+    }
+  }
+}
+
+/**
  * Finds the group of a query below the given operation.
  * From the top, a group can be wrapped by the extends and orderings of the projection, then the trailing VALUES clause,
  * and then the HAVING conditions. `from` tells which of these the given operation can still be.
@@ -101,12 +116,9 @@ Algebra.Group | undefined,
         input = input.input;
       }
     }
-    if (from !== 'having' && input.type === types.JOIN && input.input.length === 2) {
-      // Join is commutative, so the VALUES can be either operand
-      const valuesIndex = input.input.findIndex(operand => operand.type === types.VALUES);
-      if (valuesIndex >= 0) {
-        input = input.input[1 - valuesIndex];
-      }
+    const valuesJoin = from === 'having' ? undefined : splitAlgValuesJoin(input);
+    if (valuesJoin) {
+      input = valuesJoin.other;
     }
     while (input.type === types.FILTER) {
       input = input.input;

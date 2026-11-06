@@ -19,7 +19,7 @@ import type { Algebra } from '../index.js';
 import { defaultAlgebraTransformer, isTerm, types } from '../toAlgebra/index.js';
 import { forEachTermVariable, inScopeVariables } from '../util.js';
 import type { AstIndir } from './core.js';
-import { findAlgGroupBelow, resetContext } from './core.js';
+import { findAlgGroupBelow, resetContext, splitAlgValuesJoin } from './core.js';
 import { translateAlgExpressionOrOrdering, translateAlgPureExpression } from './expression.js';
 import type { RdfTermToAst } from './general.js';
 import { translateAlgPattern, translateAlgTerm } from './general.js';
@@ -142,44 +142,48 @@ function countSelectableExtends(
 export const sinkAlgHavingFilters: AstIndir<'sinkHavingFilters', AlgQueryForm, [AlgQueryForm]> = {
   name: 'sinkHavingFilters',
   fun: ({ SUBRULE }) => (_, op) => {
+    function withInput<T extends { input: Algebra.Operation }>(operation: T, input: Algebra.Operation): T {
+      return input === operation.input ? operation : { ...operation, input };
+    }
     function sinkFilter(
       filter: Algebra.Filter,
       input: Algebra.Operation,
-      filterVariables: Set<string>,
+      readsVariable: (variable: RDF.Variable) => boolean,
     ): Algebra.Operation | undefined {
       if (SUBRULE(findAlgGroupBelow, input, 'having')) {
         return { ...filter, input };
       }
-      if (input.type === types.EXTEND && filterVariables.has(input.variable.value)) {
+      if (input.type === types.EXTEND && readsVariable(input.variable)) {
         return undefined;
       }
       if (input.type === types.EXTEND || input.type === types.ORDER_BY || input.type === types.FILTER) {
-        const sunk = sinkFilter(filter, input.input, filterVariables);
+        const sunk = sinkFilter(filter, input.input, readsVariable);
         return sunk && { ...input, input: sunk };
       }
-      if (input.type === types.JOIN && SUBRULE(findAlgGroupBelow, input, 'values')) {
-        const valuesIndex = input.input.findIndex(operand => operand.type === types.VALUES);
-        const values = <Algebra.Values> input.input[valuesIndex];
-        if (values.variables.some(variable => filterVariables.has(variable.value))) {
-          return undefined;
-        }
-        const sunk = sinkFilter(filter, input.input[1 - valuesIndex], filterVariables);
-        return sunk && { ...input, input: input.input.map((operand, index) => index === valuesIndex ? operand : sunk) };
+      const valuesJoin = splitAlgValuesJoin(input);
+      if (valuesJoin && SUBRULE(findAlgGroupBelow, valuesJoin.other, 'having') &&
+        !valuesJoin.values.variables.some(readsVariable)) {
+        const join = <Algebra.Join> input;
+        const operands = join.input
+          .map(operand => operand === valuesJoin.other ? { ...filter, input: operand } : operand);
+        return { ...join, input: operands };
       }
     }
     // Inner filters sink first, so filters keep their relative order
     function sinkChain(input: Algebra.Operation): Algebra.Operation {
       if (input.type === types.EXTEND || input.type === types.ORDER_BY) {
-        return { ...input, input: sinkChain(input.input) };
+        return withInput(input, sinkChain(input.input));
       }
-      if (input.type === types.FILTER) {
+      if (input.type === types.FILTER && !SUBRULE(findAlgGroupBelow, input.input, 'having')) {
         const sunkInput = sinkChain(input.input);
-        const filterVariables = SUBRULE(collectAlgVariables, input.expression, new Set());
-        return sinkFilter(input, sunkInput, filterVariables) ?? { ...input, input: sunkInput };
+        let filterVariables: Set<string> | undefined;
+        const readsVariable = (variable: RDF.Variable): boolean =>
+          (filterVariables ??= SUBRULE(collectAlgVariables, input.expression, new Set())).has(variable.value);
+        return sinkFilter(input, sunkInput, readsVariable) ?? withInput(input, sunkInput);
       }
       return input;
     }
-    return { ...op, input: sinkChain(op.input) };
+    return withInput(op, sinkChain(op.input));
   },
 };
 
@@ -189,6 +193,7 @@ export const sinkAlgHavingFilters: AstIndir<'sinkHavingFilters', AlgQueryForm, [
  * Likewise, filters that are not HAVING conditions would be evaluated before the grouping.
  * Without a SELECT clause, a query form can moreover only read the group variables of a group.
  * The group is found by {@link findAlgGroupBelow}, below the chain of extends, orderings, and filters of the input.
+ * Expects {@link sinkAlgHavingFilters} to have moved the filters that can be HAVING conditions onto the group.
  * @return the cut, or undefined when no subquery is needed.
  */
 export const findAlgSubqueryCut: AstIndir<'findSubqueryCut', AlgSubqueryCut | undefined, [AlgQueryForm]> = {
@@ -244,12 +249,14 @@ export const wrapAlgInSubquery: AstIndir<'wrapInSubquery', AlgQueryForm, [AlgQue
     // Only steps into the operations a callback asks to continue into
     const chainTransformer = algebraTransformer.clone({ continue: false });
     const outerVariables = new Set<string>();
+    const passThrough = (operation: Algebra.Operation): PreOrderMappingReturn =>
+      ({ newValue: operation, continue: true });
     function wrap(input: Algebra.Operation): Algebra.Operation {
       // Lift the orderings out of the part that moves into the subquery
       const orderings: Algebra.OrderBy[] = [];
       const subqueryInput = chainTransformer.transformNodePreOrder<'unsafe', Algebra.Operation>(input, {
-        [types.EXTEND]: extend => ({ newValue: extend, continue: true }),
-        [types.FILTER]: filter => ({ newValue: filter, continue: true }),
+        [types.EXTEND]: passThrough,
+        [types.FILTER]: passThrough,
         [types.ORDER_BY]: (ordering) => {
           orderings.push(ordering);
           SUBRULE(collectAlgVariables, ordering.expressions, outerVariables);

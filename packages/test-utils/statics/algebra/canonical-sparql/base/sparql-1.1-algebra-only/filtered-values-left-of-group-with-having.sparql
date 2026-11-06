@@ -1,0 +1,15 @@
+ASK WHERE {
+  {
+    VALUES ?s {
+      <http://example.org/a>
+    }
+    FILTER ( ISIRI( ?s ) )
+  }
+  {
+    SELECT ( COUNT( * ) AS ?var0 ) ?s WHERE {
+      ?s ?p ?o .
+    }
+    GROUP BY ?s
+    HAVING ( COUNT( * ) > "1"^^<http://www.w3.org/2001/XMLSchema#integer> )
+  }
+}

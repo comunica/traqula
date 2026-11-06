@@ -1,0 +1,10 @@
+ASK WHERE {
+  GRAPH <http://example.org/g> {
+    {
+      SELECT ( COUNT( * ) AS ?count ) ?s WHERE {
+        ?s ?p ?o .
+      }
+      GROUP BY ?s
+    }
+  }
+}

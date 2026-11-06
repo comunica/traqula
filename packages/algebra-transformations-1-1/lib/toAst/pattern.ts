@@ -10,7 +10,8 @@ import type {
   ValuePatternRow,
 } from '@traqula/rules-sparql-1-1';
 import type * as Algebra from '../algebra.js';
-import { types } from '../toAlgebra/index.js';
+import { defaultAlgebraTransformer, types } from '../toAlgebra/index.js';
+import { inScopeVariables } from '../util.js';
 import type { AstIndir } from './core.js';
 import { findAlgGroupBelow, registerProjection } from './core.js';
 import { translateAlgPureExpression } from './expression.js';
@@ -48,6 +49,43 @@ export const translateAlgPatternIntoGroup: AstIndir<'translatePatternIntoGroup',
   },
 };
 
+/**
+ * Translates the operation as a SELECT subquery projecting all its in-scope variables.
+ * @param op - the operation to evaluate in its own scope.
+ * @return the group holding the subquery.
+ */
+export const translateAlgInOwnSubquery: AstIndir<'translateInOwnSubquery', PatternGroup, [Algebra.Operation]> = {
+  name: 'translateInOwnSubquery',
+  fun: ({ SUBRULE }) => ({ algebraFactory, algebraTransformer = defaultAlgebraTransformer }, op) =>
+    SUBRULE(translateAlgPatternIntoGroup, algebraFactory.createProject(
+      op,
+      inScopeVariables(op, (operation, callbacks) => algebraTransformer.visitNode(operation, callbacks)),
+    )),
+};
+
+const queryTypes = new Set<string>([
+  types.ASK,
+  types.PROJECT,
+  types.CONSTRUCT,
+  types.DESCRIBE,
+  types.DISTINCT,
+  types.FROM,
+  types.REDUCED,
+  types.SLICE,
+]);
+
+/**
+ * Translates the input of a solution modifier, which can only modify a query.
+ * @param op - the input of the solution modifier.
+ * @return the group holding the query, a subquery of its own when the input is no query.
+ */
+export const translateAlgModifiedQuery: AstIndir<'translateModifiedQuery', PatternGroup, [Algebra.Operation]> = {
+  name: 'translateModifiedQuery',
+  fun: ({ SUBRULE }) => (_, op) => queryTypes.has(op.type) ?
+    SUBRULE(translateAlgPatternIntoGroup, op) :
+    SUBRULE(translateAlgInOwnSubquery, op),
+};
+
 export const translateAlgSinglePattern: AstIndir<'translateSinglePattern', Pattern, [Algebra.Operation]> = {
   name: 'translateSinglePattern',
   fun: ({ SUBRULE }) => ({ astFactory: F }, op) => {
@@ -66,9 +104,17 @@ export const translateAlgSinglePattern: AstIndir<'translateSinglePattern', Patte
   },
 };
 
+/**
+ * The solution modifiers of a group belong to the query of that group.
+ * An operation over any other group is thus translated in a subquery of its own.
+ */
 export const translateAlgPatternNew: AstIndir<'translatePatternNew', Pattern | Pattern[], [Algebra.Operation]> = {
   name: 'translatePatternNew',
-  fun: ({ SUBRULE }) => (_, op) => {
+  fun: ({ SUBRULE }) => ({ queryGroup }, op) => {
+    const group = SUBRULE(findAlgGroupBelow, op, 'projection');
+    if (group && group !== queryGroup) {
+      return SUBRULE(translateAlgInOwnSubquery, op);
+    }
     SUBRULE(registerProjection, op);
     switch (op.type) {
       case types.ORDER_BY: return SUBRULE(translateAlgOrderBy, op);
@@ -118,7 +164,7 @@ export const translateAlgPath: AstIndir<'translatePath', PatternBgp, [Algebra.Pa
 export const translateAlgFrom: AstIndir<'translateFrom', PatternGroup, [Algebra.From]> = {
   name: 'translateFrom',
   fun: ({ SUBRULE }) => (_, op) => {
-    const result = SUBRULE(translateAlgPatternIntoGroup, op.input);
+    const result = SUBRULE(translateAlgModifiedQuery, op.input);
     const query = <QueryBase> result.patterns[0];
     query.datasets = SUBRULE(translateAlgDatasetClauses, op.default, op.named);
     return result;
@@ -281,7 +327,7 @@ export const operationAlgInputAsPatternList: AstIndir<'operationInputAsPatternLi
 export const translateAlgSlice: AstIndir<'translateSlice', PatternGroup, [Algebra.Slice]> = {
   name: 'translateSlice',
   fun: ({ SUBRULE }) => ({ astFactory: F }, op) => {
-    const result = SUBRULE(translateAlgPatternIntoGroup, op.input);
+    const result = SUBRULE(translateAlgModifiedQuery, op.input);
     const query = <QueryBase>result.patterns[0];
     if (op.start !== 0) {
       query.solutionModifiers.limitOffset = query.solutionModifiers.limitOffset ??

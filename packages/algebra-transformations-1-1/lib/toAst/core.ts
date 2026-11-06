@@ -14,6 +14,11 @@ export interface AstContext {
    */
   project: boolean;
   /**
+   * The group of the query being translated, other groups are translated in a subquery of their own.
+   */
+  // TODO(major): optional type can become mandatory here, as `Algebra.Group | undefined`.
+  queryGroup?: Algebra.Group;
+  /**
    * All extends found in our suboperations
    */
   extend: Algebra.Extend[];
@@ -74,6 +79,7 @@ export const resetContext: AstIndir<'resetContext', void, []> = {
   name: 'resetContext',
   fun: () => (c) => {
     c.project = false;
+    c.queryGroup = undefined;
     c.extend = [];
     c.group = [];
     c.aggregates = [];

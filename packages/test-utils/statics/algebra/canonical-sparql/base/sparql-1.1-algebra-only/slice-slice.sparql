@@ -1,0 +1,7 @@
+SELECT ?o WHERE {
+  SELECT ?o WHERE {
+    ?s <http://example.org/p> ?o .
+  }
+  LIMIT 3
+}
+LIMIT 20

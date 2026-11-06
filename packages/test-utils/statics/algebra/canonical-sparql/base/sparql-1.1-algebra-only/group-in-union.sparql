@@ -1,0 +1,11 @@
+ASK WHERE {
+  {
+    ?s <http://example.org/q> ?x .
+  }
+  UNION {
+    SELECT ( COUNT( * ) AS ?count ) ?s WHERE {
+      ?s ?p ?o .
+    }
+    GROUP BY ?s
+  }
+}

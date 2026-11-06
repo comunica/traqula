@@ -336,6 +336,7 @@ PatternGroup,
 
     // Backup values in case of nested queries
     // everything in extend, group, etc. is irrelevant for this project call
+    const queryGroup = c.queryGroup;
     const extend = c.extend;
     const group = c.group;
     const aggregates = c.aggregates;
@@ -344,6 +345,7 @@ PatternGroup,
     const order = c.order;
     SUBRULE(resetContext);
     c.project = true;
+    c.queryGroup = SUBRULE(findAlgGroupBelow, op.input, 'projection');
 
     // TranslateOperation could give an array.
     let input = [ SUBRULE(translateAlgPatternNew, op.input) ].flat();
@@ -397,6 +399,7 @@ PatternGroup,
     SUBRULE(registerValues, result);
 
     // Recover state
+    c.queryGroup = queryGroup;
     c.extend = extend;
     c.group = group;
     c.aggregates = aggregates;

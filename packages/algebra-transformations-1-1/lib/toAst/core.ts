@@ -95,7 +95,7 @@ export const resetContext: AstIndir<'resetContext', void, []> = {
  * @return the VALUES and the other operand, or undefined when the operation is no such join.
  */
 export function splitAlgValuesJoin(op: Algebra.Operation):
-{ values: Algebra.Values; other: Algebra.Operation } | undefined {
+  { values: Algebra.Values; other: Algebra.Operation } | undefined {
   if (op.type === types.JOIN && op.input.length === 2) {
     const valuesIndex = op.input.findIndex(operand => operand.type === types.VALUES);
     if (valuesIndex >= 0) {

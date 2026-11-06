@@ -135,7 +135,7 @@ function countSelectableExtends(
 
 // Operators telling whether a variable is bound, and operators giving another result on each evaluation
 const boundOperators = new Set([ 'bound' ]);
-const nondeterministicOperators = new Set([ 'rand', 'uuid', 'struuid', 'bnode' ]);
+const nonDeterministicOperators = new Set([ 'rand', 'uuid', 'struuid', 'bnode' ]);
 
 /**
  * Reorders the extends, orderings, and filters between a query form and its group, as far as they commute,
@@ -216,7 +216,7 @@ export const reorderAlgQueryChain: AstIndir<'reorderQueryChain', AlgQueryForm, [
         if (operation.type === types.EXTEND) {
           // Substituting re-evaluates the expression, so it must be deterministic
           if (isGroupedExpression(operation.expression) &&
-            !containsOperator(operation.expression, nondeterministicOperators)) {
+            !containsOperator(operation.expression, nonDeterministicOperators)) {
             substitutions.set(operation.variable.value, substitute(operation.expression));
           }
         } else if (operation.type === types.FILTER && isGroupedExpression(operation.expression)) {

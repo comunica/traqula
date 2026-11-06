@@ -133,8 +133,9 @@ function countSelectableExtends(
   return firstUnprojected < 0 ? outermostFirst.length : firstUnprojected;
 }
 
-// Operators telling whether a variable is bound, and operators giving another result on each evaluation
+// Operators telling whether a variable is bound
 const bindingOperators = new Set([ 'bound' ]);
+// Operators giving another result on each evaluation
 const nonDeterministicOperators = new Set([ 'rand', 'uuid', 'struuid', 'bnode' ]);
 // The XPath constructor functions SPARQL defines, which cast deterministically
 const castFunctions = new Set([ 'boolean', 'double', 'float', 'decimal', 'integer', 'dateTime', 'string' ]
@@ -207,6 +208,7 @@ export const reorderAlgQueryChain: AstIndir<'reorderQueryChain', AlgQueryForm, [
         .filter(variable => !valuesVariables.has(variable)));
       // The expressions of the extends below the current operation, reading only grouped variables
       const substitutions = new Map<string, Algebra.Expression>();
+
       // The expression in grouped variables, or undefined if substituting or evaluating it again changes its result
       function toGroupedExpression(
         expression: Algebra.Expression,
@@ -226,6 +228,7 @@ export const reorderAlgQueryChain: AstIndir<'reorderQueryChain', AlgQueryForm, [
           }) :
           expression;
       }
+
       for (let index = reordered.length - 1; index >= outermostFilter; index--) {
         const operation = reordered[index];
         if (operation.type === types.EXTEND) {
@@ -243,6 +246,7 @@ export const reorderAlgQueryChain: AstIndir<'reorderQueryChain', AlgQueryForm, [
           }
         }
       }
+
       if (valuesJoin) {
         const operands = valuesJoin.join.input.map(operand => operand === valuesJoin.other ? having : operand);
         bottom = { ...valuesJoin.join, input: operands };

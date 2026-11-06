@@ -1,10 +1,6 @@
-SELECT ?s ?doubled WHERE {
-  {
-    SELECT ( COUNT( ?o ) AS ?count ) ?s ( ( COUNT( ?o ) * "2"^^<http://www.w3.org/2001/XMLSchema#integer> ) AS ?doubled ) WHERE {
-      ?s <http://ex.org/p> ?o .
-    }
-    GROUP BY ?s
-  }
-  FILTER ( ( ?doubled > "1"^^<http://www.w3.org/2001/XMLSchema#integer> ) )
+SELECT ?s ( ( COUNT( ?o ) * "2"^^<http://www.w3.org/2001/XMLSchema#integer> ) AS ?doubled ) WHERE {
+  ?s <http://ex.org/p> ?o .
 }
+GROUP BY ?s
+HAVING ( ( COUNT( ?o ) * "2"^^<http://www.w3.org/2001/XMLSchema#integer> ) > "1"^^<http://www.w3.org/2001/XMLSchema#integer> )
 ORDER BY ASC ( ?s )

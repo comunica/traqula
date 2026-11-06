@@ -6,5 +6,5 @@ SELECT ?s ?doubled WHERE {
     GROUP BY ?s
     HAVING ( COUNT( ?o ) > "1"^^<http://www.w3.org/2001/XMLSchema#integer> )
   }
-  FILTER ( ( ?doubled > "1"^^<http://www.w3.org/2001/XMLSchema#integer> ) )
+  FILTER ( BOUND( ?doubled ) )
 }

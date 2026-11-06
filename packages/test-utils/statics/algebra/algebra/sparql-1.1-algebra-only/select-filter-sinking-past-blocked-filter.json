@@ -96,7 +96,7 @@
       "expression": {
         "type": "expression",
         "subType": "operator",
-        "operator": ">",
+        "operator": "bound",
         "args": [
           {
             "type": "expression",
@@ -104,18 +104,6 @@
             "term": {
               "termType": "Variable",
               "value": "doubled"
-            }
-          },
-          {
-            "type": "expression",
-            "subType": "term",
-            "term": {
-              "termType": "Literal",
-              "value": "1",
-              "datatype": {
-                "termType": "NamedNode",
-                "value": "http://www.w3.org/2001/XMLSchema#integer"
-              }
             }
           }
         ]

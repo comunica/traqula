@@ -19,7 +19,7 @@ import type { Algebra } from '../index.js';
 import { defaultAlgebraTransformer, isTerm, types } from '../toAlgebra/index.js';
 import { forEachTermVariable, inScopeVariables } from '../util.js';
 import type { AstIndir } from './core.js';
-import { findAlgGroupBelow, resetContext, splitAlgValuesJoin } from './core.js';
+import { eTypes, findAlgGroupBelow, resetContext, splitAlgValuesJoin } from './core.js';
 import { translateAlgExpressionOrOrdering, translateAlgPureExpression } from './expression.js';
 import type { RdfTermToAst } from './general.js';
 import { translateAlgPattern, translateAlgTerm } from './general.js';
@@ -133,6 +133,10 @@ function countSelectableExtends(
   return firstUnprojected < 0 ? outermostFirst.length : firstUnprojected;
 }
 
+// Operators telling whether a variable is bound, and operators giving another result on each evaluation
+const boundOperators = new Set([ 'bound' ]);
+const nondeterministicOperators = new Set([ 'rand', 'uuid', 'struuid', 'bnode' ]);
+
 /**
  * Reorders the extends, orderings, and filters between a query form and its group, as far as they commute,
  * so orderings become the ORDER BY clause and filters become HAVING conditions.
@@ -141,7 +145,7 @@ function countSelectableExtends(
  */
 export const reorderAlgQueryChain: AstIndir<'reorderQueryChain', AlgQueryForm, [AlgQueryForm]> = {
   name: 'reorderQueryChain',
-  fun: ({ SUBRULE }) => (_, op) => {
+  fun: ({ SUBRULE }) => ({ algebraTransformer = defaultAlgebraTransformer }, op) => {
     type ChainOperation = Algebra.Extend | Algebra.OrderBy | Algebra.Filter;
     // The chain down to the HAVING conditions or the trailing VALUES, outermost first.
     // Only the operation below a run of filters decides whether they are all HAVING conditions.
@@ -161,45 +165,62 @@ export const reorderAlgQueryChain: AstIndir<'reorderQueryChain', AlgQueryForm, [
     if (chain.length === 0) {
       return op;
     }
-    const readVariables = (mover: Algebra.OrderBy | Algebra.Filter): Set<string> =>
-      SUBRULE(collectAlgVariables, mover, new Set(), [ 'input' ]);
-    let moved = false;
+    const readVariables = (value: object): Set<string> => SUBRULE(collectAlgVariables, value, new Set());
 
-    // Orderings move up past the filters and the extends of variables they do not read, keeping their relative order
-    const reordered: ChainOperation[] = [];
-    for (const operation of chain) {
-      let index = reordered.length;
-      if (operation.type === types.ORDER_BY) {
-        let variables: Set<string> | undefined;
-        while (index > 0 && reordered[index - 1].type !== types.ORDER_BY) {
-          const above = reordered[index - 1];
-          if (above.type === types.EXTEND) {
-            variables ??= readVariables(operation);
-            if (variables.has(above.variable.value)) {
-              break;
-            }
-          }
-          index--;
-        }
-        moved ||= index < reordered.length;
-      }
-      reordered.splice(index, 0, operation);
-    }
+    // Orderings move up, keeping their relative order. Filters commute with them, and so do extends,
+    //  whose variable is not bound below them and can thus not affect the ordering.
+    const reordered = [
+      ...chain.filter(operation => operation.type === types.ORDER_BY),
+      ...chain.filter(operation => operation.type !== types.ORDER_BY),
+    ];
+    let moved = reordered.some((operation, index) => operation !== chain[index]);
 
-    // Filters reading only group keys and aggregates move down onto the HAVING conditions,
-    //  inner filters first so they keep their relative order
+    // Filters move down onto the HAVING conditions, inner filters first so they keep their relative order.
+    //  HAVING can only read group keys and aggregates, so the extends below a filter are substituted into it.
     const group = SUBRULE(findAlgGroupBelow, bottom, 'values');
     if (group) {
       const valuesJoin = splitAlgValuesJoin(bottom);
       const valuesVariables = new Set(valuesJoin?.values.variables.map(variable => variable.value));
-      const isGrouped = (variable: string): boolean => !valuesVariables.has(variable) &&
-        (group.variables.some(key => key.value === variable) ||
-          group.aggregates.some(aggregate => aggregate.variable.value === variable));
+      const grouped = new Set([ ...group.variables, ...group.aggregates.map(aggregate => aggregate.variable) ]
+        .map(variable => variable.value)
+        .filter(variable => !valuesVariables.has(variable)));
+      // The expressions of the extends below the current filter, reading only grouped variables
+      const substitutions = new Map<string, Algebra.Expression>();
+      const substitute = (expression: Algebra.Expression): Algebra.Expression =>
+        algebraTransformer.transformNodeSpecific<'unsafe', Algebra.Expression>(expression, {}, {
+          [types.EXPRESSION]: { [eTypes.TERM]: { transform: (copy: Algebra.TermExpression) =>
+            (copy.term.termType === 'Variable' ? substitutions.get(copy.term.value) : undefined) ?? copy }},
+        });
+      function containsOperator(expression: Algebra.Expression, operators: Set<string>): boolean {
+        let found = false;
+        algebraTransformer.visitNodeSpecific(expression, {}, { [types.EXPRESSION]: {
+          [eTypes.OPERATOR]: { visitor: (operator: Algebra.OperatorExpression) => {
+            found ||= operators.has(operator.operator);
+          } },
+          [eTypes.EXISTENCE]: { visitor: () => {
+            found = true;
+          } },
+        }});
+        return found;
+      }
+      // Whether the expression reads only grouped variables once the extends below are substituted,
+      //  which keeps its result unless it tells whether a variable is bound or reads a pattern
+      function isGroupedExpression(expression: Algebra.Expression): boolean {
+        const variables = [ ...readVariables(expression) ];
+        return variables.every(variable => grouped.has(variable) || substitutions.has(variable)) &&
+          (variables.every(variable => grouped.has(variable)) || !containsOperator(expression, boundOperators));
+      }
       let having = valuesJoin?.other ?? bottom;
       for (let index = reordered.length - 1; index >= 0; index--) {
-        const filter = reordered[index];
-        if (filter.type === types.FILTER && [ ...readVariables(filter) ].every(isGrouped)) {
-          having = { ...filter, input: having };
+        const operation = reordered[index];
+        if (operation.type === types.EXTEND) {
+          // Substituting re-evaluates the expression, so it must be deterministic
+          if (isGroupedExpression(operation.expression) &&
+            !containsOperator(operation.expression, nondeterministicOperators)) {
+            substitutions.set(operation.variable.value, substitute(operation.expression));
+          }
+        } else if (operation.type === types.FILTER && isGroupedExpression(operation.expression)) {
+          having = { ...operation, expression: substitute(operation.expression), input: having };
           reordered.splice(index, 1);
           moved = true;
         }

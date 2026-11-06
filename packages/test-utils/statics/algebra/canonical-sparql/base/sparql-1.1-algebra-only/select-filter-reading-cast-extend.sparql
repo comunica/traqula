@@ -1,0 +1,9 @@
+SELECT ?s ?text WHERE {
+  {
+    SELECT ( COUNT( ?o ) AS ?count ) ?s ( <http://www.w3.org/2001/XMLSchema#string> ( COUNT( ?o ) ) AS ?text ) WHERE {
+      ?s <http://ex.org/p> ?o .
+    }
+    GROUP BY ?s
+  }
+  FILTER ( ( ?text != "0"^^<http://www.w3.org/2001/XMLSchema#string> ) )
+}

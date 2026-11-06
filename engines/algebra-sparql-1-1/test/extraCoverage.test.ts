@@ -89,7 +89,7 @@ GROUP BY ( ?y AS ?x )`);
     );
 
     it('selects the aggregate bound to the variable', ({ expect }) => {
-      const result = generator.generate(F.forcedAutoGenTree(toAst(project)));
+      const result = generate(project);
       expect(result).toBe(`SELECT ( COUNT( ?o ) AS ?var0 ) ?s WHERE {
   ?s ?p ?o .
 }
@@ -97,7 +97,7 @@ GROUP BY ?s`);
     });
 
     it('generates a query that parses and round-trips unchanged', ({ expect }) => {
-      const result = generator.generate(F.forcedAutoGenTree(toAst(project)));
+      const result = generate(project);
       expect(roundTrip(result)).toBe(result);
     });
   });
@@ -755,23 +755,24 @@ SELECT (COUNT(EXISTS { GRAPH ?g { ?s :q ?o } }) AS ?c) WHERE { ?s :p ?g }`);
       expect(generate(operation)).toBe(expected);
     });
 
-    it('evaluates a slice below a DISTINCT in a subquery', ({ expect }) => {
-      expect(generate(AF.createDistinct(AF.createSlice(project, 0, 3)))).toBe(`SELECT DISTINCT ?o WHERE {
-  SELECT ?o WHERE {
+    const slicedSubquery = `SELECT ?o WHERE {
     ?s <http://p> ?o .
   }
-  LIMIT 3
-}`);
-    });
+  LIMIT 3`;
 
-    it('evaluates a slice below a slice in a subquery', ({ expect }) => {
-      expect(generate(AF.createSlice(AF.createSlice(project, 0, 10), 0, 20))).toBe(`SELECT ?o WHERE {
-  SELECT ?o WHERE {
-    ?s <http://p> ?o .
-  }
-  LIMIT 10
-}
-LIMIT 20`);
+    it.for<[string, Algebra.Operation, string]>([
+      [
+        'a DISTINCT',
+        AF.createDistinct(AF.createSlice(project, 0, 3)),
+        `SELECT DISTINCT ?o WHERE {\n  ${slicedSubquery}\n}`,
+      ],
+      [
+        'a slice',
+        AF.createSlice(AF.createSlice(project, 0, 3), 0, 20),
+        `SELECT ?o WHERE {\n  ${slicedSubquery}\n}\nLIMIT 20`,
+      ],
+    ])('evaluates a slice below %s in a subquery', ([ , operation, expected ], { expect }) => {
+      expect(generate(operation)).toBe(expected);
     });
   });
 });

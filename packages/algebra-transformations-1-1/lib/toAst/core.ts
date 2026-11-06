@@ -92,14 +92,14 @@ export const resetContext: AstIndir<'resetContext', void, []> = {
 /**
  * Splits a join of two operands, one of them a VALUES. Join is commutative, so the VALUES can be either operand.
  * @param op - The operation to split.
- * @return the VALUES and the other operand, or undefined when the operation is no such join.
+ * @return the join, its VALUES, and its other operand, or undefined when the operation is no such join.
  */
 export function splitAlgValuesJoin(op: Algebra.Operation):
-{ values: Algebra.Values; other: Algebra.Operation } | undefined {
+{ join: Algebra.Join; values: Algebra.Values; other: Algebra.Operation } | undefined {
   if (op.type === types.JOIN && op.input.length === 2) {
     const valuesIndex = op.input.findIndex(operand => operand.type === types.VALUES);
     if (valuesIndex >= 0) {
-      return { values: <Algebra.Values> op.input[valuesIndex], other: op.input[1 - valuesIndex] };
+      return { join: op, values: <Algebra.Values> op.input[valuesIndex], other: op.input[1 - valuesIndex] };
     }
   }
 }

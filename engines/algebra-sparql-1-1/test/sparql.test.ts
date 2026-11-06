@@ -1,3 +1,4 @@
+import { basename } from 'node:path';
 import type { Algebra } from '@traqula/algebra-transformations-1-1';
 import { Canonicalizer, algebraUtils } from '@traqula/algebra-transformations-1-1';
 import { Generator as Generator11 } from '@traqula/generator-sparql-1-1';
@@ -65,7 +66,7 @@ describe('sparql algebra 1.1 output', () => {
       it (name, ({ expect }) => {
         const canonical = generator.generate(toAst(<Algebra.Operation> json));
         expect(canonical.trim()).toEqual(canonicalSparql.trim());
-        if (!noFixpoint.has(name.split(/[/\\]/u).at(-1)!)) {
+        if (!noFixpoint.has(basename(name))) {
           // Parsing the canonical SPARQL translates back to the same canonical SPARQL
           expect(generator.generate(toAst(toAlgebra(parser.parse(canonical)))).trim()).toEqual(canonical.trim());
         }

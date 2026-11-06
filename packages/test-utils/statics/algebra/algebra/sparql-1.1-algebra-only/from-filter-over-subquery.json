@@ -1,0 +1,55 @@
+{
+  "type": "from",
+  "input": {
+    "type": "filter",
+    "input": {
+      "type": "project",
+      "input": {
+        "type": "bgp",
+        "patterns": [
+          {
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": {
+              "termType": "Variable",
+              "value": "s"
+            },
+            "predicate": {
+              "termType": "NamedNode",
+              "value": "http://example.org/p"
+            },
+            "object": {
+              "termType": "Variable",
+              "value": "o"
+            },
+            "graph": {
+              "termType": "DefaultGraph",
+              "value": ""
+            }
+          }
+        ]
+      },
+      "variables": [
+        {
+          "termType": "Variable",
+          "value": "o"
+        }
+      ]
+    },
+    "expression": {
+      "type": "expression",
+      "subType": "term",
+      "term": {
+        "termType": "Variable",
+        "value": "o"
+      }
+    }
+  },
+  "default": [
+    {
+      "termType": "NamedNode",
+      "value": "http://example.org/g"
+    }
+  ],
+  "named": []
+}

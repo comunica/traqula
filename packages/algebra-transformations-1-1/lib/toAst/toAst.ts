@@ -4,9 +4,7 @@ import { types } from '../toAlgebra/core.js';
 import type { AstIndir } from './core.js';
 import { resetContext } from './core.js';
 
-import {
-  translateAlgPatternIntoGroup,
-} from './pattern.js';
+import { translateAlgModifiedQuery } from './pattern.js';
 import { removeAlgQuads } from './quads.js';
 
 import {
@@ -30,7 +28,7 @@ export const algToSparql: AstIndir<'algToSparql', SparqlQuery, [Algebra.Operatio
       return SUBRULE(toUpdate, [ SUBRULE(translateAlgUpdateOperation, <Algebra.Update> op) ]);
     } catch { /* That's okay, it's not an update */}
     // If no Update, must be query.
-    const result = SUBRULE(translateAlgPatternIntoGroup, op);
+    const result = SUBRULE(translateAlgModifiedQuery, op);
     return <Query> result.patterns[0];
   },
 };

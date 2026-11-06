@@ -1,0 +1,8 @@
+SELECT REDUCED ?o WHERE {
+  {
+    SELECT ?o WHERE {
+      ?s <http://example.org/p> ?o .
+    }
+  }
+  FILTER ( ?o )
+}

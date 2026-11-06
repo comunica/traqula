@@ -1,0 +1,6 @@
+SELECT DISTINCT ?o WHERE {
+  SELECT ?o WHERE {
+    ?s <http://example.org/p> ?o .
+  }
+  LIMIT 3
+}

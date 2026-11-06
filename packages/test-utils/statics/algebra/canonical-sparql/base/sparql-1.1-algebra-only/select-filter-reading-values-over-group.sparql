@@ -1,0 +1,12 @@
+SELECT ?s ?count WHERE {
+  {
+    SELECT ( COUNT( ?o ) AS ?count ) ?s WHERE {
+      ?s <http://ex.org/p> ?o .
+    }
+    GROUP BY ?s
+    VALUES ?s {
+      <http://ex.org/a>
+    }
+  }
+  FILTER ( ISIRI( ?s ) )
+}

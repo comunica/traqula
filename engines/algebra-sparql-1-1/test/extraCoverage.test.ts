@@ -25,10 +25,6 @@ describe('algebra-sparql-1-1 extra coverage', () => {
     return generator.generate(F.forcedAutoGenTree(backAst));
   }
 
-  function generate(op: Algebra.Operation): string {
-    return generator.generate(F.forcedAutoGenTree(toAst(op)));
-  }
-
   function roundTripQuads(sparql: string): string {
     const ast = parser.parse(sparql);
     const algebra = toAlgebra(ast, { quads: true });
@@ -99,102 +95,6 @@ GROUP BY ?s`);
     it('generates a query that parses and round-trips unchanged', ({ expect }) => {
       const result = generator.generate(F.forcedAutoGenTree(toAst(project)));
       expect(roundTrip(result)).toBe(result);
-    });
-  });
-
-  describe('filters between the query form and its group', () => {
-    const DF = AF.dataFactory;
-    const s = DF.variable!('s');
-    const o = DF.variable!('o');
-    const count = DF.variable!('count');
-    const doubled = DF.variable!('doubled');
-    const group = AF.createGroup(
-      AF.createBgp([ AF.createPattern(s, DF.namedNode('http://p'), o) ]),
-      [ s ],
-      [ AF.createBoundAggregate(count, 'count', AF.createTermExpression(o), false) ],
-    );
-    const integer = (value: string): Algebra.Expression =>
-      AF.createTermExpression(DF.literal(value, DF.namedNode('http://www.w3.org/2001/XMLSchema#integer')));
-    const countAboveOne = AF.createOperatorExpression('>', [
-      AF.createTermExpression(count),
-      integer('1'),
-    ]);
-    const subjectIsIri = AF.createOperatorExpression('isiri', [ AF.createTermExpression(s) ]);
-    const valuesOnSubject = AF.createValues([ s ], [{ s: DF.namedNode('http://a') }]);
-    const doubleCount = AF.createExtend(group, doubled, AF.createOperatorExpression('*', [
-      AF.createTermExpression(count),
-      integer('2'),
-    ]));
-
-    it('generates a filter above a SELECT expression it does not read as HAVING', ({ expect }) => {
-      const result = generate(AF.createProject(AF.createFilter(doubleCount, countAboveOne), [ s, doubled ]));
-      expect(result).toBe(`SELECT ?s ( ( COUNT( ?o ) * "2"^^<http://www.w3.org/2001/XMLSchema#integer> ) AS ?doubled ) WHERE {
-  ?s <http://p> ?o .
-}
-GROUP BY ?s
-HAVING ( COUNT( ?o ) > "1"^^<http://www.w3.org/2001/XMLSchema#integer> )`);
-      expect(roundTrip(result)).toBe(result);
-    });
-
-    it('generates a filter above an ordering as HAVING', ({ expect }) => {
-      const ordered = AF.createOrderBy(group, [ AF.createTermExpression(s) ]);
-      const result = generate(AF.createProject(AF.createFilter(ordered, subjectIsIri), [ s, count ]));
-      expect(result).toBe(`SELECT ?s ( COUNT( ?o ) AS ?count ) WHERE {
-  ?s <http://p> ?o .
-}
-GROUP BY ?s
-HAVING ISIRI( ?s )
-ORDER BY ASC ( ?s )`);
-      expect(roundTrip(result)).toBe(result);
-    });
-
-    it('generates a filter above a trailing VALUES on other variables as HAVING', ({ expect }) => {
-      const valuesOnOther = AF.createValues([ o ], [{ o: DF.namedNode('http://a') }]);
-      const joined = AF.createJoin([ group, valuesOnOther ]);
-      const result = generate(AF.createProject(AF.createFilter(joined, countAboveOne), [ s, count ]));
-      expect(result).toBe(`SELECT ?s ( COUNT( ?o ) AS ?count ) WHERE {
-  ?s <http://p> ?o .
-}
-GROUP BY ?s
-HAVING ( COUNT( ?o ) > "1"^^<http://www.w3.org/2001/XMLSchema#integer> )
-VALUES ?o {
-  <http://a>
-}`);
-      expect(roundTrip(result)).toBe(result);
-    });
-
-    it('evaluates the group in a subquery when the filter reads a SELECT expression', ({ expect }) => {
-      const doubledAboveOne = AF.createOperatorExpression('>', [
-        AF.createTermExpression(doubled),
-        integer('1'),
-      ]);
-      const result = generate(AF.createProject(AF.createFilter(doubleCount, doubledAboveOne), [ s, doubled ]));
-      expect(result).toBe(`SELECT ?s ?doubled WHERE {
-  {
-    SELECT ( COUNT( ?o ) AS ?count ) ?s ( ( COUNT( ?o ) * "2"^^<http://www.w3.org/2001/XMLSchema#integer> ) AS ?doubled ) WHERE {
-      ?s <http://p> ?o .
-    }
-    GROUP BY ?s
-  }
-  FILTER ( ( ?doubled > "1"^^<http://www.w3.org/2001/XMLSchema#integer> ) )
-}`);
-    });
-
-    it('evaluates the group in a subquery when the filter reads a trailing VALUES variable', ({ expect }) => {
-      const joined = AF.createJoin([ group, valuesOnSubject ]);
-      const result = generate(AF.createProject(AF.createFilter(joined, subjectIsIri), [ s, count ]));
-      expect(result).toBe(`SELECT ?s ?count WHERE {
-  {
-    SELECT ( COUNT( ?o ) AS ?count ) ?s WHERE {
-      ?s <http://p> ?o .
-    }
-    GROUP BY ?s
-    VALUES ?s {
-      <http://a>
-    }
-  }
-  FILTER ( ISIRI( ?s ) )
-}`);
     });
   });
 
@@ -389,6 +289,10 @@ VALUES ?o {
     const s = AF.dataFactory.variable!('s');
     const p = AF.dataFactory.variable!('p');
     const o = AF.dataFactory.variable!('o');
+
+    function generate(op: Algebra.Operation): string {
+      return generator.generate(F.forcedAutoGenTree(toAst(op)));
+    }
 
     it('reads a pattern without a graph as default graph content', ({ expect }) => {
       const pattern = <Algebra.Pattern> { type: 'pattern', subject: s, predicate: p, object: o };

@@ -64,46 +64,45 @@ export const translateAlgInOwnSubquery: AstIndir<'translateInOwnSubquery', Patte
 };
 
 /**
- * The solution modifiers {@link translateAlgModifiedQuery} translates the input of.
+ * The operations a single query consists of, numbered in the order SPARQL applies them:
+ * the query form, then DISTINCT or REDUCED, then the slice, and FROM to the whole query.
  */
-export type AlgSolutionModifierType = typeof types.DISTINCT | typeof types.REDUCED | typeof types.SLICE;
-
-/**
- * The query forms, which DISTINCT and REDUCED modify within the same query.
- */
-const queryFormTypes = new Set<string>([ types.ASK, types.PROJECT, types.CONSTRUCT, types.DESCRIBE ]);
-
-/**
- * The operation types {@link translateAlgPatternIntoGroup} translates into a query.
- */
-const queryTypes = new Set<string>([ ...queryFormTypes, types.DISTINCT, types.REDUCED, types.SLICE, types.FROM ]);
-
-/**
- * Per solution modifier, the input types it modifies within the same query.
- * SPARQL applies DISTINCT and REDUCED after the projection, and then the slice.
- */
-const queryTypesModifiableBy: Record<AlgSolutionModifierType, Set<string>> = {
-  [types.DISTINCT]: queryFormTypes,
-  [types.REDUCED]: queryFormTypes,
-  [types.SLICE]: new Set([ ...queryFormTypes, types.DISTINCT, types.REDUCED ]),
+const queryOperationOrder = <const> {
+  [types.ASK]: 0,
+  [types.PROJECT]: 0,
+  [types.CONSTRUCT]: 0,
+  [types.DESCRIBE]: 0,
+  [types.DISTINCT]: 1,
+  [types.REDUCED]: 1,
+  [types.SLICE]: 2,
+  [types.FROM]: 3,
 };
 
 /**
- * Translates the input of a solution modifier, which can only modify a query.
- * FROM only sets the dataset, so it commutes with the solution modifiers and stays on the outer query.
- * @param op - the input of the solution modifier or FROM, or the root operation.
- * @param modifierType - the type of the solution modifier, undefined when any query can be modified.
- * @return the group holding the query, a subquery of its own when the modifier cannot modify the input's query.
+ * The types of the operations a single query consists of.
+ */
+export type AlgQueryOperationType = keyof typeof queryOperationOrder;
+
+/**
+ * Translates the input of an operation that modifies the query its input translates into, or the root operation.
+ * The input stays in that query when SPARQL applies it before the modifying operation,
+ * otherwise it is translated in a subquery of its own.
+ * @param op - the input of the modifying operation, or the root operation.
+ * @param modifierType - the type of the modifying operation, undefined for the root operation.
+ * @return the group holding the query.
  */
 export const translateAlgModifiedQuery:
-AstIndir<'translateModifiedQuery', PatternGroup, [Algebra.Operation, AlgSolutionModifierType?]> = {
+AstIndir<'translateModifiedQuery', PatternGroup, [Algebra.Operation, AlgQueryOperationType?]> = {
   name: 'translateModifiedQuery',
   fun: ({ SUBRULE }) => (_, op, modifierType) => {
+    // FROM only sets the dataset, so it commutes with the operation modifying the query
     if (op.type === types.FROM && modifierType !== undefined) {
       return SUBRULE(translateAlgFrom, op, modifierType);
     }
-    const modifiableTypes = modifierType === undefined ? queryTypes : queryTypesModifiableBy[modifierType];
-    return modifiableTypes.has(op.type) ?
+    const position: number | undefined = (<Record<string, number>> queryOperationOrder)[op.type];
+    const isAppliedBefore = position !== undefined &&
+      (modifierType === undefined || position < queryOperationOrder[modifierType]);
+    return isAppliedBefore ?
       SUBRULE(translateAlgPatternIntoGroup, op) :
       SUBRULE(translateAlgInOwnSubquery, op);
   },
@@ -183,10 +182,10 @@ export const translateAlgPath: AstIndir<'translatePath', PatternBgp, [Algebra.Pa
 /**
  * Sets the dataset clauses of the query its input translates into.
  * @param op - the FROM operation.
- * @param modifierType - the type of the solution modifier over the FROM, if any.
+ * @param modifierType - the type of the operation modifying the query, if any.
  * @return the group holding the query.
  */
-export const translateAlgFrom: AstIndir<'translateFrom', PatternGroup, [Algebra.From, AlgSolutionModifierType?]> = {
+export const translateAlgFrom: AstIndir<'translateFrom', PatternGroup, [Algebra.From, AlgQueryOperationType?]> = {
   name: 'translateFrom',
   fun: ({ SUBRULE }) => (_, op, modifierType) => {
     const result = SUBRULE(translateAlgModifiedQuery, op.input, modifierType);

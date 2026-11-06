@@ -143,65 +143,78 @@ export const reorderAlgQueryChain: AstIndir<'reorderQueryChain', AlgQueryForm, [
   name: 'reorderQueryChain',
   fun: ({ SUBRULE }) => (_, op) => {
     type ChainOperation = Algebra.Extend | Algebra.OrderBy | Algebra.Filter;
-    // The chain down to the HAVING conditions or the trailing VALUES, outermost first
+    // The chain down to the HAVING conditions or the trailing VALUES, outermost first.
+    // Only the operation below a run of filters decides whether they are all HAVING conditions.
     const chain: ChainOperation[] = [];
     let bottom = op.input;
-    while (bottom.type === types.EXTEND || bottom.type === types.ORDER_BY ||
-      (bottom.type === types.FILTER && !SUBRULE(findAlgGroupBelow, bottom.input, 'having'))) {
+    while (bottom.type !== types.FILTER || !SUBRULE(findAlgGroupBelow, bottom, 'having')) {
+      while (bottom.type === types.FILTER) {
+        chain.push(bottom);
+        bottom = bottom.input;
+      }
+      if (bottom.type !== types.EXTEND && bottom.type !== types.ORDER_BY) {
+        break;
+      }
       chain.push(bottom);
       bottom = bottom.input;
     }
-
-    const expressionVariables = new Map<ChainOperation, Set<string>>();
-    function reads(mover: Algebra.OrderBy | Algebra.Filter, variable: RDF.Variable): boolean {
-      let variables = expressionVariables.get(mover);
-      if (!variables) {
-        variables = SUBRULE(collectAlgVariables, mover, new Set(), [ 'input' ]);
-        expressionVariables.set(mover, variables);
-      }
-      return variables.has(variable.value);
+    if (chain.length === 0) {
+      return op;
     }
-    // An ordering or filter commutes with any operation of the chain but an extend of a variable it reads
-    const isBlockedBy = (mover: Algebra.OrderBy | Algebra.Filter, operation: ChainOperation): boolean =>
-      operation.type === types.EXTEND && reads(mover, operation.variable);
+    const readVariables = (mover: Algebra.OrderBy | Algebra.Filter): Set<string> =>
+      SUBRULE(collectAlgVariables, mover, new Set(), [ 'input' ]);
+    let moved = false;
 
-    // Orderings move up, keeping their relative order
+    // Orderings move up past the filters and the extends of variables they do not read, keeping their relative order
     const reordered: ChainOperation[] = [];
     for (const operation of chain) {
       let index = reordered.length;
       if (operation.type === types.ORDER_BY) {
-        while (index > 0 && reordered[index - 1].type !== types.ORDER_BY &&
-          !isBlockedBy(operation, reordered[index - 1])) {
+        let variables: Set<string> | undefined;
+        while (index > 0 && reordered[index - 1].type !== types.ORDER_BY) {
+          const above = reordered[index - 1];
+          if (above.type === types.EXTEND) {
+            variables ??= readVariables(operation);
+            if (variables.has(above.variable.value)) {
+              break;
+            }
+          }
           index--;
         }
+        moved ||= index < reordered.length;
       }
       reordered.splice(index, 0, operation);
     }
 
-    // Filters move down onto the HAVING conditions, inner filters first so they keep their relative order
+    // Filters move down onto the HAVING conditions past the operations not binding variables they read,
+    //  inner filters first so they keep their relative order
     if (SUBRULE(findAlgGroupBelow, bottom, 'values')) {
+      const valuesJoin = SUBRULE(findAlgGroupBelow, bottom, 'having') ? undefined : splitAlgValuesJoin(bottom)!;
+      let having = valuesJoin?.other ?? bottom;
+      const boundBelow = valuesJoin?.values.variables.map(variable => variable.value) ?? [];
       for (let index = reordered.length - 1; index >= 0; index--) {
-        const filter = reordered[index];
-        if (filter.type !== types.FILTER ||
-          reordered.slice(index + 1).some(operation => isBlockedBy(filter, operation))) {
-          continue;
-        }
-        if (SUBRULE(findAlgGroupBelow, bottom, 'having')) {
-          bottom = { ...filter, input: bottom };
-        } else {
-          const join = <Algebra.Join> bottom;
-          const { values, other } = splitAlgValuesJoin(join)!;
-          if (values.variables.some(variable => reads(filter, variable))) {
-            continue;
+        const operation = reordered[index];
+        if (operation.type === types.EXTEND) {
+          boundBelow.push(operation.variable.value);
+        } else if (operation.type === types.FILTER) {
+          const variables = boundBelow.length > 0 ? readVariables(operation) : new Set<string>();
+          if (!boundBelow.some(variable => variables.has(variable))) {
+            having = { ...operation, input: having };
+            reordered.splice(index, 1);
+            moved = true;
           }
-          const operands = join.input.map(operand => operand === other ? { ...filter, input: other } : operand);
-          bottom = { ...join, input: operands };
         }
-        reordered.splice(index, 1);
+      }
+      if (valuesJoin) {
+        const join = <Algebra.Join> bottom;
+        const operands = join.input.map(operand => operand === valuesJoin.other ? having : operand);
+        bottom = { ...join, input: operands };
+      } else {
+        bottom = having;
       }
     }
 
-    if (reordered.length === chain.length && reordered.every((operation, index) => operation === chain[index])) {
+    if (!moved) {
       return op;
     }
     const input = reordered.reduceRight<Algebra.Operation>((input, operation) => ({ ...operation, input }), bottom);

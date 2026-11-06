@@ -122,9 +122,8 @@ Algebra.Group | undefined,
         input = input.input;
       }
     }
-    const valuesJoin = from === 'having' ? undefined : splitAlgValuesJoin(input);
-    if (valuesJoin) {
-      input = valuesJoin.other;
+    if (from !== 'having') {
+      input = splitAlgValuesJoin(input)?.other ?? input;
     }
     while (input.type === types.FILTER) {
       input = input.input;

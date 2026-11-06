@@ -13,9 +13,8 @@ import type {
 } from '@traqula/rules-sparql-1-1';
 import { Algebra } from '../index.js';
 import type { AstIndir } from './core.js';
-import { findAlgGroupBelow } from './core.js';
 import { translateAlgPureExpression } from './expression.js';
-import { translateAlgIntoQuery, translateAlgPatternNew } from './pattern.js';
+import { translateAlgInOwnSubquery, translateAlgModifiedQuery, translateAlgPatternNew } from './pattern.js';
 
 export type RdfTermToAst<T extends RDF.Term> = T extends RDF.Variable ? TermVariable :
   T extends RDF.BlankNode ? TermBlank :
@@ -53,19 +52,10 @@ export const translateAlgTerm: AstIndir<'translateTerm', Term, [RDF.Term]> = {
  */
 export const translateAlgExtend: AstIndir<'translateExtend', Pattern | Pattern[], [Algebra.Extend]> = {
   name: 'translateExtend',
-  fun: ({ SUBRULE }) => ({
-    astFactory: F,
-    project,
-    extend,
-  }, op) => {
+  fun: ({ SUBRULE }) => ({ astFactory: F, project, extend }, op) => {
     if (project) {
       extend.push(op);
       return SUBRULE(translateAlgPatternNew, op.input);
-    }
-    // Extends over a group would be BINDs evaluated before the grouping.
-    //  Outside the chain on top of a query form, they are evaluated in a SELECT subquery of their own instead.
-    if (SUBRULE(findAlgGroupBelow, op, 'projection')) {
-      return SUBRULE(translateAlgIntoQuery, op);
     }
     // Many extends can be put in a single group
     const extendsOperations: Algebra.Extend[] = [];
@@ -105,11 +95,15 @@ AstIndir<'translateDatasetClauses', DatasetClauses, [RDF.NamedNode[], RDF.NamedN
 };
 
 /**
- * An order by is just registered to be handled in the creation of your QueryBase
+ * An order by on top of a query form is registered to become the ORDER BY clause of that query.
+ * Any other order by is translated in a SELECT subquery of its own.
  */
 export const translateAlgOrderBy: AstIndir<'translateOrderBy', Pattern | Pattern[], [Algebra.OrderBy]> = {
   name: 'translateOrderBy',
-  fun: ({ SUBRULE }) => ({ order }, op) => {
+  fun: ({ SUBRULE }) => ({ project, order }, op) => {
+    if (!project) {
+      return SUBRULE(translateAlgInOwnSubquery, op);
+    }
     order.push(...op.expressions);
     return SUBRULE(translateAlgPatternNew, op.input);
   },
@@ -131,7 +125,7 @@ export const translateAlgPattern: AstIndir<'translatePattern', TripleNesting, [A
 export const translateAlgReduced: AstIndir<'translateReduced', PatternGroup, [Algebra.Reduced]> = {
   name: 'translateReduced',
   fun: ({ SUBRULE }) => (_, op) => {
-    const result = SUBRULE(translateAlgIntoQuery, op.input, Algebra.Types.REDUCED);
+    const result = SUBRULE(translateAlgModifiedQuery, op.input, Algebra.Types.REDUCED);
     const select = <QuerySelect>result.patterns[0];
     select.reduced = true;
     return result;
@@ -144,7 +138,7 @@ export const translateAlgReduced: AstIndir<'translateReduced', PatternGroup, [Al
 export const translateAlgDistinct: AstIndir<'translateDistinct', PatternGroup, [Algebra.Distinct]> = {
   name: 'translateDistinct',
   fun: ({ SUBRULE }) => (_, op) => {
-    const result = SUBRULE(translateAlgIntoQuery, op.input, Algebra.Types.DISTINCT);
+    const result = SUBRULE(translateAlgModifiedQuery, op.input, Algebra.Types.DISTINCT);
     const select = <QuerySelect>result.patterns[0];
     select.distinct = true;
     return result;

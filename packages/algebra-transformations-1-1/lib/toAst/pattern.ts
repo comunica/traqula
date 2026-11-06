@@ -50,44 +50,54 @@ export const translateAlgPatternIntoGroup: AstIndir<'translatePatternIntoGroup',
 };
 
 /**
+ * Translates the operation as a SELECT subquery projecting all its in-scope variables.
+ * @param op - the operation to evaluate in its own scope.
+ * @return the group holding the subquery.
+ */
+export const translateAlgInOwnSubquery: AstIndir<'translateInOwnSubquery', PatternGroup, [Algebra.Operation]> = {
+  name: 'translateInOwnSubquery',
+  fun: ({ SUBRULE }) => ({ algebraFactory, algebraTransformer = defaultAlgebraTransformer }, op) =>
+    SUBRULE(translateAlgPatternIntoGroup, algebraFactory.createProject(
+      op,
+      inScopeVariables(op, (operation, callbacks) => algebraTransformer.visitNode(operation, callbacks)),
+    )),
+};
+
+/**
  * The query forms, which DISTINCT and REDUCED modify within the same query.
  */
-const algQueryFormTypes = [ types.ASK, types.PROJECT, types.CONSTRUCT, types.DESCRIBE ];
+const queryFormTypes = [ types.ASK, types.PROJECT, types.CONSTRUCT, types.DESCRIBE ];
 
 /**
  * The operation types {@link translateAlgPatternIntoGroup} translates into a query.
  */
-const algQueryTypes = new Set<string>([ ...algQueryFormTypes, types.DISTINCT, types.REDUCED, types.SLICE, types.FROM ]);
+const queryTypes = new Set<string>([ ...queryFormTypes, types.DISTINCT, types.REDUCED, types.SLICE, types.FROM ]);
 
 /**
- * Per modifying operation type, the input types it modifies within the same query.
+ * Per solution modifier type, the input types it modifies within the same query.
  * SPARQL applies DISTINCT and REDUCED after the projection, then the slice, and FROM to the whole query.
  */
-const algTypesModifiableBy: Record<string, Set<string>> = {
-  [types.DISTINCT]: new Set(algQueryFormTypes),
-  [types.REDUCED]: new Set(algQueryFormTypes),
-  [types.SLICE]: new Set([ ...algQueryFormTypes, types.DISTINCT, types.REDUCED ]),
-  [types.FROM]: algQueryTypes,
+const queryTypesModifiableBy: Record<string, Set<string>> = {
+  [types.DISTINCT]: new Set(queryFormTypes),
+  [types.REDUCED]: new Set(queryFormTypes),
+  [types.SLICE]: new Set([ ...queryFormTypes, types.DISTINCT, types.REDUCED ]),
+  [types.FROM]: queryTypes,
 };
 
 /**
- * Translates an operation into a query, wrapping it in a projection on its in-scope variables when needed.
- * @param op - The operation to translate.
- * @param modifierType - The type of the operation that modifies the resulting query, if any.
- * @return a group holding the query as its only pattern.
+ * Translates the input of a solution modifier, which can only modify a query.
+ * @param op - the input of the solution modifier, or the root operation.
+ * @param modifierType - the type of the solution modifier, undefined for the root operation.
+ * @return the group holding the query, a subquery of its own when the modifier cannot modify the input's query.
  */
-export const translateAlgIntoQuery:
-AstIndir<'translateIntoQuery', PatternGroup, [Algebra.Operation, string?]> = {
-  name: 'translateIntoQuery',
-  fun: ({ SUBRULE }) => ({ algebraFactory: AF, algebraTransformer = defaultAlgebraTransformer }, op, modifierType) => {
-    const modifiableTypes = modifierType === undefined ? algQueryTypes : algTypesModifiableBy[modifierType];
-    const query = modifiableTypes.has(op.type) ?
-      op :
-      AF.createProject(
-        op,
-        inScopeVariables(op, (operation, callbacks) => algebraTransformer.visitNode(operation, callbacks)),
-      );
-    return SUBRULE(translateAlgPatternIntoGroup, query);
+export const translateAlgModifiedQuery:
+AstIndir<'translateModifiedQuery', PatternGroup, [Algebra.Operation, string?]> = {
+  name: 'translateModifiedQuery',
+  fun: ({ SUBRULE }) => (_, op, modifierType) => {
+    const modifiableTypes = modifierType === undefined ? queryTypes : queryTypesModifiableBy[modifierType];
+    return modifiableTypes.has(op.type) ?
+      SUBRULE(translateAlgPatternIntoGroup, op) :
+      SUBRULE(translateAlgInOwnSubquery, op);
   },
 };
 
@@ -109,9 +119,17 @@ export const translateAlgSinglePattern: AstIndir<'translateSinglePattern', Patte
   },
 };
 
+/**
+ * The solution modifiers of a group belong to the query of that group.
+ * An operation over any other group is thus translated in a subquery of its own.
+ */
 export const translateAlgPatternNew: AstIndir<'translatePatternNew', Pattern | Pattern[], [Algebra.Operation]> = {
   name: 'translatePatternNew',
-  fun: ({ SUBRULE }) => (_, op) => {
+  fun: ({ SUBRULE }) => ({ queryGroup }, op) => {
+    const group = SUBRULE(findAlgGroupBelow, op, 'projection');
+    if (group && group !== queryGroup) {
+      return SUBRULE(translateAlgInOwnSubquery, op);
+    }
     SUBRULE(registerProjection, op);
     switch (op.type) {
       case types.ORDER_BY: return SUBRULE(translateAlgOrderBy, op);
@@ -160,7 +178,7 @@ export const translateAlgPath: AstIndir<'translatePath', PatternBgp, [Algebra.Pa
 export const translateAlgFrom: AstIndir<'translateFrom', PatternGroup, [Algebra.From]> = {
   name: 'translateFrom',
   fun: ({ SUBRULE }) => (_, op) => {
-    const result = SUBRULE(translateAlgIntoQuery, op.input, types.FROM);
+    const result = SUBRULE(translateAlgModifiedQuery, op.input, types.FROM);
     const query = <QueryBase> result.patterns[0];
     query.datasets = SUBRULE(translateAlgDatasetClauses, op.default, op.named);
     return result;
@@ -322,7 +340,7 @@ export const operationAlgInputAsPatternList: AstIndir<'operationInputAsPatternLi
 export const translateAlgSlice: AstIndir<'translateSlice', PatternGroup, [Algebra.Slice]> = {
   name: 'translateSlice',
   fun: ({ SUBRULE }) => ({ astFactory: F }, op) => {
-    const result = SUBRULE(translateAlgIntoQuery, op.input, types.SLICE);
+    const result = SUBRULE(translateAlgModifiedQuery, op.input, types.SLICE);
     const query = <QueryBase>result.patterns[0];
     if (op.start !== 0) {
       query.solutionModifiers.limitOffset = query.solutionModifiers.limitOffset ??

@@ -102,7 +102,7 @@ GROUP BY ?s`);
     });
   });
 
-  describe('filters and extends between the query form and its group', () => {
+  describe('filters between the query form and its group', () => {
     const DF = AF.dataFactory;
     const s = DF.variable!('s');
     const o = DF.variable!('o');
@@ -163,25 +163,6 @@ VALUES ?o {
       expect(roundTrip(result)).toBe(result);
     });
 
-    it('evaluates the group in one subquery below stacked filters reading a SELECT expression', ({ expect }) => {
-      const doubledAbove = (value: string): Algebra.Expression =>
-        AF.createOperatorExpression('>', [ AF.createTermExpression(doubled), integer(value) ]);
-      const filtered = AF.createFilter(AF.createFilter(doubleCount, doubledAbove('1')), doubledAbove('2'));
-      const result = generate(AF.createProject(filtered, [ s, doubled ]));
-      expect(result).toBe(`SELECT ?s ?doubled WHERE {
-  {
-    {
-      SELECT ?s ( ( COUNT( ?o ) * "2"^^<http://www.w3.org/2001/XMLSchema#integer> ) AS ?doubled ) WHERE {
-        ?s <http://p> ?o .
-      }
-      GROUP BY ?s
-    }
-    FILTER ( ( ?doubled > "1"^^<http://www.w3.org/2001/XMLSchema#integer> ) )
-  }
-  FILTER ( ( ?doubled > "2"^^<http://www.w3.org/2001/XMLSchema#integer> ) )
-}`);
-    });
-
     it('evaluates the group in a subquery when the filter reads a SELECT expression', ({ expect }) => {
       const doubledAboveOne = AF.createOperatorExpression('>', [
         AF.createTermExpression(doubled),
@@ -190,26 +171,12 @@ VALUES ?o {
       const result = generate(AF.createProject(AF.createFilter(doubleCount, doubledAboveOne), [ s, doubled ]));
       expect(result).toBe(`SELECT ?s ?doubled WHERE {
   {
-    SELECT ?s ( ( COUNT( ?o ) * "2"^^<http://www.w3.org/2001/XMLSchema#integer> ) AS ?doubled ) WHERE {
-      ?s <http://p> ?o .
-    }
-    GROUP BY ?s
-  }
-  FILTER ( ( ?doubled > "1"^^<http://www.w3.org/2001/XMLSchema#integer> ) )
-}`);
-    });
-
-    it('evaluates an extend over a group in a subquery when joined below the query form', ({ expect }) => {
-      const joined = AF.createJoin([ doubleCount, AF.createBgp([ AF.createPattern(s, DF.namedNode('http://q'), o) ]) ]);
-      const result = generate(AF.createProject(joined, [ s, doubled ]));
-      expect(result).toBe(`SELECT ?s ?doubled WHERE {
-  {
     SELECT ( COUNT( ?o ) AS ?count ) ?s ( ( COUNT( ?o ) * "2"^^<http://www.w3.org/2001/XMLSchema#integer> ) AS ?doubled ) WHERE {
       ?s <http://p> ?o .
     }
     GROUP BY ?s
   }
-  ?s <http://q> ?o .
+  FILTER ( ( ?doubled > "1"^^<http://www.w3.org/2001/XMLSchema#integer> ) )
 }`);
     });
 

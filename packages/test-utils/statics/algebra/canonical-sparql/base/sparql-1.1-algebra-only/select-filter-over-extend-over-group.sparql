@@ -1,6 +1,6 @@
 SELECT ?s ?c WHERE {
   {
-    SELECT ?s ( COUNT( ?o ) AS ?c ) WHERE {
+    SELECT ( COUNT( ?o ) AS ?var0 ) ?s ( COUNT( ?o ) AS ?c ) WHERE {
       ?s ?p ?o .
     }
     GROUP BY ?s

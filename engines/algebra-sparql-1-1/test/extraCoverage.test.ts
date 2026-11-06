@@ -98,6 +98,117 @@ GROUP BY ?s`);
     });
   });
 
+  describe('filters between the query form and its group', () => {
+    const DF = AF.dataFactory;
+    const s = DF.variable!('s');
+    const o = DF.variable!('o');
+    const count = DF.variable!('count');
+    const doubled = DF.variable!('doubled');
+    const group = AF.createGroup(
+      AF.createBgp([ AF.createPattern(s, DF.namedNode('http://p'), o) ]),
+      [ s ],
+      [ AF.createBoundAggregate(count, 'count', AF.createTermExpression(o), false) ],
+    );
+    const countAboveOne = AF.createOperatorExpression('>', [
+      AF.createTermExpression(count),
+      AF.createTermExpression(DF.literal('1', DF.namedNode('http://www.w3.org/2001/XMLSchema#integer'))),
+    ]);
+    const subjectIsIri = AF.createOperatorExpression('isiri', [ AF.createTermExpression(s) ]);
+    const valuesOnSubject = AF.createValues([ s ], [{ s: DF.namedNode('http://a') }]);
+    const doubleCount = AF.createExtend(group, doubled, AF.createOperatorExpression('*', [
+      AF.createTermExpression(count),
+      AF.createTermExpression(DF.literal('2', DF.namedNode('http://www.w3.org/2001/XMLSchema#integer'))),
+    ]));
+
+    function generate(op: Algebra.Operation): string {
+      return generator.generate(F.forcedAutoGenTree(toAst(op)));
+    }
+
+    it('generates a filter above a SELECT expression it does not read as HAVING', ({ expect }) => {
+      const result = generate(AF.createProject(AF.createFilter(doubleCount, countAboveOne), [ s, doubled ]));
+      expect(result).toBe(`SELECT ?s ( ( COUNT( ?o ) * "2"^^<http://www.w3.org/2001/XMLSchema#integer> ) AS ?doubled ) WHERE {
+  ?s <http://p> ?o .
+}
+GROUP BY ?s
+HAVING ( COUNT( ?o ) > "1"^^<http://www.w3.org/2001/XMLSchema#integer> )`);
+      expect(roundTrip(result)).toBe(result);
+    });
+
+    it('generates a filter above an ordering as HAVING', ({ expect }) => {
+      const ordered = AF.createOrderBy(group, [ AF.createTermExpression(s) ]);
+      const result = generate(AF.createProject(AF.createFilter(ordered, subjectIsIri), [ s, count ]));
+      expect(result).toBe(`SELECT ?s ( COUNT( ?o ) AS ?count ) WHERE {
+  ?s <http://p> ?o .
+}
+GROUP BY ?s
+HAVING ISIRI( ?s )
+ORDER BY ASC ( ?s )`);
+      expect(roundTrip(result)).toBe(result);
+    });
+
+    it('generates a filter above a trailing VALUES on other variables as HAVING', ({ expect }) => {
+      const valuesOnOther = AF.createValues([ o ], [{ o: DF.namedNode('http://a') }]);
+      const joined = AF.createJoin([ group, valuesOnOther ]);
+      const result = generate(AF.createProject(AF.createFilter(joined, countAboveOne), [ s, count ]));
+      expect(result).toBe(`SELECT ?s ( COUNT( ?o ) AS ?count ) WHERE {
+  ?s <http://p> ?o .
+}
+GROUP BY ?s
+HAVING ( COUNT( ?o ) > "1"^^<http://www.w3.org/2001/XMLSchema#integer> )
+VALUES ?o {
+  <http://a>
+}`);
+    });
+
+    it('evaluates the group in a subquery when the filter reads a SELECT expression', ({ expect }) => {
+      const doubledAboveOne = AF.createOperatorExpression('>', [
+        AF.createTermExpression(doubled),
+        AF.createTermExpression(DF.literal('1', DF.namedNode('http://www.w3.org/2001/XMLSchema#integer'))),
+      ]);
+      const result = generate(AF.createProject(AF.createFilter(doubleCount, doubledAboveOne), [ s, doubled ]));
+      expect(result).toBe(`SELECT ?s ?doubled WHERE {
+  {
+    SELECT ?s ( ( COUNT( ?o ) * "2"^^<http://www.w3.org/2001/XMLSchema#integer> ) AS ?doubled ) WHERE {
+      ?s <http://p> ?o .
+    }
+    GROUP BY ?s
+  }
+  FILTER ( ( ?doubled > "1"^^<http://www.w3.org/2001/XMLSchema#integer> ) )
+}`);
+    });
+
+    it('evaluates an extend over a group in a subquery when joined below the query form', ({ expect }) => {
+      const joined = AF.createJoin([ doubleCount, AF.createBgp([ AF.createPattern(s, DF.namedNode('http://q'), o) ]) ]);
+      const result = generate(AF.createProject(joined, [ s, doubled ]));
+      expect(result).toBe(`SELECT ?s ?doubled WHERE {
+  {
+    SELECT ( COUNT( ?o ) AS ?count ) ?s ( ( COUNT( ?o ) * "2"^^<http://www.w3.org/2001/XMLSchema#integer> ) AS ?doubled ) WHERE {
+      ?s <http://p> ?o .
+    }
+    GROUP BY ?s
+  }
+  ?s <http://q> ?o .
+}`);
+    });
+
+    it('evaluates the group in a subquery when the filter reads a trailing VALUES variable', ({ expect }) => {
+      const joined = AF.createJoin([ group, valuesOnSubject ]);
+      const result = generate(AF.createProject(AF.createFilter(joined, subjectIsIri), [ s, count ]));
+      expect(result).toBe(`SELECT ?s ?count WHERE {
+  {
+    SELECT ( COUNT( ?o ) AS ?count ) ?s WHERE {
+      ?s <http://p> ?o .
+    }
+    GROUP BY ?s
+    VALUES ?s {
+      <http://a>
+    }
+  }
+  FILTER ( ISIRI( ?s ) )
+}`);
+    });
+  });
+
   describe('insert/DELETE without quads option throws', () => {
     it('toAlgebra throws when INSERT DATA is converted without quads option', ({ expect }) => {
       const ast = parser.parse('INSERT DATA { <http://s> <http://p> <http://o> }');

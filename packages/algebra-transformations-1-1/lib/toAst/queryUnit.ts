@@ -134,20 +134,75 @@ function countSelectableExtends(
 }
 
 /**
+ * Moves the filters on top of a query form's input down onto the HAVING conditions of its group,
+ * past the extends, orderings, and trailing VALUES they commute with.
+ * @param op - The query form whose input is rewritten.
+ * @return the query form with each movable filter directly on top of the group's HAVING conditions.
+ */
+export const sinkAlgHavingFilters: AstIndir<'sinkHavingFilters', AlgQueryForm, [AlgQueryForm]> = {
+  name: 'sinkHavingFilters',
+  fun: ({ SUBRULE }) => (_, op) => {
+    function sinkFilter(
+      filter: Algebra.Filter,
+      input: Algebra.Operation,
+      filterVariables: Set<string>,
+    ): Algebra.Operation | undefined {
+      if (SUBRULE(findAlgGroupBelow, input, 'having')) {
+        return { ...filter, input };
+      }
+      if (input.type === types.EXTEND && filterVariables.has(input.variable.value)) {
+        return undefined;
+      }
+      if (input.type === types.EXTEND || input.type === types.ORDER_BY || input.type === types.FILTER) {
+        const sunk = sinkFilter(filter, input.input, filterVariables);
+        return sunk && { ...input, input: sunk };
+      }
+      if (input.type === types.JOIN && SUBRULE(findAlgGroupBelow, input, 'values')) {
+        const valuesIndex = input.input.findIndex(operand => operand.type === types.VALUES);
+        const values = <Algebra.Values> input.input[valuesIndex];
+        if (values.variables.some(variable => filterVariables.has(variable.value))) {
+          return undefined;
+        }
+        const sunk = sinkFilter(filter, input.input[1 - valuesIndex], filterVariables);
+        return sunk && { ...input, input: input.input.map((operand, index) => index === valuesIndex ? operand : sunk) };
+      }
+    }
+    // Inner filters sink first, so filters keep their relative order
+    function sinkChain(input: Algebra.Operation): Algebra.Operation {
+      if (input.type === types.EXTEND || input.type === types.ORDER_BY) {
+        return { ...input, input: sinkChain(input.input) };
+      }
+      if (input.type === types.FILTER) {
+        const sunkInput = sinkChain(input.input);
+        const filterVariables = SUBRULE(collectAlgVariables, input.expression, new Set());
+        return sinkFilter(input, sunkInput, filterVariables) ?? { ...input, input: sunkInput };
+      }
+      return input;
+    }
+    return { ...op, input: sinkChain(op.input) };
+  },
+};
+
+/**
  * Determines whether the query form needs the extends and group of its input to be evaluated in a SELECT subquery.
  * Above a group, extends that are not SELECT expressions would be BINDs, evaluated before the grouping.
+ * Likewise, filters that are not HAVING conditions would be evaluated before the grouping.
  * Without a SELECT clause, a query form can moreover only read the group variables of a group.
- * The group is found by {@link findAlgGroupBelow}, below the chain of extends and orderings of the input.
+ * The group is found by {@link findAlgGroupBelow}, below the chain of extends, orderings, and filters of the input.
  * @return the cut, or undefined when no subquery is needed.
  */
 export const findAlgSubqueryCut: AstIndir<'findSubqueryCut', AlgSubqueryCut | undefined, [AlgQueryForm]> = {
   name: 'findSubqueryCut',
   fun: ({ SUBRULE }) => (_, op) => {
-    // The extends on top of the input, outermost first
+    // The extends on top of the input down to the first filter that is no HAVING condition, outermost first
     const chainExtends: Algebra.Extend[] = [];
+    let firstFilter: Algebra.Filter | undefined;
     let input = op.input;
-    while (input.type === types.EXTEND || input.type === types.ORDER_BY) {
-      if (input.type === types.EXTEND) {
+    while (input.type === types.EXTEND || input.type === types.ORDER_BY ||
+      (input.type === types.FILTER && !SUBRULE(findAlgGroupBelow, input.input, 'having'))) {
+      if (input.type === types.FILTER) {
+        firstFilter ??= input;
+      } else if (input.type === types.EXTEND && !firstFilter) {
         chainExtends.push(input);
       }
       input = input.input;
@@ -160,6 +215,9 @@ export const findAlgSubqueryCut: AstIndir<'findSubqueryCut', AlgSubqueryCut | un
       const selectable = countSelectableExtends(chainExtends, variable => projected.has(variable.value));
       if (selectable < chainExtends.length) {
         return { start: chainExtends[selectable], aggregateVariables };
+      }
+      if (firstFilter) {
+        return { start: firstFilter.input, aggregateVariables };
       }
       if (op.type !== types.PROJECT) {
         // Without a SELECT clause, the aggregate variables are only visible from a subquery
@@ -191,6 +249,7 @@ export const wrapAlgInSubquery: AstIndir<'wrapInSubquery', AlgQueryForm, [AlgQue
       const orderings: Algebra.OrderBy[] = [];
       const subqueryInput = chainTransformer.transformNodePreOrder<'unsafe', Algebra.Operation>(input, {
         [types.EXTEND]: extend => ({ newValue: extend, continue: true }),
+        [types.FILTER]: filter => ({ newValue: filter, continue: true }),
         [types.ORDER_BY]: (ordering) => {
           orderings.push(ordering);
           SUBRULE(collectAlgVariables, ordering.expressions, outerVariables);
@@ -206,8 +265,9 @@ export const wrapAlgInSubquery: AstIndir<'wrapInSubquery', AlgQueryForm, [AlgQue
         AF.createProject(subqueryInput, projection),
       );
     }
-    // Walk down from the query form to the start of the subquery, through the orderings and extends that stay outside
-    const step = (operation: AlgQueryForm | Algebra.Extend | Algebra.OrderBy): PreOrderMappingReturn => {
+    // Walk down from the query form to the start of the subquery, through the orderings, extends, and filters outside
+    type ChainOperation = AlgQueryForm | Algebra.Extend | Algebra.OrderBy | Algebra.Filter;
+    const step = (operation: ChainOperation): PreOrderMappingReturn => {
       SUBRULE(collectAlgVariables, operation, outerVariables, [ 'input' ]);
       if (operation.input === start) {
         return { newValue: { ...operation, input: wrap(operation.input) }};
@@ -221,6 +281,7 @@ export const wrapAlgInSubquery: AstIndir<'wrapInSubquery', AlgQueryForm, [AlgQue
       [types.CONSTRUCT]: step,
       [types.EXTEND]: step,
       [types.ORDER_BY]: step,
+      [types.FILTER]: step,
     });
   },
 };
@@ -233,6 +294,7 @@ PatternGroup,
 > = {
   name: 'translateProject',
   fun: ({ SUBRULE }) => (c, op, type) => {
+    op = SUBRULE(sinkAlgHavingFilters, op);
     const cut = SUBRULE(findAlgSubqueryCut, op);
     if (cut) {
       op = SUBRULE(wrapAlgInSubquery, op, cut);

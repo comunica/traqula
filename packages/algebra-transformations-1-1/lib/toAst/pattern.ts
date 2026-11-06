@@ -66,6 +66,7 @@ export const translateAlgInOwnSubquery: AstIndir<'translateInOwnSubquery', Patte
 /**
  * The operations a single query consists of, numbered in the order SPARQL applies them:
  * the query form, then DISTINCT or REDUCED, then the slice, and FROM to the whole query.
+ * Larger number takes smaller number as input
  */
 const queryOperationOrder = <const> {
   [types.ASK]: 0,

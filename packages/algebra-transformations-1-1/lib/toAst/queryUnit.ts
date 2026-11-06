@@ -133,29 +133,36 @@ function countSelectableExtends(
   return firstUnprojected < 0 ? outermostFirst.length : firstUnprojected;
 }
 
-// Operators telling whether a variable is bound, or giving another result on each evaluation
-const substitutionUnsafeOperators = new Set([ 'bound', 'rand', 'uuid', 'struuid', 'bnode' ]);
+// Operators telling whether a variable is bound, and operators giving another result on each evaluation
+const bindingOperators = new Set([ 'bound' ]);
+const nondeterministicOperators = new Set([ 'rand', 'uuid', 'struuid', 'bnode' ]);
+// The XPath constructor functions SPARQL defines, which cast deterministically
+const castFunctions = new Set([ 'boolean', 'double', 'float', 'decimal', 'integer', 'dateTime', 'string' ]
+  .map(type => `http://www.w3.org/2001/XMLSchema#${type}`));
 
 /**
- * Whether the expression keeps its result when its variables are replaced by the expressions binding them,
- * and when it is evaluated again: it tests no binding, reads no pattern,
- * and calls no nondeterministic or custom function.
+ * Whether the expression keeps its result when its variables are replaced by the expressions binding them:
+ * it tests no binding and reads no pattern. When it is evaluated again, it must moreover be deterministic.
  * @param expression - The expression to check.
+ * @param isEvaluatedAgain - Whether the expression is evaluated again, and must thus call no nondeterministic or
+ * custom function.
  * @return whether substitution keeps the result of the expression.
  */
-export const isAlgSubstitutionSafe: AstIndir<'isSubstitutionSafe', boolean, [Algebra.Expression]> = {
+export const isAlgSubstitutionSafe: AstIndir<'isSubstitutionSafe', boolean, [Algebra.Expression, boolean]> = {
   name: 'isSubstitutionSafe',
-  fun: () => ({ algebraTransformer = defaultAlgebraTransformer }, expression) => {
+  fun: () => ({ algebraTransformer = defaultAlgebraTransformer }, expression, isEvaluatedAgain) => {
     let safe = true;
     const unsafe = (): { shortcut: boolean } => {
       safe = false;
       return { shortcut: true };
     };
     algebraTransformer.visitNodeSpecific(expression, {}, { [types.EXPRESSION]: {
-      [eTypes.OPERATOR]: { preVisitor: operator =>
-        substitutionUnsafeOperators.has(operator.operator) ? unsafe() : {}},
+      [eTypes.OPERATOR]: { preVisitor: operator => bindingOperators.has(operator.operator) ||
+        (isEvaluatedAgain && nondeterministicOperators.has(operator.operator)) ?
+        unsafe() :
+          {}},
       [eTypes.EXISTENCE]: { preVisitor: unsafe },
-      [eTypes.NAMED]: { preVisitor: unsafe },
+      [eTypes.NAMED]: { preVisitor: named => isEvaluatedAgain && !castFunctions.has(named.name.value) ? unsafe() : {}},
     }});
     return safe;
   },
@@ -207,16 +214,17 @@ export const reorderAlgQueryChain: AstIndir<'reorderQueryChain', AlgQueryForm, [
       ): Algebra.Expression | undefined {
         const ungrouped = [ ...SUBRULE(collectAlgVariables, expression, new Set()) ]
           .filter(variable => !grouped.has(variable));
-        if (!ungrouped.every(variable => substitutions.has(variable)) ||
-          ((isEvaluatedAgain || ungrouped.length > 0) && !SUBRULE(isAlgSubstitutionSafe, expression))) {
+        const isSubstituted = ungrouped.length > 0;
+        if (!ungrouped.every(variable => substitutions.has(variable)) || ((isSubstituted || isEvaluatedAgain) &&
+          !SUBRULE(isAlgSubstitutionSafe, expression, isEvaluatedAgain))) {
           return undefined;
         }
-        return ungrouped.length === 0 ?
-          expression :
+        return isSubstituted ?
           algebraTransformer.transformNodeSpecific<'unsafe', Algebra.Expression>(expression, {}, {
             [types.EXPRESSION]: { [eTypes.TERM]: { transform: (copy: Algebra.TermExpression) =>
               (isVariable(copy.term) ? substitutions.get(copy.term.value) : undefined) ?? copy }},
-          });
+          }) :
+          expression;
       }
       for (let index = reordered.length - 1; index >= outermostFilter; index--) {
         const operation = reordered[index];

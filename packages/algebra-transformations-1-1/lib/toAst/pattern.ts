@@ -189,10 +189,10 @@ export const translateAlgJoin: AstIndir<'translateJoin', Pattern[], [Algebra.Joi
     const F = c.astFactory;
     // A VALUES joined on top of a group (possibly through HAVING filters) is the query's trailing VALUES clause.
     // It needs to be handled by translateAlgProject, inside the WHERE clause it would be joined before the grouping.
-    const valuesJoin = splitAlgValuesJoin(op);
-    if (valuesJoin && SUBRULE(findAlgGroupBelow, valuesJoin.other, 'having')) {
-      c.values = SUBRULE(translateAlgValues, valuesJoin.values);
-      return SUBRULE(operationAlgInputAsPatternList, valuesJoin.other);
+    if (SUBRULE(findAlgGroupBelow, op, 'values')) {
+      const { values, other } = splitAlgValuesJoin(op)!;
+      c.values = SUBRULE(translateAlgValues, values);
+      return SUBRULE(operationAlgInputAsPatternList, other);
     }
 
     // An OPTIONAL or MINUS applies to everything preceding it in its group.

@@ -160,6 +160,26 @@ HAVING ( COUNT( ?o ) > "1"^^<http://www.w3.org/2001/XMLSchema#integer> )
 VALUES ?o {
   <http://a>
 }`);
+      expect(roundTrip(result)).toBe(result);
+    });
+
+    it('evaluates the group in one subquery below stacked filters reading a SELECT expression', ({ expect }) => {
+      const doubledAbove = (value: string): Algebra.Expression =>
+        AF.createOperatorExpression('>', [ AF.createTermExpression(doubled), integer(value) ]);
+      const filtered = AF.createFilter(AF.createFilter(doubleCount, doubledAbove('1')), doubledAbove('2'));
+      const result = generate(AF.createProject(filtered, [ s, doubled ]));
+      expect(result).toBe(`SELECT ?s ?doubled WHERE {
+  {
+    {
+      SELECT ?s ( ( COUNT( ?o ) * "2"^^<http://www.w3.org/2001/XMLSchema#integer> ) AS ?doubled ) WHERE {
+        ?s <http://p> ?o .
+      }
+      GROUP BY ?s
+    }
+    FILTER ( ( ?doubled > "1"^^<http://www.w3.org/2001/XMLSchema#integer> ) )
+  }
+  FILTER ( ( ?doubled > "2"^^<http://www.w3.org/2001/XMLSchema#integer> ) )
+}`);
     });
 
     it('evaluates the group in a subquery when the filter reads a SELECT expression', ({ expect }) => {

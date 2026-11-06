@@ -153,20 +153,18 @@ export const sinkAlgHavingFilters: AstIndir<'sinkHavingFilters', AlgQueryForm, [
       if (SUBRULE(findAlgGroupBelow, input, 'having')) {
         return { ...filter, input };
       }
-      if (input.type === types.EXTEND && readsVariable(input.variable)) {
-        return undefined;
-      }
       if (input.type === types.EXTEND || input.type === types.ORDER_BY || input.type === types.FILTER) {
+        // Sink first, so the variables of the filter are only collected once a group is found
         const sunk = sinkFilter(filter, input.input, readsVariable);
-        return sunk && { ...input, input: sunk };
+        const blocked = input.type === types.EXTEND && readsVariable(input.variable);
+        return sunk && !blocked ? { ...input, input: sunk } : undefined;
       }
-      const valuesJoin = splitAlgValuesJoin(input);
-      if (valuesJoin && SUBRULE(findAlgGroupBelow, valuesJoin.other, 'having') &&
-        !valuesJoin.values.variables.some(readsVariable)) {
-        const join = <Algebra.Join> input;
-        const operands = join.input
-          .map(operand => operand === valuesJoin.other ? { ...filter, input: operand } : operand);
-        return { ...join, input: operands };
+      if (input.type === types.JOIN && SUBRULE(findAlgGroupBelow, input, 'values')) {
+        const { values, other } = splitAlgValuesJoin(input)!;
+        if (!values.variables.some(readsVariable)) {
+          const operands = input.input.map(operand => operand === other ? { ...filter, input: other } : operand);
+          return { ...input, input: operands };
+        }
       }
     }
     // Inner filters sink first, so filters keep their relative order
@@ -201,13 +199,14 @@ export const findAlgSubqueryCut: AstIndir<'findSubqueryCut', AlgSubqueryCut | un
   fun: ({ SUBRULE }) => (_, op) => {
     // The extends on top of the input down to the first filter that is no HAVING condition, outermost first
     const chainExtends: Algebra.Extend[] = [];
-    let firstFilter: Algebra.Filter | undefined;
+    // The innermost filter that is no HAVING condition, everything below it can share one subquery
+    let lastFilter: Algebra.Filter | undefined;
     let input = op.input;
     while (input.type === types.EXTEND || input.type === types.ORDER_BY ||
       (input.type === types.FILTER && !SUBRULE(findAlgGroupBelow, input.input, 'having'))) {
       if (input.type === types.FILTER) {
-        firstFilter ??= input;
-      } else if (input.type === types.EXTEND && !firstFilter) {
+        lastFilter = input;
+      } else if (input.type === types.EXTEND && !lastFilter) {
         chainExtends.push(input);
       }
       input = input.input;
@@ -221,8 +220,8 @@ export const findAlgSubqueryCut: AstIndir<'findSubqueryCut', AlgSubqueryCut | un
       if (selectable < chainExtends.length) {
         return { start: chainExtends[selectable], aggregateVariables };
       }
-      if (firstFilter) {
-        return { start: firstFilter.input, aggregateVariables };
+      if (lastFilter) {
+        return { start: lastFilter.input, aggregateVariables };
       }
       if (op.type !== types.PROJECT) {
         // Without a SELECT clause, the aggregate variables are only visible from a subquery

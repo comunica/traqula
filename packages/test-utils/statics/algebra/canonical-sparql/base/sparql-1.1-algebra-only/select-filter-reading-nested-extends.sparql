@@ -1,0 +1,9 @@
+SELECT ?s ?quadrupled WHERE {
+  {
+    SELECT ( COUNT( ?o ) AS ?count ) ?s ( ( COUNT( ?o ) * "2"^^<http://www.w3.org/2001/XMLSchema#integer> ) AS ?doubled ) ( ( ?doubled * "2"^^<http://www.w3.org/2001/XMLSchema#integer> ) AS ?quadrupled ) WHERE {
+      ?s <http://ex.org/p> ?o .
+    }
+    GROUP BY ?s
+  }
+  FILTER ( ( ?quadrupled > "4"^^<http://www.w3.org/2001/XMLSchema#integer> ) )
+}

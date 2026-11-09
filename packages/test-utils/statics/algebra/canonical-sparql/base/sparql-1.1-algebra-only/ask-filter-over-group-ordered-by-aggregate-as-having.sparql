@@ -1,0 +1,6 @@
+ASK WHERE {
+  ?s <http://ex.org/p> ?o .
+}
+GROUP BY ?s
+HAVING ISIRI( ?s )
+ORDER BY ASC ( COUNT( ?o ) )

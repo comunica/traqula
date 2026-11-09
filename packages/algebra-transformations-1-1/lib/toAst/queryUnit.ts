@@ -19,7 +19,7 @@ import type { Algebra } from '../index.js';
 import { defaultAlgebraTransformer, isTerm, types } from '../toAlgebra/index.js';
 import { forEachTermVariable, inScopeVariables } from '../util.js';
 import type { AstIndir } from './core.js';
-import { findAlgGroupBelow, resetContext } from './core.js';
+import { findAlgGroupBelow, resetContext, splitAlgValuesJoin } from './core.js';
 import { translateAlgExpressionOrOrdering, translateAlgPureExpression } from './expression.js';
 import type { RdfTermToAst } from './general.js';
 import { translateAlgPattern, translateAlgTerm } from './general.js';
@@ -134,6 +134,77 @@ function countSelectableExtends(
 }
 
 /**
+ * Reorders the extends, orderings, and filters between a query form and its group, as far as they commute,
+ * so orderings become the ORDER BY clause and filters become HAVING conditions.
+ * Filters that stay above the group are left for the own subquery of the group, see {@link translateAlgPatternNew}.
+ * @param op - The query form whose input is reordered.
+ * @return the query form with its orderings on top and its filters on the group, or the given one if nothing moves.
+ */
+export const reorderAlgQueryChain: AstIndir<'reorderQueryChain', AlgQueryForm, [AlgQueryForm]> = {
+  name: 'reorderQueryChain',
+  fun: ({ SUBRULE }) => ({ algebraTransformer = defaultAlgebraTransformer }, op) => {
+    type ChainOperation = Algebra.Extend | Algebra.OrderBy | Algebra.Filter;
+    // The chain down to the HAVING conditions or the trailing VALUES, outermost first
+    const chain: ChainOperation[] = [];
+    let bottom = op.input;
+    while (bottom.type === types.EXTEND || bottom.type === types.ORDER_BY ||
+      (bottom.type === types.FILTER && !SUBRULE(findAlgGroupBelow, bottom, 'having'))) {
+      chain.push(bottom);
+      bottom = bottom.input;
+    }
+    if (chain.length === 0) {
+      return op;
+    }
+
+    // Filters reading only group keys and aggregates move down onto the HAVING conditions
+    const valuesJoin = splitAlgValuesJoin(bottom);
+    const group = SUBRULE(findAlgGroupBelow, valuesJoin?.other ?? bottom, 'having');
+    // The filters of the chain that become HAVING conditions
+    const havingFilters = new Set<ChainOperation>();
+    if (group) {
+      const valuesVariables = new Set(valuesJoin?.values.variables.map(variable => variable.value));
+      // The group keys and aggregates, except those the trailing VALUES joins on
+      const groupedVariables = new Set(inScopeVariables(group, (operation, callbacks) =>
+        algebraTransformer.visitNode(operation, callbacks))
+        .map(variable => variable.value)
+        .filter(variable => !valuesVariables.has(variable)));
+      for (const operation of chain) {
+        if (operation.type === types.FILTER && [ ...SUBRULE(collectAlgVariables, operation.expression, new Set()) ]
+          .every(variable => groupedVariables.has(variable))) {
+          havingFilters.add(operation);
+        }
+      }
+    }
+    if (havingFilters.size > 0) {
+      const havingConditions = [ ...havingFilters ].reduceRight<Algebra.Operation>(
+        (input, filter) => ({ ...filter, input }),
+        valuesJoin?.other ?? bottom,
+      );
+      if (valuesJoin) {
+        const join = <Algebra.Join> bottom;
+        const operands = join.input.map(operand => operand === valuesJoin.other ? havingConditions : operand);
+        bottom = { ...join, input: operands };
+      } else {
+        bottom = havingConditions;
+      }
+    }
+
+    // Orderings move up, keeping their relative order. Filters commute with them, and so do extends,
+    //  whose variable is not bound below them and can thus not affect the ordering.
+    const remaining = chain.filter(operation => !havingFilters.has(operation));
+    const reordered = [
+      ...remaining.filter(operation => operation.type === types.ORDER_BY),
+      ...remaining.filter(operation => operation.type !== types.ORDER_BY),
+    ];
+    if (havingFilters.size === 0 && reordered.every((operation, index) => operation === chain[index])) {
+      return op;
+    }
+    const input = reordered.reduceRight<Algebra.Operation>((input, operation) => ({ ...operation, input }), bottom);
+    return { ...op, input };
+  },
+};
+
+/**
  * Determines whether the query form needs the extends and group of its input to be evaluated in a SELECT subquery.
  * Above a group, extends that are not SELECT expressions would be BINDs, evaluated before the grouping.
  * Without a SELECT clause, a query form can moreover only read the group variables of a group.
@@ -174,7 +245,7 @@ export const findAlgSubqueryCut: AstIndir<'findSubqueryCut', AlgSubqueryCut | un
 /**
  * Moves the input of a query form, from the cut's `start` inward,
  * into a SELECT subquery projecting everything it binds.
- * Orderings in that part stay outside, since a subquery does not keep its order.
+ * Orderings are already above that part, moved there by {@link reorderAlgQueryChain}.
  * Aggregate variables are only projected when the outer query references them.
  */
 export const wrapAlgInSubquery: AstIndir<'wrapInSubquery', AlgQueryForm, [AlgQueryForm, AlgSubqueryCut]> = {
@@ -186,31 +257,15 @@ export const wrapAlgInSubquery: AstIndir<'wrapInSubquery', AlgQueryForm, [AlgQue
     // Only steps into the operations a callback asks to continue into
     const chainTransformer = algebraTransformer.clone({ continue: false });
     const outerVariables = new Set<string>();
-    function wrap(input: Algebra.Operation): Algebra.Operation {
-      // Lift the orderings out of the part that moves into the subquery
-      const orderings: Algebra.OrderBy[] = [];
-      const subqueryInput = chainTransformer.transformNodePreOrder<'unsafe', Algebra.Operation>(input, {
-        [types.EXTEND]: extend => ({ newValue: extend, continue: true }),
-        [types.ORDER_BY]: (ordering) => {
-          orderings.push(ordering);
-          SUBRULE(collectAlgVariables, ordering.expressions, outerVariables);
-          return { newValue: ordering.input, continue: true, reTransform: true };
-        },
-      });
-      const projection = inScopeVariables(
-        subqueryInput,
-        (subqueryOperation, callbacks) => algebraTransformer.visitNode(subqueryOperation, callbacks),
-      ).filter(variable => !aggregateVariables.has(variable.value) || outerVariables.has(variable.value));
-      return orderings.reduceRight<Algebra.Operation>(
-        (result, ordering) => ({ ...ordering, input: result }),
-        AF.createProject(subqueryInput, projection),
-      );
-    }
     // Walk down from the query form to the start of the subquery, through the orderings and extends that stay outside
     const step = (operation: AlgQueryForm | Algebra.Extend | Algebra.OrderBy): PreOrderMappingReturn => {
       SUBRULE(collectAlgVariables, operation, outerVariables, [ 'input' ]);
       if (operation.input === start) {
-        return { newValue: { ...operation, input: wrap(operation.input) }};
+        const projection = inScopeVariables(
+          start,
+          (subqueryOperation, callbacks) => algebraTransformer.visitNode(subqueryOperation, callbacks),
+        ).filter(variable => !aggregateVariables.has(variable.value) || outerVariables.has(variable.value));
+        return { newValue: { ...operation, input: AF.createProject(start, projection) }};
       }
       return { newValue: operation, continue: true };
     };
@@ -233,6 +288,7 @@ PatternGroup,
 > = {
   name: 'translateProject',
   fun: ({ SUBRULE }) => (c, op, type) => {
+    op = SUBRULE(reorderAlgQueryChain, op);
     const cut = SUBRULE(findAlgSubqueryCut, op);
     if (cut) {
       op = SUBRULE(wrapAlgInSubquery, op, cut);

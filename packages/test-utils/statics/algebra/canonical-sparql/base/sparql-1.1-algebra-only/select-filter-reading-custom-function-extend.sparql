@@ -1,0 +1,9 @@
+SELECT ?s ?custom WHERE {
+  {
+    SELECT ( COUNT( ?o ) AS ?count ) ?s ( <http://ex.org/f> ( COUNT( ?o ) ) AS ?custom ) WHERE {
+      ?s <http://ex.org/p> ?o .
+    }
+    GROUP BY ?s
+  }
+  FILTER ( ( ?custom > "1"^^<http://www.w3.org/2001/XMLSchema#integer> ) )
+}

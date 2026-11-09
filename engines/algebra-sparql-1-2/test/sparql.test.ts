@@ -1,3 +1,4 @@
+import { basename } from 'node:path';
 import { Canonicalizer, algebraUtils } from '@traqula/algebra-transformations-1-2';
 import type { Algebra } from '@traqula/algebra-transformations-1-2';
 import { forEveryNodeType } from '@traqula/core';
@@ -73,9 +74,16 @@ describe('sparql 1.2 algebra transformer', () => {
   });
 
   describe('sparqlAlgebraOnlyTests Canonical SPARQL', () => {
+    // Algebra the parser can not produce: an n-ary OR, and relative graph names
+    const noFixpoint = new Set([ 'filter-n-ary-or', 'object-prototype-graph-names' ]);
     for (const { name, json, canonicalSparql } of sparqlAlgebraOnlyTests('sparql-1.1-algebra-only')) {
       it (name, ({ expect }) => {
         expect(generateCanonical(<Algebra.Operation> json)).toEqual([ canonicalSparql.trim(), canonicalSparql.trim() ]);
+        if (!noFixpoint.has(basename(name))) {
+          // Parsing the canonical SPARQL translates back to the same canonical SPARQL
+          expect(generator.generate(toAst(toAlgebra(parser.parse(canonicalSparql)))).trim())
+            .toEqual(canonicalSparql.trim());
+        }
       });
     }
   });

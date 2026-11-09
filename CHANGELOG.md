@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.5.0-alpha.7"></a>
+## [v1.5.0-alpha.7](https://github.com/comunica/traqula/compare/v1.5.0-alpha.6...v1.5.0-alpha.7) - 2026-11-09
+
+* [Reorder the query chain so filters become HAVING and orderings stay ORDER BY (#252)](https://github.com/comunica/traqula/commit/f571d7045172755c9fccd20d0282b2468ed1e3e7)
+* [Evaluate a solution modifier's input in a subquery when SPARQL applies it first (#253)](https://github.com/comunica/traqula/commit/427de66e335ab204b45e08fbf14f48b04264e779)
+* [Translate any group other than the query's own in a subquery in toAst (#251)](https://github.com/comunica/traqula/commit/d7c1f25143e008838f90c3ba543fa0726c640959)
+
 <a name="v1.5.0-alpha.6"></a>
 ## [v1.5.0-alpha.6](https://github.com/comunica/traqula/compare/v1.5.0-alpha.5...v1.5.0-alpha.6) - 2026-11-04
 

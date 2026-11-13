@@ -51,7 +51,7 @@
     "**/lodash-es": "4.18.1",
     "**/markdown-it": "15.0.1",
     "**/picomatch": "4.0.7",
-    "**/tar": "7.5.22",
+    "**/tar": "7.5.23",
     "@nx/devkit/minimatch": "11.0.3",
     "@typescript-eslint/typescript-estree/minimatch": "11.0.3",
     "nx/minimatch": "11.0.3"

@@ -1,0 +1,7 @@
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?x ?name WHERE {
+  ?x <http://xmlns.com/foaf/0.1/mbox> <mailto:alice@example> .
+  ?x <http://xmlns.com/foaf/0.1/knows> _:1 .
+  _:1 <http://xmlns.com/foaf/0.1/knows> _:0 .
+  _:0 <http://xmlns.com/foaf/0.1/name> ?name .
+}

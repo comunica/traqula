@@ -1,0 +1,5 @@
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+ASK WHERE {
+  ?x <http://xmlns.com/foaf/0.1/name> "Alice" .
+  ?x <http://xmlns.com/foaf/0.1/mbox> <mailto:alice@work.example> .
+}

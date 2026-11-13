@@ -1,0 +1,4 @@
+SELECT ?x WHERE {
+  ?s ?p ?y .
+}
+GROUP BY ( ?y AS ?x )

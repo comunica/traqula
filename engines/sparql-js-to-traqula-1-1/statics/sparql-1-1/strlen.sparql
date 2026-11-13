@@ -1,0 +1,3 @@
+SELECT ?str ( STRLEN( ?str ) AS ?strlen ) WHERE {
+  _:0 ?p ?str .
+}

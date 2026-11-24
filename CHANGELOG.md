@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+<a name="v1.5.0"></a>
+## [v1.5.0](https://github.com/comunica/traqula/compare/v1.5.0-alpha.7...v1.5.0) - 2026-11-24
+
+### TODO: categorize commits, choose titles from: Added, Changed, Deprecated, Removed, Fixed, Security.
+* All changes of the v1.5.0-alpha.x releases
+* [Chore: upgrade dependencies](https://github.com/comunica/traqula/commit/e58f98878cf426cf5640d0505ca65583c2524b9c)
+
 <a name="v1.5.0-alpha.7"></a>
 ## [v1.5.0-alpha.7](https://github.com/comunica/traqula/compare/v1.5.0-alpha.6...v1.5.0-alpha.7) - 2026-11-09
 

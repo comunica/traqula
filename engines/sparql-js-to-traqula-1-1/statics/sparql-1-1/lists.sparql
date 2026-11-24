@@ -1,0 +1,64 @@
+BASE <ex:>
+CONSTRUCT {
+  ?s0 ?p0 _:2 .
+  _:2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <ex:a0> .
+  _:2 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:3 .
+  _:3 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> _:0 .
+  _:3 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+  _:0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <ex:b0> .
+  _:0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:1 .
+  _:1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <ex:c0> .
+  _:1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+  _:6 ?p0 ?o0 .
+  _:6 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <ex:a0> .
+  _:6 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:7 .
+  _:7 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> _:4 .
+  _:7 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+  _:4 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <ex:b0> .
+  _:4 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:5 .
+  _:5 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <ex:c0> .
+  _:5 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+}
+WHERE {
+  ?s1 ?p1 <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+  ?s1 ?p1 <ex:a1> .
+  <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> ?p2 ?o2 .
+  ?s3 ?p3 _:8 .
+  _:8 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <ex:a3> .
+  _:8 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+  ?s4 ?p4 _:9 .
+  _:9 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <ex:a4> .
+  _:9 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:10 .
+  _:10 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <ex:b4> .
+  _:10 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:11 .
+  _:11 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <ex:c4> .
+  _:11 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+  ?s5 ?p5 _:14 .
+  _:14 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <ex:a5> .
+  _:14 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:15 .
+  _:15 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> _:12 .
+  _:15 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+  _:12 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <ex:b5> .
+  _:12 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:13 .
+  _:13 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <ex:c5> .
+  _:13 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+  _:18 ?p6 ?o6 .
+  _:18 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <ex:a6> .
+  _:18 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:19 .
+  _:19 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> _:16 .
+  _:19 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+  _:16 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <ex:b6> .
+  _:16 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:17 .
+  _:17 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <ex:c6> .
+  _:17 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+  _:20 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <ex:a7> .
+  _:20 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> _:21 .
+  _:21 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> <ex:b7> .
+  _:21 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+  ?s8 ?p8 _:23 .
+  _:23 <http://www.w3.org/1999/02/22-rdf-syntax-ns#first> _:22 .
+  _:23 <http://www.w3.org/1999/02/22-rdf-syntax-ns#rest> <http://www.w3.org/1999/02/22-rdf-syntax-ns#nil> .
+  _:22 <ex:a8> <ex:b8> .
+  _:22 <ex:c8> <ex:d8> .
+  _:22 <ex:c8> <ex:e8> .
+}

@@ -22,6 +22,8 @@ const workspaceAliases: Record<string, string> = {
   '@traqula/rules-sparql-1-1-adjust': path.resolve(root, 'packages/rules-sparql-1-1-adjust/lib/index.ts'),
   '@traqula/rules-sparql-1-1': path.resolve(root, 'packages/rules-sparql-1-1/lib/index.ts'),
   '@traqula/rules-sparql-1-2': path.resolve(root, 'packages/rules-sparql-1-2/lib/index.ts'),
+  '@traqula/sparqljs-traqula-transformations':
+    path.resolve(root, 'packages/sparqljs-traqula-transformations/lib/index.ts'),
   '@traqula/test-utils': path.resolve(root, 'packages/test-utils/lib/index.ts'),
   '@traqula/algebra-sparql-1-1': path.resolve(root, 'engines/algebra-sparql-1-1/lib/index.ts'),
   '@traqula/algebra-sparql-1-2': path.resolve(root, 'engines/algebra-sparql-1-2/lib/index.ts'),
@@ -30,6 +32,7 @@ const workspaceAliases: Record<string, string> = {
   '@traqula/parser-sparql-1-1-adjust': path.resolve(root, 'engines/parser-sparql-1-1-adjust/lib/index.ts'),
   '@traqula/parser-sparql-1-1': path.resolve(root, 'engines/parser-sparql-1-1/lib/index.ts'),
   '@traqula/parser-sparql-1-2': path.resolve(root, 'engines/parser-sparql-1-2/lib/index.ts'),
+  '@traqula/sparql-js-to-traqula-1-1': path.resolve(root, 'engines/sparql-js-to-traqula-1-1/lib/index.ts'),
 };
 
 export default defineConfig({

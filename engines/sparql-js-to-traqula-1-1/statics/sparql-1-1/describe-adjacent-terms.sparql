@@ -1,0 +1,5 @@
+PREFIX ex: <http://example.org/>
+DESCRIBE ?s ?o <http://example.org/a> <http://example.org/b> <http://example.org/c> ?e <http://example.org/d> WHERE {
+  ?s <http://example.org/p> ?o .
+  ?s <http://example.org/q> ?e .
+}

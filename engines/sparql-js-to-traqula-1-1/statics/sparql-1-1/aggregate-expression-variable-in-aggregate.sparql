@@ -1,0 +1,3 @@
+SELECT ( ( COUNT( ?o ) + "1"^^<http://www.w3.org/2001/XMLSchema#integer> ) AS ?x ) WHERE {
+  ?s ?p ?o .
+}

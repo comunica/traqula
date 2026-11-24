@@ -1,0 +1,6 @@
+INSERT DATA {
+  GRAPH <http://g> {
+    <http://s> <http://p> <http://o> .
+  }
+  <http://s2> <http://p2> <http://o2> .
+}

@@ -1,0 +1,9 @@
+SELECT ?s WHERE {
+  ?s ?p ?o .
+}
+ORDER BY ASC ( NOT EXISTS {
+  SELECT ( COUNT( * ) AS ?c ) WHERE {
+    ?s ?q ?x .
+  }
+}
+)

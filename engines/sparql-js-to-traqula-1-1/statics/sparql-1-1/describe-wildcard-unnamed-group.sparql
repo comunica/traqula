@@ -1,0 +1,4 @@
+DESCRIBE * WHERE {
+  ?s ?p ?o .
+}
+GROUP BY STR( ?o )

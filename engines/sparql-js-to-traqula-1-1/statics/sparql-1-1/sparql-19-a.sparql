@@ -1,0 +1,4 @@
+SELECT ?p ( COUNT( * ) AS ?n ) WHERE {
+  _:1 ?p _:0 .
+}
+GROUP BY ?p

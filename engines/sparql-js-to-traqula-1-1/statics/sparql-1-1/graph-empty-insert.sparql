@@ -1,0 +1,4 @@
+INSERT DATA {
+  GRAPH <http://g> {
+  }
+}

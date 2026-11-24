@@ -6980,10 +6980,10 @@ rdf-terms@^2.0.0:
     rdf-data-factory "^2.0.0"
     rdf-string "^2.0.0"
 
-rdf-test-suite@^2.0.0, rdf-test-suite@^2.1.4, rdf-test-suite@~2.1.4:
-  version "2.1.6"
-  resolved "https://registry.yarnpkg.com/rdf-test-suite/-/rdf-test-suite-2.1.6.tgz#66c56b498000f0638639ee006d6f7348df6cdc43"
-  integrity sha512-1SGW5NNlPfXal6d85sLSAog2h2+imymcEVUrKvGpRMFkce+/EnDAGHJlHyZ1FaJK6iurpFJrSVJydyNMA6DRNQ==
+rdf-test-suite@^2.0.0, rdf-test-suite@^2.1.4, rdf-test-suite@~2.9.0:
+  version "2.9.0"
+  resolved "https://registry.yarnpkg.com/rdf-test-suite/-/rdf-test-suite-2.9.0.tgz#8ba9927b9511ff4e3840bce2fba955e2591f3335"
+  integrity sha512-ZB7UWt1etvtdQWzRKk5LJ3I3CgASCMfGCST1newoYPHrs6I9ARj7lh9THCW8aD+x6FHyBzJVRDopBQIHnmcsXg==
   dependencies:
     "@types/json-stable-stringify" "^1.0.32"
     "@types/minimist" "^1.2.0"
@@ -6993,16 +6993,19 @@ rdf-test-suite@^2.0.0, rdf-test-suite@^2.1.4, rdf-test-suite@~2.1.4:
     cross-fetch "^4.0.0"
     is-stream "^2.0.0"
     json-stable-stringify "^1.0.1"
+    jsonld-context-parser "^3.1.0"
     jsonld-streaming-parser "^5.0.0"
     log-symbols "^4.0.0"
     minimist "^1.2.0"
     n3 "^2.0.3"
+    papaparse "^5.5.3"
     rdf-data-factory "^2.0.0"
     rdf-isomorphic "^2.0.0"
     rdf-literal "^2.0.0"
     rdf-object "^3.0.0"
     rdf-quad "^2.0.0"
     rdf-string "^2.0.1"
+    rdf-string-ttl "^2.0.1"
     rdf-terms "^2.0.0"
     rdfxml-streaming-parser "^3.0.0"
     readable-web-to-node-stream "^3.0.2"
@@ -7010,6 +7013,7 @@ rdf-test-suite@^2.0.0, rdf-test-suite@^2.1.4, rdf-test-suite@~2.1.4:
     sparqljson-parse "^3.0.0"
     sparqlxml-parse "^3.0.0"
     stream-to-string "^1.1.0"
+    streamify-array "^2.0.0"
     streamify-string "^1.0.1"
 
 rdfxml-streaming-parser@^3.0.0:

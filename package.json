@@ -55,8 +55,8 @@
     "**/rdf-test-suite": "~2.1.4",
     "**/rdf-test-suite/n3": "2.11.0",
     "**/tar": "7.5.22",
-    "@nx/devkit/minimatch": "11.0.3",
-    "@typescript-eslint/typescript-estree/minimatch": "11.0.3",
-    "nx/minimatch": "11.0.3"
+    "@nx/devkit/minimatch": "11.0.9",
+    "@typescript-eslint/typescript-estree/minimatch": "11.0.9",
+    "nx/minimatch": "11.0.9"
   }
 }

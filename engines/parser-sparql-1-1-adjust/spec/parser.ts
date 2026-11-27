@@ -12,6 +12,17 @@ export function query(_data: unknown, queryString: string, context: Partial<Spar
   return Promise.reject(new ErrorSkipped('Querying is not supported'));
 }
 
+export function queryResultFormat(
+  _data: unknown,
+  queryString: string,
+  _mediaType: string,
+  context: Partial<SparqlContext> = {},
+): Promise<never> {
+  // Serializing results is out of scope for a parser, but the query still has to parse.
+  parse(queryString, context);
+  return Promise.reject(new ErrorSkipped('Formatting query results is not supported'));
+}
+
 export function update(_data: unknown, queryString: string, context: Partial<SparqlContext> = {}): Promise<never> {
   // Evaluation is out of scope for a parser, but the request still has to parse.
   parse(queryString, context);

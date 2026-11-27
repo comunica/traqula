@@ -59,18 +59,24 @@ SELECT ?who WHERE {
 - **`SUBJECT`, `PREDICATE`, `OBJECT`, `isTRIPLE`, `sameTerm`, `=` and `!=`** are resolved
   over such a variable, a written triple term and `TRIPLE(…)`.
 - **Variables the data binds** hold the reification node, which stands for the triple term.
-  Only where the query reads the components of such a variable, with `SUBJECT`, `PREDICATE`, `OBJECT` or `isTRIPLE`,
-  every BGP and path that binds it as subject or object is followed by a lookup of them:
+  Where the query reads the components of such a variable, with `SUBJECT`, `PREDICATE`, `OBJECT` or `isTRIPLE`,
+  they are looked up, one pattern per component read:
 
   ```sparql
   # SELECT ?s WHERE { ?r rdf:reifies ?t . BIND(SUBJECT(?t) AS ?s) }
   SELECT (?tt_t_s AS ?s) WHERE {
     ?r rdf:reifies ?t .
-    OPTIONAL { ?t rdf:subject ?tt_t_s . ?t rdf:predicate ?tt_t_p . ?t rdf:object ?tt_t_o . }
+    OPTIONAL { ?t rdf:subject ?tt_t_s . }
   }
   ```
 
-  `isTRIPLE(?t)` asks whether that lookup found something, and `SUBJECT(OBJECT(?t))` nests a second lookup in the first.
+  The lookup follows every BGP and path binding the variable as subject or object.
+  A `BIND(?t AS ?u)` copies the components of `?t` to `?u`.
+  After any other `BIND`, a `VALUES` with `UNDEF` or an aggregate, which might leave the variable unbound,
+  the lookup goes through a fresh node, `OPTIONAL { ?n rdf:subject ?tt_u_s FILTER(sameTerm(?n, ?u)) }`,
+  so it does not bind the variable to every node where it is unbound.
+  `isTRIPLE(?t)` asks whether `?t` has an `rdf:subject`, `SUBJECT(OBJECT(?t))` nests a second lookup in the first,
+  and comparing `?t` to a triple term the query makes compares their components.
   Over anything else there is no triple term to find:
   the accessors become `COALESCE()`, the expression SPARQL 1.1 defines to raise an error, and `isTRIPLE` is false.
 - **Base directions are dropped**: `"a"@en--ltr` becomes `"a"@en`, `STRLANGDIR` becomes `STRLANG`,
@@ -87,11 +93,10 @@ Some limits come with reading the query statically, without knowing the data:
 - A variable is a triple term **by name**: once the query binds `?x` to a triple term somewhere,
   `?x` is taken to hold a triple term everywhere, also in a subquery that does not share it.
 - A reification node is **still a node**: `?s ?p ?o` also matches the `rdf:subject`, `rdf:predicate` and `rdf:object`
-  triples themselves, a projected variable gives the node rather than a triple term,
-  and comparing such a variable to a written triple term is false.
+  triples themselves, and a projected variable gives the node rather than a triple term.
   Hiding the encoding altogether is what [view unfolding](https://github.com/jitsedesmet/sparql-view-unfold) is for.
-- Components are only looked up **where a BGP or path binds the variable**:
-  after `BIND(?t AS ?u)` or `VALUES ?u { :node }`, `SUBJECT(?u)` errors.
 - The lookup assumes a node has **one** `rdf:subject`, `rdf:predicate` and `rdf:object`: more of them multiply solutions.
+- With the `quads` option of `toAlgebra`, a lookup that follows no pattern, such as one after a `VALUES`,
+  queries the default graph, also within `GRAPH`.
 - An argument of `TRIPLE(…)` is evaluated once per place its value is needed,
   so `TRIPLE(?s, ?p, RAND())` can give a different object per read.

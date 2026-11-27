@@ -63,7 +63,10 @@ interface Resolved {
  * - `SUBJECT`, `PREDICATE`, `OBJECT` and `isTRIPLE` are resolved over such a variable or a written triple term.
  * - A variable the data binds holds the node reifying a triple term, as nothing tells the two apart.
  *   Where the query reads its components, every BGP and path binding the variable is followed by
- *   `OPTIONAL { ?t rdf:subject ?s . ?t rdf:predicate ?p . ?t rdf:object ?o }`, which the accessors read.
+ *   `OPTIONAL { ?t rdf:subject ?s }`, with a pattern per component read, which the accessors read.
+ *   A BIND copying such a variable copies its components, other operations binding it are followed by
+ *   `OPTIONAL { ?n rdf:subject ?s FILTER(sameTerm(?n, ?t)) }`, which does not bind it where it is unbound.
+ *   Comparing it to a triple term compares the components.
  *   Over anything else no triple term exists, so the accessors become an expression that errors (`COALESCE()`).
  * - A base direction is dropped from literals and from `STRLANGDIR`, `LANGDIR` gives `""`.
  *
@@ -81,13 +84,14 @@ export function toSparql11Algebra(operation: A.Operation, options: ToSparql11Opt
     prefix += 't';
   }
   const tripleVariables = new Set<string>();
-  const lookups = new Set<string>();
+  const lookups = new Map<string, Set<Position>>();
+  const learned = (): number => [ ...lookups.values() ].reduce((sum, read) => sum + read.size, tripleVariables.size);
   for (let i = 0; i < MAX_REWRITES; i++) {
-    const known = tripleVariables.size + lookups.size;
+    const known = learned();
     const rewriter = new Rewriter(new AlgebraFactory(options.dataFactory), prefix, tripleVariables, lookups);
     const result = rewriter.rewrite(operation);
     // A rewrite that learned how a variable is to be read, read that variable wrongly before learning so.
-    if (tripleVariables.size + lookups.size === known) {
+    if (learned() === known) {
       return result;
     }
   }
@@ -126,13 +130,13 @@ class Rewriter {
    * @param AF creates the rewritten operations.
    * @param prefix starts every name this rewriting coins, and no name of the query.
    * @param tripleVariables the names of the variables the query binds to a triple term.
-   * @param lookups the names of the variables the data binds, of which the query reads the components.
+   * @param lookups the names of the variables the data binds, to the components of them the query reads.
    */
   public constructor(
     private readonly AF: AlgebraFactory,
     private readonly prefix: string,
     private readonly tripleVariables: Set<string>,
-    private readonly lookups: Set<string>,
+    private readonly lookups: Map<string, Set<Position>>,
   ) {}
 
   public rewrite(operation: A.Operation): A.Operation {
@@ -191,11 +195,24 @@ class Rewriter {
   }
 
   /**
-   * The variables a {@link lookup} of this variable binds.
+   * Registers that the query reads a component of what a variable the data binds holds.
+   */
+  private require(variable: RDF.Variable, ...read: Position[]): void {
+    const known = this.lookups.get(variable.value) ?? new Set();
+    this.lookups.set(variable.value, known);
+    for (const position of read) {
+      known.add(position);
+    }
+  }
+
+  /**
+   * The components the query reads of a variable the data binds, each followed by those read of its own components.
    */
   private lookedUp(variable: RDF.Variable): RDF.Variable[] {
-    const components = positions.map(position => this.component(variable, position));
-    return this.isLookup(components[2]) ? [ ...components, ...this.lookedUp(components[2]) ] : components;
+    return positions.filter(position => this.lookups.get(variable.value)!.has(position)).flatMap((position) => {
+      const component = this.component(variable, position);
+      return this.isLookup(component) ? [ component, ...this.lookedUp(component) ] : [ component ];
+    });
   }
 
   /**
@@ -277,16 +294,40 @@ class Rewriter {
   }
 
   /**
-   * The reification of the node a variable holds, when it holds one: this is to be the right side of an OPTIONAL.
-   * The variable has to be bound, an unbound one would be bound to every node there is.
+   * The components the query reads of the node a variable holds, when it holds one: the right side of an OPTIONAL.
+   * The node is the variable itself, which has to be bound then, since an unbound one would match every node there is.
    */
-  private lookup(variable: RDF.Variable, graph: RDF.Term): A.Operation {
-    const components = positions.map(position => this.component(variable, position));
-    const reification = this.AF.createBgp(positions.map((position, index) =>
-      this.AF.createPattern(variable, this.DF.namedNode(RDF_NS + position), components[index], graph)));
-    return this.isLookup(components[2]) ?
-      this.AF.createLeftJoin(reification, this.lookup(components[2], graph)) :
+  private lookup(variable: RDF.Variable, graph: RDF.Term, node: RDF.Term = variable): A.Operation {
+    const read = positions.filter(position => this.lookups.get(variable.value)!.has(position));
+    const reification = this.AF.createBgp(read.map(position =>
+      this.AF.createPattern(node, this.DF.namedNode(RDF_NS + position), this.component(variable, position), graph)));
+    const object = this.component(variable, 'object');
+    return read.includes('object') && this.isLookup(object) ?
+      this.AF.createLeftJoin(reification, this.lookup(object, graph)) :
       reification;
+  }
+
+  /**
+   * Looks up the components the query reads of a variable an operation might not bind,
+   * through a fresh node that only matches where the variable is bound.
+   */
+  private guardedLookup(op: A.Operation, variable: RDF.Variable): A.Operation {
+    const node = this.freshVariable();
+    const condition = this.call('sameterm', this.term(node), this.term(variable));
+    return this.AF.createLeftJoin(op, this.lookup(variable, this.DF.defaultGraph(), node), condition);
+  }
+
+  /**
+   * Looks up the components the query reads of the variables a VALUES binds.
+   */
+  private valuesLookups(op: A.Values): A.Operation {
+    let result: A.Operation = op;
+    for (const variable of op.variables.filter(variable => this.isLookup(variable))) {
+      result = op.bindings.every(binding => binding[variable.value]) ?
+        this.AF.createLeftJoin(result, this.lookup(variable, this.DF.defaultGraph())) :
+        this.guardedLookup(result, variable);
+    }
+    return result;
   }
 
   /**
@@ -318,15 +359,15 @@ class Rewriter {
       case Types.EXTEND:
         return this.extend(op);
       case Types.VALUES:
-        return this.values(op);
+        return this.valuesLookups(this.values(op));
       case Types.PROJECT:
         return {
           ...op,
           input: this.operation(op.input),
           variables: op.variables.flatMap(v => this.flatten(v, op === this.resultProject)),
         };
-      case Types.GROUP:
-        return {
+      case Types.GROUP: {
+        const group: A.Group = {
           ...op,
           input: this.operation(op.input),
           variables: op.variables.flatMap(v => this.flatten(v)),
@@ -335,6 +376,10 @@ class Rewriter {
             return <A.BoundAggregate> this.expression(aggregate);
           }),
         };
+        return op.aggregates
+          .filter(aggregate => this.isLookup(aggregate.variable))
+          .reduce<A.Operation>((acc, aggregate) => this.guardedLookup(acc, aggregate.variable), group);
+      }
       case Types.GRAPH:
       case Types.SERVICE:
         return { ...op, input: this.operation(op.input), name: this.plainTerm(op.name) };
@@ -393,12 +438,35 @@ class Rewriter {
       if (this.isTripleVariable(op.variable)) {
         this.mixedBind = op.variable.value;
       }
-      return { ...op, input, expression: this.expression(op.expression) };
+      const extend: A.Operation = { ...op, input, expression: this.expression(op.expression) };
+      if (!this.isLookup(op.variable)) {
+        return extend;
+      }
+      if (!this.isVariable(op.expression)) {
+        return this.guardedLookup(extend, op.variable);
+      }
+      const binds: [RDF.Variable, A.Expression][] = [];
+      this.copyLookup(op.variable, op.expression.term, binds);
+      return binds.reduce((acc, [ variable, expr ]) => this.AF.createExtend(acc, variable, expr), extend);
     }
     const binds: [RDF.Variable, A.Expression][] = [];
     const valid = this.guardsItself(op.expression) ? [] : this.resolve(op.expression).valid;
     this.assign(op.variable, op.expression, valid, binds);
     return binds.reduce<A.Operation>((acc, [ variable, expr ]) => this.AF.createExtend(acc, variable, expr), input);
+  }
+
+  /**
+   * Binds the components the query reads of a variable the data binds, to those of the variable it copies.
+   */
+  private copyLookup(target: RDF.Variable, source: RDF.Variable, binds: [RDF.Variable, A.Expression][]): void {
+    for (const position of this.lookups.get(target.value)!) {
+      this.require(source, position);
+      binds.push([ this.component(target, position), this.term(this.component(source, position)) ]);
+    }
+    const object = this.component(target, 'object');
+    if (this.isLookup(object)) {
+      this.copyLookup(object, this.component(source, 'object'), binds);
+    }
   }
 
   /**
@@ -607,7 +675,7 @@ class Rewriter {
         if (this.shape(args[0])) {
           return this.guard(this.resolve(args[0]).valid, this.boolean(true));
         }
-        const target = this.lookupTarget(args[0]);
+        const target = this.lookupTarget(args[0], 'subject');
         return this.guard(
           this.defined(this.expression(args[0])),
           target ? this.call('bound', this.term(this.component(target, 'subject'))) : this.boolean(false),
@@ -651,7 +719,7 @@ class Rewriter {
   private accessor(position: Position, arg: A.Expression): A.Expression {
     const shape = this.shape(arg);
     if (!shape) {
-      const target = this.lookupTarget(arg);
+      const target = this.lookupTarget(arg, position);
       // Nothing else that the query did not make a triple term itself, is one
       return target ? this.term(this.component(target, position)) : this.call('coalesce');
     }
@@ -664,23 +732,51 @@ class Rewriter {
   }
 
   /**
-   * The variable holding what an expression that is no triple term evaluates to, when the data can bind it:
+   * Whether an expression that is no triple term evaluates to what the data binds:
    * a variable, or the object of the triple term such a variable stands for.
-   * Its components are looked up from here on.
    */
-  private lookupTarget(arg: A.Expression): RDF.Variable | undefined {
-    let target: RDF.Variable | undefined;
-    if (this.isVariable(arg)) {
-      target = arg.term;
-    } else {
-      const objectOf = this.argsOf(arg, 'object');
-      const outer = objectOf && !this.shape(objectOf[0]) && this.lookupTarget(objectOf[0]);
-      target = outer ? this.component(outer, 'object') : undefined;
+  private isLookupable(arg: A.Expression): boolean {
+    const objectOf = this.argsOf(arg, 'object');
+    return this.isVariable(arg) ||
+      (objectOf !== undefined && !this.shape(objectOf[0]) && this.isLookupable(objectOf[0]));
+  }
+
+  /**
+   * The variable holding what a {@link isLookupable} expression evaluates to, or undefined for another expression.
+   * The given components are looked up for it from here on.
+   */
+  private lookupTarget(arg: A.Expression, ...read: Position[]): RDF.Variable | undefined {
+    if (!this.isLookupable(arg)) {
+      return;
     }
-    if (target) {
-      this.lookups.add(target.value);
-    }
+    const objectOf = this.argsOf(arg, 'object');
+    const target = objectOf ?
+      this.component(this.lookupTarget(objectOf[0], 'object')!, 'object') :
+        (<A.TermExpression & { term: RDF.Variable }> arg).term;
+    this.require(target, ...read);
     return target;
+  }
+
+  /**
+   * Compares what the data binds to a triple term the query makes: the node of a triple term, compared by component.
+   */
+  private compareLookup(operator: string, node: A.Expression, tripleTerm: A.Expression): A.Expression {
+    const target = this.lookupTarget(node, ...positions)!;
+    const resolved = this.resolve(tripleTerm);
+    const [ subject, predicate, object ] = positions.map(position => this.term(this.component(target, position)));
+    const objects = this.shape(resolved.object) ?
+      this.compareLookup(operator, this.call('object', node), resolved.object) :
+      this.call(operator, object, this.expression(resolved.object));
+    const components = this.call('&&', this.call(
+      '&&',
+      this.call(operator, subject, resolved.subject),
+      this.call(operator, predicate, resolved.predicate),
+    ), objects);
+    // What the data binds is no triple term when it has no components
+    return this.guard(
+      [ ...resolved.valid, ...this.defined(this.expression(node)) ],
+      this.call('if', this.call('bound', subject), components, this.boolean(false)),
+    );
   }
 
   private compare(operator: string, left: A.Expression, right: A.Expression): A.Expression {
@@ -691,6 +787,9 @@ class Rewriter {
     }
     if (!leftShape || !rightShape) {
       const [ tripleTerm, other ] = leftShape ? [ left, right ] : [ right, left ];
+      if (this.isLookupable(other)) {
+        return this.compareLookup(operator, other, tripleTerm);
+      }
       const valid = [ ...this.resolve(tripleTerm).valid, ...this.defined(this.expression(other)) ];
       return this.guard(valid, this.boolean(false));
     }

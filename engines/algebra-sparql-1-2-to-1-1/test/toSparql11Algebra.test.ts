@@ -161,13 +161,9 @@ CLEAR ALL`,
     ?r rdf:reifies ?t .
     ?t :q ?u .
     OPTIONAL {
-      ?t rdf:subject ?tt_t_s .
-      ?t rdf:predicate ?tt_t_p .
       ?t rdf:object ?tt_t_o .
       OPTIONAL {
         ?tt_t_o rdf:subject ?tt_tt_t_o_s .
-        ?tt_t_o rdf:predicate ?tt_tt_t_o_p .
-        ?tt_t_o rdf:object ?tt_tt_t_o_o .
       }
     }
     BIND( ?tt_tt_t_o_s AS ?a )
@@ -180,34 +176,29 @@ CLEAR ALL`,
       `SELECT ?t (COUNT(*) AS ?n) { { SELECT ?t { ?r :p+ ?t } } FILTER(PREDICATE(?t) = :p) } GROUP BY ?t HAVING(isTRIPLE(?t))`,
       `SELECT ?t ( COUNT( * ) AS ?n ) WHERE {
   {
-    SELECT ?t ?tt_t_s ?tt_t_p ?tt_t_o WHERE {
+    SELECT ?t ?tt_t_s ?tt_t_p WHERE {
       ?r (:p+) ?t .
       OPTIONAL {
         ?t rdf:subject ?tt_t_s .
         ?t rdf:predicate ?tt_t_p .
-        ?t rdf:object ?tt_t_o .
       }
     }
   }
   FILTER ( ( ?tt_t_p = :p ) )
 }
-GROUP BY ?t ?tt_t_s ?tt_t_p ?tt_t_o
+GROUP BY ?t ?tt_t_s ?tt_t_p
 HAVING IF( BOUND( ?t ) , BOUND( ?tt_t_s ) , COALESCE( ) )`,
     ],
     [
       'keeps the components of an object through a subquery',
       `SELECT ?a { { SELECT ?t { ?r rdf:reifies ?t } } BIND(SUBJECT(OBJECT(?t)) AS ?a) }`,
       `SELECT ( ?tt_tt_t_o_s AS ?a ) WHERE {
-  SELECT ?t ?tt_t_s ?tt_t_p ?tt_t_o ?tt_tt_t_o_s ?tt_tt_t_o_p ?tt_tt_t_o_o WHERE {
+  SELECT ?t ?tt_t_o ?tt_tt_t_o_s WHERE {
     ?r rdf:reifies ?t .
     OPTIONAL {
-      ?t rdf:subject ?tt_t_s .
-      ?t rdf:predicate ?tt_t_p .
       ?t rdf:object ?tt_t_o .
       OPTIONAL {
         ?tt_t_o rdf:subject ?tt_tt_t_o_s .
-        ?tt_t_o rdf:predicate ?tt_tt_t_o_p .
-        ?tt_t_o rdf:object ?tt_tt_t_o_o .
       }
     }
   }
@@ -223,17 +214,19 @@ HAVING IF( BOUND( ?t ) , BOUND( ?tt_t_s ) , COALESCE( ) )`,
   ?tt0 rdf:object ?t .
   OPTIONAL {
     ?t rdf:subject ?tt_t_s .
-    ?t rdf:predicate ?tt_t_p .
-    ?t rdf:object ?tt_t_o .
   }
 }`,
     ],
     [
-      'makes the accessors of what is no variable of the data an error',
+      'copies the components of a copied variable, and makes the accessors of other expressions an error',
       `SELECT ?a ?b ?c ?d ?e ?f { ?s :p ?o BIND(?o AS ?u) BIND(SUBJECT(?u) AS ?a) BIND(SUBJECT(STR(?o)) AS ?b) BIND(isTRIPLE(:a) AS ?c) BIND(isTRIPLE(STR(?o)) AS ?d) BIND(SUBJECT(OBJECT(TRIPLE(:s, :p, ?o))) AS ?e) BIND(SUBJECT(OBJECT(STR(?o))) AS ?f) }`,
       `SELECT ( ?tt_u_s AS ?a ) ( COALESCE( ) AS ?b ) ( "false"^^xsd:boolean AS ?c ) ( IF( IF( SAMETERM( STR( ?o ) , STR( ?o ) ) , "true"^^xsd:boolean , "true"^^xsd:boolean ) , "false"^^xsd:boolean , COALESCE( ) ) AS ?d ) ( COALESCE( ) AS ?e ) ( COALESCE( ) AS ?f ) WHERE {
   ?s :p ?o .
+  OPTIONAL {
+    ?o rdf:subject ?tt_o_s .
+  }
   BIND( ?o AS ?u )
+  BIND( ?tt_o_s AS ?tt_u_s )
 }`,
     ],
     [
@@ -370,7 +363,7 @@ GROUP BY ?tt_x_s ?tt_x_p ?tt_x_o ( ?tt_x_o AS ?c )`,
     [
       'compares triple terms by their components',
       `SELECT ?a ?b ?c ?d ?e { BIND(sameTerm(<<( ?s :p <<( :a :b 1 )>> )>>, TRIPLE(:s, ?p, <<( :a :b 2 )>>)) AS ?a) BIND(<<( :s :p 1 )>> = ?o AS ?b) BIND(1 != <<( :s :p <<( :a :b 1 )>> )>> AS ?c) BIND(?s != ?o AS ?d) BIND(<<( :s :p 1 )>> = <<( :s :p <<( :a :b 1 )>> )>> AS ?e) }`,
-      `SELECT ( IF( ( ( ISIRI( ?s ) || ISBLANK( ?s ) ) && ISIRI( ?p ) ) , ( ( SAMETERM( ?s , :s ) && SAMETERM( :p , ?p ) ) && ( ( SAMETERM( :a , :a ) && SAMETERM( :b , :b ) ) && SAMETERM( "1"^^xsd:integer , "2"^^xsd:integer ) ) ) , COALESCE( ) ) AS ?a ) ( IF( BOUND( ?o ) , "false"^^xsd:boolean , COALESCE( ) ) AS ?b ) ( ! "false"^^xsd:boolean AS ?c ) ( ( ?s != ?o ) AS ?d ) ( ( ( ( :s = :s ) && ( :p = :p ) ) && "false"^^xsd:boolean ) AS ?e ) WHERE {
+      `SELECT ( IF( ( ( ISIRI( ?s ) || ISBLANK( ?s ) ) && ISIRI( ?p ) ) , ( ( SAMETERM( ?s , :s ) && SAMETERM( :p , ?p ) ) && ( ( SAMETERM( :a , :a ) && SAMETERM( :b , :b ) ) && SAMETERM( "1"^^xsd:integer , "2"^^xsd:integer ) ) ) , COALESCE( ) ) AS ?a ) ( IF( BOUND( ?o ) , IF( BOUND( ?tt_o_s ) , ( ( ( ?tt_o_s = :s ) && ( ?tt_o_p = :p ) ) && ( ?tt_o_o = "1"^^xsd:integer ) ) , "false"^^xsd:boolean ) , COALESCE( ) ) AS ?b ) ( ! "false"^^xsd:boolean AS ?c ) ( ( ?s != ?o ) AS ?d ) ( ( ( ( :s = :s ) && ( :p = :p ) ) && "false"^^xsd:boolean ) AS ?e ) WHERE {
 }`,
     ],
     [
@@ -453,6 +446,94 @@ LIMIT 1`,
     ?tt0 rdf:predicate :p .
     ?tt0 rdf:object :o .
   }
+}`,
+    ],
+    [
+      'compares what the data binds to a triple term by its components',
+      `SELECT ?r { ?r rdf:reifies ?t FILTER(?t = <<( :s :p <<( :a :b ?c )>> )>> || sameTerm(<<( :s :p 1 )>>, OBJECT(?t))) }`,
+      `SELECT ?r WHERE {
+  ?r rdf:reifies ?t .
+  OPTIONAL {
+    ?t rdf:subject ?tt_t_s .
+    ?t rdf:predicate ?tt_t_p .
+    ?t rdf:object ?tt_t_o .
+    OPTIONAL {
+      ?tt_t_o rdf:subject ?tt_tt_t_o_s .
+      ?tt_t_o rdf:predicate ?tt_tt_t_o_p .
+      ?tt_t_o rdf:object ?tt_tt_t_o_o .
+    }
+  }
+  FILTER ( ( IF( ( BOUND( ?c ) && BOUND( ?t ) ) , IF( BOUND( ?tt_t_s ) , ( ( ( ?tt_t_s = :s ) && ( ?tt_t_p = :p ) ) && IF( ( BOUND( ?c ) && BOUND( ?tt_t_o ) ) , IF( BOUND( ?tt_tt_t_o_s ) , ( ( ( ?tt_tt_t_o_s = :a ) && ( ?tt_tt_t_o_p = :b ) ) && ( ?tt_tt_t_o_o = ?c ) ) , "false"^^xsd:boolean ) , COALESCE( ) ) ) , "false"^^xsd:boolean ) , COALESCE( ) ) || IF( BOUND( ?tt_t_o ) , IF( BOUND( ?tt_tt_t_o_s ) , ( ( SAMETERM( ?tt_tt_t_o_s , :s ) && SAMETERM( ?tt_tt_t_o_p , :p ) ) && SAMETERM( ?tt_tt_t_o_o , "1"^^xsd:integer ) ) , "false"^^xsd:boolean ) , COALESCE( ) ) ) )
+}`,
+    ],
+    [
+      'looks up the components of a variable another expression binds only where it is bound',
+      `SELECT ?a { ?s :p ?o BIND(COALESCE(?o, ?s) AS ?u) BIND(SUBJECT(?u) AS ?a) }`,
+      `SELECT ( ?tt_u_s AS ?a ) WHERE {
+  {
+    ?s :p ?o .
+    BIND( COALESCE( ?o , ?s ) AS ?u )
+  }
+  OPTIONAL {
+    ?tt0 rdf:subject ?tt_u_s .
+    FILTER ( SAMETERM( ?tt0 , ?u ) )
+  }
+}`,
+    ],
+    [
+      'looks up the components of the variables of VALUES',
+      `SELECT ?a ?b { VALUES ?u { :n :m } VALUES ?v { :n UNDEF } BIND(SUBJECT(?u) AS ?a) BIND(SUBJECT(?v) AS ?b) }`,
+      `SELECT ( ?tt_u_s AS ?a ) ( ?tt_v_s AS ?b ) WHERE {
+  VALUES ?u {
+    :n
+    :m
+  }
+  OPTIONAL {
+    ?u rdf:subject ?tt_u_s .
+  }
+  {
+    VALUES ?v {
+      :n
+      UNDEF
+    }
+    OPTIONAL {
+      ?tt0 rdf:subject ?tt_v_s .
+      FILTER ( SAMETERM( ?tt0 , ?v ) )
+    }
+  }
+}`,
+    ],
+    [
+      'looks up the components of an aggregate',
+      `SELECT ?a { { SELECT (SAMPLE(?t) AS ?u) { ?r rdf:reifies ?t } } BIND(OBJECT(?u) AS ?a) }`,
+      `SELECT ( ?tt_u_o AS ?a ) WHERE {
+  SELECT ( ?var0 AS ?u ) ( ?tt_var0_o AS ?tt_u_o ) WHERE {
+    {
+      SELECT ( SAMPLE( ?t ) AS ?var0 ) WHERE {
+        ?r rdf:reifies ?t .
+      }
+    }
+    OPTIONAL {
+      ?tt0 rdf:object ?tt_var0_o .
+      FILTER ( SAMETERM( ?tt0 , ?var0 ) )
+    }
+  }
+}`,
+    ],
+    [
+      'copies the components of the object of a copied variable',
+      `SELECT ?a { ?r rdf:reifies ?t BIND(?t AS ?u) BIND(SUBJECT(OBJECT(?u)) AS ?a) }`,
+      `SELECT ( ?tt_tt_u_o_s AS ?a ) WHERE {
+  ?r rdf:reifies ?t .
+  OPTIONAL {
+    ?t rdf:object ?tt_t_o .
+    OPTIONAL {
+      ?tt_t_o rdf:subject ?tt_tt_t_o_s .
+    }
+  }
+  BIND( ?t AS ?u )
+  BIND( ?tt_t_o AS ?tt_u_o )
+  BIND( ?tt_tt_t_o_s AS ?tt_tt_u_o_s )
 }`,
     ],
   ];

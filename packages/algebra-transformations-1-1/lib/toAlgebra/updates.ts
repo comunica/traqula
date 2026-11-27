@@ -140,7 +140,7 @@ Algebra.Update,
   },
 };
 
-// UPDATE parsing will always return quads and have no GRAPH elements
+// The triples blocks of an update are always translated to quads, they never hold GRAPH operations
 export const translateUpdateTriplesBlock:
 AlgebraIndir<'translateUpdateTriplesBlock', Algebra.Pattern[], [PatternBgp | GraphQuads, RDF.NamedNode | undefined]> = {
   name: 'translateUpdateTriplesBlock',

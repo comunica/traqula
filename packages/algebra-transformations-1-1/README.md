@@ -57,6 +57,8 @@ indicating whether patterns should be translated to triple or quad patterns.
 In the case of quads the `graph` operation will be removed
 and embedded into the patterns it contained.
 The default value for this parameter is `false`.
+For update queries, even in the case of `quads: false`, the DELETE and INSERT templates are always converted to quads.
+The WHERE clause, including that of the `DELETE WHERE` shortcut, follows the `quads` option.
 ```
 PREFIX : <http://www.example.org/>
 

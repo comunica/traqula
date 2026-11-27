@@ -2262,6 +2262,11 @@ arrayify-stream@^1.0.0:
   resolved "https://registry.yarnpkg.com/arrayify-stream/-/arrayify-stream-1.0.0.tgz#9e8e113d43325c3a44e965c59b5b89d962b9a37f"
   integrity sha512-RP80ep76Lbew2wWN5ogrl2NluTnBVYYh2K3NNCcWfcmmUB7nBcNBctiJeEZAixp3I1vQ9H88iHZ9MbHSdkuupQ==
 
+arrayify-stream@^2.0.0:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/arrayify-stream/-/arrayify-stream-2.0.1.tgz#1981e419a7aa7ddc6b6a7b46ef86e10785425f81"
+  integrity sha512-z8fB6PtmnewQpFB53piS2d1KlUi3BPMICH2h7leCOUXpQcwvZ4GbHHSpdKoUrgLMR6b4Qan/uDe1St3Ao3yIHg==
+
 arrayify-stream@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/arrayify-stream/-/arrayify-stream-3.0.0.tgz#b65eef30ab1d34d45b23d4897d310d1431a82d44"
@@ -2543,6 +2548,11 @@ caniuse-lite@^1.0.30001826:
   version "1.0.30001827"
   resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001827.tgz#42db7cf8d15cbd4d66e2f4fde885009565f8bdeb"
   integrity sha512-YWEDr46gSO81M8w6uPbaIy4++IXsirx2asUqvllNiD4BPf75ibxclUjWEqp8ObCenRv+UM2n5Y8xuRPT8V8FrQ==
+
+canonicalize@^1.0.1:
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/canonicalize/-/canonicalize-1.0.8.tgz#24d1f1a00ed202faafd9bf8e63352cd4450c6df1"
+  integrity sha512-0CNTVCLZggSh7bc5VkX5WWPWO+cyZbNd07IHIsSXLia/eAq+r836hgk+8BKoEh7949Mda87VUOitx5OddVj64A==
 
 canonicalize@^2.0.0:
   version "2.1.0"
@@ -2879,6 +2889,13 @@ cosmiconfig@^7.1.0:
     parse-json "^5.0.0"
     path-type "^4.0.0"
     yaml "^1.10.0"
+
+cross-fetch@^3.0.6:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/cross-fetch/-/cross-fetch-3.2.0.tgz#34e9192f53bc757d6614304d9e5e6fb4edb782e3"
+  integrity sha512-Q+xVJLoGOeIMXZmbUK4HYk+69cQH6LudR0Vu/pRm2YlU/hDV9CiS0gKUMaWY5f2NeUH9C1nV3bsTlCo0FsTV1Q==
+  dependencies:
+    node-fetch "^2.7.0"
 
 cross-fetch@^4.0.0:
   version "4.1.0"
@@ -5175,6 +5192,22 @@ jsonld-context-parser@^3.0.0, jsonld-context-parser@^3.1.0:
     http-link-header "^1.0.2"
     relative-to-absolute-iri "^1.0.5"
 
+jsonld-streaming-parser@^4.0.1:
+  version "4.0.1"
+  resolved "https://registry.yarnpkg.com/jsonld-streaming-parser/-/jsonld-streaming-parser-4.0.1.tgz#41212df7ef21df1f970d09ef989261fbb566194b"
+  integrity sha512-6M4y9YGgADk3nXJebbRrxEdMVBJ9bnz+peAvjTXUievopqaE8sg/qml/I6Sp1ln7rpOKffsNZWSre6B7N76szw==
+  dependencies:
+    "@bergos/jsonparse" "^1.4.0"
+    "@rdfjs/types" "*"
+    "@types/http-link-header" "^1.0.1"
+    "@types/readable-stream" "^4.0.0"
+    buffer "^6.0.3"
+    canonicalize "^1.0.1"
+    http-link-header "^1.0.2"
+    jsonld-context-parser "^3.0.0"
+    rdf-data-factory "^1.1.0"
+    readable-stream "^4.0.0"
+
 jsonld-streaming-parser@^5.0.0:
   version "5.0.2"
   resolved "https://registry.yarnpkg.com/jsonld-streaming-parser/-/jsonld-streaming-parser-5.0.2.tgz#f3967c34e029e06ef68d28d51df1369a7749398d"
@@ -5897,7 +5930,7 @@ mute-stream@^2.0.0:
   resolved "https://registry.yarnpkg.com/mute-stream/-/mute-stream-2.0.0.tgz#a5446fc0c512b71c83c44d908d5c7b7b4c493b2b"
   integrity sha512-WWdIxpyjEn+FhQJQQv9aQAYlHoNVdzIzUySNV1gHUPDSdZJ3yZn7pAAbQcV7B56Mvu881q9FZV+0Vx2xC44VWA==
 
-n3@2.11.0, n3@^2.0.3:
+n3@2.11.0, n3@^2.0.0, n3@^2.0.3:
   version "2.11.0"
   resolved "https://registry.yarnpkg.com/n3/-/n3-2.11.0.tgz#6389b0a703490a6447b20f43af48a076a489a111"
   integrity sha512-A33Mcn3q3kfQotq03z62qkQyRnxoBzBP3v2Z6WgxQ+3v2FAx162Dg1RSrc7Xkpz3kWcpbVfZ/N2W474ynTDbiA==
@@ -6583,11 +6616,6 @@ pacote@^21.0.0, pacote@^21.0.2:
     ssri "^13.0.0"
     tar "^7.4.3"
 
-papaparse@^5.5.3:
-  version "5.7.1"
-  resolved "https://registry.yarnpkg.com/papaparse/-/papaparse-5.7.1.tgz#8952b4d3efe36e9a7d1ced702792e746ca34558a"
-  integrity sha512-qOR+UDWv6D3hMxnWWOk0ZpBdCkd+kw5Yh7aXOaNSQU8A+73EA2bhW7EiUix/hY0yulUi5FRvt7PpYSI2VDvY0g==
-
 parent-module@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/parent-module/-/parent-module-1.0.1.tgz#691d2709e78c79fae3a156622452d00762caaaa2"
@@ -6909,7 +6937,7 @@ quick-lru@^4.0.1:
   resolved "https://registry.yarnpkg.com/quick-lru/-/quick-lru-4.0.1.tgz#5b8878f113a58217848c6482026c73e1ba57727f"
   integrity sha512-ARhCpm70fzdcvNQfPoy49IaanKkTlRWF2JMzqhcJbhSFRZv7nPTvZJdcY7301IPmvW+/p0RgIWnQDLJxifsQ7g==
 
-rdf-data-factory@^1.1.2:
+rdf-data-factory@^1.1.0, rdf-data-factory@^1.1.2:
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/rdf-data-factory/-/rdf-data-factory-1.1.3.tgz#11b39e0c80e51bca83828b2ddaa686f733be966f"
   integrity sha512-ny6CI7m2bq4lfQQmDYvcb2l1F9KtGwz9chipX4oWu2aAtVoXjb7k3d8J1EsgAsEbMXnBipB/iuRen5H2fwRWWQ==
@@ -6958,13 +6986,6 @@ rdf-quad@^2.0.0:
     rdf-literal "^2.0.0"
     rdf-string "^2.0.0"
 
-rdf-string-ttl@^2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/rdf-string-ttl/-/rdf-string-ttl-2.0.1.tgz#74ece2fa804c32fe7de3531b1feb7e1e580a1d80"
-  integrity sha512-xIZdC6uur9OwaCQrOsjuzLpnQCNGuJFWnYIAdF48tg3wzG5QzsgDMTJISCVh+M2p1e9ivIXlEauSdWokAhpZgA==
-  dependencies:
-    rdf-data-factory "^2.0.0"
-
 rdf-string@^2.0.0, rdf-string@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/rdf-string/-/rdf-string-2.0.1.tgz#9beff12486a653d6fb0f229a5e0e5f3cc2e962c6"
@@ -6980,29 +7001,29 @@ rdf-terms@^2.0.0:
     rdf-data-factory "^2.0.0"
     rdf-string "^2.0.0"
 
-rdf-test-suite@^2.0.0, rdf-test-suite@^2.1.4, rdf-test-suite@~2.1.4:
-  version "2.1.6"
-  resolved "https://registry.yarnpkg.com/rdf-test-suite/-/rdf-test-suite-2.1.6.tgz#66c56b498000f0638639ee006d6f7348df6cdc43"
-  integrity sha512-1SGW5NNlPfXal6d85sLSAog2h2+imymcEVUrKvGpRMFkce+/EnDAGHJlHyZ1FaJK6iurpFJrSVJydyNMA6DRNQ==
+rdf-test-suite@2.1.4, rdf-test-suite@^2.0.0, rdf-test-suite@^2.1.4:
+  version "2.1.4"
+  resolved "https://registry.yarnpkg.com/rdf-test-suite/-/rdf-test-suite-2.1.4.tgz#85a393867153e5975c1b804449e7bd970117804e"
+  integrity sha512-3zFZ5UbkS3AiZrfr+RJSm9y0koohmjKi3dSh6Uvyz6X7thHDRmhS00+q1EUgkQ5MNKNC9C6NlaE4+mWQsYSA8g==
   dependencies:
     "@types/json-stable-stringify" "^1.0.32"
     "@types/minimist" "^1.2.0"
     "@types/n3" "^1.10.3"
     "@types/sax" "^1.0.1"
-    arrayify-stream "^3.0.0"
-    cross-fetch "^4.0.0"
+    arrayify-stream "^2.0.0"
+    cross-fetch "^3.0.6"
     is-stream "^2.0.0"
     json-stable-stringify "^1.0.1"
-    jsonld-streaming-parser "^5.0.0"
+    jsonld-streaming-parser "^4.0.1"
     log-symbols "^4.0.0"
     minimist "^1.2.0"
-    n3 "^2.0.3"
+    n3 "^2.0.0"
     rdf-data-factory "^2.0.0"
     rdf-isomorphic "^2.0.0"
     rdf-literal "^2.0.0"
     rdf-object "^3.0.0"
     rdf-quad "^2.0.0"
-    rdf-string "^2.0.1"
+    rdf-string "^2.0.0"
     rdf-terms "^2.0.0"
     rdfxml-streaming-parser "^3.0.0"
     readable-web-to-node-stream "^3.0.2"
@@ -7703,11 +7724,6 @@ streamify-array@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/streamify-array/-/streamify-array-1.0.1.tgz#741cd1e7eaf1d451a0da484e5dc986a76dfa479c"
   integrity sha512-ZnswaBcC6B1bhPLSQOlC6CdaDUSzU0wr2lvvHpbHNms8V7+DLd8uEAzDAWpsjxbFkijBHhuObFO/qqu52DZUMA==
-
-streamify-array@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/streamify-array/-/streamify-array-2.0.0.tgz#8eeaa1e4d19541231f4a253d1704fd6c175ccfda"
-  integrity sha512-KzJjLpbiJxH0tv1HuO5GQSsgNMfi0utPVzHmoMFKMK6PeQ1IziGT7KqCMIT1iLaxpLMXyWbd0ct6GpoUd9KvzQ==
 
 streamify-string@^1.0.1:
   version "1.0.1"

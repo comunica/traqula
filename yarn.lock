@@ -5902,10 +5902,10 @@ mute-stream@^2.0.0:
   resolved "https://registry.yarnpkg.com/mute-stream/-/mute-stream-2.0.0.tgz#a5446fc0c512b71c83c44d908d5c7b7b4c493b2b"
   integrity sha512-WWdIxpyjEn+FhQJQQv9aQAYlHoNVdzIzUySNV1gHUPDSdZJ3yZn7pAAbQcV7B56Mvu881q9FZV+0Vx2xC44VWA==
 
-n3@2.11.0, n3@^2.0.3:
-  version "2.11.0"
-  resolved "https://registry.yarnpkg.com/n3/-/n3-2.11.0.tgz#6389b0a703490a6447b20f43af48a076a489a111"
-  integrity sha512-A33Mcn3q3kfQotq03z62qkQyRnxoBzBP3v2Z6WgxQ+3v2FAx162Dg1RSrc7Xkpz3kWcpbVfZ/N2W474ynTDbiA==
+n3@2.13.12, n3@^2.0.3:
+  version "2.13.12"
+  resolved "https://registry.yarnpkg.com/n3/-/n3-2.13.12.tgz#a8c617a67b4235c573a449e94c67a0a614ff2c3f"
+  integrity sha512-z944NsyJi58WXcYevtNkUL2JhVr0KP6nvED9AgymQq5V35TDaNn1N8kO+OWJk/kj4PR0L/ilWB3d7/bWceg1CQ==
   dependencies:
     buffer "^6.0.3"
     readable-stream "^4.0.0"

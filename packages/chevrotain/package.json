@@ -45,7 +45,7 @@
   },
   "devDependencies": {
     "chevrotain": "^11.2.0",
-    "dts-bundle-generator": "^9.5.1",
+    "dts-bundle-generator": "^10.0.0",
     "esbuild": "^0.28.0"
   }
 }

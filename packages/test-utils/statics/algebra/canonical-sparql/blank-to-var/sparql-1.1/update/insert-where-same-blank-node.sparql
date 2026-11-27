@@ -1,0 +1,17 @@
+INSERT DATA {
+  GRAPH <http://example.org/g1> {
+    _:e_b <http://example.org/p> <http://example.org/o> .
+  }
+}
+;
+INSERT {
+  GRAPH <http://example.org/g2> {
+    _:e_b <http://example.org/p> <http://example.org/o> .
+  }
+}
+WHERE {
+}
+;
+INSERT DATA {
+  _:e_c <http://example.org/p> <http://example.org/o> .
+}

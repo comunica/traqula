@@ -1,0 +1,9 @@
+DELETE WHERE {
+  ?a <http://example.org/p> ?b .
+  GRAPH ?g {
+    ?b <http://example.org/q> ?c .
+  }
+  GRAPH <http://example.org/g1> {
+    ?c <http://example.org/r> ?d .
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "type": "deleteinsert",
+  "delete": [
+    {
+      "type": "pattern",
+      "termType": "Quad",
+      "subject": {
+        "termType": "Variable",
+        "value": "s"
+      },
+      "predicate": {
+        "termType": "Variable",
+        "value": "p"
+      },
+      "object": {
+        "termType": "Variable",
+        "value": "o"
+      },
+      "graph": {
+        "termType": "NamedNode",
+        "value": "http://example.org/g1"
+      }
+    }
+  ],
+  "where": {
+    "type": "graph",
+    "input": {
+      "type": "graph",
+      "input": {
+        "type": "bgp",
+        "patterns": [
+          {
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": {
+              "termType": "NamedNode",
+              "value": "http://example.org/a"
+            },
+            "predicate": {
+              "termType": "NamedNode",
+              "value": "http://xmlns.com/foaf/0.1/knows"
+            },
+            "object": {
+              "termType": "Variable",
+              "value": "s"
+            },
+            "graph": {
+              "termType": "DefaultGraph",
+              "value": ""
+            }
+          },
+          {
+            "type": "pattern",
+            "termType": "Quad",
+            "subject": {
+              "termType": "Variable",
+              "value": "s"
+            },
+            "predicate": {
+              "termType": "Variable",
+              "value": "p"
+            },
+            "object": {
+              "termType": "Variable",
+              "value": "o"
+            },
+            "graph": {
+              "termType": "DefaultGraph",
+              "value": ""
+            }
+          }
+        ]
+      },
+      "name": {
+        "termType": "NamedNode",
+        "value": "http://example.org/g1"
+      }
+    },
+    "name": {
+      "termType": "NamedNode",
+      "value": "http://example.org/g2"
+    }
+  }
+}

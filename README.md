@@ -19,6 +19,7 @@ Traqula achieves this by shipping default configurations as [engines](engines) w
 Traqula maintains a few engines (default parser, transformer, and generator configurations) built on top of its own [code packages](packages):
 * For [SPARQL 1.1](https://www.w3.org/TR/sparql11-query/): a [parser](engines/parser-sparql-1-1), [generator](engines/generator-sparql-1-1), and [algebra transformer](engines/algebra-sparql-1-1).
 * For [SPARQL 1.2](https://www.w3.org/TR/sparql12-query/): a [parser](engines/parser-sparql-1-2), [generator](engines/generator-sparql-1-2), and [algebra transformer](engines/algebra-sparql-1-2).
+  Its algebra can be [rewritten to SPARQL 1.1](engines/algebra-sparql-1-2-to-1-1) for data without triple terms.
 * For [SPARQL 1.1](https://www.w3.org/TR/sparql11-query/#grammar) + [ADJUST](https://github.com/w3c/sparql-dev/blob/main/SEP/SEP-0002/sep-0002.md) function: a [parser](engines/parser-sparql-1-1-adjust), the generator and transformers of SPARQL1.1 also work here.
 
 ## Documentation

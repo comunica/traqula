@@ -24,6 +24,7 @@ const workspaceAliases: Record<string, string> = {
   '@traqula/rules-sparql-1-2': path.resolve(root, 'packages/rules-sparql-1-2/lib/index.ts'),
   '@traqula/test-utils': path.resolve(root, 'packages/test-utils/lib/index.ts'),
   '@traqula/algebra-sparql-1-1': path.resolve(root, 'engines/algebra-sparql-1-1/lib/index.ts'),
+  '@traqula/algebra-sparql-1-2-to-1-1': path.resolve(root, 'engines/algebra-sparql-1-2-to-1-1/lib/index.ts'),
   '@traqula/algebra-sparql-1-2': path.resolve(root, 'engines/algebra-sparql-1-2/lib/index.ts'),
   '@traqula/generator-sparql-1-1': path.resolve(root, 'engines/generator-sparql-1-1/lib/index.ts'),
   '@traqula/generator-sparql-1-2': path.resolve(root, 'engines/generator-sparql-1-2/lib/index.ts'),

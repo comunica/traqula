@@ -11,6 +11,7 @@
 
     { "path": "engines/algebra-sparql-1-1" },
     { "path": "engines/algebra-sparql-1-2" },
+    { "path": "engines/algebra-sparql-1-2-to-1-1" },
     { "path": "engines/generator-sparql-1-1" },
     { "path": "engines/generator-sparql-1-2" },
     { "path": "engines/parser-sparql-1-1" },

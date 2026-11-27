@@ -58,7 +58,20 @@ SELECT ?who WHERE {
   which are bound together or not at all. A subquery projects, and a `GROUP BY` groups on, those instead.
 - **`SUBJECT`, `PREDICATE`, `OBJECT`, `isTRIPLE`, `sameTerm`, `=` and `!=`** are resolved
   over such a variable, a written triple term and `TRIPLE(…)`.
-  Over anything else, there is no triple term to find in the data:
+- **Variables the data binds** hold the reification node, which stands for the triple term.
+  Only where the query reads the components of such a variable, with `SUBJECT`, `PREDICATE`, `OBJECT` or `isTRIPLE`,
+  every BGP and path that binds it as subject or object is followed by a lookup of them:
+
+  ```sparql
+  # SELECT ?s WHERE { ?r rdf:reifies ?t . BIND(SUBJECT(?t) AS ?s) }
+  SELECT (?tt_t_s AS ?s) WHERE {
+    ?r rdf:reifies ?t .
+    OPTIONAL { ?t rdf:subject ?tt_t_s . ?t rdf:predicate ?tt_t_p . ?t rdf:object ?tt_t_o . }
+  }
+  ```
+
+  `isTRIPLE(?t)` asks whether that lookup found something, and `SUBJECT(OBJECT(?t))` nests a second lookup in the first.
+  Over anything else there is no triple term to find:
   the accessors become `COALESCE()`, the expression SPARQL 1.1 defines to raise an error, and `isTRIPLE` is false.
 - **Base directions are dropped**: `"a"@en--ltr` becomes `"a"@en`, `STRLANGDIR` becomes `STRLANG`,
   `LANGDIR` gives `""`, `hasLANGDIR` is false and `hasLANG` is written with `LANG`.
@@ -69,11 +82,16 @@ An `UnsupportedSparql12Error` is thrown for a triple term the query binds itself
 cannot be read: in the solutions of the query, an `ORDER BY`, an aggregate, a function other than those above,
 a `DELETE` template, or when the same variable is bound to something that is no triple term.
 
-Three limits come with reading the query statically, without knowing the data:
+Some limits come with reading the query statically, without knowing the data:
 
 - A variable is a triple term **by name**: once the query binds `?x` to a triple term somewhere,
   `?x` is taken to hold a triple term everywhere, also in a subquery that does not share it.
-- A variable matched **by the data**, as `?t` in `?r rdf:reifies ?t`, holds the reification node.
-  `SUBJECT(?t)` errors, it does not look up `?t rdf:subject ?s`: write the triple term out to reach its components.
+- A reification node is **still a node**: `?s ?p ?o` also matches the `rdf:subject`, `rdf:predicate` and `rdf:object`
+  triples themselves, a projected variable gives the node rather than a triple term,
+  and comparing such a variable to a written triple term is false.
+  Hiding the encoding altogether is what [view unfolding](https://github.com/jitsedesmet/sparql-view-unfold) is for.
+- Components are only looked up **where a BGP or path binds the variable**:
+  after `BIND(?t AS ?u)` or `VALUES ?u { :node }`, `SUBJECT(?u)` errors.
+- The lookup assumes a node has **one** `rdf:subject`, `rdf:predicate` and `rdf:object`: more of them multiply solutions.
 - An argument of `TRIPLE(…)` is evaluated once per place its value is needed,
   so `TRIPLE(?s, ?p, RAND())` can give a different object per read.

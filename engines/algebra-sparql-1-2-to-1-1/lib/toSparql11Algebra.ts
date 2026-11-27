@@ -61,6 +61,9 @@ interface Resolved {
  *   Such a variable is read by name: once a name is bound to a triple term somewhere in the query,
  *   it is taken to hold a triple term everywhere.
  * - `SUBJECT`, `PREDICATE`, `OBJECT` and `isTRIPLE` are resolved over such a variable or a written triple term.
+ * - A variable the data binds holds the node reifying a triple term, as nothing tells the two apart.
+ *   Where the query reads its components, every BGP and path binding the variable is followed by
+ *   `OPTIONAL { ?t rdf:subject ?s . ?t rdf:predicate ?p . ?t rdf:object ?o }`, which the accessors read.
  *   Over anything else no triple term exists, so the accessors become an expression that errors (`COALESCE()`).
  * - A base direction is dropped from literals and from `STRLANGDIR`, `LANGDIR` gives `""`.
  *
@@ -78,12 +81,13 @@ export function toSparql11Algebra(operation: A.Operation, options: ToSparql11Opt
     prefix += 't';
   }
   const tripleVariables = new Set<string>();
+  const lookups = new Set<string>();
   for (let i = 0; i < MAX_REWRITES; i++) {
-    const known = tripleVariables.size;
-    const rewriter = new Rewriter(new AlgebraFactory(options.dataFactory), prefix, tripleVariables);
+    const known = tripleVariables.size + lookups.size;
+    const rewriter = new Rewriter(new AlgebraFactory(options.dataFactory), prefix, tripleVariables, lookups);
     const result = rewriter.rewrite(operation);
-    // A rewrite that learned a variable holds a triple term read that variable wrongly before learning so.
-    if (tripleVariables.size === known) {
+    // A rewrite that learned how a variable is to be read, read that variable wrongly before learning so.
+    if (tripleVariables.size + lookups.size === known) {
       return result;
     }
   }
@@ -113,38 +117,44 @@ class Rewriter {
    * Only an error once nothing more is learned, since the expression might turn out to be a triple term.
    */
   private mixedBind: string | undefined;
+  /**
+   * The projection giving the solutions of the query, which keeps the variables it has.
+   */
+  private resultProject: A.Operation | undefined;
 
+  /**
+   * @param AF creates the rewritten operations.
+   * @param prefix starts every name this rewriting coins, and no name of the query.
+   * @param tripleVariables the names of the variables the query binds to a triple term.
+   * @param lookups the names of the variables the data binds, of which the query reads the components.
+   */
   public constructor(
     private readonly AF: AlgebraFactory,
     private readonly prefix: string,
     private readonly tripleVariables: Set<string>,
+    private readonly lookups: Set<string>,
   ) {}
 
   public rewrite(operation: A.Operation): A.Operation {
     const known = this.tripleVariables.size;
+    const wrappers = new Set<string>([ Types.SLICE, Types.DISTINCT, Types.REDUCED, Types.ORDER_BY, Types.FROM ]);
+    this.resultProject = operation;
+    while (wrappers.has(this.resultProject.type)) {
+      this.resultProject = (<A.Single> this.resultProject).input;
+    }
     const result = this.operation(operation);
     if (this.tripleVariables.size === known) {
       if (this.mixedBind) {
         throw new UnsupportedSparql12Error(`?${this.mixedBind} is bound to a triple term and to another expression`);
       }
-      this.checkResultVariables(operation);
-    }
-    return result;
-  }
-
-  /**
-   * The solutions of the query itself cannot hold a triple term.
-   */
-  private checkResultVariables(operation: A.Operation): void {
-    const wrappers = new Set<string>([ Types.SLICE, Types.DISTINCT, Types.REDUCED, Types.ORDER_BY, Types.FROM ]);
-    while (wrappers.has(operation.type)) {
-      operation = (<A.Single> operation).input;
-    }
-    if (operation.type === Types.PROJECT) {
-      for (const variable of operation.variables) {
-        this.plainTerm(variable);
+      // The solutions of the query itself cannot hold a triple term
+      if (this.resultProject.type === Types.PROJECT) {
+        for (const variable of this.resultProject.variables) {
+          this.plainTerm(variable);
+        }
       }
     }
+    return result;
   }
 
   // ---------------------------------------------------- TERMS ----------------------------------------------------
@@ -173,12 +183,30 @@ class Rewriter {
   }
 
   /**
-   * The variables binding a variable in the rewritten query: itself, or the components of its triple term.
+   * Whether the data binds this variable, to what can be the node of a triple term the query reads the components of.
+   * Only asked of a variable that is not bound to a triple term by the query, which comes first.
    */
-  private flatten(variable: RDF.Variable): RDF.Variable[] {
-    return this.isTripleVariable(variable) ?
-      positions.flatMap(position => this.flatten(this.component(variable, position))) :
-        [ variable ];
+  private isLookup(term: RDF.Term): term is RDF.Variable {
+    return term.termType === 'Variable' && this.lookups.has(term.value);
+  }
+
+  /**
+   * The variables a {@link lookup} of this variable binds.
+   */
+  private lookedUp(variable: RDF.Variable): RDF.Variable[] {
+    const components = positions.map(position => this.component(variable, position));
+    return this.isLookup(components[2]) ? [ ...components, ...this.lookedUp(components[2]) ] : components;
+  }
+
+  /**
+   * The variables binding a variable in the rewritten query: the components of its triple term,
+   * or itself, with the components looked up for it unless only the variable itself is to be kept.
+   */
+  private flatten(variable: RDF.Variable, onlyItself = false): RDF.Variable[] {
+    if (this.isTripleVariable(variable)) {
+      return positions.flatMap(position => this.flatten(this.component(variable, position)));
+    }
+    return this.isLookup(variable) && !onlyItself ? [ variable, ...this.lookedUp(variable) ] : [ variable ];
   }
 
   /**
@@ -242,15 +270,49 @@ class Rewriter {
     const subject = this.node(path.subject, graph, this.freshVariable, reification);
     const object = this.node(path.object, graph, this.freshVariable, reification);
     const result: A.Path = { ...path, subject, object, graph };
-    return reification.length > 0 ? this.AF.createJoin([ result, this.AF.createBgp(reification) ]) : result;
+    return this.withLookups(
+      reification.length > 0 ? this.AF.createJoin([ result, this.AF.createBgp(reification) ]) : result,
+      [ result, ...reification ],
+    );
+  }
+
+  /**
+   * The reification of the node a variable holds, when it holds one: this is to be the right side of an OPTIONAL.
+   * The variable has to be bound, an unbound one would be bound to every node there is.
+   */
+  private lookup(variable: RDF.Variable, graph: RDF.Term): A.Operation {
+    const components = positions.map(position => this.component(variable, position));
+    const reification = this.AF.createBgp(positions.map((position, index) =>
+      this.AF.createPattern(variable, this.DF.namedNode(RDF_NS + position), components[index], graph)));
+    return this.isLookup(components[2]) ?
+      this.AF.createLeftJoin(reification, this.lookup(components[2], graph)) :
+      reification;
+  }
+
+  /**
+   * Looks up the components the query reads of the variables these patterns bind as subject or object.
+   */
+  private withLookups(op: A.Operation, patterns: Pick<A.Pattern, 'subject' | 'object' | 'graph'>[]): A.Operation {
+    const done = new Set<string>();
+    for (const { subject, object, graph } of patterns) {
+      for (const term of [ subject, object ]) {
+        if (this.isLookup(term) && !done.has(term.value)) {
+          done.add(term.value);
+          op = this.AF.createLeftJoin(op, this.lookup(term, graph));
+        }
+      }
+    }
+    return op;
   }
 
   // -------------------------------------------------- OPERATIONS -------------------------------------------------
 
   private operation(op: A.Operation): A.Operation {
     switch (op.type) {
-      case Types.BGP:
-        return this.AF.createBgp(this.patterns(op.patterns, this.freshVariable));
+      case Types.BGP: {
+        const patterns = this.patterns(op.patterns, this.freshVariable);
+        return this.withLookups(this.AF.createBgp(patterns), patterns);
+      }
       case Types.PATH:
         return this.path(op);
       case Types.EXTEND:
@@ -258,7 +320,11 @@ class Rewriter {
       case Types.VALUES:
         return this.values(op);
       case Types.PROJECT:
-        return { ...op, input: this.operation(op.input), variables: op.variables.flatMap(v => this.flatten(v)) };
+        return {
+          ...op,
+          input: this.operation(op.input),
+          variables: op.variables.flatMap(v => this.flatten(v, op === this.resultProject)),
+        };
       case Types.GROUP:
         return {
           ...op,
@@ -537,10 +603,16 @@ class Rewriter {
       case 'predicate':
       case 'object':
         return this.accessor(operator, args[0]);
-      case 'istriple':
-        return this.shape(args[0]) ?
-          this.guard(this.resolve(args[0]).valid, this.boolean(true)) :
-          this.guard(this.defined(this.expression(args[0])), this.boolean(false));
+      case 'istriple': {
+        if (this.shape(args[0])) {
+          return this.guard(this.resolve(args[0]).valid, this.boolean(true));
+        }
+        const target = this.lookupTarget(args[0]);
+        return this.guard(
+          this.defined(this.expression(args[0])),
+          target ? this.call('bound', this.term(this.component(target, 'subject'))) : this.boolean(false),
+        );
+      }
       case 'bound':
         return this.isTripleVariable((<A.TermExpression> args[0]).term) ?
           this.resolve(args[0]).valid[0] :
@@ -579,8 +651,9 @@ class Rewriter {
   private accessor(position: Position, arg: A.Expression): A.Expression {
     const shape = this.shape(arg);
     if (!shape) {
-      // The data holds no triple terms, so neither does anything the query did not make one itself
-      return this.call('coalesce');
+      const target = this.lookupTarget(arg);
+      // Nothing else that the query did not make a triple term itself, is one
+      return target ? this.term(this.component(target, position)) : this.call('coalesce');
     }
     if (position === 'object' && shape.object) {
       throw new UnsupportedSparql12Error('a triple term is used where its components cannot be read');
@@ -588,6 +661,26 @@ class Rewriter {
     const resolved = this.resolve(arg);
     const value = position === 'object' ? this.expression(resolved.object) : resolved[position];
     return this.guardsItself(arg) ? value : this.guard(resolved.valid, value);
+  }
+
+  /**
+   * The variable holding what an expression that is no triple term evaluates to, when the data can bind it:
+   * a variable, or the object of the triple term such a variable stands for.
+   * Its components are looked up from here on.
+   */
+  private lookupTarget(arg: A.Expression): RDF.Variable | undefined {
+    let target: RDF.Variable | undefined;
+    if (this.isVariable(arg)) {
+      target = arg.term;
+    } else {
+      const objectOf = this.argsOf(arg, 'object');
+      const outer = objectOf && !this.shape(objectOf[0]) && this.lookupTarget(objectOf[0]);
+      target = outer ? this.component(outer, 'object') : undefined;
+    }
+    if (target) {
+      this.lookups.add(target.value);
+    }
+    return target;
   }
 
   private compare(operator: string, left: A.Expression, right: A.Expression): A.Expression {

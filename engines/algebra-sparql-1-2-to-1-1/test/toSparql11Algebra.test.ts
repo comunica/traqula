@@ -138,14 +138,120 @@ WHERE {
 CLEAR ALL`,
     ],
     [
-      'makes the accessors of something the query did not bind an error',
-      `SELECT ?s { ?s :p ?t FILTER(isTRIPLE(?t) && isTRIPLE(:a) && isTRIPLE(STR(?t)) && SUBJECT(?t) = :s && PREDICATE(?s) = :p) BIND(OBJECT(?t) AS ?o) }`,
+      'looks up the components of a variable the data binds',
+      `SELECT ?r ?o { ?r rdf:reifies ?t FILTER(isTRIPLE(?t) && SUBJECT(?t) = :s && PREDICATE(?t) = :p) BIND(OBJECT(?t) AS ?o) }`,
+      `SELECT ?r ?o WHERE {
+  {
+    ?r rdf:reifies ?t .
+    OPTIONAL {
+      ?t rdf:subject ?tt_t_s .
+      ?t rdf:predicate ?tt_t_p .
+      ?t rdf:object ?tt_t_o .
+    }
+    BIND( ?tt_t_o AS ?o )
+  }
+  FILTER ( ( ( IF( BOUND( ?t ) , BOUND( ?tt_t_s ) , COALESCE( ) ) && ( ?tt_t_s = :s ) ) && ( ?tt_t_p = :p ) ) )
+}`,
+    ],
+    [
+      'looks up the components of the object of a variable the data binds',
+      `SELECT ?a { ?r rdf:reifies ?t . ?t :q ?u BIND(SUBJECT(OBJECT(?t)) AS ?a) FILTER(isTRIPLE(OBJECT(?t))) }`,
+      `SELECT ?a WHERE {
+  {
+    ?r rdf:reifies ?t .
+    ?t :q ?u .
+    OPTIONAL {
+      ?t rdf:subject ?tt_t_s .
+      ?t rdf:predicate ?tt_t_p .
+      ?t rdf:object ?tt_t_o .
+      OPTIONAL {
+        ?tt_t_o rdf:subject ?tt_tt_t_o_s .
+        ?tt_t_o rdf:predicate ?tt_tt_t_o_p .
+        ?tt_t_o rdf:object ?tt_tt_t_o_o .
+      }
+    }
+    BIND( ?tt_tt_t_o_s AS ?a )
+  }
+  FILTER ( IF( BOUND( ?tt_t_o ) , BOUND( ?tt_tt_t_o_s ) , COALESCE( ) ) )
+}`,
+    ],
+    [
+      'looks up components after a path, and keeps them through a subquery and a GROUP BY',
+      `SELECT ?t (COUNT(*) AS ?n) { { SELECT ?t { ?r :p+ ?t } } FILTER(PREDICATE(?t) = :p) } GROUP BY ?t HAVING(isTRIPLE(?t))`,
+      `SELECT ?t ( COUNT( * ) AS ?n ) WHERE {
+  {
+    SELECT ?t ?tt_t_s ?tt_t_p ?tt_t_o WHERE {
+      ?r (:p+) ?t .
+      OPTIONAL {
+        ?t rdf:subject ?tt_t_s .
+        ?t rdf:predicate ?tt_t_p .
+        ?t rdf:object ?tt_t_o .
+      }
+    }
+  }
+  FILTER ( ( ?tt_t_p = :p ) )
+}
+GROUP BY ?t ?tt_t_s ?tt_t_p ?tt_t_o
+HAVING IF( BOUND( ?t ) , BOUND( ?tt_t_s ) , COALESCE( ) )`,
+    ],
+    [
+      'keeps the components of an object through a subquery',
+      `SELECT ?a { { SELECT ?t { ?r rdf:reifies ?t } } BIND(SUBJECT(OBJECT(?t)) AS ?a) }`,
+      `SELECT ( ?tt_tt_t_o_s AS ?a ) WHERE {
+  SELECT ?t ?tt_t_s ?tt_t_p ?tt_t_o ?tt_tt_t_o_s ?tt_tt_t_o_p ?tt_tt_t_o_o WHERE {
+    ?r rdf:reifies ?t .
+    OPTIONAL {
+      ?t rdf:subject ?tt_t_s .
+      ?t rdf:predicate ?tt_t_p .
+      ?t rdf:object ?tt_t_o .
+      OPTIONAL {
+        ?tt_t_o rdf:subject ?tt_tt_t_o_s .
+        ?tt_t_o rdf:predicate ?tt_tt_t_o_p .
+        ?tt_t_o rdf:object ?tt_tt_t_o_o .
+      }
+    }
+  }
+}`,
+    ],
+    [
+      'looks up the components of the variables in a written triple term',
+      `SELECT ?a { ?r rdf:reifies <<( :s :p ?t )>> BIND(SUBJECT(?t) AS ?a) }`,
+      `SELECT ( ?tt_t_s AS ?a ) WHERE {
+  ?r rdf:reifies ?tt0 .
+  ?tt0 rdf:subject :s .
+  ?tt0 rdf:predicate :p .
+  ?tt0 rdf:object ?t .
+  OPTIONAL {
+    ?t rdf:subject ?tt_t_s .
+    ?t rdf:predicate ?tt_t_p .
+    ?t rdf:object ?tt_t_o .
+  }
+}`,
+    ],
+    [
+      'makes the accessors of what is no variable of the data an error',
+      `SELECT ?a ?b ?c ?d ?e ?f { ?s :p ?o BIND(?o AS ?u) BIND(SUBJECT(?u) AS ?a) BIND(SUBJECT(STR(?o)) AS ?b) BIND(isTRIPLE(:a) AS ?c) BIND(isTRIPLE(STR(?o)) AS ?d) BIND(SUBJECT(OBJECT(TRIPLE(:s, :p, ?o))) AS ?e) BIND(SUBJECT(OBJECT(STR(?o))) AS ?f) }`,
+      `SELECT ( ?tt_u_s AS ?a ) ( COALESCE( ) AS ?b ) ( "false"^^xsd:boolean AS ?c ) ( IF( IF( SAMETERM( STR( ?o ) , STR( ?o ) ) , "true"^^xsd:boolean , "true"^^xsd:boolean ) , "false"^^xsd:boolean , COALESCE( ) ) AS ?d ) ( COALESCE( ) AS ?e ) ( COALESCE( ) AS ?f ) WHERE {
+  ?s :p ?o .
+  BIND( ?o AS ?u )
+}`,
+    ],
+    [
+      'reads a variable the query binds to a triple term as that triple term',
+      `SELECT ?s { { ?s :p ?x FILTER(isTRIPLE(?x)) } UNION { BIND(<<( :s :p :o )>> AS ?x) } }`,
       `SELECT ?s WHERE {
   {
-    ?s :p ?t .
-    BIND( COALESCE( ) AS ?o )
+    ?s :p ?tt0 .
+    ?tt0 rdf:subject ?tt_x_s .
+    ?tt0 rdf:predicate ?tt_x_p .
+    ?tt0 rdf:object ?tt_x_o .
+    FILTER ( IF( BOUND( ?tt_x_s ) , "true"^^xsd:boolean , COALESCE( ) ) )
   }
-  FILTER ( ( ( ( ( IF( BOUND( ?t ) , "false"^^xsd:boolean , COALESCE( ) ) && "false"^^xsd:boolean ) && IF( IF( SAMETERM( STR( ?t ) , STR( ?t ) ) , "true"^^xsd:boolean , "true"^^xsd:boolean ) , "false"^^xsd:boolean , COALESCE( ) ) ) && ( COALESCE( ) = :s ) ) && ( COALESCE( ) = :p ) ) )
+  UNION {
+    BIND( :s AS ?tt_x_s )
+    BIND( :p AS ?tt_x_p )
+    BIND( :o AS ?tt_x_o )
+  }
 }`,
     ],
     [
